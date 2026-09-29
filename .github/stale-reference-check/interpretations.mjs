@@ -135,7 +135,7 @@ function checkTestNames(action, source, candidate, evidence) {
     const owner = declaration?.[1]
         ? declaration[2]
         : [...evidence].filter(([line]) => line < candidate.seedLine).sort((a, b) => a[0] - b[0])
-            .flatMap(([, line]) => [...line.matchAll(/\b(?:class|struct|Class|Module)\s+(\w+)/g)].map(match => match[1]))
+            .flatMap(([, line]) => [...line.matchAll(/\b(?:class|struct)\s+(\w+)/g)].map(match => match[1]))
             .at(-1);
     requireCondition(owner !== undefined, 'No containing type declaration precedes the Ignore; request context or defer.');
     for (const name of action.testNames) {
@@ -144,15 +144,15 @@ function checkTestNames(action, source, candidate, evidence) {
         const segments = name.replace(/\(.*$/, '').split('.');
         const method = segments.pop();
         const type = segments.pop();
-        requireCondition(new RegExp(`\\b(?:class|struct|Class|Module)\\s+${escapeRegex(type)}\\b`).test(source)
+        requireCondition(new RegExp(`\\b(?:class|struct)\\s+${escapeRegex(type)}\\b`).test(source)
             && new RegExp(`\\b${escapeRegex(method)}\\s*(?:<[^>]+>)?\\s*\\(`).test(source),
         'Test identity has no declaration in supplied evidence.');
         requireCondition(type.replace(/^@/, '') === owner, 'Test identity names a type that does not contain the Ignore.');
-        const namespaces = [...source.matchAll(/\bnamespace\s+([\w.]+)|\bNamespace\s+([\w.]+)/g)]
-            .flatMap(match => (match[1] ?? match[2]).split('.'));
+        const namespaces = [...source.matchAll(/\bnamespace\s+([\w.]+)/g)]
+            .flatMap(match => match[1].split('.'));
         requireCondition(namespaces.length > 0 && segments[0] === namespaces[0]
             && segments.every(segment => namespaces.includes(segment)
-                || new RegExp(`\\b(?:class|struct|Class|Module)\\s+${escapeRegex(segment)}\\b`).test(source)),
+                || new RegExp(`\\b(?:class|struct)\\s+${escapeRegex(segment)}\\b`).test(source)),
         'Test namespace or containing type is not present in supplied evidence; request context or defer.');
     }
     // Class ignores need complete, unambiguous coverage. Do not guess inherited or nested tests.

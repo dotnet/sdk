@@ -44,6 +44,8 @@ Documentation and prompt text, test-input fixtures, snapshots, localization,
 generated files, `eng/common`, and manifest-declared vendored files are excluded.
 The checker's own synthetic test cases are also excluded from discovery.
 The collector is deliberately not a general-purpose parser of every language.
+Ignore validation understands C# MSTest declarations only; Visual Basic
+sources are not collected.
 
 Files without any GitHub issue/PR URL are eliminated before interpretation.
 Initial context is 20 lines on either side of a hit. Overlapping ranges are

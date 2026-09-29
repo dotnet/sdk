@@ -8,7 +8,7 @@ import path from 'node:path';
 
 const ignorePattern = String.raw`(\[|<|,|^[[:space:]]*)[[:space:]]*([[:alnum:]_.]+[.])?Ignore(Attribute)?([[:space:]]*\(|[[:space:]]*\]|[[:space:]]*>|[[:space:]]*$)`;
 const seedPattern = `${ignorePattern}|` + String.raw`\bTODO\b|\bwork[ -]?around\b|\b(remov(e|ed|al)|delet(e|ed|ion)|revisit|re-?enabl(e|ed))\b.*\b(when|once|after|until)\b|\b(temporary|temporarily)\b.*\b(until|fix|hack)\b`;
-const sourceExtension = /\.(cs|vb|fs|fsx|c|cc|cpp|h|hpp|js|mjs|cjs|ts|tsx|jsx|py|ps1|psm1|psd1|sh|bash|cmd|bat|yml|yaml|xml|props|targets|proj|projitems|csproj|vbproj|fsproj|slnx|nuspec|razor|cshtml|config|cmake)$/i;
+const sourceExtension = /\.(cs|fs|fsx|c|cc|cpp|h|hpp|js|mjs|cjs|ts|tsx|jsx|py|ps1|psm1|psd1|sh|bash|cmd|bat|yml|yaml|xml|props|targets|proj|projitems|csproj|vbproj|fsproj|slnx|nuspec|razor|cshtml|config|cmake)$/i;
 const excludedDirectory = /(^|\/)(documentation|docs?|prompts?|memory|skills|agents|instructions|issue_templates?|testassets|testdata|testinputs?|testresources|fixtures|__fixtures__|baselines?|snapshots?|generated|vendor|vendored|third[-_]?party|node_modules|bin|obj|artifacts|template_feed)(\/|$)/i;
 // Keep collection permissive enough to find shorthand references; the validator
 // later decides whether each reference can authorize a tracking action.

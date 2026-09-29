@@ -58,6 +58,25 @@ test('collects same-line, adjacent and multiline C#/XML seeds without requiring 
     assert.deepEqual(await collect(root, { rulesHash: 'rules-1' }), manifest);
 });
 
+test('Visual Basic sources are not collected', async t => {
+    const root = await fixture(t, {
+        'test/Cases.vb': [
+            'Namespace Sample.Tests',
+            'Public Class Cases',
+            '<Ignore("https://github.com/dotnet/sdk/issues/123")>',
+            '<TestMethod>',
+            'Public Sub Run()',
+            'End Sub',
+            "' TODO https://github.com/dotnet/sdk/issues/456",
+            'End Class',
+            'End Namespace',
+        ].join('\n'),
+        'src/Owned.cs': '// TODO https://github.com/dotnet/sdk/issues/1\n',
+    });
+    const result = await collect(root, { rulesHash: 'rules' });
+    assert.deepEqual(result.candidates.map(candidate => candidate.path), ['src/Owned.cs']);
+});
+
 test('uses tracked committed files and never modifies checkout, index, or HEAD', async t => {
     const root = await fixture(t, { 'src/Owned.cs': '// TODO https://github.com/dotnet/sdk/issues/1\n' });
     await writeFile(path.join(root, 'src', 'Untracked.cs'), '// TODO untracked');

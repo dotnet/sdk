@@ -48,10 +48,10 @@ export async function completeSubmission(directory, outputFile)
 
 function declarationHints(candidate, source)
 {
-    const patterns = /\.(cs|vb)$/i.test(candidate.path) ? {
-        namespace: /^\s*namespace\s+[\w.]+/i,
-        type: /^\s*(?:(?:public|internal|private|protected|static|abstract|sealed|partial|readonly|ref|friend|mustinherit|notinheritable)\s+)*(?:class|struct|record|interface|module)\s+\w+/i,
-        member: /^\s*(?:(?:public|internal|private|protected|static|virtual|override|async|sealed|partial|extern|unsafe|new|shared|overrides)\s+)+(?:[\w<>,?.[\]]+\s+)?@?\w+(?:<[^>]+>)?\s*\(/i,
+    const patterns = /\.cs$/i.test(candidate.path) ? {
+        namespace: /^\s*namespace\s+[\w.]+/,
+        type: /^\s*(?:(?:public|internal|private|protected|static|abstract|sealed|partial|readonly|ref)\s+)*(?:class|struct|record|interface)\s+\w+/,
+        member: /^\s*(?:(?:public|internal|private|protected|static|virtual|override|async|sealed|partial|extern|unsafe|new)\s+)+(?:[\w<>,?.[\]]+\s+)?@?\w+(?:<[^>]+>)?\s*\(/,
     } : /\.(?:xml|props|targets|[a-z]*proj)$/i.test(candidate.path) ? {
         element: /^\s*<(?:Target|PropertyGroup|ItemGroup)\b/,
     } : {};
