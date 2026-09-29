@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 
 internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult) : CommandBase<CleanFileBasedAppArtifactsCommandDefinition>(parseResult)
 {
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         bool dryRun = _parseResult.GetValue(Definition.DryRunOption);
 

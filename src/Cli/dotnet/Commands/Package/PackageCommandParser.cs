@@ -21,14 +21,14 @@ internal sealed class PackageCommandParser
     {
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 
-        command.RemoveCommand.SetAction(parseResult => new PackageRemoveCommand(parseResult).Execute());
-        command.ListCommand.SetAction(parseResult => new PackageListCommand(parseResult).Execute());
+        command.RemoveCommand.SetAction((parseResult, cancellationToken) => new PackageRemoveCommand(parseResult).Execute(cancellationToken));
+        command.ListCommand.SetAction((parseResult, cancellationToken) => new PackageListCommand(parseResult).Execute(cancellationToken));
         ConfigureAddCommand(command.AddCommand);
 
-        command.SearchCommand.SetAction(parseResult =>
+        command.SearchCommand.SetAction((parseResult, cancellationToken) =>
         {
             var command = new PackageSearchCommand(parseResult);
-            int exitCode = command.Execute();
+            int exitCode = command.Execute(cancellationToken);
 
             if (exitCode == 1)
             {
@@ -65,7 +65,7 @@ internal sealed class PackageCommandParser
             }
         });
 
-        def.SetAction(parseResult => new PackageAddCommand(parseResult).Execute());
+        def.SetAction((parseResult, cancellationToken) => new PackageAddCommand(parseResult).Execute(cancellationToken));
     }
 
     private static async Task<IEnumerable<string>> QueryNuGet(string packageStem, bool allowPrerelease, CancellationToken cancellationToken)

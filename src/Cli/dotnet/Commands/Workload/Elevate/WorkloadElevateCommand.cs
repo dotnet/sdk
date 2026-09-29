@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 internal class WorkloadElevateCommand(ParseResult parseResult)
     : WorkloadCommandBase<WorkloadElevateCommandDefinition>(parseResult)
 {
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (!OperatingSystem.IsWindows())
         {

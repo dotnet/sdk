@@ -52,6 +52,6 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath, C
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute(cancellationToken);
     }
 }

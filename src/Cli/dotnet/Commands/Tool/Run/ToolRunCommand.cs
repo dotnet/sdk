@@ -26,7 +26,7 @@ internal sealed class ToolRunCommand : CommandBase<ToolRunCommandDefinition>
         _allowRollForward = result.GetValue(Definition.RollForwardOption);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         return ExecuteCommand(_localToolsCommandResolver, _toolCommandName, _forwardArgument, _allowRollForward);
     }

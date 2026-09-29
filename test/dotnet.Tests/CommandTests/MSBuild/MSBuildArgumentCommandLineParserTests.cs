@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
     [TestClass]
     public class MSBuildArgumentCommandLineParserTests
     {
+        public TestContext TestContext { get; set; } = null!;
 
         [TestMethod]
         [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, true)]

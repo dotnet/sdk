@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var packageId = "does.not.exist";
             var command = CreateUninstallCommand($"-g {packageId}");
 
-            Action a = () => command.Execute();
+            Action a = () => command.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>()
                 .And
@@ -60,7 +60,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAPackageItUninstalls()
         {
-            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Clear();
 
-            CreateUninstallCommand($"-g {PackageId}").Execute().Should().Be(0);
+            CreateUninstallCommand($"-g {PackageId}").Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAPackageWhenCallFromUninstallRedirectCommandItUninstalls()
         {
-            CreateInstallCommand($"-g {PackageId}  --verbosity minimal").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId}  --verbosity minimal").Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -238,7 +238,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     result,
                     toolUninstallGlobalOrToolPathCommand: toolUninstallGlobalOrToolPathCommand);
 
-            uninstallCommand.Execute().Should().Be(0);
+            uninstallCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -256,7 +256,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAFailureToUninstallItLeavesItInstalled()
         {
-            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute().Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -281,7 +281,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => CreateUninstallCommand(
                 options: $"-g {PackageId}",
                 uninstallCallback: () => throw new IOException("simulated error"))
-                .Execute();
+                .Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>()
                 .And
@@ -303,7 +303,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var uninstallCommand = CreateUninstallCommand($"--tool-path {toolPath} {PackageId}");
 
-            Action a = () => uninstallCommand.Execute();
+            Action a = () => uninstallCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>()
                 .And

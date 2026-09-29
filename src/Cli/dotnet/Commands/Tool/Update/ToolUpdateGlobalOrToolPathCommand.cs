@@ -45,8 +45,8 @@ internal sealed class ToolUpdateGlobalOrToolPathCommand : CommandBase<ToolUpdate
             store: _store);
     }
 
-    public override int Execute()
-        => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+    public override int Execute(CancellationToken cancellationToken)
+        => ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
 
     internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {

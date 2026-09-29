@@ -153,7 +153,7 @@ internal static class MSBuildUtility
             NoCache = true,
         };
 
-        int buildExitCode = buildOptions.HasNoBuild ? 0 : buildCommand.Execute();
+        int buildExitCode = buildOptions.HasNoBuild ? 0 : buildCommand.Execute(CancellationToken.None);
         if (buildExitCode != 0)
         {
             return ([], buildExitCode);
@@ -339,8 +339,8 @@ internal static class MSBuildUtility
                 workingDirectory: buildSession.WorkingDirectory);
 
             return buildSession.RequiresOutOfProcessBuild
-                ? command.ExecuteOutOfProc(buildSession.WorkingDirectory)
-                : command.Execute();
+                ? command.ExecuteOutOfProc(buildSession.WorkingDirectory, CancellationToken.None)
+                : command.Execute(CancellationToken.None);
         }
         finally
         {

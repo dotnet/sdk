@@ -80,7 +80,7 @@ public class GivenCommandServices : SdkTest
 
         command.Services.Should().BeSameAs(services);
         detector.IsLLMEnvironmentCallCount.Should().Be(0);
-        Action execute = () => command.Execute();
+        Action execute = () => command.Execute(TestContext.CancellationToken);
         execute.Should().Throw<InvalidOperationException>().Which.Should().BeSameAs(stopBeforeBuild);
         detector.IsLLMEnvironmentCallCount.Should().Be(1);
     }

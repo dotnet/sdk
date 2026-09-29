@@ -25,7 +25,7 @@ public class TestCommand(
         advertiseWorkloadUpdates: null,
         CommandServices.CreateDefault())
 {
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken = default)
     {
         parseResult.HandleDebugSwitch();
 
@@ -59,7 +59,7 @@ public class TestCommand(
             return ForwardToVSTestConsole(parseResult, args, settings, testSessionCorrelationId);
         }
 
-        return ForwardToMsbuild(parseResult, settings, testSessionCorrelationId);
+        return ForwardToMsbuild(parseResult, settings, testSessionCorrelationId, cancellationToken);
     }
 
     internal /*internal for testing*/ static (string[] Args, string[] Settings) SeparateSettingsFromArgs(string[] args)
@@ -82,7 +82,7 @@ public class TestCommand(
         return settings.Length - 1;
     }
 
-    private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId)
+    private static int ForwardToMsbuild(ParseResult parseResult, string[] settings, string testSessionCorrelationId, CancellationToken cancellationToken = default)
     {
         var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
 
@@ -131,7 +131,7 @@ public class TestCommand(
                 additionalBuildProperties = ["--property:VsTestUseMSBuildOutput=true"];
             }
 
-            int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute();
+            int exitCode = FromParseResult(parseResult, settings, testSessionCorrelationId, additionalBuildProperties).Execute(cancellationToken);
 
             // We run post processing also if execution is failed for possible partial successful result to post process.
             exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult.GetValue(definition.DiagOption), FeatureFlag.Instance);

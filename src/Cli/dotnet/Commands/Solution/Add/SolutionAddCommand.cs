@@ -51,7 +51,7 @@ internal sealed class SolutionAddCommand : CommandBase<SolutionAddCommandDefinit
         _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (_projects.Count == 0)
         {

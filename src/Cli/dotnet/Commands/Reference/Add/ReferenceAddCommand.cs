@@ -28,7 +28,7 @@ internal sealed class ReferenceAddCommand : CommandBase<ReferenceAddCommandDefin
             parseResult);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         using var projects = new ProjectCollection();
         bool interactive = _parseResult.GetValue(Definition.InteractiveOption);

@@ -53,7 +53,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     }
 
-    public override int Execute() => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+    public override int Execute(CancellationToken cancellationToken) => ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
 
     internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
