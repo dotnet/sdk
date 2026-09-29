@@ -90,7 +90,7 @@ class Class1
 
             ICommand toolCommand = toolCommandSpec.ToCommand().CaptureStdOut();
 
-            var toolResult = toolCommand.Execute();
+            var toolResult = toolCommand.Execute(TestContext.CancellationToken);
 
             toolResult.Should().Pass();
         }

@@ -44,7 +44,7 @@ public class MSBuildCommand(
             services: services);
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         parseResult.HandleDebugSwitch();
 

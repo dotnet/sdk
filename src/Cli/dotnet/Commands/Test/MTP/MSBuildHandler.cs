@@ -17,7 +17,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, MSBuildSession b
     private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
 
 
-    public bool Initialize(CancellationToken cancellationToken = default)
+    public bool Initialize(CancellationToken cancellationToken)
     {
         PathOptions pathOptions = _buildOptions.PathOptions;
 
