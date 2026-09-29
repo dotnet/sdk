@@ -3,7 +3,6 @@
 
 #if TARGET_WINDOWS
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
 #endif
