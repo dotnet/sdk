@@ -94,13 +94,10 @@
     </ItemGroup>
 
     <GetWorkloadManifestLayout LayoutRoot="$(_ManifestLayoutRoot)" SourceFiles="@(_ManifestLayoutInput)">
-      <Output TaskParameter="ExistingOutputs" ItemName="_ExistingManifestLayoutOutput" />
+      <Output TaskParameter="StaleOutputs" ItemName="_StaleManifestLayoutOutput" />
       <Output TaskParameter="OwnedDirectories" ItemName="_ManifestLayoutDirectories" />
+      <Output TaskParameter="EmptyDirectories" ItemName="_EmptyManifestLayoutDirectory" />
     </GetWorkloadManifestLayout>
-
-    <ItemGroup>
-      <_StaleManifestLayoutOutput Include="@(_ExistingManifestLayoutOutput)" Exclude="@(_ExpectedManifestLayoutOutput)" />
-    </ItemGroup>
 
     <!-- The inventory detects added, removed, and remapped inputs that timestamps cannot. The root
          line records a destination change even when no manifests are mapped. -->
@@ -114,9 +111,9 @@
       <Output TaskParameter="Lines" PropertyName="_ManifestLayoutCompletionValue" />
     </ReadLinesFromFile>
 
-    <!-- Missing or stale outputs, or a corrupt stamp, force LayoutManifests to run. -->
+    <!-- Missing or stale outputs, empty owned directories, or a corrupt stamp force LayoutManifests to run. -->
     <Delete Files="$(_ManifestLayoutCompletionStamp)"
-            Condition="'@(_MissingManifestLayoutOutput)' != '' or '@(_StaleManifestLayoutOutput)' != '' or (Exists('$(_ManifestLayoutCompletionStamp)') and '$(_ManifestLayoutCompletionValue)' != 'complete')" />
+            Condition="'@(_MissingManifestLayoutOutput)' != '' or '@(_StaleManifestLayoutOutput)' != '' or '@(_EmptyManifestLayoutDirectory)' != '' or (Exists('$(_ManifestLayoutCompletionStamp)') and '$(_ManifestLayoutCompletionValue)' != 'complete')" />
   </Target>
 
   <Target Name="LayoutManifests"
@@ -127,19 +124,19 @@
 
     <PrepareIncrementalLayout
         SourceFiles="@(_ManifestLayoutInput)"
-        DestinationFiles="@(_ExpectedManifestLayoutOutput)"
-        ExistingOutputs="@(_ExistingManifestLayoutOutput)">
+        DestinationFiles="@(_ExpectedManifestLayoutOutput)">
       <Output TaskParameter="ExpectedOutputs" ItemName="_PreparedManifestLayoutOutput" />
-      <Output TaskParameter="StaleOutputs" ItemName="_PreparedStaleManifestLayoutOutput" />
     </PrepareIncrementalLayout>
 
-    <Delete Files="@(_PreparedStaleManifestLayoutOutput)" />
+    <Delete Files="@(_StaleManifestLayoutOutput)" />
+
+    <!-- Prune before copying so a directory whose name changed only in case is recreated with the
+         new name, and so the result has no empty directories, matching a clean build. -->
+    <PruneEmptyLayoutDirectories Directories="@(_ManifestLayoutDirectories)" />
+
     <Copy SourceFiles="@(_ManifestLayoutInput)"
           DestinationFiles="@(_PreparedManifestLayoutOutput)"
           SkipUnchangedFiles="true" />
-
-    <!-- An empty manifest version directory would look like an installed manifest to the SDK. -->
-    <PruneEmptyLayoutDirectories Directories="@(_ManifestLayoutDirectories)" />
 
     <CompleteIncrementalLayout ExpectedOutputs="@(_PreparedManifestLayoutOutput)"
                                CompletionStampFile="$(_ManifestLayoutCompletionStamp)" />

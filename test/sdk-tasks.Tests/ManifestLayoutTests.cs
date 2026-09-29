@@ -345,6 +345,56 @@ public class ManifestLayoutTests : SdkTest
     }
 
     /// <summary>
+    /// Verifies an empty owned directory makes a completed layout rerun and is removed, while an
+    /// empty directory the layout doesn't own is left alone.
+    /// </summary>
+    [TestMethod]
+    public void LayoutManifestsRemovesEmptyOwnedDirectoriesOnWarmBuild()
+    {
+        ManifestProject project = CreateManifestProject();
+        project.Build();
+        string ownedBand = Path.Combine(project.LayoutRoot, "10.0.100");
+        string ownedNested = Path.Combine(project.LayoutRoot, "11.0.100", project.Downloaded.Id.ToLowerInvariant(), "10.0.1", "localize");
+        string unowned = Path.Combine(project.LayoutRoot, "11.0.100", project.Downloaded.Id.ToLowerInvariant(), "not-a-version");
+        Directory.CreateDirectory(ownedBand);
+        Directory.CreateDirectory(ownedNested);
+        Directory.CreateDirectory(unowned);
+
+        project.Build().RanLayout.Should().BeTrue();
+
+        Directory.Exists(ownedBand).Should().BeFalse();
+        Directory.Exists(Path.GetDirectoryName(ownedNested)).Should().BeFalse();
+        Directory.Exists(unowned).Should().BeTrue();
+        project.Build().RanLayout.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// Verifies renames that change only letter case produce the same names as a clean build, for
+    /// both a payload file and a manifest version directory, even on case-insensitive file systems.
+    /// </summary>
+    [TestMethod]
+    public void LayoutManifestsAppliesCaseOnlyRenames()
+    {
+        ManifestProject project = CreateManifestProject();
+        project.Downloaded.Version = "11.0.1-preview.1";
+        project.WriteInputs();
+        project.Build();
+        string oldSource = project.Source(false, Path.Combine("localize", "strings.fr.json"));
+        File.Move(oldSource, oldSource + ".tmp");
+        File.Move(oldSource + ".tmp", project.Source(false, Path.Combine("localize", "strings.FR.json")));
+        project.Downloaded.Version = "11.0.1-Preview.1";
+        project.WriteInputs();
+
+        project.Build().RanLayout.Should().BeTrue();
+
+        string manifestDirectory = Path.Combine(project.LayoutRoot, "11.0.100", project.Downloaded.Id.ToLowerInvariant());
+        Directory.GetDirectories(manifestDirectory).Select(Path.GetFileName).Should().Equal("11.0.1-Preview.1");
+        Directory.GetFiles(Path.Combine(manifestDirectory, "11.0.1-Preview.1", "localize")).Select(Path.GetFileName)
+            .Should().Equal("strings.FR.json");
+        project.Build().RanLayout.Should().BeFalse();
+    }
+
+    /// <summary>
     /// Verifies disabling producers removes their former payloads and allows a fully empty
     /// expected layout to complete and skip on the next invocation.
     /// </summary>

@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 namespace Microsoft.DotNet.Build.Tasks;
 
 /// <summary>
-/// Finds the files and directories owned by the workload manifest layout, and rejects mappings
-/// whose destinations are outside that ownership.
+/// Finds the stale files and the directories owned by the workload manifest layout, and rejects
+/// mappings whose destinations are outside that ownership.
 /// </summary>
 /// <remarks>
 /// Only <c>LayoutManifests</c> writes under the <c>sdk-manifests</c> staging root, so ownership
@@ -33,17 +33,24 @@ public sealed class GetWorkloadManifestLayout : Task
     public ITaskItem[] SourceFiles { get; set; } = [];
 
     /// <summary>
-    /// Gets the owned files that currently exist, including files that the current mappings no
-    /// longer produce.
+    /// Gets the owned files that the current mappings don't produce. On a case-insensitive
+    /// comparison, this includes files whose name, or whose version directory's name, differs from
+    /// the mapped destination only in case, because copying over them would keep the old name.
     /// </summary>
     [Output]
-    public ITaskItem[] ExistingOutputs { get; private set; } = [];
+    public ITaskItem[] StaleOutputs { get; private set; } = [];
 
     /// <summary>
     /// Gets the owned directories that currently exist, excluding <see cref="LayoutRoot"/>.
     /// </summary>
     [Output]
     public ITaskItem[] OwnedDirectories { get; private set; } = [];
+
+    /// <summary>
+    /// Gets the owned directories that currently have no entries.
+    /// </summary>
+    [Output]
+    public ITaskItem[] EmptyDirectories { get; private set; } = [];
 
     public override bool Execute()
     {
@@ -54,7 +61,7 @@ public sealed class GetWorkloadManifestLayout : Task
                 return false;
             }
 
-            ValidateMappings(root);
+            Dictionary<string, string> destinations = ValidateMappings(root);
 
             if (Log.HasLoggedErrors)
             {
@@ -69,8 +76,15 @@ public sealed class GetWorkloadManifestLayout : Task
                 FindOwnedPaths(root, files, directories);
             }
 
-            ExistingOutputs = files.Select(path => (ITaskItem)new TaskItem(path)).ToArray();
+            StaleOutputs = files
+                .Where(path => !destinations.TryGetValue(path, out string? destination) || !HasSameOwnedCasing(root, path, destination))
+                .Select(path => (ITaskItem)new TaskItem(path))
+                .ToArray();
             OwnedDirectories = directories.Select(path => (ITaskItem)new TaskItem(path)).ToArray();
+            EmptyDirectories = directories
+                .Where(path => !Directory.EnumerateFileSystemEntries(path).Any())
+                .Select(path => (ITaskItem)new TaskItem(path))
+                .ToArray();
             return true;
         }
         catch (Exception exception)
@@ -80,8 +94,10 @@ public sealed class GetWorkloadManifestLayout : Task
         }
     }
 
-    private void ValidateMappings(string root)
+    private Dictionary<string, string> ValidateMappings(string root)
     {
+        var destinations = new Dictionary<string, string>(IncrementalLayoutState.PathComparer);
+
         foreach (ITaskItem source in SourceFiles)
         {
             if (!IncrementalLayoutState.TryGetFullPath(Log, source.ItemSpec, nameof(SourceFiles), out string sourcePath)
@@ -97,7 +113,24 @@ public sealed class GetWorkloadManifestLayout : Task
             {
                 Log.LogError($"Invalid workload manifest layout mapping '{sourcePath}' to '{destination}' under '{root}'.");
             }
+
+            destinations.TryAdd(destination, destination);
         }
+
+        return destinations;
+    }
+
+    // Compares case only from the version directory down (just the file name for workload sets).
+    // Those directories hold nothing but owned files, so deleting mismatched files empties them and
+    // pruning lets the copy recreate them with the new name. Higher directories can hold unowned
+    // files, so they could never be renamed and the layout would rerun on every build.
+    private static bool HasSameOwnedCasing(string root, string existing, string destination)
+    {
+        string[] existingParts = Path.GetRelativePath(root, existing).Split(Path.DirectorySeparatorChar);
+        string[] destinationParts = Path.GetRelativePath(root, destination).Split(Path.DirectorySeparatorChar);
+        int ownedStart = IsWorkloadSets(existingParts[1]) ? 3 : 2;
+
+        return existingParts.AsSpan(ownedStart).SequenceEqual(destinationParts.AsSpan(ownedStart));
     }
 
     private static void FindOwnedPaths(string root, List<string> files, List<string> directories)
