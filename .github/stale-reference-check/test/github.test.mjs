@@ -4,27 +4,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createReferenceResolver, listRepositoryIssues, normalizeReference, normalizeRepository } from '../github.mjs';
-
-const closedAt = '2026-08-01T12:00:00Z';
-const completed = { state: 'closed', state_reason: 'completed', closed_at: closedAt };
-
-function api({ issue = async () => ({ data: completed }), pull, paginate } = {}) {
-    const calls = { issues: [], pulls: [], pages: [] };
-    return {
-        calls,
-        rest: {
-            issues: {
-                get: async args => { calls.issues.push(args); return issue(args); },
-                listForRepo() {},
-            },
-            pulls: { get: async args => { calls.pulls.push(args); return pull(args); } },
-        },
-        paginate: async (route, args) => {
-            calls.pages.push(args);
-            return paginate(route, args);
-        },
-    };
-}
+import { closedAt, completed, createGitHubMock } from './github-mock.mjs';
 
 test('normalization retains source and collapses case, query, fragment and issue/PR route', () => {
     const original = 'https://GitHub.com/DotNet/SDK/issues/123?source=test#issuecomment-5';
@@ -64,9 +44,9 @@ test('rejects untrusted hosts, malformed owners/repos/numbers and normalized URL
 });
 
 test('unique canonical references are read once, including concurrent calls and issue aliases for PRs', async () => {
-    const github = api({
-        issue: async () => ({ data: { ...completed, pull_request: {} } }),
-        pull: async () => ({ data: { state: 'closed', closed_at: closedAt, merged_at: closedAt } }),
+    const { github, calls } = createGitHubMock({
+        issue: async () => ({ ...completed, pull_request: {} }),
+        pull: async () => ({ state: 'closed', closed_at: closedAt, merged_at: closedAt }),
     });
     const resolver = createReferenceResolver({ github });
     const urls = [
@@ -80,9 +60,9 @@ test('unique canonical references are read once, including concurrent calls and 
     assert.equal(result.references[0].qualifies, true);
     assert.equal(single.original, urls[1]);
     assert.deepEqual(result.references[0].originalUrls, urls.slice(0, 2));
-    assert.equal(github.calls.issues.length, 1);
-    assert.equal(github.calls.pulls.length, 1);
-    assert.deepEqual(github.calls.pulls[0], {
+    assert.equal(calls.reads.length, 1);
+    assert.equal(calls.pulls.length, 1);
+    assert.deepEqual(calls.pulls[0], {
         owner: 'dotnet', repo: 'sdk', pull_number: 1,
     });
 });
@@ -106,9 +86,9 @@ test('eligibility requires completed issues or authoritative merged_at, not clos
     ];
     for (const [name, issue, pull, qualifies, known] of cases) {
         await t.test(name, async () => {
-            const github = api({
-                issue: async () => ({ data: issue }),
-                pull: async () => ({ data: pull }),
+            const { github } = createGitHubMock({
+                issue: async () => (issue),
+                pull: async () => (pull),
             });
             const result = await createReferenceResolver({ github })
                 .resolve('https://github.com/dotnet/sdk/issues/1');
@@ -121,7 +101,7 @@ test('eligibility requires completed issues or authoritative merged_at, not clos
 test('lookup failures are unknown, cached, and never mistaken for completed issues', async t => {
     for (const status of [401, 403, 404, 422, 500]) {
         await t.test(String(status), async () => {
-            const github = api({ issue: async () => { throw { status }; } });
+            const { github, calls } = createGitHubMock({ issue: async () => { throw { status }; } });
             const resolver = createReferenceResolver({ github });
             const result = await resolver.resolveAll([
                 'https://github.com/dotnet/sdk/issues/1',
@@ -132,12 +112,12 @@ test('lookup failures are unknown, cached, and never mistaken for completed issu
             assert.deepEqual(result.diagnostics, [{
                 code: 'reference-lookup-failed', reference: 'dotnet/sdk/1', status,
             }]);
-            assert.equal(github.calls.issues.length, 1);
-            assert.equal(github.calls.pulls.length, 0);
+            assert.equal(calls.reads.length, 1);
+            assert.equal(calls.pulls.length, 0);
         });
     }
-    const github = api({
-        issue: async () => ({ data: { ...completed, pull_request: {} } }),
+    const { github, calls } = createGitHubMock({
+        issue: async () => ({ ...completed, pull_request: {} }),
         pull: async () => { throw { status: 404 }; },
     });
     const result = await createReferenceResolver({ github })
@@ -148,26 +128,26 @@ test('lookup failures are unknown, cached, and never mistaken for completed issu
 test('lookup concurrency is bounded across distinct URLs', async () => {
     let active = 0;
     let peak = 0;
-    const github = api({ issue: async () => {
+    const { github, calls } = createGitHubMock({ issue: async () => {
         active++;
         peak = Math.max(peak, active);
         await new Promise(resolve => setImmediate(resolve));
         active--;
-        return { data: completed };
+        return completed;
     } });
     const result = await createReferenceResolver({ github })
         .resolveAll(Array.from({ length: 19 }, (_, i) => `https://github.com/dotnet/sdk/issues/${i + 1}`));
     assert.equal(result.references.length, 19);
-    assert.equal(github.calls.issues.length, 19);
+    assert.equal(calls.reads.length, 19);
     assert.equal(peak, 4);
 });
 
 test('invalid reference is diagnosed without an API request', async () => {
-    const github = api();
+    const { github, calls } = createGitHubMock();
     const result = await createReferenceResolver({ github }).resolveAll(['https://evil.test/issues/1']);
     assert.equal(result.references[0].known, false);
     assert.equal(result.diagnostics[0].code, 'invalid-reference');
-    assert.equal(github.calls.issues.length, 0);
+    assert.equal(calls.reads.length, 0);
 });
 
 test('issue listing consumes full pagination, filters PRs and never label-filters open issues', async () => {
@@ -177,8 +157,7 @@ test('issue listing consumes full pagination, filters PRs and never label-filter
             { number: 102, body: '', state: 'open', pull_request: {} }],
     ];
     let visited = 0;
-    const github = api({ paginate: async (route, args) => {
-        assert.equal(route, github.rest.issues.listForRepo);
+    const { github } = createGitHubMock({ paginate: async args => {
         assert.equal(args.per_page, 100);
         if (args.state === 'open') {
             assert.equal('labels' in args, false);
@@ -202,7 +181,7 @@ test('failed, incomplete and malformed listings throw rather than returning an e
         async () => [{ number: 1, state: 'closed', body: '' }],
     ]) {
         await assert.rejects(listRepositoryIssues({
-            github: api({ paginate }), repository: 'dotnet/sdk', state: 'open',
+            github: createGitHubMock({ paginate }).github, repository: 'dotnet/sdk', state: 'open',
         }));
     }
 });

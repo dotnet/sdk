@@ -4,12 +4,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { finalize, mergeActions, normalizeActionSource, targetIds } from '../finalize.mjs';
+import { closedAt, completed, createGitHubMock as mock } from './github-mock.mjs';
 
 const repository = 'dotnet/sdk';
 const headSha = 'a'.repeat(40);
-const closedAt = '2026-08-01T12:00:00Z';
 const blocker = 'https://github.com/dotnet/runtime/issues/123';
-const completed = { state: 'closed', state_reason: 'completed', closed_at: closedAt };
 const logger = { warn() {} };
 
 function action(overrides = {}) {
@@ -20,38 +19,6 @@ function action(overrides = {}) {
         urls: [blocker], additionalConditions: [],
         ...overrides,
     };
-}
-
-function mock({ open = [], closed = [], get, paginate, create } = {}) {
-    const calls = { reads: [], lists: [], writes: [] };
-    const state = { open: [...open], closed: [...closed] };
-    const github = {
-        rest: {
-            issues: {
-                get: async args => {
-                    calls.reads.push(args);
-                    return { data: get ? await get(args) : completed };
-                },
-                listForRepo() {},
-                create: async args => {
-                    calls.writes.push(args);
-                    if (create) {
-                        return create(args, state, calls);
-                    }
-                    const created = { number: 1000 + calls.writes.length, body: args.body, state: 'open' };
-                    state.open.push(created);
-                    return { data: created };
-                },
-            },
-            pulls: { get: async () => { throw new Error('Unexpected PR lookup'); } },
-        },
-        paginate: async (route, args) => {
-            assert.equal(route, github.rest.issues.listForRepo);
-            calls.lists.push(args);
-            return paginate ? paginate(args, state, calls) : [...state[args.state]];
-        },
-    };
-    return { github, calls, state };
 }
 
 async function run(api, actions = [action()], options = {}) {
@@ -155,7 +122,7 @@ test('all blockers qualify; open/not-planned/unknown/failed/empty references sup
         { ...completed, state_reason: null },
         null,
     ]) {
-        const api = mock({ get: async args => {
+        const api = mock({ issue: async args => {
             if (args.repo === 'roslyn') {
                 if (!second) {
                     throw { status: 404 };
@@ -183,7 +150,7 @@ test('duplicate records union blockers and conditions rather than losing unresol
     assert.equal(merged[0].urls.length, 2);
     assert.deepEqual(merged[0].candidateIds, ['candidate-1', 'candidate-2']);
     assert.deepEqual(merged[0].additionalConditions, second.additionalConditions);
-    const api = mock({ get: async args => args.repo === 'roslyn' ? { state: 'open' } : completed });
+    const api = mock({ issue: async args => args.repo === 'roslyn' ? { state: 'open' } : completed });
     assert.equal((await run(api, [action(), second])).created.length, 0);
     assert.equal(api.calls.reads.length, 2);
     const passing = mock();
@@ -214,7 +181,7 @@ test('same reference for different tests produces different tasks but only one r
 });
 
 test('merged PR task records the original issues URL and authoritative merge date', async () => {
-    const api = mock({ get: async () => ({ ...completed, pull_request: {} }) });
+    const api = mock({ issue: async () => ({ ...completed, pull_request: {} }) });
     api.github.rest.pulls.get = async () => ({
         data: { state: 'closed', merged_at: '2026-07-31T12:00:00Z', closed_at: closedAt },
     });
@@ -554,7 +521,7 @@ test('changed source or reference-resolution evidence permits a new task with cl
         [action(), async () => ({ ...completed, closed_at: '2026-09-01T12:00:00Z' })],
         [action({ additionalConditions: ['Now also requires .NET 12.'] }), undefined],
     ]) {
-        const api = mock({ closed: [{ number: 7, state: 'closed', body: proposal.body }], get });
+        const api = mock({ closed: [{ number: 7, state: 'closed', body: proposal.body }], issue: get });
         const result = await run(api, [input]);
         assert.equal(result.created.length, 1);
         assert.ok(result.created[0].body.includes('## Previous tracking history'));
@@ -607,7 +574,7 @@ test('diagnostics support actions core warning and console warn, preferring warn
             },
             ...(method === 'warning' ? { warn() { assert.fail('Prefer core.warning'); } } : {}),
         };
-        const api = mock({ get: async () => { throw { status: 404 }; } });
+        const api = mock({ issue: async () => { throw { status: 404 }; } });
         const result = await run(api, [action()], { logger: core });
         assert.deepEqual(messages, result.diagnostics);
         assert.equal(messages.length, 1);
