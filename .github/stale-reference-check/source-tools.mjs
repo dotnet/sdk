@@ -1,5 +1,5 @@
 import { createHash, randomBytes } from "node:crypto";
-import { readFile, rename, writeFile } from "node:fs/promises";
+import { appendFile, readFile, rename, writeFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -155,6 +155,8 @@ async function loadSourceTools(directory)
     const expansions = new Map();
     const windows = [];
     let attempts = 0;
+    let contextBudgetFailures = 0;
+    let rejectedSubmissions = 0;
     let preparing = false;
     let submission;
     let acceptedText;
@@ -193,6 +195,7 @@ async function loadSourceTools(directory)
             }
             if ((expansions.get(candidateId) ?? 0) >= 2)
             {
+                contextBudgetFailures++;
                 throw new Error("The two-window context expansion budget is exhausted.");
             }
             const context = lines.slice(startLine - 1, endLine)
@@ -215,6 +218,16 @@ async function loadSourceTools(directory)
         {
             return { schemaVersion: 1, windows: structuredClone(windows) };
         },
+        usage()
+        {
+            return {
+                contextExpansions: windows.length,
+                contextBudgetFailures,
+                submissionAttempts: attempts,
+                rejectedSubmissions,
+                accepted: submission !== undefined,
+            };
+        },
         async prepareInterpretations({ payload })
         {
             if (submission)
@@ -231,6 +244,7 @@ async function loadSourceTools(directory)
             }
             if (attempts >= 3)
             {
+                rejectedSubmissions++;
                 throw new Error("The three-attempt submission budget is exhausted. Report missing_data; do not record.");
             }
             attempts++;
@@ -265,6 +279,7 @@ async function loadSourceTools(directory)
             }
             catch (error)
             {
+                rejectedSubmissions++;
                 throw new Error(`Submission rejected: ${error.message} ${3 - attempts} attempts remaining.`, { cause: error });
             }
             finally
@@ -281,6 +296,17 @@ async function loadSourceTools(directory)
             return structuredClone(submission);
         },
     };
+}
+
+// gh-aw's own summaries report model usage; these counters cover the source reader's budgets.
+export function formatUsage(usage)
+{
+    return "## Source reader usage\n\n| Metric | Count |\n| --- | ---: |\n" +
+        `| Context expansions | ${usage.contextExpansions} |\n` +
+        `| Context-budget failures | ${usage.contextBudgetFailures} |\n` +
+        `| Submission attempts | ${usage.submissionAttempts} |\n` +
+        `| Rejected submissions | ${usage.rejectedSubmissions} |\n` +
+        `| Submission accepted | ${usage.accepted ? "yes" : "no"} |\n\n`;
 }
 
 // gh-aw launches a fresh process per MCP call. Keep budgets in one private,
@@ -300,7 +326,7 @@ export async function startSourceServer(directory)
         try
         {
             if (request.method !== "POST" ||
-                !["/read-batch", "/read-context", "/evidence", "/prepare-interpretations", "/submission"].includes(request.url))
+                !["/read-batch", "/read-context", "/evidence", "/usage", "/prepare-interpretations", "/submission"].includes(request.url))
             {
                 throw new Error("Unknown source-reader request.");
             }
@@ -320,6 +346,7 @@ export async function startSourceServer(directory)
             const result = request.url === "/read-batch" ? tools.readBatch(args)
                 : request.url === "/prepare-interpretations" ? await tools.prepareInterpretations(args)
                 : request.url === "/submission" ? tools.submission()
+                : request.url === "/usage" ? tools.usage()
                 : request.url === "/evidence" ? tools.evidence() : tools.readContext(args);
             response.end(JSON.stringify(result));
         }
@@ -402,8 +429,12 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.a
     {
         await writeFile(outputFile, `${JSON.stringify(await requestSourceTools(directory, operation))}\n`);
     }
+    else if (operation === "usage" && outputFile)
+    {
+        await appendFile(outputFile, formatUsage(await requestSourceTools(directory, "usage")));
+    }
     else
     {
-        throw new Error("Expected serve, wait, evidence, or complete with an output path.");
+        throw new Error("Expected serve, wait, evidence, usage, or complete with an output path.");
     }
 }

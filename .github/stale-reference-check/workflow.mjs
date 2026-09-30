@@ -11,7 +11,6 @@ import {
 } from "./interpretations.mjs";
 import { finalize } from "./finalize.mjs";
 import { formatContext, getSourceTools, submissionReceipt, verifySubmission } from "./source-tools.mjs";
-import { collectDiagnostics, formatDiagnostics, formatWorkflowDiagnostics } from "./diagnostics.mjs";
 
 const inputPath = (repoRoot) => path.resolve(repoRoot, process.env.STALE_REFERENCE_INPUT ?? ".stale-reference-check/input");
 const statePath = (repoRoot) => path.join(repoRoot, ".stale-reference-check/state/cache.json");
@@ -97,7 +96,7 @@ export async function prepare({ repoRoot, refreshCache = false, logger = console
         }
     }
     await writeJson(path.join(directory, "source-context.json"), sourceFiles);
-    for (const file of ["source-tools.mjs", "diagnostics.mjs", "interpretations.mjs", "collect.mjs"])
+    for (const file of ["source-tools.mjs", "interpretations.mjs", "collect.mjs"])
     {
         await copyFile(path.join(repoRoot, ".github/stale-reference-check", file), path.join(directory, file));
     }
@@ -189,12 +188,6 @@ export async function record(repoRoot, outputFile)
         throw new Error("GH_AW_AGENT_OUTPUT is required.");
     }
     const { manifest, batch } = await loadInput(repoRoot);
-    const runtime = collectDiagnostics(path.dirname(outputFile));
-    await writeJson(path.join(path.dirname(resultsPath(repoRoot)), "runtime.json"), runtime);
-    if (process.env.GITHUB_STEP_SUMMARY)
-    {
-        await appendFile(process.env.GITHUB_STEP_SUMMARY, formatDiagnostics(runtime));
-    }
     const output = await readJson(outputFile);
     if (!Array.isArray(output.items))
     {
@@ -292,12 +285,6 @@ export async function finish({
     }
 
     const reportFile = path.join(repoRoot, ".stale-reference-check/report.json");
-    const runtimeText = batch.candidates.length
-        ? await readOptional(path.join(path.dirname(resultsPath(repoRoot)), "runtime.json")) : null;
-    const runtime = runtimeText === null ? null : JSON.parse(runtimeText);
-    const workflowRuntimeText = batch.candidates.length
-        ? await readOptional(path.join(path.dirname(resultsPath(repoRoot)), "workflow-runtime.json")) : null;
-    const workflowRuntime = workflowRuntimeText === null ? null : JSON.parse(workflowRuntimeText);
     try
     {
         const report = await finalize({
@@ -313,24 +300,6 @@ export async function finish({
             remaining: manifest.candidates.length - cachedResults.length,
             batch: interpretationCounts(fresh),
         };
-        report.runtime = runtime;
-        report.workflowRuntime = workflowRuntime;
-        if (workflowRuntime)
-        {
-            report.diagnostics.push(...workflowRuntime.diagnostics.map(diagnostic => ({ type: "workflow-runtime", ...diagnostic })));
-        }
-        else if (batch.candidates.length)
-        {
-            report.diagnostics.push({ type: "workflow-runtime", message: "Combined interpreter and detection usage is unavailable for this batch." });
-        }
-        if (runtime)
-        {
-            report.diagnostics.push(...runtime.diagnostics.map(diagnostic => ({ type: "agent-runtime", ...diagnostic })));
-        }
-        else if (batch.candidates.length)
-        {
-            report.diagnostics.push({ type: "agent-runtime", message: "Runtime diagnostics are unavailable for this batch." });
-        }
         await writeJson(reportFile, report);
         if (process.env.GITHUB_STEP_SUMMARY)
         {
@@ -339,15 +308,13 @@ export async function finish({
                 `Created: ${report.created.length}; proposed: ${report.proposed.length}; skipped: ${report.skipped.length}.\n\n` +
                 `Validated this batch: ${report.interpretations.batch.actionable} actionable; ` +
                 `${report.interpretations.batch.irrelevant} irrelevant; ${report.interpretations.batch.deferred} deferred.\n\n` +
-                `Remaining interpretations: ${report.interpretations.remaining}. See the decision-report artifact for details.\n` +
-                (workflowRuntime ? `\n${formatWorkflowDiagnostics(workflowRuntime)}` : "") +
-                (runtime ? `\n${formatDiagnostics(runtime)}` : ""));
+                `Remaining interpretations: ${report.interpretations.remaining}. See the decision-report artifact for details.\n`);
         }
         return report;
     }
     catch (error)
     {
-        await writeJson(reportFile, { failed: true, error: error.message, dryRun, runtime, workflowRuntime });
+        await writeJson(reportFile, { failed: true, error: error.message, dryRun });
         throw error;
     }
 }

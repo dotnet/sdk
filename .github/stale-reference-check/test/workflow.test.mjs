@@ -8,7 +8,6 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { expandContext, finish, prepare, printBatch, record, rulesHash } from "../workflow.mjs";
 import { completeSubmission, getSourceTools, requestSourceTools, startSourceServer, submissionReceipt } from "../source-tools.mjs";
-import { collectWorkflowDiagnostics } from "../diagnostics.mjs";
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const workflowDirectory = path.join(repository, ".github/workflows");
@@ -52,7 +51,6 @@ async function fixture(t, padding = 0)
         ".github/stale-reference-check/interpretations.mjs": "// validation rules",
         ".github/stale-reference-check/workflow.mjs": "// orchestration rules",
         ".github/stale-reference-check/source-tools.mjs": "// bounded source reader rules",
-        ".github/stale-reference-check/diagnostics.mjs": "// runtime diagnostics",
         ".github/workflows/stale-reference-interpret.md": "# Interpretation rules",
     };
     for (const [file, content] of Object.entries(files))
@@ -362,10 +360,6 @@ test("first-run recording persists interpretations and cached-only finalization 
     assert.equal(first.created.length, 0);
     assert.equal(first.interpretations.irrelevant, 1);
     assert.deepEqual(first.interpretations.batch, { actionable: 0, irrelevant: 1, deferred: 0 });
-    assert.equal(first.runtime.metrics.requestCount, null);
-    const workflowRuntime = collectWorkflowDiagnostics(root, path.join(root, "missing-detection"));
-    await writeFile(path.join(root, ".stale-reference-check/results/workflow-runtime.json"), JSON.stringify(workflowRuntime));
-    assert.ok(first.diagnostics.some(diagnostic => diagnostic.type === "agent-runtime" && diagnostic.code === "missing"));
     const next = await prepare({ repoRoot: root, logger });
     assert.equal(next.batch.candidates.length, 0);
     await rm(path.join(root, ".stale-reference-check/results/interpretations.json"));
@@ -373,8 +367,6 @@ test("first-run recording persists interpretations and cached-only finalization 
     assert.equal(second.created.length, 0);
     assert.equal(second.interpretations.remaining, 0);
     assert.deepEqual(second.interpretations.batch, { actionable: 0, irrelevant: 0, deferred: 0 });
-    assert.equal(second.runtime, null);
-    assert.equal(second.workflowRuntime, null);
 });
 
 test("preview does not save production interpretations", async (t) =>
@@ -386,32 +378,6 @@ test("preview does not save production interpretations", async (t) =>
     await finish({ github, repository: "dotnet/sdk", repoRoot: root, dryRun: true, logger });
     await assert.rejects(readFile(path.join(root, ".stale-reference-check/state/cache.json")), { code: "ENOENT" });
     assert.equal((await prepare({ repoRoot: root, logger })).batch.candidates.length, 1);
-});
-
-test("runtime warnings survive finalization without using the agent's narrative counts", async t =>
-{
-    const root = await fixture(t);
-    const { batch } = await prepare({ repoRoot: root, logger });
-    await writeFile(path.join(root, "agent-stdio.log"),
-        "Permission denied and could not request permission from user\n15 actionable; 8 irrelevant\n");
-    await recordIrrelevantBatch(root, batch);
-    const workflowRuntime = collectWorkflowDiagnostics(root, path.join(root, "missing-detection"));
-    await writeFile(path.join(root, ".stale-reference-check/results/workflow-runtime.json"), JSON.stringify(workflowRuntime));
-    process.env.GITHUB_STEP_SUMMARY = path.join(root, "summary.md");
-    t.after(() => delete process.env.GITHUB_STEP_SUMMARY);
-    const github = new Proxy({}, { get() { throw new Error("No GitHub calls expected."); } });
-    const report = await finish({ github, repository: "dotnet/sdk", repoRoot: root, dryRun: true, logger });
-    assert.equal(report.runtime.metrics.deniedCommands, 1);
-    assert.ok(report.diagnostics.some(diagnostic =>
-        diagnostic.type === "agent-runtime" && diagnostic.code === "permission-denied"));
-    assert.deepEqual(report.interpretations.batch, { actionable: 0, irrelevant: 1, deferred: 0 });
-    const saved = JSON.parse(await readFile(path.join(root, ".stale-reference-check/report.json")));
-    assert.deepEqual(saved.runtime, report.runtime);
-    assert.deepEqual(saved.workflowRuntime, workflowRuntime);
-    assert.ok(report.diagnostics.some(diagnostic =>
-        diagnostic.type === "workflow-runtime" && diagnostic.stage === "detection" && diagnostic.code === "missing"));
-    assert.match(await readFile(process.env.GITHUB_STEP_SUMMARY, "utf8"),
-        /AI credits \(requests\) \| Unavailable \| Unavailable \| Unavailable/);
 });
 
 test("expanded source evidence survives recording, separate jobs, and cached-only state checks", async (t) =>
@@ -550,7 +516,6 @@ test("driver serializes main-only runs and supports cached-only finalization", a
     assert.match(workflow, /github\.repository == 'dotnet\/sdk' && github\.ref == 'refs\/heads\/main'/);
     assert.match(workflow, /needs\.collect\.outputs\.has_misses != 'true' \|\| needs\.interpret\.result == 'success'/);
     assert.match(workflow, /if: needs\.interpret\.result == 'success'\r?\n        with:\r?\n          name: stale-reference-interpretations/);
-    assert.match(workflow, /if: needs\.interpret\.result == 'success'\r?\n        with:\r?\n          name: stale-reference-workflow-runtime/);
     assert.match(workflow, /inputs\.dry_run/);
     assert.match(workflow, /env\.DRY_RUN != 'true'/);
     assert.doesNotMatch(workflow, /pull_request:/);
@@ -685,39 +650,20 @@ test("interpreter bounds execution and retains detection before trusted recordin
     assert.match(recordJob, /needs\.detection\.result == 'success' && needs\.detection\.outputs\.detection_success == 'true'/);
 });
 
-test("agent failures retain a separate always-run runtime diagnostic artifact", async () =>
+test("source reader usage is summarized even when the agent fails", async () =>
 {
     const workflow = await readFile(path.join(workflowDirectory, "stale-reference-interpret.md"), "utf8");
-    assert.match(workflow, /name: Summarize interpreter runtime\r?\n\s+if: always\(\)/);
-    assert.match(workflow, /name: Upload interpreter runtime diagnostics\r?\n\s+if: always\(\)/);
+    assert.match(workflow, /name: Summarize source reader usage\r?\n\s+if: always\(\)/);
+    assert.doesNotMatch(workflow, /diagnostics\.mjs|runtime_diagnostics/);
     const generated = await readFile(path.join(workflowDirectory, "stale-reference-interpret.lock.yml"), "utf8");
     const agent = generated.match(/^  agent:\r?\n([\s\S]*?)(?=^  \w+:\r?\n)/m)?.[1] ?? "";
-    const summarize = agent.indexOf("name: Summarize interpreter runtime");
-    assert.ok(summarize > agent.indexOf("name: Parse agent logs for step summary"));
-    assert.match(agent.slice(summarize - 200, summarize), /if: always\(\)/);
-    assert.match(agent.slice(summarize, summarize + 300), /diagnostics\.mjs" \/tmp\/gh-aw/);
-    assert.match(agent, /name: stale-reference-runtime-\$\{\{ inputs\.input_artifact_id \}\}/);
-    assert.match(agent, /path: \$\{\{ runner\.temp \}\}\/stale-reference-private\/runtime\.json/);
-});
-
-test("workflow usage includes separate detection traces even when recording fails", async () =>
-{
-    const workflow = await readFile(path.join(workflowDirectory, "stale-reference-interpret.md"), "utf8");
-    const job = workflow.match(/^  runtime_diagnostics:\r?\n[\s\S]*?(?=\r?\n\r?\nimports:)/m)?.[0] ?? "";
-    assert.match(job, /needs: \[activation, agent, detection\]/);
-    assert.match(job, /if: always\(\) && !cancelled\(\) && needs\.activation\.result == 'success'/);
-    assert.doesNotMatch(job, /needs\.(agent|detection)\.result == 'success'|COPILOT_PAT|issues: write/);
-    assert.match(job, /pattern: "\{\$\{\{ needs\.activation\.outputs\.artifact_prefix \}\}agent,\$\{\{ needs\.activation\.outputs\.artifact_prefix \}\}detection\}"/);
-    assert.match(job, /merge-multiple: false/);
-    assert.match(job, /diagnostics\.mjs" --workflow/);
-    assert.match(job, /name: stale-reference-workflow-runtime-\$\{\{ inputs\.input_artifact_id \}\}/);
-    const generated = await readFile(path.join(workflowDirectory, "stale-reference-interpret.lock.yml"), "utf8");
-    const generatedJob = generated.match(/^  runtime_diagnostics:\r?\n([\s\S]*?)(?=^  \w+:\r?\n|$(?![\s\S]))/m)?.[1] ?? "";
-    assert.match(generatedJob, /always\(\) && !cancelled\(\)/);
-    assert.match(generatedJob, /merge-multiple: false/);
-    assert.match(generatedJob, /--workflow/);
+    const summarize = agent.indexOf("name: Summarize source reader usage");
+    assert.ok(summarize > 0);
+    assert.match(agent.slice(summarize - 40, summarize), /if: always\(\)/);
+    assert.match(agent.slice(summarize, summarize + 400), /source-tools\.mjs" usage/);
+    assert.doesNotMatch(generated, /runtime_diagnostics|diagnostics\.mjs/);
     const caller = await readFile(path.join(workflowDirectory, "stale-reference-check.yml"), "utf8");
-    assert.match(caller, /name: stale-reference-workflow-runtime-\$\{\{ needs\.collect\.outputs\.input_artifact_id \}\}/);
+    assert.doesNotMatch(caller, /workflow-runtime/);
 });
 
 test("caller grants the compiler-required permissions and interpreter jobs remain read-only", async () =>

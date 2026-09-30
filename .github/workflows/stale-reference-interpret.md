@@ -37,49 +37,6 @@ jobs:
       needs.agent.result != 'success' ||
       needs.detection.outputs.detection_success != 'true' ||
       needs.agent.outputs.output_types != 'record_interpretations'
-  runtime_diagnostics:
-    needs: [activation, agent, detection]
-    if: always() && !cancelled() && needs.activation.result == 'success'
-    runs-on: ubuntu-slim
-    permissions:
-      actions: read
-      contents: read
-    steps:
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: '24'
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          artifact-ids: ${{ inputs.input_artifact_id }}
-          merge-multiple: true
-          path: ${{ runner.temp }}/stale-reference-private
-      - name: Download separate interpreter and detection traces
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: "{${{ needs.activation.outputs.artifact_prefix }}agent,${{ needs.activation.outputs.artifact_prefix }}detection}"
-          merge-multiple: false
-          path: ${{ runner.temp }}/stale-reference-runtime
-      - name: Summarize complete workflow model usage
-        if: always()
-        env:
-          STALE_REFERENCE_PRIVATE: ${{ runner.temp }}/stale-reference-private
-          RUNTIME_DIRECTORY: ${{ runner.temp }}/stale-reference-runtime
-          ARTIFACT_PREFIX: ${{ needs.activation.outputs.artifact_prefix }}
-        run: |
-          mkdir -p "$RUNTIME_DIRECTORY"
-          node "$STALE_REFERENCE_PRIVATE/diagnostics.mjs" --workflow \
-            "$RUNTIME_DIRECTORY/${ARTIFACT_PREFIX}agent" \
-            "$RUNTIME_DIRECTORY/${ARTIFACT_PREFIX}detection" \
-            "$RUNTIME_DIRECTORY/workflow-runtime.json"
-      - name: Upload complete workflow usage
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: stale-reference-workflow-runtime-${{ inputs.input_artifact_id }}
-          path: ${{ runner.temp }}/stale-reference-runtime/workflow-runtime.json
-          overwrite: true
-          if-no-files-found: error
-          retention-days: 7
 
 imports:
   - uses: shared/pat_pool.md
@@ -115,6 +72,11 @@ steps:
       fi
 
 post-steps:
+  - name: Summarize source reader usage
+    if: always()
+    env:
+      STALE_REFERENCE_PRIVATE: ${{ runner.temp }}/stale-reference-private
+    run: node "$STALE_REFERENCE_PRIVATE/source-tools.mjs" usage "$STALE_REFERENCE_PRIVATE" "$GITHUB_STEP_SUMMARY"
   - name: Export trusted context evidence and validated submission
     env:
       STALE_REFERENCE_PRIVATE: ${{ runner.temp }}/stale-reference-private
@@ -127,20 +89,6 @@ post-steps:
       path: |
         ${{ runner.temp }}/stale-reference-private/context-evidence.json
         ${{ runner.temp }}/stale-reference-private/submission.json
-      overwrite: true
-      if-no-files-found: error
-      retention-days: 7
-  - name: Summarize interpreter runtime
-    if: always()
-    env:
-      STALE_REFERENCE_PRIVATE: ${{ runner.temp }}/stale-reference-private
-    run: node "$STALE_REFERENCE_PRIVATE/diagnostics.mjs" /tmp/gh-aw "$STALE_REFERENCE_PRIVATE/runtime.json"
-  - name: Upload interpreter runtime diagnostics
-    if: always()
-    uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-    with:
-      name: stale-reference-runtime-${{ inputs.input_artifact_id }}
-      path: ${{ runner.temp }}/stale-reference-private/runtime.json
       overwrite: true
       if-no-files-found: error
       retention-days: 7

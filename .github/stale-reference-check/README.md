@@ -242,43 +242,16 @@ Manually dispatch **Check potentially stale references** from `main`:
 The run's `stale-reference-report-*` artifact records created/proposed/skipped
 decisions, deferred context, remaining interpretations, and per-batch counts
 computed from source-validated results. The recording job also writes
-`summary.json` and `runtime.json` beside `interpretations.json`; the agent's
-narrative is not a source of counts.
-An always-run agent post-step also publishes `runtime.json` in
-`stale-reference-runtime-<input-artifact-id>` and the agent job summary, so runtime
-failures do not depend on successful output recording for diagnostics. The
-recording job recomputes metrics from the complete downloaded agent artifact.
+`summary.json` beside `interpretations.json`; the agent's narrative is not a
+source of counts.
 
-These `runtime.json` artifacts and the decision report's `runtime` field cover
-the **interpreter only**, not threat detection.
-A separate read-only `runtime_diagnostics` job waits for the interpreter and
-detector, including failures, without depending on successful recording. It
-downloads their current-run artifacts into separate directories and publishes
-`workflow-runtime.json` as `stale-reference-workflow-runtime-<input-artifact-id>`.
-It runs no model and changes no detection or filing gates. Successful
-finalization includes this report in `workflowRuntime` and the job summary.
-
-[`diagnostics.mjs`](diagnostics.mjs) summarizes the downloaded traces:
-request count, models, summed request duration, token/cache usage, AI credits,
-permission-denial occurrences, context-budget failures, and rejected submissions.
-The workflow usage table separates interpreter and detector requests and reports
-their combined usage. It does not add `agent_usage.json` totals to request
-totals a second time. Both stages must have usable request logs for a combined
-total; missing or skipped detector traces are not assumed to cost zero.
-Detector metrics require only its token-usage logs, not interpreter-only MCP or
-CLI artifacts. Token fields retain each provider's accounting semantics, and
-summed model-request duration is not workflow wall time.
-Runtime warnings appear in the decision report and job summaries. Missing,
-malformed, or oversized traces produce explicit unavailable metrics, not zeroes.
-Model prompt-cache tokens are unrelated to the persistent interpretation cache.
-These metrics are observational and never authorize filing; cached-only runs do
-not reuse a previous batch's runtime diagnostics.
-
-To summarize separately downloaded interpreter and detection artifacts locally:
-
-```powershell
-node .github\stale-reference-check\diagnostics.mjs --workflow .\agent .\detection .\workflow-runtime.json
-```
+Model usage (requests, tokens, and AI credits) for the interpreter and threat
+detection comes from gh-aw's own per-job summaries; this workflow adds no
+separate usage accounting. An always-run agent post-step appends a
+**Source reader usage** table to the agent job summary with counts the gh-aw
+summaries cannot see: context expansions, context-budget failures, submission
+attempts, rejected submissions, and whether a submission was accepted. These
+counts are observational and never authorize filing.
 
 A failure is explicit,
 not a successful empty result. API failures do not establish that a blocker was

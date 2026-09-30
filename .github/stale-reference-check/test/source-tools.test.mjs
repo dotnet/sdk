@@ -6,7 +6,7 @@ import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import test from "node:test";
-import { formatContext, getSourceTools } from "../source-tools.mjs";
+import { formatContext, formatUsage, getSourceTools } from "../source-tools.mjs";
 
 async function reader(t, { context, lines, count = 1, startLine = 1, seedLine = startLine } = {})
 {
@@ -130,6 +130,28 @@ test("oversized expansions are rejected before spending the two-window allowance
     tools.readContext({ candidateId, startLine: 2, endLine: 2 });
     tools.readContext({ candidateId, startLine: 2, endLine: 2 });
     assert.throws(() => tools.readContext({ candidateId, startLine: 2, endLine: 2 }), /budget is exhausted/);
+});
+
+test("usage counts expansions, budget failures, and rejected submissions for the step summary", async t =>
+{
+    const { tools, candidates } = await reader(t);
+    const candidateId = candidates[0].id;
+    tools.readContext({ candidateId, startLine: 1, endLine: 1 });
+    tools.readContext({ candidateId, startLine: 2, endLine: 2 });
+    assert.throws(() => tools.readContext({ candidateId, startLine: 1, endLine: 2 }), /budget is exhausted/);
+    for (let attempt = 0; attempt < 4; attempt++)
+    {
+        await assert.rejects(tools.prepareInterpretations({ payload: "{" }), /Submission rejected|budget is exhausted/);
+    }
+    const usage = tools.usage();
+    assert.deepEqual(usage, {
+        contextExpansions: 2, contextBudgetFailures: 1, submissionAttempts: 3, rejectedSubmissions: 4, accepted: false,
+    });
+    const summary = formatUsage(usage);
+    assert.match(summary, /^## Source reader usage\n/);
+    assert.match(summary, /\| Context-budget failures \| 1 \|/);
+    assert.match(summary, /\| Rejected submissions \| 4 \|/);
+    assert.match(summary, /\| Submission accepted \| no \|/);
 });
 
 test("context rendering preserves line breaks, identifies the candidate, and shows remaining allowance", async t =>
