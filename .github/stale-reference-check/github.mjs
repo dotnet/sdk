@@ -1,16 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-import { setTimeout } from 'node:timers/promises';
-
 const ownerPattern = '[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?';
 const repositoryPattern = '[a-z0-9_.-]{1,100}';
 const repositoryRegex = new RegExp(`^(${ownerPattern})/(${repositoryPattern})$`, 'i');
 const referenceRegex = new RegExp(
     `^https://github\\.com/(${ownerPattern})/(${repositoryPattern})/(issues|pull)/([1-9][0-9]*)/?(?:[?#][^\\s<>]*)?$`, 'i');
-const readAttempts = 3;
 const readConcurrency = 4;
-const maximumRetryDelayMs = 2000;
 
 export function normalizeRepository(repository) {
     const match = typeof repository === 'string' && repositoryRegex.exec(repository);
@@ -37,40 +33,6 @@ export function normalizeReference(original) {
         key: `${owner}/${repo}/${number}`,
         url: `https://github.com/${owner}/${repo}/${match[3].toLowerCase()}/${number}`,
     };
-}
-
-function retryDelay(error, attempt) {
-    const status = error?.status ?? error?.response?.status;
-    const headers = error?.response?.headers ?? {};
-    const rateLimited = status === 429 ||
-        (status === 403 && (headers['x-ratelimit-remaining'] === '0' || headers['retry-after'] !== undefined));
-    if (!rateLimited && ![500, 502, 503, 504].includes(status)) {
-        return null;
-    }
-    const retryAfter = headers['retry-after'];
-    let delay = 250 * (2 ** attempt);
-    if (retryAfter !== undefined) {
-        const seconds = Number(retryAfter);
-        delay = Number.isFinite(seconds) ? seconds * 1000 : Date.parse(retryAfter) - Date.now();
-    } else if (rateLimited && headers['x-ratelimit-reset'] !== undefined) {
-        delay = Number(headers['x-ratelimit-reset']) * 1000 - Date.now();
-    }
-    // A long rate-limit wait is deferred to a later run, not retried prematurely.
-    return Number.isFinite(delay) && delay <= maximumRetryDelayMs ? Math.max(0, delay) : null;
-}
-
-async function readWithRetry(operation, sleep) {
-    for (let attempt = 0; ; attempt++) {
-        try {
-            return await operation();
-        } catch (error) {
-            const delay = retryDelay(error, attempt);
-            if (attempt + 1 >= readAttempts || delay === null) {
-                throw error;
-            }
-            await sleep(delay);
-        }
-    }
 }
 
 function limiter() {
@@ -105,21 +67,20 @@ export function errorDiagnostic(code, error, details = {}) {
     return { code, ...details, ...(Number.isInteger(status) ? { status } : {}) };
 }
 
-export function createReferenceResolver({ github, sleep = setTimeout }) {
+// Reads rely on the github-script client's built-in retries for transient failures.
+export function createReferenceResolver({ github }) {
     const cache = new Map();
     const limit = limiter();
 
     async function lookup(reference) {
         const { owner, repo, number, key } = reference;
         try {
-            const { data: issue } = await readWithRetry(
-                () => github.rest.issues.get({ owner, repo, issue_number: number, request: { retries: 0 } }), sleep);
+            const { data: issue } = await github.rest.issues.get({ owner, repo, issue_number: number });
             if (!issue || !['open', 'closed'].includes(issue.state)) {
                 throw new Error('Invalid issue response.');
             }
             if (issue.pull_request) {
-                const { data: pull } = await readWithRetry(
-                    () => github.rest.pulls.get({ owner, repo, pull_number: number, request: { retries: 0 } }), sleep);
+                const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number: number });
                 if (!pull || !['open', 'closed'].includes(pull.state) ||
                     (pull.merged_at !== null && !validDate(pull.merged_at))) {
                     throw new Error('Invalid pull-request response.');
@@ -192,15 +153,15 @@ export function createReferenceResolver({ github, sleep = setTimeout }) {
 // issues are filtered to that label because only workflow-created issues carry
 // reusable history for suppressing refiled duplicates. See README.md's "Eligibility and
 // duplicate protection" section for the full rationale.
-export async function listRepositoryIssues({ github, repository, state, sleep = setTimeout }) {
+export async function listRepositoryIssues({ github, repository, state }) {
     if (!['open', 'closed'].includes(state)) {
         throw new Error('Expected open or closed issues.');
     }
     const { owner, repo } = normalizeRepository(repository);
-    const issues = await readWithRetry(() => github.paginate(github.rest.issues.listForRepo, {
-        owner, repo, state, per_page: 100, request: { retries: 0 },
+    const issues = await github.paginate(github.rest.issues.listForRepo, {
+        owner, repo, state, per_page: 100,
         ...(state === 'closed' ? { labels: 'agentic-workflows' } : {}),
-    }), sleep);
+    });
     if (!Array.isArray(issues) || issues.some(issue =>
         !issue || !Number.isSafeInteger(issue.number) || issue.number <= 0 ||
         issue.state !== state || !(issue.body === null || typeof issue.body === 'string'))) {

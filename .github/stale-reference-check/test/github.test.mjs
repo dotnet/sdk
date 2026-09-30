@@ -7,7 +7,6 @@ import { createReferenceResolver, listRepositoryIssues, normalizeReference, norm
 
 const closedAt = '2026-08-01T12:00:00Z';
 const completed = { state: 'closed', state_reason: 'completed', closed_at: closedAt };
-const pause = async () => {};
 
 function api({ issue = async () => ({ data: completed }), pull, paginate } = {}) {
     const calls = { issues: [], pulls: [], pages: [] };
@@ -69,7 +68,7 @@ test('unique canonical references are read once, including concurrent calls and 
         issue: async () => ({ data: { ...completed, pull_request: {} } }),
         pull: async () => ({ data: { state: 'closed', closed_at: closedAt, merged_at: closedAt } }),
     });
-    const resolver = createReferenceResolver({ github, sleep: pause });
+    const resolver = createReferenceResolver({ github });
     const urls = [
         'https://github.com/dotnet/sdk/issues/1#x',
         'https://github.com/DOTNET/SDK/pull/1?x=y',
@@ -84,7 +83,7 @@ test('unique canonical references are read once, including concurrent calls and 
     assert.equal(github.calls.issues.length, 1);
     assert.equal(github.calls.pulls.length, 1);
     assert.deepEqual(github.calls.pulls[0], {
-        owner: 'dotnet', repo: 'sdk', pull_number: 1, request: { retries: 0 },
+        owner: 'dotnet', repo: 'sdk', pull_number: 1,
     });
 });
 
@@ -111,7 +110,7 @@ test('eligibility requires completed issues or authoritative merged_at, not clos
                 issue: async () => ({ data: issue }),
                 pull: async () => ({ data: pull }),
             });
-            const result = await createReferenceResolver({ github, sleep: pause })
+            const result = await createReferenceResolver({ github })
                 .resolve('https://github.com/dotnet/sdk/issues/1');
             assert.equal(result.qualifies, qualifies);
             assert.equal(result.known, known);
@@ -123,7 +122,7 @@ test('lookup failures are unknown, cached, and never mistaken for completed issu
     for (const status of [401, 403, 404, 422, 500]) {
         await t.test(String(status), async () => {
             const github = api({ issue: async () => { throw { status }; } });
-            const resolver = createReferenceResolver({ github, sleep: pause });
+            const resolver = createReferenceResolver({ github });
             const result = await resolver.resolveAll([
                 'https://github.com/dotnet/sdk/issues/1',
                 'https://github.com/dotnet/sdk/pull/1',
@@ -133,7 +132,7 @@ test('lookup failures are unknown, cached, and never mistaken for completed issu
             assert.deepEqual(result.diagnostics, [{
                 code: 'reference-lookup-failed', reference: 'dotnet/sdk/1', status,
             }]);
-            assert.equal(github.calls.issues.length, status === 500 ? 3 : 1);
+            assert.equal(github.calls.issues.length, 1);
             assert.equal(github.calls.pulls.length, 0);
         });
     }
@@ -141,36 +140,9 @@ test('lookup failures are unknown, cached, and never mistaken for completed issu
         issue: async () => ({ data: { ...completed, pull_request: {} } }),
         pull: async () => { throw { status: 404 }; },
     });
-    const result = await createReferenceResolver({ github, sleep: pause })
+    const result = await createReferenceResolver({ github })
         .resolve('https://github.com/dotnet/sdk/pull/1');
     assert.equal(result.known, false);
-});
-
-test('retries only explicit transient/rate-limit reads within bounded delays', async () => {
-    let attempts = 0;
-    const delays = [];
-    const github = api({
-        issue: async () => {
-            if (attempts++ === 0) {
-                throw { status: 403, response: { headers: { 'retry-after': '1' } } };
-            }
-            return { data: completed };
-        },
-    });
-    const result = await createReferenceResolver({ github, sleep: async delay => delays.push(delay) })
-        .resolve('https://github.com/dotnet/sdk/issues/1');
-    assert.equal(result.qualifies, true);
-    assert.deepEqual(delays, [1000]);
-    for (const failure of [
-        new Error('Unclassified connection error'),
-        { status: 429, response: { headers: { 'retry-after': '120' } } },
-    ]) {
-        const failing = api({ issue: async () => { throw failure; } });
-        const failed = await createReferenceResolver({ github: failing, sleep: pause })
-            .resolve('https://github.com/dotnet/sdk/issues/1');
-        assert.equal(failed.known, false);
-        assert.equal(failing.calls.issues.length, 1);
-    }
 });
 
 test('lookup concurrency is bounded across distinct URLs', async () => {
@@ -183,7 +155,7 @@ test('lookup concurrency is bounded across distinct URLs', async () => {
         active--;
         return { data: completed };
     } });
-    const result = await createReferenceResolver({ github, sleep: pause })
+    const result = await createReferenceResolver({ github })
         .resolveAll(Array.from({ length: 19 }, (_, i) => `https://github.com/dotnet/sdk/issues/${i + 1}`));
     assert.equal(result.references.length, 19);
     assert.equal(github.calls.issues.length, 19);
@@ -230,25 +202,7 @@ test('failed, incomplete and malformed listings throw rather than returning an e
         async () => [{ number: 1, state: 'closed', body: '' }],
     ]) {
         await assert.rejects(listRepositoryIssues({
-            github: api({ paginate }), repository: 'dotnet/sdk', state: 'open', sleep: pause,
+            github: api({ paginate }), repository: 'dotnet/sdk', state: 'open',
         }));
     }
-});
-
-test('pagination retries a transient incomplete read but never accepts its partial pages', async () => {
-    let attempts = 0;
-    const delays = [];
-    const github = api({ paginate: async () => {
-        if (++attempts < 3) {
-            throw { status: 503 };
-        }
-        return [{ number: 201, body: 'page three', state: 'open' }];
-    } });
-    const issues = await listRepositoryIssues({
-        github, repository: 'dotnet/sdk', state: 'open', sleep: async delay => delays.push(delay),
-    });
-    assert.equal(issues[0].number, 201);
-    assert.equal(attempts, 3);
-    assert.deepEqual(delays, [250, 500]);
-    assert.ok(github.calls.pages.every(call => call.request.retries === 0));
 });
