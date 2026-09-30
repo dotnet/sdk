@@ -15,6 +15,10 @@ namespace Microsoft.DotNet.Watch;
 /// Reload message is sent to the browser in that case.
 ///
 /// The instances are also reused if the project file is updated or the project graph is reloaded.
+///
+/// Each connection loads the current browser tools session key from the key pair the project's
+/// build wrote to its intermediate output. Loading on connect allows the server to start before
+/// <c>dotnet run</c> builds the application and naturally observes key rotation after a clean.
 /// </summary>
 internal sealed class BrowserRefreshServerFactory : IDisposable
 {
@@ -45,13 +49,30 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         bool hasExistingServer;
 
         var key = projectNode.ProjectInstance.GetId();
+        var browserToolsProject = appModel.BrowserToolsProject;
 
         lock (_serversGuard)
         {
             hasExistingServer = _servers.TryGetValue(key, out server);
+
+            if (server != null)
+            {
+                if (BrowserToolsBuildOutputs.TryGetFor(browserToolsProject, server.Logger) is not { } outputs)
+                {
+                    server.Dispose();
+                    _servers.Remove(key);
+                    server = null;
+                    hasExistingServer = false;
+                }
+                else
+                {
+                    server.UpdateSessionKeyFactory(outputs.CreateSessionKey);
+                }
+            }
+
             if (!hasExistingServer)
             {
-                server = appModel.TryCreateRefreshServer(projectNode);
+                server = appModel.TryCreateRefreshServer(browserToolsProject);
                 _servers.Add(key, server);
             }
         }

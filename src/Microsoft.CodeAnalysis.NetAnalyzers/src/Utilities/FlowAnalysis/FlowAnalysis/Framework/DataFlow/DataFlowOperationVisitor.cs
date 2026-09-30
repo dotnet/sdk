@@ -2120,24 +2120,26 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
         /// for interprocedural analysis.
         /// The default implementation returns cloned CurrentAnalysisData.
         /// </summary>
-        protected virtual TAnalysisData GetInitialInterproceduralAnalysisData(
+        protected virtual (TAnalysisData Data, bool IsTrimmed) GetInitialInterproceduralAnalysisData(
             IMethodSymbol invokedMethod,
+            ControlFlowGraph invokedCfg,
             (AnalysisEntity? Instance, PointsToAbstractValue PointsToValue)? invocationInstance,
             (AnalysisEntity Instance, PointsToAbstractValue PointsToValue)? thisOrMeInstanceForCaller,
             ImmutableDictionary<IParameterSymbol, ArgumentInfo<TAbstractAnalysisValue>> argumentValuesMap,
+            ImmutableDictionary<ISymbol, PointsToAbstractValue> capturedVariablesMap,
             IDictionary<AnalysisEntity, PointsToAbstractValue>? pointsToValues,
             IDictionary<AnalysisEntity, CopyAbstractValue>? copyValues,
             IDictionary<AnalysisEntity, ValueContentAbstractValue>? valueContentValues,
             bool isLambdaOrLocalFunction,
             bool hasParameterWithDelegateType)
-            => GetClonedCurrentAnalysisData();
+            => (GetClonedCurrentAnalysisData(), false);
 
         /// <summary>
         /// Apply the result data from interprocedural analysis to CurrentAnalysisData.
         /// Default implementation is designed for the default implementation of GetInitialInterproceduralAnalysisData.
         /// and overwrites the CurrentAnalysisData with the given <paramref name="resultData"/>.
         /// </summary>
-        protected virtual void ApplyInterproceduralAnalysisResult(TAnalysisData resultData, bool isLambdaOrLocalFunction, bool hasDelegateTypeArgument, TAnalysisResult analysisResult)
+        protected virtual void ApplyInterproceduralAnalysisResult(TAnalysisData resultData, bool isLambdaOrLocalFunction, bool hasDelegateTypeArgument, TAnalysisResult analysisResult, bool initialDataIsTrimmed)
             => CurrentAnalysisData = resultData;
 
         private void ApplyInterproceduralAnalysisDataForUnhandledThrowOperations(Dictionary<ThrownExceptionInfo, TAnalysisData> interproceduralUnhandledThrowOperationsData)
@@ -2271,7 +2273,8 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 
             // Compute optional interprocedural analysis data for context-sensitive analysis.
             bool isContextSensitive = isLambdaOrLocalFunction || InterproceduralAnalysisKind == InterproceduralAnalysisKind.ContextSensitive;
-            var interproceduralAnalysisData = isContextSensitive ? ComputeInterproceduralAnalysisData() : null;
+            bool initialDataIsTrimmed = false;
+            var interproceduralAnalysisData = isContextSensitive ? ComputeInterproceduralAnalysisData(out initialDataIsTrimmed) : null;
             TAnalysisResult? analysisResult;
 
             try
@@ -2325,7 +2328,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
 
                     // Apply interprocedural result analysis data for non-exception paths.
                     var resultData = GetExitBlockOutputData(analysisResult);
-                    ApplyInterproceduralAnalysisResult(resultData, isLambdaOrLocalFunction, hasParameterWithDelegateType, analysisResult);
+                    ApplyInterproceduralAnalysisResult(resultData, isLambdaOrLocalFunction, hasParameterWithDelegateType, analysisResult, initialDataIsTrimmed);
 
                     Debug.Assert(arguments.All(arg => !_pendingArgumentsToReset.Contains(arg)));
                 }
@@ -2425,7 +2428,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 return hasEscapes;
             }
 
-            InterproceduralAnalysisData<TAnalysisData, TAnalysisContext, TAbstractAnalysisValue> ComputeInterproceduralAnalysisData()
+            InterproceduralAnalysisData<TAnalysisData, TAnalysisContext, TAbstractAnalysisValue> ComputeInterproceduralAnalysisData(out bool isTrimmed)
             {
                 RoslynDebug.Assert(cfg != null);
 
@@ -2435,15 +2438,17 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
                 var pointsToValues = pointsToAnalysisResult?[cfg.GetEntry()].Data;
                 var copyValues = copyAnalysisResult?[cfg.GetEntry()].Data;
                 var valueContentValues = valueContentAnalysisResult?[cfg.GetEntry()].Data;
-                var initialAnalysisData = GetInitialInterproceduralAnalysisData(invokedMethod, invocationInstance,
-                    thisOrMeInstance, argumentValuesMap, pointsToValues, copyValues, valueContentValues, isLambdaOrLocalFunction, hasParameterWithDelegateType);
+                var capturedVariablesMap = GetCapturedVariablesMap(cfg, invokedMethod, isLambdaOrLocalFunction);
+                var (initialAnalysisData, initialDataIsTrimmed) = GetInitialInterproceduralAnalysisData(invokedMethod, cfg, invocationInstance,
+                    thisOrMeInstance, argumentValuesMap, capturedVariablesMap, pointsToValues, copyValues, valueContentValues, isLambdaOrLocalFunction, hasParameterWithDelegateType);
+                isTrimmed = initialDataIsTrimmed;
 
                 return new InterproceduralAnalysisData<TAnalysisData, TAnalysisContext, TAbstractAnalysisValue>(
                     initialAnalysisData,
                     invocationInstance,
                     thisOrMeInstance,
                     argumentValuesMap,
-                    GetCapturedVariablesMap(cfg, invokedMethod, isLambdaOrLocalFunction),
+                    capturedVariablesMap,
                     _addressSharedEntitiesProvider.GetAddressedSharedEntityMap(),
                     ImmutableStack.CreateRange(_interproceduralCallStack),
                     newMethodsBeingAnalyzed,

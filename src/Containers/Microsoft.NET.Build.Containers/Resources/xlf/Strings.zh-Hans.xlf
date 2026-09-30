@@ -219,6 +219,11 @@
         <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
+      <trans-unit id="InvalidAuthResponse_UnexpectedAuthOrigin">
+        <source>authentication challenge origin '{0}' does not match registry origin '{1}'</source>
+        <target state="new">authentication challenge origin '{0}' does not match registry origin '{1}'</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the origin that returned the authentication challenge; {1} is the expected registry origin.</note>
+      </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
         <target state="translated">CONTAINER2031: 不支持容器映像格式“{0}”。支持的格式为“{1}”。</target>

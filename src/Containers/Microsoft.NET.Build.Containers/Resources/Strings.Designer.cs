@@ -421,6 +421,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to authentication challenge origin &apos;{0}&apos; does not match registry origin &apos;{1}&apos;.
+        /// </summary>
+        internal static string InvalidAuthResponse_UnexpectedAuthOrigin {
+            get {
+                return ResourceManager.GetString("InvalidAuthResponse_UnexpectedAuthOrigin", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER1019: The registry &apos;{0}&apos; returned an invalid authentication response: {1}.
         /// </summary>
         internal static string InvalidRegistryAuthResponse {

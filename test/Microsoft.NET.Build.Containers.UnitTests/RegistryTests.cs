@@ -746,6 +746,32 @@ public class RegistryTests : IDisposable
         mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken), Times.Exactly(5));
     }
 
+    /// <summary>
+    /// Verifies that an invalid authentication response during a layer download fails immediately
+    /// and retains the original registry and reason rather than becoming a generic download failure.
+    /// </summary>
+    [TestMethod]
+    public async Task DownloadBlobAsync_PropagatesInvalidAuthResponseWithoutRetry()
+    {
+        const string registryName = "registry.invalid";
+        const string repository = "test/image";
+        var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_PropagatesInvalidAuthResponseWithoutRetry));
+        // Use an uncached digest so the download reaches the registry rather than the local store.
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, $"sha256:{Guid.NewGuid():N}{Guid.NewGuid():N}", 123);
+        var expected = new InvalidAuthResponseException(registryName, "authentication challenge came from another origin");
+        var api = new Mock<IRegistryAPI>(MockBehavior.Strict);
+        api.Setup(a => a.Blob.GetStreamAsync(repository, descriptor.Digest, It.IsAny<CancellationToken>()))
+            .ThrowsAsync(expected);
+        var registry = new Registry(registryName, logger, api.Object, retryDelayProvider: () => TimeSpan.Zero);
+
+        // A permanent authentication rejection must escape immediately, preserving the original exception.
+        InvalidAuthResponseException actual = await Assert.ThrowsExactlyAsync<InvalidAuthResponseException>(
+            () => registry.DownloadBlobAsync(repository, descriptor, TestContext.CancellationToken));
+
+        Assert.AreSame(expected, actual);
+        api.Verify(a => a.Blob.GetStreamAsync(repository, descriptor.Digest, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     private static NextChunkUploadInformation ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength, HttpStatusCode code = HttpStatusCode.Accepted)
     {
         return new(uploadUrl);
