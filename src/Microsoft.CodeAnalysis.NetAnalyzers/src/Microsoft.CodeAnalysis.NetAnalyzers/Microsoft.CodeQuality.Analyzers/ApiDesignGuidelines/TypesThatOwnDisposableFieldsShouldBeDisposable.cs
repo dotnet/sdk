@@ -70,7 +70,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var disposableProperties = namedType
                 .GetMembers()
                 .OfType<IPropertySymbol>()
-                .Where(p => !p.IsStatic && disposeAnalysisHelper.IsDisposable(p.Type))
+                .Where(p => !p.IsStatic
+                    && p.IsPropertyWithBackingField(out var backingField)
+                    && disposableFields.Contains(backingField))
                 .ToSet();
             if (disposableFields.Count == 0 && disposableProperties.Count == 0)
             {
@@ -100,6 +102,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 && !ctx.Options.IsConfiguredToSkipAnalysis(Rule, field.Field.Type, parent, ctx.Compilation))
             {
                 disposableFieldNamesBuilder.Add(field.Field.Name, ctx.CancellationToken);
+            }
+            else if (ctx.Operation is IAssignmentOperation { Target: IPropertyReferenceOperation propertyReference } propertyAssignment
+                && propertyAssignment.Value.WalkDownConversion().Kind == OperationKind.ObjectCreation
+                && disposableProperties.Contains(propertyReference.Property)
+                && !ctx.Options.IsConfiguredToSkipAnalysis(Rule, propertyReference.Property.Type, parent, ctx.Compilation))
+            {
+                disposableFieldNamesBuilder.Add(propertyReference.Property.Name, ctx.CancellationToken);
             }
             else if (ctx.Operation is IFieldInitializerOperation initializer && initializer.Value.WalkDownConversion().Kind == OperationKind.ObjectCreation)
             {
