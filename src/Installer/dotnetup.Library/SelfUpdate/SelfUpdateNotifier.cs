@@ -18,7 +18,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 /// </remarks>
 internal sealed class SelfUpdateNotifier
 {
-    private const string MarkerPrefix = ".dotnetup-update-check-";
     private const string MarkerExtension = ".dnupc";
 
     internal static TimeSpan RefreshInterval { get; } = TimeSpan.FromHours(24);
@@ -148,14 +147,14 @@ internal sealed class SelfUpdateNotifier
 
     private bool WasCheckedRecently()
     {
-        long latestCheckTicks = 0;
+        long latestCheckSeconds = 0;
         try
         {
-            foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"{MarkerPrefix}*{MarkerExtension}"))
+            foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"*{MarkerExtension}"))
             {
-                if (TryGetMarkerTicks(path, out var ticks))
+                if (TryGetMarkerSeconds(path, out var seconds))
                 {
-                    latestCheckTicks = Math.Max(latestCheckTicks, ticks);
+                    latestCheckSeconds = Math.Max(latestCheckSeconds, seconds);
                 }
             }
         }
@@ -164,17 +163,18 @@ internal sealed class SelfUpdateNotifier
             return false;
         }
 
-        long nowTicks = _timeProvider.GetUtcNow().UtcTicks;
+        long nowSeconds = _timeProvider.GetUtcNow().ToUnixTimeSeconds();
         // Markers intentionally omit channel and version. Missing a notice for up to a day after
         // either changes is acceptable for this best-effort check.
-        return latestCheckTicks <= nowTicks && nowTicks - latestCheckTicks < RefreshInterval.Ticks;
+        return latestCheckSeconds <= nowSeconds &&
+            nowSeconds - latestCheckSeconds < (long)RefreshInterval.TotalSeconds;
     }
 
     private string? TryCreateMarker()
     {
         var path = Path.Combine(
             _markerDirectory,
-            $"{MarkerPrefix}{_timeProvider.GetUtcNow().UtcTicks.ToString("D19", CultureInfo.InvariantCulture)}{MarkerExtension}");
+            $"{_timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)}{MarkerExtension}");
         try
         {
             using var marker = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
@@ -188,16 +188,16 @@ internal sealed class SelfUpdateNotifier
 
     private void DeleteOldMarkers(string currentMarkerPath)
     {
-        if (!TryGetMarkerTicks(currentMarkerPath, out var currentMarkerTicks))
+        if (!TryGetMarkerSeconds(currentMarkerPath, out var currentMarkerSeconds))
         {
             return;
         }
 
         try
         {
-            foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"{MarkerPrefix}*{MarkerExtension}"))
+            foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"*{MarkerExtension}"))
             {
-                if (!TryGetMarkerTicks(path, out var markerTicks) || markerTicks >= currentMarkerTicks)
+                if (!TryGetMarkerSeconds(path, out var markerSeconds) || markerSeconds >= currentMarkerSeconds)
                 {
                     continue;
                 }
@@ -218,12 +218,11 @@ internal sealed class SelfUpdateNotifier
         }
     }
 
-    private static bool TryGetMarkerTicks(string path, out long ticks)
+    private static bool TryGetMarkerSeconds(string path, out long seconds)
     {
-        var name = Path.GetFileName(path);
-        var timestamp = name.AsSpan(MarkerPrefix.Length, name.Length - MarkerPrefix.Length - MarkerExtension.Length);
-        return long.TryParse(timestamp, NumberStyles.None, CultureInfo.InvariantCulture, out ticks) &&
-            ticks > 0;
+        var timestamp = Path.GetFileNameWithoutExtension(path);
+        return long.TryParse(timestamp, NumberStyles.None, CultureInfo.InvariantCulture, out seconds) &&
+            seconds > 0;
     }
 
     private static ReleaseVersion? ResolveLatestFromFeed(string channel, string rid)

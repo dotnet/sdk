@@ -59,7 +59,8 @@ public class SelfUpdateNotifierTests : IDisposable
         requestedChannel.Should().Be(channel);
         output.Contains(BootstrapperStrings.SelfUpdateAvailableNotice, StringComparison.Ordinal)
             .Should().Be(expectedNotice);
-        Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle();
+        Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle()
+            .Which.Should().EndWith($"{_time.GetUtcNow().ToUnixTimeSeconds()}.dnupc");
     }
 
     [TestMethod]
