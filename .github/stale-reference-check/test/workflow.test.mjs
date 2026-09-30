@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { execFile, execFileSync } from "node:child_process";
+import { execFile } from "node:child_process";
 import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -8,6 +8,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { expandContext, finish, prepare, printBatch, record, rulesHash } from "../workflow.mjs";
 import { completeSubmission, getSourceTools, requestSourceTools, startSourceServer, submissionReceipt } from "../source-tools.mjs";
+import { createGitRepo } from "./fixture.mjs";
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
 const workflowDirectory = path.join(repository, ".github/workflows");
@@ -31,10 +32,8 @@ after(() =>
     }
 });
 
-async function fixture(t, padding = 0)
+function fixture(t, padding = 0)
 {
-    const root = await mkdtemp(path.join(os.tmpdir(), "stale-reference-workflow-"));
-    t.after(() => rm(root, { recursive: true, force: true }));
     const files = {
         "src/Sample.cs": [
             "namespace Example.Tests;",
@@ -53,16 +52,8 @@ async function fixture(t, padding = 0)
         ".github/stale-reference-check/source-tools.mjs": "// bounded source reader rules",
         ".github/workflows/stale-reference-interpret.md": "# Interpretation rules",
     };
-    for (const [file, content] of Object.entries(files))
-    {
-        await mkdir(path.dirname(path.join(root, file)), { recursive: true });
-        await writeFile(path.join(root, file), `${content}\n`);
-    }
-    execFileSync("git", ["init", "--quiet", root]);
-    execFileSync("git", ["-C", root, "add", "."]);
-    execFileSync("git", ["-C", root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
-        "-c", "commit.gpgsign=false", "commit", "--quiet", "-m", "fixture"]);
-    return root;
+    const contents = Object.fromEntries(Object.entries(files).map(([file, content]) => [file, `${content}\n`]));
+    return createGitRepo(t, contents, { directory: os.tmpdir(), prefix: "stale-reference-workflow-" });
 }
 
 const logger = { info() {}, warn() {} };

@@ -2,27 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { collect, git } from '../collect.mjs';
+import { createGitRepo } from './fixture.mjs';
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 
-async function fixture(t, files) {
-    const root = await mkdtemp(path.join(testDirectory, '.collect-'));
-    t.after(() => rm(root, { recursive: true, force: true }));
-    await git(root, ['init', '--quiet']);
-    await git(root, ['config', 'core.autocrlf', 'false']);
-    for (const [name, content] of Object.entries(files)) {
-        const file = path.join(root, ...name.split('/'));
-        await mkdir(path.dirname(file), { recursive: true });
-        await writeFile(file, content);
-    }
-    await git(root, ['add', '.']);
-    await git(root, ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', '-m', 'Fixture']);
-    return root;
+function fixture(t, files) {
+    return createGitRepo(t, files, { directory: testDirectory, prefix: '.collect-' });
 }
 
 test('collects same-line, adjacent and multiline C#/XML seeds without requiring a URL', async t => {

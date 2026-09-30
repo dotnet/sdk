@@ -2,11 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import assert from 'node:assert/strict';
-import { mkdtemp, mkdir, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdir, rm, symlink, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { collect, git } from '../collect.mjs';
+import { createGitRepo } from './fixture.mjs';
 import { getCachedResults, mergeCache, readContext, selectBatch, validateInterpretations } from '../interpretations.mjs';
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -14,15 +15,8 @@ const url = 'https://github.com/dotnet/sdk/issues/123';
 const otherUrl = 'https://github.com/dotnet/runtime/pull/456';
 
 async function fixture(t, source, filePath = 'test/Cases.cs') {
-    const root = await mkdtemp(path.join(testDirectory, '.interpretations-'));
-    t.after(() => rm(root, { recursive: true, force: true }));
-    await git(root, ['init', '--quiet']);
-    await git(root, ['config', 'core.autocrlf', 'false']);
+    const root = await createGitRepo(t, { [filePath]: source }, { directory: testDirectory, prefix: '.interpretations-' });
     const file = path.join(root, ...filePath.split('/'));
-    await mkdir(path.dirname(file), { recursive: true });
-    await writeFile(file, source);
-    await git(root, ['add', '.']);
-    await git(root, ['-c', 'user.name=Fixture', '-c', 'user.email=fixture@example.invalid', 'commit', '--quiet', '-m', 'Fixture']);
     return { root, file, manifest: await collect(root, { rulesHash: 'rules-1' }) };
 }
 
