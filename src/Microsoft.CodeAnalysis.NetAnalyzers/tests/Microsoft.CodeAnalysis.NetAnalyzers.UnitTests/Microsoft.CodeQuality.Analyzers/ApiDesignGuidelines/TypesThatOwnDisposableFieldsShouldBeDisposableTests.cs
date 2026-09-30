@@ -365,6 +365,33 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     """);
         }
 
+        [TestMethod, WorkItem(54089, "https://github.com/dotnet/sdk/issues/54089")]
+        public async Task CA1001CSharpTestWithDisposableAutoPropertyAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+                using System.IO;
+
+                public class [|Class1|]
+                {
+                    public MemoryStream DataStream { get; } = new MemoryStream();
+                }
+                """, """
+    using System;
+    using System.IO;
+
+    public class Class1 : IDisposable
+    {
+        public MemoryStream DataStream { get; } = new MemoryStream();
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+    }
+    """);
+        }
+
         [TestMethod, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
         public async Task CA1001CSharpTestWithIAsyncDisposableAsync()
         {
@@ -710,6 +737,32 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             End Sub
         End Class
     End Namespace
+    """);
+        }
+
+        [TestMethod, WorkItem(54089, "https://github.com/dotnet/sdk/issues/54089")]
+        public async Task CA1001BasicTestWithDisposableAutoPropertyAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
+                Imports System.IO
+
+                Public Class [|Class1|]
+                    Public ReadOnly Property DataStream As MemoryStream = New MemoryStream()
+                End Class
+                """, """
+    Imports System
+    Imports System.IO
+
+    Public Class Class1
+        Implements IDisposable
+
+        Public ReadOnly Property DataStream As MemoryStream = New MemoryStream()
+
+        Public Sub Dispose() Implements IDisposable.Dispose
+            Throw New NotImplementedException()
+        End Sub
+    End Class
     """);
         }
 

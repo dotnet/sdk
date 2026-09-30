@@ -67,18 +67,32 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 .OfType<IFieldSymbol>()
                 .Where(f => !f.IsStatic && disposeAnalysisHelper.IsDisposable(f.Type))
                 .ToSet();
-            if (disposableFields.Count == 0)
+            var disposableProperties = namedType
+                .GetMembers()
+                .OfType<IPropertySymbol>()
+                .Where(p => !p.IsStatic && disposeAnalysisHelper.IsDisposable(p.Type))
+                .ToSet();
+            if (disposableFields.Count == 0 && disposableProperties.Count == 0)
             {
                 return;
             }
 
             var disposableFieldNamesBuilder = TemporarySet<string>.Empty;
 
-            ctx.RegisterOperationAction(context => AnalyzeOperation(context, namedType, disposableFields, ref disposableFieldNamesBuilder), OperationKind.SimpleAssignment, OperationKind.FieldInitializer);
+            ctx.RegisterOperationAction(
+                context => AnalyzeOperation(context, namedType, disposableFields, disposableProperties, ref disposableFieldNamesBuilder),
+                OperationKind.SimpleAssignment,
+                OperationKind.FieldInitializer,
+                OperationKind.PropertyInitializer);
             ctx.RegisterSymbolEndAction(context => AnalyzeSymbolEnd(context, ref disposableFieldNamesBuilder));
         }
 
-        private static void AnalyzeOperation(OperationAnalysisContext ctx, INamedTypeSymbol parent, ISet<IFieldSymbol> disposableFields, ref TemporarySet<string> disposableFieldNamesBuilder)
+        private static void AnalyzeOperation(
+            OperationAnalysisContext ctx,
+            INamedTypeSymbol parent,
+            ISet<IFieldSymbol> disposableFields,
+            ISet<IPropertySymbol> disposableProperties,
+            ref TemporarySet<string> disposableFieldNamesBuilder)
         {
             if (ctx.Operation is IAssignmentOperation { Target: IFieldReferenceOperation field } assignment
                 && assignment.Value.WalkDownConversion().Kind == OperationKind.ObjectCreation
@@ -95,6 +109,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     if (!ctx.Options.IsConfiguredToSkipAnalysis(Rule, f.Type, parent, ctx.Compilation))
                     {
                         disposableFieldNamesBuilder.Add(f.Name, ctx.CancellationToken);
+                    }
+                }
+            }
+            else if (ctx.Operation is IPropertyInitializerOperation propertyInitializer
+                && propertyInitializer.Value?.WalkDownConversion().Kind == OperationKind.ObjectCreation)
+            {
+                var candidateProperties = propertyInitializer.InitializedProperties.Intersect(disposableProperties);
+                foreach (var property in candidateProperties)
+                {
+                    if (!ctx.Options.IsConfiguredToSkipAnalysis(Rule, property.Type, parent, ctx.Compilation))
+                    {
+                        disposableFieldNamesBuilder.Add(property.Name, ctx.CancellationToken);
                     }
                 }
             }
