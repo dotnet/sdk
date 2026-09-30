@@ -13,6 +13,8 @@ internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result
     public override IReadOnlyCollection<InstallComponent> MigrationComponents =>
         [InstallComponent.Runtime, InstallComponent.ASPNETCore, InstallComponent.WindowsDesktop];
 
+    protected override bool ShowsUpdateNotification => true;
+
     /// <summary>
     /// Maps user-friendly runtime type names to InstallComponent enum values.
     /// Descriptions are obtained from InstallComponentExtensions.GetDisplayName().

@@ -239,8 +239,9 @@ remove `dotnetup` from `PATH`** — it removes the Unix profile line and the Win
 ```jsonc
 {
   "schemaVersion": "1",
-  "accessMode": "shell",   // renamed from "pathPreference"
-  "dotnetupOnPath": true   // new; defaults to true when absent
+  "accessMode": "shell",       // renamed from "pathPreference"
+  "dotnetupOnPath": true,      // new; defaults to true when absent
+  "updateNotifications": true  // defaults to true when absent; set by `self update --nowarn`
 }
 ```
 
@@ -249,11 +250,14 @@ No `schemaVersion` bump. Builds have shipped **internally** with the original sh
 `FullPathReplacement`). No config files have shipped publicly, so rather than a migration the
 reader simply does not honor the legacy shape:
 
-- The legacy `pathPreference` property name is ignored (an unknown property does not crash), so
-  `accessMode` falls back to its default (`shell`).
+- The legacy `pathPreference` property name is ignored (an unknown property does not crash).
+- Only a config that records `accessMode` counts as completed setup. A config without it, such as a
+  legacy config or one written only by `self update --nowarn`, is treated as not set up, so
+  first-use onboarding still runs and `env` commands report that no configuration exists.
 - Only the current `accessMode` values `none` / `shell` / `everywhere` (case-insensitive) are
   accepted; a pre-rename enum spelling is treated as a corrupt value.
 - A missing `dotnetupOnPath` defaults to `true`.
+- Writing the setup choices preserves `updateNotifications`.
 
 Either way, the next write rewrites the file in the new shape, so a handful of internal configs
 re-default once instead of carrying a stream-manipulating compatibility shim indefinitely. Because

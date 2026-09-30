@@ -14,6 +14,8 @@ internal class SdkInstallCommand(ParseResult result) : InstallCommand(result, "s
     public override bool UpdateGlobalJson { get; } = result.GetValue(SdkInstallCommandParser.UpdateGlobalJsonOption) ?? false;
     public override IReadOnlyCollection<InstallComponent> MigrationComponents => [InstallComponent.SDK];
 
+    protected override bool ShowsUpdateNotification => true;
+
     protected override void ExecuteCore()
     {
         // Map each channel to a MinimalInstallSpec. If none provided, a single null-channel

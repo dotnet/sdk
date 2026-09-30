@@ -37,12 +37,7 @@ internal static class EnvSettingsWriter
             dotnetRoot,
             resolvedShellProvider);
 
-        DotnetupConfigData newConfig = new()
-        {
-            AccessMode = targetEnv,
-            DotnetupOnPath = targetDotnetupOnPath,
-        };
-        DotnetupConfig.Write(newConfig);
+        DotnetupConfigData newConfig = DotnetupConfig.WriteAccessSettings(targetEnv, targetDotnetupOnPath);
 
         Console.WriteLine(DescribeOutcome(targetEnv, targetDotnetupOnPath));
 

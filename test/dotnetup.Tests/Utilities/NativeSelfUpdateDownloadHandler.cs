@@ -32,8 +32,9 @@ internal sealed class NativeSelfUpdateDownloadHandler : HttpMessageHandler
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        Assert.AreEqual(HttpMethod.Get, request.Method);
         Assert.IsNotNull(request.RequestUri);
+        // Only the channel shortlink is probed with HEAD, to find the version without the executable.
+        Assert.AreEqual(request.RequestUri == DailyUri ? HttpMethod.Head : HttpMethod.Get, request.Method);
         Assert.AreEqual(Uri.UriSchemeHttps, request.RequestUri.Scheme);
         _requests.Add(request.RequestUri);
 

@@ -201,6 +201,15 @@ internal class CommonOptions
         };
     }
 
+    /// <summary>
+    /// Resolves whether the command may interact with the user, even for commands that do not
+    /// register <see cref="InteractiveOption"/>.
+    /// </summary>
+    internal static bool IsInteractive(ParseResult parseResult)
+        => parseResult.GetResult(InteractiveOption) is not null
+            ? parseResult.GetValue(InteractiveOption)
+            : !IsCIEnvironmentOrRedirected();
+
     private static bool IsCIEnvironmentOrRedirected() =>
         new Cli.Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 
