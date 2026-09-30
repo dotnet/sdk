@@ -177,15 +177,26 @@ layout and packaging. This is composition, not the normal home for product behav
 1. The native host selects an SDK. The managed CLI starts in
    [`Program.Main`](../../src/Cli/dotnet/Program.cs), while supported Native AOT paths
    start in [`NativeEntryPoint`](../../src/Cli/dotnet-aot/NativeEntryPoint.cs).
-2. Both paths use the shared command tree. The managed parser attaches handlers;
+2. Before telemetry or parsing, the Native AOT path resolves the versioned SDK directory
+   and registers its generated-string resource provider. The default external-localized
+   mode reads existing managed satellite assemblies as data; the experimental
+   external-all mode strictly preflights managed neutral owners before the AOT commit
+   point. [`AotResources.targets`](../../src/Cli/dotnet-aot/AotResources.targets) owns
+   ILC resource placement, and the [NativeAOT design](../../src/Cli/dotnet-aot/DESIGN.md#localized-resource-modes)
+   owns the lookup and fallback contract. The shared runtime is compiled into
+   [`Microsoft.DotNet.Cli.CoreUtils`](../../src/Cli/Microsoft.DotNet.Cli.CoreUtils),
+   while the analyzer-only
+   [`Microsoft.DotNet.Cli.Resources.Generator`](../../src/Cli/Microsoft.DotNet.Cli.Resources.Generator)
+   emits the generated accessors without adding a runtime assembly.
+3. Both paths use the shared command tree. The managed parser attaches handlers;
    unsupported AOT operations continue in the managed CLI.
-3. Built-in commands execute their handlers. Unmatched managed commands are resolved as
+4. Built-in commands execute their handlers. Unmatched managed commands are resolved as
    external `dotnet-*` commands, with file-based C# execution as another fallback.
-4. Build-family commands forward to MSBuild. MSBuild loads the SDK resolvers, then imports
+5. Build-family commands forward to MSBuild. MSBuild loads the SDK resolvers, then imports
    `Sdk.props`, evaluates the project, and imports `Sdk.targets`.
-5. Shipping targets invoke SDK tasks and integrate compiler, NuGet, runtime, and workload
+6. Shipping targets invoke SDK tasks and integrate compiler, NuGet, runtime, and workload
    artifacts owned by this and adjacent repositories.
-6. The repository build compiles the components first, then the redist project copies them
+7. The repository build compiles the components first, then the redist project copies them
    into the runnable SDK layout.
 
 ## Lifecycle Boundaries

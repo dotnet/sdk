@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine.Parsing;
-using System.Resources;
+using Microsoft.DotNet.Cli.Resources;
 
 namespace Microsoft.DotNet.Cli.Help;
 
@@ -11,8 +11,10 @@ namespace Microsoft.DotNet.Cli.Help;
 /// </summary>
 public static class LocalizationResources
 {
-    private static Lazy<ResourceManager> _resourceManager = new(
-        () => new ResourceManager("System.CommandLine.Properties.Resources", typeof(System.CommandLine.Symbol).Assembly));
+    private static readonly Lazy<StringResourceManager> s_resourceManager = new(
+        () => StringResourceManagerProvider.Create(
+            "System.CommandLine.Properties.Resources",
+            typeof(System.CommandLine.Symbol).Assembly));
 
     /// <summary>
     ///   Interpolates values into a localized string similar to Usage:.
@@ -94,7 +96,7 @@ public static class LocalizationResources
     /// <returns>The final string after interpolation.</returns>
     private static string GetResourceString(string resourceName, params object[] formatArguments)
     {
-        string? resourceString = _resourceManager.Value.GetString(resourceName);
+        string? resourceString = s_resourceManager.Value.GetString(resourceName);
         if (resourceString is null)
         {
             return string.Empty;

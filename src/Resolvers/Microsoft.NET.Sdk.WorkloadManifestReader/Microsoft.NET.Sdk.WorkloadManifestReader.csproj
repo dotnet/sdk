@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.props" />
 
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
@@ -7,7 +8,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="**\*.resx" GenerateSource="true" Namespace="Microsoft.NET.Sdk.Localization" />
+    <EmbeddedResource Update="**\*.resx" GenerateSource="true" Namespace="Microsoft.NET.Sdk.Localization">
+      <Generator Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Microsoft.DotNet.Cli.Resources</Generator>
+      <ClassName Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Microsoft.NET.Sdk.Localization.Strings</ClassName>
+    </EmbeddedResource>
     <Compile Include="..\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
@@ -20,10 +24,20 @@
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
   </ItemGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">
+    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
+    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <!-- Netfx version builds against the lowest version of System.Text.Json that's guaranteed to be shipped with MSBuild in VS -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.targets" />
 
 </Project>
