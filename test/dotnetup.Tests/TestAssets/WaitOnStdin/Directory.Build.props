@@ -1,0 +1,10 @@
+<Project>
+  <!-- Import the repo root Directory.Build.props directly, skipping test-specific one -->
+  <Import Project="$(MSBuildThisFileDirectory)..\..\..\..\Directory.Build.props" />
+
+  <!-- This is not a test project -->
+  <PropertyGroup>
+    <IsTestProject>false</IsTestProject>
+    <GenerateProgramFile>true</GenerateProgramFile>
+  </PropertyGroup>
+</Project>

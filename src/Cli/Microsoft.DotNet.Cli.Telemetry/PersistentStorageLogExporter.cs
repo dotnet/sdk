@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
-using System.Threading;
 using Microsoft.DotNet.Cli.Telemetry.Implementation;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -15,108 +13,38 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 /// Insights wire format and persists it to durable on-disk storage instead of transmitting it,
 /// so a short-lived CLI process captures its log telemetry before exiting.
 ///
-/// Like the trace exporter, it owns the persist-then-drain pipeline: the first time it exports
-/// it starts a background <see cref="PersistentStorageTelemetryUploader"/> that opportunistically
+/// Like the trace exporter, it owns the persist-then-drain pipeline: after persisting a batch it
+/// notifies a background <see cref="PersistentStorageTelemetryUploader"/> that opportunistically
 /// uploads telemetry persisted by this and previous CLI invocations. Because it drains the same
 /// storage the trace exporter uses, either exporter's drain uploads every persisted blob (leasing
 /// prevents double-upload), so running both signals against one storage directory is safe.
 ///
 /// This exporter should be driven by a <c>SimpleLogRecordExportProcessor</c> so that
-/// <see cref="Export"/> runs synchronously as each log record is emitted, guaranteeing the write
+/// <c>Export</c> runs synchronously as each log record is emitted, guaranteeing the write
 /// completes before process shutdown.
 /// </summary>
-internal sealed class PersistentStorageLogExporter : BaseExporter<LogRecord>
+internal sealed class PersistentStorageLogExporter : PersistentStorageTelemetryExporter<LogRecord>
 {
-    private readonly ITelemetryBlobStorage _storage;
-    private readonly string _instrumentationKey;
-    private readonly Uri _ingestionTrackUri;
-    private readonly int _leasePeriodMilliseconds;
-    private readonly int _maxBlobsPerDrain;
-    private TelemetryResourceContext? _resourceContext;
-    // Guards against starting more than one background drain per exporter.
-    private int _drainStarted;
-    private CancellationTokenSource? _drainCts;
-    private Task? _drainTask;
-
     public PersistentStorageLogExporter(
         ITelemetryBlobStorage storage,
         string instrumentationKey,
         Uri ingestionTrackUri,
         int leasePeriodMilliseconds,
-        int maxBlobsPerDrain)
+        int maxBlobsPerDrain,
+        bool startBackgroundDrain = true)
+        : base(
+            storage,
+            instrumentationKey,
+            ingestionTrackUri,
+            leasePeriodMilliseconds,
+            maxBlobsPerDrain,
+            startBackgroundDrain)
     {
-        _storage = storage;
-        _instrumentationKey = instrumentationKey;
-        _ingestionTrackUri = ingestionTrackUri;
-        _leasePeriodMilliseconds = leasePeriodMilliseconds;
-        _maxBlobsPerDrain = maxBlobsPerDrain;
     }
 
-    public override ExportResult Export(in Batch<LogRecord> batch)
-    {
-        try
-        {
-            StartBackgroundDrainOnce();
-
-            var resource = _resourceContext ??= TelemetryResourceContextFactory.FromResource(ParentProvider?.GetResource());
-            var bytes = AzureMonitorLogSerializer.SerializeBatch(in batch, resource, _instrumentationKey);
-            if (bytes is null || bytes.Length == 0)
-            {
-                return ExportResult.Success;
-            }
-
-            return _storage.TryPersist(bytes) ? ExportResult.Success : ExportResult.Failure;
-        }
-        catch (Exception e)
-        {
-            // Telemetry must never surface errors to the CLI. Swallow and report failure.
-            Debug.Fail(e.ToString());
-            return ExportResult.Failure;
-        }
-    }
-
-    protected override bool OnShutdown(int timeoutMilliseconds)
-    {
-        _drainCts?.Cancel();
-        if (_drainTask is not null)
-        {
-            try
-            {
-                return _drainTask.Wait(timeoutMilliseconds);
-            }
-            catch (AggregateException)
-            {
-                return true;
-            }
-        }
-        return true;
-    }
-
-    private void StartBackgroundDrainOnce()
-    {
-        if (Interlocked.Exchange(ref _drainStarted, 1) != 0)
-        {
-            return;
-        }
-
-        _drainCts = new CancellationTokenSource();
-        var transport = new HttpTelemetryUploadTransport(_ingestionTrackUri);
-        var uploader = new PersistentStorageTelemetryUploader(_storage, transport, _leasePeriodMilliseconds, _maxBlobsPerDrain);
-        _drainTask = Task.Run(async () =>
-        {
-            try
-            {
-                await uploader.DrainAsync(_drainCts.Token).ConfigureAwait(false);
-            }
-            catch (OperationCanceledException)
-            {
-                // Expected when shutdown is signalled.
-            }
-            catch (Exception e)
-            {
-                // Background telemetry drain must never surface errors.
-                Debug.Fail(e.ToString());
-            }
-        });
-    }
+    protected override byte[]? SerializeBatch(
+        in Batch<LogRecord> batch,
+        TelemetryResourceContext resource,
+        string instrumentationKey)
+        => AzureMonitorLogSerializer.SerializeBatch(in batch, resource, instrumentationKey);
 }

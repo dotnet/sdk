@@ -1,0 +1,406 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="it" original="../Strings.resx">
+    <body>
+      <trans-unit id="CommandInteractiveOptionDescription">
+        <source>Allows the command to stop and wait for user input or action.</source>
+        <target state="new">Allows the command to stop and wait for user input or action.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandDescription">
+        <source>Run a command using the dotnetup-managed dotnet installation.</source>
+        <target state="new">Run a command using the dotnetup-managed dotnet installation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandDotnetNotFound">
+        <source>dotnet executable not found at '{0}'.</source>
+        <target state="new">dotnet executable not found at '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandDotnetStartFailed">
+        <source>Error: Failed to start the dotnet process.</source>
+        <target state="new">Error: Failed to start the dotnet process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandForwardedArgsDescription">
+        <source>Arguments to forward to dotnet.</source>
+        <target state="new">Arguments to forward to dotnet.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetCommandInstallFirst">
+        <source>Run 'dotnetup install' to install a .NET SDK first.</source>
+        <target state="new">Run 'dotnetup install' to install a .NET SDK first.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvApplyToTerminalPrompt">
+        <source>To apply the change to this terminal now, run:
+  {0}
+Or open a new terminal.</source>
+        <target state="new">To apply the change to this terminal now, run:
+  {0}
+Or open a new terminal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvClearCommandDescription">
+        <source>Remove all dotnetup environment wiring (equivalent to 'env set none --dotnetup-on-path false').</source>
+        <target state="new">Remove all dotnetup environment wiring (equivalent to 'env set none --dotnetup-on-path false').</target>
+        <note>{Locked="env set none --dotnetup-on-path false"}</note>
+      </trans-unit>
+      <trans-unit id="EnvCommandDescription">
+        <source>Manage the dotnetup environment configuration (PATH and DOTNET_ROOT wiring).</source>
+        <target state="new">Manage the dotnetup environment configuration (PATH and DOTNET_ROOT wiring).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftDotnetupOnPathMissing">
+        <source>dotnetup is configured to be on PATH but is missing from the user PATH.</source>
+        <target state="new">dotnetup is configured to be on PATH but is missing from the user PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftDotnetupOnPathUnexpected">
+        <source>dotnetup is on the user PATH but is configured to be off.</source>
+        <target state="new">dotnetup is on the user PATH but is configured to be off.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftEverywhereModeEnvVarsIncomplete">
+        <source>Windows user PATH / DOTNET_ROOT / system PATH do not match 'everywhere' mode expectations.</source>
+        <target state="new">Windows user PATH / DOTNET_ROOT / system PATH do not match 'everywhere' mode expectations.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftEverywhereModeEnvVarsUnexpected">
+        <source>Windows user PATH / DOTNET_ROOT still has 'everywhere'-mode wiring (expected dotnet access: '{0}').</source>
+        <target state="new">Windows user PATH / DOTNET_ROOT still has 'everywhere'-mode wiring (expected dotnet access: '{0}').</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftProfileBlockMissing">
+        <source>Shell profile is missing the dotnetup managed block.</source>
+        <target state="new">Shell profile is missing the dotnetup managed block.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvDriftProfileBlockUnexpected">
+        <source>Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.</source>
+        <target state="new">Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvElevationCancelled">
+        <source>Elevation was cancelled. The system PATH was not modified.</source>
+        <target state="new">Elevation was cancelled. The system PATH was not modified.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvModeWindowsOnly">
+        <source>'{0}' mode is only supported on Windows. Use 'shell' on this platform.</source>
+        <target state="new">'{0}' mode is only supported on Windows. Use 'shell' on this platform.</target>
+        <note>{Locked="shell"}</note>
+      </trans-unit>
+      <trans-unit id="EnvOpenNewTerminalForOtherSurfaces">
+        <source>Other open terminals and applications will pick up this change after they're restarted.</source>
+        <target state="new">Other open terminals and applications will pick up this change after they're restarted.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOpenNewTerminalToTakeEffect">
+        <source>Open a new terminal for the change to take effect.</source>
+        <target state="new">Open a new terminal for the change to take effect.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeBothOnPath">
+        <source>dotnet and dotnetup are on your PATH.</source>
+        <target state="new">dotnet and dotnetup are on your PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeDotnetOnlyOnPath">
+        <source>dotnet is on your PATH. dotnetup is not.</source>
+        <target state="new">dotnet is on your PATH. dotnetup is not.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeDotnetupOnlyOnPath">
+        <source>dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet &lt;command&gt;'.</source>
+        <target state="new">dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet &lt;command&gt;'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeNeitherOnPath">
+        <source>Neither dotnet nor dotnetup is on your PATH.</source>
+        <target state="new">Neither dotnet nor dotnetup is on your PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptCommandDescription">
+        <source>Generates a shell script that configures the environment for .NET. With no selection flags it follows your configured env settings; pass --dotnet and/or --dotnetup to emit only those parts.</source>
+        <target state="new">Generates a shell script that configures the environment for .NET. With no selection flags it follows your configured env settings; pass --dotnet and/or --dotnetup to emit only those parts.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptDotnetInstallPathOptionDescription">
+        <source>The path to the .NET installation directory. If not specified, uses the default user install path.</source>
+        <target state="new">The path to the .NET installation directory. If not specified, uses the default user install path.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptDotnetOptionDescription">
+        <source>Add the managed dotnet to PATH and set DOTNET_ROOT.</source>
+        <target state="new">Add the managed dotnet to PATH and set DOTNET_ROOT.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptDotnetupOnlyConflict">
+        <source>--dotnetup-only cannot be combined with --dotnet or --dotnetup.</source>
+        <target state="new">--dotnetup-only cannot be combined with --dotnet or --dotnetup.</target>
+        <note>{Locked="--dotnetup-only"}{Locked="--dotnet"}{Locked="--dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="EnvScriptDotnetupOnlyOptionDescription">
+        <source>Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</source>
+        <target state="new">Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptDotnetupOptionDescription">
+        <source>Add the dotnetup directory to PATH.</source>
+        <target state="new">Add the dotnetup directory to PATH.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptShellNotDetected">
+        <source>Error: Unable to detect current shell. The SHELL environment variable is not set.</source>
+        <target state="new">Error: Unable to detect current shell. The SHELL environment variable is not set.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptShellNotSet">
+        <source>SHELL environment variable is not set; cannot detect shell.</source>
+        <target state="new">SHELL environment variable is not set; cannot detect shell.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptSpecifyShell">
+        <source>Please specify the shell using --shell option.</source>
+        <target state="new">Please specify the shell using --shell option.</target>
+        <note>{Locked="--shell"}</note>
+      </trans-unit>
+      <trans-unit id="EnvScriptSpecifyShellWithSupported">
+        <source>Please specify the shell using --shell option. Supported shells: {0}</source>
+        <target state="new">Please specify the shell using --shell option. Supported shells: {0}</target>
+        <note>{Locked="--shell"}</note>
+      </trans-unit>
+      <trans-unit id="EnvScriptSupportedShells">
+        <source>Supported shells: {0}</source>
+        <target state="new">Supported shells: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptUnsupportedShell">
+        <source>Error: Unsupported shell '{0}'.</source>
+        <target state="new">Error: Unsupported shell '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvScriptUnsupportedShellError">
+        <source>Unsupported shell '{0}'.</source>
+        <target state="new">Unsupported shell '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvSetCommandDescription">
+        <source>Apply (or re-sync) the configured env settings.</source>
+        <target state="new">Apply (or re-sync) the configured env settings.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvSetConfigUnreadable">
+        <source>No mode specified and the existing configuration could not be read. Specify a mode explicitly: none, shell, or everywhere.</source>
+        <target state="new">No mode specified and the existing configuration could not be read. Specify a mode explicitly: none, shell, or everywhere.</target>
+        <note>{Locked="none"}{Locked="shell"}{Locked="everywhere"}</note>
+      </trans-unit>
+      <trans-unit id="EnvSetDotnetupOnPathOptionDescription">
+        <source>Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.</source>
+        <target state="new">Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.</target>
+        <note>{Locked="true"}{Locked="false"}</note>
+      </trans-unit>
+      <trans-unit id="EnvSetModeArgumentDescription">
+        <source>The dotnet access mode: {0}. Omit to re-apply the stored mode.</source>
+        <target state="new">The dotnet access mode: {0}. Omit to re-apply the stored mode.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvSetNoStoredConfig">
+        <source>No mode specified and no stored configuration to re-apply. Specify a mode: none, shell, or everywhere.</source>
+        <target state="new">No mode specified and no stored configuration to re-apply. Specify a mode: none, shell, or everywhere.</target>
+        <note>{Locked="none"}{Locked="shell"}{Locked="everywhere"}</note>
+      </trans-unit>
+      <trans-unit id="EnvSetUnknownMode">
+        <source>Unknown env mode '{0}'. Expected one of: {1}.</source>
+        <target state="new">Unknown env mode '{0}'. Expected one of: {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShellRequiredForProfile">
+        <source>Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell &lt;{0}&gt; to specify it explicitly.</source>
+        <target state="new">Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell &lt;{0}&gt; to specify it explicitly.</target>
+        <note>{Locked="--shell"}</note>
+      </trans-unit>
+      <trans-unit id="EnvShowApplyToTerminalPrompt">
+        <source>To apply it to this terminal now, run:</source>
+        <target state="new">To apply it to this terminal now, run:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowCommandDescription">
+        <source>Show the configured env mode and report any detected drift.</source>
+        <target state="new">Show the configured env mode and report any detected drift.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowDriftHeader">
+        <source>Detected drift between configured settings and the current environment:</source>
+        <target state="new">Detected drift between configured settings and the current environment:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowHeader">
+        <source>dotnetup environment:</source>
+        <target state="new">dotnetup environment:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowInSync">
+        <source>In sync.</source>
+        <target state="new">In sync.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowInSyncNotActive">
+        <source>In sync, but not yet active in this terminal.</source>
+        <target state="new">In sync, but not yet active in this terminal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowLabelDotnetAccess">
+        <source>dotnet access</source>
+        <target state="new">dotnet access</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowLabelDotnetupOnPath">
+        <source>dotnetup on PATH</source>
+        <target state="new">dotnetup on PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowNoConfiguration">
+        <source>No dotnetup env configuration found. Run 'dotnetup env set &lt;mode&gt;' to configure.</source>
+        <target state="new">No dotnetup env configuration found. Run 'dotnetup env set &lt;mode&gt;' to configure.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowOpenNewTerminalToPickUp">
+        <source>Open a new terminal to pick up the change.</source>
+        <target state="new">Open a new terminal to pick up the change.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowOrOpenNewTerminal">
+        <source>Or open a new terminal.</source>
+        <target state="new">Or open a new terminal.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvShowRunSetToResync">
+        <source>Run 'dotnetup env set' to re-sync.</source>
+        <target state="new">Run 'dotnetup env set' to re-sync.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FormatOptionDescription">
+        <source>Output format (text or json).</source>
+        <target state="new">Output format (text or json).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpConfigCommandsTitle">
+        <source>Configuration Commands:</source>
+        <target state="new">Configuration Commands:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpDescriptionLabel">
+        <source>Description:</source>
+        <target state="new">Description:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpInstallCommandsTitle">
+        <source>Install Commands:</source>
+        <target state="new">Install Commands:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpOptionsTitle">
+        <source>Options:</source>
+        <target state="new">Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpQueryCommandsTitle">
+        <source>Query Commands:</source>
+        <target state="new">Query Commands:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUsageLabel">
+        <source>Usage:</source>
+        <target state="new">Usage:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUtilityCommandsTitle">
+        <source>Utility Commands:</source>
+        <target state="new">Utility Commands:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoCommandDescription">
+        <source>Display dotnetup information.</source>
+        <target state="new">Display dotnetup information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoHeader">
+        <source>dotnetup Information:</source>
+        <target state="new">dotnetup Information:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoNoListOptionDescription">
+        <source>Skip listing installed SDKs (faster).</source>
+        <target state="new">Skip listing installed SDKs (faster).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InfoOptionDescription">
+        <source>Display dotnetup information.</source>
+        <target state="new">Display dotnetup information.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitCommandDescription">
+        <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
+        <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListCommandDescription">
+        <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
+        <target state="new">List installed .NET SDKs and runtimes managed by dotnetup.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListHeaderSubtitle">
+        <source>(managed by dotnetup)</source>
+        <target state="new">(managed by dotnetup)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListHeaderTitle">
+        <source>Installations</source>
+        <target state="new">Installations</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListNoInstallations">
+        <source>(none)</source>
+        <target state="new">(none)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListNoVerifyOptionDescription">
+        <source>Skip verifying that each installation is valid.</source>
+        <target state="new">Skip verifying that each installation is valid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListTotal">
+        <source>Total</source>
+        <target state="new">Total</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceEverywhere">
+        <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
+        <target state="new">PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceNone">
+        <source>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</source>
+        <target state="new">You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PathGuidanceShell">
+        <source>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</source>
+        <target state="new">Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RootCommandDescription">
+        <source>.NET toolchain manager for user level installs.</source>
+        <target state="new">.NET toolchain manager for user level installs.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TelemetryNotice">
+        <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>
+        <target state="new">dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
