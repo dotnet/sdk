@@ -107,7 +107,6 @@ The dotnetup data directory contains these user-level state files:
 | `dotnetup_manifest.json` | Tracks installation roots, install specifications, installations, and shared subcomponents. |
 | `dotnetup_manifest.json.sha256` | Detects changes to manifest content that dotnetup did not write. |
 | `dotnetup.config.json` | Stores the .NET access mode, whether the `dotnetup` directory is on `PATH`, and whether dotnetup mentions available updates. |
-| `dotnetup.update-check.json` | Caches the latest dotnetup version found by the daily update check. |
 
 Do not edit these files. Use `dotnetup install`, `update`, `uninstall`,
 `env`, and `self update --nowarn` commands to change the related state.

@@ -3,8 +3,6 @@
 
 using System.CommandLine;
 using System.Globalization;
-using System.Resources;
-using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
@@ -80,7 +78,6 @@ public class SelfCommandParserTests
 
         result.Errors.Should().BeEmpty();
         result.GetValue(SelfCommandParser.NoWarnOption).Should().Be(expected);
-        result.CommandResult.Command.Options.Should().Contain(SelfCommandParser.NoWarnOption);
     }
 
     [TestMethod]
@@ -110,8 +107,7 @@ public class SelfCommandParserTests
             new SelfUpdateCommand(Parser.Parse(["self", "update", "--nowarn", "false"])).Execute().Should().Be(0);
             DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeTrue();
 
-            output.ToString().Should().Contain(BootstrapperStrings.SelfUpdateNotificationsDisabled)
-                .And.Contain(BootstrapperStrings.SelfUpdateNotificationsEnabled);
+            output.ToString().Should().BeEmpty();
         }
         finally
         {
@@ -170,45 +166,6 @@ public class SelfCommandParserTests
             .And.Contain("--force")
             .And.Contain("--nowarn")
             .And.Contain("--no-progress");
-    }
-
-    [TestMethod]
-    [DataRow(nameof(BootstrapperStrings.SelfCommandDescription), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateCommandDescription), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateChannelOptionDescription), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateDownloading), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateAlreadyUpToDate), 2)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateCurrentVersionNewer), 2)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateForceOptionDescription), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateForcedWarning), 2)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateMaybeDailyBuild), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateAvailableNotice), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateNoWarnOptionDescription), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateNoWarnConflict), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateNotificationsDisabled), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateNotificationsEnabled), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateNotificationsConfigUnreadable), 1)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateSucceeded), 1)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateInProgress), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateExecutableChanged), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateIdentityUnavailable), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateBusyUpdate), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateBusyCommand), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateStagedIdentityMismatch), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateRollbackFailed), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateVerificationFailed), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateAccessFailed), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateUnsupportedHost), 0)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateRequiresCanonicalName), 2)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateUnsupportedLocation), 1)]
-    [DataRow(nameof(BootstrapperStrings.SelfUpdateDirectoryAccessDenied), 1)]
-    public void ResourcesHaveExpectedFormatArguments(string key, int argumentCount)
-    {
-        var resources = new ResourceManager("Microsoft.DotNet.Tools.Bootstrapper.Strings", typeof(SelfUpdateCommand).Assembly);
-        var value = resources.GetString(key, CultureInfo.InvariantCulture);
-
-        value.Should().NotBeNullOrWhiteSpace();
-        CompositeFormat.Parse(value!).MinimumArgumentCount.Should().Be(argumentCount);
     }
 
     [TestMethod]

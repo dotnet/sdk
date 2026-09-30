@@ -20,13 +20,11 @@ public class SelfUpdateNotifierTests : IDisposable
 {
     private const string Channel = "preview";
     private readonly string _tempDir;
-    private readonly string _statePath;
     private readonly ManualTimeProvider _time = new(new DateTimeOffset(2026, 9, 29, 12, 0, 0, TimeSpan.Zero));
 
     public SelfUpdateNotifierTests()
     {
         _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-notifier-tests", Guid.NewGuid().ToString("N"));
-        _statePath = Path.Combine(_tempDir, "data", "dotnetup.update-check.json");
     }
 
     public TestContext TestContext { get; set; } = null!;
@@ -37,156 +35,139 @@ public class SelfUpdateNotifierTests : IDisposable
     }
 
     [TestMethod]
-    public void Refresh_CachesNewerVersion_AndReportsIt()
+    [DataRow("0.1.0", "stable", "0.2.0", true)]
+    [DataRow("0.2.0-preview.1.26400.1", "preview", "0.2.0-preview.1.26465.1", true)]
+    [DataRow("0.2.0-dev.1", "daily", "0.2.0-dev.2", true)]
+    [DataRow("0.2.0-preview.1.26465.1", "preview", "0.2.0-preview.1.26465.1", false)]
+    [DataRow("0.2.0-preview.1.26465.1", "preview", "0.2.0-preview.1.26400.1", false)]
+    [DataRow("0.2.0-dev.1", "daily", "0.2.0-preview.1.26465.1", false)]
+    public void Refresh_NotifiesOnlyForNewerVersionOnCurrentChannel(
+        string loadedVersion,
+        string channel,
+        string latestVersion,
+        bool expectedNotice)
     {
-        var notifier = CreateNotifier("0.2.0-preview.1.26400.1", _ => ReleaseVersion.Parse("0.2.0-preview.1.26465.1"));
+        string? requestedChannel = null;
+        var notifier = CreateNotifier(loadedVersion, requested =>
+        {
+            requestedChannel = requested;
+            return ReleaseVersion.Parse(latestVersion);
+        }, SelfUpdateDefaultChannel.FromLoadedVersion(loadedVersion));
 
-        notifier.GetAvailableUpdate().Should().BeNull();
-        notifier.Refresh();
+        var output = CaptureOutput(notifier.Refresh);
 
-        notifier.GetAvailableUpdate().Should().Be(ReleaseVersion.Parse("0.2.0-preview.1.26465.1"));
-        File.Exists(_statePath + ".lock").Should().BeFalse();
-        Directory.GetFiles(Path.GetDirectoryName(_statePath)!, "*.tmp").Should().BeEmpty();
+        requestedChannel.Should().Be(channel);
+        output.Contains(BootstrapperStrings.SelfUpdateAvailableNotice, StringComparison.Ordinal)
+            .Should().Be(expectedNotice);
+        Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle();
     }
 
     [TestMethod]
-    [DataRow("0.2.0-preview.1.26465.1")]
-    [DataRow("0.2.0-preview.1.26465.1+abc123")]
-    [DataRow("0.3.0-preview.1.26500.1")]
-    [DataRow("0.2.0-dev")]
-    public void GetAvailableUpdate_IgnoresSameOlderOrDifferentLabelBuilds(string loadedVersion)
-    {
-        var notifier = CreateNotifier(loadedVersion, _ => ReleaseVersion.Parse("0.2.0-preview.1.26465.1"));
-
-        notifier.Refresh();
-
-        notifier.GetAvailableUpdate().Should().BeNull();
-    }
-
-    [TestMethod]
-    public void GetAvailableUpdate_IgnoresCacheForAnotherChannel()
-    {
-        CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.2.0-preview.1"), channel: "daily").Refresh();
-
-        CreateNotifier("0.1.0-preview.1", _ => null).GetAvailableUpdate().Should().BeNull();
-    }
-
-    [TestMethod]
-    public void StartRefreshIfStale_SkipsNetworkWhileCacheIsFresh()
+    public void StartRefreshIfStale_SkipsNetworkWhileMarkerIsFresh()
     {
         int calls = 0;
         var notifier = CreateNotifier("0.1.0-preview.1", _ =>
         {
             Interlocked.Increment(ref calls);
-            return ReleaseVersion.Parse("0.2.0-preview.1");
+            return ReleaseVersion.Parse("0.1.0-preview.1");
         });
 
         notifier.StartRefreshIfStale();
-        notifier.RefreshTask.Should().NotBeNull();
-        notifier.RefreshTask!.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken).Should().BeTrue();
+        WaitForRefresh(notifier);
 
         _time.Advance(TimeSpan.FromHours(23));
-        var secondNotifier = CreateNotifier("0.1.0-preview.1", _ => throw new InvalidOperationException("Should not refresh."));
+        var secondNotifier = CreateNotifier("0.2.0", _ => throw new InvalidOperationException("Should not refresh."), "stable");
         secondNotifier.StartRefreshIfStale();
-        secondNotifier.RefreshTask.Should().BeNull();
-        secondNotifier.GetAvailableUpdate().Should().Be(ReleaseVersion.Parse("0.2.0-preview.1"));
 
-        _time.Advance(TimeSpan.FromHours(2));
+        secondNotifier.RefreshTask.Should().BeNull();
+        calls.Should().Be(1);
+    }
+
+    [TestMethod]
+    [DataRow("0.2.0-preview.2", "preview")]
+    [DataRow("1.0.0", "stable")]
+    public void StartRefreshIfStale_FreshMarkerAppliesAcrossVersionsAndChannels(
+        string secondLoadedVersion,
+        string secondChannel)
+    {
+        CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.1.0-preview.1")).Refresh();
+        var secondNotifier = CreateNotifier(
+            secondLoadedVersion,
+            _ => throw new InvalidOperationException("Should not refresh."),
+            secondChannel);
+
+        secondNotifier.StartRefreshIfStale();
+
+        secondNotifier.RefreshTask.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void StartRefreshIfStale_RefreshesAfterIntervalAndDeletesOldMarker()
+    {
+        var notifier = CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.1.0-preview.1"));
+        notifier.Refresh();
+        var oldMarker = Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle().Subject;
+
+        _time.Advance(TimeSpan.FromHours(25));
         notifier.StartRefreshIfStale();
-        notifier.RefreshTask!.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken).Should().BeTrue();
-        calls.Should().Be(2);
+        WaitForRefresh(notifier);
+
+        var marker = Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle().Subject;
+        marker.Should().NotBe(oldMarker);
+        File.Exists(oldMarker).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void Refresh_DoesNotDeleteNewerMarkerCreatedByAnotherCheck()
+    {
+        var newerTime = new ManualTimeProvider(_time.GetUtcNow().AddMinutes(1));
+        var olderNotifier = CreateNotifier("0.1.0-preview.1", _ =>
+        {
+            CreateNotifier("0.1.0-preview.1", _ => null, timeProvider: newerTime).Refresh();
+            return null;
+        });
+
+        olderNotifier.Refresh();
+
+        Directory.GetFiles(_tempDir, "*.dnupc").Should().HaveCount(2);
     }
 
     [TestMethod]
     public void StartRefreshIfStale_RefreshesWhenClockMovedBackward()
     {
-        CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.2.0-preview.1")).Refresh();
+        CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.1.0-preview.1")).Refresh();
         _time.Advance(TimeSpan.FromHours(-1));
 
-        var notifier = CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.2.0-preview.1"));
+        var notifier = CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.1.0-preview.1"));
         notifier.StartRefreshIfStale();
 
-        notifier.RefreshTask.Should().NotBeNull();
-        notifier.RefreshTask!.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken).Should().BeTrue();
+        WaitForRefresh(notifier);
     }
 
     [TestMethod]
-    public void Refresh_ResolverFailure_LeavesCacheUnchangedForRetry()
+    public void Refresh_ResolverFailure_DoesNotCreateMarkerSoNextCommandRetries()
     {
-        CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.2.0-preview.1")).Refresh();
-        var before = File.ReadAllText(_statePath);
-        _time.Advance(TimeSpan.FromDays(2));
-
         var notifier = CreateNotifier("0.1.0-preview.1", _ => throw new HttpRequestException("offline"));
-        notifier.Refresh();
 
-        File.ReadAllText(_statePath).Should().Be(before);
+        notifier.Refresh();
+        Directory.GetFiles(_tempDir, "*.dnupc").Should().BeEmpty();
+
         notifier.StartRefreshIfStale();
-        notifier.RefreshTask.Should().NotBeNull();
+        WaitForRefresh(notifier);
+        Directory.GetFiles(_tempDir, "*.dnupc").Should().BeEmpty();
     }
 
     [TestMethod]
-    public void Refresh_ChannelWithoutBuild_IsCachedWithoutNotifying()
+    public void Refresh_ChannelWithoutBuild_CreatesMarkerWithoutNotifying()
     {
-        var notifier = CreateNotifier("1.0.0", _ => null, channel: "stable");
+        var notifier = CreateNotifier("1.0.0", _ => null, "stable");
 
-        notifier.Refresh();
+        var output = CaptureOutput(notifier.Refresh);
         notifier.StartRefreshIfStale();
 
+        output.Should().BeEmpty();
         notifier.RefreshTask.Should().BeNull();
-        notifier.GetAvailableUpdate().Should().BeNull();
-    }
-
-    [TestMethod]
-    public void Refresh_SkipsWhileAnotherProcessHoldsTheLock()
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(_statePath)!);
-        using (new FileStream(_statePath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
-        {
-            CreateNotifier("0.1.0-preview.1", _ => throw new InvalidOperationException("Should not refresh.")).Refresh();
-        }
-
-        File.Exists(_statePath).Should().BeFalse();
-    }
-
-    [TestMethod]
-    public void GetAvailableUpdate_CorruptCache_ReturnsNull()
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(_statePath)!);
-        File.WriteAllText(_statePath, "not valid json{{{");
-
-        CreateNotifier("0.1.0-preview.1", _ => null).GetAvailableUpdate().Should().BeNull();
-    }
-
-    [TestMethod]
-    public void ShowIfUpdateAvailable_WritesNoticeOnlyWhenNewer()
-    {
-        using var output = new StringWriter(CultureInfo.InvariantCulture);
-        var originalConsole = AnsiConsole.Console;
-        AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings
-        {
-            Ansi = AnsiSupport.No,
-            ColorSystem = ColorSystemSupport.NoColors,
-            Interactive = InteractionSupport.No,
-            Out = new AnsiConsoleOutput(output),
-        });
-        // Avoid wrapping the long notice at the default 80-column test width.
-        AnsiConsole.Console.Profile.Width = int.MaxValue;
-        try
-        {
-            var notifier = CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.2.0-preview.1"));
-            notifier.ShowIfUpdateAvailable();
-            output.ToString().Should().BeEmpty();
-
-            notifier.Refresh();
-            notifier.ShowIfUpdateAvailable();
-
-            output.ToString().Should().Contain(BootstrapperStrings.SelfUpdateAvailableNotice);
-        }
-        finally
-        {
-            AnsiConsole.Console = originalConsole;
-        }
+        Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle();
     }
 
     [TestMethod]
@@ -216,8 +197,41 @@ public class SelfUpdateNotifierTests : IDisposable
         ((bool)property.GetValue(new SdkUpdateCommand(Parser.Parse(["update"])))!).Should().BeTrue();
     }
 
-    private SelfUpdateNotifier CreateNotifier(string loadedVersion, Func<string, ReleaseVersion?> resolveLatest, string channel = Channel)
-        => new(ReleaseVersion.Parse(loadedVersion), channel, _statePath, resolveLatest, _time);
+    private SelfUpdateNotifier CreateNotifier(
+        string loadedVersion,
+        Func<string, ReleaseVersion?> resolveLatest,
+        string channel = Channel,
+        TimeProvider? timeProvider = null)
+        => new(ReleaseVersion.Parse(loadedVersion), channel, _tempDir, resolveLatest, timeProvider ?? _time);
+
+    private void WaitForRefresh(SelfUpdateNotifier notifier)
+    {
+        notifier.RefreshTask.Should().NotBeNull();
+        notifier.RefreshTask!.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken).Should().BeTrue();
+    }
+
+    private static string CaptureOutput(Action action)
+    {
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        var originalConsole = AnsiConsole.Console;
+        AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Ansi = AnsiSupport.No,
+            ColorSystem = ColorSystemSupport.NoColors,
+            Interactive = InteractionSupport.No,
+            Out = new AnsiConsoleOutput(output),
+        });
+        AnsiConsole.Console.Profile.Width = int.MaxValue;
+        try
+        {
+            action();
+            return output.ToString();
+        }
+        finally
+        {
+            AnsiConsole.Console = originalConsole;
+        }
+    }
 
     private sealed class ManualTimeProvider(DateTimeOffset utcNow) : TimeProvider
     {

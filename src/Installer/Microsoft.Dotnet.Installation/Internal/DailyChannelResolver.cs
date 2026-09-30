@@ -230,9 +230,7 @@ internal sealed class DailyChannelResolver : IDisposable
 
     private HttpResponseMessage Send(HttpMethod method, string url)
     {
-        // A request without content holds no resources, and the response keeps it to report the
-        // final redirect URI, so it is not disposed here.
-        var request = new HttpRequestMessage(method, url);
+        using var request = new HttpRequestMessage(method, url);
         return _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
     }
 

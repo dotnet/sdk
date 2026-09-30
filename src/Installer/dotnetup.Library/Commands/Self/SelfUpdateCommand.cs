@@ -35,7 +35,6 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
         if (_updateNotifications is bool enabled)
         {
             DotnetupConfig.SetUpdateNotifications(enabled);
-            Console.WriteLine(enabled ? Strings.SelfUpdateNotificationsEnabled : Strings.SelfUpdateNotificationsDisabled);
             return;
         }
 

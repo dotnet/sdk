@@ -176,14 +176,6 @@
     <value>'--nowarn' only changes the update notification setting and cannot be combined with '--channel' or '--force'.</value>
     <comment>{Locked="'--nowarn'"} {Locked="'--channel'"} {Locked="'--force'"}</comment>
   </data>
-  <data name="SelfUpdateNotificationsDisabled" xml:space="preserve">
-    <value>dotnetup will no longer mention available updates. To show them again, run 'dotnetup self update --nowarn false'.</value>
-    <comment>{Locked="dotnetup"} {Locked="'dotnetup self update --nowarn false'"}</comment>
-  </data>
-  <data name="SelfUpdateNotificationsEnabled" xml:space="preserve">
-    <value>dotnetup will mention available updates after install and update commands.</value>
-    <comment>{Locked="dotnetup"}</comment>
-  </data>
   <data name="SelfUpdateNotificationsConfigUnreadable" xml:space="preserve">
     <value>The update notification setting was not changed because the dotnetup config file at {0} could not be read. Fix or delete the file, and then try again.</value>
     <comment>{Locked="dotnetup"} {0} is the path to the dotnetup config file.</comment>

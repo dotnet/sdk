@@ -1,8 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
@@ -14,40 +13,41 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 /// </summary>
 /// <remarks>
 /// A command starts a background refresh at most once per <see cref="RefreshInterval"/>. The refresh
-/// reads the channel's version from its redirect target, without downloading dotnetup, and atomically
-/// replaces a small cache file. The end-of-command check reads only that cache, so it never waits on
-/// the network; a refresh cut short by process exit is retried by a later command. No self-update
-/// lock is needed because the check never touches the executable.
+/// reads the channel's version from its redirect target without downloading dotnetup. Timestamped
+/// marker files throttle the best-effort check without coordinating concurrent processes.
 /// </remarks>
 internal sealed class SelfUpdateNotifier
 {
+    private const string MarkerPrefix = ".dotnetup-update-check-";
+    private const string MarkerExtension = ".dnupc";
+
     internal static TimeSpan RefreshInterval { get; } = TimeSpan.FromHours(24);
 
     private readonly ReleaseVersion _loadedVersion;
     private readonly string _channel;
-    private readonly string _statePath;
+    private readonly string _markerDirectory;
     private readonly Func<string, ReleaseVersion?> _resolveLatest;
     private readonly TimeProvider _timeProvider;
 
     /// <param name="loadedVersion">The version of the running dotnetup.</param>
     /// <param name="channel">The release channel whose latest version is checked.</param>
-    /// <param name="statePath">The cache file holding the latest check result.</param>
+    /// <param name="markerDirectory">The directory containing update-check marker files.</param>
     /// <param name="resolveLatest">
     /// Returns the channel's latest version, or <c>null</c> when the channel has no build. Network
     /// failures should throw so the check is retried by the next command.
     /// </param>
-    /// <param name="timeProvider">The clock used to decide whether the cache is fresh.</param>
-    internal SelfUpdateNotifier(ReleaseVersion loadedVersion, string channel, string statePath,
+    /// <param name="timeProvider">The clock used to decide whether the latest marker is fresh.</param>
+    internal SelfUpdateNotifier(ReleaseVersion loadedVersion, string channel, string markerDirectory,
         Func<string, ReleaseVersion?> resolveLatest, TimeProvider timeProvider)
     {
         _loadedVersion = loadedVersion;
         _channel = channel;
-        _statePath = statePath;
+        _markerDirectory = markerDirectory;
         _resolveLatest = resolveLatest;
         _timeProvider = timeProvider;
     }
 
-    /// <summary>The background refresh started by this command, if the cache was stale.</summary>
+    /// <summary>The background refresh started by this command, if the latest marker was stale.</summary>
     internal Task? RefreshTask { get; private set; }
 
     /// <summary>
@@ -60,8 +60,7 @@ internal sealed class SelfUpdateNotifier
         // Redirected output is read by a program, even when --interactive true allows prompts.
         if (!interactive ||
             Console.IsOutputRedirected ||
-            SelfUpdateInvocation.Current is not { } invocation ||
-            !ReleaseVersion.TryParse(invocation.LoadedVersion, out var loadedVersion))
+            SelfUpdateInvocation.Current is not { } invocation)
         {
             return null;
         }
@@ -79,9 +78,9 @@ internal sealed class SelfUpdateNotifier
 
             var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
             var notifier = new SelfUpdateNotifier(
-                loadedVersion,
+                ReleaseVersion.Parse(invocation.LoadedVersion),
                 SelfUpdateDefaultChannel.FromLoadedVersion(invocation.LoadedVersion),
-                DotnetupPaths.UpdateCheckPath,
+                invocation.Paths.DirectoryPath,
                 channel => ResolveLatestFromFeed(channel, rid),
                 TimeProvider.System);
             notifier.StartRefreshIfStale();
@@ -95,42 +94,19 @@ internal sealed class SelfUpdateNotifier
 
     internal void StartRefreshIfStale()
     {
-        if (!IsFresh(ReadState()))
+        if (!WasCheckedRecently())
         {
             RefreshTask = Task.Run(Refresh);
         }
     }
 
     /// <summary>
-    /// Writes the gold update notice when the cached check found a newer build. Never throws, because
-    /// the command it follows has already succeeded.
+    /// Returns the newer version on the running build's semantic channel, if any. A build on a
+    /// different prerelease label (such as a local development build) is never reported.
     /// </summary>
-    public void ShowIfUpdateAvailable()
+    internal ReleaseVersion? GetAvailableUpdate(ReleaseVersion? latest)
     {
-        try
-        {
-            if (GetAvailableUpdate() is not null)
-            {
-                AnsiConsole.MarkupLine(DotnetupTheme.Notice(Strings.SelfUpdateAvailableNotice.EscapeMarkup()));
-            }
-        }
-        catch (IOException)
-        {
-            // The terminal went away after the command finished; there is nothing left to report to.
-        }
-    }
-
-    /// <summary>
-    /// Returns the cached newer version on the running build's semantic channel, if any. A build on a
-    /// different prerelease label (such as a local development build) is never told to update.
-    /// </summary>
-    internal ReleaseVersion? GetAvailableUpdate()
-    {
-        var state = ReadState();
-        if (state is null ||
-            !string.Equals(state.Channel, _channel, StringComparison.Ordinal) ||
-            state.LatestVersion is null ||
-            !ReleaseVersion.TryParse(state.LatestVersion, out var latest))
+        if (latest is null)
         {
             return null;
         }
@@ -145,23 +121,24 @@ internal sealed class SelfUpdateNotifier
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(_statePath)!);
-
-            // Another dotnetup already refreshing holds this exclusively; skip rather than wait. The OS
-            // releases the handle, and deletes the file, as soon as this process exits.
-            using var refreshLock = TryAcquireRefreshLock();
-            if (refreshLock is null || IsFresh(ReadState()))
+            Directory.CreateDirectory(_markerDirectory);
+            if (WasCheckedRecently())
             {
                 return;
             }
 
             var latest = _resolveLatest(_channel);
-            WriteState(new UpdateCheckState
+            var markerPath = TryCreateMarker();
+            if (markerPath is null)
             {
-                Channel = _channel,
-                LatestVersion = latest?.ToString(),
-                CheckedUtc = _timeProvider.GetUtcNow(),
-            });
+                return;
+            }
+
+            DeleteOldMarkers(markerPath);
+            if (GetAvailableUpdate(latest) is not null)
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Notice(Strings.SelfUpdateAvailableNotice.EscapeMarkup()));
+            }
         }
         catch (Exception)
         {
@@ -169,59 +146,84 @@ internal sealed class SelfUpdateNotifier
         }
     }
 
-    private bool IsFresh(UpdateCheckState? state)
+    private bool WasCheckedRecently()
     {
-        if (state is null || !string.Equals(state.Channel, _channel, StringComparison.Ordinal))
+        long latestCheckTicks = 0;
+        try
+        {
+            foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"{MarkerPrefix}*{MarkerExtension}"))
+            {
+                if (TryGetMarkerTicks(path, out var ticks))
+                {
+                    latestCheckTicks = Math.Max(latestCheckTicks, ticks);
+                }
+            }
+        }
+        catch (Exception ex) when (ex is DirectoryNotFoundException or IOException or UnauthorizedAccessException)
         {
             return false;
         }
 
-        // A future timestamp (for example, after the clock moved back) is treated as stale.
-        var age = _timeProvider.GetUtcNow() - state.CheckedUtc;
-        return age >= TimeSpan.Zero && age < RefreshInterval;
+        long nowTicks = _timeProvider.GetUtcNow().UtcTicks;
+        // Markers intentionally omit channel and version. Missing a notice for up to a day after
+        // either changes is acceptable for this best-effort check.
+        return latestCheckTicks <= nowTicks && nowTicks - latestCheckTicks < RefreshInterval.Ticks;
     }
 
-    private UpdateCheckState? ReadState()
+    private string? TryCreateMarker()
     {
+        var path = Path.Combine(
+            _markerDirectory,
+            $"{MarkerPrefix}{_timeProvider.GetUtcNow().UtcTicks.ToString("D19", CultureInfo.InvariantCulture)}{MarkerExtension}");
         try
         {
-            return File.Exists(_statePath)
-                ? JsonSerializer.Deserialize(File.ReadAllText(_statePath), UpdateCheckJsonContext.Default.UpdateCheckState)
-                : null;
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
-        {
-            return null;
-        }
-    }
-
-    private void WriteState(UpdateCheckState state)
-    {
-        // Replace atomically so a concurrent reader never observes a partial file. A unique temporary
-        // name keeps writers apart even if two refreshes race past the advisory lock.
-        var tempPath = $"{_statePath}.{Guid.NewGuid():N}.tmp";
-        try
-        {
-            File.WriteAllText(tempPath, JsonSerializer.Serialize(state, UpdateCheckJsonContext.Default.UpdateCheckState));
-            File.Move(tempPath, _statePath, overwrite: true);
-        }
-        finally
-        {
-            File.Delete(tempPath);
-        }
-    }
-
-    private FileStream? TryAcquireRefreshLock()
-    {
-        try
-        {
-            return new FileStream(_statePath + ".lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None,
-                bufferSize: 1, FileOptions.DeleteOnClose);
+            using var marker = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
+            return path;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return null;
         }
+    }
+
+    private void DeleteOldMarkers(string currentMarkerPath)
+    {
+        if (!TryGetMarkerTicks(currentMarkerPath, out var currentMarkerTicks))
+        {
+            return;
+        }
+
+        try
+        {
+            foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"{MarkerPrefix}*{MarkerExtension}"))
+            {
+                if (!TryGetMarkerTicks(path, out var markerTicks) || markerTicks >= currentMarkerTicks)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    File.Delete(path);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+                {
+                    // Cleanup is best effort.
+                }
+            }
+        }
+        catch (Exception ex) when (ex is DirectoryNotFoundException or IOException or UnauthorizedAccessException)
+        {
+            // Cleanup is best effort.
+        }
+    }
+
+    private static bool TryGetMarkerTicks(string path, out long ticks)
+    {
+        var name = Path.GetFileName(path);
+        var timestamp = name.AsSpan(MarkerPrefix.Length, name.Length - MarkerPrefix.Length - MarkerExtension.Length);
+        return long.TryParse(timestamp, NumberStyles.None, CultureInfo.InvariantCulture, out ticks) &&
+            ticks > 0;
     }
 
     private static ReleaseVersion? ResolveLatestFromFeed(string channel, string rid)
@@ -240,18 +242,3 @@ internal sealed class SelfUpdateNotifier
         }
     }
 }
-
-/// <summary>The cached result of the most recent dotnetup update check.</summary>
-internal sealed class UpdateCheckState
-{
-    public string? Channel { get; set; }
-
-    /// <summary>The channel's latest version, or <c>null</c> when the channel had no build.</summary>
-    public string? LatestVersion { get; set; }
-
-    public DateTimeOffset CheckedUtc { get; set; }
-}
-
-[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
-[JsonSerializable(typeof(UpdateCheckState))]
-internal partial class UpdateCheckJsonContext : JsonSerializerContext { }

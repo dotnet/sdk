@@ -501,16 +501,6 @@ Or open a new terminal.</target>
         <target state="new">The update notification setting was not changed because the dotnetup config file at {0} could not be read. Fix or delete the file, and then try again.</target>
         <note>{Locked="dotnetup"} {0} is the path to the dotnetup config file.</note>
       </trans-unit>
-      <trans-unit id="SelfUpdateNotificationsDisabled">
-        <source>dotnetup will no longer mention available updates. To show them again, run 'dotnetup self update --nowarn false'.</source>
-        <target state="new">dotnetup will no longer mention available updates. To show them again, run 'dotnetup self update --nowarn false'.</target>
-        <note>{Locked="dotnetup"} {Locked="'dotnetup self update --nowarn false'"}</note>
-      </trans-unit>
-      <trans-unit id="SelfUpdateNotificationsEnabled">
-        <source>dotnetup will mention available updates after install and update commands.</source>
-        <target state="new">dotnetup will mention available updates after install and update commands.</target>
-        <note>{Locked="dotnetup"}</note>
-      </trans-unit>
       <trans-unit id="SelfUpdateRequiresCanonicalName">
         <source>Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</source>
         <target state="new">Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</target>
