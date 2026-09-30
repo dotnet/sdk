@@ -76,6 +76,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_IsImplicitRestore>false</_IsImplicitRestore>
     <_IsImplicitRestore Condition="'$(MSBuildIsRestoring)' == 'true'">true</_IsImplicitRestore>
     <_IsPacking Condition="'$(_IsPacking)' == ''">false</_IsPacking>
+    <_ToolPackWasSelfContained>$(SelfContained)</_ToolPackWasSelfContained>
 
     <!-- Now we can set load-bearing properties for the package, but only if the previously-computed conditions hold.
          We must set these to different values for the 'outer' agnostic package, as well as any RID-agnostic child packages,
@@ -304,7 +305,8 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <NETSdkError Condition=" '$(_TargetFrameworkVersionWithoutV)' &lt; '2.1' "
                  ResourceName="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21" />
 
-    <NETSdkError Condition=" '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0))"
+    <NETSdkError Condition=" '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and
+                            !('$(_ToolPackWasSelfContained)' == 'true' and ('$(_IsRidSpecific)' == 'true' or '$(CreateRidSpecificToolPackages)' == 'true'))"
              ResourceName="PackAsToolCannotSupportTargetPlatformIdentifier" />
   </Target>
 
