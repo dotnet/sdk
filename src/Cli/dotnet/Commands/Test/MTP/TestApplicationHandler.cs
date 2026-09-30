@@ -643,8 +643,12 @@ internal sealed class TestApplicationHandler
             // call HandshakeFailure instead of AssemblyRunCompleted
             _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
         }
-        else
+        else if (!_options.CollectTestMap || exitCode != ExitCode.Success || _handshakeInfo.HasValue)
         {
+            // Test-map collection owns reporting and launches discovery children, so the collection
+            // application can successfully exit without opening the ordinary TestHost reporting
+            // channel. Preserve handshake failure detection for failed processes and partial
+            // handshakes, which indicate that the expected collection behavior did not occur.
             _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
         }
 
