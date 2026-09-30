@@ -7,6 +7,7 @@ namespace Microsoft.NET.TestFramework.Commands
     {
         public DotnetTestCommand(ITestOutputHelper log, bool disableNewOutput, params string[] args) : base(log)
         {
+            WithEnvironmentVariable("MSBuildEnableWorkloadResolver", "false");
             Arguments.Add("test");
             if (disableNewOutput)
             {
