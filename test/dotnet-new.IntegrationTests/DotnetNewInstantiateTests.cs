@@ -102,7 +102,16 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             if (templateName == "mstest")
             {
-                projectContents.Should().Contain("<MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>");
+                if (language != "C#")
+                {
+                    projectContents.Should().Contain("""<AssemblyAttribute Include="Microsoft.VisualStudio.TestTools.UnitTesting.ParallelizeAttribute">""");
+                    projectContents.Should().Contain("<Scope>Microsoft.VisualStudio.TestTools.UnitTesting.ExecutionScope.MethodLevel</Scope>");
+                }
+                else
+                {
+                    projectContents.Should().Contain("<MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>");
+                }
+
                 Directory.EnumerateFiles(outputDirectory, "MSTestSettings.*").Should().BeEmpty();
             }
         }
@@ -155,14 +164,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
-        [DynamicData(nameof(MSTestSdkTemplateData))]
-        public void MSTestTemplate_WithMSTestSdk_UsesProjectParallelizationSettings(
+        [DynamicData(nameof(MSTestProjectParallelizationData))]
+        public void MSTestTemplate_UsesProjectParallelizationSettings(
             string language,
-            string projectExtension)
+            string projectExtension,
+            string testRunner,
+            bool useMSTestSdk)
         {
-            const string projectName = "MSTestSdkProject";
+            const string projectName = "MSTestProject";
             string workingDirectory = CreateTemporaryFolder();
             string outputDirectory = Path.Combine(workingDirectory, projectName);
+
+            Directory.CreateDirectory(Path.Combine(workingDirectory, ".git"));
 
             new DotnetNewCommand(
                     _log,
@@ -176,8 +189,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     projectName,
                     "--output",
                     outputDirectory,
+                    "--test-runner",
+                    testRunner,
                     "--sdk",
-                    "true")
+                    useMSTestSdk.ToString())
                 .WithCustomHive(s_mstestTemplateSelectionHome)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
@@ -188,16 +203,56 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             string projectContents = File.ReadAllText(Path.Combine(outputDirectory, $"{projectName}.{projectExtension}"));
 
-            projectContents.Should().Contain("""<Project Sdk="MSTest.Sdk/4.4.0">""");
-            projectContents.Should().Contain("<MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>");
+            projectContents.Should().Contain(useMSTestSdk
+                ? """<Project Sdk="MSTest.Sdk/4.4.0">"""
+                : """<Project Sdk="Microsoft.NET.Sdk">""");
+            if (language != "C#")
+            {
+                projectContents.Should().Contain("""<AssemblyAttribute Include="Microsoft.VisualStudio.TestTools.UnitTesting.ParallelizeAttribute">""");
+                projectContents.Should().Contain("<Scope>Microsoft.VisualStudio.TestTools.UnitTesting.ExecutionScope.MethodLevel</Scope>");
+            }
+            else
+            {
+                projectContents.Should().Contain("<MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>");
+            }
+
             Directory.EnumerateFiles(outputDirectory, "MSTestSettings.*").Should().BeEmpty();
+
+            new DotnetBuildCommand(_log)
+                .WithWorkingDirectory(outputDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string targetFramework = ToolsetInfo.CurrentTargetFramework;
+            string assemblyPath = Path.Combine(outputDirectory, "bin", "Debug", targetFramework, $"{projectName}.dll");
+            new FileInfo(assemblyPath).AssemblyShould()
+                .HaveAttribute("Microsoft.VisualStudio.TestTools.UnitTesting.ParallelizeAttribute");
+
+            string intermediateOutputDirectory = Path.Combine(outputDirectory, "obj", "Debug", targetFramework);
+            Directory.EnumerateFiles(intermediateOutputDirectory, "*AssemblyInfo.*", SearchOption.TopDirectoryOnly)
+                .Select(File.ReadAllText)
+                .Should()
+                .Contain(contents => contents.Contains(
+                    "Microsoft.VisualStudio.TestTools.UnitTesting.ExecutionScope.MethodLevel",
+                    StringComparison.Ordinal));
         }
 
-        public static IEnumerable<object[]> MSTestSdkTemplateData()
+        public static IEnumerable<object[]> MSTestProjectParallelizationData()
         {
-            yield return ["C#", "csproj"];
-            yield return ["F#", "fsproj"];
-            yield return ["VB", "vbproj"];
+            foreach ((string language, string projectExtension) in new[]
+            {
+                ("C#", "csproj"),
+                ("F#", "fsproj"),
+                ("VB", "vbproj"),
+            })
+            {
+                foreach (string testRunner in new[] { "VSTest", "Microsoft.Testing.Platform" })
+                {
+                    yield return [language, projectExtension, testRunner, false];
+                    yield return [language, projectExtension, testRunner, true];
+                }
+            }
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped

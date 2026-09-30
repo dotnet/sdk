@@ -6,7 +6,6 @@
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
     <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
-    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
 <!--#if (TestRunner == "VSTest")-->
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
@@ -23,6 +22,13 @@
 <!--#endif-->
   </PropertyGroup>
 <!--#endif-->
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Microsoft.VisualStudio.TestTools.UnitTesting.ParallelizeAttribute">
+      <Scope>Microsoft.VisualStudio.TestTools.UnitTesting.ExecutionScope.MethodLevel</Scope>
+      <Scope_IsLiteral>true</Scope_IsLiteral>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="Test1.fs" />
@@ -52,7 +58,6 @@
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
     <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
-    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
@@ -61,6 +66,13 @@
 <!--#endif-->
 <!--#endif-->
   </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="Microsoft.VisualStudio.TestTools.UnitTesting.ParallelizeAttribute">
+      <Scope>Microsoft.VisualStudio.TestTools.UnitTesting.ExecutionScope.MethodLevel</Scope>
+      <Scope_IsLiteral>true</Scope_IsLiteral>
+    </AssemblyAttribute>
+  </ItemGroup>
 
   <ItemGroup>
 <!--#if (CoverageTool == "coverlet")-->
