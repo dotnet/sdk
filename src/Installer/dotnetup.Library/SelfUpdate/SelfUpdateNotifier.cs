@@ -67,15 +67,13 @@ internal sealed class SelfUpdateNotifier
 
         try
         {
-            // Only suggest 'self update' where it can succeed: notifications are enabled, unsigned
-            // downloads are allowed, and the executable has the canonical name in a supported location.
             if (!DotnetupConfig.ReadUpdateNotificationsEnabled() || UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
             {
                 return null;
             }
 
-            invocation.Paths.ValidateLocation();
-
+            // Do not validate the executable location: renamed executables should still mention
+            // updates even though self-update requires restoring the canonical name first.
             var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
             var notifier = new SelfUpdateNotifier(
                 ReleaseVersion.Parse(invocation.LoadedVersion),
