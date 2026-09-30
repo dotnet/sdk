@@ -305,6 +305,78 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldNotTrigger_FileLocalReturnType()
+        {
+            await TestCSAsync("""
+                                using System;
+                                using System.Collections.Generic;
+
+                                class C
+                                {
+                                    IDisposable Foo() => new Bar();
+                                    IEnumerable<IDisposable> GetItems() => new List<Bar>();
+                                    IEnumerable<IDisposable> GetArray() => new[] { new Bar() };
+                                }
+
+                                file class Bar : IDisposable
+                                {
+                                    public void Dispose() { }
+                                }
+
+                """);
+        }
+
+        [TestMethod]
+        public async Task ShouldTrigger_FileLocalContainingType()
+        {
+            await TestCSAsync("""
+                                using System;
+
+                                file class C
+                                {
+                                    IDisposable {|#0:Foo|}() => new Bar();
+                                }
+
+                                file class Bar : IDisposable
+                                {
+                                    public void Dispose() { }
+                                }
+
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(0)
+                    .WithArguments("Foo", "System.IDisposable", "Bar"));
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldTrigger_LocalFileLocalType()
+        {
+            await TestCSAsync("""
+                                using System;
+
+                                class C
+                                {
+                                    void M()
+                                    {
+                                        IDisposable {|#0:value|} = new Bar();
+                                        value.Dispose();
+                                    }
+                                }
+
+                                file class Bar : IDisposable
+                                {
+                                    public void Dispose() { }
+                                }
+
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                    .WithLocation(0)
+                    .WithArguments("value", "System.IDisposable", "Bar"));
+        }
+
+        [TestMethod]
         public async Task ShouldNotTrigger_VirtualOverrides()
         {
             const string Source = """
