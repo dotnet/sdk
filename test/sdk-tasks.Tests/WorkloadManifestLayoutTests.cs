@@ -125,6 +125,32 @@ public class WorkloadManifestLayoutTests : SdkTest
         task.StaleOutputs.Select(item => item.ItemSpec).Should().Contain(Path.GetFullPath(file));
     }
 
+    [TestMethod]
+    [DataRow("11.0.100.0")]
+    [DataRow("11.0.100+build.7")]
+    public void ResolvesNormalizedPackagePathsWithoutChangingManifestVersion(string version)
+    {
+        string root = TestAssetsManager.CreateTestDirectory().Path;
+        var manifest = new TaskItem("Test.Manifest");
+        manifest.SetMetadata("Version", version);
+        manifest.SetMetadata("NupkgId", "Test.Manifest-11.0.100");
+        manifest.SetMetadata("MsiNupkgId", "Test.Manifest-11.0.100.Msi.x64");
+        var task = new ResolveBundledManifestPackages
+        {
+            PackageRoot = root,
+            Manifests = [manifest],
+            BuildEngine = new MockBuildEngine()
+        };
+
+        task.Execute().Should().BeTrue();
+        task.ResolvedManifests.Should().ContainSingle();
+        task.ResolvedManifests[0].GetMetadata("Version").Should().Be(version);
+        task.ResolvedManifests[0].GetMetadata("RestoredNupkgContentPath")
+            .Should().Be(Path.Combine(root, "test.manifest-11.0.100", "11.0.100"));
+        task.ResolvedManifests[0].GetMetadata("RestoredMsiNupkgContentPath")
+            .Should().Be(Path.Combine(root, "test.manifest-11.0.100.msi.x64", "11.0.100"));
+    }
+
     private static TaskItem Input(string source, string destination)
     {
         var item = new TaskItem(source);

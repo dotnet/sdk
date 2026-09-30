@@ -200,9 +200,9 @@
            Condition="'@(BuiltinManifestMsiPackages)' != ''" />
   </Target>
 
-  <Target Name="GenerateWorkloadManifestsWxs" DependsOnTargets="UnzipBuiltinWorkloadManifestMsiNuPkg">
+  <Target Name="GenerateWorkloadManifestsWxs" DependsOnTargets="UnzipBuiltinWorkloadManifestMsiNuPkg;_ResolveBundledManifestPackages">
     <ItemGroup>
-      <_Manifests Include="@(BundledManifests)">
+      <_Manifests Include="@(_ResolvedBundledManifests)">
         <MsiPath>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</MsiPath>
       </_Manifests>
       <_Manifests Include="@(BuiltinManifestMsiPackages)" Condition="'@(BuiltinManifestMsiPackages)' != ''">

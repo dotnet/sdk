@@ -236,8 +236,7 @@ public sealed partial class GetWorkloadManifestLayout : Task
 
     private static bool IsVersion(string value) =>
         VersionRegex().IsMatch(value)
-        && NuGetVersion.TryParse(value, out NuGetVersion? version)
-        && string.Equals(value, version.ToNormalizedString(), StringComparison.Ordinal);
+        && NuGetVersion.TryParse(value, out _);
 
     private static bool IsWorkloadSets(string value) =>
         string.Equals(value, WorkloadSetsDirectoryName, StringComparison.OrdinalIgnoreCase);
@@ -252,6 +251,59 @@ public sealed partial class GetWorkloadManifestLayout : Task
     // Manifest and workload-set versions are NuGet versions with three or four numeric parts.
     [GeneratedRegex(@"\A[0-9]+\.[0-9]+\.[0-9]+(?:\.[0-9]+)?(?:[-+].+)?\z", RegexOptions.CultureInvariant)]
     private static partial Regex VersionRegex();
+}
+
+/// <summary>
+/// Resolves downloaded manifest packages in NuGet's normalized global-packages layout
+/// while retaining the supplied version for the manifest destination.
+/// </summary>
+public sealed class ResolveBundledManifestPackages : Task
+{
+    [Required]
+    public string PackageRoot { get; set; } = string.Empty;
+
+    public ITaskItem[] Manifests { get; set; } = [];
+
+    [Output]
+    public ITaskItem[] ResolvedManifests { get; private set; } = [];
+
+    public override bool Execute()
+    {
+        try
+        {
+            if (!IncrementalLayoutState.TryGetFullPath(Log, PackageRoot, nameof(PackageRoot), out string root))
+            {
+                return false;
+            }
+
+            var resolved = new List<ITaskItem>(Manifests.Length);
+            foreach (ITaskItem manifest in Manifests)
+            {
+                string version = manifest.GetMetadata("Version");
+                if (!NuGetVersion.TryParse(version, out NuGetVersion? parsed))
+                {
+                    Log.LogError($"Invalid bundled workload manifest version '{version}' for '{manifest.ItemSpec}'.");
+                    continue;
+                }
+
+                var item = new TaskItem(manifest);
+                string normalizedVersion = parsed.ToNormalizedString().ToLowerInvariant();
+                item.SetMetadata("RestoredNupkgContentPath",
+                    Path.Combine(root, item.GetMetadata("NupkgId").ToLowerInvariant(), normalizedVersion));
+                item.SetMetadata("RestoredMsiNupkgContentPath",
+                    Path.Combine(root, item.GetMetadata("MsiNupkgId").ToLowerInvariant(), normalizedVersion));
+                resolved.Add(item);
+            }
+
+            ResolvedManifests = resolved.ToArray();
+            return !Log.HasLoggedErrors;
+        }
+        catch (Exception exception)
+        {
+            Log.LogErrorFromException(exception, showStackTrace: true);
+            return false;
+        }
+    }
 }
 
 /// <summary>

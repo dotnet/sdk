@@ -33,6 +33,7 @@
   <UsingTask TaskName="ProcessRuntimeAnalyzerVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="PrepareIncrementalLayout" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="PruneEmptyLayoutDirectories" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="ResolveBundledManifestPackages" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="RemoveAssetFromDepsPackages" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ReplaceFilesWithSymbolicLinks" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />

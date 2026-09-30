@@ -12,6 +12,7 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Build.Tasks;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
+using NuGet.Versioning;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
@@ -94,6 +95,11 @@ public class ManifestLayoutTests : SdkTest
 
         void Build(string name, string? path = null, string target = "LayoutManifests", bool warm = false)
         {
+            if (target != "Restore")
+            {
+                project.SyncDownloadedPackage();
+            }
+
             string binlog = Path.Combine(project.Root, name + ".binlog");
             new DotnetCommand(Log, "msbuild", path ?? Path.Combine(project.Root, "manifest-layout.proj"),
                     $"/t:{target}", "/nr:false", $"/bl:{binlog}")
@@ -262,6 +268,28 @@ public class ManifestLayoutTests : SdkTest
             File.Exists(project.Output(!builtin, "WorkloadManifest.json")).Should().BeTrue();
             project.Build().RanLayout.Should().BeFalse();
         }
+    }
+
+    /// <summary>
+    /// Verifies valid version spellings that NuGet normalizes still produce owned layout outputs.
+    /// </summary>
+    [TestMethod]
+    [DataRow("11.0.100.0")]
+    [DataRow("11.0.100+build.7")]
+    [DataRow("11.0.100.0+build.7")]
+    public void LayoutManifestsAcceptsNonNormalizedVersions(string version)
+    {
+        ManifestProject project = CreateManifestProject();
+        project.Downloaded.Version = version;
+        project.WriteInputs();
+
+        project.Build().RanLayout.Should().BeTrue();
+        File.Exists(project.Output(false, "WorkloadManifest.json")).Should().BeTrue();
+
+        string stale = WriteFile(project.Output(false, "stale.json"), "stale");
+        project.Build().RanLayout.Should().BeTrue();
+        File.Exists(stale).Should().BeFalse();
+        project.Build().RanLayout.Should().BeFalse();
     }
 
     /// <summary>
@@ -743,7 +771,7 @@ public class ManifestLayoutTests : SdkTest
             string sdkTasks = typeof(PrepareIncrementalLayout).Assembly.Location;
             string buildTasks = Path.Combine(Path.GetDirectoryName(typeof(Project).Assembly.Location)!, "Microsoft.Build.Tasks.Core.dll");
             string[] sdkTaskNames =
-                ["PrepareIncrementalLayout", "CompleteIncrementalLayout", "GetWorkloadManifestLayout", "PruneEmptyLayoutDirectories", "GetWorkloadSetFeatureBand"];
+                ["PrepareIncrementalLayout", "CompleteIncrementalLayout", "GetWorkloadManifestLayout", "PruneEmptyLayoutDirectories", "GetWorkloadSetFeatureBand", "ResolveBundledManifestPackages"];
             string[] buildTaskNames = ["Copy", "Delete", "Error", "MSBuild", "ReadLinesFromFile", "WriteLinesToFile"];
             return string.Join(
                 Environment.NewLine,
@@ -1027,6 +1055,7 @@ public class ManifestLayoutTests : SdkTest
                     <RepoRoot>{{Escape(repoRoot + Path.DirectorySeparatorChar)}}</RepoRoot>
                     <IntermediateOutputPath>{{Escape(Path.Combine(Root, "obj") + Path.DirectorySeparatorChar)}}</IntermediateOutputPath>
                     <RedistInstallerLayoutPath>{{Escape(Path.Combine(Root, "sdk") + Path.DirectorySeparatorChar)}}</RedistInstallerLayoutPath>
+                    <NuGetPackageRoot>{{Escape(Path.Combine(Root, "packages") + Path.DirectorySeparatorChar)}}</NuGetPackageRoot>
                     <ProductMonikerRid>test-rid</ProductMonikerRid>
                     <TargetArchitecture>x64</TargetArchitecture>
                     <Version>11.0.100</Version>
@@ -1042,7 +1071,8 @@ public class ManifestLayoutTests : SdkTest
                     <BundledManifests Include="{{Escape(Downloaded.Id)}}" Condition="'{{Downloaded.Enabled}}' == 'True'"
                                       FeatureBand="{{Escape(Downloaded.FeatureBand)}}"
                                       Version="{{Escape(Downloaded.Version)}}"
-                                      RestoredNupkgContentPath="{{Escape(Path.Combine(Root, "downloaded"))}}" />
+                                      NupkgId="{{Escape($"{Downloaded.Id}.Manifest-{Downloaded.FeatureBand}")}}"
+                                      MsiNupkgId="{{Escape($"{Downloaded.Id}.Manifest-{Downloaded.FeatureBand}.Msi.x64")}}" />
                     <BuiltinManifests Include="{{Escape(Builtin.Id)}}" Condition="'{{Builtin.Enabled}}' == 'True'" />
                   </ItemGroup>
                   <Target Name="GenerateInstallerLayout">
@@ -1079,13 +1109,42 @@ public class ManifestLayoutTests : SdkTest
             Dictionary<string, string>? globalProperties = null,
             bool expectedSuccess = true,
             string? interruptionTask = null,
-            string target = "LayoutManifests") =>
-            BuildProject(
+            string target = "LayoutManifests")
+        {
+            SyncDownloadedPackage();
+            return BuildProject(
                 _projectPath,
                 target,
                 globalProperties,
                 expectedSuccess,
                 interruptionTask is null ? null : collection => InjectInterruption(collection, interruptionTask));
+        }
+
+        public void SyncDownloadedPackage()
+        {
+            string packageData = Path.Combine(
+                Root, "packages",
+                $"{Downloaded.Id}.Manifest-{Downloaded.FeatureBand}".ToLowerInvariant(),
+                NuGetVersion.Parse(Downloaded.Version).ToNormalizedString().ToLowerInvariant(),
+                "data");
+            if (Directory.Exists(packageData))
+            {
+                Directory.Delete(packageData, recursive: true);
+            }
+
+            if (!Downloaded.Enabled)
+            {
+                return;
+            }
+
+            string sourceData = Path.Combine(Root, "downloaded", "data");
+            foreach (string source in Directory.GetFiles(sourceData, "*", SearchOption.AllDirectories))
+            {
+                string destination = Path.Combine(packageData, Path.GetRelativePath(sourceData, source));
+                Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                File.Copy(source, destination);
+            }
+        }
 
         private void InjectInterruption(ProjectCollection collection, string interruptionTask)
         {

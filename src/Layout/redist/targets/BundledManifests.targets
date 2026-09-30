@@ -60,20 +60,26 @@
     <_ManifestLayoutCompletionStamp>$(_ManifestLayoutStatePrefix).complete</_ManifestLayoutCompletionStamp>
   </PropertyGroup>
 
-  <Target Name="_PrepareLayoutManifests" DependsOnTargets="_PrepareBaselineWorkloadSet">
-    <Error Text="Workload manifest '%(BundledManifests.Identity)' is missing WorkloadManifest.json in '%(BundledManifests.RestoredNupkgContentPath)\data'."
-           Condition="'@(BundledManifests)' != '' and !Exists('%(BundledManifests.RestoredNupkgContentPath)\data\WorkloadManifest.json')" />
+  <Target Name="_ResolveBundledManifestPackages" Condition="'@(BundledManifests)' != ''">
+    <ResolveBundledManifestPackages PackageRoot="$(NuGetPackageRoot)" Manifests="@(BundledManifests)">
+      <Output TaskParameter="ResolvedManifests" ItemName="_ResolvedBundledManifests" />
+    </ResolveBundledManifestPackages>
+  </Target>
+
+  <Target Name="_PrepareLayoutManifests" DependsOnTargets="_ResolveBundledManifestPackages;_PrepareBaselineWorkloadSet">
+    <Error Text="Workload manifest '%(_ResolvedBundledManifests.Identity)' is missing WorkloadManifest.json in '%(_ResolvedBundledManifests.RestoredNupkgContentPath)\data'."
+           Condition="'@(_ResolvedBundledManifests)' != '' and !Exists('%(_ResolvedBundledManifests.RestoredNupkgContentPath)\data\WorkloadManifest.json')" />
 
     <ItemGroup>
-      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
+      <ManifestContent Include="%(_ResolvedBundledManifests.RestoredNupkgContentPath)\data\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data')"
                        DestinationPath="%(FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(Version)"
                        RestoredNupkgContentPath="%(RestoredNupkgContentPath)"
                        WorkloadManifestId="%(Identity)" />
 
-      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\localize\*"
+      <ManifestContent Include="%(_ResolvedBundledManifests.RestoredNupkgContentPath)\data\localize\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data\localize')"
-                       DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)/localize" />
+                       DestinationPath="%(_ResolvedBundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(_ResolvedBundledManifests.Version)/localize" />
     </ItemGroup>
 
     <Error Text="No workload manifest content found." Condition="'@(BundledManifests)' != '' and '@(ManifestContent)' == ''" />
