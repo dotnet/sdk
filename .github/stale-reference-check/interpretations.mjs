@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { assertRepoPath, numberedContext, readSource, sourceId, sourceLines } from './collect.mjs';
+import { numberPattern, ownerPattern, referenceUrlPattern, repositoryPattern, shorthandPattern } from './references.mjs';
 
 const statuses = new Set(['actionable', 'irrelevant', 'insufficient_context']);
 const kinds = new Set(['ignore', 'todo', 'workaround']);
@@ -9,6 +10,10 @@ const rawActionKeys = ['kind', 'anchor', 'testNames', 'startLine', 'endLine', 'u
 const enrichedActionKeys = [...rawActionKeys, 'candidateId', 'path', 'sourceExcerpt'];
 // Only results restored/validated by this module may carry derived fields. JSON from the agent cannot opt in.
 const validatedResultObjects = new WeakSet();
+// Match any github.com URL as one token so shorthand is never found inside it.
+const sourceReferenceRegex = new RegExp(String.raw`https:\/\/github\.com\/[^\s"'<>()[\]{}]+|` + shorthandPattern, 'g');
+const shorthandRegex = new RegExp(`^(${ownerPattern})/(${repositoryPattern})#(${numberPattern})$`);
+const actionUrlRegex = new RegExp(`^${referenceUrlPattern}` + String.raw`\/?(?:[?#][^\s]*)?$`);
 
 function requireCondition(condition, message) {
     if (!condition) throw new Error(message);
@@ -110,11 +115,11 @@ function evidenceText(evidence) {
 }
 
 function sourceUrls(source) {
-    const references = source.match(/https:\/\/github\.com\/[^\s"'<>()[\]{}]+|[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/[A-Za-z0-9_.-]+#[1-9]\d*/g) ?? [];
+    const references = source.match(sourceReferenceRegex) ?? [];
     return new Set(references.map(reference => {
         // Qualified shorthand has no issue/PR route, so it is normalized as
         // an issue; pull requests must use an explicit /pull/ URL.
-        const shorthand = /^([^/]+)\/([^#]+)#([1-9]\d+)$/.exec(reference);
+        const shorthand = shorthandRegex.exec(reference);
         if (shorthand) return `https://github.com/${shorthand[1]}/${shorthand[2]}/issues/${shorthand[3]}`;
         return reference.replace(/[.,;:]+$/, '');
     }));
@@ -198,7 +203,7 @@ function validateAction(action, candidate, evidence, enriched = false) {
     const nearbyEvidence = new Map([...evidence].filter(([line]) => line >= candidate.startLine - 80 && line <= candidate.endLine + 80));
     const urls = sourceUrls(evidenceText(nearbyEvidence));
     for (const url of action.urls) {
-        requireCondition(/^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(?:issues|pull)\/[1-9]\d*\/?(?:[?#][^\s]*)?$/.test(url),
+        requireCondition(actionUrlRegex.test(url),
             'Action URL must identify a public GitHub issue or pull request.');
         requireCondition(urls.has(url), 'Action URL is not present in supplied nearby source evidence.');
     }

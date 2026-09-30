@@ -5,6 +5,7 @@ import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { lstat, readFile, realpath } from 'node:fs/promises';
 import path from 'node:path';
+import { referenceUrlPattern, shorthandPattern } from './references.mjs';
 
 const ignorePattern = String.raw`(\[|<|,|^[[:space:]]*)[[:space:]]*([[:alnum:]_.]+[.])?Ignore(Attribute)?([[:space:]]*\(|[[:space:]]*\]|[[:space:]]*>|[[:space:]]*$)`;
 const seedPattern = `${ignorePattern}|` + String.raw`\bTODO\b|\bwork[ -]?around\b|\b(remov(e|ed|al)|delet(e|ed|ion)|revisit|re-?enabl(e|ed))\b.*\b(when|once|after|until)\b|\b(temporary|temporarily)\b.*\b(until|fix|hack)\b`;
@@ -12,7 +13,7 @@ const sourceExtension = /\.(cs|fs|fsx|c|cc|cpp|h|hpp|js|mjs|cjs|ts|tsx|jsx|py|ps
 const excludedDirectory = /(^|\/)(documentation|docs?|prompts?|memory|skills|agents|instructions|issue_templates?|testassets|testdata|testinputs?|testresources|fixtures|__fixtures__|baselines?|snapshots?|generated|vendor|vendored|third[-_]?party|node_modules|bin|obj|artifacts|template_feed)(\/|$)/i;
 // Keep collection permissive enough to find shorthand references; the validator
 // later decides whether each reference can authorize a tracking action.
-const githubReference = /(?:https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+\/(?:issues|pull)\/[1-9]\d*|[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?\/[A-Za-z0-9_.-]+#[1-9]\d*)(?=\/?(?:[?#]|$|[\s"'<>()[\]{},.;:]))/;
+const githubReference = new RegExp(`(?:${referenceUrlPattern}|${shorthandPattern})` + String.raw`(?=\/?(?:[?#]|$|[\s"'<>()[\]{},.;:]))`);
 
 export function git(repoRoot, args, { input, allowedExitCodes = [0] } = {}) {
     return new Promise((resolve, reject) => {

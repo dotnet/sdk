@@ -70,6 +70,16 @@ test('accepts XML workaround conditions and historical irrelevant classification
     assert.equal((await validate(f, [result(candidate)]))[0].status, 'irrelevant');
 });
 
+test('qualified shorthand references of any length are collected and normalized to issue URLs', async t => {
+    for (const number of [5, 12345]) {
+        const f = await fixture(t, `// TODO remove once dotnet/sdk#${number} is fixed\n`);
+        const candidate = f.manifest.candidates[0];
+        assert.ok(candidate, `shorthand #${number} should be collected`);
+        const results = await validate(f, [result(candidate, [action(candidate, { urls: [`https://github.com/dotnet/sdk/issues/${number}`] })])]);
+        assert.deepEqual(results[0].actions[0].urls, [`https://github.com/dotnet/sdk/issues/${number}`]);
+    }
+});
+
 test('rejects supporting code links even alongside a valid issue blocker', async t => {
     const codeUrl = 'https://github.com/dotnet/msbuild/blob/main/src/Build/Construction/Solution/SolutionProjectGenerator.cs#L659-L672';
     const f = await fixture(t, `// TODO replace duplicated logic when the API is public: ${url}\n// Current implementation: ${codeUrl}\n`);

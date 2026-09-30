@@ -1,11 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-const ownerPattern = '[a-z0-9](?:[a-z0-9-]{0,37}[a-z0-9])?';
-const repositoryPattern = '[a-z0-9_.-]{1,100}';
+import { numberPattern, ownerPattern, repositoryPattern } from './references.mjs';
+
 const repositoryRegex = new RegExp(`^(${ownerPattern})/(${repositoryPattern})$`, 'i');
 const referenceRegex = new RegExp(
-    `^https://github\\.com/(${ownerPattern})/(${repositoryPattern})/(issues|pull)/([1-9][0-9]*)/?(?:[?#][^\\s<>]*)?$`, 'i');
+    `^https://github\\.com/(${ownerPattern})/(${repositoryPattern})/(issues|pull)/(${numberPattern})/?(?:[?#][^\\s<>]*)?$`, 'i');
 const readConcurrency = 4;
 
 export function normalizeRepository(repository) {

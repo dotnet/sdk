@@ -49,6 +49,7 @@ export async function rulesHash(repoRoot)
     for (const file of [
         ".github/stale-reference-check/collect.mjs",
         ".github/stale-reference-check/interpretations.mjs",
+        ".github/stale-reference-check/references.mjs",
         ".github/stale-reference-check/workflow.mjs",
         ".github/stale-reference-check/source-tools.mjs",
         ".github/workflows/stale-reference-interpret.md",
@@ -96,7 +97,7 @@ export async function prepare({ repoRoot, refreshCache = false, logger = console
         }
     }
     await writeJson(path.join(directory, "source-context.json"), sourceFiles);
-    for (const file of ["source-tools.mjs", "interpretations.mjs", "collect.mjs"])
+    for (const file of ["source-tools.mjs", "interpretations.mjs", "collect.mjs", "references.mjs"])
     {
         await copyFile(path.join(repoRoot, ".github/stale-reference-check", file), path.join(directory, file));
     }
