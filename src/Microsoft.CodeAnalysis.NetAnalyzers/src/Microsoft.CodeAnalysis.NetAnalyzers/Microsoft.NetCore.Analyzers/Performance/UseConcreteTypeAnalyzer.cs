@@ -414,6 +414,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     namedType.TypeArguments.Any(ContainsFileLocalType) ||
                     (namedType.ContainingType is { } containingType && ContainsFileLocalType(containingType)),
                 IArrayTypeSymbol arrayType => ContainsFileLocalType(arrayType.ElementType),
+                IPointerTypeSymbol pointerType => ContainsFileLocalType(pointerType.PointedAtType),
                 _ => false,
             };
 

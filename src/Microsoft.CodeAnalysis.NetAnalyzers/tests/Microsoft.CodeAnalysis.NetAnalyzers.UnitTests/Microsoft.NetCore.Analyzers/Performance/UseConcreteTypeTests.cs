@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -351,6 +352,87 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         [TestMethod]
         [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldNotTrigger_FileLocalTypeInMemberSignatures()
+        {
+            await TestCSAsync("""
+                                class C
+                                {
+                                    private I _field = new Bar();
+                                    private I Property { get; set; } = new Bar();
+
+                                    private static void Consume(I value)
+                                    {
+                                        value.M();
+                                    }
+
+                                    void M()
+                                    {
+                                        _field.M();
+                                        Property.M();
+                                        Consume(new Bar());
+                                    }
+                                }
+
+                                interface I
+                                {
+                                    void M();
+                                }
+
+                                file class Bar : I
+                                {
+                                    public void M() { }
+                                }
+
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldTrigger_FileLocalTypeInFileLocalMemberSignatures()
+        {
+            await TestCSAsync("""
+                                file class C
+                                {
+                                    private I {|#0:_field|} = new Bar();
+                                    private I {|#1:Property|} { get; set; } = new Bar();
+
+                                    private static void Consume(I {|#2:value|})
+                                    {
+                                        value.M();
+                                    }
+
+                                    void M()
+                                    {
+                                        _field.M();
+                                        Property.M();
+                                        Consume(new Bar());
+                                    }
+                                }
+
+                                interface I
+                                {
+                                    void M();
+                                }
+
+                                file class Bar : I
+                                {
+                                    public void M() { }
+                                }
+
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0)
+                    .WithArguments("_field", "I", "Bar"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1)
+                    .WithArguments("Property", "I", "Bar"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
+                    .WithLocation(2)
+                    .WithArguments("value", "I", "Bar"));
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
         public async Task ShouldTrigger_LocalFileLocalType()
         {
             await TestCSAsync("""
@@ -374,6 +456,38 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
                     .WithLocation(0)
                     .WithArguments("value", "System.IDisposable", "Bar"));
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldNotTrigger_FileLocalPointerArrayReturnType()
+        {
+            const string source = """
+                                using System;
+
+                                unsafe class C
+                                {
+                                    Array GetArray() => new Bar*[1];
+                                }
+
+                                file struct Bar
+                                {
+                                    public int Value;
+                                }
+
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                SolutionTransforms =
+                {
+                    (solution, projectId) => solution.WithProjectCompilationOptions(projectId,
+                        ((CSharpCompilationOptions)solution.GetProject(projectId)!.CompilationOptions!).WithAllowUnsafe(true))
+                }
+            }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
