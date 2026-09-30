@@ -29,54 +29,130 @@ internal sealed class WindowsWorkplaceJoinDetectionProvider : IInternalMicrosoft
 
     internal static InternalMicrosoftProbeResult Parse(string output, string? fallbackDomain = null)
     {
-        var tenantMatchesMicrosoft = false;
-        var workplaceJoined = false;
-        var azureAdJoined = false;
-        var values = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        var deviceState = CreateValueSet();
+        var tenantDetails = CreateValueSet();
+        var userState = CreateValueSet();
+        var unsectioned = CreateValueSet();
+        var workAccounts = new List<IReadOnlyDictionary<string, string>>();
+        Dictionary<string, string> currentValues = unsectioned;
 
         foreach (var line in output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
         {
-            var separator = line.IndexOf(':');
-            if (separator < 0)
+            if (TryGetSection(line, out var section))
             {
+                switch (section)
+                {
+                    case DsregSection.DeviceState:
+                        currentValues = deviceState;
+                        break;
+                    case DsregSection.TenantDetails:
+                        currentValues = tenantDetails;
+                        break;
+                    case DsregSection.UserState:
+                        currentValues = userState;
+                        break;
+                    case DsregSection.WorkAccount:
+                        currentValues = CreateValueSet();
+                        workAccounts.Add(currentValues);
+                        break;
+                    default:
+                        currentValues = CreateValueSet();
+                        break;
+                }
                 continue;
             }
 
-            var key = line[..separator].Trim();
-            var value = line[(separator + 1)..].Trim();
-            values[key] = value;
-
-            if (key.Equals("TenantId", StringComparison.OrdinalIgnoreCase))
+            var separator = line.IndexOf(':');
+            if (separator > 0)
             {
-                tenantMatchesMicrosoft = value.Equals(
-                    InternalMicrosoftDetectionUtilities.MicrosoftTenantId,
-                    StringComparison.OrdinalIgnoreCase);
-            }
-            else if (key.Equals("WorkplaceJoined", StringComparison.OrdinalIgnoreCase))
-            {
-                workplaceJoined = value.Equals("YES", StringComparison.OrdinalIgnoreCase);
-            }
-            else if (key.Equals("AzureAdJoined", StringComparison.OrdinalIgnoreCase))
-            {
-                azureAdJoined = value.Equals("YES", StringComparison.OrdinalIgnoreCase);
+                currentValues[line[..separator].Trim()] = line[(separator + 1)..].Trim();
             }
         }
 
-        if (!tenantMatchesMicrosoft || (!workplaceJoined && !azureAdJoined))
+        if (deviceState.Count == 0 && tenantDetails.Count == 0 && userState.Count == 0 && workAccounts.Count == 0)
         {
-            return InternalMicrosoftProbeResult.NotDetected;
+            deviceState = unsectioned;
+            tenantDetails = unsectioned;
+            userState = unsectioned;
+            workAccounts.Add(unsectioned);
         }
 
-        var accountIdentifier = GetFirstValue(
-            values,
-            "UserEmail",
-            "User Email",
-            "UserPrincipalName",
-            "User Principal Name",
-            "UPN");
-        var alias = accountIdentifier is null
-            ? null
-            : InternalMicrosoftDetectionUtilities.NormalizeAlias(accountIdentifier.Split('@', 2)[0]);
+        var candidates = new List<InternalMicrosoftProbeResult>();
+        if (IsYes(deviceState, "AzureAdJoined") && HasMicrosoftTenant(tenantDetails))
+        {
+            var domain = GetCorporateDomain(deviceState, fallbackDomain);
+            candidates.Add(new InternalMicrosoftProbeResult(true, null, domain));
+        }
+
+        if (IsYes(userState, "WorkplaceJoined"))
+        {
+            var workplaceEvidence = workAccounts.Count > 0
+                ? workAccounts
+                : [userState];
+            foreach (var workAccount in workplaceEvidence)
+            {
+                if (HasMicrosoftTenant(workAccount))
+                {
+                    candidates.Add(GetWorkAccountResult(workAccount));
+                }
+            }
+        }
+
+        return candidates.Count switch
+        {
+            0 => InternalMicrosoftProbeResult.NotDetected,
+            1 => candidates[0],
+            _ => SelectUnambiguousIdentity(candidates)
+        };
+    }
+
+    private static Dictionary<string, string> CreateValueSet() =>
+        new(StringComparer.OrdinalIgnoreCase);
+
+    private static bool TryGetSection(string line, out DsregSection section)
+    {
+        var trimmed = line.Trim();
+        var isFramedHeading = trimmed.Length > 2 && trimmed[0] == '|' && trimmed[^1] == '|';
+        var heading = trimmed.Trim('|').Trim();
+        if (heading.Equals("Device State", StringComparison.OrdinalIgnoreCase))
+        {
+            section = DsregSection.DeviceState;
+            return true;
+        }
+        if (heading.Equals("Tenant Details", StringComparison.OrdinalIgnoreCase))
+        {
+            section = DsregSection.TenantDetails;
+            return true;
+        }
+        if (heading.Equals("User State", StringComparison.OrdinalIgnoreCase))
+        {
+            section = DsregSection.UserState;
+            return true;
+        }
+        if (heading.StartsWith("Work Account ", StringComparison.OrdinalIgnoreCase))
+        {
+            section = DsregSection.WorkAccount;
+            return true;
+        }
+
+        section = DsregSection.None;
+        return isFramedHeading;
+    }
+
+    private static bool IsYes(IReadOnlyDictionary<string, string> values, string key) =>
+        values.TryGetValue(key, out var value) &&
+        value.Equals("YES", StringComparison.OrdinalIgnoreCase);
+
+    private static bool HasMicrosoftTenant(IReadOnlyDictionary<string, string> values) =>
+        GetFirstValue(values, "TenantId", "Tenant Id", "WorkplaceTenantId", "Workplace Tenant Id")
+            ?.Equals(
+                InternalMicrosoftDetectionUtilities.MicrosoftTenantId,
+                StringComparison.OrdinalIgnoreCase) == true;
+
+    private static string? GetCorporateDomain(
+        IReadOnlyDictionary<string, string> values,
+        string? fallbackDomain)
+    {
         var domainValue = GetFirstValue(
             values,
             "DomainName",
@@ -86,16 +162,55 @@ internal sealed class WindowsWorkplaceJoinDetectionProvider : IInternalMicrosoft
             "OnPremDomainName",
             "UserDnsDomain",
             "User DNS Domain");
-        var domain = InternalMicrosoftDetectionUtilities.TryGetCorporateDomain(domainValue, out var corporateDomain)
-            ? corporateDomain
-            : InternalMicrosoftDetectionUtilities.NormalizeDomain(domainValue);
-        if (domain is null &&
-            InternalMicrosoftDetectionUtilities.TryGetCorporateDomain(fallbackDomain, out var fallbackCorporateDomain))
+        if (InternalMicrosoftDetectionUtilities.TryGetCorporateDomain(domainValue, out var corporateDomain))
         {
-            domain = fallbackCorporateDomain;
+            return corporateDomain;
         }
 
-        return new InternalMicrosoftProbeResult(true, alias, domain);
+        return InternalMicrosoftDetectionUtilities.TryGetCorporateDomain(
+            fallbackDomain,
+            out var fallbackCorporateDomain)
+                ? fallbackCorporateDomain
+                : null;
+    }
+
+    private static InternalMicrosoftProbeResult GetWorkAccountResult(
+        IReadOnlyDictionary<string, string> values)
+    {
+        var accountIdentifier = GetFirstValue(
+            values,
+            "UserEmail",
+            "User Email",
+            "UserPrincipalName",
+            "User Principal Name",
+            "UPN");
+        return InternalMicrosoftDetectionUtilities.TryGetMicrosoftAccountIdentity(
+            accountIdentifier,
+            out var alias,
+            out var domain)
+                ? new InternalMicrosoftProbeResult(true, alias, domain)
+                : new InternalMicrosoftProbeResult(true, null, null);
+    }
+
+    private static InternalMicrosoftProbeResult SelectUnambiguousIdentity(
+        IReadOnlyList<InternalMicrosoftProbeResult> candidates)
+    {
+        var aliases = candidates
+            .Select(candidate => candidate.Alias)
+            .Where(alias => alias is not null)
+            .Distinct(StringComparer.Ordinal)
+            .Take(2)
+            .ToArray();
+        var domains = candidates
+            .Select(candidate => candidate.Domain)
+            .Where(domain => domain is not null)
+            .Distinct(StringComparer.Ordinal)
+            .Take(2)
+            .ToArray();
+        return new InternalMicrosoftProbeResult(
+            true,
+            aliases.Length == 1 ? aliases[0] : null,
+            domains.Length == 1 ? domains[0] : null);
     }
 
     private static string? GetFirstValue(IReadOnlyDictionary<string, string> values, params string[] keys)
@@ -109,6 +224,15 @@ internal sealed class WindowsWorkplaceJoinDetectionProvider : IInternalMicrosoft
         }
 
         return null;
+    }
+
+    private enum DsregSection
+    {
+        None,
+        DeviceState,
+        TenantDetails,
+        UserState,
+        WorkAccount
     }
 }
 

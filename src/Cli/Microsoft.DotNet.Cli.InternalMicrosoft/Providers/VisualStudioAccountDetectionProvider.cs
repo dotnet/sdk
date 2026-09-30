@@ -251,10 +251,13 @@ internal static class VisualStudioAccountDetectionParser
                     StringComparison.OrdinalIgnoreCase) ||
                 !InternalMicrosoftDetectionUtilities.TryGetString(tokenRoot, "iss", out var issuer) ||
                 !issuer.Equals(
-                    $"https://login.microsoftonline.com/{InternalMicrosoftDetectionUtilities.MicrosoftTenantId}/v2.0",
+                    $"https://{InternalMicrosoftDetectionUtilities.MicrosoftLoginHost}/{InternalMicrosoftDetectionUtilities.MicrosoftTenantId}/v2.0",
                     StringComparison.OrdinalIgnoreCase) ||
                 !InternalMicrosoftDetectionUtilities.TryGetString(tokenRoot, "preferred_username", out var username) ||
-                !TryParseMicrosoftUsername(username, out var alias, out var domain))
+                !InternalMicrosoftDetectionUtilities.TryGetMicrosoftAccountIdentity(
+                    username,
+                    out var alias,
+                    out var domain))
             {
                 return JsonShapeFailure(InternalMicrosoftProbeFailureStage.IdTokenPayload);
             }
@@ -289,28 +292,4 @@ internal static class VisualStudioAccountDetectionParser
         property.ValueKind is JsonValueKind.True or JsonValueKind.False
             ? property.GetBoolean()
             : null;
-
-    private static bool TryParseMicrosoftUsername(string username, out string? alias, out string? domain)
-    {
-        alias = null;
-        domain = null;
-        var separator = username.IndexOf('@');
-        if (separator <= 0 || separator == username.Length - 1)
-        {
-            return false;
-        }
-
-        var suffix = username[(separator + 1)..];
-        if (!suffix.Equals("microsoft.com", StringComparison.OrdinalIgnoreCase) &&
-            !suffix.EndsWith(".microsoft.com", StringComparison.OrdinalIgnoreCase))
-        {
-            return false;
-        }
-
-        alias = InternalMicrosoftDetectionUtilities.NormalizeAlias(username[..separator]);
-        domain = InternalMicrosoftDetectionUtilities.TryGetCorporateDomain(suffix, out var corporateDomain)
-            ? corporateDomain
-            : null;
-        return alias is not null;
-    }
 }

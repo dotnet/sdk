@@ -211,7 +211,10 @@ internal sealed class MacPlatformSsoDetectionProvider : IInternalMicrosoftDetect
 
     private static bool IsMicrosoftTenantEndpoint(Uri uri, string expectedSuffix) =>
         uri.Scheme == Uri.UriSchemeHttps &&
-        string.Equals(uri.Host, "login.microsoftonline.com", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(
+            uri.Host,
+            InternalMicrosoftDetectionUtilities.MicrosoftLoginHost,
+            StringComparison.OrdinalIgnoreCase) &&
         uri.AbsolutePath.Equals(
             $"/{InternalMicrosoftDetectionUtilities.MicrosoftTenantId}{expectedSuffix}",
             StringComparison.OrdinalIgnoreCase);

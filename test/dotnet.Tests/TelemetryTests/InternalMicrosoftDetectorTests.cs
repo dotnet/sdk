@@ -447,13 +447,95 @@ public class InternalMicrosoftDetectorTests : SdkTest
     {
         var result = WindowsWorkplaceJoinDetectionProvider.Parse(
             """
+            | Device State |
             AzureAdJoined : YES
+            DomainName : redmond.corp.microsoft.com
+            | Tenant Details |
+            TenantId : 72f988bf-86f1-41af-91ab-2d7cd011db47
+            | User State |
+            WorkplaceJoined : YES
+            | Work Account 1 |
             TenantId : 72f988bf-86f1-41af-91ab-2d7cd011db47
             User Email : Alias@Microsoft.com
-            DomainName : redmond.corp.microsoft.com
             """);
 
         result.Should().Be(new InternalMicrosoftProbeResult(true, "alias", "REDMOND"));
+    }
+
+    [TestMethod]
+    public void WindowsWorkplaceJoinDoesNotMixExternalAccountWithMicrosoftDevice()
+    {
+        var result = WindowsWorkplaceJoinDetectionProvider.Parse(
+            """
+            | Device State |
+            AzureAdJoined : YES
+            DomainName : redmond.corp.microsoft.com
+            | Tenant Details |
+            TenantId : 72f988bf-86f1-41af-91ab-2d7cd011db47
+            | User State |
+            WorkplaceJoined : YES
+            | Work Account 1 |
+            TenantId : aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+            User Email : external@contoso.com
+            """);
+
+        result.Should().Be(new InternalMicrosoftProbeResult(true, null, "REDMOND"));
+    }
+
+    [TestMethod]
+    public void WindowsWorkplaceJoinDoesNotMixExternalDeviceWithMicrosoftAccount()
+    {
+        var result = WindowsWorkplaceJoinDetectionProvider.Parse(
+            """
+            | Device State |
+            AzureAdJoined : YES
+            DomainName : contoso.example
+            | Tenant Details |
+            TenantId : aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+            | User State |
+            WorkplaceJoined : YES
+            | Work Account 1 |
+            TenantId : 72f988bf-86f1-41af-91ab-2d7cd011db47
+            User Email : Alias@Microsoft.com
+            """);
+
+        result.Should().Be(new InternalMicrosoftProbeResult(true, "alias", null));
+    }
+
+    [TestMethod]
+    public void WindowsWorkplaceJoinChecksEachWorkAccountIndependently()
+    {
+        var result = WindowsWorkplaceJoinDetectionProvider.Parse(
+            """
+            | User State |
+            WorkplaceJoined : YES
+            | Work Account 1 |
+            TenantId : 72f988bf-86f1-41af-91ab-2d7cd011db47
+            User Email : Alias@Microsoft.com
+            | Work Account 2 |
+            TenantId : aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+            User Email : external@contoso.com
+            """);
+
+        result.Should().Be(new InternalMicrosoftProbeResult(true, "alias", null));
+    }
+
+    [TestMethod]
+    public void WindowsWorkplaceJoinDoesNotMixValuesFromUnrelatedSections()
+    {
+        var result = WindowsWorkplaceJoinDetectionProvider.Parse(
+            """
+            | User State |
+            WorkplaceJoined : YES
+            | Work Account 1 |
+            WorkplaceTenantId : 72f988bf-86f1-41af-91ab-2d7cd011db47
+            User Email : employee@microsoft.com
+            | Diagnostic Data |
+            WorkplaceTenantId : 11111111-1111-1111-1111-111111111111
+            User Email : external@example.com
+            """);
+
+        result.Should().Be(new InternalMicrosoftProbeResult(true, "employee", null));
     }
 
     [TestMethod]

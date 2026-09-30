@@ -203,7 +203,7 @@ public class TelemetryClient : ITelemetryClient
         }
 
         s_internalMicrosoftTelemetry.Start(InternalMicrosoftDetector.CreateDefault(
-            Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "internal-microsoft", "detector.json"),
+            Path.Join(CliFolderPathCalculator.DotnetUserProfileFolderPath, "internal-microsoft", "detector.json"),
             s_isCIEnvironment,
             Product.Version),
             CancellationToken.None);

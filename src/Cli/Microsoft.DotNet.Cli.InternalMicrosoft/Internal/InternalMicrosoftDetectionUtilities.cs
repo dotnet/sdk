@@ -12,9 +12,12 @@ namespace Microsoft.DotNet.Cli.InternalMicrosoft;
 /// </summary>
 internal static partial class InternalMicrosoftDetectionUtilities
 {
+    internal const string MicrosoftAccountDomain = "microsoft.com";
+    internal const string MicrosoftLoginHost = "login.microsoftonline.com";
     internal const string MicrosoftTenantId = "72f988bf-86f1-41af-91ab-2d7cd011db47";
 
     private const string CorpMicrosoftDomainSuffix = ".corp.microsoft.com";
+    private const string MicrosoftAccountDomainSuffix = "." + MicrosoftAccountDomain;
 
     internal static bool IsWsl(string? distroName, string? interop, string? kernelRelease) =>
         !string.IsNullOrEmpty(distroName) ||
@@ -59,6 +62,38 @@ internal static partial class InternalMicrosoftDetectionUtilities
 
         var trimmed = value.Trim();
         return DomainRegex().IsMatch(trimmed) ? trimmed.ToUpperInvariant() : null;
+    }
+
+    internal static bool TryGetMicrosoftAccountIdentity(
+        string? value,
+        out string? alias,
+        out string? domain)
+    {
+        alias = null;
+        domain = null;
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return false;
+        }
+
+        var separator = value.IndexOf('@');
+        if (separator <= 0 || separator == value.Length - 1)
+        {
+            return false;
+        }
+
+        var suffix = value[(separator + 1)..];
+        if (!suffix.Equals(MicrosoftAccountDomain, StringComparison.OrdinalIgnoreCase) &&
+            !suffix.EndsWith(MicrosoftAccountDomainSuffix, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        alias = NormalizeAlias(value[..separator]);
+        domain = TryGetCorporateDomain(suffix, out var corporateDomain)
+            ? corporateDomain
+            : null;
+        return alias is not null;
     }
 
     internal static bool IsGitHubToken(string? value) =>
