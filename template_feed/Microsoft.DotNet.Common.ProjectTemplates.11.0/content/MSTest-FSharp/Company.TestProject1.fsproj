@@ -6,6 +6,7 @@
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
     <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
 <!--#if (TestRunner == "VSTest")-->
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
@@ -24,7 +25,6 @@
 <!--#endif-->
 
   <ItemGroup>
-    <Compile Include="MSTestSettings.fs" />
     <Compile Include="Test1.fs" />
 <!--#if (ExplicitProgramFile && TestRunner == "Microsoft.Testing.Platform")-->
     <Compile Include="Program.fs" />
@@ -52,6 +52,7 @@
     <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
     <RootNamespace Condition="'$(name)' != '$(name{-VALUE-FORMS-}safe_namespace)'">Company.TestProject1</RootNamespace>
     <LangVersion Condition="'$(langVersion)' != ''">$(ProjectLanguageVersion)</LangVersion>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->
     <EnableMSTestRunner>true</EnableMSTestRunner>
     <OutputType>Exe</OutputType>
@@ -69,7 +70,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="MSTestSettings.fs" />
     <Compile Include="Test1.fs" />
 <!--#if (ExplicitProgramFile && TestRunner == "Microsoft.Testing.Platform")-->
     <Compile Include="Program.fs" />

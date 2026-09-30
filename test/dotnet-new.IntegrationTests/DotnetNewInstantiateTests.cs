@@ -99,6 +99,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             projectContents.Should().Contain($"<TargetFramework>{targetFramework}</TargetFramework>");
             projectContents.Should().Contain("""<PackageReference Include="MSTest" Version="4.4.0" />""");
+
+            if (templateName == "mstest")
+            {
+                projectContents.Should().Contain("<MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>");
+                Directory.EnumerateFiles(outputDirectory, "MSTestSettings.*").Should().BeEmpty();
+            }
         }
 
         public static IEnumerable<object[]> MSTestTemplateSelectionData()
@@ -146,6 +152,52 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 yield return ["mstest-playwright", targetFramework, "C#", "csproj"];
             }
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(MSTestSdkTemplateData))]
+        public void MSTestTemplate_WithMSTestSdk_UsesProjectParallelizationSettings(
+            string language,
+            string projectExtension)
+        {
+            const string projectName = "MSTestSdkProject";
+            string workingDirectory = CreateTemporaryFolder();
+            string outputDirectory = Path.Combine(workingDirectory, projectName);
+
+            new DotnetNewCommand(
+                    _log,
+                    "mstest",
+                    "--no-restore",
+                    "--framework",
+                    ToolsetInfo.CurrentTargetFramework,
+                    "--language",
+                    language,
+                    "--name",
+                    projectName,
+                    "--output",
+                    outputDirectory,
+                    "--sdk",
+                    "true")
+                .WithCustomHive(s_mstestTemplateSelectionHome)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.HaveStdOutContaining("was created successfully.");
+
+            string projectContents = File.ReadAllText(Path.Combine(outputDirectory, $"{projectName}.{projectExtension}"));
+
+            projectContents.Should().Contain("""<Project Sdk="MSTest.Sdk/4.4.0">""");
+            projectContents.Should().Contain("<MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>");
+            Directory.EnumerateFiles(outputDirectory, "MSTestSettings.*").Should().BeEmpty();
+        }
+
+        public static IEnumerable<object[]> MSTestSdkTemplateData()
+        {
+            yield return ["C#", "csproj"];
+            yield return ["F#", "fsproj"];
+            yield return ["VB", "vbproj"];
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
