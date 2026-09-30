@@ -14,7 +14,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 /// <remarks>
 /// A command starts a background refresh at most once per <see cref="RefreshInterval"/>. The refresh
 /// reads the channel's version from its redirect target without downloading dotnetup. Timestamped
-/// marker files throttle the best-effort check without coordinating concurrent processes.
+/// marker files store the result and throttle the best-effort check without coordinating concurrent
+/// processes.
 /// </remarks>
 internal sealed class SelfUpdateNotifier
 {
@@ -79,7 +80,7 @@ internal sealed class SelfUpdateNotifier
             var notifier = new SelfUpdateNotifier(
                 ReleaseVersion.Parse(invocation.LoadedVersion),
                 SelfUpdateDefaultChannel.FromLoadedVersion(invocation.LoadedVersion),
-                invocation.Paths.DirectoryPath,
+                DotnetupPaths.UpdateCheckDirectory,
                 channel => ResolveLatestFromFeed(channel, rid),
                 TimeProvider.System);
             notifier.StartRefreshIfStale();
@@ -100,17 +101,33 @@ internal sealed class SelfUpdateNotifier
     }
 
     /// <summary>
-    /// Returns the newer version on the running build's semantic channel, if any. A build on a
-    /// different prerelease label (such as a local development build) is never reported.
+    /// Writes the update notice when the latest marker records a newer build. Never throws, because
+    /// the command it follows has already succeeded.
     /// </summary>
-    internal ReleaseVersion? GetAvailableUpdate(ReleaseVersion? latest)
+    public void ShowIfUpdateAvailable()
     {
-        if (latest is null)
+        try
         {
-            return null;
+            if (GetAvailableUpdate() is not null)
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Notice(Strings.SelfUpdateAvailableNotice.EscapeMarkup()));
+            }
         }
+        catch (IOException)
+        {
+            // The terminal went away after the command finished; there is nothing left to report to.
+        }
+    }
 
-        return SelfUpdateWorkflow.HasSameSemanticChannel(_loadedVersion, latest) &&
+    /// <summary>
+    /// Returns the newer version from the latest marker when it is on the running build's semantic
+    /// channel. A different prerelease label (such as a local development build) is never reported.
+    /// </summary>
+    internal ReleaseVersion? GetAvailableUpdate()
+    {
+        var latest = ReadLatestMarker().Version;
+        return latest is not null &&
+            SelfUpdateWorkflow.HasSameSemanticChannel(_loadedVersion, latest) &&
             latest.ComparePrecedenceTo(_loadedVersion) > 0
                 ? latest
                 : null;
@@ -127,17 +144,13 @@ internal sealed class SelfUpdateNotifier
             }
 
             var latest = _resolveLatest(_channel);
-            var markerPath = TryCreateMarker();
+            var markerPath = TryCreateMarker(latest);
             if (markerPath is null)
             {
                 return;
             }
 
             DeleteOldMarkers(markerPath);
-            if (GetAvailableUpdate(latest) is not null)
-            {
-                AnsiConsole.MarkupLine(DotnetupTheme.Notice(Strings.SelfUpdateAvailableNotice.EscapeMarkup()));
-            }
         }
         catch (Exception)
         {
@@ -147,34 +160,20 @@ internal sealed class SelfUpdateNotifier
 
     private bool WasCheckedRecently()
     {
-        long latestCheckSeconds = 0;
-        try
-        {
-            foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"*{MarkerExtension}"))
-            {
-                if (TryGetMarkerSeconds(path, out var seconds))
-                {
-                    latestCheckSeconds = Math.Max(latestCheckSeconds, seconds);
-                }
-            }
-        }
-        catch (Exception ex) when (ex is DirectoryNotFoundException or IOException or UnauthorizedAccessException)
-        {
-            return false;
-        }
-
+        long latestCheckSeconds = ReadLatestMarker().UnixSeconds;
         long nowSeconds = _timeProvider.GetUtcNow().ToUnixTimeSeconds();
-        // Markers intentionally omit channel and version. Missing a notice for up to a day after
-        // either changes is acceptable for this best-effort check.
+        // Markers intentionally omit channel and installed version. Missing a notice for up to a day
+        // after either changes is acceptable for this best-effort check.
         return latestCheckSeconds <= nowSeconds &&
             nowSeconds - latestCheckSeconds < (long)RefreshInterval.TotalSeconds;
     }
 
-    private string? TryCreateMarker()
+    private string? TryCreateMarker(ReleaseVersion? latest)
     {
+        var versionSuffix = latest is null ? "" : $"_{latest}";
         var path = Path.Combine(
             _markerDirectory,
-            $"{_timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)}{MarkerExtension}");
+            $"{_timeProvider.GetUtcNow().ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture)}{versionSuffix}{MarkerExtension}");
         try
         {
             using var marker = new FileStream(path, FileMode.CreateNew, FileAccess.Write, FileShare.Read);
@@ -188,7 +187,7 @@ internal sealed class SelfUpdateNotifier
 
     private void DeleteOldMarkers(string currentMarkerPath)
     {
-        if (!TryGetMarkerSeconds(currentMarkerPath, out var currentMarkerSeconds))
+        if (!TryParseMarker(currentMarkerPath, out var currentMarker))
         {
             return;
         }
@@ -197,7 +196,7 @@ internal sealed class SelfUpdateNotifier
         {
             foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"*{MarkerExtension}"))
             {
-                if (!TryGetMarkerSeconds(path, out var markerSeconds) || markerSeconds >= currentMarkerSeconds)
+                if (!TryParseMarker(path, out var marker) || marker.UnixSeconds >= currentMarker.UnixSeconds)
                 {
                     continue;
                 }
@@ -218,11 +217,68 @@ internal sealed class SelfUpdateNotifier
         }
     }
 
-    private static bool TryGetMarkerSeconds(string path, out long seconds)
+    private (long UnixSeconds, ReleaseVersion? Version) ReadLatestMarker()
     {
-        var timestamp = Path.GetFileNameWithoutExtension(path);
-        return long.TryParse(timestamp, NumberStyles.None, CultureInfo.InvariantCulture, out seconds) &&
-            seconds > 0;
+        (long UnixSeconds, ReleaseVersion? Version) latest = default;
+        try
+        {
+            foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"*{MarkerExtension}"))
+            {
+                if (TryParseMarker(path, out var marker) && IsNewerMarker(marker, latest))
+                {
+                    latest = marker;
+                }
+            }
+        }
+        catch (Exception ex) when (ex is DirectoryNotFoundException or IOException or UnauthorizedAccessException)
+        {
+            // A missing or unreadable marker directory has no usable cached result.
+        }
+
+        return latest;
+    }
+
+    private static bool IsNewerMarker(
+        (long UnixSeconds, ReleaseVersion? Version) candidate,
+        (long UnixSeconds, ReleaseVersion? Version) current)
+    {
+        if (candidate.UnixSeconds != current.UnixSeconds)
+        {
+            return candidate.UnixSeconds > current.UnixSeconds;
+        }
+
+        if (candidate.Version is null)
+        {
+            return false;
+        }
+
+        return current.Version is null ||
+            candidate.Version.ComparePrecedenceTo(current.Version) > 0;
+    }
+
+    private static bool TryParseMarker(
+        string path,
+        out (long UnixSeconds, ReleaseVersion? Version) marker)
+    {
+        var name = Path.GetFileNameWithoutExtension(path);
+        var separator = name.IndexOf('_');
+        var timestamp = separator < 0 ? name : name[..separator];
+        if (!long.TryParse(timestamp, NumberStyles.None, CultureInfo.InvariantCulture, out var seconds) ||
+            seconds <= 0)
+        {
+            marker = default;
+            return false;
+        }
+
+        ReleaseVersion? version = null;
+        if (separator >= 0 && !ReleaseVersion.TryParse(name[(separator + 1)..], out version))
+        {
+            marker = default;
+            return false;
+        }
+
+        marker = (seconds, version);
+        return true;
     }
 
     private static ReleaseVersion? ResolveLatestFromFeed(string channel, string rid)

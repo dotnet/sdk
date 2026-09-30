@@ -54,13 +54,17 @@ public class SelfUpdateNotifierTests : IDisposable
             return ReleaseVersion.Parse(latestVersion);
         }, SelfUpdateDefaultChannel.FromLoadedVersion(loadedVersion));
 
-        var output = CaptureOutput(notifier.Refresh);
+        var output = CaptureOutput(() =>
+        {
+            notifier.Refresh();
+            notifier.ShowIfUpdateAvailable();
+        });
 
         requestedChannel.Should().Be(channel);
         output.Contains(BootstrapperStrings.SelfUpdateAvailableNotice, StringComparison.Ordinal)
             .Should().Be(expectedNotice);
         Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle()
-            .Which.Should().EndWith($"{_time.GetUtcNow().ToUnixTimeSeconds()}.dnupc");
+            .Which.Should().EndWith($"{_time.GetUtcNow().ToUnixTimeSeconds()}_{latestVersion}.dnupc");
     }
 
     [TestMethod]
@@ -163,12 +167,30 @@ public class SelfUpdateNotifierTests : IDisposable
     {
         var notifier = CreateNotifier("1.0.0", _ => null, "stable");
 
-        var output = CaptureOutput(notifier.Refresh);
+        var output = CaptureOutput(() =>
+        {
+            notifier.Refresh();
+            notifier.ShowIfUpdateAvailable();
+        });
         notifier.StartRefreshIfStale();
 
         output.Should().BeEmpty();
         notifier.RefreshTask.Should().BeNull();
         Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void ShowIfUpdateAvailable_PrefersVersionedMarkerAtSameTimestamp()
+    {
+        Directory.CreateDirectory(_tempDir);
+        var timestamp = _time.GetUtcNow().ToUnixTimeSeconds();
+        File.Create(Path.Combine(_tempDir, $"{timestamp}.dnupc")).Dispose();
+        File.Create(Path.Combine(_tempDir, $"{timestamp}_0.2.0-preview.1.dnupc")).Dispose();
+        var notifier = CreateNotifier("0.1.0-preview.1", _ => null);
+
+        var output = CaptureOutput(notifier.ShowIfUpdateAvailable);
+
+        output.Should().Contain(BootstrapperStrings.SelfUpdateAvailableNotice);
     }
 
     [TestMethod]
