@@ -113,15 +113,9 @@ safe output such as `create-issue`, the compiler's internal `safe_outputs` and
 job declares `issues: none`; the interpreter call requires no `issues: write`
 grant from the driver.
 
-`gh aw compile` must be run on Linux or macOS for this workflow. On Windows,
-a host-path-separator bug in the compiler's secret-redaction validation
-(`filepath.Join` instead of `path.Join`) produces backslash artifact paths
-that fail the "artifact paths not covered by secret redaction" check even
-though the workflow is valid; see
-[github/gh-aw#62458](https://github.com/github/gh-aw/issues/62458) and the fix
-in [github/gh-aw#62484](https://github.com/github/gh-aw/pull/62484). Always
-regenerate `stale-reference-interpret.lock.yml` from a Linux/macOS shell (e.g.
-WSL on Windows).
+Run `gh aw compile` for this workflow on Linux or macOS (for example, WSL);
+compiling on Windows fails because of a compiler path-separator bug. See
+[KNOWN_ISSUES](../memory/KNOWN_ISSUES.md#gh-aw-compile-must-run-on-linux-or-macos-never-windows).
 
 The gh-aw v0.89.17 compiler defaults to MCP gateway v0.4.25, which the protocol
 smoke test validates for native clients' stateful fallback initialization. Strict
