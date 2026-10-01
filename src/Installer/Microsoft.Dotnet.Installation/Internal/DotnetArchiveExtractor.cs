@@ -308,11 +308,15 @@ internal class DotnetArchiveExtractor : IDisposable
         // Hold a read handle on the archive throughout the entire extraction to prevent garbage collectors reaping the archive.
         using var archiveStream = new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-        long totalEntries = CountTarEntries(archiveStream, isGzip);
-        installTask?.MaxValue = totalEntries > 0 ? totalEntries : 1;
+        IProgressTask? entryProgressTask = installTask?.RequiresKnownMaximum == true ? installTask : null;
+        if (entryProgressTask is not null)
+        {
+            long totalEntries = CountTarEntries(archiveStream, isGzip);
+            entryProgressTask.MaxValue = totalEntries > 0 ? totalEntries : 1;
+        }
 
         archiveStream.Seek(0, SeekOrigin.Begin);
-        ExtractTarContents(archiveStream, isGzip, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
+        ExtractTarContents(archiveStream, isGzip, targetDir, entryProgressTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
     }
 
     /// <summary>
@@ -434,7 +438,11 @@ internal class DotnetArchiveExtractor : IDisposable
     private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
         using var zip = ZipFile.OpenRead(archivePath);
-        installTask?.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1;
+        IProgressTask? entryProgressTask = installTask?.RequiresKnownMaximum == true ? installTask : null;
+        if (entryProgressTask is not null)
+        {
+            entryProgressTask.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1;
+        }
 
         foreach (var entry in zip.Entries)
         {
@@ -456,7 +464,7 @@ internal class DotnetArchiveExtractor : IDisposable
             }
 
             onEntryExtracted?.Invoke(entry.FullName);
-            installTask?.Value += 1;
+            entryProgressTask?.Value += 1;
         }
     }
 

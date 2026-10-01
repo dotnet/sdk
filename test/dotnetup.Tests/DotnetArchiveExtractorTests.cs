@@ -317,6 +317,56 @@ public class DotnetArchiveExtractorTests
     }
 
     [TestMethod]
+    public void ExtractTarContents_SkipsEntryProgressForCompletionOnlyTask()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var tarPath = Path.Combine(testEnv.TempRoot, "test.tar");
+        var extractDir = Path.Combine(testEnv.TempRoot, "extracted");
+        Directory.CreateDirectory(extractDir);
+
+        var defaultMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead;
+        CreateTarWithPermissions(tarPath,
+            ("hello.txt", defaultMode, isDirectory: false),
+            ("sub/nested.txt", defaultMode, isDirectory: false));
+
+        var task = new TestProgressTask(requiresKnownMaximum: false)
+        {
+            MaxValue = 17,
+            Value = 3,
+        };
+
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, task);
+
+        task.MaxValue.Should().Be(17);
+        task.Value.Should().Be(3);
+        File.Exists(Path.Combine(extractDir, "hello.txt")).Should().BeTrue();
+        File.Exists(Path.Combine(extractDir, "sub", "nested.txt")).Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ExtractTarContents_ReportsEntryProgressWhenMaximumIsRequired()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var tarPath = Path.Combine(testEnv.TempRoot, "test.tar");
+        var extractDir = Path.Combine(testEnv.TempRoot, "extracted");
+        Directory.CreateDirectory(extractDir);
+
+        var defaultMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead;
+        CreateTarWithPermissions(tarPath,
+            ("hello.txt", defaultMode, isDirectory: false),
+            ("sub/nested.txt", defaultMode, isDirectory: false));
+
+        var task = new TestProgressTask(requiresKnownMaximum: true);
+
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, task);
+
+        task.MaxValue.Should().Be(2);
+        task.Value.Should().Be(2);
+    }
+
+    [TestMethod]
     public void ExtractTarContents_SkipsExistingSubcomponents()
     {
         // Arrange — create a tar with files in two subcomponents
@@ -586,5 +636,12 @@ public class DotnetArchiveExtractorTests
 
         return ms.ToArray();
     }
-}
 
+    private sealed class TestProgressTask(bool requiresKnownMaximum) : IProgressTask
+    {
+        public string Description { get; set; } = string.Empty;
+        public double Value { get; set; }
+        public double MaxValue { get; set; }
+        public bool RequiresKnownMaximum { get; } = requiresKnownMaximum;
+    }
+}
