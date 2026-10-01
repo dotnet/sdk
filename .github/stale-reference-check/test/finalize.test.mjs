@@ -12,13 +12,15 @@ const blocker = 'https://github.com/dotnet/runtime/issues/123';
 const logger = { warn() {} };
 
 function action(overrides = {}) {
-    return {
+    const result = {
         candidateId: 'candidate-1', kind: 'ignore', path: 'test/Tests/FeatureTests.cs',
         anchor: 'Tests.FeatureTests.Works', testNames: ['Tests.FeatureTests.Works'],
         startLine: 42, endLine: 42, sourceExcerpt: `[Ignore("${blocker}")]`,
         urls: [blocker], additionalConditions: [],
         ...overrides,
     };
+    result.seedText ??= result.sourceExcerpt.split(/\r?\n/, 1)[0];
+    return result;
 }
 
 async function run(api, actions = [action()], options = {}) {
@@ -250,6 +252,26 @@ test('legacy comment task requires exact source comment and path, not the blocke
     assert.equal((await run(duplicate, [input])).skipped[0].reason, 'open-duplicate');
     const unrelated = mock({ open: [{ number: 7, state: 'open', body: `src/File.cs: ${blocker}` }] });
     assert.equal((await run(unrelated, [input])).created.length, 1);
+});
+
+test('open TODO marker deduplicates when its owning path and seed remain stable', async () => {
+    const input = action({
+        kind: 'todo', path: 'src/File.cs', anchor: 'N.C.M', testNames: [],
+        startLine: 20, endLine: 20, sourceExcerpt: `// TODO remove the fallback after ${blocker}`,
+    });
+    const proposal = await proposalFor(input);
+    const reinterpreted = {
+        ...input, anchor: 'N.C.Other', startLine: 30, endLine: 31,
+        sourceExcerpt: `// TODO remove the fallback after ${blocker}\n// additional context`,
+    };
+    const result = await run(mock({ open: [{ number: 7, state: 'open', body: proposal.body }] }), [reinterpreted]);
+    assert.equal(result.skipped[0].reason, 'open-duplicate');
+    assert.equal(result.created.length, 0);
+    const edited = {
+        ...reinterpreted, seedText: `// TODO use a different fallback after ${blocker}`,
+        sourceExcerpt: `// TODO use a different fallback after ${blocker}`,
+    };
+    assert.equal((await run(mock({ open: [{ number: 7, state: 'open', body: proposal.body }] }), [edited])).created.length, 1);
 });
 
 test('class ignore markers cover each member; any existing member suppresses the entire group', async () => {
@@ -538,12 +560,16 @@ test('changed comment source has a different identity; shared upstream reference
     });
     const proposal = await proposalFor(previous);
     const api = mock({ open: [{ number: 7, state: 'open', body: proposal.body }] });
-    const result = await run(api, [{ ...previous, sourceExcerpt: `// TODO ${blocker}: remove a different workaround` }]);
+    const result = await run(api, [{
+        ...previous, seedText: `// TODO ${blocker}: remove a different workaround`,
+        sourceExcerpt: `// TODO ${blocker}: remove a different workaround`,
+    }]);
     assert.equal(result.created.length, 1);
     assert.notDeepEqual(result.created[0].targetIds, proposal.targetIds);
     const historyApi = mock({ closed: [{ number: 7, state: 'closed', body: proposal.body }] });
     const withHistory = await run(historyApi, [{
-        ...previous, sourceExcerpt: `// TODO ${blocker}: remove an updated workaround`,
+        ...previous, seedText: `// TODO ${blocker}: remove an updated workaround`,
+        sourceExcerpt: `// TODO ${blocker}: remove an updated workaround`,
     }]);
     assert.equal(withHistory.created.length, 1);
     assert.ok(withHistory.created[0].body.includes('https://github.com/dotnet/sdk/issues/7 (closed)'));

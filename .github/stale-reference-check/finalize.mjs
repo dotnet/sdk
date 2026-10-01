@@ -43,7 +43,7 @@ function marker(id) {
 function sourceOf(action) {
     return {
         anchor: action.anchor, startLine: action.startLine, endLine: action.endLine,
-        excerpt: action.sourceExcerpt,
+        excerpt: action.sourceExcerpt, seedText: action.seedText,
     };
 }
 
@@ -121,7 +121,10 @@ export function findOpenDuplicate(issues, group, ambiguousTestNames = new Set())
             return true;
         }
         if (ids.length) {
-            return false;
+            if (group.kind === 'ignore') return false;
+            return group.sources.some(source =>
+                body.includes(`\nSource path: ${inlineCode(group.path)}\n`) &&
+                body.includes(source.seedText.trim()));
         }
         const visible = `${issue.title ?? ''}\n${body}`;
         if (group.kind === 'ignore') {

@@ -7,7 +7,7 @@ import { numberPattern, ownerPattern, referenceUrlPattern, repositoryPattern, sh
 const statuses = new Set(['actionable', 'irrelevant', 'insufficient_context']);
 const kinds = new Set(['ignore', 'todo', 'workaround']);
 const rawActionKeys = ['kind', 'anchor', 'testNames', 'startLine', 'endLine', 'urls', 'additionalConditions'];
-const enrichedActionKeys = [...rawActionKeys, 'candidateId', 'path', 'sourceExcerpt'];
+const enrichedActionKeys = [...rawActionKeys, 'candidateId', 'path', 'sourceExcerpt', 'seedText'];
 // Only results restored/validated by this module may carry derived fields. JSON from the agent cannot opt in.
 const validatedResultObjects = new WeakSet();
 // Match any github.com URL as one token so shorthand is never found inside it.
@@ -221,11 +221,12 @@ function validateAction(action, candidate, evidence, enriched = false) {
     const result = {
         candidateId: candidate.id, kind: action.kind, path: candidate.path, anchor: action.anchor,
         testNames: action.testNames ?? [], startLine: action.startLine, endLine: action.endLine,
-        sourceExcerpt, urls: [...action.urls], additionalConditions: action.additionalConditions ?? [],
+        sourceExcerpt, seedText, urls: [...action.urls], additionalConditions: action.additionalConditions ?? [],
     };
     if (enriched) {
         requireCondition(action.candidateId === result.candidateId && action.path === result.path
-            && action.sourceExcerpt === result.sourceExcerpt, 'Cached action provenance mismatch.');
+            && action.sourceExcerpt === result.sourceExcerpt && action.seedText === result.seedText,
+        'Cached action provenance mismatch.');
     }
     return result;
 }
