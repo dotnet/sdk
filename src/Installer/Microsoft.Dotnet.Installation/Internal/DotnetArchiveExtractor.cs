@@ -14,7 +14,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _ownsProgressReporter = true;
     private readonly int _versionDisplayWidth;
-    private readonly DotnetTarArchiveExtractor _tarArchiveExtractor;
+    private readonly ITarArchiveExtractor _tarArchiveExtractor;
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -66,7 +66,10 @@ internal class DotnetArchiveExtractor : IDisposable
         _request = request;
         _resolvedVersion = resolvedVersion;
         _versionDisplayWidth = versionDisplayWidth;
-        _tarArchiveExtractor = new DotnetTarArchiveExtractor();
+        var dotnetTarArchiveExtractor = new DotnetTarArchiveExtractor();
+        _tarArchiveExtractor = OperatingSystem.IsWindows()
+            ? new WindowsNativeTarArchiveExtractor(dotnetTarArchiveExtractor)
+            : dotnetTarArchiveExtractor;
         ScratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
 
         if (archiveDownloader != null)
