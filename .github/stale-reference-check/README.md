@@ -207,28 +207,45 @@ Open issues are
 fully paginated and compared locally, without relying on hidden-marker search
 indexing, mutable titles, or labels. Conservative checks also recognize existing
 unmarked tasks with the same exact test/source identity. A shared upstream URL
-alone is not a duplicate.
+alone does not mean that an existing issue covers a particular finding.
 
-Eligible TODO/workaround targets in the same file share one open tracking issue.
-Each target has a complete evidence block with its own versioned target ID,
-evidence fingerprint, source excerpt, verified reference resolutions,
-prerequisites, and previous tracking history. Later eligible targets or changed
-evidence are appended to that issue, preserving existing content, titles, and
-labels. Ignored tests retain their existing overlapping-test grouping.
+Eligible references to the same resolved blocker share one open tracking issue
+across files, including ignored tests, TODOs, and workarounds. A target that
+depends on multiple blockers is grouped by that exact canonical blocker set;
+other targets anchored to the same set share its issue. Unrelated blockers are
+never combined merely because their references occur in one file. Every blocker
+in a set must qualify before its findings can be filed.
 
-File-container identity is separate from target identity; the file marker covers
-both TODOs and workarounds. One legacy marked TODO/workaround issue can be adopted
-as the container without rewriting its content. Multiple matching open containers
-cause new additions to be deferred with a diagnostic rather than selecting one
-arbitrarily or creating another. An oversized issue body is also deferred rather
-than split into another issue.
+New issues have one shared repository/branch header, verified blocker-resolution
+section, and follow-up section. Only the Findings section contains the individual
+source paths, target identities, pinned excerpts, unverified prerequisites, and
+previous tracking history. Target IDs remain independent of this grouping.
+Ignored-test evidence also carries a per-test fingerprint so a class-wide ignore
+can add uncovered members without suppressing them because another member is
+already tracked.
+
+Blocker-container identity is separate from source-target identity and uses
+canonical GitHub repository/number keys, so URL aliases identify the same blocker.
+Later findings or changed prerequisites are inserted inside the marked Findings
+section, preserving existing finding text, human notes, titles, and labels. Missing,
+reversed, or duplicate section boundaries defer updates with a diagnostic. Changed
+shared blocker-resolution evidence also defers updates for review rather than
+silently retaining outdated resolution dates.
+
+A legacy marked task can be adopted without rewriting its content only when its
+recorded findings all prove the exact same blocker set. Old mixed-blocker file
+issues remain readable for site-specific duplicate and closure checks, but are
+not adopted to append unrelated references. Legacy bodies are not automatically
+flattened because they may contain human edits. Multiple matching open containers
+or oversized bodies defer additions rather than picking a container arbitrarily
+or splitting a blocker set into another issue.
 
 Closing a tracking issue as completed does not establish that all of its targets
 were fixed. Subsequent runs re-evaluate current source and file any remaining
 eligible targets, or append them to a suitable open issue, retaining the closed
 issue as history. A `not_planned` (won't-fix) closure suppresses the canonical
 targets covered by that issue, even if their prerequisites change. It does not
-suppress unrelated new targets in the file. Missing or unknown closure reasons
+suppress unrelated new targets for the same blocker. Missing or unknown closure reasons
 defer affected targets. Closed-history lookup uses the existing
 `agentic-workflows` label; removing that label can remove this protection. Open
 duplicate detection is not label-dependent.

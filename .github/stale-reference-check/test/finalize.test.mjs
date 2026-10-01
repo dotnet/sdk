@@ -43,7 +43,7 @@ test('fixed ignore template and code-owned labels include pinned evidence and ac
     assert.equal(result.created.length, 1);
     const payload = api.calls.writes[0];
     assert.deepEqual(payload.labels, ['cookie', 'agentic-workflows', 'stale-issue-detection']);
-    assert.equal(payload.title, 'Revalidate ignored test: `Tests.FeatureTests.Works`');
+    assert.equal(payload.title, 'Revalidate references to dotnet/runtime#123');
     assert.equal(payload.owner, 'dotnet');
     assert.equal(payload.repo, 'sdk');
     assert.deepEqual(payload.request, { retries: 0 });
@@ -58,7 +58,8 @@ test('fixed ignore template and code-owned labels include pinned evidence and ac
     ]) {
         assert.ok(payload.body.includes(expected), expected);
     }
-    assert.match(payload.body, /^<!-- stale-reference:v1:[a-f0-9]{64} -->/);
+    assert.match(payload.body, /^<!-- stale-reference-blockers:v1:[a-f0-9]{64} -->/);
+    assert.match(payload.body, /<!-- stale-reference:v1:[a-f0-9]{64} -->/);
     assert.match(payload.body, /<!-- stale-reference-evidence:v1:[a-f0-9]{64} -->/);
     assert.ok(!payload.body.includes('MODEL'));
     assert.equal(api.calls.lists.filter(call => call.state === 'open').length, 2);
@@ -173,14 +174,16 @@ test('duplicate ordering does not change the merged actionable kind or evidence'
     assert.deepEqual(forward.proposed, reverse.proposed);
 });
 
-test('same reference for different tests produces different tasks but only one remote lookup', async () => {
+test('same reference for different tests produces one task with distinct identities and one remote lookup', async () => {
     const api = mock();
     const result = await run(api, [
         action(), action({ candidateId: 'second', testNames: ['Tests.FeatureTests.Other'] }),
     ]);
-    assert.equal(result.created.length, 2);
+    assert.equal(result.created.length, 1);
     assert.equal(api.calls.reads.length, 1);
-    assert.notDeepEqual(result.created[0].targetIds, result.created[1].targetIds);
+    assert.equal(result.created[0].targetIds.length, 2);
+    assert.ok(result.created[0].body.includes('Tests.FeatureTests.Works'));
+    assert.ok(result.created[0].body.includes('Tests.FeatureTests.Other'));
 });
 
 test('merged PR task records the original issues URL and authoritative merge date', async () => {
@@ -276,7 +279,7 @@ test('distinct TODO anchors sharing a seed are appended, not treated as duplicat
     assert.equal((await run(mock({ open: [{ number: 7, state: 'open', body: proposal.body }] }), [edited])).updated.length, 1);
 });
 
-test('class ignore markers cover each member; any existing member suppresses the entire group', async () => {
+test('class ignore markers cover each member and append only members not already tracked', async () => {
     const input = action({
         anchor: 'Tests.FeatureTests',
         testNames: ['Tests.FeatureTests.Works', 'Tests.FeatureTests.Other'],
@@ -289,6 +292,9 @@ test('class ignore markers cover each member; any existing member suppresses the
     const result = await run(api, [input]);
     assert.equal(result.skipped[0].reason, 'open-duplicate');
     assert.equal(result.created.length, 0);
+    assert.equal(result.updated.length, 1);
+    assert.ok(result.updated[0].body.includes('Fully qualified test: `Tests.FeatureTests.Other`'));
+    assert.equal(result.updated[0].targetIds.length, 1);
     const combined = mergeActions(repository, [input, action(), action({
         candidateId: 'overlap', testNames: ['Tests.FeatureTests.Other', 'Tests.FeatureTests.Third'],
     })]);
@@ -308,13 +314,14 @@ test('dry-run computes identical payloads with strictly zero mutation calls', as
 test('five-issue cap is hardcoded and excludes duplicates across cached/fresh/repeated actions', async () => {
     const actions = Array.from({ length: 8 }, (_, i) => action({
         candidateId: `candidate-${i}`, testNames: [`Tests.FeatureTests.Case${i}`],
+        urls: [blocker.replace('123', String(123 + i))],
     }));
     const api = mock();
     const result = await run(api, [...actions, ...actions], { maximumOpenIssues: 100 });
     assert.equal(result.created.length, 5);
     assert.equal(api.calls.writes.length, 5);
     assert.equal(result.skipped.filter(skip => skip.reason === 'open-issue-cap').length, 3);
-    assert.equal(api.calls.reads.length, 1);
+    assert.equal(api.calls.reads.length, 8);
     const dry = await run(mock(), [...actions, ...actions], { dryRun: true });
     assert.equal(dry.proposed.length, 5);
     assert.equal(dry.skipped.filter(skip => skip.reason === 'open-issue-cap').length, 3);
@@ -417,7 +424,8 @@ test('refresh failure halts writes rather than trusting a stale successful listi
         return [];
     } });
     const result = await run(api, [
-        action(), action({ candidateId: 'another', testNames: ['Tests.FeatureTests.Other'] }),
+        action(), action({ candidateId: 'another', testNames: ['Tests.FeatureTests.Other'],
+            urls: [blocker.replace('123', '456')] }),
     ]);
     assert.equal(api.calls.writes.length, 0);
     assert.equal(result.diagnostics[0].code, 'tracking-refresh-failed');
@@ -447,7 +455,8 @@ test('ambiguous POST success is reconciled by markers without sending a second P
 test('unreconciled POST failure halts remaining filing; no automatic POST retry', async () => {
     const api = mock({ create: async () => { throw { status: 502 }; } });
     const result = await run(api, [
-        action(), action({ candidateId: 'other', testNames: ['Tests.FeatureTests.Other'] }),
+        action(), action({ candidateId: 'other', testNames: ['Tests.FeatureTests.Other'],
+            urls: [blocker.replace('123', '456')] }),
     ]);
     assert.equal(api.calls.writes.length, 1);
     assert.equal(result.created.length, 0);
@@ -466,6 +475,7 @@ test('partial create failure retains previous successes and halts the remaining 
     } });
     const inputs = Array.from({ length: 4 }, (_, index) => action({
         candidateId: `candidate-${index}`, testNames: [`Tests.FeatureTests.Case${index}`],
+        urls: [blocker.replace('123', String(123 + index))],
     }));
     const result = await run(api, inputs);
     assert.equal(api.calls.writes.length, 2);
@@ -482,6 +492,7 @@ test('reconciled creates count against the same hard five-issue cap', async () =
     } });
     const inputs = Array.from({ length: 7 }, (_, index) => action({
         candidateId: `candidate-${index}`, testNames: [`Tests.FeatureTests.Case${index}`],
+        urls: [blocker.replace('123', String(123 + index))],
     }));
     const result = await run(api, inputs);
     assert.equal(api.calls.writes.length, 5);

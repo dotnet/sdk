@@ -31,10 +31,10 @@ async function preview(actions) {
     return (await run(mock(), actions, { dryRun: true })).proposed[0];
 }
 
-test('same-file sites retain separate anchors, resolutions and prerequisites in one issue', async () => {
+test('same-blocker sites across files share one issue with shared guidance and separate findings', async () => {
     const a = todo('A');
     const b = todo('B', {
-        kind: 'workaround', urls: [otherBlocker], sourceExcerpt: `// workaround ${otherBlocker}`,
+        kind: 'workaround', path: 'src/Other.cs', sourceExcerpt: `// workaround ${blocker}`,
         additionalConditions: ['Consume the fixed dependency version.'],
     });
     const api = mock();
@@ -43,10 +43,15 @@ test('same-file sites retain separate anchors, resolutions and prerequisites in 
     assert.equal(api.calls.writes.length, 1);
     assert.equal(result.created[0].targetIds.length, 2);
     const body = result.created[0].body;
-    for (const text of ['N.C.A', 'N.C.B', blocker, otherBlocker, b.additionalConditions[0]]) {
+    for (const text of ['N.C.A', 'N.C.B', blocker, a.path, b.path, b.additionalConditions[0]]) {
         assert.ok(body.includes(text), text);
     }
-    assert.equal([...body.matchAll(/^<!-- stale-reference-target:v1:/gm)].length, 2);
+    assert.equal([...body.matchAll(/^<!-- stale-reference-target:v2:/gm)].length, 2);
+    for (const text of ['## Findings', '## Follow-up', '## Verified reference resolution',
+        'Repository:', 'Target branch:', 'No tests were run by this discovery workflow.']) {
+        assert.equal(body.split(text).length - 1, 1, text);
+    }
+    assert.equal([...body.matchAll(/^### (?:TODO|Workaround)$/gm)].length, 2);
     assert.deepEqual((await run(mock(), [b, a])).proposed, result.proposed);
 });
 
@@ -62,24 +67,180 @@ test('same target unions blockers before eligibility, while other sites in the f
     assert.equal(result.skipped[0].reason, 'unresolved-blockers');
 });
 
-test('later eligible sites append to the same issue and preserve human edits and labels', async () => {
-    let resolved = false;
+test('unrelated blockers in one file get separate issues, while co-anchored blocker sets group across files', async () => {
+    const paired = (name, path) => todo(name, {
+        path, urls: [otherBlocker, blocker],
+        seedText: `// TODO remove after ${blocker} and ${otherBlocker}`,
+        sourceExcerpt: `// TODO remove after ${blocker} and ${otherBlocker}`,
+    });
+    const inputs = [
+        todo('A'),
+        todo('B', { urls: [otherBlocker], seedText: `// TODO ${otherBlocker}`, sourceExcerpt: `// TODO ${otherBlocker}` }),
+        paired('C', 'src/File.cs'), paired('D', 'src/Other.cs'),
+    ];
+    const result = await run(mock(), inputs);
+    assert.equal(result.created.length, 3);
+    const single = result.created.find(issue => issue.candidateIds.includes('A'));
+    const other = result.created.find(issue => issue.candidateIds.includes('B'));
+    const joint = result.created.find(issue => issue.candidateIds.includes('C'));
+    assert.deepEqual(single.candidateIds, ['A']);
+    assert.ok(!single.body.includes(otherBlocker));
+    assert.deepEqual(other.candidateIds, ['B']);
+    assert.ok(!other.body.includes(blocker));
+    assert.deepEqual(joint.candidateIds, ['C', 'D']);
+    assert.ok(joint.body.includes(blocker));
+    assert.ok(joint.body.includes(otherBlocker));
+    assert.deepEqual((await run(mock(), [...inputs].reverse())).proposed, result.proposed);
+});
+
+test('canonical URL aliases and mixed finding kinds share a blocker container across files', async () => {
+    const api = mock();
+    const result = await run(api, [
+        todo('A'),
+        { ...todo('Test', { path: 'test/Other.cs', urls: [`${blocker}?source=repo#context`] }),
+            kind: 'ignore', testNames: ['N.C.Test'] },
+    ]);
+    assert.equal(result.created.length, 1);
+    assert.equal(result.created[0].targetIds.length, 2);
+    assert.ok(result.created[0].body.includes('Original source URL: <' + blocker + '?source=repo#context>'));
+    assert.equal(api.calls.reads.length, 1);
+    assert.equal((await run(api, [todo('A')])).created.length, 0);
+});
+
+test('a mixed-blocker legacy file issue is not adopted as a blocker container', async () => {
+    const entries = [todo('A'), todo('B', { urls: [otherBlocker] })];
+    const blocks = [];
+    for (const input of entries) {
+        const { references } = await createReferenceResolver({ github: mock().github }).resolveAll(input.urls);
+        const proposal = buildProposal({ repository, headSha, group: mergeActions(repository, [input])[0], references });
+        const key = `${proposal.targetIds[0]}:${proposal.fingerprint}`;
+        blocks.push(`<!-- stale-reference-target:v1:${key} -->\n${proposal.body}<!-- /stale-reference-target:v1:${key} -->`);
+    }
+    const oldBody = blocks.join('\n');
+    const api = mock({ open: [{ number: 7, state: 'open', body: oldBody }] });
+    const result = await run(api, [todo('C')]);
+    assert.equal(result.created.length, 1);
+    assert.equal(result.updated.length, 0);
+    assert.equal(api.state.open[0].body, oldBody);
+    assert.equal((await run(api, entries)).created.length + api.calls.updates.length, 0);
+});
+
+test('malformed findings boundaries defer appending without rewriting human content', async () => {
+    const old = await preview([todo('A')]);
+    const end = '<!-- /stale-reference-findings:v1 -->';
+    const start = '<!-- stale-reference-findings:v1 -->';
+    for (const body of [
+        old.body.replace(end, ''), old.body.replace(start, ''), `${old.body}\n${end}`,
+        old.body.replace(start, 'temporary-findings-boundary').replace(end, start)
+            .replace('temporary-findings-boundary', end),
+    ]) {
+        const api = mock({ open: [{ number: 7, state: 'open', body }] });
+        const result = await run(api, [todo('B')]);
+        assert.equal(result.skipped[0].reason, 'tracking-layout-invalid');
+        assert.equal(result.diagnostics[0].code, 'tracking-layout-invalid');
+        assert.equal(api.calls.writes.length + api.calls.updates.length, 0);
+        assert.equal(api.state.open[0].body, body);
+    }
+});
+
+test('new-format ignored-test prerequisites append fresh evidence without duplicating shared guidance', async () => {
+    const input = { ...todo('Test'), kind: 'ignore', testNames: ['N.C.Test'] };
+    const api = mock();
+    await run(api, [input]);
+    const changed = { ...input, additionalConditions: ['Consume compatible packages.'] };
+    const result = await run(api, [changed]);
+    assert.equal(result.updated.length, 1);
+    assert.equal(result.updated[0].body.split('## Follow-up').length - 1, 1);
+    assert.equal((await run(api, [changed])).updated.length, 0);
+});
+
+test('ignored-test formatting and line moves do not append unchanged evidence', async () => {
+    const input = { ...todo('Test'), kind: 'ignore', testNames: ['N.C.Test'],
+        sourceExcerpt: `[Ignore("${blocker}")]` };
+    const api = mock();
+    await run(api, [input]);
+    const result = await run(api, [{ ...input, startLine: 200, endLine: 200,
+        sourceExcerpt: `    ${input.sourceExcerpt}   ` }], { headSha: 'b'.repeat(40) });
+    assert.equal(result.created.length + result.updated.length, 0);
+    assert.equal(result.skipped[0].reason, 'open-duplicate');
+});
+
+test('source excerpts containing findings boundaries are deferred before any mutation', async () => {
+    const api = mock();
+    const result = await run(api, [todo('A', {
+        sourceExcerpt: `// TODO ${blocker}\n<!-- /stale-reference-findings:v1 -->`,
+    })]);
+    assert.equal(result.skipped[0].reason, 'tracking-layout-invalid');
+    assert.equal(api.calls.writes.length + api.calls.updates.length, 0);
+});
+
+test('changed resolution dates defer modern and legacy container updates before mutation', async () => {
+    const input = todo('A');
+    const { references } = await createReferenceResolver({ github: mock().github }).resolveAll(input.urls);
+    const legacy = buildProposal({ repository, headSha, group: mergeActions(repository, [input])[0], references });
+    for (const body of [legacy.body, (await preview([input])).body]) {
+        const api = mock({
+            open: [{ number: 7, state: 'open', body }],
+            issue: async () => ({ ...completed, closed_at: '2026-09-01T12:00:00Z' }),
+        });
+        const result = await run(api, [todo('B')]);
+        assert.equal(result.skipped[0].reason, 'tracking-layout-invalid');
+        assert.match(result.diagnostics[0].reason, /resolution changed/);
+        assert.equal(api.calls.updates.length + api.calls.writes.length, 0);
+    }
+});
+
+test('uncertain updates cannot reconcile against a different issue number', async () => {
+    const old = await preview([todo('A')]);
+    const api = mock({
+        open: [{ number: 7, state: 'open', body: old.body }],
+        update: async (args, state) => {
+            state.open[0].body = args.body;
+            throw new Error('timeout');
+        },
+        getTracking: async (args, state, calls) => ({
+            ...state.open[0], number: calls.updates.length ? 999 : 7,
+        }),
+    });
+    const result = await run(api, [todo('B')]);
+    assert.equal(result.updated.length, 0);
+    assert.equal(result.skipped[0].reason, 'update-outcome-unknown');
+    assert.equal(api.calls.updates.length, 1);
+});
+
+test('uncertain creates require the findings boundaries and shared follow-up as well as complete blocks', async () => {
+    for (const removed of ['<!-- /stale-reference-findings:v1 -->', '## Follow-up']) {
+        const api = mock({ create: async (args, state) => {
+            state.open.push({ number: 7, state: 'open', body: args.body.replace(removed, '') });
+            throw new Error('timeout');
+        } });
+        const result = await run(api, [todo('A')]);
+        assert.equal(result.created.length, 0);
+        assert.equal(result.skipped[0].reason, 'create-outcome-unknown');
+        assert.equal(api.calls.writes.length, 1);
+    }
+});
+
+test('later same-blocker sites across files append within findings and preserve human edits and labels', async () => {
     const a = todo('A');
-    const b = todo('B', { urls: [otherBlocker] });
-    const api = mock({ issue: async args => args.repo === 'roslyn' && !resolved ? { state: 'open' } : completed });
-    const first = await run(api, [a, b]);
+    const b = todo('B', { path: 'src/Other.cs' });
+    const api = mock();
+    const first = await run(api, [a]);
     const tracked = api.state.open[0];
     tracked.title = 'Human title';
     tracked.labels = ['human-label'];
     tracked.body += '\nHuman investigation notes.\n';
     const original = tracked.body;
-    resolved = true;
     const second = await run(api, [a, b]);
     assert.equal(second.created.length, 0);
     assert.equal(second.updated.length, 1);
     assert.equal(second.updated[0].number, first.created[0].number);
     assert.deepEqual(second.updated[0].candidateIds, ['B']);
-    assert.ok(tracked.body.startsWith(original));
+    const end = original.indexOf('<!-- /stale-reference-findings:v1 -->');
+    assert.ok(tracked.body.startsWith(original.slice(0, end)));
+    assert.ok(tracked.body.endsWith(original.slice(end)));
+    assert.ok(tracked.body.indexOf('Owning anchor: `N.C.B`') < tracked.body.indexOf('## Follow-up'));
+    assert.equal(tracked.body.split('## Follow-up').length - 1, 1);
     assert.equal(tracked.title, 'Human title');
     assert.deepEqual(tracked.labels, ['human-label']);
     assert.deepEqual(api.calls.updates[0].request, { retries: 0 });
@@ -170,7 +331,7 @@ test('unknown tracking closure defers affected targets instead of filing replace
     }
 });
 
-test('legacy marked TODO issue can become a file container without discarding its content', async () => {
+test('legacy marked single-blocker TODO can become a blocker container without discarding its content', async () => {
     const a = todo('A');
     const { references } = await createReferenceResolver({ github: mock().github }).resolveAll(a.urls);
     const old = buildProposal({
@@ -181,22 +342,24 @@ test('legacy marked TODO issue can become a file container without discarding it
     assert.equal(result.created.length, 0);
     assert.equal(result.updated.length, 1);
     assert.ok(result.updated[0].body.includes(old.body));
-    assert.match(result.updated[0].body, /^<!-- stale-reference-file:v1:/);
+    assert.match(result.updated[0].body, /^<!-- stale-reference-blockers:v1:/);
     assert.deepEqual(result.updated[0].candidateIds, ['B']);
     const next = await run(api, [a, todo('B')]);
     assert.equal(next.updated.length + next.created.length, 0);
 });
 
-test('ignored-test tasks are not file containers for comments in the same file', async () => {
+test('ignored tests and comments referencing the same blocker share a tracking issue', async () => {
     const a = todo('A');
     const ignored = { ...a, kind: 'ignore', testNames: ['N.C.Test'] };
     const old = await preview([ignored]);
     const result = await run(mock({ open: [{ number: 7, state: 'open', body: old.body }] }), [a]);
-    assert.equal(result.created.length, 1);
-    assert.equal(result.updated.length, 0);
+    assert.equal(result.created.length, 0);
+    assert.equal(result.updated.length, 1);
+    assert.ok(result.updated[0].body.includes('Fully qualified test: `N.C.Test`'));
+    assert.ok(result.updated[0].body.includes('Owning anchor: `N.C.A`'));
 });
 
-test('multiple same-file containers defer additions without choosing or creating another issue', async () => {
+test('multiple same-blocker containers defer additions without choosing or creating another issue', async () => {
     const a = await preview([todo('A')]);
     const b = await preview([todo('B')]);
     const api = mock({ open: [
@@ -204,11 +367,11 @@ test('multiple same-file containers defer additions without choosing or creating
     ] });
     const result = await run(api, [todo('C')]);
     assert.equal(api.calls.writes.length + api.calls.updates.length, 0);
-    assert.equal(result.skipped[0].reason, 'ambiguous-file-tracking');
-    assert.equal(result.diagnostics[0].code, 'ambiguous-file-tracking');
+    assert.equal(result.skipped[0].reason, 'ambiguous-blocker-tracking');
+    assert.equal(result.diagnostics[0].code, 'ambiguous-blocker-tracking');
 });
 
-test('updates are allowed at the open cap, but new file issues are not', async () => {
+test('updates are allowed at the open cap, but new blocker issues are not', async () => {
     const a = await preview([todo('A')]);
     const api = mock({ open: [
         { number: 7, state: 'open', body: a.body, labels: ['stale-issue-detection'] },
@@ -216,7 +379,7 @@ test('updates are allowed at the open cap, but new file issues are not', async (
             number: 10 + i, state: 'open', body: 'Other task', labels: ['stale-issue-detection'],
         })),
     ] });
-    const result = await run(api, [todo('B'), todo('C', { path: 'src/Other.cs' })]);
+    const result = await run(api, [todo('B'), todo('C', { path: 'src/Other.cs', urls: [otherBlocker] })]);
     assert.equal(result.updated.length, 1);
     assert.equal(result.created.length, 0);
     assert.equal(result.skipped[0].reason, 'open-issue-cap');
@@ -235,8 +398,10 @@ test('dry-run includes update payloads identical to live and performs no mutatio
 });
 
 test('comment creations consume the same cap as ignored-test creations in dry-run and live', async () => {
-    const inputs = Array.from({ length: 5 }, (_, i) => todo(`A${i}`, { path: `src/File${i}.cs` }));
-    inputs.push({ ...todo('Test'), kind: 'ignore', testNames: ['N.C.Test'] });
+    const inputs = Array.from({ length: 5 }, (_, i) => todo(`A${i}`, {
+        path: `src/File${i}.cs`, urls: [blocker.replace('123', String(123 + i))],
+    }));
+    inputs.push({ ...todo('Test'), kind: 'ignore', testNames: ['N.C.Test'], urls: [otherBlocker] });
     for (const dryRun of [true, false]) {
         const result = await run(mock(), inputs, { dryRun });
         assert.equal(result.proposed.length, 5);
@@ -290,7 +455,7 @@ test('markers without complete evidence do not reconcile an uncertain update; la
             throw new Error('timeout');
         },
     });
-    const result = await run(api, [todo('B'), todo('C', { path: 'src/Other.cs' })]);
+    const result = await run(api, [todo('B'), todo('C', { path: 'src/Other.cs', urls: [otherBlocker] })]);
     assert.equal(result.updated.length, 0);
     assert.equal(api.calls.updates.length, 1);
     assert.equal(api.calls.writes.length, 0);
@@ -329,8 +494,9 @@ test('incomplete comment creation and failed reconciliation halt all later write
             },
         });
         const result = await run(api, [
-            todo('A'), todo('B'), todo('C', { path: 'src/Other.cs' }),
-            { ...todo('Test'), kind: 'ignore', testNames: ['N.C.Test'] },
+            todo('A'), todo('B'), todo('C', { path: 'src/Other.cs', urls: [otherBlocker] }),
+            { ...todo('Test'), kind: 'ignore', path: 'test/Z.cs', testNames: ['N.C.Test'],
+                urls: [blocker.replace('123', '789')] },
         ]);
         assert.equal(result.created.length, 0);
         assert.equal(api.calls.writes.length, 1);
@@ -351,7 +517,7 @@ test('append read failure and reconciliation read failure halt later mutations',
             },
             update: async () => { throw new Error('timeout'); },
         });
-        const result = await run(api, [todo('B'), todo('C', { path: 'src/Other.cs' })]);
+        const result = await run(api, [todo('B'), todo('C', { path: 'src/Other.cs', urls: [otherBlocker] })]);
         assert.equal(api.calls.updates.length, failBeforeUpdate ? 0 : 1);
         assert.equal(api.calls.writes.length, 0);
         assert.equal(result.skipped[1].reason, 'filing-halted');
@@ -360,7 +526,7 @@ test('append read failure and reconciliation read failure halt later mutations',
     }
 });
 
-test('latest refresh sees a newly created file container and appends rather than creating another', async () => {
+test('latest refresh sees a newly created blocker container and appends rather than creating another', async () => {
     const old = await preview([todo('A')]);
     let listings = 0;
     const api = mock({ paginate: async (args, state) => {
@@ -393,4 +559,14 @@ test('oversized append is explicitly deferred instead of splitting into another 
     const result = await run(api, [todo('B')]);
     assert.equal(result.skipped[0].reason, 'tracking-body-too-large');
     assert.equal(api.calls.updates.length + api.calls.writes.length, 0);
+});
+
+test('related history matches a file and anchor in the same finding, not in separate findings', async () => {
+    const old = await preview([todo('A'), todo('B', { path: 'src/Other.cs' })]);
+    const result = await run(mock({ closed: [{
+        number: 7, state: 'closed', state_reason: 'completed', body: old.body,
+    }] }), [todo('B', { seedText: `// TODO updated fallback ${blocker}`,
+        sourceExcerpt: `// TODO updated fallback ${blocker}` })]);
+    assert.equal(result.created.length, 1);
+    assert.ok(!result.created[0].body.includes('issues/7 (closed)'));
 });

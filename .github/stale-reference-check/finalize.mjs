@@ -136,9 +136,10 @@ function closedHistory(issues, group) {
     // visible, but never use that weaker association to suppress a new action.
     const related = group.kind === 'ignore' ? [] : issues.filter(issue => {
         const body = issue.body ?? '';
-        return matches(markerPattern, body).length &&
-            body.includes(`\nSource path: ${inlineCode(group.path)}\n`) &&
-            group.sources.some(source => body.includes(`\nOwning anchor: ${inlineCode(source.anchor)}\n`));
+        const sections = targetSections(body);
+        return matches(markerPattern, body).length && (sections.length ? sections : [body]).some(section =>
+            section.includes(`\nSource path: ${inlineCode(group.path)}\n`) &&
+            group.sources.some(source => section.includes(`\nOwning anchor: ${inlineCode(source.anchor)}\n`)));
     });
     const history = [...new Map([...exact, ...related].map(issue => [issue.number, issue])).values()];
     return { history };
@@ -159,28 +160,88 @@ function evidenceFingerprint(group, references) {
     });
 }
 
-function fileMarker(repository, path) {
+function blockerMarker(repository, references) {
     const { owner, repo } = normalizeRepository(repository);
-    return `<!-- stale-reference-file:v1:${hash([`${owner}/${repo}`, path, 'todo/workaround'])} -->`;
+    return `<!-- stale-reference-blockers:v1:${hash([`${owner}/${repo}`, unique(references.map(reference => reference.key))])} -->`;
 }
 
-function targetBlock({ repository, targetBranch, headSha, group, references, history }) {
-    const proposal = buildProposal({ repository, targetBranch, headSha, group, references, history });
-    const key = `${group.ids[0]}:${proposal.fingerprint}`;
-    return `<!-- stale-reference-target:v1:${key} -->\n${proposal.body}` +
-        `<!-- /stale-reference-target:v1:${key} -->`;
+const findingsStart = '<!-- stale-reference-findings:v1 -->';
+const findingsEnd = '<!-- /stale-reference-findings:v1 -->';
+
+function targetSections(body) {
+    const blocks = [...body.matchAll(/<!-- stale-reference-target:v([12]):([a-f0-9]{64}:[a-f0-9]{64}) -->\n([\s\S]*?)<!-- \/stale-reference-target:v\1:\2 -->/g)];
+    const prefix = body.slice(0, body.search(/<!-- stale-reference-target:v[12]:/));
+    return [...(blocks.length && matches(markerPattern, prefix).length ? [prefix] : []),
+        ...blocks.map(match => match[3])];
 }
 
-function isCommentContainer(issue, repository, path) {
+function findingsRange(body) {
+    const starts = [...body.matchAll(/^<!-- stale-reference-findings:v1 -->$/gm)];
+    const ends = [...body.matchAll(/^<!-- \/stale-reference-findings:v1 -->$/gm)];
+    if (starts.length !== 1 || ends.length !== 1 || starts[0].index >= ends[0].index ||
+        !body.includes('\n## Follow-up\n', ends[0].index)) {
+        throw new Error('Tracking issue has a missing or ambiguous findings section.');
+    }
+    return { start: starts[0].index, end: ends[0].index };
+}
+
+function targetBlock({ repository, headSha, group, references, history }) {
+    const { owner, repo } = normalizeRepository(repository);
+    const base = `https://github.com/${owner}/${repo}`;
+    const path = group.path.split('/').map(encodeURIComponent).join('/');
+    const fingerprint = evidenceFingerprint(group, references);
+    const key = `${group.ids[0]}:${fingerprint}`;
+    return [
+        `<!-- stale-reference-target:v2:${key} -->`,
+        ...group.ids.map(marker),
+        `<!-- stale-reference-evidence:v1:${fingerprint} -->`,
+        ...(group.kind === 'ignore' ? group.ids.map(id =>
+            `<!-- stale-reference-evidence:v2:${id}:${evidenceFingerprint({ ...group, ids: [id] }, references)} -->`) : []),
+        `### ${group.kind === 'ignore' ? 'Ignored tests' : group.kind === 'todo' ? 'TODO' : 'Workaround'}`,
+        '',
+        `Source path: ${inlineCode(group.path)}`,
+        ...(group.kind === 'ignore'
+            ? group.testNames.map(name => `Fully qualified test: ${inlineCode(name)}`)
+            : unique(group.sources.map(source => source.anchor)).map(anchor => `Owning anchor: ${inlineCode(anchor)}`)),
+        '', '#### Source evidence', '',
+        ...group.sources.flatMap(source => [
+            `[Commit-pinned source, lines ${source.startLine}-${source.endLine}](${base}/blob/${headSha}/${path}#L${source.startLine}-L${source.endLine})`,
+            '', fenced(source.excerpt), '',
+        ]),
+        '#### Additional prerequisites (not verified)', '',
+        ...(group.additionalConditions.length
+            ? group.additionalConditions.flatMap(condition => [fenced(condition), ''])
+            : ['None identified in the source; this does not establish that none exist.', '']),
+        ...(history.length ? [
+            '#### Previous tracking history', '',
+            ...history.map(issue => `- ${base}/issues/${issue.number} (closed)`), '',
+        ] : []),
+        `<!-- /stale-reference-target:v2:${key} -->`,
+    ].join('\n');
+}
+
+function isBlockerContainer(issue, repository, references) {
     const body = issue.body ?? '';
     const { owner, repo } = normalizeRepository(repository);
-    if (!body.includes(`\nRepository: \`${owner}/${repo}\`\n`) ||
-        !body.includes(`\nSource path: ${inlineCode(path)}\n`)) {
+    if (!body.includes(`\nRepository: \`${owner}/${repo}\`\n`)) {
         return false;
     }
-    return body.includes(fileMarker(repository, path)) ||
-        (matches(markerPattern, body).length > 0 &&
-            /Follow-up kind: \*\*(?:todo|workaround)\*\*\./.test(body));
+    if (body.includes('<!-- stale-reference-blockers:v1:')) {
+        return body.includes(blockerMarker(repository, references));
+    }
+    // Adopt only legacy tasks whose recorded resolutions prove the exact blocker set.
+    const expected = JSON.stringify(unique(references.map(reference => reference.key)));
+    const legacyBlocks = targetSections(body);
+    if (body.includes('<!-- stale-reference-target:v1:') && !legacyBlocks.length) return false;
+    const sections = legacyBlocks.length ? legacyBlocks : [body];
+    return matches(markerPattern, body).length > 0 && sections.every(section => {
+        const urls = [...section.matchAll(/^- ([^\n ]+): (?:issue closed as completed|pull request merged)/gm)];
+        if (!urls.length || urls.some(match =>
+            !/^https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/(?:issues|pull)\/[1-9]\d{0,14}$/.test(match[1]))) return false;
+        const keys = urls.map(match => match[1].slice('https://github.com/'.length)
+            .replace(/\/(?:issues|pull)\//, '/').toLowerCase());
+        return JSON.stringify(unique(keys)) === expected;
+    });
 }
 
 function referenceResolution(reference) {
@@ -189,31 +250,52 @@ function referenceResolution(reference) {
         : `issue closed as completed at ${reference.closedAt}`}.`;
 }
 
-function commentCovered(issue, entry) {
+function commentCovered(issue, entry, repository, ambiguousNames) {
     const body = issue.body ?? '';
-    if (body.includes('<!-- stale-reference-target:v1:')) {
+    if (body.includes('<!-- stale-reference-blockers:v1:') &&
+        !body.includes(blockerMarker(repository, entry.references))) return false;
+    if (entry.group.kind === 'ignore') {
+        if (body.includes('<!-- stale-reference-target:v2:')) {
+            return targetSections(body).some(block => entry.group.ids.every(id =>
+                block.includes(`<!-- stale-reference-evidence:v2:${id}:${evidenceFingerprint({ ...entry.group, ids: [id] }, entry.references)} -->`)) &&
+                entry.group.testNames.every(name => block.includes(`Fully qualified test: ${inlineCode(name)}`)) &&
+                entry.group.sources.every(source =>
+                    normalizeActionSource(block).includes(normalizeActionSource(source.excerpt))) &&
+                entry.group.additionalConditions.every(condition => block.includes(fenced(condition))) &&
+                entry.references.every(reference => body.includes(referenceResolution(reference)))) ||
+                Boolean(findOpenDuplicate([{ ...issue, body: body.slice(0, body.indexOf('<!-- stale-reference-target:v2:')) }],
+                    entry.group, ambiguousNames));
+        }
+        return Boolean(findOpenDuplicate([issue], entry.group, ambiguousNames));
+    }
+    if (/<!-- stale-reference-target:v[12]:/.test(body)) {
         const fingerprint = evidenceFingerprint(entry.group, entry.references);
         const key = `${entry.group.ids[0]}:${fingerprint}`;
-        const start = `<!-- stale-reference-target:v1:${key} -->`;
-        const end = `<!-- /stale-reference-target:v1:${key} -->`;
-        let offset = -1;
-        while ((offset = body.indexOf(start, offset + 1)) !== -1) {
-            const endOffset = body.indexOf(end, offset + start.length);
-            if (endOffset === -1) continue;
-            const block = body.slice(offset + start.length, endOffset);
-            if (block.includes(marker(entry.group.ids[0])) &&
-                block.includes(`<!-- stale-reference-evidence:v1:${fingerprint} -->`) &&
-                ['## Canonical target', '## Source evidence', '## Verified reference resolution',
-                    '## Additional prerequisites (not verified)', '## Follow-up'].every(section => block.includes(section)) &&
-                entry.group.sources.every(source =>
-                    block.includes(`Owning anchor: ${inlineCode(source.anchor)}`) &&
-                    normalizeActionSource(block).includes(normalizeActionSource(source.seedText))) &&
-                entry.references.every(reference => block.includes(referenceResolution(reference))) &&
-                entry.group.additionalConditions.every(condition => block.includes(fenced(condition)))) {
-                return true;
+        for (const version of [1, 2]) {
+            const start = `<!-- stale-reference-target:v${version}:${key} -->`;
+            const end = `<!-- /stale-reference-target:v${version}:${key} -->`;
+            let offset = -1;
+            while ((offset = body.indexOf(start, offset + 1)) !== -1) {
+                const endOffset = body.indexOf(end, offset + start.length);
+                if (endOffset === -1) continue;
+                const block = body.slice(offset + start.length, endOffset);
+                if (block.includes(marker(entry.group.ids[0])) &&
+                    block.includes(`<!-- stale-reference-evidence:v1:${fingerprint} -->`) &&
+                    (version === 1
+                        ? ['## Canonical target', '## Source evidence', '## Verified reference resolution',
+                            '## Additional prerequisites (not verified)', '## Follow-up']
+                        : ['#### Source evidence', '#### Additional prerequisites (not verified)'])
+                        .every(section => block.includes(section)) &&
+                    entry.group.sources.every(source =>
+                        block.includes(`Owning anchor: ${inlineCode(source.anchor)}`) &&
+                        normalizeActionSource(block).includes(normalizeActionSource(source.seedText))) &&
+                    entry.references.every(reference => (version === 1 ? block : body).includes(referenceResolution(reference))) &&
+                    entry.group.additionalConditions.every(condition => block.includes(fenced(condition)))) {
+                    return true;
+                }
             }
         }
-        const legacy = body.slice(0, body.indexOf('<!-- stale-reference-target:v1:'));
+        const legacy = body.slice(0, body.search(/<!-- stale-reference-target:v[12]:/));
         return matches(markerPattern, legacy).includes(entry.group.ids[0]) &&
             legacy.includes(`<!-- stale-reference-evidence:v1:${fingerprint} -->`);
     }
@@ -235,18 +317,24 @@ function trackingClosure(issues, group) {
     return unknown ? { reason: 'unknown-tracking-closure', number: unknown.number } : null;
 }
 
-async function finalizeCommentFiles({
-    github, repository, targetBranch, headSha, dryRun, entries, readTracking, report, result, remembered,
+async function finalizeBlockers({
+    github, repository, targetBranch, headSha, dryRun, entries, readTracking, report, result, remembered, ambiguousNames,
 }) {
     const { owner, repo } = normalizeRepository(repository);
-    const files = new Map();
+    const blockers = new Map();
     for (const entry of entries) {
-        if (!files.has(entry.group.path)) files.set(entry.group.path, []);
-        files.get(entry.group.path).push(entry);
+        const key = blockerMarker(repository, entry.references);
+        if (!blockers.has(key)) blockers.set(key, []);
+        blockers.get(key).push(entry);
     }
     let halted = false;
-    for (const [path, fileEntries] of files) {
-        const candidateIds = unique(fileEntries.flatMap(entry => entry.group.candidateIds));
+    for (const [container, blockerEntries] of blockers) {
+        const references = blockerEntries[0].references.map(reference => ({
+            ...reference,
+            originalUrls: unique(blockerEntries.flatMap(entry =>
+                entry.references.find(item => item.key === reference.key).originalUrls)),
+        })).sort((a, b) => a.key.localeCompare(b.key));
+        const candidateIds = unique(blockerEntries.flatMap(entry => entry.group.candidateIds));
         if (halted) {
             result.skipped.push({ candidateIds, reason: 'filing-halted' });
             continue;
@@ -262,27 +350,45 @@ async function finalizeCommentFiles({
         }
         const open = [...new Map([...tracking.open, ...remembered.values()]
             .map(issue => [issue.number, issue])).values()];
-        const missing = fileEntries.filter(entry => {
+        const missing = blockerEntries.flatMap(original => {
+            let entry = original;
+            if (entry.group.kind === 'ignore') {
+                const testNames = entry.group.testNames.filter(name => {
+                    const group = { ...entry.group, testNames: [name],
+                        ids: targetIds(repository, { ...entry.group, testNames: [name] }) };
+                    const closure = trackingClosure(tracking.closed, group);
+                    const duplicate = open.find(issue => commentCovered(issue, { ...entry, group }, repository, ambiguousNames));
+                    if (!closure && !duplicate) return true;
+                    result.skipped.push({ candidateIds: group.candidateIds, targetIds: group.ids,
+                        ...(closure ?? { reason: 'open-duplicate', number: duplicate.number }) });
+                    return false;
+                });
+                if (!testNames.length) return [];
+                entry = { ...entry, group: { ...entry.group, testNames,
+                    ids: targetIds(repository, { ...entry.group, testNames }) } };
+                return [entry];
+            }
             const closure = trackingClosure(tracking.closed, entry.group);
             if (closure) {
                 result.skipped.push({ candidateIds: entry.group.candidateIds, ...closure });
-                return false;
+                return [];
             }
-            const duplicate = open.find(issue => commentCovered(issue, entry));
+            const duplicate = open.find(issue => commentCovered(issue, entry, repository, ambiguousNames));
             if (duplicate) {
                 result.skipped.push({
                     candidateIds: entry.group.candidateIds, reason: 'open-duplicate', number: duplicate.number,
                 });
-                return false;
+                return [];
             }
-            return true;
+            return [entry];
         });
         if (!missing.length) continue;
-        const containers = open.filter(issue => isCommentContainer(issue, repository, path));
+        const containers = open.filter(issue => isBlockerContainer(issue, repository, references));
         const pendingIds = unique(missing.flatMap(entry => entry.group.candidateIds));
         if (containers.length > 1) {
-            report({ code: 'ambiguous-file-tracking', path, numbers: containers.map(issue => issue.number) });
-            result.skipped.push({ candidateIds: pendingIds, reason: 'ambiguous-file-tracking' });
+            report({ code: 'ambiguous-blocker-tracking', blockerKeys: references.map(reference => reference.key),
+                numbers: containers.map(issue => issue.number) });
+            result.skipped.push({ candidateIds: pendingIds, reason: 'ambiguous-blocker-tracking' });
             continue;
         }
         let existing = containers[0];
@@ -290,23 +396,36 @@ async function finalizeCommentFiles({
             try {
                 const { data } = await github.rest.issues.get({ owner, repo, issue_number: existing.number });
                 if (data?.number !== existing.number || data.state !== 'open' || data.pull_request ||
-                    typeof data.body !== 'string' || !isCommentContainer(data, repository, path)) {
+                    typeof data.body !== 'string' || !isBlockerContainer(data, repository, references)) {
                     throw new Error('Tracking issue changed identity or is no longer open.');
                 }
                 existing = data;
             } catch (error) {
-                report(errorDiagnostic('tracking-read-failed', error, { path }));
+                report(errorDiagnostic('tracking-read-failed', error, { candidateIds: pendingIds }));
                 result.skipped.push({ candidateIds: pendingIds, reason: 'tracking-unavailable' });
                 halted = true;
                 continue;
             }
         }
-        const additions = missing.filter(entry => {
-            if (!existing || !commentCovered(existing, entry)) return true;
+        const additions = missing.flatMap(entry => {
+            if (!existing) return [entry];
+            if (entry.group.kind === 'ignore') {
+                const testNames = entry.group.testNames.filter(name => {
+                    const group = { ...entry.group, testNames: [name],
+                        ids: targetIds(repository, { ...entry.group, testNames: [name] }) };
+                    if (!commentCovered(existing, { ...entry, group }, repository, ambiguousNames)) return true;
+                    result.skipped.push({ candidateIds: group.candidateIds, targetIds: group.ids,
+                        reason: 'open-duplicate', number: existing.number });
+                    return false;
+                });
+                return testNames.length ? [{ ...entry, group: { ...entry.group, testNames,
+                    ids: targetIds(repository, { ...entry.group, testNames }) } }] : [];
+            }
+            if (!commentCovered(existing, entry, repository, ambiguousNames)) return [entry];
             result.skipped.push({
                 candidateIds: entry.group.candidateIds, reason: 'open-duplicate', number: existing.number,
             });
-            return false;
+            return [];
         });
         if (!additions.length) continue;
         const capNumbers = new Set(tracking.open.filter(issue => hasCapLabel(issue.labels)).map(issue => issue.number));
@@ -321,22 +440,60 @@ async function finalizeCommentFiles({
             repository, targetBranch, headSha, ...entry,
             history: closedHistory(tracking.closed, entry.group).history,
         }));
-        const container = fileMarker(repository, path);
-        const title = `Revalidate TODOs/workarounds in ${inlineCode(path)}`.slice(0, 256);
+        const title = `Revalidate references to ${references.map(reference =>
+            `${reference.key.slice(0, reference.key.lastIndexOf('/'))}#${reference.key.split('/').at(-1)}`).join(', ')}`.slice(0, 256);
         const header = [
-            container, '## Potentially stale TODOs/workarounds', '',
+            container, '## Potentially stale references', '',
             `Repository: \`${owner}/${repo}\``,
-            `Source path: ${inlineCode(path)}`,
-            'Follow-up kind: **todo/workaround**.', '',
-            'Each target below has its own evidence and prerequisites. Revalidate each separately.',
+            `Target branch: **${targetBranch}**.`, '',
+            'These sites are potentially stale, not proven obsolete. Revalidate each separately.',
+            'No tests were run by this discovery workflow. Upstream resolution does not prove that a test passes,',
+            'that a fixed dependency version is consumed, or that removing a workaround is safe. No root cause is claimed.',
             'Closing this issue as completed does not suppress targets still present in source.',
+            '', '## Verified reference resolution', '',
+            ...references.flatMap(reference => [
+                referenceResolution(reference),
+                ...reference.originalUrls.map(url => `  - Original source URL: <${url}>`),
+            ]),
             '',
         ].join('\n');
-        const body = existing
-            ? `${existing.body.includes(container) ? '' : `${container}\n`}${existing.body}\n\n${blocks.join('\n\n')}\n`
-            : `${header}\n${blocks.join('\n\n')}\n`;
+        const base = `https://github.com/${owner}/${repo}`;
+        const encodedBranch = targetBranch.split('/').map(encodeURIComponent).join('/');
+        const followUp = [
+            '## Follow-up', '',
+            `1. Work against \`${targetBranch}\`; verify all prerequisites, fixed-version consumption, and behavior`,
+            '   across supported versions. Historical compatibility reasons may still require this code.',
+            '2. Remove the relevant Ignore for the listed tests, preserving unrelated ignores and conditions.',
+            '   Remove or update each TODO/workaround only when justified; otherwise retain it and record why.',
+            `3. Cover a justified change with the smallest appropriate regression check. Use the repository`,
+            `   [run-tests skill](${base}/blob/${encodedBranch}/.github/skills/run-tests/SKILL.md) for SDK tests`,
+            '   on the required platform. Verify that the tests actually execute rather than being skipped or selecting zero tests.',
+            '4. If tests pass, submit the focused change. Otherwise retain the new failure evidence and unresolved',
+            '   prerequisites here; do not assume the original root cause or silently discard failures.',
+            '',
+        ].join('\n');
+        let body;
+        try {
+            if (existing && !references.every(reference => existing.body.includes(referenceResolution(reference)))) {
+                throw new Error('Recorded blocker resolution changed; review the shared evidence before appending.');
+            }
+            if (existing?.body.includes('<!-- stale-reference-blockers:v1:')) {
+                const range = findingsRange(existing.body);
+                body = existing.body.slice(0, range.end) + blocks.join('\n\n') + '\n\n' + existing.body.slice(range.end);
+            } else {
+                const findings = `## Findings\n\n${findingsStart}\n\n${blocks.join('\n\n')}\n\n${findingsEnd}\n\n`;
+                body = existing
+                    ? `${container}\n${existing.body}\n\n${findings}${followUp}`
+                    : `${header}\n${findings}${followUp}`;
+            }
+            findingsRange(body);
+        } catch (error) {
+            report(errorDiagnostic('tracking-layout-invalid', error, { candidateIds: pendingIds, reason: error.message }));
+            result.skipped.push({ candidateIds: pendingIds, reason: 'tracking-layout-invalid' });
+            continue;
+        }
         if (body.length > 65536) {
-            report({ code: 'tracking-body-too-large', path, length: body.length });
+            report({ code: 'tracking-body-too-large', candidateIds: pendingIds, length: body.length });
             result.skipped.push({ candidateIds: pendingIds, reason: 'tracking-body-too-large' });
             continue;
         }
@@ -351,8 +508,8 @@ async function finalizeCommentFiles({
         };
         result.proposed.push(proposal);
         if (dryRun) {
-            remembered.set(existing?.number ?? path, {
-                number: existing?.number ?? path, title: proposal.title, body,
+            remembered.set(existing?.number ?? container, {
+                number: existing?.number ?? container, title: proposal.title, body,
                 state: 'open', labels: existing ? existing.labels : proposal.labels,
             });
             continue;
@@ -364,6 +521,16 @@ async function finalizeCommentFiles({
                 number, title: proposal.title, body, state: 'open',
                 labels: existing ? existing.labels : proposal.labels,
             });
+        };
+        const acceptedMutation = issue => {
+            if (!Number.isSafeInteger(issue?.number) || issue.number <= 0 || issue.pull_request ||
+                (existing && issue.number !== existing.number) ||
+                issue.state !== 'open' || !isBlockerContainer(issue, repository, references) ||
+                !references.every(reference => issue.body.includes(referenceResolution(reference))) ||
+                !issue.body.includes('## Follow-up')) return false;
+            const range = findingsRange(issue.body);
+            const findings = issue.body.slice(range.start, range.end);
+            return blocks.every(block => findings.includes(block));
         };
         try {
             const response = existing
@@ -377,8 +544,7 @@ async function finalizeCommentFiles({
                 (existing && response.data.number !== existing.number)) {
                 throw new Error('Mutation result has no matching issue number.');
             }
-            if (response.data.state !== 'open' || typeof response.data.body !== 'string' ||
-                !blocks.every(block => response.data.body.includes(block))) {
+            if (!acceptedMutation(response.data)) {
                 throw new Error('Mutation result does not contain the complete target evidence.');
             }
             record(response.data.number);
@@ -389,11 +555,12 @@ async function finalizeCommentFiles({
                 const current = existing
                     ? [(await github.rest.issues.get({ owner, repo, issue_number: existing.number })).data]
                     : await listRepositoryIssues({ github, repository, state: 'open' });
-                const accepted = current.find(issue => issue?.state === 'open' &&
-                    isCommentContainer(issue, repository, path) && blocks.every(block => issue.body.includes(block)));
+                const accepted = current.find(acceptedMutation);
                 if (accepted) {
                     record(accepted.number, true);
-                    remembered.set(accepted.number, accepted);
+                    remembered.set(accepted.number, {
+                        ...accepted, labels: accepted.labels ?? (existing ? existing.labels : proposal.labels),
+                    });
                     continue;
                 }
             } catch (reconcileError) {
@@ -559,17 +726,14 @@ export async function finalize({
         return result;
     }
     async function readTracking() {
-        // Both complete listings must succeed before any proposed mutation. Re-invoked
-        // before each creation below (not just once) so a duplicate filed by a prior
-        // iteration in this same run is visible before the next one is proposed; this
-        // trades extra paginated API calls (bounded by maximumOpenIssues) for correctness.
+        // Refresh before each blocker batch so prior mutations and closure decisions
+        // are visible before proposing another creation or append.
         const [open, closed] = await Promise.all(['open', 'closed'].map(state =>
             listRepositoryIssues({ github, repository, state })));
         return { open, closed };
     }
-    let tracking;
     try {
-        tracking = await readTracking();
+        await readTracking();
     } catch (error) {
         report(errorDiagnostic('tracking-list-failed', error));
         result.skipped.push(...eligible.map(({ group }) => ({
@@ -577,123 +741,9 @@ export async function finalize({
         })));
         return result;
     }
-    const commentIssues = new Map();
-    const commentHalted = await finalizeCommentFiles({
+    await finalizeBlockers({
         github, repository, targetBranch, headSha, dryRun, readTracking, report, result,
-        entries: eligible.filter(({ group }) => group.kind !== 'ignore'),
-        remembered: commentIssues,
+        entries: eligible, remembered: new Map(), ambiguousNames,
     });
-    const remembered = [...commentIssues.values()];
-    let halted = commentHalted;
-    for (const entry of eligible.filter(({ group }) => group.kind === 'ignore')) {
-        let group = entry.group;
-        const { references } = entry;
-        if (halted) {
-            result.skipped.push({ candidateIds: group.candidateIds, reason: 'filing-halted' });
-            continue;
-        }
-        function retainTargets() {
-            const remaining = group.testNames.filter(name => {
-                const ids = targetIds(repository, { kind: 'ignore', path: group.path, testNames: [name] });
-                const closure = trackingClosure(tracking.closed, { ids });
-                if (!closure) return true;
-                result.skipped.push({ candidateIds: group.candidateIds, targetIds: ids, ...closure });
-                return false;
-            });
-            group = {
-                ...group, testNames: remaining,
-                ids: targetIds(repository, { kind: 'ignore', path: group.path, testNames: remaining }),
-            };
-            return remaining.length > 0;
-        }
-        function duplicate() {
-            const open = findOpenDuplicate([...tracking.open, ...remembered], group, ambiguousNames);
-            if (open) {
-                return { candidateIds: group.candidateIds, reason: 'open-duplicate', number: open.number };
-            }
-            return null;
-        }
-        if (!retainTargets()) continue;
-        let skip = duplicate();
-        if (skip) {
-            result.skipped.push(skip);
-            continue;
-        }
-        function openCapCount() {
-            // Count distinct currently-open, cap-labeled issues: tracking.open reflects
-            // GitHub's state (refreshed before each real creation below), and each
-            // remembered item from this run adds one more — by number when it has a real
-            // one, or a unique placeholder for a not-yet-created dry-run proposal — so a
-            // lagging refresh can't undercount issues this run has already filed.
-            const numbers = new Set(tracking.open.filter(issue => hasCapLabel(issue.labels)).map(issue => issue.number));
-            for (const item of remembered.filter(issue => hasCapLabel(issue.labels))) {
-                numbers.add(item.number ?? Symbol());
-            }
-            return numbers.size;
-        }
-        if (openCapCount() >= maximumOpenIssues) {
-            result.skipped.push({ candidateIds: group.candidateIds, reason: 'open-issue-cap' });
-            continue;
-        }
-        if (!dryRun) {
-            try {
-                tracking = await readTracking();
-            } catch (error) {
-                report(errorDiagnostic('tracking-refresh-failed', error));
-                result.skipped.push({ candidateIds: group.candidateIds, reason: 'tracking-unavailable' });
-                halted = true;
-                continue;
-            }
-            if (!retainTargets()) continue;
-            skip = duplicate();
-            if (skip) {
-                result.skipped.push(skip);
-                continue;
-            }
-            if (openCapCount() >= maximumOpenIssues) {
-                result.skipped.push({ candidateIds: group.candidateIds, reason: 'open-issue-cap' });
-                continue;
-            }
-        }
-        const history = closedHistory(tracking.closed, group).history;
-        const proposal = {
-            operation: 'create', ...buildProposal({ repository, targetBranch, headSha, group, references, history }),
-        };
-        result.proposed.push(proposal);
-        if (dryRun) {
-            remembered.push({ number: null, body: proposal.body, state: 'open', labels: proposal.labels });
-            continue;
-        }
-        const { owner, repo } = normalizeRepository(repository);
-        try {
-            const { data } = await github.rest.issues.create({
-                owner, repo, title: proposal.title, body: proposal.body, labels: proposal.labels,
-                request: { retries: 0 },
-            });
-            if (!Number.isSafeInteger(data?.number) || data.number <= 0) {
-                throw new Error('Create result has no issue number.');
-            }
-            result.created.push({ ...proposal, number: data.number });
-            remembered.push({ number: data.number, body: proposal.body, state: 'open', labels: proposal.labels });
-        } catch (error) {
-            report(errorDiagnostic('create-failed', error, { candidateIds: group.candidateIds }));
-            // Never retry a POST. Even a timeout can mean GitHub accepted the issue.
-            try {
-                const open = await listRepositoryIssues({ github, repository, state: 'open' });
-                const created = open.find(issue => matches(markerPattern, issue.body)
-                    .some(id => group.ids.includes(id)));
-                if (created) {
-                    result.created.push({ ...proposal, number: created.number, reconciled: true });
-                    remembered.push({ ...created, labels: created.labels ?? proposal.labels });
-                    tracking.open = open;
-                    continue;
-                }
-            } catch (reconcileError) {
-                report(errorDiagnostic('create-reconciliation-failed', reconcileError));
-            }
-            result.skipped.push({ candidateIds: group.candidateIds, reason: 'create-outcome-unknown' });
-            halted = true;
-        }
-    }
     return result;
 }
