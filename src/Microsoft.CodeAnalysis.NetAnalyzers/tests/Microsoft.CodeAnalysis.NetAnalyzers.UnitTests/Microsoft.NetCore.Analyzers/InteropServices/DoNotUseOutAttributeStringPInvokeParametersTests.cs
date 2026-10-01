@@ -18,53 +18,53 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
         [TestMethod]
         public async Task StringByReference_NoDiagnostics_CSAsync()
         {
-            string source = @"
-using System.Runtime.InteropServices;
+            string source = """
+                using System.Runtime.InteropServices;
 
-public class C
-{
-    [DllImport(""user32.dll"", CharSet=CharSet.Unicode)]
-    private static extern void Method1(out string s); // OK
+                public class C
+                {
+                    [DllImport("user32.dll", CharSet=CharSet.Unicode)]
+                    private static extern void Method1(out string s); // OK
 
-    [DllImport(""user32.dll"", CharSet=CharSet.Unicode)]
-    private static extern void Method2([In] [Out] ref string s); // OK
+                    [DllImport("user32.dll", CharSet=CharSet.Unicode)]
+                    private static extern void Method2([In] [Out] ref string s); // OK
 
-    [DllImport(""user32.dll"", CharSet=CharSet.Unicode)]
-    private static extern void Method3([Out] out string s); // OK
-}
-";
+                    [DllImport("user32.dll", CharSet=CharSet.Unicode)]
+                    private static extern void Method3([Out] out string s); // OK
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
         [TestMethod]
         public async Task NotPInvoke_NoDiagnostics_CSAsync()
         {
-            string source = @"
-using System.Runtime.InteropServices;
+            string source = """
+                using System.Runtime.InteropServices;
 
-public class C
-{
-    private static extern void Method1([Out] string s);
-}
-";
+                public class C
+                {
+                    private static extern void Method1([Out] string s);
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
         [TestMethod]
         public async Task OutAttributeStringByValue_Diagnostics_CSAsync()
         {
-            string source = @"
-using System.Runtime.InteropServices;
+            string source = """
+                using System.Runtime.InteropServices;
 
-public class C
-{
-    [DllImport(""user32.dll"", CharSet=CharSet.Unicode)]
-    private static extern void Method1([Out] string {|#0:s|}); // Should not have [Out] string
+                public class C
+                {
+                    [DllImport("user32.dll", CharSet=CharSet.Unicode)]
+                    private static extern void Method1([Out] string {|#0:s|}); // Should not have [Out] string
 
-    [DllImport(""user32.dll"", CharSet=CharSet.Unicode)]
-    private static extern void Method2(string s1, [Out] string {|#1:s2|}, [Out] string {|#2:s3|}); // Should not have [Out] string
-}
-";
+                    [DllImport("user32.dll", CharSet=CharSet.Unicode)]
+                    private static extern void Method2(string s1, [Out] string {|#1:s2|}, [Out] string {|#2:s3|}); // Should not have [Out] string
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(
                 source,
                 CSharpResult(0, "s"),
@@ -75,48 +75,48 @@ public class C
         [TestMethod]
         public async Task StringByReference_NoDiagnostics_VBAsync()
         {
-            string source = @"
-Imports System.Runtime.InteropServices
+            string source = """
+                Imports System.Runtime.InteropServices
 
-Class C
-    <DllImport(""user32.dll"", CharSet:=CharSet.Unicode)>
-    Private Shared Sub Method1(<Out()> ByRef s As String) ' OK
-    End Sub
-End Class
-";
+                Class C
+                    <DllImport("user32.dll", CharSet:=CharSet.Unicode)>
+                    Private Shared Sub Method1(<Out()> ByRef s As String) ' OK
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
         [TestMethod]
         public async Task NotPInvoke_NoDiagnostics_VBAsync()
         {
-            string source = @"
-Imports System.Runtime.InteropServices
+            string source = """
+                Imports System.Runtime.InteropServices
 
-Class C
-    Private Shared Sub Method1(<Out()> s As String)
-    End Sub
-End Class
-";
+                Class C
+                    Private Shared Sub Method1(<Out()> s As String)
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
         [TestMethod]
         public async Task OutAttributeStringByValue_Diagnostics_VBAsync()
         {
-            string source = @"
-Imports System.Runtime.InteropServices
+            string source = """
+                Imports System.Runtime.InteropServices
 
-Class C
-    <DllImport(""user32.dll"", CharSet:=CharSet.Unicode)>
-    Private Shared Sub Method1(<Out()> {|#0:s|} As String) ' Should not have <Out> string
-    End Sub
+                Class C
+                    <DllImport("user32.dll", CharSet:=CharSet.Unicode)>
+                    Private Shared Sub Method1(<Out()> {|#0:s|} As String) ' Should not have <Out> string
+                    End Sub
 
-    <DllImport(""user32.dll"", CharSet:=CharSet.Unicode)>
-    Private Shared Sub Method2(s1 As String, <Out()> {|#1:s2|} As String, <Out()> {|#2:s3|} As String) ' Should not have <Out> string
-    End Sub
-End Class
-";
+                    <DllImport("user32.dll", CharSet:=CharSet.Unicode)>
+                    Private Shared Sub Method2(s1 As String, <Out()> {|#1:s2|} As String, <Out()> {|#2:s3|} As String) ' Should not have <Out> string
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(
                 source,
                 BasicResult(0, "s"),

@@ -19,218 +19,240 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task ReferenceTypesAreOKAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod(string test)
-        {
-            return ReferenceEquals(test, string.Empty);
-        }
-    }
-}");
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static bool TestMethod(string test)
+                        {
+                            return ReferenceEquals(test, string.Empty);
+                        }
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(test as String)
-            Return ReferenceEquals(string.Empty, test)
-        End Function
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Class TestClass
+                        Private Shared Function TestMethod(test as String)
+                            Return ReferenceEquals(string.Empty, test)
+                        End Function
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task LeftArgumentFailsForValueTypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod(string test)
-        {
-            return ReferenceEquals(IntPtr.Zero, test);
-        }
-    }
-}",
+                using System;
+
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static bool TestMethod(string test)
+                        {
+                            return ReferenceEquals(IntPtr.Zero, test);
+                        }
+                    }
+                }
+                """,
                 GetCSharpMethodResultAt(10, 36, "System.IntPtr"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(test as String)
-            Return ReferenceEquals(IntPtr.Zero, test)
-        End Function
-    End Class
-End Namespace",
+                Imports System
+
+                Namespace TestNamespace
+                    Class TestClass
+                        Private Shared Function TestMethod(test as String)
+                            Return ReferenceEquals(IntPtr.Zero, test)
+                        End Function
+                    End Class
+                End Namespace
+                """,
                 GetVisualBasicMethodResultAt(7, 36, "System.IntPtr"));
         }
 
         [TestMethod]
         public async Task RightArgumentFailsForValueTypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod(string test)
-        {
-            return object.ReferenceEquals(test, 4);
-        }
-    }
-}",
+                using System;
+
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static bool TestMethod(string test)
+                        {
+                            return object.ReferenceEquals(test, 4);
+                        }
+                    }
+                }
+                """,
                 GetCSharpMethodResultAt(10, 49, "int"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(test as String)
-            Return Object.ReferenceEquals(test, 4)
-        End Function
-    End Class
-End Namespace",
+                Imports System
+
+                Namespace TestNamespace
+                    Class TestClass
+                        Private Shared Function TestMethod(test as String)
+                            Return Object.ReferenceEquals(test, 4)
+                        End Function
+                    End Class
+                End Namespace
+                """,
                 GetVisualBasicMethodResultAt(7, 49, "Integer"));
         }
 
         [TestMethod]
         public async Task NoErrorForUnconstrainedGenericAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod<T>(T test, object other)
-        {
-            return ReferenceEquals(test, other);
-        }
-    }
-}");
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static bool TestMethod<T>(T test, object other)
+                        {
+                            return ReferenceEquals(test, other);
+                        }
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(Of T)(test as T, other as Object)
-            Return ReferenceEquals(test, other)
-        End Function
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Class TestClass
+                        Private Shared Function TestMethod(Of T)(test as T, other as Object)
+                            Return ReferenceEquals(test, other)
+                        End Function
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task NoErrorForInterfaceConstrainedGenericAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod<T>(T test, object other)
-            where T : IDisposable
-        {
-            return ReferenceEquals(test, other);
-        }
-    }
-}");
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static bool TestMethod<T>(T test, object other)
+                            where T : IDisposable
+                        {
+                            return ReferenceEquals(test, other);
+                        }
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(Of T As IDisposable)(test as T, other as Object)
-            Return ReferenceEquals(test, other)
-        End Function
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Class TestClass
+                        Private Shared Function TestMethod(Of T As IDisposable)(test as T, other as Object)
+                            Return ReferenceEquals(test, other)
+                        End Function
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task ErrorForValueTypeConstrainedGenericAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod<T>(T test, object other)
-            where T : struct
-        {
-            return ReferenceEquals(test, other);
-        }
-    }
-}",
+                using System;
+
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static bool TestMethod<T>(T test, object other)
+                            where T : struct
+                        {
+                            return ReferenceEquals(test, other);
+                        }
+                    }
+                }
+                """,
                 GetCSharpMethodResultAt(11, 36, "T"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(Of T As Structure)(test as T, other as Object)
-            Return ReferenceEquals(test, other)
-        End Function
-    End Class
-End Namespace",
+                Imports System
+
+                Namespace TestNamespace
+                    Class TestClass
+                        Private Shared Function TestMethod(Of T As Structure)(test as T, other as Object)
+                            Return ReferenceEquals(test, other)
+                        End Function
+                    End Class
+                End Namespace
+                """,
                 GetVisualBasicMethodResultAt(7, 36, "T"));
         }
 
         [TestMethod]
         public async Task TwoValueTypesProducesTwoErrorsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod<TLeft, TRight>(TLeft test, TRight other)
-            where TLeft : struct
-            where TRight : struct
-        {
-            return ReferenceEquals(
-                test,
-                other);
-        }
-    }
-}",
+                using System;
+
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static bool TestMethod<TLeft, TRight>(TLeft test, TRight other)
+                            where TLeft : struct
+                            where TRight : struct
+                        {
+                            return ReferenceEquals(
+                                test,
+                                other);
+                        }
+                    }
+                }
+                """,
                 GetCSharpMethodResultAt(13, 17, "TLeft"),
                 GetCSharpMethodResultAt(14, 17, "TRight"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(Of TLeft As Structure, TRight As Structure)(test as TLeft, other as TRight)
-            Return ReferenceEquals(test, other)
-        End Function
-    End Class
-End Namespace",
+                Imports System
+
+                Namespace TestNamespace
+                    Class TestClass
+                        Private Shared Function TestMethod(Of TLeft As Structure, TRight As Structure)(test as TLeft, other as TRight)
+                            Return ReferenceEquals(test, other)
+                        End Function
+                    End Class
+                End Namespace
+                """,
                 GetVisualBasicMethodResultAt(7, 36, "TLeft"),
                 GetVisualBasicMethodResultAt(7, 42, "TRight"));
         }
@@ -238,105 +260,115 @@ End Namespace",
         [TestMethod]
         public async Task LeftArgumentFailsForValueTypeWhenRightIsNullAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod()
-        {
-            return ReferenceEquals(IntPtr.Zero, null);
-        }
-    }
-}",
+                using System;
+
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static bool TestMethod()
+                        {
+                            return ReferenceEquals(IntPtr.Zero, null);
+                        }
+                    }
+                }
+                """,
                 GetCSharpMethodResultAt(10, 36, "System.IntPtr"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod()
-            Return ReferenceEquals(IntPtr.Zero, Nothing)
-        End Function
-    End Class
-End Namespace",
+                Imports System
+
+                Namespace TestNamespace
+                    Class TestClass
+                        Private Shared Function TestMethod()
+                            Return ReferenceEquals(IntPtr.Zero, Nothing)
+                        End Function
+                    End Class
+                End Namespace
+                """,
                 GetVisualBasicMethodResultAt(7, 36, "System.IntPtr"));
         }
 
         [TestMethod]
         public async Task RightArgumentFailsForValueTypeWhenLeftIsNullAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod()
-        {
-            return object.ReferenceEquals(null, 4);
-        }
-    }
-}",
+                using System;
+
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static bool TestMethod()
+                        {
+                            return object.ReferenceEquals(null, 4);
+                        }
+                    }
+                }
+                """,
                 GetCSharpMethodResultAt(10, 49, "int"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod()
-            Return Object.ReferenceEquals(Nothing, 4)
-        End Function
-    End Class
-End Namespace",
+                Imports System
+
+                Namespace TestNamespace
+                    Class TestClass
+                        Private Shared Function TestMethod()
+                            Return Object.ReferenceEquals(Nothing, 4)
+                        End Function
+                    End Class
+                End Namespace
+                """,
                 GetVisualBasicMethodResultAt(7, 52, "Integer"));
         }
 
         [TestMethod]
         public async Task DoNotWarnForUserDefinedConversionsAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace TestNamespace
-{
-    class CacheKey
-    {
-        public static explicit operator CacheKey(int value)
-        {
-            return null;
-        }
-    }
+                namespace TestNamespace
+                {
+                    class CacheKey
+                    {
+                        public static explicit operator CacheKey(int value)
+                        {
+                            return null;
+                        }
+                    }
 
-    class TestClass
-    {
-        private static bool TestMethod()
-        {
-            return object.ReferenceEquals(null, (CacheKey)4);
-        }
-    }
-}");
+                    class TestClass
+                    {
+                        private static bool TestMethod()
+                        {
+                            return object.ReferenceEquals(null, (CacheKey)4);
+                        }
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Namespace TestNamespace
-    Class CacheKey
-        Public Shared Narrowing Operator CType(value as Integer) as CacheKey
-            Return Nothing
-        End Operator
-    End Class
-    Class TestClass
-        Private Shared Function TestMethod()
-            Return Object.ReferenceEquals(Nothing, CType(4, CacheKey))
-        End Function
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Class CacheKey
+                        Public Shared Narrowing Operator CType(value as Integer) as CacheKey
+                            Return Nothing
+                        End Operator
+                    End Class
+                    Class TestClass
+                        Private Shared Function TestMethod()
+                            Return Object.ReferenceEquals(Nothing, CType(4, CacheKey))
+                        End Function
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
@@ -345,36 +377,38 @@ End Namespace");
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections.Generic;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod(string test)
-        {
-            return ReferenceEqualityComparer.Instance.Equals(string.Empty, test);
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod(string test)
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(string.Empty, test);
+                            }
+                        }
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
+                    Imports System
+                    Imports System.Collections.Generic
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(test as String)
-            Return ReferenceEqualityComparer.Instance.Equals(string.Empty, test)
-        End Function
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod(test as String)
+                                Return ReferenceEqualityComparer.Instance.Equals(string.Empty, test)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -384,37 +418,41 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod(string test)
-        {
-            return ReferenceEqualityComparer.Instance.Equals(IntPtr.Zero, test);
-        }
-    }
-}",
+                    using System;
+                    using System.Collections.Generic;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod(string test)
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(IntPtr.Zero, test);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 62, "System.IntPtr") },
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(test as String)
-            Return ReferenceEqualityComparer.Instance.Equals(IntPtr.Zero, test)
-        End Function
-    End Class
-End Namespace",
+                    Imports System
+                    Imports System.Collections.Generic
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod(test as String)
+                                Return ReferenceEqualityComparer.Instance.Equals(IntPtr.Zero, test)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "System.IntPtr") },
             }.RunAsync(CancellationToken.None);
         }
@@ -425,37 +463,41 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod(string test)
-        {
-            return ReferenceEqualityComparer.Instance.Equals(test, 4);
-        }
-    }
-}",
+                    using System;
+                    using System.Collections.Generic;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod(string test)
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(test, 4);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 68, "int") },
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(test as String)
-            Return ReferenceEqualityComparer.Instance.Equals(test, 4)
-        End Function
-    End Class
-End Namespace",
+                    Imports System
+                    Imports System.Collections.Generic
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod(test as String)
+                                Return ReferenceEqualityComparer.Instance.Equals(test, 4)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 68, "Integer") },
             }.RunAsync(CancellationToken.None);
         }
@@ -466,36 +508,38 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections.Generic;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod<T>(T test, object other)
-        {
-            return ReferenceEqualityComparer.Instance.Equals(test, other);
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod<T>(T test, object other)
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(test, other);
+                            }
+                        }
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
+                    Imports System
+                    Imports System.Collections.Generic
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(Of T)(test as T, other as Object)
-            Return ReferenceEqualityComparer.Instance.Equals(test, other)
-        End Function
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod(Of T)(test as T, other as Object)
+                                Return ReferenceEqualityComparer.Instance.Equals(test, other)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -505,37 +549,39 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections.Generic;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod<T>(T test, object other)
-            where T : IDisposable
-        {
-            return ReferenceEqualityComparer.Instance.Equals(test, other);
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod<T>(T test, object other)
+                                where T : IDisposable
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(test, other);
+                            }
+                        }
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
+                    Imports System
+                    Imports System.Collections.Generic
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(Of T As IDisposable)(test as T, other as Object)
-            Return ReferenceEqualityComparer.Instance.Equals(test, other)
-        End Function
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod(Of T As IDisposable)(test as T, other as Object)
+                                Return ReferenceEqualityComparer.Instance.Equals(test, other)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -545,38 +591,42 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod<T>(T test, object other)
-            where T : struct
-        {
-            return ReferenceEqualityComparer.Instance.Equals(test, other);
-        }
-    }
-}",
+                    using System;
+                    using System.Collections.Generic;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod<T>(T test, object other)
+                                where T : struct
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(test, other);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(12, 62, "T") },
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(Of T As Structure)(test as T, other as Object)
-            Return ReferenceEqualityComparer.Instance.Equals(test, other)
-        End Function
-    End Class
-End Namespace",
+                    Imports System
+                    Imports System.Collections.Generic
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod(Of T As Structure)(test as T, other as Object)
+                                Return ReferenceEqualityComparer.Instance.Equals(test, other)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "T") },
             }.RunAsync(CancellationToken.None);
         }
@@ -587,24 +637,26 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod<TLeft, TRight>(TLeft test, TRight other)
-            where TLeft : struct
-            where TRight : struct
-        {
-            return ReferenceEqualityComparer.Instance.Equals(
-                test,
-                other);
-        }
-    }
-}",
+                    using System;
+                    using System.Collections.Generic;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod<TLeft, TRight>(TLeft test, TRight other)
+                                where TLeft : struct
+                                where TRight : struct
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(
+                                    test,
+                                    other);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetCSharpComparerResultAt(14, 17, "TLeft"),
@@ -615,17 +667,19 @@ namespace TestNamespace
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(Of TLeft As Structure, TRight As Structure)(test as TLeft, other as TRight)
-            Return ReferenceEqualityComparer.Instance.Equals(test, other)
-        End Function
-    End Class
-End Namespace",
+                    Imports System
+                    Imports System.Collections.Generic
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod(Of TLeft As Structure, TRight As Structure)(test as TLeft, other as TRight)
+                                Return ReferenceEqualityComparer.Instance.Equals(test, other)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetVisualBasicComparerResultAt(8, 62, "TLeft"),
@@ -640,37 +694,41 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod()
-        {
-            return ReferenceEqualityComparer.Instance.Equals(IntPtr.Zero, null);
-        }
-    }
-}",
+                    using System;
+                    using System.Collections.Generic;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod()
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(IntPtr.Zero, null);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 62, "System.IntPtr") },
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod()
-            Return ReferenceEqualityComparer.Instance.Equals(IntPtr.Zero, Nothing)
-        End Function
-    End Class
-End Namespace",
+                    Imports System
+                    Imports System.Collections.Generic
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod()
+                                Return ReferenceEqualityComparer.Instance.Equals(IntPtr.Zero, Nothing)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 62, "System.IntPtr") },
             }.RunAsync(CancellationToken.None);
         }
@@ -681,37 +739,41 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod()
-        {
-            return ReferenceEqualityComparer.Instance.Equals(null, 4);
-        }
-    }
-}",
+                    using System;
+                    using System.Collections.Generic;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod()
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(null, 4);
+                            }
+                        }
+                    }
+                    """,
                 ExpectedDiagnostics = { GetCSharpComparerResultAt(11, 68, "int") },
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod()
-            Return ReferenceEqualityComparer.Instance.Equals(Nothing, 4)
-        End Function
-    End Class
-End Namespace",
+                    Imports System
+                    Imports System.Collections.Generic
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod()
+                                Return ReferenceEqualityComparer.Instance.Equals(Nothing, 4)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
                 ExpectedDiagnostics = { GetVisualBasicComparerResultAt(8, 71, "Integer") },
             }.RunAsync(CancellationToken.None);
         }
@@ -722,49 +784,51 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections.Generic;
 
-namespace TestNamespace
-{
-    class CacheKey
-    {
-        public static explicit operator CacheKey(int value)
-        {
-            return null;
-        }
-    }
+                    namespace TestNamespace
+                    {
+                        class CacheKey
+                        {
+                            public static explicit operator CacheKey(int value)
+                            {
+                                return null;
+                            }
+                        }
 
-    class TestClass
-    {
-        private static bool TestMethod()
-        {
-            return ReferenceEqualityComparer.Instance.Equals(null, (CacheKey)4);
-        }
-    }
-}",
+                        class TestClass
+                        {
+                            private static bool TestMethod()
+                            {
+                                return ReferenceEqualityComparer.Instance.Equals(null, (CacheKey)4);
+                            }
+                        }
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections.Generic
+                TestCode = """
+                    Imports System
+                    Imports System.Collections.Generic
 
-Namespace TestNamespace
-    Class CacheKey
-        Public Shared Narrowing Operator CType(value as Integer) as CacheKey
-            Return Nothing
-        End Operator
-    End Class
-    Class TestClass
-        Private Shared Function TestMethod()
-            Return ReferenceEqualityComparer.Instance.Equals(Nothing, CType(4, CacheKey))
-        End Function
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class CacheKey
+                            Public Shared Narrowing Operator CType(value as Integer) as CacheKey
+                                Return Nothing
+                            End Operator
+                        End Class
+                        Class TestClass
+                            Private Shared Function TestMethod()
+                                Return ReferenceEqualityComparer.Instance.Equals(Nothing, CType(4, CacheKey))
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -774,44 +838,46 @@ End Namespace",
             await new VerifyCS.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
+                TestCode = """
+                    using System;
+                    using System.Collections;
+                    using System.Collections.Generic;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static bool TestMethod(string test)
-        {
-            IEqualityComparer<object> generic = ReferenceEqualityComparer.Instance;
-            IEqualityComparer nonGeneric = ReferenceEqualityComparer.Instance;
-            
-            return generic.Equals(4, 5) || nonGeneric.Equals(4, 5);
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static bool TestMethod(string test)
+                            {
+                                IEqualityComparer<object> generic = ReferenceEqualityComparer.Instance;
+                                IEqualityComparer nonGeneric = ReferenceEqualityComparer.Instance;
+
+                                return generic.Equals(4, 5) || nonGeneric.Equals(4, 5);
+                            }
+                        }
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-Imports System
-Imports System.Collections
-Imports System.Collections.Generic
+                TestCode = """
+                    Imports System
+                    Imports System.Collections
+                    Imports System.Collections.Generic
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Function TestMethod(test as String)
-            Dim generic as IEqualityComparer(Of object) = ReferenceEqualityComparer.Instance
-            Dim nonGeneric as IEqualityComparer = ReferenceEqualityComparer.Instance
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Function TestMethod(test as String)
+                                Dim generic as IEqualityComparer(Of object) = ReferenceEqualityComparer.Instance
+                                Dim nonGeneric as IEqualityComparer = ReferenceEqualityComparer.Instance
 
-            Return generic.Equals(4, 5) Or nonGeneric.Equals(4, 5)
-        End Function
-    End Class
-End Namespace",
+                                Return generic.Equals(4, 5) Or nonGeneric.Equals(4, 5)
+                            End Function
+                        End Class
+                    End Namespace
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 

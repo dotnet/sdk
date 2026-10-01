@@ -27,10 +27,10 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- Paths to tools, tasks, and extensions are calculated relative to the BlazorWebAssemblySdkDirectoryRoot. This can be modified to test a local build. -->
     <BlazorWebAssemblySdkDirectoryRoot Condition="'$(BlazorWebAssemblySdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</BlazorWebAssemblySdkDirectoryRoot>
-    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net11.0</_BlazorWebAssemblySdkTasksTFM>
+    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net12.0</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' != 'Core'">net472</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\$(_BlazorWebAssemblySdkTasksTFM)\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll</_BlazorWebAssemblySdkTasksAssembly>
-    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net11.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
+    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net12.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
@@ -172,11 +172,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Include="@(_BlazorJSStaticWebAsset)" />
       <StaticWebAssetEndpoint Include="@(_BlazorStaticWebAssetEndpoint)" />
     </ItemGroup>
-  </Target>
-
-  <!-- Just print a message here, static web assets takes care of all the copying -->
-  <Target Name="_BlazorCopyFilesToOutputDirectory" AfterTargets="CopyFilesToOutputDirectory">
-    <Message Importance="High" Text="$(MSBuildProjectName) (Blazor output) -&gt; $(TargetDir)wwwroot" Condition="'$(CopyBuildOutputToOutputDirectory)' == 'true' and '$(SkipCopyBuildProduct)'!='true'" />
   </Target>
 
   <!-- Make sure that ResolveAssemblyReferences runs early enough to ensure satellite assemblies are populated in the ResolvedFilesToPublish -->

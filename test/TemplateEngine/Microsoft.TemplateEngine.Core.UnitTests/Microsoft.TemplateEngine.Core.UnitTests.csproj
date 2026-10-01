@@ -2,6 +2,10 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+    <!-- Test classes have isolated fixtures, but methods within several classes share mutable
+         logger/environment helpers and variable collections. Run classes in parallel while
+         preserving method isolation within each class. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

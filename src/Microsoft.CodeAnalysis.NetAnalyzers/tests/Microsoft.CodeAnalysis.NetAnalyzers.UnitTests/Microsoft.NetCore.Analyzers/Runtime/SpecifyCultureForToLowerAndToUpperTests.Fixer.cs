@@ -17,33 +17,33 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CA1311_FixToLowerCSharpAsync_SpecifyCurrentCulture()
         {
-            const string source = @"
-using System.Globalization;
+            const string source = """
+                using System.Globalization;
 
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.[|ToLower|]();
-        a?.[|ToLower|]();
-    }
-}
-";
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.[|ToLower|]();
+                        a?.[|ToLower|]();
+                    }
+                }
+                """;
 
-            const string fixedSource = @"
-using System.Globalization;
+            const string fixedSource = """
+                using System.Globalization;
 
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.ToLower(CultureInfo.CurrentCulture);
-        a?.ToLower(CultureInfo.CurrentCulture);
-    }
-}
-";
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.ToLower(CultureInfo.CurrentCulture);
+                        a?.ToLower(CultureInfo.CurrentCulture);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -57,29 +57,29 @@ class C
         [TestMethod]
         public async Task CA1311_FixToLowerCSharpAsync_UseInvariantVersion()
         {
-            const string source = @"
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.[|ToLower|]();
-        a?.[|ToLower|]();
-    }
-}
-";
+            const string source = """
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.[|ToLower|]();
+                        a?.[|ToLower|]();
+                    }
+                }
+                """;
 
-            const string fixedSource = @"
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.ToLowerInvariant();
-        a?.ToLowerInvariant();
-    }
-}
-";
+            const string fixedSource = """
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.ToLowerInvariant();
+                        a?.ToLowerInvariant();
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -93,29 +93,29 @@ class C
         [TestMethod]
         public async Task CA1311_FixToLowerBasicAsync_SpecifyCurrentCulture()
         {
-            var source = @"
-Imports System.Globalization
+            var source = """
+                Imports System.Globalization
 
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToLower|]()
-        a?.[|ToLower|]()
-    End Sub
-End Class
-";
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToLower|]()
+                        a?.[|ToLower|]()
+                    End Sub
+                End Class
+                """;
 
-            var fixedSource = @"
-Imports System.Globalization
+            var fixedSource = """
+                Imports System.Globalization
 
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToLower(CultureInfo.CurrentCulture)
-        a?.ToLower(CultureInfo.CurrentCulture)
-    End Sub
-End Class
-";
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToLower(CultureInfo.CurrentCulture)
+                        a?.ToLower(CultureInfo.CurrentCulture)
+                    End Sub
+                End Class
+                """;
             await new VerifyVB.Test
             {
                 TestState = { Sources = { source } },
@@ -128,31 +128,31 @@ End Class
         [TestMethod]
         public async Task CA1311_FixToLowerBasicAsync_SpecifyCurrentCulture_MemberAccessSyntax()
         {
-            var source = @"
-Imports System.Globalization
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToLower|]
-        a?.[|ToLower|]
-        Dim b = a.[|ToLower|]
-        Dim c = a?.[|ToLower|]
-    End Sub
-End Class
-";
+            var source = """
+                Imports System.Globalization
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToLower|]
+                        a?.[|ToLower|]
+                        Dim b = a.[|ToLower|]
+                        Dim c = a?.[|ToLower|]
+                    End Sub
+                End Class
+                """;
 
-            var fixedSource = @"
-Imports System.Globalization
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToLower(CultureInfo.CurrentCulture)
-        a?.ToLower(CultureInfo.CurrentCulture)
-        Dim b = a.ToLower(CultureInfo.CurrentCulture)
-        Dim c = a?.ToLower(CultureInfo.CurrentCulture)
-    End Sub
-End Class
-";
+            var fixedSource = """
+                Imports System.Globalization
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToLower(CultureInfo.CurrentCulture)
+                        a?.ToLower(CultureInfo.CurrentCulture)
+                        Dim b = a.ToLower(CultureInfo.CurrentCulture)
+                        Dim c = a?.ToLower(CultureInfo.CurrentCulture)
+                    End Sub
+                End Class
+                """;
             await new VerifyVB.Test
             {
                 TestState = { Sources = { source } },
@@ -165,25 +165,25 @@ End Class
         [TestMethod]
         public async Task CA1311_FixToLowerBasicAsync_UseInvariantVersion()
         {
-            const string source = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToLower|]()
-        a?.[|ToLower|]()
-    End Sub
-End Class
-";
+            const string source = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToLower|]()
+                        a?.[|ToLower|]()
+                    End Sub
+                End Class
+                """;
 
-            const string fixedSource = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToLowerInvariant()
-        a?.ToLowerInvariant()
-    End Sub
-End Class
-";
+            const string fixedSource = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToLowerInvariant()
+                        a?.ToLowerInvariant()
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -197,29 +197,29 @@ End Class
         [TestMethod]
         public async Task CA1311_FixToLowerBasicAsync_UseInvariantVersion_MemberAccessSyntax()
         {
-            const string source = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToLower|]
-        a?.[|ToLower|]
-        Dim b = a.[|ToLower|]
-        Dim c = a?.[|ToLower|]
-    End Sub
-End Class
-";
+            const string source = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToLower|]
+                        a?.[|ToLower|]
+                        Dim b = a.[|ToLower|]
+                        Dim c = a?.[|ToLower|]
+                    End Sub
+                End Class
+                """;
 
-            const string fixedSource = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToLowerInvariant
-        a?.ToLowerInvariant
-        Dim b = a.ToLowerInvariant
-        Dim c = a?.ToLowerInvariant
-    End Sub
-End Class
-";
+            const string fixedSource = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToLowerInvariant
+                        a?.ToLowerInvariant
+                        Dim b = a.ToLowerInvariant
+                        Dim c = a?.ToLowerInvariant
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -233,33 +233,33 @@ End Class
         [TestMethod]
         public async Task CA1311_FixToUpperCSharpAsync_SpecifyCurrentCulture()
         {
-            const string source = @"
-using System.Globalization;
+            const string source = """
+                using System.Globalization;
 
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.[|ToUpper|]();
-        a?.[|ToUpper|]();
-    }
-}
-";
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.[|ToUpper|]();
+                        a?.[|ToUpper|]();
+                    }
+                }
+                """;
 
-            const string fixedSource = @"
-using System.Globalization;
+            const string fixedSource = """
+                using System.Globalization;
 
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.ToUpper(CultureInfo.CurrentCulture);
-        a?.ToUpper(CultureInfo.CurrentCulture);
-    }
-}
-";
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.ToUpper(CultureInfo.CurrentCulture);
+                        a?.ToUpper(CultureInfo.CurrentCulture);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -273,29 +273,29 @@ class C
         [TestMethod]
         public async Task CA1311_FixToUpperCSharpAsync_UseInvariantVersion()
         {
-            const string source = @"
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.[|ToUpper|]();
-        a?.[|ToUpper|]();
-    }
-}
-";
+            const string source = """
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.[|ToUpper|]();
+                        a?.[|ToUpper|]();
+                    }
+                }
+                """;
 
-            const string fixedSource = @"
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.ToUpperInvariant();
-        a?.ToUpperInvariant();
-    }
-}
-";
+            const string fixedSource = """
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.ToUpperInvariant();
+                        a?.ToUpperInvariant();
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -309,29 +309,29 @@ class C
         [TestMethod]
         public async Task CA1311_FixToUpperBasicAsync_SpecifyCurrentCulture()
         {
-            var source = @"
-Imports System.Globalization
+            var source = """
+                Imports System.Globalization
 
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToUpper|]()
-        a?.[|ToUpper|]()
-    End Sub
-End Class
-";
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToUpper|]()
+                        a?.[|ToUpper|]()
+                    End Sub
+                End Class
+                """;
 
-            var fixedSource = @"
-Imports System.Globalization
+            var fixedSource = """
+                Imports System.Globalization
 
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToUpper(CultureInfo.CurrentCulture)
-        a?.ToUpper(CultureInfo.CurrentCulture)
-    End Sub
-End Class
-";
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToUpper(CultureInfo.CurrentCulture)
+                        a?.ToUpper(CultureInfo.CurrentCulture)
+                    End Sub
+                End Class
+                """;
             await new VerifyVB.Test
             {
                 TestState = { Sources = { source } },
@@ -344,31 +344,31 @@ End Class
         [TestMethod]
         public async Task CA1311_FixToUpperBasicAsync_SpecifyCurrentCulture_MemberAccessSyntax()
         {
-            var source = @"
-Imports System.Globalization
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToUpper|]
-        a?.[|ToUpper|]
-        Dim b = a.[|ToUpper|]
-        Dim c = a?.[|ToUpper|]
-    End Sub
-End Class
-";
+            var source = """
+                Imports System.Globalization
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToUpper|]
+                        a?.[|ToUpper|]
+                        Dim b = a.[|ToUpper|]
+                        Dim c = a?.[|ToUpper|]
+                    End Sub
+                End Class
+                """;
 
-            var fixedSource = @"
-Imports System.Globalization
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToUpper(CultureInfo.CurrentCulture)
-        a?.ToUpper(CultureInfo.CurrentCulture)
-        Dim b = a.ToUpper(CultureInfo.CurrentCulture)
-        Dim c = a?.ToUpper(CultureInfo.CurrentCulture)
-    End Sub
-End Class
-";
+            var fixedSource = """
+                Imports System.Globalization
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToUpper(CultureInfo.CurrentCulture)
+                        a?.ToUpper(CultureInfo.CurrentCulture)
+                        Dim b = a.ToUpper(CultureInfo.CurrentCulture)
+                        Dim c = a?.ToUpper(CultureInfo.CurrentCulture)
+                    End Sub
+                End Class
+                """;
             await new VerifyVB.Test
             {
                 TestState = { Sources = { source } },
@@ -381,25 +381,25 @@ End Class
         [TestMethod]
         public async Task CA1311_FixToUpperBasicAsync_UseInvariantVersion()
         {
-            const string source = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToUpper|]()
-        a?.[|ToUpper|]()
-    End Sub
-End Class
-";
+            const string source = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToUpper|]()
+                        a?.[|ToUpper|]()
+                    End Sub
+                End Class
+                """;
 
-            const string fixedSource = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToUpperInvariant()
-        a?.ToUpperInvariant()
-    End Sub
-End Class
-";
+            const string fixedSource = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToUpperInvariant()
+                        a?.ToUpperInvariant()
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -413,29 +413,29 @@ End Class
         [TestMethod]
         public async Task CA1311_FixToUpperBasicAsync_UseInvariantVersion_MemberAccessSyntax()
         {
-            const string source = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToUpper|]
-        a?.[|ToUpper|]
-        Dim b = a.[|ToUpper|]
-        Dim c = a?.[|ToUpper|]
-    End Sub
-End Class
-";
+            const string source = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToUpper|]
+                        a?.[|ToUpper|]
+                        Dim b = a.[|ToUpper|]
+                        Dim c = a?.[|ToUpper|]
+                    End Sub
+                End Class
+                """;
 
-            const string fixedSource = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToUpperInvariant
-        a?.ToUpperInvariant
-        Dim b = a.ToUpperInvariant
-        Dim c = a?.ToUpperInvariant
-    End Sub
-End Class
-";
+            const string fixedSource = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToUpperInvariant
+                        a?.ToUpperInvariant
+                        Dim b = a.ToUpperInvariant
+                        Dim c = a?.ToUpperInvariant
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -449,31 +449,31 @@ End Class
         [TestMethod]
         public async Task CA1311_NestedToLower_FixAllRewritesBoth_CSharpAsync_SpecifyCurrentCulture()
         {
-            const string source = @"
-using System.Globalization;
+            const string source = """
+                using System.Globalization;
 
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.[|ToLower|]().[|ToLower|]();
-    }
-}
-";
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.[|ToLower|]().[|ToLower|]();
+                    }
+                }
+                """;
 
-            const string fixedSource = @"
-using System.Globalization;
+            const string fixedSource = """
+                using System.Globalization;
 
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.ToLower(CultureInfo.CurrentCulture).ToLower(CultureInfo.CurrentCulture);
-    }
-}
-";
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.ToLower(CultureInfo.CurrentCulture).ToLower(CultureInfo.CurrentCulture);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -487,27 +487,27 @@ class C
         [TestMethod]
         public async Task CA1311_NestedToLower_FixAllRewritesBoth_CSharpAsync_UseInvariantVersion()
         {
-            const string source = @"
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.[|ToLower|]().[|ToLower|]();
-    }
-}
-";
+            const string source = """
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.[|ToLower|]().[|ToLower|]();
+                    }
+                }
+                """;
 
-            const string fixedSource = @"
-class C
-{
-    void M()
-    {
-        var a = ""test"";
-        a.ToLowerInvariant().ToLowerInvariant();
-    }
-}
-";
+            const string fixedSource = """
+                class C
+                {
+                    void M()
+                    {
+                        var a = "test";
+                        a.ToLowerInvariant().ToLowerInvariant();
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -521,27 +521,27 @@ class C
         [TestMethod]
         public async Task CA1311_NestedToLower_FixAllRewritesBoth_BasicAsync_SpecifyCurrentCulture()
         {
-            const string source = @"
-Imports System.Globalization
+            const string source = """
+                Imports System.Globalization
 
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToLower|]().[|ToLower|]()
-    End Sub
-End Class
-";
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToLower|]().[|ToLower|]()
+                    End Sub
+                End Class
+                """;
 
-            const string fixedSource = @"
-Imports System.Globalization
+            const string fixedSource = """
+                Imports System.Globalization
 
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToLower(CultureInfo.CurrentCulture).ToLower(CultureInfo.CurrentCulture)
-    End Sub
-End Class
-";
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToLower(CultureInfo.CurrentCulture).ToLower(CultureInfo.CurrentCulture)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -555,23 +555,23 @@ End Class
         [TestMethod]
         public async Task CA1311_NestedToLower_FixAllRewritesBoth_BasicAsync_UseInvariantVersion()
         {
-            const string source = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.[|ToLower|]().[|ToLower|]()
-    End Sub
-End Class
-";
+            const string source = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.[|ToLower|]().[|ToLower|]()
+                    End Sub
+                End Class
+                """;
 
-            const string fixedSource = @"
-Class C
-    Sub M()
-        Dim a = ""test""
-        a.ToLowerInvariant().ToLowerInvariant()
-    End Sub
-End Class
-";
+            const string fixedSource = """
+                Class C
+                    Sub M()
+                        Dim a = "test"
+                        a.ToLowerInvariant().ToLowerInvariant()
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {

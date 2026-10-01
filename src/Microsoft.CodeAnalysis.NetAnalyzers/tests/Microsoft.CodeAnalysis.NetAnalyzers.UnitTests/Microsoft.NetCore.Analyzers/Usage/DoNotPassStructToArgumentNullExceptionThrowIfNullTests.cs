@@ -26,27 +26,29 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         [DataRow("bool")]
         public async Task NotNullable_PassedInConstructor_Diagnostic(string type)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-public class Test
-{{
-    public Test({type} x)
-    {{
-        {{|#0:ArgumentNullException.ThrowIfNull(x)|}};
-        Console.WriteLine(x);
-    }}
-}}";
-            var fixedCode = $@"
-using System;
+                public class Test
+                {
+                    public Test({{type}} x)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            var fixedCode = $$"""
+                using System;
 
-public class Test
-{{
-    public Test({type} x)
-    {{
-        Console.WriteLine(x);
-    }}
-}}";
+                public class Test
+                {
+                    public Test({{type}} x)
+                    {
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -63,32 +65,34 @@ public class Test
         [DataRow("bool")]
         public async Task Nullable_PassedInConstructor_Diagnostic(string type)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-public class Test
-{{
-    public Test({type}? x)
-    {{
-        {{|#0:ArgumentNullException.ThrowIfNull(x)|}};
-        Console.WriteLine(x);
-    }}
-}}";
-            var fixedCode = $@"
-using System;
+                public class Test
+                {
+                    public Test({{type}}? x)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            var fixedCode = $$"""
+                using System;
 
-public class Test
-{{
-    public Test({type}? x)
-    {{
-        if (!x.HasValue)
-        {{
-            throw new ArgumentNullException(nameof(x));
-        }}
+                public class Test
+                {
+                    public Test({{type}}? x)
+                    {
+                        if (!x.HasValue)
+                        {
+                            throw new ArgumentNullException(nameof(x));
+                        }
 
-        Console.WriteLine(x);
-    }}
-}}";
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -105,29 +109,31 @@ public class Test
         [DataRow("bool")]
         public async Task NotNullable_PassedAsLocalVariable_Diagnostic(string type)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-public class Test
-{{
-    public void Run()
-    {{
-        {type} x = default;
-        {{|#0:ArgumentNullException.ThrowIfNull(x)|}};
-        Console.WriteLine(x);
-    }}
-}}";
-            var fixedCode = $@"
-using System;
+                public class Test
+                {
+                    public void Run()
+                    {
+                        {{type}} x = default;
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            var fixedCode = $$"""
+                using System;
 
-public class Test
-{{
-    public void Run()
-    {{
-        {type} x = default;
-        Console.WriteLine(x);
-    }}
-}}";
+                public class Test
+                {
+                    public void Run()
+                    {
+                        {{type}} x = default;
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -144,34 +150,36 @@ public class Test
         [DataRow("bool")]
         public async Task Nullable_PassedAsLocalVariable_Diagnostic(string type)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-public class Test
-{{
-    public void Run()
-    {{
-        {type}? x = null;
-        {{|#0:ArgumentNullException.ThrowIfNull(x)|}};
-        Console.WriteLine(x);
-    }}
-}}";
-            var fixedCode = $@"
-using System;
+                public class Test
+                {
+                    public void Run()
+                    {
+                        {{type}}? x = null;
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            var fixedCode = $$"""
+                using System;
 
-public class Test
-{{
-    public void Run()
-    {{
-        {type}? x = null;
-        if (!x.HasValue)
-        {{
-            throw new ArgumentNullException(nameof(x));
-        }}
+                public class Test
+                {
+                    public void Run()
+                    {
+                        {{type}}? x = null;
+                        if (!x.HasValue)
+                        {
+                            throw new ArgumentNullException(nameof(x));
+                        }
 
-        Console.WriteLine(x);
-    }}
-}}";
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -185,31 +193,33 @@ public class Test
         [TestMethod]
         public async Task NotNullable_CustomStruct_Diagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-public class Test
-{
-    public Test(MyStruct x)
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(x)|};
-        Console.WriteLine(x);
-    }
-}
+                public class Test
+                {
+                    public Test(MyStruct x)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        Console.WriteLine(x);
+                    }
+                }
 
-public struct MyStruct {}";
-            const string fixedCode = @"
-using System;
+                public struct MyStruct {}
+                """;
+            const string fixedCode = """
+                using System;
 
-public class Test
-{
-    public Test(MyStruct x)
-    {
-        Console.WriteLine(x);
-    }
-}
+                public class Test
+                {
+                    public Test(MyStruct x)
+                    {
+                        Console.WriteLine(x);
+                    }
+                }
 
-public struct MyStruct {}";
+                public struct MyStruct {}
+                """;
 
             await new VerifyCS.Test
             {
@@ -223,36 +233,38 @@ public struct MyStruct {}";
         [TestMethod]
         public async Task Nullable_CustomStruct_Diagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-public class Test
-{
-    public Test(MyStruct? x)
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(x)|};
-        Console.WriteLine(x);
-    }
-}
+                public class Test
+                {
+                    public Test(MyStruct? x)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        Console.WriteLine(x);
+                    }
+                }
 
-public struct MyStruct {}";
-            const string fixedCode = @"
-using System;
+                public struct MyStruct {}
+                """;
+            const string fixedCode = """
+                using System;
 
-public class Test
-{
-    public Test(MyStruct? x)
-    {
-        if (!x.HasValue)
-        {
-            throw new ArgumentNullException(nameof(x));
-        }
+                public class Test
+                {
+                    public Test(MyStruct? x)
+                    {
+                        if (!x.HasValue)
+                        {
+                            throw new ArgumentNullException(nameof(x));
+                        }
 
-        Console.WriteLine(x);
-    }
-}
+                        Console.WriteLine(x);
+                    }
+                }
 
-public struct MyStruct {}";
+                public struct MyStruct {}
+                """;
 
             await new VerifyCS.Test
             {
@@ -268,23 +280,25 @@ public struct MyStruct {}";
         public async Task NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "System.Guid", "bool")] string type,
             [CombinatorialValues("System.ArgumentNullException", "global::System.ArgumentNullException")] string exceptionType)
         {
-            var code = $@"
-public class Test
-{{
-    public Test({type} x)
-    {{
-        {{|#0:{exceptionType}.ThrowIfNull(x)|}};
-        System.Console.WriteLine(x);
-    }}
-}}";
-            var fixedCode = $@"
-public class Test
-{{
-    public Test({type} x)
-    {{
-        System.Console.WriteLine(x);
-    }}
-}}";
+            var code = $$"""
+                public class Test
+                {
+                    public Test({{type}} x)
+                    {
+                        {|#0:{{exceptionType}}.ThrowIfNull(x)|};
+                        System.Console.WriteLine(x);
+                    }
+                }
+                """;
+            var fixedCode = $$"""
+                public class Test
+                {
+                    public Test({{type}} x)
+                    {
+                        System.Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -300,32 +314,34 @@ public class Test
         public async Task Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "Guid", "bool")] string type,
             [CombinatorialValues("System.ArgumentNullException", "global::System.ArgumentNullException")] string exceptionType)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-public class Test
-{{
-    public Test({type}? x)
-    {{
-        {{|#0:{exceptionType}.ThrowIfNull(x)|}};
-        Console.WriteLine(x);
-    }}
-}}";
-            var fixedCode = $@"
-using System;
+                public class Test
+                {
+                    public Test({{type}}? x)
+                    {
+                        {|#0:{{exceptionType}}.ThrowIfNull(x)|};
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            var fixedCode = $$"""
+                using System;
 
-public class Test
-{{
-    public Test({type}? x)
-    {{
-        if (!x.HasValue)
-        {{
-            throw new ArgumentNullException(nameof(x));
-        }}
+                public class Test
+                {
+                    public Test({{type}}? x)
+                    {
+                        if (!x.HasValue)
+                        {
+                            throw new ArgumentNullException(nameof(x));
+                        }
 
-        Console.WriteLine(x);
-    }}
-}}";
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -342,31 +358,33 @@ public class Test
         [DataRow("bool")]
         public async Task NotNullable_PropertyAccess_Diagnostic(string type)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-public class Test
-{{
-    public Test(MyRecord x)
-    {{
-        {{|#0:ArgumentNullException.ThrowIfNull(x.X)|}};
-        Console.WriteLine(x);
-    }}
-}}
+                public class Test
+                {
+                    public Test(MyRecord x)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x.X)|};
+                        Console.WriteLine(x);
+                    }
+                }
 
-public record MyRecord({type} X);";
-            var fixedCode = $@"
-using System;
+                public record MyRecord({{type}} X);
+                """;
+            var fixedCode = $$"""
+                using System;
 
-public class Test
-{{
-    public Test(MyRecord x)
-    {{
-        Console.WriteLine(x);
-    }}
-}}
+                public class Test
+                {
+                    public Test(MyRecord x)
+                    {
+                        Console.WriteLine(x);
+                    }
+                }
 
-public record MyRecord({type} X);";
+                public record MyRecord({{type}} X);
+                """;
 
             await new VerifyCS.Test
             {
@@ -384,36 +402,38 @@ public record MyRecord({type} X);";
         [DataRow("bool")]
         public async Task Nullable_PropertyAccess_Diagnostic(string type)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-public class Test
-{{
-    public Test(MyRecord x)
-    {{
-        {{|#0:ArgumentNullException.ThrowIfNull(x.X)|}};
-        Console.WriteLine(x);
-    }}
-}}
+                public class Test
+                {
+                    public Test(MyRecord x)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x.X)|};
+                        Console.WriteLine(x);
+                    }
+                }
 
-public record MyRecord({type}? X);";
-            var fixedCode = $@"
-using System;
+                public record MyRecord({{type}}? X);
+                """;
+            var fixedCode = $$"""
+                using System;
 
-public class Test
-{{
-    public Test(MyRecord x)
-    {{
-        if (!x.X.HasValue)
-        {{
-            throw new ArgumentNullException(nameof(x.X));
-        }}
+                public class Test
+                {
+                    public Test(MyRecord x)
+                    {
+                        if (!x.X.HasValue)
+                        {
+                            throw new ArgumentNullException(nameof(x.X));
+                        }
 
-        Console.WriteLine(x);
-    }}
-}}
+                        Console.WriteLine(x);
+                    }
+                }
 
-public record MyRecord({type}? X);";
+                public record MyRecord({{type}}? X);
+                """;
 
             await new VerifyCS.Test
             {
@@ -431,29 +451,31 @@ public record MyRecord({type}? X);";
         [DataRow("MyType")]
         public async Task Instantiation_Diagnostic(string type)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-class Test
-{{
-    void Run()
-    {{
-        {{|#0:ArgumentNullException.ThrowIfNull(new {type}())|}};
-    }}
-}}
+                class Test
+                {
+                    void Run()
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(new {{type}}())|};
+                    }
+                }
 
-class MyType {{}}";
-            const string fixedCode = @"
-using System;
+                class MyType {}
+                """;
+            const string fixedCode = """
+                using System;
 
-class Test
-{
-    void Run()
-    {
-    }
-}
+                class Test
+                {
+                    void Run()
+                    {
+                    }
+                }
 
-class MyType {}";
+                class MyType {}
+                """;
 
             await new VerifyCS.Test
             {
@@ -467,31 +489,33 @@ class MyType {}";
         [TestMethod]
         public async Task EmptyInitializer_Diagnostic()
         {
-            const string code = @"
-using System;
-using System.Collections.Generic;
+            const string code = """
+                using System;
+                using System.Collections.Generic;
 
-class Test
-{
-    void Run()
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(new MyType {})|};
-    }
-}
+                class Test
+                {
+                    void Run()
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(new MyType {})|};
+                    }
+                }
 
-class MyType {}";
-            const string fixedCode = @"
-using System;
-using System.Collections.Generic;
+                class MyType {}
+                """;
+            const string fixedCode = """
+                using System;
+                using System.Collections.Generic;
 
-class Test
-{
-    void Run()
-    {
-    }
-}
+                class Test
+                {
+                    void Run()
+                    {
+                    }
+                }
 
-class MyType {}";
+                class MyType {}
+                """;
 
             await new VerifyCS.Test
             {
@@ -505,35 +529,37 @@ class MyType {}";
         [TestMethod]
         public async Task Initializer_Diagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-class Test
-{
-    void Run()
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(new MyType { Name = ""Test"" })|};
-    }
-}
+                class Test
+                {
+                    void Run()
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(new MyType { Name = "Test" })|};
+                    }
+                }
 
-class MyType
-{
-    public string Name { get; set; }
-}";
-            const string fixedCode = @"
-using System;
+                class MyType
+                {
+                    public string Name { get; set; }
+                }
+                """;
+            const string fixedCode = """
+                using System;
 
-class Test
-{
-    void Run()
-    {
-    }
-}
+                class Test
+                {
+                    void Run()
+                    {
+                    }
+                }
 
-class MyType
-{
-    public string Name { get; set; }
-}";
+                class MyType
+                {
+                    public string Name { get; set; }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -547,27 +573,29 @@ class MyType
         [TestMethod]
         public async Task CollectionInitializer_Diagnostic()
         {
-            const string code = @"
-using System;
-using System.Collections.Generic;
+            const string code = """
+                using System;
+                using System.Collections.Generic;
 
-class Test
-{
-    void Run()
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(new List<int> { 1, 2, 3 })|};
-    }
-}";
-            const string fixedCode = @"
-using System;
-using System.Collections.Generic;
+                class Test
+                {
+                    void Run()
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(new List<int> { 1, 2, 3 })|};
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
+                using System.Collections.Generic;
 
-class Test
-{
-    void Run()
-    {
-    }
-}";
+                class Test
+                {
+                    void Run()
+                    {
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -585,29 +613,31 @@ class Test
         [DataRow("System.Net.Http.HttpClient")]
         public async Task Nameof_Diagnostic(string type)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-class Test
-{{
-    void Run({type} x)
-    {{
-        {{|#0:ArgumentNullException.ThrowIfNull(nameof(x))|}};
-    }}
-}}
+                class Test
+                {
+                    void Run({{type}} x)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(nameof(x))|};
+                    }
+                }
 
-class MyType {{}}";
-            var fixedCode = $@"
-using System;
+                class MyType {}
+                """;
+            var fixedCode = $$"""
+                using System;
 
-class Test
-{{
-    void Run({type} x)
-    {{
-    }}
-}}
+                class Test
+                {
+                    void Run({{type}} x)
+                    {
+                    }
+                }
 
-class MyType {{}}";
+                class MyType {}
+                """;
 
             await new VerifyCS.Test
             {
@@ -621,25 +651,27 @@ class MyType {{}}";
         [TestMethod]
         public async Task Generics_Diagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-class Test
-{
-    public void M<T>(T x) where T : struct
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(x)|};
-    }
-}";
-            const string fixedCode = @"
-using System;
+                class Test
+                {
+                    public void M<T>(T x) where T : struct
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
 
-class Test
-{
-    public void M<T>(T x) where T : struct
-    {
-    }
-}";
+                class Test
+                {
+                    public void M<T>(T x) where T : struct
+                    {
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -653,28 +685,30 @@ class Test
         [TestMethod]
         public async Task TriviaIsNotPreserved_Diagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-class Test
-{
-    public void M(int x)
-    {
-        // Throw if null
-        {|#0:ArgumentNullException.ThrowIfNull(x)|};
-        Console.WriteLine(x);
-    }
-}";
-            const string fixedCode = @"
-using System;
+                class Test
+                {
+                    public void M(int x)
+                    {
+                        // Throw if null
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
 
-class Test
-{
-    public void M(int x)
-    {
-        Console.WriteLine(x);
-    }
-}";
+                class Test
+                {
+                    public void M(int x)
+                    {
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -688,31 +722,33 @@ class Test
         [TestMethod]
         public async Task TriviaIsPreserved_Diagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-class Test
-{
-    // This is a method.
-    public void M(int x)
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(x)|};
-        // Print x
-        Console.WriteLine(x);
-    }
-}";
-            const string fixedCode = @"
-using System;
+                class Test
+                {
+                    // This is a method.
+                    public void M(int x)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        // Print x
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
 
-class Test
-{
-    // This is a method.
-    public void M(int x)
-    {
-        // Print x
-        Console.WriteLine(x);
-    }
-}";
+                class Test
+                {
+                    // This is a method.
+                    public void M(int x)
+                    {
+                        // Print x
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -726,27 +762,29 @@ class Test
         [TestMethod]
         public async Task TwoArguments_Diagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-class Test
-{
-    public void M(int x)
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(x, nameof(x))|};
-        Console.WriteLine(x);
-    }
-}";
-            const string fixedCode = @"
-using System;
+                class Test
+                {
+                    public void M(int x)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x, nameof(x))|};
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
 
-class Test
-{
-    public void M(int x)
-    {
-        Console.WriteLine(x);
-    }
-}";
+                class Test
+                {
+                    public void M(int x)
+                    {
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -760,28 +798,30 @@ class Test
         [TestMethod]
         public async Task TwoNonNullable_FixAllRemovesBoth_Diagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-class Test
-{
-    public void M(int x, Guid y)
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(x)|};
-        {|#1:ArgumentNullException.ThrowIfNull(y)|};
-        Console.WriteLine(x);
-    }
-}";
-            const string fixedCode = @"
-using System;
+                class Test
+                {
+                    public void M(int x, Guid y)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        {|#1:ArgumentNullException.ThrowIfNull(y)|};
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
 
-class Test
-{
-    public void M(int x, Guid y)
-    {
-        Console.WriteLine(x);
-    }
-}";
+                class Test
+                {
+                    public void M(int x, Guid y)
+                    {
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -799,38 +839,40 @@ class Test
         [TestMethod]
         public async Task TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-class Test
-{
-    public void M(int? x, Guid? y)
-    {
-        {|#0:ArgumentNullException.ThrowIfNull(x)|};
-        {|#1:ArgumentNullException.ThrowIfNull(y)|};
-        Console.WriteLine(x);
-    }
-}";
-            const string fixedCode = @"
-using System;
+                class Test
+                {
+                    public void M(int? x, Guid? y)
+                    {
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                        {|#1:ArgumentNullException.ThrowIfNull(y)|};
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
 
-class Test
-{
-    public void M(int? x, Guid? y)
-    {
-        if (!x.HasValue)
-        {
-            throw new ArgumentNullException(nameof(x));
-        }
+                class Test
+                {
+                    public void M(int? x, Guid? y)
+                    {
+                        if (!x.HasValue)
+                        {
+                            throw new ArgumentNullException(nameof(x));
+                        }
 
-        if (!y.HasValue)
-        {
-            throw new ArgumentNullException(nameof(y));
-        }
+                        if (!y.HasValue)
+                        {
+                            throw new ArgumentNullException(nameof(y));
+                        }
 
-        Console.WriteLine(x);
-    }
-}";
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -860,22 +902,23 @@ class Test
         [DataRow("MyStruct?")]
         public async Task CustomThrowIfNull_NoDiagnostic(string type)
         {
-            var code = $@"
-#nullable enable
-public class Test
-{{
-    public Test({type} x)
-    {{
-        ArgumentNullException.ThrowIfNull(x);
-        System.Console.WriteLine(x);
-    }}
-}}
+            var code = $$"""
+                #nullable enable
+                public class Test
+                {
+                    public Test({{type}} x)
+                    {
+                        ArgumentNullException.ThrowIfNull(x);
+                        System.Console.WriteLine(x);
+                    }
+                }
 
-public class ArgumentNullException {{
-    public static void ThrowIfNull(object? value) => throw null!;
-}}
+                public class ArgumentNullException {
+                    public static void ThrowIfNull(object? value) => throw null!;
+                }
 
-public struct MyStruct {{}}";
+                public struct MyStruct {}
+                """;
 
             await new VerifyCS.Test
             {
@@ -896,18 +939,19 @@ public struct MyStruct {{}}";
         [DataRow("System.Net.Http.HttpClient?")]
         public async Task ReferenceTypes_NoDiagnostic(string type)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-#nullable enable
-public class Test
-{{
-    public Test({type} x)
-    {{
-        ArgumentNullException.ThrowIfNull(x);
-        Console.WriteLine(x);
-    }}
-}}";
+                #nullable enable
+                public class Test
+                {
+                    public Test({{type}} x)
+                    {
+                        ArgumentNullException.ThrowIfNull(x);
+                        Console.WriteLine(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -920,19 +964,20 @@ public class Test
         [TestMethod]
         public async Task Record_NoDiagnostic()
         {
-            const string code = @"
-using System;
+            const string code = """
+                using System;
 
-public class Test
-{
-    public Test(MyRecord x)
-    {
-        global::System.ArgumentNullException.ThrowIfNull(x);
-        Console.WriteLine(x);
-    }
-}
+                public class Test
+                {
+                    public Test(MyRecord x)
+                    {
+                        global::System.ArgumentNullException.ThrowIfNull(x);
+                        Console.WriteLine(x);
+                    }
+                }
 
-public record MyRecord;";
+                public record MyRecord;
+                """;
 
             await new VerifyCS.Test
             {
@@ -948,16 +993,17 @@ public record MyRecord;";
         [DataRow("where T : class")]
         public async Task Generics_NoDiagnostic(string whereClause)
         {
-            var code = $@"
-using System;
+            var code = $$"""
+                using System;
 
-class Test
-{{
-    public void M<T>(T x) {whereClause}
-    {{
-        ArgumentNullException.ThrowIfNull(x);
-    }}
-}}";
+                class Test
+                {
+                    public void M<T>(T x) {{whereClause}}
+                    {
+                        ArgumentNullException.ThrowIfNull(x);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -981,25 +1027,25 @@ class Test
         [DataRow("Boolean")]
         public async Task Vb_NotNullable_PassedInConstructor_Diagnostic(string type)
         {
-            var code = $@"
-Imports System
+            var code = $$"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As {type})
-        {{|#0:ArgumentNullException.ThrowIfNull(x)|}}
-        Console.WriteLine(x)
-    End Sub
-End Class
-";
-            var fixedCode = $@"
-Imports System
+                Public Class Test
+                    Public Sub Test(x As {{type}})
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
+            var fixedCode = $"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As {type})
-        Console.WriteLine(x)
-    End Sub
-End Class
-";
+                Public Class Test
+                    Public Sub Test(x As {type})
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1016,27 +1062,29 @@ End Class
         [DataRow("Boolean")]
         public async Task Vb_Nullable_PassedInConstructor_Diagnostic(string type)
         {
-            var code = $@"
-Imports System
+            var code = $$"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As {type}?)
-       {{|#0:ArgumentNullException.ThrowIfNull(x)|}}
-        Console.WriteLine(x)
-    End Sub
-End Class";
-            var fixedCode = $@"
-Imports System
+                Public Class Test
+                    Public Sub Test(x As {{type}}?)
+                       {|#0:ArgumentNullException.ThrowIfNull(x)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
+            var fixedCode = $"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As {type}?)
-        If Not x.HasValue Then
-            Throw New ArgumentNullException(NameOf(x))
-        End If
+                Public Class Test
+                    Public Sub Test(x As {type}?)
+                        If Not x.HasValue Then
+                            Throw New ArgumentNullException(NameOf(x))
+                        End If
 
-        Console.WriteLine(x)
-    End Sub
-End Class";
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1053,25 +1101,27 @@ End Class";
         [DataRow("Boolean")]
         public async Task Vb_NotNullable_PassedAsLocalVariable_Diagnostic(string type)
         {
-            var code = $@"
-Imports System
+            var code = $$"""
+                Imports System
 
-Public Class Test
-    Public Sub Run()
-        Dim x As {type} = Nothing
-        {{|#0:ArgumentNullException.ThrowIfNull(x)|}}
-        Console.WriteLine(x)
-    End Sub
-End Class";
-            var fixedCode = $@"
-Imports System
+                Public Class Test
+                    Public Sub Run()
+                        Dim x As {{type}} = Nothing
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
+            var fixedCode = $"""
+                Imports System
 
-Public Class Test
-    Public Sub Run()
-        Dim x As {type} = Nothing
-        Console.WriteLine(x)
-    End Sub
-End Class";
+                Public Class Test
+                    Public Sub Run()
+                        Dim x As {type} = Nothing
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1088,30 +1138,32 @@ End Class";
         [DataRow("Boolean")]
         public async Task Vb_Nullable_PassedAsLocalVariable_Diagnostic(string type)
         {
-            var code = $@"
-Imports System
+            var code = $$"""
+                Imports System
 
-Public Class Test
-    Public Sub Run()
-        Dim x As {type}? = Nothing
-        {{|#0:ArgumentNullException.ThrowIfNull(x)|}}
-        Console.WriteLine(x)
-    End Sub
-End Class";
-            var fixedCode = $@"
-Imports System
+                Public Class Test
+                    Public Sub Run()
+                        Dim x As {{type}}? = Nothing
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
+            var fixedCode = $"""
+                Imports System
 
-Public Class Test
-    Public Sub Run()
-        Dim x As {type}? = Nothing
+                Public Class Test
+                    Public Sub Run()
+                        Dim x As {type}? = Nothing
 
-        If Not x.HasValue Then
-            Throw New ArgumentNullException(NameOf(x))
-        End If
+                        If Not x.HasValue Then
+                            Throw New ArgumentNullException(NameOf(x))
+                        End If
 
-        Console.WriteLine(x)
-    End Sub
-End Class";
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1125,29 +1177,31 @@ End Class";
         [TestMethod]
         public async Task Vb_NotNullable_CustomStruct_Diagnostic()
         {
-            const string code = @"
-Imports System
+            const string code = """
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As MyStruct)
-        {|#0:ArgumentNullException.ThrowIfNull(x)|}
-        Console.WriteLine(x)
-    End Sub
-End Class
+                Public Class Test
+                    Public Sub Test(x As MyStruct)
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
 
-Public Structure MyStruct
-End Structure";
-            const string fixedCode = @"
-Imports System
+                Public Structure MyStruct
+                End Structure
+                """;
+            const string fixedCode = """
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As MyStruct)
-        Console.WriteLine(x)
-    End Sub
-End Class
+                Public Class Test
+                    Public Sub Test(x As MyStruct)
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
 
-Public Structure MyStruct
-End Structure";
+                Public Structure MyStruct
+                End Structure
+                """;
 
             await new VerifyVB.Test
             {
@@ -1161,33 +1215,35 @@ End Structure";
         [TestMethod]
         public async Task Vb_Nullable_CustomStruct_Diagnostic()
         {
-            const string code = @"
-Imports System
+            const string code = """
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As MyStruct?)
-        {|#0:ArgumentNullException.ThrowIfNull(x)|}
-        Console.WriteLine(x)
-    End Sub
-End Class
+                Public Class Test
+                    Public Sub Test(x As MyStruct?)
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
 
-Public Structure MyStruct
-End Structure";
-            const string fixedCode = @"
-Imports System
+                Public Structure MyStruct
+                End Structure
+                """;
+            const string fixedCode = """
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As MyStruct?)
-        If Not x.HasValue Then
-            Throw New ArgumentNullException(NameOf(x))
-        End If
+                Public Class Test
+                    Public Sub Test(x As MyStruct?)
+                        If Not x.HasValue Then
+                            Throw New ArgumentNullException(NameOf(x))
+                        End If
 
-        Console.WriteLine(x)
-    End Sub
-End Class
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
 
-Public Structure MyStruct
-End Structure";
+                Public Structure MyStruct
+                End Structure
+                """;
 
             await new VerifyVB.Test
             {
@@ -1203,19 +1259,21 @@ End Structure";
         public async Task Vb_NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("System.Int32", "System.Guid", "System.Boolean")] string type,
             [CombinatorialValues("System.ArgumentNullException", "Global.System.ArgumentNullException")] string exceptionType)
         {
-            var code = $@"
-Public Class Test
-    Public Sub Test(x As {type})
-        {{|#0:{exceptionType}.ThrowIfNull(x)|}}
-        System.Console.WriteLine(x)
-    End Sub
-End Class";
-            var fixedCode = $@"
-Public Class Test
-    Public Sub Test(x As {type})
-        System.Console.WriteLine(x)
-    End Sub
-End Class";
+            var code = $$"""
+                Public Class Test
+                    Public Sub Test(x As {{type}})
+                        {|#0:{{exceptionType}}.ThrowIfNull(x)|}
+                        System.Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
+            var fixedCode = $"""
+                Public Class Test
+                    Public Sub Test(x As {type})
+                        System.Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1231,27 +1289,29 @@ End Class";
         public async Task Vb_Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("Int32", "Guid", "Boolean")] string type,
             [CombinatorialValues("System.ArgumentNullException", "Global.System.ArgumentNullException")] string exceptionType)
         {
-            var code = $@"
-Imports System
+            var code = $$"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As {type}?)
-       {{|#0:{exceptionType}.ThrowIfNull(x)|}}
-        Console.WriteLine(x)
-    End Sub
-End Class";
-            var fixedCode = $@"
-Imports System
+                Public Class Test
+                    Public Sub Test(x As {{type}}?)
+                       {|#0:{{exceptionType}}.ThrowIfNull(x)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
+            var fixedCode = $"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As {type}?)
-        If Not x.HasValue Then
-            Throw New ArgumentNullException(NameOf(x))
-        End If
+                Public Class Test
+                    Public Sub Test(x As {type}?)
+                        If Not x.HasValue Then
+                            Throw New ArgumentNullException(NameOf(x))
+                        End If
 
-        Console.WriteLine(x)
-    End Sub
-End Class";
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1268,31 +1328,33 @@ End Class";
         [DataRow("Boolean")]
         public async Task Vb_NotNullable_PropertyAccess_Diagnostic(string type)
         {
-            var code = $@"
-Imports System
+            var code = $$"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As MyType)
-       {{|#0:ArgumentNullException.ThrowIfNull(x.X)|}}
-        Console.WriteLine(x)
-    End Sub
-End Class
+                Public Class Test
+                    Public Sub Test(x As MyType)
+                       {|#0:ArgumentNullException.ThrowIfNull(x.X)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
 
-Public Class MyType
-    Public Dim X As {type}
-End Class";
-            var fixedCode = $@"
-Imports System
+                Public Class MyType
+                    Public Dim X As {{type}}
+                End Class
+                """;
+            var fixedCode = $"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As MyType)
-        Console.WriteLine(x)
-    End Sub
-End Class
+                Public Class Test
+                    Public Sub Test(x As MyType)
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
 
-Public Class MyType
-    Public Dim X As {type}
-End Class";
+                Public Class MyType
+                    Public Dim X As {type}
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1309,35 +1371,37 @@ End Class";
         [DataRow("Boolean")]
         public async Task Vb_Nullable_PropertyAccess_Diagnostic(string type)
         {
-            var code = $@"
-Imports System
+            var code = $$"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As MyType)
-       {{|#0:ArgumentNullException.ThrowIfNull(x.X)|}}
-        Console.WriteLine(x)
-    End Sub
-End Class
+                Public Class Test
+                    Public Sub Test(x As MyType)
+                       {|#0:ArgumentNullException.ThrowIfNull(x.X)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
 
-Public Class MyType
-    Public Dim X As {type}?
-End Class";
-            var fixedCode = $@"
-Imports System
+                Public Class MyType
+                    Public Dim X As {{type}}?
+                End Class
+                """;
+            var fixedCode = $"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As MyType)
-        If Not x.X.HasValue Then
-            Throw New ArgumentNullException(NameOf(x.X))
-        End If
+                Public Class Test
+                    Public Sub Test(x As MyType)
+                        If Not x.X.HasValue Then
+                            Throw New ArgumentNullException(NameOf(x.X))
+                        End If
 
-        Console.WriteLine(x)
-    End Sub
-End Class
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
 
-Public Class MyType
-    Public Dim X As {type}?
-End Class";
+                Public Class MyType
+                    Public Dim X As {type}?
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1354,27 +1418,29 @@ End Class";
         [DataRow("MyType")]
         public async Task Vb_Instantiation_Diagnostic(string type)
         {
-            var code = $@"
-Imports System
+            var code = $$"""
+                Imports System
 
-Class Test
-    Sub Run()
-        {{|#0:ArgumentNullException.ThrowIfNull(New {type}())|}}
-    End Sub
-End Class
+                Class Test
+                    Sub Run()
+                        {|#0:ArgumentNullException.ThrowIfNull(New {{type}}())|}
+                    End Sub
+                End Class
 
-Class MyType
-End Class";
-            const string fixedCode = @"
-Imports System
+                Class MyType
+                End Class
+                """;
+            const string fixedCode = """
+                Imports System
 
-Class Test
-    Sub Run()
-    End Sub
-End Class
+                Class Test
+                    Sub Run()
+                    End Sub
+                End Class
 
-Class MyType
-End Class";
+                Class MyType
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1392,27 +1458,29 @@ End Class";
         [DataRow("System.Net.Http.HttpClient")]
         public async Task Vb_Nameof_Diagnostic(string type)
         {
-            var code = $@"
-Imports System
+            var code = $$"""
+                Imports System
 
-Class Test
-    Sub Run(x As {type})
-        {{|#0:ArgumentNullException.ThrowIfNull(nameof(x))|}}
-    End Sub
-End Class
+                Class Test
+                    Sub Run(x As {{type}})
+                        {|#0:ArgumentNullException.ThrowIfNull(nameof(x))|}
+                    End Sub
+                End Class
 
-Class MyType
-End Class";
-            var fixedCode = $@"
-Imports System
+                Class MyType
+                End Class
+                """;
+            var fixedCode = $"""
+                Imports System
 
-Class Test
-    Sub Run(x As {type})
-    End Sub
-End Class
+                Class Test
+                    Sub Run(x As {type})
+                    End Sub
+                End Class
 
-Class MyType
-End Class";
+                Class MyType
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1426,21 +1494,23 @@ End Class";
         [TestMethod]
         public async Task Vb_Generics_Diagnostic()
         {
-            const string code = @"
-Imports System
+            const string code = """
+                Imports System
 
-Class Test
-    Public Sub M(Of T As Structure)(x As T)
-        {|#0:ArgumentNullException.ThrowIfNull(x)|}
-    End Sub
-End Class";
-            const string fixedCode = @"
-Imports System
+                Class Test
+                    Public Sub M(Of T As Structure)(x As T)
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+                    End Sub
+                End Class
+                """;
+            const string fixedCode = """
+                Imports System
 
-Class Test
-    Public Sub M(Of T As Structure)(x As T)
-    End Sub
-End Class";
+                Class Test
+                    Public Sub M(Of T As Structure)(x As T)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1454,29 +1524,31 @@ End Class";
         [TestMethod]
         public async Task Vb_Initializer_Diagnostic()
         {
-            const string code = @"
-Imports System
+            const string code = """
+                Imports System
 
-Class Test
-    Sub Run()
-        {|#0:ArgumentNullException.ThrowIfNull(new MyType With { .Name = ""Test"" })|}
-    End Sub
-End Class
+                Class Test
+                    Sub Run()
+                        {|#0:ArgumentNullException.ThrowIfNull(new MyType With { .Name = "Test" })|}
+                    End Sub
+                End Class
 
-Class MyType
-    Public Property Name As String
-End Class";
-            const string fixedCode = @"
-Imports System
+                Class MyType
+                    Public Property Name As String
+                End Class
+                """;
+            const string fixedCode = """
+                Imports System
 
-Class Test
-    Sub Run()
-    End Sub
-End Class
+                Class Test
+                    Sub Run()
+                    End Sub
+                End Class
 
-Class MyType
-    Public Property Name As String
-End Class";
+                Class MyType
+                    Public Property Name As String
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1490,23 +1562,25 @@ End Class";
         [TestMethod]
         public async Task Vb_CollectionInitializer_Diagnostic()
         {
-            const string code = @"
-Imports System
-Imports System.Collections.Generic
+            const string code = """
+                Imports System
+                Imports System.Collections.Generic
 
-Class Test
-    Sub Run()
-        {|#0:ArgumentNullException.ThrowIfNull(new List(Of Int32) From { 1, 2, 3 })|}
-    End Sub
-End Class";
-            const string fixedCode = @"
-Imports System
-Imports System.Collections.Generic
+                Class Test
+                    Sub Run()
+                        {|#0:ArgumentNullException.ThrowIfNull(new List(Of Int32) From { 1, 2, 3 })|}
+                    End Sub
+                End Class
+                """;
+            const string fixedCode = """
+                Imports System
+                Imports System.Collections.Generic
 
-Class Test
-    Sub Run()
-    End Sub
-End Class";
+                Class Test
+                    Sub Run()
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1520,24 +1594,26 @@ End Class";
         [TestMethod]
         public async Task Vb_TwoNonNullable_FixAllRemovesBoth_Diagnostic()
         {
-            const string code = @"
-Imports System
+            const string code = """
+                Imports System
 
-Public Class Test
-    Public Sub Run(x As Int32, y As Guid)
-        {|#0:ArgumentNullException.ThrowIfNull(x)|}
-        {|#1:ArgumentNullException.ThrowIfNull(y)|}
-        Console.WriteLine(x)
-    End Sub
-End Class";
-            const string fixedCode = @"
-Imports System
+                Public Class Test
+                    Public Sub Run(x As Int32, y As Guid)
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+                        {|#1:ArgumentNullException.ThrowIfNull(y)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
+            const string fixedCode = """
+                Imports System
 
-Public Class Test
-    Public Sub Run(x As Int32, y As Guid)
-        Console.WriteLine(x)
-    End Sub
-End Class";
+                Public Class Test
+                    Public Sub Run(x As Int32, y As Guid)
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1555,32 +1631,34 @@ End Class";
         [TestMethod]
         public async Task Vb_TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
         {
-            const string code = @"
-Imports System
+            const string code = """
+                Imports System
 
-Public Class Test
-    Public Sub Run(x As Int32?, y As Guid?)
-        {|#0:ArgumentNullException.ThrowIfNull(x)|}
-        {|#1:ArgumentNullException.ThrowIfNull(y)|}
-        Console.WriteLine(x)
-    End Sub
-End Class";
-            const string fixedCode = @"
-Imports System
+                Public Class Test
+                    Public Sub Run(x As Int32?, y As Guid?)
+                        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+                        {|#1:ArgumentNullException.ThrowIfNull(y)|}
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
+            const string fixedCode = """
+                Imports System
 
-Public Class Test
-    Public Sub Run(x As Int32?, y As Guid?)
-        If Not x.HasValue Then
-            Throw New ArgumentNullException(NameOf(x))
-        End If
+                Public Class Test
+                    Public Sub Run(x As Int32?, y As Guid?)
+                        If Not x.HasValue Then
+                            Throw New ArgumentNullException(NameOf(x))
+                        End If
 
-        If Not y.HasValue Then
-            Throw New ArgumentNullException(NameOf(y))
-        End If
+                        If Not y.HasValue Then
+                            Throw New ArgumentNullException(NameOf(y))
+                        End If
 
-        Console.WriteLine(x)
-    End Sub
-End Class";
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1610,22 +1688,23 @@ End Class";
         [DataRow("MyStruct?")]
         public async Task Vb_CustomThrowIfNull_NoDiagnostic(string type)
         {
-            var code = $@"
-Public Class Test
-    Public Sub Test(x As {type})
-        ArgumentNullException.ThrowIfNull(x)
-        System.Console.WriteLine(x)
-    End Sub
-End Class
+            var code = $"""
+                Public Class Test
+                    Public Sub Test(x As {type})
+                        ArgumentNullException.ThrowIfNull(x)
+                        System.Console.WriteLine(x)
+                    End Sub
+                End Class
 
-Public Class ArgumentNullException
-    Public Shared Sub ThrowIfNull(value As Object)
-        Throw New System.Exception()
-    End Sub
-End Class
+                Public Class ArgumentNullException
+                    Public Shared Sub ThrowIfNull(value As Object)
+                        Throw New System.Exception()
+                    End Sub
+                End Class
 
-Public Structure MyStruct
-End Structure";
+                Public Structure MyStruct
+                End Structure
+                """;
 
             await new VerifyVB.Test
             {
@@ -1641,15 +1720,16 @@ End Structure";
         [DataRow("System.Net.Http.HttpClient")]
         public async Task Vb_ReferenceTypes_NoDiagnostic(string type)
         {
-            var code = $@"
-Imports System
+            var code = $"""
+                Imports System
 
-Public Class Test
-    Public Sub Test(x As {type})
-        ArgumentNullException.ThrowIfNull(x)
-        Console.WriteLine(x)
-    End Sub
-End Class";
+                Public Class Test
+                    Public Sub Test(x As {type})
+                        ArgumentNullException.ThrowIfNull(x)
+                        Console.WriteLine(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {
@@ -1663,14 +1743,15 @@ End Class";
         [DataRow("As Class")]
         public async Task Vb_Generics_NoDiagnostic(string whereClause)
         {
-            var code = $@"
-Imports System
+            var code = $"""
+                Imports System
 
-Class Test
-    Public Sub M(Of T {whereClause})(x As T)
-        ArgumentNullException.ThrowIfNull(x)
-    End Sub
-End Class";
+                Class Test
+                    Public Sub M(Of T {whereClause})(x As T)
+                        ArgumentNullException.ThrowIfNull(x)
+                    End Sub
+                End Class
+                """;
 
             await new VerifyVB.Test
             {

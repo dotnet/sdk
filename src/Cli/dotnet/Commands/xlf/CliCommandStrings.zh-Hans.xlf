@@ -132,6 +132,11 @@
         <target state="translated">选项 "--collect-test-map" 不能与 "--max-parallel-test-modules" 结合使用。测试映射按单个模块逐一收集。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDeviceOptionsNotSupportedForFileBasedApps">
+        <source>The '--device' and '--list-devices' options are not supported for C# file-based apps.</source>
+        <target state="new">The '--device' and '--list-devices' options are not supported for C# file-based apps.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
         <target state="translated">选项 "--device" 和 "--list-devices" 需要项目，不能与 "--test-modules" 一起使用。</target>
@@ -3359,7 +3364,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestDiscoveryExitCode">
         <source>Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
-        <target state="translated">测试发现已完成，退出代码为非成功: {0}。{1} 请参阅: https://aka.ms/testingplatform/exitcodes</target>
+        <target state="new">Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
         <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestDiscoverySummary">
@@ -3379,7 +3384,7 @@ Your project targets multiple frameworks. Specify which framework to run using '
       </trans-unit>
       <trans-unit id="TestRunExitCode">
         <source>Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
-        <target state="translated">测试运行已完成，退出代码为非成功: {0}。{1} 请参阅: https://aka.ms/testingplatform/exitcodes</target>
+        <target state="new">Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
         <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">

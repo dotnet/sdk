@@ -115,19 +115,6 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
-    [DataRow("-mt")]
-    [DataRow("\"--mt:false\"")]
-    public void VerboseWithMultiThreadedOption(string option)
-    {
-        var options = VerifyOptions(["--verbose", option, "--", option]);
-
-        Assert.AreEqual(LogLevel.Debug, options.GlobalOptions.LogLevel);
-        AssertEx.SequenceEqual([NugetInteractiveProperty, option], options.BuildArguments);
-        AssertEx.SequenceEqual([option, "--", option], options.CommandArguments);
-        AssertEx.SequenceEqual(["--", option], options.CommandArgumentsForFileDiscovery);
-    }
-
-    [TestMethod]
     [DataRow("--quiet")]
     [DataRow("--verbose")]
     public void TraceAndOtherLogLevel(string option)
@@ -141,6 +128,32 @@ public class CommandLineOptionsTests
     {
         var options = VerifyOptions(["--trace"]);
         Assert.AreEqual(LogLevel.Trace, options.GlobalOptions.LogLevel);
+    }
+
+    [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("\"--mt:false\"")]
+    public void TraceWithMultiThreadedOption(string option)
+    {
+        var options = VerifyOptions(["--trace", option, "--", option]);
+
+        Assert.AreEqual(LogLevel.Trace, options.GlobalOptions.LogLevel);
+        AssertEx.SequenceEqual([NugetInteractiveProperty, option], options.BuildArguments);
+        AssertEx.SequenceEqual([option, "--", option], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", option], options.CommandArgumentsForFileDiscovery);
+    }
+
+    [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("\"--mt:false\"")]
+    public void VerboseWithMultiThreadedOption(string option)
+    {
+        var options = VerifyOptions(["--verbose", option, "--", option]);
+
+        Assert.AreEqual(LogLevel.Debug, options.GlobalOptions.LogLevel);
+        AssertEx.SequenceEqual([NugetInteractiveProperty, option], options.BuildArguments);
+        AssertEx.SequenceEqual([option, "--", option], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", option], options.CommandArgumentsForFileDiscovery);
     }
 
     [TestMethod]

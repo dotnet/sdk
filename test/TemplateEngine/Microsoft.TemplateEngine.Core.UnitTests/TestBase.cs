@@ -1,13 +1,32 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Text;
+using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Core.Contracts;
+using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     public abstract class TestBase
     {
+        protected static IEngineEnvironmentSettings CreateEnvironment(
+            EnvironmentSettingsHelper environmentSettingsHelper,
+            [CallerMemberName] string hostIdentifier = "")
+        {
+            CultureInfo currentUICulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                return environmentSettingsHelper.CreateEnvironment(hostIdentifier: hostIdentifier, virtualize: true);
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = currentUICulture;
+            }
+        }
+
         protected static void RunAndVerify(string originalValue, string expectedValue, IProcessor processor, int bufferSize, bool? changeOverride = null, bool emitBOM = false)
         {
             byte[] valueBytes = Encoding.UTF8.GetBytes(originalValue);

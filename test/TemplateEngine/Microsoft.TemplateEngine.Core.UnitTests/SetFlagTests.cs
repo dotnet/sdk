@@ -156,7 +156,7 @@ End";
 End";
 
             VariableCollection vc = new VariableCollection();
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = CreateEnvironment(_environmentSettingsHelper);
             EngineConfig engineConfig = new EngineConfig(environmentSettings.Host.Logger, vc);
 
             string on = "//+:cnd";
@@ -186,7 +186,7 @@ End";
 ";
 
             VariableCollection vc = new();
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = CreateEnvironment(_environmentSettingsHelper);
             EngineConfig engineConfig = new(environmentSettings.Host.Logger, vc);
 
             ConditionalTokens tokens = new()

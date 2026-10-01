@@ -5,6 +5,7 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.DotNet.Watch.Aspire.UnitTests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

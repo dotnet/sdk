@@ -12,6 +12,7 @@ using Microsoft.Win32;
 namespace Microsoft.DotNet.Cli.Workload.List.Tests
 {
     [SupportedOSPlatform("windows")]
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     [OSCondition(OperatingSystems.Windows)]
     public class GivenAnMsiInstallation : IDisposable
@@ -24,7 +25,6 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             @"SOFTWARE\Microsoft\dotnet-test\InstalledWorkloads\Standalone");
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void GivenExistingRecordsItCanDetermineInstalledWorkloads()
         {
             CreateWorkloadRecord("6.0.100", "workload.A");
@@ -37,7 +37,6 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void GivenExistingRecordsItCanDeleteRecords()
         {
             CreateWorkloadRecord("6.0.100", "workload.A");
@@ -54,7 +53,6 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
         }
 
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void GivenExistingRecordsItOnlyEnumeratesFeatureBandsWithWorkloads()
         {
             CreateWorkloadRecord("6.0.100", "workload.A");

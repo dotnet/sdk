@@ -6,6 +6,8 @@
   "symbols/TargetFrameworkOverride/displayName": "Zastąpienie struktury docelowej",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/displayName": "Struktura",
+  "symbols/Framework/choices/net12.0/description": ".NET 12",
+  "symbols/Framework/choices/net12.0-windows/description": ".NET 12 (tylko system Windows)",
   "symbols/Framework/choices/net11.0/description": ".NET 11",
   "symbols/Framework/choices/net11.0-windows/description": ".NET 11 (tylko system Windows)",
   "symbols/Framework/choices/net10.0/description": ".NET 10",

@@ -132,6 +132,11 @@
         <target state="translated">La opción "--collect-test-map" no se puede combinar con "--max-parallel-test-modules". Los mapas de prueba se recopilan un módulo a la vez.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDeviceOptionsNotSupportedForFileBasedApps">
+        <source>The '--device' and '--list-devices' options are not supported for C# file-based apps.</source>
+        <target state="new">The '--device' and '--list-devices' options are not supported for C# file-based apps.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
         <target state="translated">Las opciones "--device" y "--list-devices" requieren un proyecto y no se pueden usar con "--test-modules".</target>
@@ -3359,7 +3364,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="TestDiscoveryExitCode">
         <source>Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
-        <target state="translated">Detección de pruebas completada con código de salida incorrecto: {0}. {1} Véase: https://aka.ms/testingplatform/exitcodes</target>
+        <target state="new">Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
         <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestDiscoverySummary">
@@ -3379,7 +3384,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="TestRunExitCode">
         <source>Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</source>
-        <target state="translated">La serie de pruebas se completó con un código de salida incorrecto: {0}. {1} Véase: https://aka.ms/testingplatform/exitcodes</target>
+        <target state="new">Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</target>
         <note>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">

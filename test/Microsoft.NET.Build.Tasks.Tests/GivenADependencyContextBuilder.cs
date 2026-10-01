@@ -72,7 +72,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Build();
 
             JObject result = Save(dependencyContext);
-            JObject baseline = ReadJson($"{baselineFileName}.deps.json");
+            JObject baseline = ReadJson(Path.Combine(AppContext.BaseDirectory, $"{baselineFileName}.deps.json"));
 
             try
             {
@@ -84,7 +84,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             {
                 // write the result file out on failure for easy comparison
 
-                using (JsonTextWriter writer = new(File.CreateText($"result-{baselineFileName}.deps.json")))
+                using (JsonTextWriter writer = new(File.CreateText(Path.Combine(AppContext.BaseDirectory, $"result-{baselineFileName}.deps.json"))))
                 {
                     JsonSerializer serializer = new()
                     {

@@ -135,67 +135,98 @@ $dnExe = Join-Path $dnPublishDir $dnExeName
 if (-not (Test-Path $dnExe)) { throw "dn host not found at '$dnExe'. Run without -NoBuild first." }
 
 $argList = $Command.Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)
-$env:DOTNET_ROOT = (Join-Path $repoRoot ".dotnet")
-$env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
-
-# Emulate the deployed non-flat layout: tell dn to load dotnet-aot from (and pass as sdk_dir) the
-# versioned SDK subfolder, optionally forcing the self-locate fallback by blanking sdk_dir.
-if ($Layout -eq "Separated") {
-    $env:DOTNET_AOT_SDK_DIR = (Join-Path $dnPublishDir "sdk/11.0.100")
-    Write-Host "Layout:        Separated (dotnet-aot in $($env:DOTNET_AOT_SDK_DIR))" -ForegroundColor Cyan
-}
-else {
-    Remove-Item Env:\DOTNET_AOT_SDK_DIR -ErrorAction SilentlyContinue
-}
-if ($SelfLocate) {
-    $env:DOTNET_AOT_BLANK_SDKDIR = "1"
-    Write-Host "Self-locate:   enabled (dn passes empty sdk_dir; dotnet-aot self-locates)" -ForegroundColor Cyan
-}
-else {
-    Remove-Item Env:\DOTNET_AOT_BLANK_SDKDIR -ErrorAction SilentlyContinue
+$environmentVariableNames = @(
+    "DOTNET_ROOT",
+    "DOTNET_CLI_TELEMETRY_OPTOUT",
+    "DOTNET_AOT_SDK_DIR",
+    "DOTNET_AOT_LIBRARY_DIR",
+    "DOTNET_AOT_BLANK_SDKDIR",
+    "DOTNET_CLI_ENABLEAOT"
+)
+$previousEnvironment = @{}
+foreach ($variableName in $environmentVariableNames) {
+    $environmentVariable = Get-Item "Env:\$variableName" -ErrorAction SilentlyContinue
+    $previousEnvironment[$variableName] = [pscustomobject]@{
+        Exists = $null -ne $environmentVariable
+        Value = $environmentVariable.Value
+    }
 }
 
-function Invoke-Dn([bool]$enableAot) {
-    if ($enableAot) {
-        $env:DOTNET_CLI_ENABLEAOT = "true"
+try {
+    $env:DOTNET_ROOT = (Join-Path $repoRoot ".dotnet")
+    $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
+    Remove-Item Env:\DOTNET_AOT_LIBRARY_DIR -ErrorAction SilentlyContinue
+
+    # Emulate the deployed non-flat layout: tell dn to load dotnet-aot from (and pass as sdk_dir) the
+    # versioned SDK subfolder, optionally forcing the self-locate fallback by blanking sdk_dir.
+    if ($Layout -eq "Separated") {
+        $env:DOTNET_AOT_SDK_DIR = (Join-Path $dnPublishDir "sdk/11.0.100")
+        Write-Host "Layout:        Separated (dotnet-aot in $($env:DOTNET_AOT_SDK_DIR))" -ForegroundColor Cyan
     }
     else {
-        $env:DOTNET_CLI_ENABLEAOT = "false"
+        Remove-Item Env:\DOTNET_AOT_SDK_DIR -ErrorAction SilentlyContinue
     }
-    & $dnExe @argList 2>&1
-}
-
-switch ($Mode) {
-    "Aot" {
-        Write-Host "===== AOT (DOTNET_CLI_ENABLEAOT=true) =====" -ForegroundColor Green
-        Invoke-Dn $true
+    if ($SelfLocate) {
+        $env:DOTNET_AOT_BLANK_SDKDIR = "1"
+        Write-Host "Self-locate:   enabled (dn passes empty sdk_dir; dotnet-aot self-locates)" -ForegroundColor Cyan
     }
-    "Managed" {
-        Write-Host "===== Managed (DOTNET_CLI_ENABLEAOT=false) =====" -ForegroundColor Green
-        Invoke-Dn $false
+    else {
+        Remove-Item Env:\DOTNET_AOT_BLANK_SDKDIR -ErrorAction SilentlyContinue
     }
-    "Compare" {
-        $logDir = Join-Path $repoRoot "artifacts/log"
-        New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
-        $aotOut = Invoke-Dn $true
-        $managedOut = Invoke-Dn $false
-        $aotOut | Set-Content (Join-Path $logDir "dn-aot.txt")
-        $managedOut | Set-Content (Join-Path $logDir "dn-managed.txt")
-
-        Write-Host "===== AOT (DOTNET_CLI_ENABLEAOT=true) =====" -ForegroundColor Green
-        $aotOut | Write-Output
-        Write-Host "===== Managed (fallback) =====" -ForegroundColor Green
-        $managedOut | Write-Output
-
-        $diff = Compare-Object $aotOut $managedOut
-        Write-Host ""
-        if ($diff) {
-            Write-Host "DIFFERENCES (AOT vs managed):" -ForegroundColor Yellow
-            $diff | Format-Table -AutoSize
+    function Invoke-Dn([bool]$enableAot) {
+        if ($enableAot) {
+            $env:DOTNET_CLI_ENABLEAOT = "true"
         }
         else {
-            Write-Host "IDENTICAL: AOT and managed output match line-for-line." -ForegroundColor Green
+            $env:DOTNET_CLI_ENABLEAOT = "false"
+        }
+        & $dnExe @argList 2>&1
+    }
+
+    switch ($Mode) {
+        "Aot" {
+            Write-Host "===== AOT (DOTNET_CLI_ENABLEAOT=true) =====" -ForegroundColor Green
+            Invoke-Dn $true
+        }
+        "Managed" {
+            Write-Host "===== Managed (DOTNET_CLI_ENABLEAOT=false) =====" -ForegroundColor Green
+            Invoke-Dn $false
+        }
+        "Compare" {
+            $logDir = Join-Path $repoRoot "artifacts/log"
+            New-Item -ItemType Directory -Force -Path $logDir | Out-Null
+
+            $aotOut = Invoke-Dn $true
+            $managedOut = Invoke-Dn $false
+            $aotOut | Set-Content (Join-Path $logDir "dn-aot.txt")
+            $managedOut | Set-Content (Join-Path $logDir "dn-managed.txt")
+
+            Write-Host "===== AOT (DOTNET_CLI_ENABLEAOT=true) =====" -ForegroundColor Green
+            $aotOut | Write-Output
+            Write-Host "===== Managed (fallback) =====" -ForegroundColor Green
+            $managedOut | Write-Output
+
+            $diff = Compare-Object $aotOut $managedOut
+            Write-Host ""
+            if ($diff) {
+                Write-Host "DIFFERENCES (AOT vs managed):" -ForegroundColor Yellow
+                $diff | Format-Table -AutoSize
+            }
+            else {
+                Write-Host "IDENTICAL: AOT and managed output match line-for-line." -ForegroundColor Green
+            }
+        }
+    }
+}
+finally {
+    foreach ($variableName in $environmentVariableNames) {
+        $previousValue = $previousEnvironment[$variableName]
+        if ($previousValue.Exists) {
+            Set-Item "Env:\$variableName" -Value $previousValue.Value
+        }
+        elseif (Test-Path "Env:\$variableName") {
+            Remove-Item "Env:\$variableName"
         }
     }
 }

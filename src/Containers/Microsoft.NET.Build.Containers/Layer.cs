@@ -216,7 +216,7 @@ internal class Layer
 
                     // On Unix, we can determine the x-bit based on the filesystem permission.
                     // On Windows, we use executable permissions for all entries.
-                    return (OperatingSystem.IsWindows() || ((file.UnixFileMode | UnixFileMode.UserExecute) != 0)) ? executeMode : nonExecuteMode;
+                    return (OperatingSystem.IsWindows() || ((file.UnixFileMode & UnixFileMode.UserExecute) != 0)) ? executeMode : nonExecuteMode;
                 }
             }
         }

@@ -142,8 +142,8 @@ Exemplos:
         <source>
       Show trace output
     </source>
-        <target state="translated">
-      Mostrar saída de rastreamento
+        <target state="new">
+      Show trace output
     </target>
         <note />
       </trans-unit>

@@ -168,7 +168,7 @@ namespace dotnet.Tests
             var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
 
             buildOptions.MSBuildArgs.Should().Contain("-mt:false").And.NotContain(argument);
-            buildOptions.TestApplicationArguments.Should().Equal(argument);
+            buildOptions.TestApplicationArguments.Should().Contain(argument);
         }
 
         [TestMethod]

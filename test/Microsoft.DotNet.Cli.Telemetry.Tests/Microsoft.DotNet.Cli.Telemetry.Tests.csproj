@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <!-- Exporter shutdown switches and SDK stats configuration are process-wide. -->
     <MSTestParallelizeScope>None</MSTestParallelizeScope>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <Nullable>enable</Nullable>
