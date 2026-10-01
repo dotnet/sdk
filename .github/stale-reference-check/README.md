@@ -55,7 +55,7 @@ context; there is no shared-context representation. Each batch contains at most
 
 The reader presents that batch as consecutive, labeled text pages rather than
 one large batch object. Every text response is at most 12 KiB including the
-[pinned MCP adapter's JSON string encoding](https://github.com/github/gh-aw/blob/v0.89.17/actions/setup/js/mcp_handler_process.cjs#L143-L160),
+[pinned MCP adapter's JSON string encoding](https://github.com/github/gh-aw/blob/v0.89.21/actions/setup/js/mcp_handler_process.cjs#L143-L160),
 with an explicit next-page number. The adapter can expose escaped newlines even
 for string results; native calls and bounded pages eliminate the need for shell
 extraction, not the runtime's JSON encoding.
@@ -117,7 +117,7 @@ Run `gh aw compile` for this workflow on Linux or macOS (for example, WSL);
 compiling on Windows fails because of a compiler path-separator bug. See
 [KNOWN_ISSUES](../memory/KNOWN_ISSUES.md#gh-aw-compile-must-run-on-linux-or-macos-never-windows).
 
-The gh-aw v0.89.17 compiler defaults to MCP gateway v0.4.25, which the protocol
+The gh-aw v0.89.21 compiler defaults to MCP gateway v0.4.25, which the protocol
 smoke test validates for native clients' stateful fallback initialization. Strict
 mode, sandboxing, and permissions remain unchanged. The generated lock pins that
 compiler-selected image to an immutable digest.
@@ -134,7 +134,7 @@ The bounded reader in
 is outside the agent's filesystem mounts. Only selected batch/context results
 cross that boundary. The host enforces the expansion and response-size limits.
 Because the pinned
-[gh-aw runtime](https://github.com/github/gh-aw/blob/v0.89.17/actions/setup/js/mcp_server_core.cjs)
+[gh-aw runtime](https://github.com/github/gh-aw/blob/v0.89.21/actions/setup/js/mcp_server_core.cjs)
 launches a fresh process per MCP script call, a private loopback reader retains the shared
 budget and accepted submission. Source calls only read source; submission calls
 validate and retain one payload without GitHub access or issue/cache writes.
@@ -296,10 +296,10 @@ The fast fixture tests remain independent of Docker. The protocol check does not
 replace an end-to-end hosted preview of the interpreter.
 
 Edit the interpreter Markdown, never its generated lock file. The checked-in
-workflow is compiled with gh-aw v0.89.17 and its matching immutable runtime:
+workflow is compiled with gh-aw v0.89.21 and its matching immutable runtime:
 
 ```powershell
-gh aw compile stale-reference-interpret --action-mode action --action-tag v0.89.17
+gh aw compile stale-reference-interpret --action-mode action --action-tag v0.89.21
 ```
 
 When changing the compiler/runtime together, regenerate only this workflow and
