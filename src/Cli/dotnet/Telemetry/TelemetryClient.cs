@@ -202,10 +202,11 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProvider ??= s_tracerProviderBuilder.Build();
         }
 
-        s_internalMicrosoftTelemetry.Start(InternalMicrosoftDetector.CreateDefault(
-            Path.Join(CliFolderPathCalculator.DotnetUserProfileFolderPath, "internal-microsoft", "detector.json"),
-            s_isCIEnvironment,
-            Product.Version),
+        s_internalMicrosoftTelemetry.Start(
+            () => InternalMicrosoftDetector.CreateDefault(
+                Path.Join(CliFolderPathCalculator.DotnetUserProfileFolderPath, "internal-microsoft", "detector.json"),
+                s_isCIEnvironment,
+                Product.Version),
             CancellationToken.None);
 
         var initialSessionId = !string.IsNullOrEmpty(sessionId)
