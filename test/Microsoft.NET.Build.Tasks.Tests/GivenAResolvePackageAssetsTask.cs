@@ -116,7 +116,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             new CacheWriter(task); // Should not error
         }
 
-        private static string AssetsFileWithInvalidLocale(string tfm, string locale) => @"
+        private static string AssetsFileWithResourceLocale(string tfm, string locale) => @"
 {
   `version`: 3,
   `targets`: {
@@ -130,7 +130,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
           `lib/netstandard2.0/JavaScriptEngineSwitcher.Core.dll`: {}
         },
         `resource`: {
-          `lib/netstandard2.0/ru-ru/JavaScriptEngineSwitcher.Core.resources.dll`: {
+          `lib/netstandard2.0/{locale}/JavaScriptEngineSwitcher.Core.resources.dll`: {
             `locale`: `{locale}`
           }
         }
@@ -160,7 +160,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void It_warns_on_invalid_culture_codes_of_resources(string tfm, bool shouldHaveWarnings)
         {
             string projectAssetsJsonPath = Path.GetTempFileName();
-            var assetsContent = AssetsFileWithInvalidLocale(tfm, "what is this even");
+            var assetsContent = AssetsFileWithResourceLocale(tfm, "what is this even");
             File.WriteAllText(projectAssetsJsonPath, assetsContent);
             var task = InitializeTask(out _);
             task.ProjectAssetsFile = projectAssetsJsonPath;
@@ -183,7 +183,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         public void It_warns_on_incorrectly_cased_culture_codes_of_resources(string tfm, bool shouldHaveWarnings)
         {
             string projectAssetsJsonPath = Path.GetTempFileName();
-            var assetsContent = AssetsFileWithInvalidLocale(tfm, "ru-ru");
+            var assetsContent = AssetsFileWithResourceLocale(tfm, "ru-ru");
             File.WriteAllText(projectAssetsJsonPath, assetsContent);
             var task = InitializeTask(out _);
             task.ProjectAssetsFile = projectAssetsJsonPath;
@@ -197,6 +197,33 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var invalidContextMessages = engine.Messages.Where(msg => msg.Code == "NETSDK1187" && msg.Importance == MessageImportance.Low);
             invalidContextMessages.Should().HaveCount(shouldHaveWarnings ? 0 : 1);
+        }
+
+        [DataRow("net7.0", "ckb")]
+        [DataRow("net7.0", "ckb-IQ")]
+        [DataRow("net6.0", "ckb")]
+        [DataRow("net6.0", "ckb-IQ")]
+        [TestMethod]
+        public void It_does_not_warn_for_remapped_resource_cultures(string tfm, string locale)
+        {
+            string projectAssetsJsonPath = Path.GetTempFileName();
+            try
+            {
+                File.WriteAllText(projectAssetsJsonPath, AssetsFileWithResourceLocale(tfm, locale));
+                var task = InitializeTask(out _);
+                task.ProjectAssetsFile = projectAssetsJsonPath;
+                task.TargetFramework = tfm;
+                using var writer = new CacheWriter(task, new MockPackageResolver());
+                using var stream = writer.WriteToMemoryStream();
+                var engine = (MockBuildEngine)task.BuildEngine;
+
+                engine.Warnings.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
+                engine.Messages.Where(msg => msg.Code == "NETSDK1187").Should().BeEmpty();
+            }
+            finally
+            {
+                File.Delete(projectAssetsJsonPath);
+            }
         }
 
         private ResolvePackageAssets InitializeTask(out IEnumerable<PropertyInfo> inputProperties)
