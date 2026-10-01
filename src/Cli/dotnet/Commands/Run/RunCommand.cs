@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
@@ -903,22 +903,24 @@ public class RunCommand
             parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
         }
 
-        // If the application arguments contain any logger args then we need to remove them from the application arguments and apply
-        // them to the restore args. This is because we can't model the logger command structure in MSBuild in the System.CommandLine
-        // parser, but we need logger information to synchronize the restore and build logger configurations.
+        // If the application arguments contain any MSBuild-only switches then we need to remove them from the
+        // application arguments and apply them to the build and restore args. This covers logger switches, whose
+        // command structure we can't model in the System.CommandLine parser but whose configuration has to be
+        // synchronized between restore and build, as well as engine switches such as -mt that would otherwise be
+        // handed to the launched application, which has no use for them.
         var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList() ?? [];
 
-        SeparateApplicationLoggerArguments(parseResult, applicationArguments, out var loggerArgs, out var nonLoggerArgs);
+        SeparateMSBuildAndApplicationArguments(parseResult, applicationArguments, out var msbuildOnlyArgs, out var applicationArgs);
 
         var msbuildProperties = parseResult.OptionValuesToBeForwarded(definition).ToList();
-        if (loggerArgs.Length > 0)
+        if (msbuildOnlyArgs.Length > 0)
         {
-            msbuildProperties.AddRange(loggerArgs);
+            msbuildProperties.AddRange(msbuildOnlyArgs);
         }
 
         // Only consider `-` to mean "read code from stdin" if it is before double dash `--`
         // (otherwise it should be forwarded to the target application as its command-line argument).
-        bool readCodeFromStdin = nonLoggerArgs is ["-", ..] &&
+        bool readCodeFromStdin = applicationArgs is ["-", ..] &&
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
@@ -930,7 +932,7 @@ public class RunCommand
             throw new GracefulException(CliCommandStrings.CannotCombineOptions, definition.ProjectOption.Name, definition.FileOption.Name);
         }
 
-        string[] args = [.. nonLoggerArgs];
+        string[] args = [.. applicationArgs];
         string? projectFilePath = DiscoverProjectFilePath(
             filePath: fileOption,
             projectFileOrDirectoryPath: projectOption,
@@ -1002,7 +1004,7 @@ public class RunCommand
                 stdinStream.CopyTo(fileStream);
             }
 
-            Debug.Assert(nonLoggerArgs[0] == "-");
+            Debug.Assert(applicationArgs[0] == "-");
         }
 
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
@@ -1032,11 +1034,11 @@ public class RunCommand
 
         return command;
 
-        static void SeparateApplicationLoggerArguments(
+        static void SeparateMSBuildAndApplicationArguments(
             ParseResult parseResult,
             IReadOnlyList<string> applicationArguments,
-            out ImmutableArray<string> loggerArgs,
-            out ImmutableArray<string> nonLoggerArgs)
+            out ImmutableArray<string> msbuildOnlyArgs,
+            out ImmutableArray<string> applicationArgs)
         {
             if (!CommonRunHelpers.TrySplitApplicationArgumentsAtDoubleDash(
                 parseResult,
@@ -1046,13 +1048,13 @@ public class RunCommand
             {
                 // This hopefully should not happen, but if it does, we don't want to break users.
                 Reporter.Error.WriteLine(CliCommandStrings.RunCommandWarningUnableToDetermineLoggerArguments.Yellow());
-                loggerArgs = [];
-                nonLoggerArgs = [.. applicationArguments];
+                msbuildOnlyArgs = [];
+                applicationArgs = [.. applicationArguments];
                 return;
             }
 
-            LoggerUtility.SeparateLoggerArguments(applicationArguments.Take(countBeforeDoubleDash), out loggerArgs, out var nonLoggerArgsBeforeDoubleDash);
-            nonLoggerArgs = [.. nonLoggerArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash];
+            LoggerUtility.SeparateMSBuildArguments(applicationArguments.Take(countBeforeDoubleDash), out msbuildOnlyArgs, out var applicationArgsBeforeDoubleDash);
+            applicationArgs = [.. applicationArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash];
         }
 
         bool UsingRunCommandShorthandProjectOption(ParseResult parseResult)

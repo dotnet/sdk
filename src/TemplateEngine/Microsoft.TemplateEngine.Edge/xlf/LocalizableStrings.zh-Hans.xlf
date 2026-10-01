@@ -376,7 +376,7 @@ Details: {1}.</source>
         <source>Failed to create template.
 Details: {0}</source>
         <target state="translated">未能创建模板。
-详细信息: {0}。</target>
+详细信息: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
@@ -421,7 +421,7 @@ Details: {1}</source>
       <trans-unit id="TemplatePackageManager_Error_FailedToStoreCache">
         <source>Failed to store template cache, details: {0}
 Template cache will be recreated on the next run.</source>
-        <target state="translated">未能存储模板缓存，详细信息: {0}
+        <target state="translated">无法存储模板缓存，详细信息： {0}
 将在下次运行时重新创建模板缓存。</target>
         <note>{0} should not end with period - period is a part of the format entry.</note>
       </trans-unit>
@@ -431,9 +431,9 @@ The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
         <target state="translated">
-以下模板使用相同的标识“{0}”:
+以下模板使用相同的标识 '{0}'：
 {1}
-将使用“{2}”中的模板。要解决此冲突，请卸载冲突的模板包。</target>
+将使用 '{2}' 中的模板。若要解决此冲突，请卸载冲突的模板包。</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'

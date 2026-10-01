@@ -106,8 +106,8 @@ Ten argument można określić wiele razy w celu podania wielu zmiennych.
 
 Przykłady:
 -e VARIABLE=abc
--e VARABLE=”wartość ze spacjami”
--e VARABLE=”wartości;rozdzielone;średnikami”
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -132,13 +132,13 @@ Examples:
         <target state="translated">Ustawia wartość zmiennej środowiskowej. 
 Jeśli zmienna nie istnieje, tworzy ją, a jeśli istnieje, przesłania. 
 Wymusi to uruchamianie testów w izolowanym procesie. 
-Ten argument można określić wiele razy w celu podania wielu wartości.
+Ten argument można określić wiele razy w celu podania wielu zmiennych.
 
 Przykłady:
--e ZMIENNA=abc
--e ZMIENNA="wartość ze spacjami"
--e ZMIENNA="wartości;rozdzielone;średnikami"
--e ZM1=abc -e ZM2=def -e ZM3=ghi
+-e VARIABLE=abc
+-e VARIABLE="value with spaces"
+-e VARIABLE="value;separated with;semicolons"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>

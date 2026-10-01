@@ -494,7 +494,6 @@ $@"class C
 }}");
     }
 
-    [TestClass]
     public abstract class PreferIsEmptyOverCountTestsBase
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
@@ -545,7 +544,6 @@ $@"class C
                 extensionsSource: null);
     }
 
-    [TestClass]
     public abstract class PreferIsEmptyOverCountLinqTestsBase
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {

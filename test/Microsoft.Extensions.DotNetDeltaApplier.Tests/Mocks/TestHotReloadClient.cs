@@ -15,15 +15,19 @@ internal sealed class TestHotReloadClient() : HotReloadClient(new TestLogger(), 
     {
     }
 
-    public override void InitiateConnection(CancellationToken cancellationToken)
+    public override void InitiateConnection(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
     {
     }
 
     public override Task WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)
         => Task.CompletedTask;
 
-    public override Task<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
-        => Task.FromResult(ImmutableArray<string>.Empty);
+    public override Task<HotReloadAgentInfo> GetConnectedAgentInfoAsync(CancellationToken cancellationToken)
+        => Task.FromResult(new HotReloadAgentInfo
+        {
+            ManagedCodeUpdateCapabilities = [],
+            LocalProcessId = null
+        });
 
     public override Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {

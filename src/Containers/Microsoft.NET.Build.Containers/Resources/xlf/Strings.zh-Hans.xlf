@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
         <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
-        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <target state="translated">CONTAINER1021: 多体系结构映像无法加载到 WSLC。请发布单平台映像，或将多体系结构映像发布到注册表。</target>
         <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -206,17 +206,17 @@
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_DisallowedScheme">
         <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
-        <target state="new">bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</target>
+        <target state="translated">持有者领域“{0}”使用不允许的方案“{1}”；仅接受 "https" (当注册表配置为不安全时，接受 "http")</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
         <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
-        <target state="new">bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</target>
+        <target state="translated">持有者领域“{0}”解析为“{1}”，该地址是专用、环回、链接本地或未指定的 IP 字面地址</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
         <source>bearer realm '{0}' is not a valid absolute URI</source>
-        <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
+        <target state="translated">持有者领域“{0}”不是有效的绝对 URI</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
@@ -271,7 +271,7 @@
       </trans-unit>
       <trans-unit id="InvalidRegistryAuthResponse">
         <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
-        <target state="new">CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</target>
+        <target state="translated">CONTAINER1019: 注册表“{0}”返回了无效的身份验证响应: {1}</target>
         <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
       </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
@@ -401,7 +401,7 @@
       </trans-unit>
       <trans-unit id="Registry_ManifestExists">
         <source>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</source>
-        <target state="new">Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</target>
+        <target state="translated">存储库“{1}”中已存在清单“{0}”。正在跳过层和配置上传。</target>
         <note>{0} is the manifest digest, {1} is the repository name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">

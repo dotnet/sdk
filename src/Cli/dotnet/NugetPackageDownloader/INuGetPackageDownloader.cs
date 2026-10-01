@@ -42,5 +42,6 @@ internal interface INuGetPackageDownloader
 
     Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
         VersionRange versionRange,
-        PackageSourceLocation packageSourceLocation = null);
+        PackageSourceLocation packageSourceLocation = null,
+        CancellationToken cancellationToken = default);
 }

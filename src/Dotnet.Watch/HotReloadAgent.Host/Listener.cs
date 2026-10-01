@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class Listener(Transport transport, IHotReloadAgent agent, Action<string> log)
+internal sealed class Listener(Transport transport, IHotReloadAgent agent, int processId, Action<string> log)
 {
     /// <summary>
     /// Messages to the client sent after the initial <see cref="ClientInitializationResponse"/> is sent
@@ -72,7 +72,8 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
     {
         agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
 
-        await transport.SendAsync(new ClientInitializationResponse(agent.Capabilities), cancellationToken).ConfigureAwait(false);
+        var response = new ClientInitializationResponse(processId, capabilities: agent.Capabilities);
+        await transport.SendAsync(response, cancellationToken).ConfigureAwait(false);
 
         // Apply updates made before this process was launched to avoid executing unupdated versions of the affected modules.
 
@@ -95,6 +96,10 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
             var payloadType = (RequestType)await request.Stream.ReadByteAsync(cancellationToken).ConfigureAwait(false);
             switch (payloadType)
             {
+                case RequestType.SetEnvironmentVariables:
+                    await SetEnvironmentVariablesAsync(request.Stream, cancellationToken).ConfigureAwait(false);
+                    break;
+
                 case RequestType.ManagedCodeUpdate:
                     await ReadAndApplyManagedCodeUpdateAsync(request.Stream, cancellationToken).ConfigureAwait(false);
                     break;
@@ -111,6 +116,29 @@ internal sealed class Listener(Transport transport, IHotReloadAgent agent, Actio
                     throw new InvalidOperationException($"Unexpected payload type: {payloadType}");
             }
         }
+    }
+
+    private async Task SetEnvironmentVariablesAsync(Stream stream, CancellationToken cancellationToken)
+    {
+        var environmentVariableCount = await stream.ReadInt32Async(cancellationToken).ConfigureAwait(false);
+
+        log($"Setting environment variables ({environmentVariableCount})");
+
+        for (var i = 0; i < environmentVariableCount; i++)
+        {
+            var name = await stream.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+            var value = await stream.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+            catch (Exception e)
+            {
+                log($"Unable to set environment variable '{name}': {e.Message}");
+            }
+        }
+
+        await SendResponseAsync(new SetEnvironmentVariablesResponse(), cancellationToken).ConfigureAwait(false);
     }
 
     private async ValueTask ReadAndApplyManagedCodeUpdateAsync(Stream stream, CancellationToken cancellationToken)

@@ -1474,7 +1474,6 @@ dotnet_code_quality.copy_analysis = true") }
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PredicateAnalysis)]
         [TestMethod]
         public async Task ContractCheck_DiagnosticAsync()
         {
@@ -5601,8 +5600,6 @@ namespace MyComments
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [TestMethod]
         public async Task CopyAnalysisAssert_AddressSharedOutParamAsync()
         {
@@ -5625,8 +5622,6 @@ public class C
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [TestMethod]
         public async Task CopyAnalysisAssert_ApplyInterproceduralResultAsync()
         {
@@ -5715,7 +5710,6 @@ public class CSharpSyntaxNode : SyntaxNode
             GetCSharpResultAt(37, 23, "SyntaxKind Extensions.Kind(SyntaxNode node)", "node"));
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2339, "https://github.com/dotnet/roslyn-analyzers/issues/2339")]
         public async Task ParameterReassignedAfterNullCheckAsync()
         {
@@ -5741,7 +5735,6 @@ public static class C
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2327, "https://github.com/dotnet/roslyn-analyzers/issues/2327")]
         public async Task ForEachLoopsAfterNullCheckAsync()
         {
@@ -5778,7 +5771,6 @@ public class Model
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2280, "https://github.com/dotnet/roslyn-analyzers/issues/2280")]
         public async Task ConditionalAssignmentAfterNullCheckAsync()
         {
@@ -5799,7 +5791,6 @@ public class Node
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2276, "https://github.com/dotnet/roslyn-analyzers/issues/2276")]
         public async Task AssignedArrayEmptyOnNullPathAsync()
         {
@@ -5827,7 +5818,6 @@ public class TableSet
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2275, "https://github.com/dotnet/roslyn-analyzers/issues/2275")]
         [DataRow("IsNullOrWhiteSpace")]
         [DataRow("IsNullOrEmpty")]
@@ -5865,7 +5855,6 @@ public class C
 }}");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2369, "https://github.com/dotnet/roslyn-analyzers/issues/2369")]
         [DataRow("IsNullOrWhiteSpace")]
         [DataRow("IsNullOrEmpty")]
@@ -5893,7 +5882,6 @@ public class C
 }}");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2369, "https://github.com/dotnet/roslyn-analyzers/issues/2369")]
         [DataRow("IsNullOrWhiteSpace")]
         [DataRow("IsNullOrEmpty")]
@@ -5919,7 +5907,6 @@ public class C
 }}");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2582, "https://github.com/dotnet/roslyn-analyzers/issues/2582")]
         public async Task StringEmptyFieldIsNonNullAsync()
         {
@@ -5937,7 +5924,6 @@ public class Class1
 }}");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2582, "https://github.com/dotnet/roslyn-analyzers/issues/2582")]
         public async Task ArrayEmptyMethodIsNonNullAsync()
         {
@@ -5955,7 +5941,6 @@ public class Class1
 }}");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2582, "https://github.com/dotnet/roslyn-analyzers/issues/2582")]
         public async Task ImmutableCreationMethodIsNonNullAsync()
         {
@@ -5978,7 +5963,6 @@ public class Class1
 }}");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod]
         public async Task NamedArgumentInDifferentOrderAsync()
         {
@@ -6008,7 +5992,6 @@ public class C
             GetCSharpResultAt(13, 12, "void C.M(C c1, C c2)", "c2"));
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod]
         [WorkItem(2528, "https://github.com/dotnet/roslyn-analyzers/issues/2528")]
         [WorkItem(3845, "https://github.com/dotnet/roslyn-analyzers/issues/3845")]
@@ -6032,7 +6015,6 @@ End Class
 ");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2269, "https://github.com/dotnet/roslyn-analyzers/issues/2269")]
         public async Task ProtectedMemberOfSealedClassNotFlaggedAsync()
         {
@@ -6052,7 +6034,6 @@ public sealed class B : A
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2526, "https://github.com/dotnet/roslyn-analyzers/issues/2526")]
         public async Task CheckedWithConditionalAccess_01Async()
         {
@@ -6072,7 +6053,6 @@ public class C
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2526, "https://github.com/dotnet/roslyn-analyzers/issues/2526")]
         public async Task CheckedWithConditionalAccess_02Async()
         {
@@ -6088,7 +6068,6 @@ public class C
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2586, "https://github.com/dotnet/roslyn-analyzers/issues/2586")]
         public async Task CheckedWithConditionalAccess_03Async()
         {
@@ -6113,7 +6092,6 @@ public class C
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2630, "https://github.com/dotnet/roslyn-analyzers/issues/2630")]
         public async Task IsPatternInConditionalExpression_01_NoDiagnosticAsync()
         {
@@ -6137,7 +6115,6 @@ public class Class1
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2630, "https://github.com/dotnet/roslyn-analyzers/issues/2630")]
         public async Task IsPatternInConditionalExpression_01_DiagnosticAsync()
         {
@@ -6167,7 +6144,6 @@ public class Class1
             GetCSharpResultAt(7, 20, "void Class1.DoSomething(object input)", "input"));
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(2630, "https://github.com/dotnet/roslyn-analyzers/issues/2630")]
         public async Task IsPatternInConditionalExpression_02_NoDiagnosticAsync()
         {
@@ -6190,7 +6166,6 @@ public class Class1
 }");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, CombinatorialData, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
         public async Task IsPatternInConditionalExpression_03_NoDiagnosticAsync(bool discardPattern)
         {
@@ -6208,7 +6183,6 @@ public class Class1
 }}");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, CombinatorialData, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
         public async Task IsPatternInConditionalExpression_04_NoDiagnosticAsync(bool discardPattern)
         {
@@ -6234,7 +6208,6 @@ public class Class1
 public class Class2 {{ }}");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, CombinatorialData, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
         public async Task IsPatternInConditionalExpression_05_NoDiagnosticAsync(bool discardPattern)
         {
@@ -6251,7 +6224,6 @@ public class Class1
 }}");
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(3716, "https://github.com/dotnet/roslyn-analyzers/issues/3716")]
         public async Task RecursivePatternInConditionalExpression_NoDiagnosticAsync()
         {
@@ -6273,7 +6245,6 @@ public class Class1
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
         public async Task IsNullPatternInConditionalExpression_NoDiagnosticAsync()
         {
@@ -6297,7 +6268,6 @@ public class Class1
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
         public async Task NegationPatternInConditionalExpression_NoDiagnosticAsync()
         {
@@ -6319,7 +6289,6 @@ public class Class1
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestMethod, WorkItem(4056, "https://github.com/dotnet/roslyn-analyzers/issues/4056")]
         public async Task RelationalPatternInConditionalExpression_NoDiagnosticAsync()
         {

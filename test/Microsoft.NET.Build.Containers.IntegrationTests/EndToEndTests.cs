@@ -962,6 +962,49 @@ public class EndToEndTests : SdkTest, IDisposable
     }
 
     [TestMethod]
+    [DynamicData(nameof(AvailableMultiArchLocalRegistryData))]
+    public void EndToEndMultiArch_LocalRegistry_DualPublish(string imageName, string localRegistry)
+    {
+        string tag = "1.0";
+        string image = $"{imageName}:{tag}";
+
+        // Create a new console project
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
+
+        string[] publishArgs =
+        [
+            "publish",
+            "/t:PublishContainer",
+            "-f", _oldFramework,
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={tag}",
+            $"/p:LocalRegistry={localRegistry}"
+        ];
+
+        // First publish
+        CommandResult firstResult = new DotnetCommand(Log, publishArgs)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        firstResult.Should().Pass()
+            .And.HaveStdOutContaining($"Pushed image '{image}' to local registry");
+
+        // Second publish to the same image name should also succeed
+        CommandResult secondResult = new DotnetCommand(Log, publishArgs)
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        secondResult.Should().Pass()
+            .And.HaveStdOutContaining($"Pushed image '{image}' to local registry");
+
+        // Cleanup
+        newProjectDir.Delete(true);
+    }
+
+    [TestMethod]
     [WslcAvailableCondition]
     public void EndToEndMultiArch_WslcIsRejected()
     {

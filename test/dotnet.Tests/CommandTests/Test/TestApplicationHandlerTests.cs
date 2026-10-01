@@ -158,6 +158,58 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
+    public void OnHandshakeReceived_WithRetryOrchestrator_EnablesRetryBeforeFirstTestHost()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            showAssembly: true);
+
+        bool orchestratorAccepted = handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                hostType: HandshakeMessageHostTypes.TestHostOrchestrator,
+                orchestratorFeature: "RetryOrchestrator"),
+            gotSupportedVersion: true);
+        bool testHostAccepted = handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                attemptNumber: 1),
+            gotSupportedVersion: true);
+
+        orchestratorAccepted.Should().BeTrue();
+        testHostAccepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        console.GetOutput().Should().Contain("(try 1)");
+    }
+
+    [TestMethod]
+    public void OnHandshakeReceived_WithUnknownOrchestrator_AcceptsWithoutEnablingRetry()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            showAssembly: true);
+
+        bool orchestratorAccepted = handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                hostType: HandshakeMessageHostTypes.TestHostOrchestrator,
+                orchestratorFeature: "FutureOrchestrator"),
+            gotSupportedVersion: true);
+        bool testHostAccepted = handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                attemptNumber: 1),
+            gotSupportedVersion: true);
+
+        orchestratorAccepted.Should().BeTrue();
+        testHostAccepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        console.GetOutput().Should().NotContain("(try 1)");
+    }
+
+    [TestMethod]
     public void OnHandshakeReceived_WithArtifactPostProcessingCapabilities_RecordsApplication()
     {
         var manager = new ArtifactPostProcessingManager();
@@ -546,6 +598,7 @@ public class TestApplicationHandlerTests : IDisposable
         string hostType = "TestHost",
         bool includeInstanceId = true,
         int? attemptNumber = null,
+        string? orchestratorFeature = null,
         string? supportedPostProcessorKinds = null,
         string? supportedPostProcessorExtensions = null)
     {
@@ -574,6 +627,11 @@ public class TestApplicationHandlerTests : IDisposable
         if (attemptNumber.HasValue)
         {
             properties[HandshakeMessagePropertyNames.AttemptNumber] = attemptNumber.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (orchestratorFeature is not null)
+        {
+            properties[HandshakeMessagePropertyNames.OrchestratorFeature] = orchestratorFeature;
         }
 
         if (supportedPostProcessorKinds is not null)

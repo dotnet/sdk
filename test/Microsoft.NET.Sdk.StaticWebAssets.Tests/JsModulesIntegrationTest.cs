@@ -58,6 +58,41 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [TestMethod]
+        public void DotNetWatchBrowserToolsInitializer_IsDevelopmentOnlyAndBuildOnly()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp");
+            var build = CreateBuildCommand(projectDirectory);
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var jsModulesManifestPath = Path.Combine(intermediateOutputPath, "jsmodules", "jsmodules.build.manifest.json");
+
+            // The assets are part of every development build: the build owns the browser tools key
+            // pair and the settings document, and dotnet-watch only reads them back.
+            ExecuteCommand(build).Should().Pass();
+            File.ReadAllText(jsModulesManifestPath)
+                .Should().Contain("Microsoft.NET.Sdk.BlazorWeb.DotNetWatch")
+                .And.Contain("lib.module.js");
+
+            // Opting out removes them entirely.
+            ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
+            if (File.Exists(jsModulesManifestPath))
+            {
+                File.ReadAllText(jsModulesManifestPath).Should().NotContain("Microsoft.NET.Sdk.BlazorWeb.DotNetWatch");
+            }
+
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish).Should().Pass();
+
+            var publishManifestPath = Path.Combine(
+                publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
+                "staticwebassets.publish.json");
+            File.ReadAllText(publishManifestPath).Should().NotContain("Microsoft.NET.Sdk.BlazorWeb.DotNetWatch");
+            Directory.GetFiles(
+                publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
+                "*DotNetWatch*",
+                SearchOption.AllDirectories).Should().BeEmpty();
+        }
+
+        [TestMethod]
         public void Build_DiscoversJsModulesBasedOnPatterns()
         {
             var testAsset = "RazorComponentApp";
@@ -71,7 +106,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             CreateFile("", ProjectDirectory.TestRoot, "Pages", "Index.cshtml.js");
 
             var build = CreateBuildCommand(ProjectDirectory);
-            ExecuteCommand(build).Should().Pass();
+            ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
 
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -144,7 +179,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var build = CreateBuildCommand(projectDirectory);
-            ExecuteCommand(build).Should().Pass();
+            ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
 
             var intermediateOutputPath = Path.Combine(build.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
 

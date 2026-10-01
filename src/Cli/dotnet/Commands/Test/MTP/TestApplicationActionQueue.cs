@@ -13,8 +13,11 @@ internal class TestApplicationActionQueue
     private readonly Channel<ParallelizableTestModuleGroupWithSequentialInnerModules> _channel;
     private readonly Task[] _readers;
     private readonly CancellationToken _cancellationToken;
+    private readonly TestApplicationPolicy _fallbackTestApplicationPolicy;
+    private readonly BuildOptions _buildOptions;
 
     private int? _aggregateExitCode;
+    private readonly List<TestApplicationPolicy> _effectivePolicies = [];
 
     private readonly Lock _lock = new();
 
@@ -28,11 +31,14 @@ internal class TestApplicationActionQueue
         CtrlCCancellationManager ctrlC,
         ArtifactPostProcessingManager artifactPostProcessingManager,
         TestRunPolicy testRunPolicy,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        TestApplicationPolicy fallbackTestApplicationPolicy = default)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
         _cancellationToken = cancellationToken;
+        _fallbackTestApplicationPolicy = fallbackTestApplicationPolicy;
+        _buildOptions = buildOptions;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
@@ -50,6 +56,17 @@ internal class TestApplicationActionQueue
 
     public void Enqueue(ParallelizableTestModuleGroupWithSequentialInnerModules testApplication)
     {
+        lock (_lock)
+        {
+            foreach (TestModule module in testApplication)
+            {
+                _effectivePolicies.Add(
+                    MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationPolicy(
+                        module,
+                        _buildOptions));
+            }
+        }
+
         if (_cancellationToken.IsCancellationRequested)
         {
             return;
@@ -164,6 +181,49 @@ internal class TestApplicationActionQueue
             // and report final session state via IPC.
         }
     }
+
+    internal bool FailOnAllSkippedTests
+    {
+        get
+        {
+            lock (_lock)
+            {
+                IReadOnlyList<TestApplicationPolicy> effectivePolicies = GetEffectivePolicies();
+                return ShouldFailOnAllSkippedTests(effectivePolicies);
+            }
+        }
+    }
+
+    internal int ApplyExitCodeIgnorePolicy(int exitCode)
+    {
+        lock (_lock)
+        {
+            IReadOnlyList<TestApplicationPolicy> effectivePolicies = GetEffectivePolicies();
+            return ApplyExitCodeIgnorePolicy(exitCode, effectivePolicies);
+        }
+    }
+
+    internal static bool ShouldFailOnAllSkippedTests(IReadOnlyList<TestApplicationPolicy> effectivePolicies)
+        => effectivePolicies.Any(policy =>
+            policy.FailOnAllSkippedTests &&
+            MicrosoftTestingPlatformTestCommand.ApplyExitCodeIgnorePolicy(
+                ExitCode.ZeroTests,
+                policy.IgnoredExitCodes) != ExitCode.Success);
+
+    internal static int ApplyExitCodeIgnorePolicy(
+        int exitCode,
+        IReadOnlyList<TestApplicationPolicy> effectivePolicies)
+        => effectivePolicies.All(policy =>
+            MicrosoftTestingPlatformTestCommand.ApplyExitCodeIgnorePolicy(
+                exitCode,
+                policy.IgnoredExitCodes) == ExitCode.Success)
+                ? ExitCode.Success
+                : exitCode;
+
+    private IReadOnlyList<TestApplicationPolicy> GetEffectivePolicies()
+        => _effectivePolicies.Count == 0
+            ? [_fallbackTestApplicationPolicy]
+            : _effectivePolicies;
 
     internal static int NormalizeExitCode(int result, bool hasFailureDuringDispose)
     {

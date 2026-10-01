@@ -106,8 +106,8 @@ Este argumento se puede especificar varias veces para proporcionar múltiples va
 
 Ejemplos:
 -e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;separated with;semicolons"
+-e VARIABLE="valor con espacios"
+-e VARIABLE="value; separados por; punto y coma"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -136,8 +136,8 @@ Este argumento se puede especificar varias veces para proporcionar múltiples va
 
 Ejemplos:
 -e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;separated with;semicolons"
+-e VARIABLE="valor con espacios"
+-e VARIABLE="value; separados por; punto y coma"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />

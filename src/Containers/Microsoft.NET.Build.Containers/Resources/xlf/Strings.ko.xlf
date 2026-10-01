@@ -191,7 +191,7 @@
       </trans-unit>
       <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
         <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
-        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <target state="translated">CONTAINER1021: 다중 아키텍처 이미지는 WSLC에 로드할 수 없습니다. 단일 플랫폼 이미지를 게시하거나 다중 아키텍처 이미지를 레지스트리에 게시합니다.</target>
         <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
@@ -206,17 +206,17 @@
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_DisallowedScheme">
         <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
-        <target state="new">bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</target>
+        <target state="translated">전달자 영역 '{0}'은(는) 허용되지 않는 '{1}' 체계를 사용합니다. 'https'만 허용됩니다(또는 레지스트리가 안전하지 않은 것으로 구성된 경우 'http').</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
         <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
-        <target state="new">bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</target>
+        <target state="translated">전달자 영역 '{0}'은(는) 프라이빗, 루프백, 링크 로컬 또는 지정되지 않은 IP 리터럴 주소인 '{1}'(으)로 확인됩니다.</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
         <source>bearer realm '{0}' is not a valid absolute URI</source>
-        <target state="new">bearer realm '{0}' is not a valid absolute URI</target>
+        <target state="translated">전달자 영역 '{0}'은(는) 유효한 절대 URI가 아닙니다.</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
@@ -271,7 +271,7 @@
       </trans-unit>
       <trans-unit id="InvalidRegistryAuthResponse">
         <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
-        <target state="new">CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</target>
+        <target state="translated">CONTAINER1019: 레지스트리 '{0}'에서 잘못된 인증 응답을 반환했습니다. {1}</target>
         <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
       </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
@@ -401,7 +401,7 @@
       </trans-unit>
       <trans-unit id="Registry_ManifestExists">
         <source>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</source>
-        <target state="new">Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</target>
+        <target state="translated">매니페스트 '{0}'이(가) 이미 리포지토리 '{1}'에 있습니다. 계층 및 구성 업로드를 건너뜁니다.</target>
         <note>{0} is the manifest digest, {1} is the repository name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">

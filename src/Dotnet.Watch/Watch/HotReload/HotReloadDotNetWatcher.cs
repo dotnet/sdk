@@ -40,7 +40,7 @@ internal sealed class HotReloadDotNetWatcher
         _selectionPrompt = selectionPrompt;
         if (!context.Options.NonInteractive)
         {
-            var consoleInput = new ConsoleInputReader(_console, context.Options.LogLevel, context.EnvironmentOptions.SuppressEmojis);
+            var consoleInput = new ConsoleInputReader(_console, context.Options.GetEffectiveLogLevel(context.EnvironmentOptions), context.EnvironmentOptions.SuppressEmojis);
 
             var noPrompt = context.EnvironmentOptions.RestartOnRudeEdit;
             if (noPrompt)
@@ -53,9 +53,7 @@ internal sealed class HotReloadDotNetWatcher
 
         _designTimeBuildGraphFactory = new ProjectGraphFactory(
             context.RootProjects,
-            buildProperties: EvaluationResult.GetGlobalBuildProperties(
-                context.BuildArguments,
-                context.EnvironmentOptions),
+            buildProperties: EvaluationResult.GetGlobalBuildProperties(context.BuildArguments),
             context.BuildLogger,
             context.Options,
             context.EnvironmentOptions);
@@ -1304,7 +1302,7 @@ internal sealed class HotReloadDotNetWatcher
                 }
                 : null,
 
-            // pass user-specified build arguments last to override defaults:
+            // dotnet-watch reserved properties are added after user-specified build arguments to override defaults:
             Arguments = arguments
         };
 

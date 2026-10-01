@@ -57,6 +57,8 @@ internal sealed class WebSocketTransport(string serverUrl, string? serverPublicK
                     _webSocket.Options.AddSubProtocol(encryptedSecret);
                 }
 
+                _webSocket.Options.SetRequestHeader("Origin", (serverPublicKey != null ? "wss" : "ws") + "://localhost");
+
                 Log($"Connecting to {serverUrl}...");
                 await _webSocket.ConnectAsync(new Uri(serverUrl), connectCts.Token).ConfigureAwait(false);
                 Log("Connected.");

@@ -2,7 +2,7 @@
   "profiles": {
     "dotnet-watch": {
       "commandName": "Project",
-      "commandLineArgs": "-bl",
+      "commandLineArgs": "--no-hot-reload run -f net6.0 --property:AssemblyVersion=1.2.3.4 -v minimal -- -v",
       "workingDirectory": "D:\\Temp\\app2",
       "environmentVariables": {
         "DOTNET_WATCH_DEBUG_SDK_DIRECTORY": "$(RepoRoot)artifacts\\bin\\redist\\$(Configuration)\\dotnet\\sdk\\$(Version)",

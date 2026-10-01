@@ -2018,8 +2018,8 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <value>Run unit tests using the test runner specified in a .NET project.</value>
   </data>
   <data name="TestDiscoveryExitCode" xml:space="preserve">
-    <value>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</value>
-    <comment>0 is whole number, the value of exit code</comment>
+    <value>Test discovery completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</value>
+    <comment>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</comment>
   </data>
   <data name="TestDiscoverySummary" xml:space="preserve">
     <value>Discovered {0} tests in {1} assemblies.</value>
@@ -2033,8 +2033,53 @@ Your project targets multiple frameworks. Specify which framework to run using '
     <value>The target framework to run tests for. The target framework must also be specified in the project file.</value>
   </data>
   <data name="TestRunExitCode" xml:space="preserve">
-    <value>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</value>
-    <comment>0 is whole number, the value of exit code</comment>
+    <value>Test run completed with non-success exit code: {0}. {1} See: https://aka.ms/testingplatform/exitcodes</value>
+    <comment>{0} is the numeric exit code. {1} is a concise description of the exit code. {Locked="https://aka.ms/testingplatform/exitcodes"}</comment>
+  </data>
+  <data name="ExitCodeAtLeastOneTestFailedDescription" xml:space="preserve">
+    <value>At least one test failed.</value>
+  </data>
+  <data name="ExitCodeCoverageThresholdFailedDescription" xml:space="preserve">
+    <value>One or more code coverage thresholds were not met.</value>
+  </data>
+  <data name="ExitCodeDependentProcessExitedDescription" xml:space="preserve">
+    <value>A dependent process exited.</value>
+  </data>
+  <data name="ExitCodeGenericFailureDescription" xml:space="preserve">
+    <value>An unexpected error occurred.</value>
+  </data>
+  <data name="ExitCodeIncompatibleProtocolVersionDescription" xml:space="preserve">
+    <value>The test platform protocol version is incompatible.</value>
+  </data>
+  <data name="ExitCodeInvalidCommandLineDescription" xml:space="preserve">
+    <value>The command-line arguments are invalid.</value>
+  </data>
+  <data name="ExitCodeInvalidPlatformSetupDescription" xml:space="preserve">
+    <value>The test platform setup or extension configuration is invalid.</value>
+  </data>
+  <data name="ExitCodeMinimumExpectedTestsPolicyViolationDescription" xml:space="preserve">
+    <value>Fewer tests ran than required by the minimum expected tests policy.</value>
+  </data>
+  <data name="ExitCodeTestAdapterTestSessionFailureDescription" xml:space="preserve">
+    <value>The test adapter reported a test session failure.</value>
+  </data>
+  <data name="ExitCodeTestExecutionStoppedAtDeadlineDescription" xml:space="preserve">
+    <value>Test execution stopped because the configured deadline was approaching.</value>
+  </data>
+  <data name="ExitCodeTestExecutionStoppedForMaxFailedTestsDescription" xml:space="preserve">
+    <value>Test execution stopped after reaching the maximum failed tests limit.</value>
+  </data>
+  <data name="ExitCodeTestHostProcessExitedNonGracefullyDescription" xml:space="preserve">
+    <value>The test host process exited unexpectedly.</value>
+  </data>
+  <data name="ExitCodeTestSessionAbortedDescription" xml:space="preserve">
+    <value>The test session was aborted.</value>
+  </data>
+  <data name="ExitCodeUnknownDescription" xml:space="preserve">
+    <value>The exit code is not recognized.</value>
+  </data>
+  <data name="ExitCodeZeroTestsDescription" xml:space="preserve">
+    <value>No tests ran.</value>
   </data>
   <data name="TestRunSummary" xml:space="preserve">
     <value>Test run summary:</value>

@@ -7,7 +7,6 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
-    [TestClass]
     public abstract class MvcBuildIntegrationTestLegacy : AspNetSdkTest
     {
         public abstract string TestProjectName { get; }

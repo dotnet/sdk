@@ -101,8 +101,8 @@ Examples:
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">設定環境變數的值。
-若變數不存在，則加以建立; 若有，則予以覆寫。
-此引數可多次指定，以提供多項變數。
+若變數不存在，則建立變數; 若已存在，則進行覆寫。
+可多次指定此引數，以提供多項變數。
 
 範例:
 -e VARIABLE=abc
@@ -130,9 +130,9 @@ Examples:
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">設定環境變數的值。
-若變數不存在，則加以建立; 若有，則予以覆寫。
+若變數不存在，則建立變數; 若已存在，則進行覆寫。
 這會強制在隔離流程中執行測試。
-此引數可多次指定，以提供多項變數。
+可多次指定此引數，以提供多項變數。
 
 範例:
 -e VARIABLE=abc
