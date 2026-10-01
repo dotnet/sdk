@@ -6,6 +6,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
 {
     private const string TarExecutable = "tar.exe";
+    private const int DirectoryMoveAttempts = 5;
 
     private readonly ITarArchiveExtractor _fallbackExtractor;
     private readonly INativeTarProcessRunner _processRunner;
@@ -127,7 +128,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            Directory.Move(stagedSubcomponent, destination);
+            MoveDirectoryWithRetry(stagedSubcomponent, destination);
         }
 
         if (Directory.Exists(topLevelDirectory))
@@ -173,7 +174,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
     {
         if (!Directory.Exists(destination))
         {
-            Directory.Move(source, destination);
+            MoveDirectoryWithRetry(source, destination);
             return;
         }
 
@@ -188,6 +189,26 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
         }
 
         Directory.Delete(source);
+    }
+
+    private static void MoveDirectoryWithRetry(string source, string destination)
+    {
+        for (int attempt = 1; ; attempt++)
+        {
+            try
+            {
+                Directory.Move(source, destination);
+                return;
+            }
+            catch (Exception ex) when (
+                ex is IOException or UnauthorizedAccessException &&
+                attempt < DirectoryMoveAttempts &&
+                Directory.Exists(source) &&
+                !Directory.Exists(destination))
+            {
+                Thread.Sleep(TimeSpan.FromMilliseconds(100 * attempt));
+            }
+        }
     }
 
     private static string CreateStagingDirectoryPath(string targetDirectory)
