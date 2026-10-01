@@ -73,7 +73,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "add", "Microsoft.NET.Sdk@9.0.200", "--no-restore")
+            .Execute("add", "sdk", "Microsoft.NET.Sdk@9.0.200", "--no-restore")
             .Should().Pass()
             .And.HaveStdOutContaining("SDK reference 'Microsoft.NET.Sdk' version '9.0.200' updated");
 
@@ -104,7 +104,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "add", "Cake.Sdk@6.2.0", "--no-restore")
+            .Execute("add", "sdk", "Cake.Sdk@6.2.0", "--no-restore")
             .Should().Pass();
 
         var contents = File.ReadAllText(projectFilePath);
@@ -138,7 +138,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "add", sdkName, "--no-restore")
+            .Execute("add", "sdk", sdkName, "--no-restore")
             .Should().Pass()
             .And.HaveStdOutContaining($"SDK reference '{sdkName}' is already present");
 
@@ -165,7 +165,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
         var projectFilePath = Path.Combine(projectDirectory, $"{testAsset}.csproj");
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "add", "Cake.Sdk", "--no-restore")
+            .Execute("add", "sdk", "Cake.Sdk", "--no-restore")
             .Should().Pass();
 
         File.ReadAllText(projectFilePath).Should().Contain("""<Sdk Name="Cake.Sdk" />""");
@@ -192,7 +192,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
         var projectFilePath = Path.Combine(projectDirectory, $"{testAsset}.csproj");
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "add", "Cake.Sdk", "--no-restore")
+            .Execute("add", "sdk", "Cake.Sdk", "--no-restore")
             .Should().Pass();
 
         File.ReadAllText(projectFilePath).Should().Contain("""<Sdk Name="Cake.Sdk" />""");
@@ -311,7 +311,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "add", sdkName, "--no-restore")
+            .Execute("add", "sdk", sdkName, "--no-restore")
             .Should().Pass()
             .And.HaveStdOutContaining($"SDK reference '{sdkName}' added to project");
 
@@ -389,7 +389,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
     public void WhenSdkIdentityHasEmptyVersionSuffixItFails()
     {
         new DotnetCommand(Log)
-            .Execute("sdk", "add", "Cake.Sdk@")
+            .Execute("add", "sdk", "Cake.Sdk@")
             .Should().Fail()
             .And.HaveStdErrContaining("SDK version must not be empty");
     }
@@ -410,7 +410,7 @@ public sealed class GivenDotnetAddSdk(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "add", "Cake.Sdk@99999.0.0")
+            .Execute("add", "sdk", "Cake.Sdk@99999.0.0")
             .Should().Fail();
 
         File.ReadAllBytes(projectFilePath).Should().Equal(originalBytes);

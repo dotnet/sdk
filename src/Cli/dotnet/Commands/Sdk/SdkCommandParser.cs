@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Sdk.Add;
 using Microsoft.DotNet.Cli.Commands.Sdk.Check;
-using Microsoft.DotNet.Cli.Commands.Sdk.Remove;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk;
@@ -15,7 +13,5 @@ internal static class SdkCommandParser
     {
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
         command.CheckCommand.SetAction(SdkCheckCommand.Run);
-        command.AddCommand.SetAction(parseResult => new SdkAddCommand(parseResult).Execute());
-        command.RemoveCommand.SetAction(parseResult => new SdkRemoveCommand(parseResult).Execute());
     }
 }

@@ -65,7 +65,7 @@ public sealed class GivenDotnetRemoveSdk(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "remove", $"{sdkName}@{sdkVersion}")
+            .Execute("remove", "sdk", $"{sdkName}@{sdkVersion}")
             .Should().Pass()
             .And.HaveStdOutContaining($"Removing SDK reference '{sdkName}' from project '{projectFilePath}'");
 
@@ -94,7 +94,7 @@ public sealed class GivenDotnetRemoveSdk(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "remove", "Aspire.AppHost.Sdk")
+            .Execute("remove", "sdk", "Aspire.AppHost.Sdk")
             .Should().Pass()
             .And.HaveStdOutContaining($"Removing SDK reference 'Aspire.AppHost.Sdk' from project '{projectFilePath}'");
 
@@ -173,7 +173,7 @@ public sealed class GivenDotnetRemoveSdk(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log)
             .WithWorkingDirectory(projectDirectory)
-            .Execute("sdk", "remove", "Microsoft.NET.Sdk")
+            .Execute("remove", "sdk", "Microsoft.NET.Sdk")
             .Should().Fail();
 
         File.ReadAllText(projectFilePath).Should().Contain("""<Sdk Name="Microsoft.NET.Sdk" />""");

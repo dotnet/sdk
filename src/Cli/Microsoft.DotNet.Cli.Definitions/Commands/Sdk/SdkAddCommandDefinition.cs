@@ -7,14 +7,6 @@ using Microsoft.DotNet.Cli.Commands.Package;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Add;
 
-internal sealed class SdkAddCommandDefinition() : SdkAddCommandDefinitionBase(Name)
-{
-    public new const string Name = "add";
-
-    public override Argument<string>? GetProjectOrFileArgument()
-        => null;
-}
-
 internal abstract class SdkAddCommandDefinitionBase : Command
 {
     public static Option<string?> CreateVersionOption() => new Option<string?>("--version", "-v")

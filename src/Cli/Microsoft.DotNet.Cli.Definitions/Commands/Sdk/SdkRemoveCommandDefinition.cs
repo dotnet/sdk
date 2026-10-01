@@ -7,14 +7,6 @@ using Microsoft.DotNet.Cli.Commands.Package;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Remove;
 
-internal sealed class SdkRemoveCommandDefinition() : SdkRemoveCommandDefinitionBase(Name)
-{
-    public new const string Name = "remove";
-
-    public override Argument<string>? GetProjectOrFileArgument()
-        => null;
-}
-
 internal abstract class SdkRemoveCommandDefinitionBase : Command
 {
     public readonly Argument<string[]> SdkIdArgument = new(CommonArguments.SdkIdArgumentName)
