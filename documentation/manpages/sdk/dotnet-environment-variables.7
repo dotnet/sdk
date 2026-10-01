@@ -14,19 +14,53 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-environment-variables" "7" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-environment-variables" "7" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
 dotnet-environment-variables - .NET environment variables
 .SH DESCRIPTION
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
-.PP
-In this article, you\[cq]ll learn about the environment variables used by .NET.
+This article lists the environment variables used by .NET.
 Some environment variables are used by the .NET runtime, while others are only used by the .NET SDK and .NET CLI.
 Some environment variables are used by all three components.
 .SS .NET runtime environment variables
+.PP
+This section defines the following environment variables:
+.IP \[bu] 2
+\f[V]DOTNET_SYSTEM_NET_HTTP_*\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SYSTEM_GLOBALIZATION_*\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SYSTEM_GLOBALIZATION_USENLS\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SYSTEM_NET_SOCKETS_*\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SYSTEM_NET_DISABLEIPV6\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SYSTEM_NET_HTTP_USESOCKETSHTTPHANDLER\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_RUNNING_IN_CONTAINER\f[R] and \f[V]DOTNET_RUNNING_IN_CONTAINERS\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SYSTEM_DIAGNOSTICS\f[R] and related variables
+.IP \[bu] 2
+\f[V]DOTNET_DiagnosticPorts\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_DefaultDiagnosticPortSuspend\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_EnableDiagnostics\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_EnableDiagnostics_IPC\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_EnableDiagnostics_Debugger\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_EnableDiagnostics_Profiler\f[R]
+.IP \[bu] 2
+EventPipe variables
+.PP
+For more information about configuring the .NET runtime, see .NET runtime configuration settings.
 .SS \f[V]DOTNET_SYSTEM_NET_HTTP_*\f[R]
 .PP
 There are several global HTTP environment variable settings:
@@ -112,7 +146,7 @@ In the \f[I]runtimeconfig.json\f[R] file:
 By setting environment variable value \f[V]DOTNET_SYSTEM_GLOBALIZATION_INVARIANT\f[R] to \f[V]true\f[R] or \f[V]1\f[R].
 .RS
 .PP
-A value set in the project file or \f[I]runtimeconfig.json\f[R] has a higher priority than the environment variable.
+In .NET 9 and later versions, environment variables have a higher priority than values set in the project file or \f[I]runtimeconfig.json\f[R].
 .RE
 .PP
 For more information, see .NET Globalization Invariant Mode (https://github.com/dotnet/runtime/blob/main/docs/design/features/globalization-invariant-mode.md).
@@ -231,6 +265,80 @@ See EventPipe environment variables for more information.
 \f[V]DOTNET_EventPipeOutputStreaming\f[R]: When set to \f[V]1\f[R], enables streaming to the output file while the app is running.
 By default trace information is accumulated in a circular buffer and the contents are written at app shutdown.
 .SS .NET SDK and CLI environment variables
+.PP
+This section describes the following environment variables:
+.IP \[bu] 2
+\f[V]DOTNET_ROOT\f[R], \f[V]DOTNET_ROOT(x86)\f[R], \f[V]DOTNET_ROOT_X86\f[R], \f[V]DOTNET_ROOT_X64\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_HOST_PATH\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_LAUNCH_PROFILE\f[R]
+.IP \[bu] 2
+\f[V]NUGET_PACKAGES\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SERVICING\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_NOLOGO\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_CLI_PERF_LOG\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_CLI_ENABLEAOT\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_GENERATE_ASPNET_CERTIFICATE\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_ADD_GLOBAL_TOOLS_TO_PATH\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_CLI_TELEMETRY_OPTOUT\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SKIP_FIRST_TIME_EXPERIENCE\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_MULTILEVEL_LOOKUP\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_ROLL_FORWARD\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_ROLL_FORWARD_TO_PRERELEASE\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_CLI_FORCE_UTF8_ENCODING\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_CLI_UI_LANGUAGE\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_DISABLE_GUI_ERRORS\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_ADDITIONAL_DEPS\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_RUNTIME_ID\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SHARED_STORE\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_STARTUP_HOOKS\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_BUNDLE_EXTRACT_BASE_DIR\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_CLI_HOME\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_CLI_CONTEXT_*\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_INTERVAL_HOURS\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SDK_VULNERABILITY_CHECK_DISABLE\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SDK_VULNERABILITY_CHECK_INTERVAL_HOURS\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT\f[R]
+.IP \[bu] 2
+\f[V]DOTNET_HOST_TRACE\f[R]
+.IP \[bu] 2
+\f[V]SuppressNETCoreSdkPreviewMessage\f[R]
+.IP \[bu] 2
+Configure MSBuild in the .NET CLI
+.IP \[bu] 2
+\f[V]DOTNET_NEW_PREFERRED_LANG\f[R]
+.IP \[bu] 2
+\f[V]dotnet watch\f[R] environment variables
 .SS \f[V]DOTNET_ROOT\f[R], \f[V]DOTNET_ROOT(x86)\f[R], \f[V]DOTNET_ROOT_X86\f[R], \f[V]DOTNET_ROOT_X64\f[R]
 .PP
 Specifies the location of the .NET runtimes, if they are not installed in the default location.
@@ -269,19 +377,17 @@ In other cases, this environment variable is ignored.
 \f[V]DOTNET_ROOT\f[R].
 .SS \f[V]DOTNET_HOST_PATH\f[R]
 .PP
-Specifies the absolute path to a \f[V]dotnet\f[R] host (\f[V]dotnet.exe\f[R] on Windows, \f[V]dotnet\f[R] on Linux and macOS) that was used to launch the currently-running \f[V]dotnet\f[R] process.
-This is used by the .NET SDK to help tools that run during .NET SDK commands ensure they use the same \f[V]dotnet\f[R] runtime for any child \f[V]dotnet\f[R] processes they create for the duration of the command.
-Tools and MSBuild Tasks within the SDK that invoke binaries via the \f[V]dotnet\f[R] host are expected to honor this environment variable to ensure a consistent experience.
+Specifies the absolute path to a \f[V]dotnet\f[R] host (\f[V]dotnet.exe\f[R] on Windows, \f[V]dotnet\f[R] on Linux and macOS).
+This path represents either the host used to launch the currently running \f[V]dotnet\f[R] process, or the host that would be used when running \f[V]dotnet\f[R] commands for the currently building project when executing under MSBuild.
+The .NET SDK uses this variable to help tools that run during .NET SDK commands ensure they use the same \f[V]dotnet\f[R] host configuration for any child \f[V]dotnet\f[R] processes they create for the duration of the command.
+Tools and any MSBuild logic that run within a build and invoke binaries via the \f[V]dotnet\f[R] host are expected to honor this environment variable to ensure a consistent experience.
 .PP
-Tools that invoke \f[V]dotnet\f[R] during an SDK command should use the following algorithm to locate it:
-.IP \[bu] 2
-if \f[V]DOTNET_HOST_PATH\f[R] is set, use that value directly
-.IP \[bu] 2
-otherwise, rely on \f[V]dotnet\f[R] via the system\[cq]s \f[V]PATH\f[R]
+Starting in Visual Studio 2026, MSBuild in Visual Studio \f[I]also\f[R] ensures that \f[V]DOTNET_HOST_PATH\f[R] is set for all builds of .NET SDK projects.
+For greatest consistency, all MSBuild tools and logic that want to use \f[I]the same dotnet binary\f[R] as the one that spawned the build should rely on \f[V]DOTNET_HOST_PATH\f[R] and should consider emitting a diagnostic (warning or error) when the variable is not present.
 .RS
 .PP
 \f[V]DOTNET_HOST_PATH\f[R] is not a general solution for locating the \f[V]dotnet\f[R] host.
-It is only intended to be used by tools that are invoked by the .NET SDK.
+It is only intended to be used by binaries and tools that are invoked by the .NET SDK or MSBuild.
 .RE
 .SS \f[V]DOTNET_LAUNCH_PROFILE\f[R]
 .PP
@@ -378,6 +484,21 @@ This flag does not affect telemetry (see \f[V]DOTNET_CLI_TELEMETRY_OPTOUT\f[R] f
 Specifies whether performance details about the current CLI session are logged.
 Enabled when set to \f[V]1\f[R], \f[V]true\f[R], or \f[V]yes\f[R].
 This is disabled by default.
+.SS \f[V]DOTNET_CLI_ENABLEAOT\f[R]
+.PP
+Specifies whether the .NET SDK uses its native (ahead-of-time compiled) CLI command-handling fast path.
+When enabled, common commands (such as command-line parsing, \f[V]dotnet --version\f[R], and \f[V]dotnet --info\f[R]) are handled by a native entry point for faster startup, transparently falling back to the managed CLI for anything the fast path doesn\[cq]t handle.
+.PP
+Set this variable to control the fast path explicitly:
+.IP \[bu] 2
+To enable it, set the variable to \f[V]true\f[R], \f[V]1\f[R], \f[V]yes\f[R], or \f[V]on\f[R].
+.IP \[bu] 2
+To disable it and route every invocation to the managed CLI, set the variable to \f[V]false\f[R], \f[V]0\f[R], \f[V]no\f[R], or \f[V]off\f[R].
+.RS
+.PP
+Starting in .NET 11 Preview 7, this fast path is enabled by default (\f[V]true\f[R]) on all platforms.
+To disable it, set the variable to \f[V]false\f[R], \f[V]0\f[R], \f[V]no\f[R], or \f[V]off\f[R].
+.RE
 .SS \f[V]DOTNET_GENERATE_ASPNET_CERTIFICATE\f[R]
 .PP
 Specifies whether to generate an ASP.NET Core certificate.
@@ -482,15 +603,34 @@ For more information, see Advertising manifests.
 Specifies the minimum number of hours between background downloads of advertising manifests for workloads.
 The default is \f[V]24\f[R], which is no more frequently than once a day.
 For more information, see Advertising manifests.
+.SS \f[V]DOTNET_SDK_VULNERABILITY_CHECK_DISABLE\f[R]
+.PP
+Disables the opt-in SDK vulnerability, end-of-life, and feature-band discontinuation check.
+When set to \f[V]true\f[R], the .NET CLI doesn\[cq]t refresh the local SDK release metadata cache in the background, and the MSBuild check doesn\[cq]t emit NETSDK1238, NETSDK1239, or NETSDK1240.
+The default is \f[V]false\f[R].
+The check is also opt-in at the project level through the \f[V]CheckSdkVulnerabilities\f[R] MSBuild property.
+.SS \f[V]DOTNET_SDK_VULNERABILITY_CHECK_INTERVAL_HOURS\f[R]
+.PP
+Specifies the minimum number of hours between background refreshes of the SDK release metadata cache used by the SDK vulnerability, end-of-life, and feature-band discontinuation check.
+The default is \f[V]24\f[R].
+.SS \f[V]DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK\f[R]
+.PP
+Specifies whether to skip the workload integrity check on first-run.
+The integrity check ensures that workloads from previous feature bands are accessible to the currently installed SDK.
+Set the value to \f[V]true\f[R], \f[V]1\f[R], or \f[V]yes\f[R] to skip the check.
+The default is \f[V]false\f[R], meaning the integrity check is performed.
 .SS \f[V]DOTNET_TOOLS_ALLOW_MANIFEST_IN_ROOT\f[R]
 .PP
 Specifies whether .NET SDK local tools search for tool manifest files in the root folder on Windows.
 The default is \f[V]false\f[R].
 .SS \f[V]DOTNET_HOST_TRACE\f[R]
 .PP
-\f[B]This variable applies to .NET 10 and later versions.\f[R] For older versions, replace the \f[V]DOTNET_HOST_\f[R] prefix with \f[V]COREHOST_\f[R].
-.PP
 Controls diagnostics tracing from the hosting components, such as \f[V]dotnet.exe\f[R], \f[V]hostfxr\f[R], and \f[V]hostpolicy\f[R].
+.RS
+.PP
+Prior to .NET 10, the \f[V]COREHOST_\f[R] prefix was used instead of \f[V]DOTNET_HOST_\f[R] (for example, \f[V]COREHOST_TRACE\f[R]).
+The functionality and values remain identical.
+.RE
 .IP \[bu] 2
 \f[V]DOTNET_HOST_TRACE=[0/1]\f[R] - default is \f[V]0\f[R] - tracing disabled.
 If set to \f[V]1\f[R], diagnostics tracing is enabled.
@@ -513,20 +653,6 @@ The setting is used only when tracing is enabled via \f[V]DOTNET_HOST_TRACE=1\f[
 .PP
 The typical way to get detailed trace information about application startup is to set \f[V]DOTNET_HOST_TRACE=1\f[R] and \f[V]DOTNET_HOST_TRACEFILE=host_trace.txt\f[R] and then run the application.
 A new file \f[V]host_trace.txt\f[R] will be created in the current directory with the detailed information.
-.SS \f[V]COREHOST_TRACE\f[R]
-.PP
-Controls diagnostics tracing from the hosting components, such as \f[V]dotnet.exe\f[R], \f[V]hostfxr\f[R], and \f[V]hostpolicy\f[R].
-.RS
-.PP
-Starting with .NET 10, use the \f[V]DOTNET_HOST_TRACE\f[R] environment variables instead.
-The \f[V]COREHOST_TRACE\f[R] variables work the same as \f[V]DOTNET_HOST_TRACE\f[R] variables.
-.RE
-.IP \[bu] 2
-\f[V]COREHOST_TRACE\f[R] - see \f[V]DOTNET_HOST_TRACE\f[R].
-.IP \[bu] 2
-\f[V]COREHOST_TRACEFILE\f[R] - see \f[V]DOTNET_HOST_TRACEFILE\f[R].
-.IP \[bu] 2
-\f[V]COREHOST_TRACE_VERBOSITY\f[R] - see \f[V]DOTNET_HOST_TRACE_VERBOSITY\f[R].
 .SS \f[V]SuppressNETCoreSdkPreviewMessage\f[R]
 .PP
 If set to \f[V]true\f[R], invoking \f[V]dotnet\f[R] won\[cq]t produce a warning when a preview SDK is being used.

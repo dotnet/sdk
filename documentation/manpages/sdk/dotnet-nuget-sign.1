@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-sign" "1" "2025-08-29" "" ".NET Documentation"
+.TH "dotnet-nuget-sign" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet nuget sign
 .PP
@@ -123,7 +123,7 @@ If a certificate is password protected but no password is provided, the sign com
 .RS
 .PP
 The \f[V]sign\f[R] command only supports non-interactive mode.
-There won\[cq]t be any prompt for a password at run time.
+There won\[cq]t be any prompt for a password at runtime.
 .RE
 .RE
 .IP \[bu] 2
@@ -161,21 +161,17 @@ Defaults to SHA256.
 .PP
 URL to an RFC 3161 timestamping server.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .SH EXAMPLES
 .IP \[bu] 2
 Sign \f[I]foo.nupkg\f[R] with certificate \f[I]cert.pfx\f[R] (not password protected):
