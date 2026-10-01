@@ -349,13 +349,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="FilterRuntimeAssetsByRuntimeIdentifier"
           AfterTargets="ResolvePackageAssets"
-          Condition="'$(BundledRuntimeAssetRuntimeIdentifiers)' != ''">
+          Condition="'$(BundledRuntimeAssetRuntimeIdentifiers)' != '' and '$(RuntimeIdentifierGraphPath)' != '' and Exists('$(RuntimeIdentifierGraphPath)')">
 
     <ItemGroup>
       <_RuntimeAssetFilterRids Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
     </ItemGroup>
 
-    <!-- For each specified RID, collect the compatible runtime target items. -->
+    <!-- For each specified RID, collect the compatible runtime target items. A less-specific
+         asset (e.g. "linux") may be compatible with more than one filter RID (e.g. "linux-x64"
+         and "linux-arm64"), so the batched task execution below can produce duplicate items;
+         deduplicate them before replacing RuntimeTargetsCopyLocalItems. -->
     <SelectRuntimeIdentifierSpecificItems
         Items="@(RuntimeTargetsCopyLocalItems)"
         TargetRuntimeIdentifier="%(_RuntimeAssetFilterRids.Identity)"
@@ -364,9 +367,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     </SelectRuntimeIdentifierSpecificItems>
 
     <ItemGroup>
+      <_DistinctFilteredRuntimeTargetsCopyLocalItems Include="@(_FilteredRuntimeTargetsCopyLocalItems->Distinct())" />
       <RuntimeTargetsCopyLocalItems Remove="@(RuntimeTargetsCopyLocalItems)" />
-      <RuntimeTargetsCopyLocalItems Include="@(_FilteredRuntimeTargetsCopyLocalItems)" />
+      <RuntimeTargetsCopyLocalItems Include="@(_DistinctFilteredRuntimeTargetsCopyLocalItems)" />
       <_FilteredRuntimeTargetsCopyLocalItems Remove="@(_FilteredRuntimeTargetsCopyLocalItems)" />
+      <_DistinctFilteredRuntimeTargetsCopyLocalItems Remove="@(_DistinctFilteredRuntimeTargetsCopyLocalItems)" />
       <_RuntimeAssetFilterRids Remove="@(_RuntimeAssetFilterRids)" />
     </ItemGroup>
 
