@@ -90,10 +90,13 @@ Integration with static web assets:
     BundleScopedCssFiles;
   </GenerateComputedBuildStaticWebAssetsDependsOn>
 
-  <GenerateStaticWebAssetsPublishManifestDependsOn Condition="'$(ExcludeScopedCssAssets)' == 'true'">
-    $(GenerateStaticWebAssetsPublishManifestDependsOn);
+  <!-- Remove the scoped CSS assets at the end of ResolvePublishStaticWebAssets, before ResolvePublishRelatedStaticWebAssets
+       derives assets from them (publish compression, service worker manifest, HTML asset placeholders).
+  -->
+  <ResolvePublishStaticWebAssetsDependsOn Condition="'$(ExcludeScopedCssAssets)' == 'true'">
+    $(ResolvePublishStaticWebAssetsDependsOn);
     _RemoveScopedCssAssetsFromPublish
-  </GenerateStaticWebAssetsPublishManifestDependsOn>
+  </ResolvePublishStaticWebAssetsDependsOn>
 
 </PropertyGroup>
 
@@ -118,8 +121,26 @@ Integration with static web assets:
       <AssetFile>%(StaticWebAsset.Identity)</AssetFile>
     </_ScopedCssPublishAsset>
 
-    <StaticWebAsset Remove="@(_ScopedCssPublishAsset)" />
-    <StaticWebAssetEndpoint Remove="@(_ScopedCssPublishAsset)" MatchOnMetadata="AssetFile" />
+    <!-- Compressed variants loaded from the build manifest carry AssetTraitName=Content-Encoding and point at the
+         original asset through RelatedAsset, so they need to go together with the scoped CSS assets they derive from.
+         Keep the compressed assets whose RelatedAsset matches an excluded scoped CSS asset by removing the complement.
+    -->
+    <_ScopedCssPublishAssetKey Include="@(_ScopedCssPublishAsset)">
+      <RelatedAsset>%(Identity)</RelatedAsset>
+    </_ScopedCssPublishAssetKey>
+
+    <_ScopedCssPublishRelatedAsset
+      Include="@(StaticWebAsset)"
+      Condition="'%(StaticWebAsset.AssetTraitName)' == 'Content-Encoding'">
+      <AssetFile>%(StaticWebAsset.Identity)</AssetFile>
+    </_ScopedCssPublishRelatedAsset>
+
+    <_ScopedCssPublishUnrelatedAsset Include="@(_ScopedCssPublishRelatedAsset)" />
+    <_ScopedCssPublishUnrelatedAsset Remove="@(_ScopedCssPublishAssetKey)" MatchOnMetadata="RelatedAsset" />
+    <_ScopedCssPublishRelatedAsset Remove="@(_ScopedCssPublishUnrelatedAsset)" />
+
+    <StaticWebAsset Remove="@(_ScopedCssPublishAsset);@(_ScopedCssPublishRelatedAsset)" />
+    <StaticWebAssetEndpoint Remove="@(_ScopedCssPublishAsset);@(_ScopedCssPublishRelatedAsset)" MatchOnMetadata="AssetFile" />
   </ItemGroup>
 </Target>
 

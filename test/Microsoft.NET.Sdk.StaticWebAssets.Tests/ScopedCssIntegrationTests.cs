@@ -10,6 +10,7 @@ using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
@@ -323,8 +324,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.gz")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.br")).Should().NotExist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
+
+            AssertPublishManifestDoesNotContainScopedCssAssets(intermediateOutputPath);
         }
 
         [TestMethod]
@@ -342,8 +347,88 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "ComponentApp.styles.css")).Should().NotExist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css.gz")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css.br")).Should().NotExist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
+
+            AssertPublishManifestDoesNotContainScopedCssAssets(intermediateOutputPath);
         }
+
+        [TestMethod]
+        public void Publish_ServiceWorkerAssetsManifest_DoesNotListScopedCssAssets_WhenExcluded()
+        {
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges(document =>
+                {
+                    var propertyGroup = new XElement("PropertyGroup");
+                    propertyGroup.Add(new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js"));
+                    document.Root.Add(propertyGroup);
+
+                    var itemGroup = new XElement("ItemGroup");
+                    var serviceWorker = new XElement("ServiceWorker");
+                    serviceWorker.SetAttributeValue("Include", @"wwwroot\service-worker.js");
+                    serviceWorker.SetAttributeValue("PublishedContent", @"wwwroot\service-worker.published.js");
+                    itemGroup.Add(serviceWorker);
+                    document.Root.Add(itemGroup);
+                });
+
+            var wwwroot = Path.Combine(projectDirectory.TestRoot, "wwwroot");
+            Directory.CreateDirectory(wwwroot);
+            File.WriteAllText(Path.Combine(wwwroot, "service-worker.js"), "// development service worker");
+            File.WriteAllText(Path.Combine(wwwroot, "service-worker.published.js"), "// published service worker");
+
+            // Without the exclusion the service worker manifest lists the scoped CSS bundle, which proves the
+            // assertion below is looking at the right file.
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish).Should().Pass();
+
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var serviceWorkerAssetsManifest = Path.Combine(publishOutputPath, "wwwroot", "service-worker-assets.js");
+
+            var listedAssets = ReadServiceWorkerAssetUrls(serviceWorkerAssetsManifest);
+            listedAssets.Should().Contain(url => url.EndsWith(".styles.css"));
+
+            // With the exclusion the manifest is regenerated without the scoped CSS bundle.
+            publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:ExcludeScopedCssAssets=true").Should().Pass();
+
+            listedAssets = ReadServiceWorkerAssetUrls(serviceWorkerAssetsManifest);
+            listedAssets.Should().NotBeEmpty();
+            listedAssets.Should().NotContain(url => IsScopedCssPath(url));
+
+            var intermediateOutputPath = Path.Combine(publish.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
+            AssertPublishManifestDoesNotContainScopedCssAssets(intermediateOutputPath);
+        }
+
+        private static string[] ReadServiceWorkerAssetUrls(string serviceWorkerAssetsManifest)
+        {
+            new FileInfo(serviceWorkerAssetsManifest).Should().Exist();
+
+            // Trim prefix 'self.assetsManifest = ' and suffix ';'
+            var manifestContents = File.ReadAllText(serviceWorkerAssetsManifest).TrimEnd()[22..^1];
+            var manifestContentsJson = JsonDocument.Parse(manifestContents);
+            manifestContentsJson.RootElement.TryGetProperty("assets", out var assets).Should().BeTrue();
+            assets.ValueKind.Should().Be(JsonValueKind.Array);
+
+            return assets.EnumerateArray().Select(e => e.GetProperty("url").GetString()).OrderBy(e => e).ToArray();
+        }
+
+        private static void AssertPublishManifestDoesNotContainScopedCssAssets(string intermediateOutputPath)
+        {
+            var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.publish.json")));
+
+            publishManifest.Assets.Should().NotBeEmpty();
+            publishManifest.Endpoints.Should().NotBeEmpty();
+
+            publishManifest.Assets.Where(a => a.AssetTraitName == "ScopedCss").Should().BeEmpty();
+            publishManifest.Assets.Where(a => a.AssetTraitName == "Content-Encoding" && IsScopedCssPath(a.RelatedAsset)).Should().BeEmpty();
+            publishManifest.Assets.Where(a => IsScopedCssPath(a.RelativePath)).Should().BeEmpty();
+            publishManifest.Endpoints.Where(e => IsScopedCssPath(e.Route) || IsScopedCssPath(e.AssetFile)).Should().BeEmpty();
+        }
+
+        private static bool IsScopedCssPath(string path)
+            => path != null && (path.Contains(".styles.css") || path.Contains(".rz.scp.css") || path.Contains(".bundle.scp.css"));
 
         [TestMethod]
         [CoreMSBuildOnly]
