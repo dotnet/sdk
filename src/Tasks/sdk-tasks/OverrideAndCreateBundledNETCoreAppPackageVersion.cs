@@ -151,6 +151,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 return;
             }
 
+            // NetTFMUpdate: Remove this downlevel override once stage 0 Mono workloads include net12 runtime pack versions.
             // e.g. sdk-manifests/11.0.100-rc.1/microsoft.net.workload.mono.toolchain.current/11.0.100-rc.1.26425.128/WorkloadManifest.targets
             var stage0Path = Stage0MonoToolchainManifestTargetsPaths
                 .Select(i => i.ItemSpec)
