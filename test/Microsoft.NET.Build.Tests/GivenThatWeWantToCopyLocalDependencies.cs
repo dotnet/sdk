@@ -408,7 +408,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             // sqlite package has RID-specific native assets for linux-x64, osx-x64, win7-x64, win7-x86.
-            // Setting BundledRuntimeAssetRuntimeIdentifiers to linux-x64;win7-x64 should include linux and win7-x64 assets only.
+            // Setting BundledRuntimeAssetRuntimeIdentifiers to linux-x64;win7-x64 should include linux-x64 and win7-x64 assets only.
             testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = "linux-x64;win7-x64";
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
             testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
