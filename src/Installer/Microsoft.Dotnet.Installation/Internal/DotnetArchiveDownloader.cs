@@ -192,7 +192,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         op.Tag("download.bytes", fileInfo.Length);
         op.Tag("download.from_cache", false);
 
-        try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
+        try { _downloadCache.AddToCache(downloadUrl, destinationPath, preferHardLink: true); }
         catch { /* Ignore errors adding to cache - it's not critical */ }
 
         return destinationPath;
@@ -444,10 +444,12 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             return false;
         }
 
+        string tempPath = $"{destinationPath}.download";
         try
         {
-            VerifyFileHash(cachedFilePath, expectedHash);
-            File.Copy(cachedFilePath, destinationPath, overwrite: true);
+            _downloadCache.MaterializeFile(cachedFilePath, tempPath, preferHardLink: true);
+            VerifyFileHash(tempPath, expectedHash);
+            CommitDownload(tempPath, destinationPath);
 
             var cachedFileSize = new FileInfo(cachedFilePath).Length;
             progress?.Report(new DownloadProgress(cachedFileSize, cachedFileSize));
@@ -459,6 +461,11 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         catch
         {
             return false; // Cached file corrupted — fall through to download
+        }
+        finally
+        {
+            try { File.Delete(tempPath); }
+            catch { }
         }
     }
 
