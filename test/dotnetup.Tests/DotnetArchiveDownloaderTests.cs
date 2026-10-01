@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Reflection;
 using System.Security.Cryptography;
 using FluentAssertions;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
@@ -178,6 +179,44 @@ public class DotnetArchiveDownloaderTests
 
         // Should not throw
         DotnetArchiveDownloader.VerifyFileHash(filePath, correctHash);
+    }
+
+    [TestMethod]
+    public void DownloadWithVerification_VerifiesHashAcrossMultipleBuffers()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        byte[] content = new byte[200_000];
+        RandomNumberGenerator.Fill(content);
+        string expectedHash = Convert.ToHexString(SHA512.HashData(content)).ToLowerInvariant();
+        var download = new ResolvedDownload(
+            new Uri("https://example.test/archive.tar.gz"),
+            expectedHash,
+            "win-x64",
+            ReleaseVersion.Parse("11.0.100"));
+        using var httpClient = new HttpClient(new StaticContentHandler(content));
+        var downloader = new DotnetDownloader(
+            new ReleaseManifest(),
+            httpClient,
+            Path.Combine(testEnv.TempRoot, "cache"));
+        string destination = Path.Combine(testEnv.TempRoot, "archive.tar.gz");
+
+        downloader.DownloadWithVerification(download, destination).Should().Be(destination);
+
+        File.ReadAllBytes(destination).Should().Equal(content);
+    }
+
+    private sealed class StaticContentHandler(byte[] content) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(content),
+                RequestMessage = request,
+            });
+        }
     }
 
     [TestMethod]
