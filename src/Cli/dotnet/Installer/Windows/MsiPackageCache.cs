@@ -169,7 +169,7 @@ internal class MsiPackageCache(InstallElevationContextBase elevationContext, ISe
     /// Verifies that an MSI package contains an Authenticode signature that terminates in a trusted Microsoft root certificate.
     /// </summary>
     /// <param name="msiPath">The path of the MSI to verify.</param>
-    private void VerifyPackageSignature(string msiPath)
+    internal void VerifyPackageSignature(string msiPath)
     {
         if (VerifySignatures)
         {
