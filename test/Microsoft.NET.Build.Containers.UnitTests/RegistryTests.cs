@@ -939,7 +939,7 @@ public class RegistryTests : IDisposable
         var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, $"sha256:{Guid.NewGuid():N}{Guid.NewGuid():N}", 123);
         var expected = new InvalidAuthResponseException(registryName, "authentication challenge came from another origin");
         var api = new Mock<IRegistryAPI>(MockBehavior.Strict);
-        api.Setup(a => a.Blob.GetStreamAsync(repository, descriptor.Digest, It.IsAny<CancellationToken>()))
+        api.Setup(a => a.Blob.GetUnvalidatedStreamAsync(repository, descriptor.Digest, It.IsAny<CancellationToken>()))
             .ThrowsAsync(expected);
         var registry = new Registry(registryName, logger, api.Object, retryDelayProvider: () => TimeSpan.Zero);
 
@@ -948,7 +948,7 @@ public class RegistryTests : IDisposable
             () => registry.DownloadBlobAsync(repository, descriptor, TestContext.CancellationToken));
 
         Assert.AreSame(expected, actual);
-        api.Verify(a => a.Blob.GetStreamAsync(repository, descriptor.Digest, It.IsAny<CancellationToken>()), Times.Once);
+        api.Verify(a => a.Blob.GetUnvalidatedStreamAsync(repository, descriptor.Digest, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private static NextChunkUploadInformation ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength, HttpStatusCode code = HttpStatusCode.Accepted)
