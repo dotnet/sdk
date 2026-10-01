@@ -368,6 +368,10 @@ public class ParserTests
 
         // Output should match Parser.Version
         output.Trim().Should().Be(Parser.Version);
+        if (!Parser.Version.EndsWith("-dev", StringComparison.Ordinal))
+        {
+            output.Should().Contain("-daily.");
+        }
     }
 
     [TestMethod]

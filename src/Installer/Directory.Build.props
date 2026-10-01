@@ -11,7 +11,7 @@
          Bumped 0.1.4 -> 0.2.0 for the breaking change that moves the default
          dotnet install root under the dotnetup data directory. -->
     <DotnetupVersionPrefix>0.2.0</DotnetupVersionPrefix>
-    <DotnetupPreReleaseVersionLabel>preview</DotnetupPreReleaseVersionLabel>
+    <DotnetupPreReleaseVersionLabel>daily</DotnetupPreReleaseVersionLabel>
     <DotnetupPreReleaseVersionIteration>1</DotnetupPreReleaseVersionIteration>
   </PropertyGroup>
 
