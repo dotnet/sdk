@@ -1,5 +1,7 @@
 <Project>
 
+  <!-- NetTFMUpdate: Re-enable when bundled templates support targeting net12. -->
+  <!-- <TemplateFrameworkVersion>$(MajorMinorVersion)</TemplateFrameworkVersion> -->
   <PropertyGroup>
     <_IncrementalLayoutStateDirectory>$(IntermediateOutputPath)incremental-layout\</_IncrementalLayoutStateDirectory>
     <_TemplatesSdkLayoutStatePrefix>$(_IncrementalLayoutStateDirectory)templates-sdk-$(ProductMonikerRid)</_TemplatesSdkLayoutStatePrefix>
