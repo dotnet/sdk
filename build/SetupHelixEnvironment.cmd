@@ -11,8 +11,8 @@ set TestFullMSBuild=%1
 
 REM Enable crash dump collection for .NET processes.
 set DOTNET_DbgEnableMiniDump=1
-set DOTNET_DbgMiniDumpType=1
-set DOTNET_DbgMiniDumpName=%HELIX_WORKITEM_UPLOAD_ROOT%\coredump.%p.dmp
+set DOTNET_DbgMiniDumpType=4
+set DOTNET_DbgMiniDumpName=%HELIX_WORKITEM_UPLOAD_ROOT%\coredump.%p
 set DOTNET_EnableCrashReport=1
 
 REM Ensure Visual Studio instances allow preview SDKs

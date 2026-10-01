@@ -28,10 +28,16 @@ function helixWorkItemUrl(reference)
   return `https://helix.dot.net/api/2019-06-17/jobs/${encodeURIComponent(reference.jobId)}/workitems/${encodeURIComponent(reference.workItem)}`;
 }
 
+function isDumpArtifact(fileName = "")
+{
+  return /\.(?:dmp|core|crash)$/i.test(fileName)
+    || /(?:^|[\\/])coredump\.\d+$/i.test(fileName);
+}
+
 function selectArtifactLinks(files = [])
 {
   return files
-    .filter(file => /\.(?:trx|xml|binlog|dmp|core|crash|log)$/i.test(file.FileName))
+    .filter(file => /\.(?:trx|xml|binlog|log)$/i.test(file.FileName) || isDumpArtifact(file.FileName))
     .slice(0, 10)
     .map(file => ({name: file.FileName, url: file.Uri}));
 }
@@ -40,7 +46,7 @@ export function getArtifactEvidenceSources(files = [])
 {
   const sources = [];
   if (files.some(file => /\.(?:trx|xml)$/i.test(file.FileName))) sources.push("helix-trx");
-  if (files.some(file => /\.(?:dmp|core|crash)$/i.test(file.FileName))) sources.push("helix-dump");
+  if (files.some(file => isDumpArtifact(file.FileName))) sources.push("helix-dump");
   return sources;
 }
 
