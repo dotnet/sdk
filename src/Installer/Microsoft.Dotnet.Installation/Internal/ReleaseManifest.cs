@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Net;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal.Signing;
 
@@ -145,15 +146,12 @@ internal class ReleaseManifest
     {
         try
         {
-            var productCollection = GetReleasesIndex();
-            var product = FindProduct(productCollection, resolvedVersion);
-            if (product is null)
+            var releases = GetReleases(resolvedVersion.Major, resolvedVersion.Minor);
+            if (releases is null)
             {
                 return FindReleaseFileResult.ProductNotFound;
             }
-            // Routes through GetReleases(product) so the per-channel JSON is signature-verified
-            // (and per-process cached) before we trust its contents to drive the archive download.
-            var release = FindRelease(GetReleases(product), resolvedVersion, installRequest.Component);
+            var release = FindRelease(releases, resolvedVersion, installRequest.Component);
             if (release is null)
             {
                 return FindReleaseFileResult.ReleaseNotFound;
@@ -202,12 +200,12 @@ internal class ReleaseManifest
     /// process for the index JSON, matching the per-product cache contract below.
     /// TODO: Caching of the manifest or product collection after the program exits would be ideal.
     /// </summary>
-    public ProductCollection GetReleasesIndex() => _productCollection.Value;
+    public virtual ProductCollection GetReleasesIndex() => _productCollection.Value;
 
     /// <summary>
     /// Returns releases for a product. Downloaded + signature-verified once per process per
     /// product, then served from <see cref="_releaseCache"/>. <see cref="Lazy{T}"/> guarantees the
-    /// verify runs exactly once even under concurrent <see cref="GetReleases"/> calls.
+    /// verify runs exactly once even under concurrent <see cref="GetReleases(Product)"/> calls.
     ///
     /// <para>
     /// On failure, the cache entry is removed so a retry within the same process gets a fresh
@@ -215,12 +213,38 @@ internal class ReleaseManifest
     /// block recovery from transient errors (503, network blips) for the rest of the process.
     /// </para>
     /// </summary>
-    public ReadOnlyCollection<ProductRelease> GetReleases(Product product)
+    public virtual ReadOnlyCollection<ProductRelease> GetReleases(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
-        var lazy = _releaseCache.GetOrAdd(product.ProductVersion, _ =>
+        return GetCachedReleases(product.ProductVersion, () => _loader.Value.GetVerifiedReleases(product));
+    }
+
+    /// <summary>
+    /// Returns releases for a known major/minor product without loading the release index.
+    /// A missing direct endpoint falls back through the signed index for compatibility with
+    /// mirrors that do not expose the standard release-metadata directory layout.
+    /// </summary>
+    public virtual ReadOnlyCollection<ProductRelease>? GetReleases(int major, int minor)
+    {
+        string productVersion = $"{major}.{minor}";
+        try
+        {
+            return GetCachedReleases(productVersion, () => _loader.Value.GetVerifiedReleases(major, minor));
+        }
+        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+        {
+            Product? product = FindProduct(GetReleasesIndex(), productVersion);
+            return product is null ? null : GetReleases(product);
+        }
+    }
+
+    private ReadOnlyCollection<ProductRelease> GetCachedReleases(
+        string productVersion,
+        Func<ReadOnlyCollection<ProductRelease>> valueFactory)
+    {
+        var lazy = _releaseCache.GetOrAdd(productVersion, _ =>
             new Lazy<ReadOnlyCollection<ProductRelease>>(
-                () => _loader.Value.GetVerifiedReleases(product),
+                valueFactory,
                 LazyThreadSafetyMode.ExecutionAndPublication));
         try
         {
@@ -228,21 +252,13 @@ internal class ReleaseManifest
         }
         catch
         {
-            // Atomic compare-and-remove: only drop the failed entry, not a fresh one another
-            // thread may have already swapped in.
-            _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>>>(product.ProductVersion, lazy));
+            _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>>>(productVersion, lazy));
             throw;
         }
     }
 
-    /// <summary>
-    /// Finds the product for the given version.
-    /// </summary>
-    private static Product? FindProduct(ProductCollection productCollection, ReleaseVersion releaseVersion)
-    {
-        var majorMinor = $"{releaseVersion.Major}.{releaseVersion.Minor}";
-        return productCollection.FirstOrDefault(p => p.ProductVersion == majorMinor);
-    }
+    private static Product? FindProduct(ProductCollection productCollection, string productVersion) =>
+        productCollection.FirstOrDefault(p => p.ProductVersion == productVersion);
 
     /// <summary>
     /// Determines whether a runtime component's display name matches the requested install component type.

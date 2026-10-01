@@ -115,6 +115,24 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         }
     }
 
+    /// <summary>
+    /// Downloads and verifies the release manifest for a known product version without first
+    /// downloading the release index.
+    /// </summary>
+    public ReadOnlyCollection<ProductRelease> GetVerifiedReleases(int major, int minor)
+    {
+        Uri channelUrl = GetReleaseUriForProductVersion(major, minor);
+        string tempPath = DownloadAndVerify(channelUrl);
+        try
+        {
+            return Product.GetReleasesAsync(tempPath).GetAwaiter().GetResult();
+        }
+        finally
+        {
+            TryDeleteFile(tempPath);
+        }
+    }
+
     private static void TryDeleteFile(string path)
     {
         try
@@ -159,6 +177,9 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         };
         return builder.Uri;
     }
+
+    internal Uri GetReleaseUriForProductVersion(int major, int minor) =>
+        new(_indexUrl, $"{major}.{minor}/releases.json");
 
     /// <summary>
     /// Downloads JSON bytes, fetches the sibling <c>.p7s</c>, runs signature verification, and

@@ -5,8 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.ObjectModel;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 
@@ -32,6 +35,65 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
             var version = manifest.GetLatestVersionForChannel(new UpdateChannel("9.0"), InstallComponent.SDK);
             Assert.IsNotNull(version);
             Assert.StartsWith("9.0.", version.ToString());
+        }
+
+        [TestMethod]
+        public void GetLatestVersionForChannel_KnownProductChannels_DoNotLoadIndex()
+        {
+            var releaseManifest = new TrackingReleaseManifest();
+            var resolver = new ChannelVersionResolver(releaseManifest, new DailyChannelResolver(releaseManifest));
+
+            resolver.GetLatestVersionForChannel(new UpdateChannel("5.0"), InstallComponent.SDK).Should().NotBeNull();
+            resolver.GetLatestVersionForChannel(new UpdateChannel("5.0.1xx"), InstallComponent.SDK).Should().NotBeNull();
+
+            releaseManifest.DirectReleaseRequestCount.Should().Be(2);
+            releaseManifest.IndexRequestCount.Should().Be(0);
+        }
+
+        [TestMethod]
+        public void GetLatestVersionForChannel_MajorOnly_LoadsIndex()
+        {
+            var releaseManifest = new TrackingReleaseManifest();
+            var resolver = new ChannelVersionResolver(releaseManifest, new DailyChannelResolver(releaseManifest));
+
+            resolver.GetLatestVersionForChannel(new UpdateChannel("5"), InstallComponent.SDK).Should().NotBeNull();
+
+            releaseManifest.IndexRequestCount.Should().Be(1);
+            releaseManifest.DirectReleaseRequestCount.Should().Be(0);
+        }
+
+        [TestMethod]
+        [DataRow("latest")]
+        [DataRow("lts")]
+        [DataRow("preview")]
+        public void GetLatestVersionForChannel_NamedChannel_LoadsIndex(string channel)
+        {
+            var releaseManifest = new TrackingReleaseManifest();
+            var resolver = new ChannelVersionResolver(releaseManifest, new DailyChannelResolver(releaseManifest));
+
+            _ = resolver.GetLatestVersionForChannel(new UpdateChannel(channel), InstallComponent.SDK);
+
+            releaseManifest.IndexRequestCount.Should().Be(1);
+            releaseManifest.DirectReleaseRequestCount.Should().Be(0);
+        }
+
+        [TestMethod]
+        public void TryFindReleaseFile_ExactVersion_DoesNotLoadIndex()
+        {
+            var releaseManifest = new TrackingReleaseManifest();
+            ReleaseVersion version = releaseManifest.Releases.SelectMany(release => release.Sdks).First().Version;
+            var request = new DotnetInstallRequest(
+                new DotnetInstallRoot(Path.GetTempPath(), InstallerUtilities.GetDefaultInstallArchitecture()),
+                new UpdateChannel(version.ToString()),
+                InstallComponent.SDK,
+                new InstallRequestOptions());
+
+            FindReleaseFileResult result = releaseManifest.TryFindReleaseFile(request, version);
+
+            result.Status.Should().NotBe(FindReleaseFileStatus.ProductNotFound);
+            result.Status.Should().NotBe(FindReleaseFileStatus.ReleaseNotFound);
+            releaseManifest.DirectReleaseRequestCount.Should().Be(1);
+            releaseManifest.IndexRequestCount.Should().Be(0);
         }
 
         [TestMethod]
@@ -298,6 +360,42 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
                 }
 
                 return Task.FromResult(new HttpResponseMessage(HttpStatusCode.NotFound) { RequestMessage = request });
+            }
+        }
+
+        private sealed class TrackingReleaseManifest : ReleaseManifest
+        {
+            private readonly ProductCollection _index;
+
+            public TrackingReleaseManifest()
+            {
+                string repoRoot = typeof(ChannelVersionResolverTests).Assembly
+                    .GetCustomAttributes<AssemblyMetadataAttribute>()
+                    .First(attribute => attribute.Key == "RepoRoot").Value!;
+                string fixtureRoot = Path.Combine(repoRoot, "test", "TestAssets", "TestReleases", "TestRelease");
+                _index = ProductCollection.GetFromFileAsync(
+                    Path.Combine(fixtureRoot, "releases-index.json"),
+                    downloadLatest: false).GetAwaiter().GetResult();
+                Releases = Product.GetReleasesAsync(
+                    Path.Combine(fixtureRoot, "5.0", "releases.json")).GetAwaiter().GetResult();
+            }
+
+            public int IndexRequestCount { get; private set; }
+
+            public int DirectReleaseRequestCount { get; private set; }
+
+            public ReadOnlyCollection<ProductRelease> Releases { get; }
+
+            public override ProductCollection GetReleasesIndex()
+            {
+                IndexRequestCount++;
+                return _index;
+            }
+
+            public override ReadOnlyCollection<ProductRelease>? GetReleases(int major, int minor)
+            {
+                DirectReleaseRequestCount++;
+                return major == 5 && minor == 0 ? Releases : null;
             }
         }
 

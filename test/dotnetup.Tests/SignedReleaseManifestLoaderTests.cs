@@ -194,6 +194,16 @@ public class SignedReleaseManifestLoaderTests
         rebased.UserInfo.Should().BeEmpty();
     }
 
+    [TestMethod]
+    public void GetReleaseUriForProductVersion_UsesConfiguredIndexDirectory()
+    {
+        using var loader = CreateLoader("https://mirror.corp.com:8443/custom/release-metadata/releases-index.json");
+
+        Uri channelUrl = loader.GetReleaseUriForProductVersion(11, 0);
+
+        channelUrl.Should().Be("https://mirror.corp.com:8443/custom/release-metadata/11.0/releases.json");
+    }
+
     // ---------------- DownloadAndVerify orchestration (HTTP failure / tamper mapping) ----------------
     //
     // These tests cover the orchestration path inside SignedReleaseManifestLoader.DownloadAndVerify
@@ -295,6 +305,27 @@ public class SignedReleaseManifestLoaderTests
 
         act.Should().Throw<DotnetInstallException>()
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
+    }
+
+    [TestMethod]
+    public void GetVerifiedReleases_DirectProductSignatureFailure_DoesNotFetchIndex()
+    {
+        const string channelUrl = "https://example.test/release-metadata/11.0/releases.json";
+        const string channelSigUrl = "https://example.test/release-metadata/11.0/releases-directory.json.20260505084330.p7s";
+        byte[] signedJson = LoadSignedJson();
+        byte[] tamperedJson = [.. signedJson, (byte)' '];
+        var handler = new StubHandler
+        {
+            { channelUrl, _ => OkBytes(tamperedJson) },
+            { channelSigUrl, _ => OkBytes(LoadSignedP7s()) },
+        };
+        using var loader = CreateLoaderWithHandler(handler);
+
+        Action act = () => loader.GetVerifiedReleases(11, 0);
+
+        act.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
+        handler.RequestCount.Should().Be(2);
     }
 
     [TestMethod]
