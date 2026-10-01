@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-format" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-format" "1" "2026-09-29" "" ".NET Documentation"
 .hy
 .SH dotnet format
 .PP
@@ -29,7 +29,7 @@ dotnet-format - Formats code to match \f[V]editorconfig\f[R] settings.
 dotnet format [<PROJECT | SOLUTION>]
   [--binarylog <BINARY-LOG-PATH>] [--diagnostics <DIAGNOSTICS>]
   [--exclude <EXCLUDE>] [--exclude-diagnostics <EXCLUDE-DIAGNOSTICS>]
-  [--include <INCLUDE>] [--include-generated]
+  [--framework <FRAMEWORK>] [--include <INCLUDE>] [--include-generated]
   [--no-restore] [--report <REPORT-PATH>] [--severity <LEVEL>]
   [-v|--verbosity <LEVEL>] [--verify-no-changes] [--version]
 
@@ -83,6 +83,14 @@ The default is none.
 A space-separated list of diagnostic IDs to exclude when fixing code style or third-party issues.
 Default value is none.
 For a list of built-in analyzer rule IDs that you can specify, see the list of IDs for code-analysis style rules.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--framework <FRAMEWORK>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the target framework moniker (TFM), such as \f[V]net11.0\f[R], to format in a multi-targeted project.
+If you don\[cq]t specify this option, \f[V]dotnet format\f[R] formats all target frameworks.
+Available starting with .NET 11.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--include <INCLUDE>\f[B]\f[R]

@@ -14,14 +14,14 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-sln" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-sln" "1" "2026-09-29" "" ".NET Documentation"
 .hy
 .SH dotnet sln
 .PP
 \f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
-dotnet-sln - Lists or modifies the projects in a .NET solution file, or migrates the file to an \f[I].slnx\f[R] file.
+dotnet-sln - Lists or modifies the projects in a .NET solution file or solution filter, or migrates an \f[I].sln\f[R] file to an \f[I].slnx\f[R] file.
 .SH SYNOPSIS
 .IP
 .nf
@@ -33,7 +33,7 @@ dotnet sln [command] -h|--help
 .fi
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet sln\f[R] command provides a convenient way to list and modify projects in a solution file.
+The \f[V]dotnet sln\f[R] command provides a convenient way to list and modify projects in a solution file or solution filter.
 .SS Create a solution file
 .PP
 To use the \f[V]dotnet sln\f[R] command, the solution file must already exist.
@@ -66,15 +66,24 @@ dotnet new sln --output MySolution
 .PP
 In .NET 9 and earlier versions, \f[V]dotnet new sln\f[R] creates an \f[I].sln\f[R] file instead of an \f[I].slnx\f[R] file.
 .RE
+.SS Create a solution filter
+.PP
+Starting with .NET 11, you can create a solution filter (\f[I].slnf\f[R] file) with the \f[V]slnf\f[R] template:
+.IP
+.nf
+\f[C]
+dotnet new slnf --name MyApp.slnf
+\f[R]
+.fi
 .SH ARGUMENTS
 .IP \[bu] 2
 \f[B]\f[VB]SOLUTION_FILE\f[B]\f[R]
 .RS 2
 .PP
-The solution file to use (either an \f[I].sln\f[R] or \f[I].slnx\f[R] file).
+The solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] file) or solution filter (\f[I].slnf\f[R] file) to use.
 .PP
-If unspecified, the command searches the current directory for an \f[I].sln\f[R] or \f[I].slnx\f[R] file and, if it finds exactly one, uses that file.
-If multiple solution files are found, the user is prompted to specify a file explicitly.
+If unspecified, the command searches the current directory for an \f[I].sln\f[R], \f[I].slnx\f[R], or \f[I].slnf\f[R] file and, if it finds exactly one, uses that file.
+If multiple solution files or filters are found, the user is prompted to specify a file explicitly.
 If none are found, the command fails.
 .RE
 .SH OPTIONS
@@ -137,18 +146,21 @@ dotnet sln add [-h|--help]
 \f[B]\f[VB]SOLUTION_FILE\f[B]\f[R]
 .RS 2
 .PP
-The solution file to use (either an \f[I].sln\f[R] or \f[I].slnx\f[R] file).
+The solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] file) or solution filter (\f[I].slnf\f[R] file) to use.
 .PP
-If unspecified, the command searches the current directory for an \f[I].sln\f[R] or \f[I].slnx\f[R] file and, if it finds exactly one, uses that file.
-If multiple solution files are found, the user is prompted to specify a file explicitly.
+If unspecified, the command searches the current directory for an \f[I].sln\f[R], \f[I].slnx\f[R], or \f[I].slnf\f[R] file and, if it finds exactly one, uses that file.
+If multiple solution files or filters are found, the user is prompted to specify a file explicitly.
 If none are found, the command fails.
+.PP
+(Support for \f[I].slnf\f[R] files was added in .NET 11.)
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]PROJECT_PATH\f[B]\f[R]
 .RS 2
 .PP
-The path to the project or projects to add to the solution.
+The path to the project or projects to add to the solution or solution filter.
 Unix/Linux shell globbing pattern (https://en.wikipedia.org/wiki/Glob_(programming)) expansions are processed correctly by the \f[V]dotnet sln\f[R] command.
+Solution filters don\[cq]t support the \f[V]--in-root\f[R] or \f[V]-s|--solution-folder\f[R] options.
 .PP
 If \f[V]PROJECT_PATH\f[R] includes folders that contain the project folder, that portion of the path is used to create solution folders.
 For example, the following commands create a solution with \f[V]myapp\f[R] in solution folder \f[V]folder1/folder2\f[R]:
@@ -198,17 +210,19 @@ dotnet sln [<SOLUTION_FILE>] remove [-h|--help]
 \f[B]\f[VB]SOLUTION_FILE\f[B]\f[R]
 .RS 2
 .PP
-The solution file to use (either an \f[I].sln\f[R] or \f[I].slnx\f[R] file).
+The solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] file) or solution filter (\f[I].slnf\f[R] file) to use.
 .PP
-If unspecified, the command searches the current directory for an \f[I].sln\f[R] or \f[I].slnx\f[R] file and, if it finds exactly one, uses that file.
-If multiple solution files are found, the user is prompted to specify a file explicitly.
+If unspecified, the command searches the current directory for an \f[I].sln\f[R], \f[I].slnx\f[R], or \f[I].slnf\f[R] file and, if it finds exactly one, uses that file.
+If multiple solution files or filters are found, the user is prompted to specify a file explicitly.
 If none are found, the command fails.
+.PP
+(Support for \f[I].slnf\f[R] files was added in .NET 11.)
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]PROJECT_PATH\f[B] or \f[VB]PROJECT_NAME\f[B]\f[R]
 .RS 2
 .PP
-The path to, or name of, the project or projects to remove from the solution.
+The path to, or name of, the project or projects to remove from the solution or solution filter.
 Unix/Linux shell globbing pattern (https://en.wikipedia.org/wiki/Glob_(programming)) expansions are processed correctly by the \f[V]dotnet sln\f[R] command.
 .PP
 If a project name is provided instead of a path, the project in the solution that matches the name, regardless of its path, is removed.
@@ -258,6 +272,21 @@ List the projects in a solution:
 .nf
 \f[C]
 dotnet sln todo.slnx list
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Create a solution filter, add a project, list the projects, and remove the project:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet new sln --name MyApp
+dotnet sln MyApp.slnx add src/Lib/Lib.csproj
+dotnet new slnf --name MyApp.slnf
+dotnet sln MyApp.slnf add src/Lib/Lib.csproj
+dotnet sln MyApp.slnf list
+dotnet sln MyApp.slnf remove src/Lib/Lib.csproj
 \f[R]
 .fi
 .RE
