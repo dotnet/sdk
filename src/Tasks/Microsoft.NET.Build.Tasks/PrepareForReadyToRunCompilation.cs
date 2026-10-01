@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// This task is replicated in dotnet/runtime at src/tasks/Crossgen2Tasks/PrepareForReadyToRunCompilation.cs.
+// Keep both copies synchronized.
+
 #nullable disable
 
 using System.Reflection;
@@ -181,7 +184,6 @@ namespace Microsoft.NET.Build.Tasks
                     r2rFileToPublish = CreateReadyToRunFileToPublish(
                         file,
                         outputR2RImageRelativePath,
-                        isCompositeImage: false,
                         compilerOutputRelativePath: out outputR2RImageRelativePath,
                         compilerOutputPath: out outputR2RImage);
                 }
@@ -315,7 +317,6 @@ namespace Microsoft.NET.Build.Tasks
                 TaskItem compositeR2RFileToPublish = CreateReadyToRunFileToPublish(
                     MainAssembly,
                     compositeR2RImageBaseRelativePath,
-                    isCompositeImage: true,
                     compilerOutputRelativePath: out string compositeR2RImageRelativePath,
                     compilerOutputPath: out string compositeR2RImageOutputPath);
 
@@ -373,17 +374,9 @@ namespace Microsoft.NET.Build.Tasks
         private TaskItem CreateReadyToRunFileToPublish(
             ITaskItem inputFile,
             string relativePath,
-            bool isCompositeImage,
             out string compilerOutputRelativePath,
             out string compilerOutputPath)
         {
-            if (isCompositeImage && Crossgen2ContainerFormat == "wasm" &&
-                Crossgen2Tool?.GetMetadata(MetadataKeys.TargetOS) == "wasi")
-            {
-                // The WASI composition pipeline consumes this fixed composite image name.
-                relativePath = "composite-r2r.wasm";
-            }
-
             // Crossgen2 emits WebAssembly directly, while Mach-O output is an object file
             // that must be linked into the dylib published by the SDK.
             (string compilerExtension, string publishExtension) = Crossgen2ContainerFormat switch
