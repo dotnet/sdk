@@ -13,15 +13,15 @@ export function normalizeActionSource(source) {
 
 function literalEnd(source, start) {
     const quote = source[start];
+    const prefix = source.slice(Math.max(0, start - 2), start);
+    const verbatim = quote === '"' && /(?:@|@\$)$/.test(prefix);
+    const interpolated = quote === '"' && /(?:\$|\$@|@\$)$/.test(prefix);
     const delimiter = /^"+/.exec(source.slice(start))?.[0];
-    if (quote === '"' && delimiter.length >= 3) {
+    if (quote === '"' && !verbatim && delimiter.length >= 3) {
         const end = source.indexOf(delimiter, start + delimiter.length);
         requireSource(end !== -1, 'unterminated raw string.');
         return end + delimiter.length;
     }
-    const prefix = source.slice(Math.max(0, start - 2), start);
-    const verbatim = quote === '"' && /(?:@|@\$)$/.test(prefix);
-    const interpolated = quote === '"' && /(?:\$|\$@|@\$)$/.test(prefix);
     for (let index = start + 1; index < source.length; index++) {
         if (source[index] === '\\' && !verbatim) {
             index++;

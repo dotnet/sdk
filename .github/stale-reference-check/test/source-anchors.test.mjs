@@ -18,6 +18,8 @@ test('C# literals, comments, attributes and nested scopes cannot fabricate decla
         'void Run() {',
         'var normal = "class Bogus { \\"quoted\\" }";',
         'var verbatim = @"class Fake { ""quoted"" }";',
+        'var quoteLeadingVerbatim = @"""class Fake {";',
+        'var quoteLeadingInterpolated = $@"""class Fake {Call("nested")} {{";',
         'var raw = """class Fake { "quoted" }""";',
         'var interpolated = $"text {Call("nested", new Thing { Value = \'}\' })}";',
         'var interpolatedVerbatim = $@"text {Call(@"nested", \'{\')}";',
