@@ -171,6 +171,26 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AllowEmptyTelemetry EventName="targetframeworkeval" EventData="@(TFTelemetry)" />
   </Target>
 
+  <UsingTask TaskName="CollectProjectUsageTelemetry" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <!--
+    Records the shape of each user project for the dotnet CLI's daily project usage telemetry.
+    DOTNET_CLI_TELEMETRY_SESSIONID is set by the dotnet CLI only when telemetry is enabled, so this target
+    does not run for Visual Studio builds or when the user opts out.
+  -->
+  <Target Name="_CollectProjectUsageTelemetry"
+          AfterTargets="CoreCompile"
+          Condition="'$(DOTNET_CLI_TELEMETRY_SESSIONID)' != '' and '$(DesignTimeBuild)' != 'true' and '$(GenerateProjectUsageTelemetry)' != 'false'">
+    <CollectProjectUsageTelemetry ProjectPath="$(MSBuildProjectFullPath)"
+                                  TargetFramework="$(TargetFramework)"
+                                  RuntimeIdentifier="$(RuntimeIdentifier)"
+                                  RuntimeIdentifiers="$(RuntimeIdentifiers)"
+                                  SdkVersion="$(NETCoreSdkVersion)"
+                                  References="@(ReferencePathWithRefAssemblies)"
+                                  Files="@(Compile);@(None);@(Content);@(EmbeddedResource);@(AdditionalFiles);@(Page)"
+                                  ContinueOnError="true" />
+  </Target>
+
   <!--
     Don't leave TargetFrameworkVersion empty if it still hasn't been determined. We will trigger the error above,
     but we need this to be a valid version so that our error message does not get pre-empted by failure to interpret

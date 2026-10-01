@@ -57,6 +57,11 @@ internal static class EnvironmentVariableNames
     public static readonly string OTEL_SDK_DISABLED = "OTEL_SDK_DISABLED";
     public static readonly string SDK_VULNERABILITY_CHECK_DISABLE = "DOTNET_SDK_VULNERABILITY_CHECK_DISABLE";
     public static readonly string SDK_VULNERABILITY_CHECK_INTERVAL_HOURS = "DOTNET_SDK_VULNERABILITY_CHECK_INTERVAL_HOURS";
+    public static readonly string DOTNET_CLI_PROJECT_USAGE_STORE = "DOTNET_CLI_PROJECT_USAGE_STORE";
+    public static readonly string DOTNET_CLI_PROJECT_USAGE_EXPORT_INTERVAL_HOURS = "DOTNET_CLI_PROJECT_USAGE_EXPORT_INTERVAL_HOURS";
+    public static readonly string DOTNET_CLI_PROJECT_USAGE_RETENTION_DAYS = "DOTNET_CLI_PROJECT_USAGE_RETENTION_DAYS";
+    public static readonly string DOTNET_CLI_PROJECT_USAGE_EXPORT_SPAWNED = "DOTNET_CLI_PROJECT_USAGE_EXPORT_SPAWNED";
+    public static readonly string DOTNET_CLI_DISABLE_PROJECT_USAGE_EXPORT = "DOTNET_CLI_DISABLE_PROJECT_USAGE_EXPORT";
 
 #if NET7_0_OR_GREATER
     private static readonly Version s_version6_0 = new(6, 0);
