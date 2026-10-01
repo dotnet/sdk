@@ -198,9 +198,9 @@ export function buildProposal({ repository, targetBranch = 'main', headSha, grou
     const fingerprint = evidenceFingerprint(group, references);
     const title = (group.kind === 'ignore'
         ? (group.testNames.length === 1
-            ? `Revalidate ignored test: ${group.testNames[0]}`
-            : `Revalidate ignored tests in ${group.path} (${group.testNames.length} tests)`)
-        : `Revalidate ${group.kind === 'todo' ? 'TODO' : 'workaround'} in ${group.path}`).slice(0, 256);
+            ? `Revalidate ignored test: ${inlineCode(group.testNames[0])}`
+            : `Revalidate ignored tests in ${inlineCode(group.path)} (${group.testNames.length} tests)`)
+        : `Revalidate ${group.kind === 'todo' ? 'TODO' : 'workaround'} in ${inlineCode(group.path)}`).slice(0, 256);
     // capLabel marks issues that count toward the total-open-issue filing cap; see
     // maximumOpenIssues below.
     const labels = ['cookie', 'agentic-workflows', capLabel];

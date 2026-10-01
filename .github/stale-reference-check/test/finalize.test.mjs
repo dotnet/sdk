@@ -43,7 +43,7 @@ test('fixed ignore template and code-owned labels include pinned evidence and ac
     assert.equal(result.created.length, 1);
     const payload = api.calls.writes[0];
     assert.deepEqual(payload.labels, ['cookie', 'agentic-workflows', 'stale-issue-detection']);
-    assert.equal(payload.title, 'Revalidate ignored test: Tests.FeatureTests.Works');
+    assert.equal(payload.title, 'Revalidate ignored test: `Tests.FeatureTests.Works`');
     assert.equal(payload.owner, 'dotnet');
     assert.equal(payload.repo, 'sdk');
     assert.deepEqual(payload.request, { retries: 0 });
