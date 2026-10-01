@@ -143,7 +143,8 @@ partial class CreateNewImage
     public string ContainerUser { get; set; }
 
     /// <summary>
-    /// The Unix timestamp used to make generated container artifacts reproducible.
+    /// The non-negative Unix timestamp used to make generated container artifacts reproducible.
+    /// An invalid non-empty value causes container publishing to fail.
     /// </summary>
     public string SourceDateEpoch { get; set; }
 

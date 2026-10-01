@@ -52,6 +52,49 @@ public class CreateNewImageTests
     }
 
     [TestMethod]
+    public void ArchiveIncrementalFingerprintDistinguishesNullAndEmptyImageFormat()
+    {
+        string publishDirectory = CreateTempDirectory();
+        try
+        {
+            CreateNewImage task = CreateIncrementalTask(publishDirectory);
+            task.ImageFormat = null;
+            string inheritedFormat = ComputeResolvedFingerprint(task);
+
+            task.ImageFormat = "";
+            string invalidFormat = ComputeResolvedFingerprint(task);
+
+            Assert.AreNotEqual(inheritedFormat, invalidFormat);
+        }
+        finally
+        {
+            Directory.Delete(publishDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ArchiveIncrementalFingerprintNormalizesSourceDateEpoch()
+    {
+        string publishDirectory = CreateTempDirectory();
+        try
+        {
+            CreateNewImage task = CreateIncrementalTask(publishDirectory);
+            task.SourceDateEpoch = "1";
+            string canonical = ComputeResolvedFingerprint(task);
+
+            task.SourceDateEpoch = "0001";
+            Assert.AreEqual(canonical, ComputeResolvedFingerprint(task));
+
+            task.SourceDateEpoch = "2";
+            Assert.AreNotEqual(canonical, ComputeResolvedFingerprint(task));
+        }
+        finally
+        {
+            Directory.Delete(publishDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ArchiveIncrementalFingerprintTracksLabels()
     {
         string publishDirectory = CreateTempDirectory();
@@ -199,7 +242,7 @@ public class CreateNewImageTests
     }
 
     [TestMethod]
-    public async System.Threading.Tasks.Task ArchiveIncrementalCacheRestoresOutputsBeforeResolvingBaseImage()
+    public async System.Threading.Tasks.Task ArchiveIncrementalCacheWithUnsetSourceDateEpochRestoresOutputsBeforeResolvingBaseImage()
     {
         string tempDirectory = CreateTempDirectory();
         try
@@ -223,6 +266,7 @@ public class CreateNewImageTests
             original.GeneratedContainerDigest = "sha256:digest";
             original.GeneratedContainerMediaType = "application/vnd.oci.image.manifest.v1+json";
             original.GeneratedContainerNames = [new TaskItem("test:latest")];
+            Assert.AreEqual("", original.SourceDateEpoch);
             string fingerprint = ContainerArchiveCache.ComputeFingerprint(
                 original,
                 BaseManifestDigest,
@@ -245,6 +289,30 @@ public class CreateNewImageTests
             Assert.AreEqual("sha256:digest", cached.GeneratedContainerDigest);
             Assert.AreEqual("test:latest", cached.GeneratedContainerNames.Single().ItemSpec);
             Assert.AreEqual(archiveWriteTime, File.GetLastWriteTimeUtc(resolvedArchivePath));
+
+            CreateNewImage invalidFormat = CreateIncrementalTask(publishDirectory);
+            invalidFormat.BaseRegistry = "invalid.example";
+            invalidFormat.BaseImageDigest = BaseManifestDigest;
+            invalidFormat.ArchiveOutputPath = archivePath;
+            invalidFormat.ArchiveIncrementalCachePath = cachePath;
+            invalidFormat.EnableArchiveIncrementalCache = true;
+            invalidFormat.ImageFormat = "";
+            invalidFormat.BuildEngine = new Mock<IBuildEngine>().Object;
+
+            Assert.IsFalse(await invalidFormat.ExecuteAsync(CancellationToken.None));
+            Assert.AreEqual("", invalidFormat.GeneratedContainerManifest);
+
+            CreateNewImage invalidEpoch = CreateIncrementalTask(publishDirectory);
+            invalidEpoch.BaseRegistry = "invalid.example";
+            invalidEpoch.BaseImageDigest = BaseManifestDigest;
+            invalidEpoch.ArchiveOutputPath = archivePath;
+            invalidEpoch.ArchiveIncrementalCachePath = cachePath;
+            invalidEpoch.EnableArchiveIncrementalCache = true;
+            invalidEpoch.SourceDateEpoch = "not-a-timestamp";
+            invalidEpoch.BuildEngine = new Mock<IBuildEngine>().Object;
+
+            Assert.IsFalse(await invalidEpoch.ExecuteAsync(CancellationToken.None));
+            Assert.AreEqual("", invalidEpoch.GeneratedContainerManifest);
 
             File.WriteAllText(resolvedArchivePath, "different archive");
             Assert.IsFalse(ContainerArchiveCache.TryRestore(cached, fingerprint));

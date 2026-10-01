@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers.Binary;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -32,7 +33,11 @@ internal static class ContainerArchiveCache
         Append(hash, task.ContainerUser);
         Append(hash, task.ImageFormat);
         Append(hash, task.AppCommandInstruction);
-        Append(hash, task.SourceDateEpoch);
+        // A generated UtcNow value is output metadata. Hashing it would make every invocation miss.
+        DateTime? sourceDateEpoch = CreateNewImage.ParseSourceDateEpoch(task.SourceDateEpoch);
+        Append(hash, sourceDateEpoch is null
+            ? null
+            : new DateTimeOffset(sourceDateEpoch.Value).ToUnixTimeSeconds().ToString(CultureInfo.InvariantCulture));
         Append(hash, task.GenerateLabels.ToString());
         if (task.GenerateLabels)
         {
@@ -238,8 +243,15 @@ internal static class ContainerArchiveCache
 
     private static void Append(IncrementalHash hash, string? value)
     {
-        byte[] bytes = Encoding.UTF8.GetBytes(value ?? "");
         Span<byte> length = stackalloc byte[sizeof(int)];
+        if (value is null)
+        {
+            BinaryPrimitives.WriteInt32LittleEndian(length, -1);
+            hash.AppendData(length);
+            return;
+        }
+
+        byte[] bytes = Encoding.UTF8.GetBytes(value);
         BinaryPrimitives.WriteInt32LittleEndian(length, bytes.Length);
         hash.AppendData(length);
         hash.AppendData(bytes);

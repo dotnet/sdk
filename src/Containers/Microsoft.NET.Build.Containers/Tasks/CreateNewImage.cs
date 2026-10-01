@@ -20,18 +20,30 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     internal static DateTime? ParseSourceDateEpoch(string? value)
     {
+        return TryParseSourceDateEpoch(value, out DateTime? timestamp) ? timestamp : null;
+    }
+
+    internal static bool TryParseSourceDateEpoch(string? value, out DateTime? timestamp)
+    {
+        timestamp = null;
+        if (string.IsNullOrEmpty(value))
+        {
+            return true;
+        }
+
         if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
         {
-            return null;
+            return false;
         }
 
         try
         {
-            return DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
+            timestamp = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
+            return true;
         }
         catch (ArgumentOutOfRangeException)
         {
-            return null;
+            return false;
         }
     }
 
@@ -63,6 +75,26 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         if (!Directory.Exists(PublishDirectory))
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory), PublishDirectory);
+            return !Log.HasLoggedErrors;
+        }
+
+        KnownImageFormats? requestedImageFormat = null;
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
+            {
+                requestedImageFormat = imageFormat;
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
+                return !Log.HasLoggedErrors;
+            }
+        }
+
+        if (!TryParseSourceDateEpoch(SourceDateEpoch, out DateTime? sourceDateEpoch))
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidSourceDateEpoch), SourceDateEpoch);
             return !Log.HasLoggedErrors;
         }
 
@@ -98,7 +130,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         try
         {
-            return await ExecuteAsyncCore(logger, msbuildLoggerFactory, archiveIncrementalFingerprint, cancellationToken).ConfigureAwait(false);
+            return await ExecuteAsyncCore(logger, msbuildLoggerFactory, archiveIncrementalFingerprint, requestedImageFormat, sourceDateEpoch, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -115,6 +147,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         ILogger logger,
         ILoggerFactory msbuildLoggerFactory,
         string? archiveIncrementalFingerprint,
+        KnownImageFormats? requestedImageFormat,
+        DateTime? sourceDateEpoch,
         CancellationToken cancellationToken)
     {
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
@@ -203,23 +237,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             (Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
         Log.LogMessage(MessageImportance.High, message, parameters);
 
-        KnownImageFormats? requestedImageFormat = null;
-        if (ImageFormat is not null)
-        {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                requestedImageFormat = imageFormat;
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
-        }
         imageBuilder.ManifestMediaType = ContainerHelpers.GetManifestMediaType(
             imageBuilder.ManifestMediaType,
             requestedImageFormat,
             destinationImageReference);
-        DateTime createdAt = ParseSourceDateEpoch(SourceDateEpoch) ?? DateTime.UtcNow;
+        DateTime createdAt = sourceDateEpoch ?? DateTime.UtcNow;
         var userId = imageBuilder.IsWindows ? null : ContainerHelpers.TryParseUserId(ContainerUser);
         Layer newLayer = Layer.FromDirectory(
             PublishDirectory,

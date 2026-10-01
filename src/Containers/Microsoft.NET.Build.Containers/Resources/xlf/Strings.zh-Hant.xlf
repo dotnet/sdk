@@ -289,6 +289,11 @@
         <target state="translated">CONTAINER2019: 無效的 SDK 語義版本 '{0}'。</target>
         <note>{StrBegins="CONTAINER2019: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidSourceDateEpoch">
+        <source>CONTAINER2032: SOURCE_DATE_EPOCH value '{0}' is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset.</source>
+        <target state="new">CONTAINER2032: SOURCE_DATE_EPOCH value '{0}' is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset.</target>
+        <note>{StrBegins="CONTAINER2032: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidTag">
         <source>CONTAINER2007: Invalid {0} provided: {1}. Image tags must be alphanumeric, underscore, hyphen, or period.</source>
         <target state="translated">CONTAINER2007: 提供的 {0} 無效: {1}。映像標記必須是英數字元、底線、連字號或句號。</target>
