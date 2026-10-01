@@ -306,7 +306,7 @@ export async function finish({
         {
             await appendFile(process.env.GITHUB_STEP_SUMMARY,
                 `## Potentially stale references\n\nMode: ${dryRun ? "preview (no writes)" : "live"}\n\n` +
-                `Created: ${report.created.length}; proposed: ${report.proposed.length}; skipped: ${report.skipped.length}.\n\n` +
+                `Created: ${report.created.length}; updated: ${report.updated.length}; proposed: ${report.proposed.length}; skipped: ${report.skipped.length}.\n\n` +
                 `Validated this batch: ${report.interpretations.batch.actionable} actionable; ` +
                 `${report.interpretations.batch.irrelevant} irrelevant; ${report.interpretations.batch.deferred} deferred.\n\n` +
                 `Remaining interpretations: ${report.interpretations.remaining}. See the decision-report artifact for details.\n`);

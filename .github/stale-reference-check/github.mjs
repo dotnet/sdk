@@ -151,7 +151,7 @@ export function createReferenceResolver({ github }) {
 // Open issues are fetched unfiltered by label so duplicate detection also catches
 // issues filed manually by humans (who won't have applied 'agentic-workflows'); closed
 // issues are filtered to that label because only workflow-created issues carry
-// reusable history for suppressing refiled duplicates. See README.md's "Eligibility and
+// reusable closure history (including won't-fix decisions). See README.md's "Eligibility and
 // duplicate protection" section for the full rationale.
 export async function listRepositoryIssues({ github, repository, state }) {
     if (!['open', 'closed'].includes(state)) {

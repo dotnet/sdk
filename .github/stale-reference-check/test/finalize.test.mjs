@@ -254,7 +254,7 @@ test('legacy comment task requires exact source comment and path, not the blocke
     assert.equal((await run(unrelated, [input])).created.length, 1);
 });
 
-test('open TODO marker deduplicates when its owning path and seed remain stable', async () => {
+test('distinct TODO anchors sharing a seed are appended, not treated as duplicates', async () => {
     const input = action({
         kind: 'todo', path: 'src/File.cs', anchor: 'N.C.M', testNames: [],
         startLine: 20, endLine: 20, sourceExcerpt: `// TODO remove the fallback after ${blocker}`,
@@ -265,13 +265,14 @@ test('open TODO marker deduplicates when its owning path and seed remain stable'
         sourceExcerpt: `// TODO remove the fallback after ${blocker}\n// additional context`,
     };
     const result = await run(mock({ open: [{ number: 7, state: 'open', body: proposal.body }] }), [reinterpreted]);
-    assert.equal(result.skipped[0].reason, 'open-duplicate');
+    assert.equal(result.updated.length, 1);
+    assert.ok(result.updated[0].body.includes('Owning anchor: `N.C.Other`'));
     assert.equal(result.created.length, 0);
     const edited = {
         ...reinterpreted, seedText: `// TODO use a different fallback after ${blocker}`,
         sourceExcerpt: `// TODO use a different fallback after ${blocker}`,
     };
-    assert.equal((await run(mock({ open: [{ number: 7, state: 'open', body: proposal.body }] }), [edited])).created.length, 1);
+    assert.equal((await run(mock({ open: [{ number: 7, state: 'open', body: proposal.body }] }), [edited])).updated.length, 1);
 });
 
 test('class ignore markers cover each member; any existing member suppresses the entire group', async () => {
@@ -505,30 +506,30 @@ test('failed ambiguous-create reconciliation also fails closed', async () => {
     assert.equal(result.created.length, 0);
 });
 
-test('unchanged closed tracking task suppresses refiling despite moved lines or new checkout', async () => {
+test('declined closed tracking task suppresses refiling despite moved lines or new checkout', async () => {
     const proposal = await proposalFor();
     const api = mock({ closed: [{
-        number: 7, state: 'closed', title: 'Declined', body: proposal.body,
+        number: 7, state: 'closed', state_reason: 'not_planned', title: 'Declined', body: proposal.body,
     }] });
     const result = await run(api, [action({ startLine: 80, endLine: 80 })], { headSha: 'b'.repeat(40) });
     assert.equal(api.calls.writes.length, 0);
-    assert.equal(result.skipped[0].reason, 'unchanged-closed-task');
+    assert.equal(result.skipped[0].reason, 'declined-closed-task');
     assert.equal(result.skipped[0].number, 7);
     assert.ok(api.calls.lists.some(call => call.state === 'closed' && call.labels === 'agentic-workflows'));
 });
 
-test('closed TODO history ignores comment formatting but preserves new prerequisites', async () => {
+test('completed TODO history permits remaining source targets even with unchanged evidence', async () => {
     const input = action({
         kind: 'todo', path: 'src/Fix.cs', anchor: 'N.C.M', testNames: [],
         sourceExcerpt: `// TODO remove when ${blocker} is consumed`,
     });
     const proposal = await proposalFor(input);
-    const closed = [{ number: 7, state: 'closed', body: proposal.body }];
+    const closed = [{ number: 7, state: 'closed', state_reason: 'completed', body: proposal.body }];
     const moved = await run(mock({ closed }), [{
         ...input, startLine: 100, endLine: 101,
         sourceExcerpt: `/* TODO remove when\n * ${blocker} is consumed */`,
     }]);
-    assert.equal(moved.skipped[0].reason, 'unchanged-closed-task');
+    assert.equal(moved.created.length, 1);
     const changed = await run(mock({ closed }), [{
         ...input, additionalConditions: ['Requires compatible packages for all supported frameworks.'],
     }]);
@@ -543,7 +544,7 @@ test('changed source or reference-resolution evidence permits a new task with cl
         [action(), async () => ({ ...completed, closed_at: '2026-09-01T12:00:00Z' })],
         [action({ additionalConditions: ['Now also requires .NET 12.'] }), undefined],
     ]) {
-        const api = mock({ closed: [{ number: 7, state: 'closed', body: proposal.body }], issue: get });
+        const api = mock({ closed: [{ number: 7, state: 'closed', state_reason: 'completed', body: proposal.body }], issue: get });
         const result = await run(api, [input]);
         assert.equal(result.created.length, 1);
         assert.ok(result.created[0].body.includes('## Previous tracking history'));
@@ -564,9 +565,9 @@ test('changed comment source has a different identity; shared upstream reference
         ...previous, seedText: `// TODO ${blocker}: remove a different workaround`,
         sourceExcerpt: `// TODO ${blocker}: remove a different workaround`,
     }]);
-    assert.equal(result.created.length, 1);
-    assert.notDeepEqual(result.created[0].targetIds, proposal.targetIds);
-    const historyApi = mock({ closed: [{ number: 7, state: 'closed', body: proposal.body }] });
+    assert.equal(result.updated.length, 1);
+    assert.notDeepEqual(result.updated[0].targetIds, proposal.targetIds);
+    const historyApi = mock({ closed: [{ number: 7, state: 'closed', state_reason: 'completed', body: proposal.body }] });
     const withHistory = await run(historyApi, [{
         ...previous, seedText: `// TODO ${blocker}: remove an updated workaround`,
         sourceExcerpt: `// TODO ${blocker}: remove an updated workaround`,

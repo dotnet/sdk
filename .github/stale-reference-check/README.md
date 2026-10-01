@@ -2,12 +2,14 @@
 
 This maintenance workflow finds ignored tests, actionable TODOs, and temporary
 workarounds whose referenced GitHub blockers may have been resolved. It creates
-revalidation tasks, not claims that tests pass or code can safely be removed.
+and updates revalidation tasks, not claims that tests pass or code can safely be
+removed.
 
 The [driver](../workflows/stale-reference-check.yml) runs on its configured
 target branch. It never creates more than **five** total open tracking issues
-(labeled `stale-issue-detection`); once that many are open, filing halts until
-a human closes some of them. It never changes source,
+(labeled `stale-issue-detection`); once that many are open, creation halts until
+a human closes some of them, but eligible additions to existing file-level
+issues can still be appended. It never changes source,
 opens a pull request, comments on an existing issue, or removes an Ignore.
 Generated tracking issues and interpretation caches use the workflow's target
 branch rather than assuming `main`.
@@ -25,7 +27,7 @@ branch rather than assuming `main`.
    errors. Recording revalidates against a separate trusted checkout.
 4. [`github.mjs`](github.mjs) deduplicates reference lookups and obtains current
    issue/PR states. [`finalize.mjs`](finalize.mjs) checks live tracking issues and
-   creates fixed-template tasks. [`workflow.mjs`](workflow.mjs) connects these
+   creates or appends fixed-template tasks. [`workflow.mjs`](workflow.mjs) connects these
    stages, including the route that skips the agent completely.
 
 The compiler's standard threat-detection stage remains enabled. It checks agent
@@ -187,22 +189,52 @@ Durable identity is separate from interpretation-cache identity:
 - TODO/workaround: repository path, owning declaration/structural anchor, and
   normalized actionable source text, not the surrounding window.
 
-Code creates versioned body markers and visible identity fields. Open issues are
+Code creates versioned body markers and visible identity fields. Duplicate
+interpretations of the same target are merged before eligibility checks so all
+their blockers and additional prerequisites are retained. This checks each
+target's recorded blockers, not whether proposed code changes are independent.
+Open issues are
 fully paginated and compared locally, without relying on hidden-marker search
 indexing, mutable titles, or labels. Conservative checks also recognize existing
 unmarked tasks with the same exact test/source identity. A shared upstream URL
 alone is not a duplicate.
 
-The workflow serializes its runs, checks again before creation, and reconciles
-ambiguous creation errors before any further action. It does not repeatedly file
-unchanged tasks already closed by maintainers when matching workflow history is
-available. Closed-history lookup uses the existing `agentic-workflows` label;
-removing that label from a closed issue can remove this suppression. Open
+Eligible TODO/workaround targets in the same file share one open tracking issue.
+Each target has a complete evidence block with its own versioned target ID,
+evidence fingerprint, source excerpt, verified reference resolutions,
+prerequisites, and previous tracking history. Later eligible targets or changed
+evidence are appended to that issue, preserving existing content, titles, and
+labels. Ignored tests retain their existing overlapping-test grouping.
+
+File-container identity is separate from target identity; the file marker covers
+both TODOs and workarounds. One legacy marked TODO/workaround issue can be adopted
+as the container without rewriting its content. Multiple matching open containers
+cause new additions to be deferred with a diagnostic rather than selecting one
+arbitrarily or creating another. An oversized issue body is also deferred rather
+than split into another issue.
+
+Closing a tracking issue as completed does not establish that all of its targets
+were fixed. Subsequent runs re-evaluate current source and file any remaining
+eligible targets, or append them to a suitable open issue, retaining the closed
+issue as history. A `not_planned` (won't-fix) closure suppresses the canonical
+targets covered by that issue, even if their prerequisites change. It does not
+suppress unrelated new targets in the file. Missing or unknown closure reasons
+defer affected targets. Closed-history lookup uses the existing
+`agentic-workflows` label; removing that label can remove this protection. Open
 duplicate detection is not label-dependent.
+
+The workflow serializes its runs, refreshes tracking before mutations, reads the
+latest issue before appending, and reconciles ambiguous creation/update errors
+before any further action. Mutations are not automatically retried. An uncertain
+append is accepted only when its complete evidence blocks are present remotely,
+not just its identity markers. Updates are allowed at the five-open-issue cap,
+which limits creation, not additions to existing issues.
 
 GitHub does not enforce unique issue-body keys atomically. These checks protect
 against this workflow's repeated and concurrent runs, but cannot prevent an
 unrelated human or automation from creating the same task at the same instant.
+Issue-body updates are not atomic compare-and-swap operations; a human edit
+between the final read and update can still be overwritten.
 
 ## Filed tasks and Issue Monster
 
@@ -227,13 +259,13 @@ test can be re-enabled; a newly exposed failure belongs in the tracking task.
 
 Manually dispatch **Check potentially stale references** from `main`:
 
-- `dry_run: true` is the default. It produces proposed issue payloads and decisions
+- `dry_run: true` is the default. It produces proposed create/update payloads and decisions
   without changing issues or the production cache.
 - `refresh_cache: true` ignores cached interpretations for collection. Batch
   limits still apply.
 - Scheduled runs are live and retain validated interpretations.
 
-The run's `stale-reference-report-*` artifact records created/proposed/skipped
+The run's `stale-reference-report-*` artifact records created/updated/proposed/skipped
 decisions, deferred context, remaining interpretations, and per-batch counts
 computed from source-validated results. The recording job also writes
 `summary.json` beside `interpretations.json`; the agent's narrative is not a
