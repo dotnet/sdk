@@ -5,7 +5,9 @@ using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.InternalAbstractions;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Moq;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests;
 
@@ -85,5 +87,32 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
         Directory.CreateDirectory(Path.Combine(testDirectory, "unexpected", "PFiles64", "dotnet", "sdk-manifests", "6.0.100", "test.manifest"));
 
         WindowsMsiManifestInstaller.FindExtractedManifestFolder(testDirectory).Should().BeNull();
+    }
+
+    [TestMethod]
+    public async Task ExtractManifestAsyncVerifiesMsiBeforeAdminInstall()
+    {
+        using var temporaryDirectory = new TemporaryDirectory();
+        var downloader = new Mock<INuGetPackageDownloader>();
+        downloader.Setup(d => d.ExtractPackageAsync(It.IsAny<string>(), It.IsAny<DirectoryPath>()))
+            .Returns((string _, DirectoryPath folder) =>
+            {
+                string dataPath = Path.Combine(folder.Value, "data");
+                Directory.CreateDirectory(dataPath);
+                File.WriteAllText(Path.Combine(dataPath, "msi.json"), """{"Payload":"manifest.msi"}""");
+                File.WriteAllText(Path.Combine(dataPath, "manifest.msi"), string.Empty);
+                return Task.FromResult<IEnumerable<string>>([]);
+            });
+
+        string? verifiedMsiPath = null;
+        var installer = new WindowsMsiManifestInstaller(downloader.Object, verifyPackageSignature: path =>
+        {
+            verifiedMsiPath = path;
+            throw new InvalidOperationException("Signature verification failed");
+        });
+
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(() =>
+            installer.ExtractManifestAsync("manifest.nupkg", Path.Combine(temporaryDirectory.DirectoryPath, "target")));
+        Path.GetFileName(verifiedMsiPath).Should().Be("manifest.msi");
     }
 }
