@@ -178,6 +178,7 @@ public class DotnetArchiveExtractorTests
         call.Version.Should().Be(version);
         call.DestinationPath.Should().StartWith(extractor.ScratchDownloadDirectory);
         call.DestinationPath.Should().EndWith(DotnetupTestUtilities.DefaultArchiveFileExtension);
+        call.HasProgressReporter.Should().BeFalse();
 
         _log.WriteLine($"Download was called with version {call.Version} to {call.DestinationPath}");
     }

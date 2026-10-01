@@ -80,7 +80,9 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         const int fileStreamBufferSize = 8192;
         using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, fileStreamBufferSize, useAsync: true);
 
-        string actualHash = await CopyStreamWithProgressAndHashAsync(contentStream, fileStream, totalBytes, progress).ConfigureAwait(false);
+        string actualHash = progress is null
+            ? await CopyStreamAndHashAsync(contentStream, fileStream).ConfigureAwait(false)
+            : await CopyStreamWithProgressAndHashAsync(contentStream, fileStream, totalBytes, progress).ConfigureAwait(false);
 
         await fileStream.FlushAsync().ConfigureAwait(false);
         fileStream.Close();
@@ -93,7 +95,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         Stream source,
         Stream destination,
         long? totalBytes,
-        IProgress<DownloadProgress>? progress)
+        IProgress<DownloadProgress> progress)
     {
         var buffer = new byte[81920]; // 80KB buffer
         long bytesRead = 0;
@@ -111,11 +113,26 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             if ((now - lastProgressReport).TotalMilliseconds > 100)
             {
                 lastProgressReport = now;
-                progress?.Report(new DownloadProgress(bytesRead, totalBytes));
+                progress.Report(new DownloadProgress(bytesRead, totalBytes));
             }
         }
 
-        progress?.Report(new DownloadProgress(bytesRead, totalBytes));
+        progress.Report(new DownloadProgress(bytesRead, totalBytes));
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+    }
+
+    private static async Task<string> CopyStreamAndHashAsync(Stream source, Stream destination)
+    {
+        var buffer = new byte[81920];
+        int read;
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA512);
+
+        while ((read = await source.ReadAsync(buffer).ConfigureAwait(false)) > 0)
+        {
+            await destination.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
+            hash.AppendData(buffer, 0, read);
+        }
+
         return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
     }
 
