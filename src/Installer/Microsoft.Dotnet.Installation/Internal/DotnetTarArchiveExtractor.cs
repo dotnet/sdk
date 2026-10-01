@@ -12,6 +12,8 @@ internal sealed class DotnetTarArchiveExtractor : ITarArchiveExtractor
     {
         bool isGzip = context.ArchivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
 
+        // Keep the archive open throughout extraction so cleanup cannot remove it between
+        // the optional counting pass and the extraction pass.
         using var archiveStream = new FileStream(context.ArchivePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
         IProgressTask? entryProgressTask = context.ProgressTask?.RequiresKnownMaximum == true
@@ -40,6 +42,10 @@ internal sealed class DotnetTarArchiveExtractor : ITarArchiveExtractor
         return totalFiles;
     }
 
+    /// <summary>
+    /// Wraps an already-open TAR stream for reading and adds gzip decompression when needed.
+    /// Disposing the returned wrapper never closes <paramref name="archiveStream"/>.
+    /// </summary>
     private static OwnedTarStream OpenReadStream(Stream archiveStream, bool isGzip)
         => isGzip
             ? new OwnedTarStream(new GZipStream(archiveStream, CompressionMode.Decompress, leaveOpen: true))
@@ -54,6 +60,8 @@ internal sealed class DotnetTarArchiveExtractor : ITarArchiveExtractor
         using OwnedTarStream tarStream = OpenReadStream(archiveStream, isGzip);
         using var tarReader = new TarReader(tarStream.Stream, leaveOpen: true);
 
+        // A hardlink target can appear later in the archive, so create hardlinks only after
+        // all regular files have been extracted.
         var deferredHardLinks = new List<(string DestinationPath, string TargetPath)>();
         while (tarReader.GetNextEntry() is { } entry)
         {

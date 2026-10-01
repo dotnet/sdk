@@ -145,4 +145,8 @@
     <value>.NET {0} {1} has no released artifacts for user-level installation. Choose a different version or install it at the system level.</value>
     <comment>{0}=component name (e.g. WindowsDesktop), {1}=resolved version. Shown when a release publishes only non-installable artifacts (e.g. .exe installers) for the platform and dotnetup cannot perform a user-level install.</comment>
   </data>
+  <data name="NativeTarProcessStartReturnedFalse" xml:space="preserve">
+    <value>The process API returned false while starting native TAR executable '{0}'.</value>
+    <comment>{0}=native TAR executable name or path.</comment>
+  </data>
 </root>

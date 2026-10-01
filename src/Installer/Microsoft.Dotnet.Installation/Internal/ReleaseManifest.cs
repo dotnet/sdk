@@ -151,6 +151,10 @@ internal class ReleaseManifest
             {
                 return FindReleaseFileResult.ProductNotFound;
             }
+
+            // Both direct major/minor lookup and index fallback route through GetReleases,
+            // ensuring the per-channel JSON is signature-verified and process-cached before
+            // its contents select an archive.
             var release = FindRelease(releases, resolvedVersion, installRequest.Component);
             if (release is null)
             {
@@ -252,11 +256,16 @@ internal class ReleaseManifest
         }
         catch
         {
+            // Atomic compare-and-remove: only remove the failed Lazy, not a replacement another
+            // thread may have installed after observing the same failure.
             _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>>>(productVersion, lazy));
             throw;
         }
     }
 
+    /// <summary>
+    /// Finds the product matching a major/minor product-version identifier.
+    /// </summary>
     private static Product? FindProduct(ProductCollection productCollection, string productVersion) =>
         productCollection.FirstOrDefault(p => p.ProductVersion == productVersion);
 
