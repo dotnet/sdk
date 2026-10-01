@@ -3,6 +3,7 @@
 
 import { assertRepoPath, numberedContext, readSource, sourceId, sourceLines } from './collect.mjs';
 import { numberPattern, ownerPattern, referenceUrlPattern, repositoryPattern, shorthandPattern } from './references.mjs';
+import { sourceAnchors } from './source-anchors.mjs';
 
 const statuses = new Set(['actionable', 'irrelevant', 'insufficient_context']);
 const kinds = new Set(['ignore', 'todo', 'workaround']);
@@ -180,7 +181,7 @@ function checkTestNames(action, source, candidate, evidence) {
     }
 }
 
-function validateAction(action, candidate, evidence, enriched = false) {
+function validateAction(action, candidate, evidence, enriched = false, commentAnchor) {
     keys(action, enriched ? enrichedActionKeys : rawActionKeys, 'Action');
     requireCondition(kinds.has(action.kind), 'Invalid action kind.');
     text(action.anchor, 'Action anchor', 1024);
@@ -219,11 +220,13 @@ function validateAction(action, candidate, evidence, enriched = false) {
             'Only ignore actions may identify tests.');
     }
     const result = {
-        candidateId: candidate.id, kind: action.kind, path: candidate.path, anchor: action.anchor,
+        candidateId: candidate.id, kind: action.kind, path: candidate.path,
+        anchor: action.kind === 'ignore' || commentAnchor === undefined ? action.anchor : commentAnchor(),
         testNames: action.testNames ?? [], startLine: action.startLine, endLine: action.endLine,
         sourceExcerpt, seedText, urls: [...action.urls], additionalConditions: action.additionalConditions ?? [],
     };
     if (enriched) {
+        requireCondition(action.anchor === result.anchor, 'Cached action anchor provenance mismatch.');
         requireCondition(action.candidateId === result.candidateId && action.path === result.path
             && action.sourceExcerpt === result.sourceExcerpt && action.seedText === result.seedText,
         'Cached action provenance mismatch.');
@@ -231,7 +234,7 @@ function validateAction(action, candidate, evidence, enriched = false) {
     return result;
 }
 
-function validateResult(result, candidate, { cached = false } = {}) {
+function validateResult(result, candidate, { cached = false, commentAnchor } = {}) {
     keys(result, cached ? ['candidateId', 'status', 'reason', 'actions', 'contextExpansions']
         : ['candidateId', 'status', 'reason', 'actions'], 'Interpretation result');
     requireCondition(result.candidateId === candidate.id && statuses.has(result.status), 'Invalid interpretation identity or status.');
@@ -241,7 +244,7 @@ function validateResult(result, candidate, { cached = false } = {}) {
         'Actionable results require actions; other statuses must not contain actions.');
     const expansions = expansionsFor(candidate, cached ? result.contextExpansions ?? [] : undefined);
     const evidence = evidenceFor(candidate, expansions);
-    const actions = result.actions.map(action => validateAction(action, candidate, evidence, cached));
+    const actions = result.actions.map(action => validateAction(action, candidate, evidence, cached, commentAnchor));
     requireCondition(new Set(actions.map(action => JSON.stringify(action))).size === actions.length, 'Duplicate actions.');
     const validated = {
         candidateId: result.candidateId, status: result.status, reason: result.reason, actions,
@@ -376,6 +379,7 @@ async function validateWithSources(payload, manifest, expectedCandidateIds, cont
         'Interpretation output must contain exactly the expected candidate IDs.');
     const expected = new Set(expectedCandidateIds);
     const sources = new Map();
+    const anchors = new Map();
     if (contextEvidence !== undefined) {
         keys(contextEvidence, ['schemaVersion', 'expansions'], 'Context evidence');
         requireCondition(contextEvidence.schemaVersion === 1, 'Unsupported context evidence schemaVersion.');
@@ -419,7 +423,11 @@ async function validateWithSources(payload, manifest, expectedCandidateIds, cont
                 'Source evidence does not match the current blob.');
         }
         try {
-            results.push(validateResult(result, candidate, { cached }));
+            const commentAnchor = () => {
+                if (!anchors.has(fileKey)) anchors.set(fileKey, sourceAnchors(lines, candidate.path));
+                return anchors.get(fileKey)(candidate.seedLine);
+            };
+            results.push(validateResult(result, candidate, { cached, commentAnchor }));
         } catch (error) {
             throw new Error(`Candidate ${candidate.id}: ${error.message}`, { cause: error });
         }

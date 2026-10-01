@@ -65,8 +65,15 @@ Read all pages: a candidate, or an unusually long source line, can span pages.
 Paging does not remove candidates, truncate source, or change the batch artifacts.
 Declaration lookup hints give line numbers for nearby syntactic matches, not
 proof of ownership or additional source evidence. Use them to target a necessary
-context expansion, not to guess a fully qualified name. Non-Ignore anchors do not
-require a fully qualified namespace when a stable declaration is already visible.
+context expansion, not to guess a fully qualified name. Non-Ignore anchors supplied
+by the model are hints, not trusted identities. The host replaces them with a
+deterministic [lexical source-site path](source-anchors.mjs) derived from the verified complete file:
+C# namespace/declaration/block headers, or XML element names and sorted attributes.
+This is not a compiler symbol or proof of semantic ownership. Comments preceding
+declarations/elements use the following structural site; other comments use their
+containing scope. Unsupported or ambiguous structures, including indistinguishable
+repeated comments, fail validation rather than acquiring model-chosen identities.
+This host computation does not expand the model's source evidence allowance.
 
 The interpreter may request up to two additional windows of at most 80 lines
 and 10 KiB of source per candidate. A response also reports the remaining
@@ -186,8 +193,11 @@ Durable identity is separate from interpretation-cache identity:
 
 - Ignored test: repository path plus fully qualified test declaration, independent
   of line number, source commit, data rows, and original reference.
-- TODO/workaround: repository path, owning declaration/structural anchor, and
-  normalized actionable source text, not the surrounding window.
+- TODO/workaround: repository path, source-derived structural anchor, and
+  normalized seed comment, not model anchor spelling or model-selected span.
+  Surrounding excerpt changes alone do not append another evidence block.
+  Cached comment anchors are recomputed and checked against committed source
+  before filing; these identity rules invalidate earlier interpretation caches.
 
 Code creates versioned body markers and visible identity fields. Duplicate
 interpretations of the same target are merged before eligibility checks so all

@@ -9,6 +9,8 @@ import test from 'node:test';
 import { collect, git } from '../collect.mjs';
 import { createGitRepo } from './fixture.mjs';
 import { getCachedResults, mergeCache, readContext, selectBatch, validateInterpretations } from '../interpretations.mjs';
+import { finalize, targetIds } from '../finalize.mjs';
+import { createGitHubMock } from './github-mock.mjs';
 
 const testDirectory = path.dirname(fileURLToPath(import.meta.url));
 const url = 'https://github.com/dotnet/sdk/issues/123';
@@ -68,6 +70,86 @@ test('accepts XML workaround conditions and historical irrelevant classification
     const results = await validate(f, [result(candidate, [action(candidate, { anchor: 'Project', additionalConditions: ['Consume the fixed package.'] })])]);
     assert.deepEqual(results[0].actions[0].additionalConditions, ['Consume the fixed package.']);
     assert.equal((await validate(f, [result(candidate)]))[0].status, 'irrelevant');
+});
+
+test('comment identity is source-owned, independent of model qualification, spans and line shifts', async t => {
+    const source = [
+        'namespace Sample.Tests;',
+        'class Cases {',
+        'public void A() {',
+        `// TODO ${url}`,
+        'return;',
+        '}',
+        'public void B() {',
+        `// TODO ${url}`,
+        'return;',
+        '}',
+        '}',
+    ].join('\n');
+    const f = await fixture(t, source);
+    const [a, b] = f.manifest.candidates;
+    const interpret = async (anchor, endLine = a.seedLine) => (await validate(f,
+        [result(a, [action(a, { anchor, endLine })]), result(b, [action(b, { anchor })])])).map(item => item.actions[0]);
+    const short = await interpret('Cases.A');
+    const full = await interpret('Sample.Tests.Cases.A', a.seedLine + 1);
+    const fabricated = await interpret('Invented.Owner.Missing');
+    assert.equal(short[0].anchor, 'csharp: namespace Sample.Tests / class Cases / public void A()');
+    assert.equal(short[1].anchor, 'csharp: namespace Sample.Tests / class Cases / public void B()');
+    const ids = actions => actions.map(item => targetIds('dotnet/sdk', item));
+    assert.deepEqual(ids(short), ids(full));
+    assert.deepEqual(ids(short), ids(fabricated));
+    assert.notDeepEqual(ids(short)[0], ids(short)[1]);
+    const api = createGitHubMock();
+    const file = actions => finalize({ github: api.github, repository: 'dotnet/sdk',
+        headSha: f.manifest.headSha, actions, dryRun: false, logger: { warn() {} } });
+    assert.equal((await file(short)).created.length, 1);
+    const repeat = await file(full);
+    assert.equal(repeat.created.length + repeat.updated.length, 0);
+    const tracked = api.state.open.pop();
+    api.state.closed.push({ ...tracked, state: 'closed', state_reason: 'not_planned' });
+    const declined = await file(fabricated);
+    assert.equal(declined.created.length + declined.updated.length, 0);
+    assert.equal(declined.skipped.filter(item => item.reason === 'declined-closed-task').length, 2);
+    const cache = mergeCache(null, f.manifest, await validate(f,
+        [result(a, [action(a)]), result(b, [action(b)])]), { nextCursor: 0 });
+    const restored = getCachedResults(JSON.parse(JSON.stringify(cache)), f.manifest);
+    assert.deepEqual(ids((await validate(f, restored)).map(item => item.actions[0])), ids(short));
+    restored[0].actions[0].anchor = 'forged cached owner';
+    await assert.rejects(validate(f, restored), /anchor.*provenance/i);
+    const shifted = await fixture(t, `// unrelated header\n\n${source}`);
+    const shiftedActions = (await validate(shifted, shifted.manifest.candidates.map(candidate =>
+        result(candidate, [action(candidate)])))).map(item => item.actions[0]);
+    assert.deepEqual(ids(shiftedActions), ids(short));
+});
+
+test('leading declaration comments and XML sites get distinct source-owned anchors', async t => {
+    const f = await fixture(t, [
+        'namespace Sample.Tests { class Cases {',
+        `// TODO ${url}`,
+        'public void A() {}',
+        `// TODO ${url}`,
+        'public void B(int value) {}',
+        '} }',
+    ].join('\n'));
+    const actions = (await validate(f, f.manifest.candidates.map(candidate => result(candidate, [action(candidate)]))))
+        .map(item => item.actions[0]);
+    assert.equal(actions[0].anchor, 'csharp: namespace Sample.Tests / class Cases / public void A()');
+    assert.equal(actions[1].anchor, 'csharp: namespace Sample.Tests / class Cases / public void B(int value)');
+    const xml = await fixture(t, [
+        '<Project>',
+        '<Target Name="A">',
+        `<!-- Workaround ${url} -->`,
+        '</Target>',
+        '<Target Name="B">',
+        `<!-- Workaround ${url} -->`,
+        '</Target>',
+        '</Project>',
+    ].join('\n'), 'src/Build.targets');
+    const xmlActions = (await validate(xml, xml.manifest.candidates.map(candidate =>
+        result(candidate, [action(candidate, { anchor: 'Project' })])))).map(item => item.actions[0]);
+    assert.equal(xmlActions[0].anchor, 'xml: Project / Target[Name="A"]');
+    assert.equal(xmlActions[1].anchor, 'xml: Project / Target[Name="B"]');
+    assert.notDeepEqual(targetIds('dotnet/sdk', xmlActions[0]), targetIds('dotnet/sdk', xmlActions[1]));
 });
 
 test('qualified shorthand references of any length are collected and normalized to issue URLs', async t => {

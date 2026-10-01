@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 import { createHash } from 'node:crypto';
+import { normalizeActionSource } from './source-anchors.mjs';
 import {
     createReferenceResolver, errorDiagnostic, listRepositoryIssues, normalizeRepository,
 } from './github.mjs';
@@ -20,11 +21,7 @@ function unique(values) {
     return [...new Set(values)].sort();
 }
 
-export function normalizeActionSource(source) {
-    return source.split(/\r?\n/).map(line => line.trim()
-        .replace(/^(?:\/\/+|\/\*+|\*+\/?|<!--|')\s?/, '')
-        .replace(/\s?(?:\*\/|-->)$/, '')).join(' ').replace(/\s+/g, ' ').trim();
-}
+export { normalizeActionSource };
 
 export function targetIds(repository, action) {
     const { owner, repo } = normalizeRepository(repository);
@@ -32,7 +29,7 @@ export function targetIds(repository, action) {
     if (action.kind === 'ignore') {
         return unique(action.testNames.map(name => hash([...prefix, 'test', name])));
     }
-    return [hash([...prefix, 'comment', action.anchor, normalizeActionSource(action.sourceExcerpt)])];
+    return [hash([...prefix, 'comment', action.anchor, normalizeActionSource(action.seedText)])];
 }
 
 function marker(id) {
@@ -152,7 +149,8 @@ function evidenceFingerprint(group, references) {
         version: 1,
         kind: group.kind,
         ids: group.ids,
-        source: unique(group.sources.map(source => normalizeActionSource(source.excerpt))),
+        source: unique(group.sources.map(source => normalizeActionSource(
+            group.kind === 'ignore' ? source.excerpt : source.seedText))),
         conditions: group.additionalConditions,
         references: references.map(reference => ({
             key: reference.key, kind: reference.kind, state: reference.state,
@@ -209,7 +207,7 @@ function commentCovered(issue, entry) {
                     '## Additional prerequisites (not verified)', '## Follow-up'].every(section => block.includes(section)) &&
                 entry.group.sources.every(source =>
                     block.includes(`Owning anchor: ${inlineCode(source.anchor)}`) &&
-                    normalizeActionSource(block).includes(normalizeActionSource(source.excerpt))) &&
+                    normalizeActionSource(block).includes(normalizeActionSource(source.seedText))) &&
                 entry.references.every(reference => block.includes(referenceResolution(reference))) &&
                 entry.group.additionalConditions.every(condition => block.includes(fenced(condition)))) {
                 return true;

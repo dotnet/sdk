@@ -48,6 +48,7 @@ function fixture(t, padding = 0)
         ].join("\n"),
         ".github/stale-reference-check/collect.mjs": "// collector rules",
         ".github/stale-reference-check/interpretations.mjs": "// validation rules",
+        ".github/stale-reference-check/source-anchors.mjs": "// source-owned identity rules",
         ".github/stale-reference-check/references.mjs": "// reference patterns",
         ".github/stale-reference-check/workflow.mjs": "// orchestration rules",
         ".github/stale-reference-check/source-tools.mjs": "// bounded source reader rules",
@@ -109,7 +110,7 @@ test("native object submission serializes in the actual MCP script and retains h
     const root = await fixture(t);
     const { batch } = await prepare({ repoRoot: root, logger });
     const directory = path.join(root, ".stale-reference-check/input");
-    for (const file of ["source-tools.mjs", "interpretations.mjs", "collect.mjs", "references.mjs"])
+    for (const file of ["source-tools.mjs", "interpretations.mjs", "source-anchors.mjs", "collect.mjs", "references.mjs"])
     {
         await writeFile(path.join(directory, file),
             await readFile(path.join(repository, ".github/stale-reference-check", file)));
@@ -245,7 +246,7 @@ test("submission transport preserves large UTF-8 payloads and enforces size and 
 test("packaged submission tools work in a separate process without a source checkout", async t =>
 {
     const root = await fixture(t);
-    for (const file of ["source-tools.mjs", "interpretations.mjs", "collect.mjs", "references.mjs"])
+    for (const file of ["source-tools.mjs", "interpretations.mjs", "source-anchors.mjs", "collect.mjs", "references.mjs"])
     {
         await writeFile(path.join(root, ".github/stale-reference-check", file),
             await readFile(path.join(repository, ".github/stale-reference-check", file)));

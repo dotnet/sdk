@@ -99,20 +99,21 @@ test('identity excludes line, checkout, reference URL, data rows, and arbitrary 
     }));
 });
 
-test('comment identity uses normalized actionable source and owning anchor, not location/context', () => {
+test('comment identity uses normalized seed and owning anchor, not model span or location', () => {
     const input = action({
         kind: 'todo', path: 'src/File.cs', anchor: 'N.C.M', testNames: [],
-        sourceExcerpt: '// TODO remove this\n// when fixed',
+        seedText: '// TODO remove this', sourceExcerpt: '// TODO remove this\n// when fixed',
     });
     assert.equal(normalizeActionSource(input.sourceExcerpt), 'TODO remove this when fixed');
     assert.deepEqual(targetIds(repository, input), targetIds(repository, {
-        ...input, startLine: 500, endLine: 501, sourceExcerpt: '  /* TODO remove this when fixed */ ',
+        ...input, startLine: 500, endLine: 501, seedText: '  /* TODO remove this */ ',
+        sourceExcerpt: '  /* TODO remove this when fixed */ ',
     }));
     assert.notDeepEqual(targetIds(repository, input), targetIds(repository, {
         ...input, anchor: 'N.C.Other',
     }));
     assert.notDeepEqual(targetIds(repository, input), targetIds(repository, {
-        ...input, sourceExcerpt: '// TODO remove this only after another prerequisite',
+        ...input, seedText: '// TODO remove this only after another prerequisite',
     }));
 });
 
