@@ -8,6 +8,8 @@ namespace Microsoft.NET.TestFramework
 {
     public class ToolsetInfo
     {
+        // NetTFMUpdate: SDK assemblies target net12 while generated apps still use the net11 product packs.
+        public const string SdkTargetFramework = "net12.0";
         public const string CurrentTargetFramework = "net11.0";
         /// <remarks>Keep in sync with <see cref="Product.TargetFrameworkVersion"/>.</remarks>
         public const string CurrentTargetFrameworkVersion = "11.0";
