@@ -31,7 +31,8 @@ internal static class SdkAddVersionHelper
         string sdkName,
         string? userVersion,
         bool userVersionSpecified,
-        string startDirectory)
+        string startDirectory,
+        bool interactive)
     {
         if (userVersionSpecified)
         {
@@ -48,7 +49,7 @@ internal static class SdkAddVersionHelper
             return (null, LeaveExistingUnchangedWhenVersionIsNull: true);
         }
 
-        var nugetVersion = GetLatestNuGetSdkVersion(sdkName, startDirectory);
+        var nugetVersion = GetLatestNuGetSdkVersion(sdkName, startDirectory, interactive);
         return (nugetVersion, LeaveExistingUnchangedWhenVersionIsNull: false);
     }
 
@@ -64,7 +65,14 @@ internal static class SdkAddVersionHelper
         JsonDocument document;
         try
         {
-            document = JsonDocument.Parse(File.ReadAllText(globalJsonPath));
+            var jsonDocumentOptions = new JsonDocumentOptions
+            {
+                AllowTrailingCommas = true,
+                CommentHandling = JsonCommentHandling.Skip
+            };
+
+            using var stream = File.OpenRead(globalJsonPath);
+            document = JsonDocument.Parse(stream, jsonDocumentOptions);
         }
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or SecurityException)
         {
@@ -182,7 +190,7 @@ internal static class SdkAddVersionHelper
         }
     }
 
-    private static string GetLatestNuGetSdkVersion(string sdkName, string startDirectory)
+    private static string GetLatestNuGetSdkVersion(string sdkName, string startDirectory, bool interactive)
     {
         string packageInstallDir = Path.Combine(Path.GetTempPath(), PackageCacheFolderName, Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(packageInstallDir);
@@ -191,7 +199,8 @@ internal static class SdkAddVersionHelper
         {
             var downloader = new NuGetPackageDownloader.NuGetPackageDownloader(
                 packageInstallDir: new DirectoryPath(packageInstallDir),
-                currentWorkingDirectory: startDirectory);
+                currentWorkingDirectory: startDirectory,
+                restoreActionConfig: new RestoreActionConfig(Interactive: interactive));
 
             NuGetVersion version = downloader
                 .GetLatestPackageVersion(new PackageId(sdkName), includePreview: false)
