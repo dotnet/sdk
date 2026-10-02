@@ -294,6 +294,63 @@ public class AotRunCommandTests
         }
     }
 
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, false)]
+    [DataRow(true, true)]
+    public void ExecutableLaunchProfileMarkerIsScopedToEntryPoint(bool sameEntryPoint, bool explicitProfile)
+    {
+        var fixture = CreateFixture();
+        string? originalDotnetRoot = NativeEntryPoint.DotnetRoot;
+        string? originalMarker = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED);
+        try
+        {
+            NativeEntryPoint.DotnetRoot = fixture.TestDirectory;
+            string origin = sameEntryPoint ? fixture.EntryPointPath : Path.Join(fixture.TestDirectory, "Other.cs");
+            Environment.SetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED, origin);
+            WriteLaunchSettings(fixture, """
+                {
+                    "profiles": {
+                        "ProjectProfile": {
+                            "commandName": "Project",
+                            "commandLineArgs": "profile-argument",
+                            "environmentVariables": {
+                                "PROFILE_ONLY": "profile-value"
+                            }
+                        }
+                    }
+                }
+                """);
+            var parseResult = Parser.Parse([
+                "run", "--file", fixture.EntryPointPath, "--no-build",
+                .. (explicitProfile ? new[] { "--launch-profile", "ProjectProfile" } : Array.Empty<string>()),
+            ]);
+            AotRunInvocation? invocation = null;
+
+            AotRunCommand.Execute(
+                parseResult,
+                value =>
+                {
+                    invocation = value;
+                    return 0;
+                },
+                fixture.TestDirectory);
+
+            Assert.IsNotNull(invocation);
+            bool applyProfile = !sameEntryPoint || explicitProfile;
+            Assert.AreEqual(applyProfile ? "profile-argument" : "", invocation.CommandArguments);
+            Assert.AreEqual(applyProfile, invocation.EnvironmentVariables.ContainsKey("PROFILE_ONLY"));
+            Assert.IsNull(invocation.EnvironmentVariables[EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED]);
+            Assert.AreEqual(origin, Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED, originalMarker);
+            NativeEntryPoint.DotnetRoot = originalDotnetRoot;
+            DeleteFixture(fixture);
+        }
+    }
+
     /// <summary>Verifies that launch profile arguments requiring MSBuild defer to the managed CLI.</summary>
     [TestMethod]
     [DataRow("Project", "ProjectProfile")]
@@ -427,6 +484,7 @@ public class AotRunCommandTests
             Assert.AreEqual(profileDirectory, invocation.WorkingDirectory);
             Assert.IsNull(invocation.ArtifactsPath);
             Assert.AreEqual("ExecutableProfile", invocation.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"]);
+            Assert.AreEqual(fixture.EntryPointPath, invocation.EnvironmentVariables[EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED]);
             Assert.AreEqual("profile-value", invocation.EnvironmentVariables["PROFILE_ONLY"]);
             Assert.AreEqual("cli-value", invocation.EnvironmentVariables["OVERRIDE"]);
             string? rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(

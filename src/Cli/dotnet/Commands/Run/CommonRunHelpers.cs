@@ -151,6 +151,13 @@ internal static class CommonRunHelpers
             return LaunchProfileParseResult.Success(model: null);
         }
 
+        // An Executable profile may launch `dotnet watch run` for this project. Do not let the
+        // default profile overwrite its environment, but still honor other projects and explicit profiles.
+        if (string.IsNullOrEmpty(launchProfile) && HasLaunchProfileBeenApplied(projectOrEntryPointFilePath))
+        {
+            return LaunchProfileParseResult.Success(model: null);
+        }
+
         launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(
             projectOrEntryPointFilePath,
             launchProfile,
@@ -190,10 +197,12 @@ internal static class CommonRunHelpers
     /// <summary>
     /// Applies launch-profile environment variables followed by command-line or evaluated overrides.
     /// </summary>
+    /// <param name="projectOrEntryPointFilePath">The project or entry-point path that owns the launch profile.</param>
     /// <param name="launchProfile">The selected launch profile.</param>
     /// <param name="environmentVariables">Environment variables that override profile values.</param>
     /// <param name="apply">Applies one environment variable to the launch.</param>
     public static void ApplyLaunchEnvironmentVariables(
+        string projectOrEntryPointFilePath,
         LaunchProfile? launchProfile,
         IReadOnlyDictionary<string, string> environmentVariables,
         Action<string, string?> apply)
@@ -212,11 +221,30 @@ internal static class CommonRunHelpers
             }
         }
 
+        if (launchProfile is ExecutableLaunchProfile)
+        {
+            apply(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED, Path.GetFullPath(projectOrEntryPointFilePath));
+        }
+        else if (Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED) is not null)
+        {
+            // Consume the marker only in the application's environment, so a watch parent can reuse it on restart.
+            apply(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED, null);
+        }
+
         foreach ((string name, string value) in environmentVariables)
         {
             apply(name, value);
         }
     }
+
+    /// <summary>
+    /// Returns true if an Executable launch profile for this project or entry point has already been applied.
+    /// </summary>
+    private static bool HasLaunchProfileBeenApplied(string projectOrEntryPointFilePath)
+        => string.Equals(
+            Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED),
+            Path.GetFullPath(projectOrEntryPointFilePath),
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 
 #if !CLI_AOT
     /// <summary>
