@@ -475,14 +475,36 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return !logTargetMethod.IsStatic && IsGeneratorSelectedLoggerMember(isEnabledInstance);
                 }
 
+                // Unlike 'WalkDownConversion()' alone, this also strips parentheses (e.g. '(logger)'), which can wrap
+                // either a conversion or another parenthesized operation in any order.
+                static IOperation? WalkDownParenthesesAndConversions(IOperation? operation)
+                {
+                    while (true)
+                    {
+                        switch (operation)
+                        {
+                            case IParenthesizedOperation parenthesized:
+                                operation = parenthesized.Operand;
+                                continue;
+
+                            case IConversionOperation conversion:
+                                operation = conversion.Operand;
+                                continue;
+
+                            default:
+                                return operation;
+                        }
+                    }
+                }
+
                 // Two operations refer to the same logger instance only when they resolve to the same
                 // field/property/parameter/local *and* are accessed through the same receiver. This matters because
                 // 'GetReferencedMemberOrLocalOrParameter()' returns the same '_logger' field symbol for both
                 // 'this._logger' and 'other._logger', even though they are different logger instances.
                 static bool AreSameInstance(IOperation? a, IOperation? b)
                 {
-                    a = a?.WalkDownConversion();
-                    b = b?.WalkDownConversion();
+                    a = WalkDownParenthesesAndConversions(a);
+                    b = WalkDownParenthesesAndConversions(b);
 
                     if (a is null || b is null)
                     {
@@ -522,7 +544,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return false;
                     }
 
-                    var logInstance = logInvocation.Instance?.WalkDownConversion();
+                    var logInstance = WalkDownParenthesesAndConversions(logInvocation.Instance);
 
                     switch (isEnabledInstance)
                     {
@@ -532,7 +554,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                 return false;
                             }
 
-                            var memberInstance = memberReference.Instance?.WalkDownConversion();
+                            var memberInstance = WalkDownParenthesesAndConversions(memberReference.Instance);
                             if (memberInstance is null)
                             {
                                 // Static member of the containing type.
@@ -659,7 +681,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 static IOperation? GetInstanceResolvingConditionalAccess(IInvocationOperation invocation)
                 {
-                    var instance = invocation.GetInstance()?.WalkDownConversion();
+                    var instance = WalkDownParenthesesAndConversions(invocation.GetInstance());
 
                     if (instance is IConditionalAccessInstanceOperation conditionalAccessInstance)
                     {

@@ -5560,6 +5560,32 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task GuardedWorkWithParenthesizedInstanceInLog_NoDiagnostic_VB()
+        {
+            // Unlike C#, VB's IOperation tree represents parenthesized expressions as a distinct
+            // 'IParenthesizedOperation' node, so parentheses around the guard and/or logging instance must not
+            // prevent matching the guard against the logging call.
+            string source = """
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Class C
+                    Sub M(logger As ILogger, eventId As EventId, exception As Exception, formatter As Func(Of String, Exception, String))
+                        If (logger).IsEnabled(LogLevel.Information) Then
+                            Call (logger).Log(LogLevel.Information, eventId, ExpensiveMethodCall(), exception, formatter)
+                        End If
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
         public async Task GuardedWorkInLogConditionalAccess_NoDiagnostic_VB()
         {
             string source = """
