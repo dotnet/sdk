@@ -73,7 +73,7 @@ internal static class ContainerArchiveCache
         return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
 
-    public static bool TryRestore(CreateNewImage task, string fingerprint)
+    public static bool TryRestore(CreateNewImage task, string fingerprint, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(task.ArchiveOutputPath)
             || string.IsNullOrEmpty(task.ArchiveIncrementalCachePath)
@@ -104,7 +104,7 @@ internal static class ContainerArchiveCache
 
         try
         {
-            if (entry.ArchiveDigest != ComputeFileDigest(GetArchiveOutputPath(task)))
+            if (entry.ArchiveDigest != ComputeFileDigest(GetArchiveOutputPath(task), cancellationToken))
             {
                 return false;
             }
@@ -130,7 +130,7 @@ internal static class ContainerArchiveCache
         return true;
     }
 
-    public static void Save(CreateNewImage task, string fingerprint)
+    public static void Save(CreateNewImage task, string fingerprint, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(task.ArchiveOutputPath)
             || string.IsNullOrEmpty(task.ArchiveIncrementalCachePath)
@@ -151,7 +151,7 @@ internal static class ContainerArchiveCache
         ArchiveCacheEntry entry = new(
             FormatVersion,
             fingerprint,
-            ComputeFileDigest(GetArchiveOutputPath(task)),
+            ComputeFileDigest(GetArchiveOutputPath(task), cancellationToken),
             task.GeneratedContainerManifest,
             task.GeneratedContainerConfiguration,
             task.GeneratedContainerDigest,
@@ -257,10 +257,21 @@ internal static class ContainerArchiveCache
         hash.AppendData(bytes);
     }
 
-    private static string ComputeFileDigest(string path)
+    private static string ComputeFileDigest(string path, CancellationToken cancellationToken)
     {
         using FileStream stream = File.OpenRead(path);
-        return Convert.ToHexStringLower(SHA256.HashData(stream));
+        using IncrementalHash hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
+        byte[] buffer = new byte[81920];
+        cancellationToken.ThrowIfCancellationRequested();
+        int read;
+        while ((read = stream.Read(buffer, 0, buffer.Length)) != 0)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            hash.AppendData(buffer, 0, read);
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return Convert.ToHexStringLower(hash.GetHashAndReset());
     }
 
     private sealed record ArchiveCacheEntry(

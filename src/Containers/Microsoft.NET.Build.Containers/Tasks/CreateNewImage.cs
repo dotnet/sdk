@@ -106,7 +106,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 BaseImageDigest,
                 baseImageIsResolved: false,
                 cancellationToken);
-            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint))
+            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint, cancellationToken))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 return true;
@@ -220,7 +220,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 imageBuilder.BaseImageManifestDigest,
                 baseImageIsResolved: true,
                 cancellationToken);
-            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint))
+            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint, cancellationToken))
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 return true;
@@ -320,7 +320,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         if (archiveIncrementalFingerprint is not null && !Log.HasLoggedErrors)
         {
-            ContainerArchiveCache.Save(this, archiveIncrementalFingerprint);
+            ContainerArchiveCache.Save(this, archiveIncrementalFingerprint, cancellationToken);
         }
 
         return !Log.HasLoggedErrors;

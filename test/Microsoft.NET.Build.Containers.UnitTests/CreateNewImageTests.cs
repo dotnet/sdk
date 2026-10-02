@@ -272,7 +272,7 @@ public class CreateNewImageTests
                 BaseManifestDigest,
                 baseImageIsResolved: false,
                 TestContext.CancellationToken);
-            ContainerArchiveCache.Save(original, fingerprint);
+            ContainerArchiveCache.Save(original, fingerprint, TestContext.CancellationToken);
             DateTime archiveWriteTime = File.GetLastWriteTimeUtc(resolvedArchivePath);
 
             CreateNewImage cached = CreateIncrementalTask(publishDirectory);
@@ -289,6 +289,15 @@ public class CreateNewImageTests
             Assert.AreEqual("sha256:digest", cached.GeneratedContainerDigest);
             Assert.AreEqual("test:latest", cached.GeneratedContainerNames.Single().ItemSpec);
             Assert.AreEqual(archiveWriteTime, File.GetLastWriteTimeUtc(resolvedArchivePath));
+
+            using (CancellationTokenSource cancellation = new())
+            {
+                cancellation.Cancel();
+                Assert.ThrowsExactly<OperationCanceledException>(
+                    () => ContainerArchiveCache.TryRestore(cached, fingerprint, cancellation.Token));
+                Assert.ThrowsExactly<OperationCanceledException>(
+                    () => ContainerArchiveCache.Save(original, fingerprint, cancellation.Token));
+            }
 
             CreateNewImage invalidFormat = CreateIncrementalTask(publishDirectory);
             invalidFormat.BaseRegistry = "invalid.example";
@@ -315,7 +324,7 @@ public class CreateNewImageTests
             Assert.AreEqual("", invalidEpoch.GeneratedContainerManifest);
 
             File.WriteAllText(resolvedArchivePath, "different archive");
-            Assert.IsFalse(ContainerArchiveCache.TryRestore(cached, fingerprint));
+            Assert.IsFalse(ContainerArchiveCache.TryRestore(cached, fingerprint, TestContext.CancellationToken));
         }
         finally
         {
