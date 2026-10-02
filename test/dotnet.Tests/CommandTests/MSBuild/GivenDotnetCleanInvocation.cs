@@ -50,6 +50,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             new string[] { "--verbosity:diag" })]
         [DataRow(new string[] { "--disable-build-servers" },
             new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
+        [DataRow(new string[] { "--logger:xyz" },
+            new string[] { "--logger:xyz" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
