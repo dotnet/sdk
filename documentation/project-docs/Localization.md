@@ -1,4 +1,20 @@
 # Localization
+
+## Satellite resources from NuGet packages
+
+The SDK copies package satellites for the Windows pseudo-locales `qps-ploc`,
+`qps-plocm`, and `qps-ploca` into lowercase culture directories during build and
+publish. These names are recognized case-insensitively and do not produce the
+NETSDK1187 casing diagnostic, because Windows NLS and ICU disagree on their casing.
+The original package paths, satellite assembly culture metadata, and embedded resource
+names are preserved; the output culture and destination metadata use lowercase.
+
+Other cultures retain their existing behavior: casing corrections such as `ru-ru`
+to `ru-RU` produce NETSDK1187 (a low-importance message for targets before .NET 7),
+while identifier replacements such as NLS's `ckb` to `ku` are not applied.
+See [resource loading](https://learn.microsoft.com/dotnet/core/dependency-loading/loading-resources)
+and the [satellite compatibility tests](../../test/Microsoft.NET.Build.Tests/GivenThatWeWantToPreserveSatelliteCultures.cs).
+
 ## Summary
 The .NET SDK is translated into 14 languages. In our codebase, you can see the primary resx file lists the strings to be translated. 
 

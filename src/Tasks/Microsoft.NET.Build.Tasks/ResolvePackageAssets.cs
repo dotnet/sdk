@@ -336,7 +336,7 @@ namespace Microsoft.NET.Build.Tasks
         ////////////////////////////////////////////////////////////////////////////////////////////////////
 
         private const int CacheFormatSignature = ('P' << 0) | ('K' << 8) | ('G' << 16) | ('A' << 24);
-        private const int CacheFormatVersion = 12;
+        private const int CacheFormatVersion = 13;
         private static readonly Encoding TextEncoding = Encoding.UTF8;
         private const int SettingsHashLength = 256 / 8;
         private HashAlgorithm CreateSettingsHash() => SHA256.Create();
@@ -1727,7 +1727,14 @@ namespace Microsoft.NET.Build.Tasks
                         // file systems when the locale-specific assets are copied.
                         try
                         {
-                            var normalizedLocale = System.Globalization.CultureInfo.GetCultureInfo(locale).Name;
+                            // NLS and ICU disagree on pseudo-locale casing. Lowercase satellite directories
+                            // work with both, without changing assembly culture or manifest resource names.
+                            bool isPseudoLocale = string.Equals(locale, "qps-ploc", StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(locale, "qps-plocm", StringComparison.OrdinalIgnoreCase)
+                                || string.Equals(locale, "qps-ploca", StringComparison.OrdinalIgnoreCase);
+                            var normalizedLocale = isPseudoLocale
+                                ? locale.ToLowerInvariant()
+                                : System.Globalization.CultureInfo.GetCultureInfo(locale).Name;
 
                             // Only apply CultureInfo's normalization when it is a pure casing change.
                             // CultureInfo can remap locale codes to entirely different locales
@@ -1735,7 +1742,7 @@ namespace Microsoft.NET.Build.Tasks
                             // normalization when the result differs beyond casing.
                             if (string.Equals(normalizedLocale, locale, StringComparison.OrdinalIgnoreCase))
                             {
-                                if (normalizedLocale != locale)
+                                if (normalizedLocale != locale && !isPseudoLocale)
                                 {
                                     var tfm = _lockFile.GetTargetAndThrowIfNotFound(_targetFramework, null).TargetFramework;
                                     if (tfm.Version.Major >= 7)
@@ -1749,8 +1756,8 @@ namespace Microsoft.NET.Build.Tasks
                                         // Roslyn does similar for IDE-only analysis messages.
                                         _task.Log.LogMessage(MessageImportance.Low, Strings.PackageContainsIncorrectlyCasedLocale, package.Name, package.Version.ToNormalizedString(), locale, normalizedLocale);
                                     }
-                                    locale = normalizedLocale;
                                 }
+                                locale = normalizedLocale;
                             }
                         }
                         catch (System.Globalization.CultureNotFoundException cnf)
