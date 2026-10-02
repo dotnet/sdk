@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Xml;
+using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
@@ -10,10 +12,10 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
 internal class DotnetAddPostActionProcessor(
-    Func<string, string, string?, bool>? addPackageReferenceCallback = null,
+    Func<string, string, string?, bool, bool>? addPackageReferenceCallback = null,
     Func<string, string, bool>? addProjectReferenceCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, string, string?, bool> _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
+    private readonly Func<string, string, string?, bool, bool> _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
     private readonly Func<string, string, bool> _addProjectReferenceCallback = addProjectReferenceCallback ?? DotnetCommandCallbacks.AddProjectReference;
 
     public override Guid Id => ActionProcessorId;
@@ -80,7 +82,7 @@ internal class DotnetAddPostActionProcessor(
         bool success = true;
         foreach (string projectFile in projectsToProcess)
         {
-            success &= AddReference(action, projectFile, outputBasePath, creationEffects);
+            success &= AddReference(action, projectFile, outputBasePath, creationEffects, environment.Host.FileSystem);
 
             if (!success)
             {
@@ -111,7 +113,7 @@ internal class DotnetAddPostActionProcessor(
         return foundFiles ?? [];
     }
 
-    private bool AddReference(IPostAction actionConfig, string projectFile, string outputBasePath, ICreationEffects creationEffects)
+    private bool AddReference(IPostAction actionConfig, string projectFile, string outputBasePath, ICreationEffects creationEffects, IPhysicalFileSystem fileSystem)
     {
         if (actionConfig.Args == null || !actionConfig.Args.TryGetValue("reference", out string? referenceToAdd))
         {
@@ -137,7 +139,24 @@ internal class DotnetAddPostActionProcessor(
         else if (string.Equals(referenceType, "package", StringComparison.OrdinalIgnoreCase))
         {
             actionConfig.Args.TryGetValue("version", out string? version);
-            return AddPackageReference(projectFile, referenceToAdd, version);
+
+            // A repository using central package management already owns the version of this
+            // package. Passing the template's version would rewrite the existing PackageVersion
+            // entry and change it for every project in that repository, so the template version
+            // is only supplied when the central file has no entry for the package yet.
+            if (!string.IsNullOrWhiteSpace(version) && HasCentralPackageVersion(fileSystem, projectFile, referenceToAdd))
+            {
+                version = null;
+            }
+
+            // Templates that schedule their own restore post-action opt out of the per-package
+            // restore. Left unset, the add keeps restoring, so package existence and
+            // compatibility are still validated for every other template.
+            bool noRestore = actionConfig.Args.TryGetValue("noRestore", out string? noRestoreValue)
+                && bool.TryParse(noRestoreValue, out bool parsedNoRestore)
+                && parsedNoRestore;
+
+            return AddPackageReference(projectFile, referenceToAdd, version, noRestore);
         }
         else if (string.Equals(referenceType, "framework", StringComparison.OrdinalIgnoreCase))
         {
@@ -151,7 +170,73 @@ internal class DotnetAddPostActionProcessor(
         }
     }
 
-    private bool AddPackageReference(string projectPath, string packageName, string? version)
+    internal static bool HasCentralPackageVersion(IPhysicalFileSystem fileSystem, string projectFile, string packageName)
+    {
+        try
+        {
+            string? directory = Path.GetDirectoryName(Path.GetFullPath(projectFile));
+            while (!string.IsNullOrEmpty(directory))
+            {
+                string candidate = Path.Combine(directory, "Directory.Packages.props");
+                if (fileSystem.FileExists(candidate))
+                {
+                    // NuGet imports the nearest Directory.Packages.props, so the search stops here
+                    // whether or not this one declares the package.
+                    return ContainsPackageVersion(fileSystem, candidate, packageName);
+                }
+
+                directory = Path.GetDirectoryName(directory);
+            }
+        }
+        catch (ArgumentException)
+        {
+            // An unusable project path is handled by the caller; fall through to the default.
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+
+        return false;
+    }
+
+    private static bool ContainsPackageVersion(IPhysicalFileSystem fileSystem, string propsFile, string packageName)
+    {
+        try
+        {
+            XDocument document = XDocument.Parse(fileSystem.ReadAllText(propsFile));
+            foreach (XElement element in document.Descendants())
+            {
+                if (!string.Equals(element.Name.LocalName, "PackageVersion", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                string? declared = (string?)element.Attribute("Include") ?? (string?)element.Attribute("Update");
+                if (string.Equals(declared, packageName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+        }
+        catch (XmlException)
+        {
+            // A central file we cannot parse is treated as declaring nothing, which keeps the
+            // previous behaviour rather than silently dropping the version.
+        }
+        catch (IOException)
+        {
+        }
+        catch (UnauthorizedAccessException)
+        {
+        }
+
+        return false;
+    }
+
+    private bool AddPackageReference(string projectPath, string packageName, string? version, bool noRestore)
     {
         try
         {
@@ -163,7 +248,7 @@ internal class DotnetAddPostActionProcessor(
             {
                 Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddPackageReference_WithVersion, packageName, version, projectPath));
             }
-            bool succeeded = _addPackageReferenceCallback(projectPath, packageName, version);
+            bool succeeded = _addPackageReferenceCallback(projectPath, packageName, version, noRestore);
             if (succeeded)
             {
                 Reporter.Output.WriteLine(CliCommandStrings.PostAction_AddReference_Succeeded);
