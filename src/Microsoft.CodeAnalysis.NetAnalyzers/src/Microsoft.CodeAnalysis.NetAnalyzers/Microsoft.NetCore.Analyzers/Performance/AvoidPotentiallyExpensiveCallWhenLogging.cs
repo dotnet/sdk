@@ -257,11 +257,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
         internal sealed class RequiredSymbols(
+            INamedTypeSymbol iLoggerType,
             IMethodSymbol logMethod,
             IMethodSymbol isEnabledMethod,
             Dictionary<IMethodSymbol, int> logExtensionsMethodsAndLevel,
             INamedTypeSymbol? loggerMessageAttributeType)
         {
+            private readonly INamedTypeSymbol _iLoggerType = iLoggerType;
             private readonly IMethodSymbol _logMethod = logMethod;
             private readonly IMethodSymbol _isEnabledMethod = isEnabledMethod;
             private readonly Dictionary<IMethodSymbol, int> _logExtensionsMethodsAndLevel = logExtensionsMethodsAndLevel;
@@ -295,6 +297,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
 
                 return new RequiredSymbols(
+                    iLoggerType,
                     logMethod,
                     isEnabledMethod,
                     logExtensionsMethods,
@@ -375,6 +378,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 //   1. If the 'ILogger.IsEnabled' invocation is negated, the 'WhenTrue' branch must contain a return.
                 //   2. If the 'ILogger.IsEnabled' invocation is not negated, the 'WhenTrue' branch must contain the log invocation.
                 // This is also not perfect, but should be good enough to prevent false positives.
+                var logTargetMethod = logInvocation.TargetMethod.ReducedFrom ?? logInvocation.TargetMethod;
+                var isLoggerMessageInvocation = logTargetMethod.HasAnyAttribute(_loggerMessageAttributeType);
+
                 var currentBlockAncestor = logInvocation.GetAncestor<IBlockOperation>(OperationKind.Block);
                 while (currentBlockAncestor is not null)
                 {
@@ -410,7 +416,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     bool IsValidIsEnabledGuardInvocation(IInvocationOperation invocation)
                     {
                         if (!IsIsEnabledInvocation(invocation) ||
-                            !AreInvocationsOnSameInstance(logInvocation, invocation) ||
+                            !IsSameLoggerInstance(invocation) ||
                             !IsSameLogLevel(invocation.Arguments[0]))
                         {
                             return false;
@@ -429,12 +435,87 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         invocation.TargetMethod.IsOverrideOrImplementationOfInterfaceMember(_isEnabledMethod);
                 }
 
-                static bool AreInvocationsOnSameInstance(IInvocationOperation invocation1, IInvocationOperation invocation2)
+                bool IsSameLoggerInstance(IInvocationOperation isEnabledInvocation)
                 {
-                    return SymbolEqualityComparer.Default.Equals(
-                        GetInstanceResolvingConditionalAccess(invocation1).GetReferencedMemberOrLocalOrParameter(),
-                        GetInstanceResolvingConditionalAccess(invocation2).GetReferencedMemberOrLocalOrParameter());
+                    var isEnabledInstance = GetInstanceResolvingConditionalAccess(isEnabledInvocation);
+                    var isEnabledInstanceSymbol = isEnabledInstance.GetReferencedMemberOrLocalOrParameter();
+
+                    if (!isLoggerMessageInvocation)
+                    {
+                        return SymbolEqualityComparer.Default.Equals(
+                            GetInstanceResolvingConditionalAccess(logInvocation).GetReferencedMemberOrLocalOrParameter(),
+                            isEnabledInstanceSymbol);
+                    }
+
+                    // For [LoggerMessage] methods, require a resolvable logger so that an unrelated guard such as
+                    // 'GetLogger().IsEnabled(...)' is not matched against a log invocation on the implicit 'this' instance.
+                    if (isEnabledInstanceSymbol is null)
+                    {
+                        return false;
+                    }
+
+                    if (SymbolEqualityComparer.Default.Equals(
+                        GetInstanceResolvingConditionalAccess(logInvocation).GetReferencedMemberOrLocalOrParameter(),
+                        isEnabledInstanceSymbol))
+                    {
+                        return true;
+                    }
+
+                    // A [LoggerMessage] method that is not invoked as an extension method gets its logger
+                    // from an ILogger parameter, For example: 'Log.SomeMessage(logger, argument)'.
+                    var loggerArgument = logInvocation.Arguments.FirstOrDefault(a => IsLoggerType(a.Parameter?.Type));
+                    if (loggerArgument is not null)
+                    {
+                        return SymbolEqualityComparer.Default.Equals(
+                            loggerArgument.Value.GetReferencedMemberOrLocalOrParameter(),
+                            isEnabledInstanceSymbol);
+                    }
+
+                    // An instance [LoggerMessage] method without an ILogger parameter gets its logger from an ILogger field,
+                    // property or primary constructor parameter of its containing type. For example: 'this.SomeMessage(argument)'.
+                    return !logTargetMethod.IsStatic && IsLoggerMemberOfLogInvocationInstance(isEnabledInstance!);
                 }
+
+                bool IsLoggerMemberOfLogInvocationInstance(IOperation isEnabledInstance)
+                {
+                    var containingType = logTargetMethod.ContainingType;
+                    var logInstance = logInvocation.Instance?.WalkDownConversion();
+
+                    switch (isEnabledInstance)
+                    {
+                        case IMemberReferenceOperation memberReference:
+                            if (!containingType.GetBaseTypesAndThis().Any(t => SymbolEqualityComparer.Default.Equals(t.OriginalDefinition, memberReference.Member.ContainingType.OriginalDefinition)))
+                            {
+                                return false;
+                            }
+
+                            var memberInstance = memberReference.Instance?.WalkDownConversion();
+                            if (memberInstance is null)
+                            {
+                                // Static member of the containing type.
+                                return true;
+                            }
+
+                            if (memberInstance is IInstanceReferenceOperation)
+                            {
+                                return logInstance is IInstanceReferenceOperation;
+                            }
+
+                            return memberInstance.GetReferencedMemberOrLocalOrParameter() is { } memberInstanceSymbol &&
+                                SymbolEqualityComparer.Default.Equals(memberInstanceSymbol, logInstance.GetReferencedMemberOrLocalOrParameter());
+
+                        case IParameterReferenceOperation parameterReference:
+                            // Primary constructor parameter (or a parameter of the constructor being executed), which
+                            // can only be the logger of the current instance.
+                            return logInstance is IInstanceReferenceOperation &&
+                                parameterReference.Parameter.ContainingSymbol is IMethodSymbol { MethodKind: MethodKind.Constructor };
+
+                        default:
+                            return false;
+                    }
+                }
+
+                bool IsLoggerType(ITypeSymbol? type) => type.DerivesFrom(_iLoggerType);
 
                 static IOperation? GetInstanceResolvingConditionalAccess(IInvocationOperation invocation)
                 {
