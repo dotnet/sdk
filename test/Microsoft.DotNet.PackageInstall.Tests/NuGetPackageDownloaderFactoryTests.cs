@@ -30,7 +30,9 @@ public class NuGetPackageDownloaderFactoryTests : SdkTest
         downloader.Should().BeOfType<NuGetPackageDownloader>();
     }
 
+    // Requesting verification makes the constructor read DOTNET_NUGET_SIGNATURE_VERIFICATION, which another test mutates.
     [TestMethod]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void CreateForWorkloads_WithAllParameters_ReturnsConfiguredDownloader()
     {
         var tempDir = GetTempDir();
@@ -64,9 +66,9 @@ public class NuGetPackageDownloaderFactoryTests : SdkTest
         downloader.Should().NotBeNull();
     }
 
-    // The production constructor reads this process-wide variable, while other tests do not acquire a matching lock.
+    // The production constructor reads this process-wide variable.
     [TestMethod]
-    [DoNotParallelize]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void Constructor_WhenVerifyRequestedButPlatformUnsupported_LogsMessage()
     {
         // On non-Windows, requesting verification without the env var should log a message.
