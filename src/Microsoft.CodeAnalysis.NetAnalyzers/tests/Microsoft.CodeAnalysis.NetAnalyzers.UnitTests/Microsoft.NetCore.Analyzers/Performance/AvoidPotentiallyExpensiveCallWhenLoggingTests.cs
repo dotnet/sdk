@@ -3173,8 +3173,11 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
-        public async Task GuardedWorkInInstanceLoggerMessageWithLoggerProperty_NoDiagnostic_CS()
+        public async Task GuardedWorkInInstanceLoggerMessageWithOnlyLoggerProperty_ReportsDiagnostic_CS()
         {
+            // The logging source generator only resolves a logger from a field (or a primary constructor
+            // parameter), never a property, so a type with only an 'ILogger' property has no valid logger
+            // source for the generated method; guarding on the property therefore does not apply here.
             string source = """
                 using System;
                 using Microsoft.Extensions.Logging;
@@ -3190,7 +3193,156 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     {
                         if (Logger.IsEnabled(LogLevel.Information))
                         {
-                            StaticLogLevel(ExpensiveMethodCall());
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInInstanceLoggerMessageWithLoggerFieldAndProperty_ReportsDiagnostic_CS()
+        {
+            // The source generator prioritizes an 'ILogger' field over an 'ILogger' property, so guarding on
+            // 'OtherLogger' does not guard the generated method, which actually logs through '_logger'.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    private readonly ILogger _logger;
+
+                    public ILogger OtherLogger { get; }
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (OtherLogger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithAmbiguousLoggerFields_ReportsDiagnostic_CS()
+        {
+            // The source generator reports an error and does not emit the method when more than one 'ILogger'
+            // field candidate exists, so no guard can be recognized for the generated method in that case,
+            // regardless of which (or whether any) of the ambiguous fields is checked.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C
+                {
+                    private readonly ILogger _logger;
+                    private readonly ILogger _otherLogger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithAmbiguousPrimaryConstructorLoggerParameters_ReportsDiagnostic_CS()
+        {
+            // The source generator reports an error and does not emit the method when more than one 'ILogger'
+            // primary constructor parameter candidate exists (and there is no field), so no guard can be
+            // recognized for the generated method in that case.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C(ILogger logger, ILogger otherLogger)
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInStaticLoggerMessageWithGenericLoggerConstraint_NoDiagnostic_CS()
+        {
+            // 'TLogger' is constrained to 'ILogger' without a 'class' constraint, so converting a 'TLogger'
+            // value to 'ILogger' is a boxing conversion, not the identity/implicit-reference conversion the
+            // source generator requires; the generator therefore uses the 'logger' parameter, not 'candidate'.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+                }
+
+                struct FakeLogger : ILogger
+                {
+                    public IDisposable BeginScope<TState>(TState state) { return default; }
+                    public bool IsEnabled(LogLevel logLevel) { return true; }
+                    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) { }
+                }
+
+                class C
+                {
+                    void M(FakeLogger candidate, ILogger logger)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.Message(candidate, logger, ExpensiveMethodCall());
                         }
                     }
 
@@ -3263,6 +3415,46 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         if (base._logger.IsEnabled(LogLevel.Information))
                         {
                             StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithAmbiguousLoggerFieldsAcrossBaseAndDerivedTypes_ReportsDiagnostic_CS()
+        {
+            // An accessible (non-private) 'ILogger' field on a base type is still a candidate alongside a field
+            // declared on the derived type, so the source generator is unable to unambiguously resolve a logger
+            // field here either, even though the two candidates are declared in different types.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                class B
+                {
+                    protected ILogger _baseLogger;
+                }
+
+                partial class C : B
+                {
+                    private readonly ILogger _logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
                         }
                     }
 
@@ -3655,6 +3847,45 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         if (_logger.IsEnabled(LogLevel.Information))
                         {
                             StaticLogLevel(logger, [|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInStaticLoggerMessageWithLoggerArgumentFieldOnDifferentReceiver_ReportsDiagnostic_CS()
+        {
+            // 'other._logger' and '_logger' both resolve to the same '_logger' field symbol, but they are
+            // accessed through different receivers ('other' vs. the implicit 'this'), so they are not the
+            // same logger instance and the guard does not apply to the logged call.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    public static partial void StaticLogLevel(ILogger logger, string argument);
+                    public static partial void StaticLogLevel(ILogger logger, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    private readonly ILogger _logger;
+
+                    void M(C other)
+                    {
+                        if (_logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.StaticLogLevel(other._logger, [|ExpensiveMethodCall()|]);
                         }
                     }
 
