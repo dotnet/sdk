@@ -264,10 +264,10 @@ internal static class ContainerArchiveCache
         byte[] buffer = new byte[81920];
         cancellationToken.ThrowIfCancellationRequested();
         int read;
-        while ((read = stream.Read(buffer, 0, buffer.Length)) != 0)
+        while ((read = stream.Read(buffer.AsSpan())) != 0)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            hash.AppendData(buffer, 0, read);
+            hash.AppendData(buffer.AsSpan(0, read));
         }
 
         cancellationToken.ThrowIfCancellationRequested();
