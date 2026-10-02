@@ -109,81 +109,42 @@ log are unaffected. Set `DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT` to disable i
 
 ## CLI Activity Duration Metrics
 
-The CLI separates its existing telemetry activities (`dotnet-cli`) from detailed,
-opt-in performance activities (`dotnet-cli-perf`). The performance source contains
-`msbuild-submission`, `release-property-discovery`, and the run/test discovery
-activities described below. Built-in SDK telemetry continues to subscribe only to
-`dotnet-cli`; it does not enable or export the performance activities.
-
-For explicit performance collection, the CLI bridges completed activities from both
-sources to a `System.Diagnostics.Metrics` histogram:
+Performance collectors such as PerfStar can opt into CLI phase timings by enabling
+the `dotnet-cli-perf` meter. Built-in SDK telemetry and its OTLP exporter do not
+enable this collection.
 
 | Meter | Instrument | Unit | Tag |
 | --- | --- | --- | --- |
 | `dotnet-cli-perf` | `dotnet.cli.activity.duration` | `s` (seconds) | `activity.name` |
 
-Each stopped activity records one measurement equal to its `Activity.Duration.TotalSeconds`.
-The `activity.name` tag contains the operation name, such as `main`, `first-time-use`,
-`parse`, `invocation`, `release-property-discovery`, or `msbuild-submission`, rather than
-the display name or command-line arguments.
-The bridge requests activities only while a metric collector explicitly enables this
-histogram. Trace listeners can independently request activities from either source.
-Metric collection does not mark otherwise unsampled traces as recorded. Without a
-collector for the performance source or histogram, the new scopes do not allocate
-activities or record durations; initialization and sampling checks still have a cost.
+Each completed activity from either source (`dotnet-cli` or `dotnet-cli-perf`)
+records its duration, tagged by operation name. Collectors own export and flushing.
+To collect activity spans, subscribe to the relevant activity source; enabling
+metrics alone does not force trace recording.
 
-The `release-property-discovery` activity covers project or solution discovery,
-evaluation, and reading `PackRelease` or `PublishRelease` to select the default
-configuration. It ends before the subsequent MSBuild submission. When release-property
-discovery is disabled or the configuration is explicitly supplied, that work is skipped
-and no discovery activity is emitted.
-
-Run and Microsoft.Testing.Platform test commands also use MSBuild before their main
-build invocation. Those paths have the following activities:
+The `dotnet-cli-perf` source contains these activities:
 
 | Activity | Measured work |
 | --- | --- |
-| `project-selection` | The shared run/test selector loads and, when necessary, evaluates a project, then creates the project instance used for framework, device, or capability checks. Cached project-instance snapshots are included too. |
-| `device-discovery` | Optional restore, `ComputeAvailableDevices` execution, and reading its results, when that target exists. Interactive device prompts are outside this activity. |
-| `test-project-discovery` | MTP evaluates the outer project and relevant target-framework-specific projects before automatic device selection. An explicitly supplied device skips this discovery. |
-| `test-target-framework-discovery` | MTP evaluates framework properties for an explicit `--device` when no framework was supplied. Interactive framework prompts are outside this activity. |
-| `test-environment-discovery` | MTP evaluates environment-variable support and prepares the corresponding properties file before forwarding a project build. No activity is emitted when that check is unnecessary. |
+| `msbuild-submission` | Synchronous MSBuild invocation, including child/server wait time. For file-based projects, covers `BeginBuild` through `EndBuild`. |
+| `release-property-discovery` | Project/solution discovery and `PackRelease` / `PublishRelease` evaluation to choose the default configuration. |
+| `project-selection` | Run/test project loading, evaluation when needed, and project-instance creation, including cached snapshots. |
+| `device-discovery` | Optional restore, `ComputeAvailableDevices` execution, and reading its results. |
+| `test-project-discovery` | Microsoft.Testing.Platform (MTP) outer- and inner-framework project evaluation for automatic device selection. |
+| `test-target-framework-discovery` | MTP framework evaluation when `--device` is given without a target framework. |
+| `test-environment-discovery` | MTP environment-variable support checks and properties-file preparation before a project build. |
 
-These are command phases, not a classification of engine ownership or a fixed position
-in the command: preparation can itself execute MSBuild targets, and shared discovery
-helpers can also run after a build or with `--no-build`. Do not assume that all MSBuild
-work is inside `msbuild-submission`, or that every `project-selection` measurement
-represents a fresh evaluation.
+Skipped phases emit no activity; failed invocations still record their duration.
+Interactive device/framework prompts are excluded. Separate restore and build
+invocations produce separate submission activities.
 
-The `msbuild-submission` activity covers the synchronous MSBuild invocation, including
-waiting for an out-of-process or server build to finish. CLI argument parsing, project
-discovery, and Pack/Publish release-setting discovery happen outside this scope. Separate restore and
-build invocations produce separate activities. For file-based projects, the activity
-starts immediately before `BuildManager.BeginBuild` and remains open through
-`BuildManager.EndBuild`; paths that skip MSBuild, such as an up-to-date file-based
-application, do not emit it. Failed invocations also stop and record their activity.
+Timings are **inclusive**: do not add nested durations or subtract independently
+aggregated percentiles. Preparation can itself evaluate or build projects, so these
+are not startup-to-first-submission measurements. Timing scopes do not change
+forwarded trace context.
 
-Performance collectors, such as PerfStar, must explicitly subscribe to the
-`dotnet-cli-perf` meter to collect durations. To collect the activity spans themselves,
-subscribe to the `dotnet-cli-perf` activity source as well as `dotnet-cli` for the
-existing CLI phases. Enabling the SDK's built-in telemetry or its OTLP exporter alone
-does not opt into this collection. The performance collector owns exporting and flushing
-these measurements; the instrumentation itself does not configure an exporter or send
-network requests, and does not require the SDK's telemetry exporters to be enabled.
-
-When explicitly enabled, performance activities participate in the current trace context
-and can parent existing in-process CLI and MSBuild activities. The timing scopes do not
-change the trace context forwarded to child processes or MSBuild servers; those spans
-are not explicitly reparented under `msbuild-submission`.
-
-Activity durations are inclusive: `invocation` includes its `msbuild-submission`
-children, and an in-process submission can contain the logger's separate `msbuild` activity.
-Do not add these nested durations together. Subtracting non-overlapping submission
-durations from their enclosing command measures work outside those submissions,
-including work afterward or between submissions, not strictly time before the first
-submission. The `main` activity includes process startup, whereas `invocation` excludes
-earlier initialization and argument parsing. Compute differences for matching
-invocations before aggregation; subtracting independent percentiles is not equivalent.
+Without a collector for the performance source or histogram, the new activities are
+not created. Initialization and sampling checks still have a cost.
 
 ## Common Properties Collected
 
