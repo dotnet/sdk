@@ -44,6 +44,7 @@
     <VersionFeature80ForWorkloads>$(VersionFeature80)</VersionFeature80ForWorkloads>
     <VersionFeature90ForWorkloads>$(VersionFeature90)</VersionFeature90ForWorkloads>
     <VersionFeature100ForWorkloads>$(VersionFeature100)</VersionFeature100ForWorkloads>
+    <Net11RuntimeVersionForWorkloads>11.0.0-preview.7.26381.103</Net11RuntimeVersionForWorkloads>
   </PropertyGroup>
   <PropertyGroup Label="Production dependencies">
     <MicrosoftCssParserVersion>1.0.0-20230414.1</MicrosoftCssParserVersion>
@@ -122,6 +123,7 @@
     <!-- Dependencies from https://github.com/dotnet/emsdk -->
     <!-- emscripten versions, these are are included in package IDs and need to be kept in sync with emsdk -->
     <EmscriptenVersionCurrent>6.0.2</EmscriptenVersionCurrent>
+    <EmscriptenVersionNet11>6.0.2</EmscriptenVersionNet11>
     <EmscriptenVersionNet10>3.1.56</EmscriptenVersionNet10>
     <EmscriptenVersionNet9>3.1.56</EmscriptenVersionNet9>
     <EmscriptenVersionNet8>3.1.34</EmscriptenVersionNet8>
