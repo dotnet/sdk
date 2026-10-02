@@ -295,7 +295,7 @@ public class IncrementalLayoutTests : SdkTest
 
         string staleOutput = CreateFile(project.Root, "layout", "stale.nupkg", "stale");
         File.WriteAllText(source, "changed-before-copy");
-        SetLastWriteTimeAfter(source, File.GetLastWriteTimeUtc(project.CompletionFile));
+        SetLastWriteTimeAfter(source, File.GetLastWriteTimeUtc(project.CompletionFile).AddSeconds(2));
         project.BuildShouldFail("AfterDelete");
 
         File.Exists(staleOutput).Should().BeFalse();
@@ -306,7 +306,7 @@ public class IncrementalLayoutTests : SdkTest
         File.ReadAllText(project.Output("template.nupkg")).Should().Be("changed-before-copy");
 
         File.WriteAllText(source, "changed-before-completion");
-        SetLastWriteTimeAfter(source, File.GetLastWriteTimeUtc(project.CompletionFile));
+        SetLastWriteTimeAfter(source, File.GetLastWriteTimeUtc(project.CompletionFile).AddSeconds(2));
         project.BuildShouldFail("AfterCopy");
 
         File.ReadAllText(project.Output("template.nupkg")).Should().Be("changed-before-completion");
@@ -342,6 +342,7 @@ public class IncrementalLayoutTests : SdkTest
 
                   <PropertyGroup>
                     <MajorMinorVersion>11.0</MajorMinorVersion>
+                    <TemplateFrameworkVersion>11.0</TemplateFrameworkVersion>
                     <ProductMonikerRid>win-x64</ProductMonikerRid>
                     <BundledInputRoot>{{Escape(Path.GetDirectoryName(bundledTemplate)!)}}</BundledInputRoot>
                     <IntermediateOutputPath>{{Escape(Path.Combine(root, "obj"))}}/</IntermediateOutputPath>
