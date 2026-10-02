@@ -24,8 +24,8 @@
   <Target Name="_GenerateWorkloadManifestFiles">
     <ItemGroup>
       <!-- When changing 'NetVersion', also change in the dotnet/runtime repo the value of 'PackageId' in Microsoft.NET.Runtime.WebAssembly.Templates.csproj -->
-      <_WorkloadManifestValues Include="NetVersion" Value="net11" /> <!-- NetCurrent -->
-      <_WorkloadManifestValues Include="FrameworkVersionCurrent" Value="11.0" />
+      <_WorkloadManifestValues Include="NetVersion" Value="net12" />
+      <_WorkloadManifestValues Include="FrameworkVersionCurrent" Value="12.0" />
       <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
       <_WorkloadManifestValues Include="RuntimeVersion" Value="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
       <_WorkloadManifestValues Include="RuntimeVersionNet10" Value="10.0.$(VersionFeature100ForWorkloads)" />
