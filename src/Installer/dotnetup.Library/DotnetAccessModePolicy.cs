@@ -11,13 +11,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 internal static class DotnetAccessModePolicy
 {
     /// <summary>
-    /// Returns true when the given <see cref="DotnetAccessMode"/> implies we should
-    /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
-    /// </summary>
-    public static bool ShouldReplaceSystemConfiguration(DotnetAccessMode accessMode) =>
-        accessMode is DotnetAccessMode.Everywhere;
-
-    /// <summary>
     /// Returns true when the mode shadows the system dotnet and migration should therefore be
     /// selected by default to preserve the installed SDKs and runtimes.
     /// </summary>

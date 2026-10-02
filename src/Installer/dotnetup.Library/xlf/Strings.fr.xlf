@@ -341,9 +341,269 @@ Or open a new terminal.</target>
         <target state="new">Display dotnetup information.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitBannerDescription">
+        <source>.NET toolchain manager for developers.</source>
+        <target state="new">.NET toolchain manager for developers.</target>
+        <note>{Locked=".NET"}</note>
+      </trans-unit>
       <trans-unit id="InitCommandDescription">
         <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
         <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitDryRunAccessModeLabel">
+        <source>Access mode</source>
+        <target state="new">Access mode</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitDryRunChannelLabel">
+        <source>SDK channel</source>
+        <target state="new">SDK channel</target>
+        <note>{Locked="SDK"}</note>
+      </trans-unit>
+      <trans-unit id="InitDryRunInstallLocationLabel">
+        <source>Installs in</source>
+        <target state="new">Installs in</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitDryRunMigrateCount">
+        <source>Yes ({0} install(s))</source>
+        <target state="new">Yes ({0} install(s))</target>
+        <note>{0} is the number of system-managed .NET installations that would be migrated.</note>
+      </trans-unit>
+      <trans-unit id="InitDryRunMigrateLabel">
+        <source>Migrate system installs</source>
+        <target state="new">Migrate system installs</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitDryRunNotice">
+        <source>(dry run — no changes were made to your machine)</source>
+        <target state="new">(dry run — no changes were made to your machine)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitEnvironmentSetupProgress">
+        <source>Setting up your environment.</source>
+        <target state="new">Setting up your environment.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormAccept">
+        <source>Accept and install</source>
+        <target state="new">Accept and install</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormAccessModeDescription">
+        <source>Controls where the dotnet you install is available. Change it later with 'dotnetup env set'.</source>
+        <target state="new">Controls where the dotnet you install is available. Change it later with 'dotnetup env set'.</target>
+        <note>{Locked="dotnet"}{Locked="dotnetup env set"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormAccessModeEverywhereHelp">
+        <source>Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation).</source>
+        <target state="new">Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation).</target>
+        <note>{Locked="PATH"}{Locked="dotnetup"}{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormAccessModeLabel">
+        <source>Access mode</source>
+        <target state="new">Access mode</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormAccessModeNoneHelp">
+        <source>Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected.</source>
+        <target state="new">Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected.</target>
+        <note>{Locked=".NET"}{Locked="dotnetup dotnet"}{Locked="dotnet"}{Locked="PATH"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormAccessModeShellHelp">
+        <source>Configure your shell profile so shell sessions use dotnetup's .NET installs.</source>
+        <target state="new">Configure your shell profile so shell sessions use dotnetup's .NET installs.</target>
+        <note>{Locked="dotnetup"}{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormChannelDailyHelp">
+        <source>Latest unsigned daily build</source>
+        <target state="new">Latest unsigned daily build</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormChannelDescription">
+        <source>Determines which version of .NET to install and how it stays updated — 'latest', 'lts', 'preview', 'daily', or a version like '10.0'.</source>
+        <target state="new">Determines which version of .NET to install and how it stays updated — 'latest', 'lts', 'preview', 'daily', or a version like '10.0'.</target>
+        <note>{Locked=".NET"}{Locked="latest"}{Locked="lts"}{Locked="preview"}{Locked="daily"}{Locked="10.0"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormChannelFromGlobalJson">
+        <source>From your global.json</source>
+        <target state="new">From your global.json</target>
+        <note>{Locked="global.json"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormChannelLabel">
+        <source>SDK Channel</source>
+        <target state="new">SDK Channel</target>
+        <note>{Locked="SDK"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormChannelLatestHelp">
+        <source>Latest stable release</source>
+        <target state="new">Latest stable release</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormChannelLtsHelp">
+        <source>Long Term Support</source>
+        <target state="new">Long Term Support</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormChannelOther">
+        <source>&lt;other&gt;</source>
+        <target state="new">&lt;other&gt;</target>
+        <note>Choice for entering a custom .NET channel. Preserve the angle brackets.</note>
+      </trans-unit>
+      <trans-unit id="InitFormChannelOtherHelp">
+        <source>Type your own, e.g. 10.0.1xx</source>
+        <target state="new">Type your own, e.g. 10.0.1xx</target>
+        <note>10.0.1xx is an example .NET SDK feature-band channel. {Locked="10.0.1xx"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormChannelPreviewHelp">
+        <source>Latest preview</source>
+        <target state="new">Latest preview</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormChannelRequested">
+        <source>Requested by this install command</source>
+        <target state="new">Requested by this install command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormChoiceNo">
+        <source>No</source>
+        <target state="new">No</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormChoiceYes">
+        <source>Yes</source>
+        <target state="new">Yes</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormConfirmationPrompt">
+        <source>Install .NET with these settings?</source>
+        <target state="new">Install .NET with these settings?</target>
+        <note>{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormCustomChannelPrompt">
+        <source>type a channel</source>
+        <target state="new">type a channel</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormDefaultSuffix">
+        <source>(default)</source>
+        <target state="new">(default)</target>
+        <note>Appended to the recommended choice in the init form.</note>
+      </trans-unit>
+      <trans-unit id="InitFormDetailDotnetRoot">
+        <source>Sets DOTNET_ROOT.</source>
+        <target state="new">Sets DOTNET_ROOT.</target>
+        <note>{Locked="DOTNET_ROOT"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormDetailEditShellProfile">
+        <source>Edits your shell profile.</source>
+        <target state="new">Edits your shell profile.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormDetailEdits">
+        <source>Edits:</source>
+        <target state="new">Edits:</target>
+        <note>Shown before the path of a shell profile that dotnetup will edit.</note>
+      </trans-unit>
+      <trans-unit id="InitFormDetailGlobalJsonSource">
+        <source>From global.json:</source>
+        <target state="new">From global.json:</target>
+        <note>{Locked="global.json"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormDetailShellOnly">
+        <source>Only applications launched from the shell use dotnetup's .NET installs.</source>
+        <target state="new">Only applications launched from the shell use dotnetup's .NET installs.</target>
+        <note>{Locked="dotnetup"}{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormDetailSystemPath">
+        <source>Adds dotnetup's .NET to the system PATH, ahead of any machine-wide install.</source>
+        <target state="new">Adds dotnetup's .NET to the system PATH, ahead of any machine-wide install.</target>
+        <note>{Locked="dotnetup"}{Locked=".NET"}{Locked="PATH"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormInstallLocation">
+        <source>dotnetup will install .NET SDKs and runtimes in {0}.</source>
+        <target state="new">dotnetup will install .NET SDKs and runtimes in {0}.</target>
+        <note>{0} is the styled installation path. {Locked="dotnetup"}{Locked=".NET"}{Locked="SDK"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormMigrateLabel">
+        <source>Migrate system installs</source>
+        <target state="new">Migrate system installs</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitFormMigrateNoHelp">
+        <source>Don't install any additional .NET SDKs or runtimes.</source>
+        <target state="new">Don't install any additional .NET SDKs or runtimes.</target>
+        <note>{Locked=".NET"}{Locked="SDK"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormMigrateYesHelp">
+        <source>Install the SDK and runtime versions you already have system-wide, so those versions stay available.</source>
+        <target state="new">Install the SDK and runtime versions you already have system-wide, so those versions stay available.</target>
+        <note>{Locked="SDK"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormMigrationAdditionalVersions">
+        <source>{0}, and {1} more</source>
+        <target state="new">{0}, and {1} more</target>
+        <note>{0} is a comma-separated list of versions; {1} is the number of additional versions.</note>
+      </trans-unit>
+      <trans-unit id="InitFormMigrationAspNetCoreRuntimesLabel">
+        <source>ASP.NET Core runtimes:</source>
+        <target state="new">ASP.NET Core runtimes:</target>
+        <note>{Locked="ASP.NET Core"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormMigrationRuntimesLabel">
+        <source>.NET runtimes:</source>
+        <target state="new">.NET runtimes:</target>
+        <note>{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormMigrationSdksLabel">
+        <source>.NET SDKs:</source>
+        <target state="new">.NET SDKs:</target>
+        <note>{Locked=".NET"}{Locked="SDK"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormMigrationWindowsDesktopRuntimesLabel">
+        <source>.NET Desktop runtimes:</source>
+        <target state="new">.NET Desktop runtimes:</target>
+        <note>{Locked=".NET Desktop"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormNavigationCustomInput">
+        <source>type · ↑/↓ choose · Enter set · Esc back</source>
+        <target state="new">type · ↑/↓ choose · Enter set · Esc back</target>
+        <note>{Locked="↑/↓"}{Locked="Enter"}{Locked="Esc"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormNavigationField">
+        <source>↑/↓ move · Enter select · Esc back</source>
+        <target state="new">↑/↓ move · Enter select · Esc back</target>
+        <note>{Locked="↑/↓"}{Locked="Enter"}{Locked="Esc"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormNavigationForm">
+        <source>↑/↓ move · Enter edit/accept · Esc quit</source>
+        <target state="new">↑/↓ move · Enter edit/accept · Esc quit</target>
+        <note>{Locked="↑/↓"}{Locked="Enter"}{Locked="Esc"}</note>
+      </trans-unit>
+      <trans-unit id="InitFormWelcome">
+        <source>Welcome to dotnetup!</source>
+        <target state="new">Welcome to dotnetup!</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="InitInstallingToFromGlobalJson">
+        <source>Installing to {0} as specified by {1}.</source>
+        <target state="new">Installing to {0} as specified by {1}.</target>
+        <note>{0} is the styled installation path; {1} is the styled global.json path.</note>
+      </trans-unit>
+      <trans-unit id="InitLocalSdkPathMessage">
+        <source>A global.json here specifies a local .NET SDK path, so dotnetup left your environment unchanged. Use 'dotnetup install' to install .NET to that path.</source>
+        <target state="new">A global.json here specifies a local .NET SDK path, so dotnetup left your environment unchanged. Use 'dotnetup install' to install .NET to that path.</target>
+        <note>{Locked="global.json"}{Locked=".NET"}{Locked="dotnetup"}{Locked="dotnetup install"}</note>
+      </trans-unit>
+      <trans-unit id="InitManagedInstallLocation">
+        <source>You can find dotnetup managed installs at {0}.</source>
+        <target state="new">You can find dotnetup managed installs at {0}.</target>
+        <note>{0} is the styled installation path. {Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="InitSetupComplete">
+        <source>Setup complete!</source>
+        <target state="new">Setup complete!</target>
         <note />
       </trans-unit>
       <trans-unit id="ListCommandDescription">

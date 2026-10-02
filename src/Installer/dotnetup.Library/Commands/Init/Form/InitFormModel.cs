@@ -110,7 +110,7 @@ internal sealed class InitFormModel
         {
             if (choiceIndex == _globalJsonChannelIndex && _globalJsonPath is not null)
             {
-                lines.Add(new DetailLine("From global.json:", _globalJsonPath));
+                lines.Add(new DetailLine(Strings.InitFormDetailGlobalJsonSource, _globalJsonPath));
             }
         }
         else if (ReferenceEquals(field, _accessModeField))
@@ -139,7 +139,7 @@ internal sealed class InitFormModel
             {
                 var lines = new List<DetailLine>
                 {
-                    new("Only applications launched from the shell use dotnetup's .NET installs."),
+                    new(Strings.InitFormDetailShellOnly),
                 };
                 AddProfileLines(lines);
                 return lines;
@@ -149,8 +149,8 @@ internal sealed class InitFormModel
             {
                 var lines = new List<DetailLine>();
                 AddProfileLines(lines);
-                lines.Add(new DetailLine("Adds dotnetup's .NET to the system PATH, ahead of any machine-wide install."));
-                lines.Add(new DetailLine("Sets DOTNET_ROOT."));
+                lines.Add(new DetailLine(Strings.InitFormDetailSystemPath));
+                lines.Add(new DetailLine(Strings.InitFormDetailDotnetRoot));
                 return lines;
             }
 
@@ -163,13 +163,13 @@ internal sealed class InitFormModel
     {
         if (_profilePaths.Count == 0)
         {
-            lines.Add(new DetailLine("Edits your shell profile."));
+            lines.Add(new DetailLine(Strings.InitFormDetailEditShellProfile));
             return;
         }
 
         foreach (string profilePath in _profilePaths)
         {
-            lines.Add(new DetailLine("Edits:", profilePath));
+            lines.Add(new DetailLine(Strings.InitFormDetailEdits, profilePath));
         }
     }
 
@@ -179,10 +179,19 @@ internal sealed class InitFormModel
             .GroupBy(m => m.Component)
             .OrderBy(g => g.Key)
             .Select(g => new DetailLine(
-                FormattableString.Invariant($"{g.Key.GetDisplayName()}s:"),
+                GetMigrationComponentLabel(g.Key),
                 FormatVersions([.. g.Select(m => m.ExampleVersion.ToString())])))
             .ToList();
     }
+
+    private static string GetMigrationComponentLabel(InstallComponent component) => component switch
+    {
+        InstallComponent.SDK => Strings.InitFormMigrationSdksLabel,
+        InstallComponent.Runtime => Strings.InitFormMigrationRuntimesLabel,
+        InstallComponent.ASPNETCore => Strings.InitFormMigrationAspNetCoreRuntimesLabel,
+        InstallComponent.WindowsDesktop => Strings.InitFormMigrationWindowsDesktopRuntimesLabel,
+        _ => component.ToString(),
+    };
 
     private List<MigrationWorkflow.MigrationSelection> CurrentMigrations()
     {
@@ -199,7 +208,7 @@ internal sealed class InitFormModel
 
         int remaining = versions.Count - shown;
         return remaining > 0
-            ? string.Format(CultureInfo.InvariantCulture, "{0}, and {1} more", joined, remaining)
+            ? string.Format(CultureInfo.InvariantCulture, Strings.InitFormMigrationAdditionalVersions, joined, remaining)
             : joined;
     }
 
@@ -268,27 +277,30 @@ internal sealed class InitFormModel
             }
 
             string helperText = channelDisplay.GlobalJsonPath is not null
-                ? "From your global.json"
-                : "Requested by this install command";
+                ? Strings.InitFormChannelFromGlobalJson
+                : Strings.InitFormChannelRequested;
             choices.Add(new FieldChoice(channelDisplay.ChannelLabel, helperText));
             tokens.Add(channelDisplay.ChannelLabel);
         }
 
-        AddChannelChoice(ChannelVersionResolver.LatestChannel, "Latest stable release");
-        AddChannelChoice(ChannelVersionResolver.LtsChannel, "Long Term Support");
-        AddChannelChoice(ChannelVersionResolver.PreviewChannel, "Latest preview");
-        AddChannelChoice(ChannelVersionResolver.DailyChannel, "Latest unsigned daily build");
-        choices.Add(new FieldChoice("<other>", "Type your own, e.g. 10.0.1xx", IsCustomInput: true));
+        AddChannelChoice(ChannelVersionResolver.LatestChannel, Strings.InitFormChannelLatestHelp);
+        AddChannelChoice(ChannelVersionResolver.LtsChannel, Strings.InitFormChannelLtsHelp);
+        AddChannelChoice(ChannelVersionResolver.PreviewChannel, Strings.InitFormChannelPreviewHelp);
+        AddChannelChoice(ChannelVersionResolver.DailyChannel, Strings.InitFormChannelDailyHelp);
+        choices.Add(new FieldChoice(
+            Strings.InitFormChannelOther,
+            Strings.InitFormChannelOtherHelp,
+            IsCustomInput: true));
         tokens.Add(null);
 
         // The recommended default is listed first (the pending request when present, else "latest").
         int defaultIndex = 0;
 
         var field = new FormField(
-            "SDK Channel",
+            Strings.InitFormChannelLabel,
             choices,
             defaultIndex,
-            description: "Determines which version of .NET to install and how it stays updated \u2014 'latest', 'lts', 'preview', 'daily', or a version like '10.0'.",
+            description: Strings.InitFormChannelDescription,
             inlineHelp: true,
             browseDetailShowsDescription: true);
         return (field, tokens, globalJsonIndex);
@@ -312,39 +324,37 @@ internal sealed class InitFormModel
         var modes = new List<DotnetAccessMode> { DotnetAccessMode.None, DotnetAccessMode.Shell };
         var choices = new List<FieldChoice>
         {
-            new(AccessModeTitle(DotnetAccessMode.None), "Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected."),
-            new(AccessModeTitle(DotnetAccessMode.Shell), "Configure your shell profile so shell sessions use dotnetup's .NET installs."),
+            new(DotnetAccessMode.None.ToString().ToLowerInvariant(), Strings.InitFormAccessModeNoneHelp),
+            new(DotnetAccessMode.Shell.ToString().ToLowerInvariant(), Strings.InitFormAccessModeShellHelp),
         };
 
         if (isWindows)
         {
             modes.Add(DotnetAccessMode.Everywhere);
-            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Everywhere), "Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation)."));
+            choices.Add(new FieldChoice(
+                DotnetAccessMode.Everywhere.ToString().ToLowerInvariant(),
+                Strings.InitFormAccessModeEverywhereHelp));
         }
 
         int defaultIndex = Math.Max(0, modes.IndexOf(recommended));
         var field = new FormField(
-            "Access mode",
+            Strings.InitFormAccessModeLabel,
             choices,
             defaultIndex,
-            description: "Controls where the dotnet you install is available. Change it later with 'dotnetup env set'.");
+            description: Strings.InitFormAccessModeDescription);
         return (field, modes);
     }
-
-    // The access-mode value shown to the user, capitalized (None / Shell / Everywhere), matching the
-    // 'dotnetup env' vocabulary.
-    private static string AccessModeTitle(DotnetAccessMode mode) => mode.ToString();
 
     private static FormField BuildMigrateField(bool migrateByDefault, Func<bool> isVisible)
     {
         var choices = new List<FieldChoice>
         {
-            new("Yes", "Install the SDK and runtime versions you already have system-wide, so those versions stay available."),
-            new("No", "Don't install any additional .NET SDKs or runtimes."),
+            new(Strings.InitFormChoiceYes, Strings.InitFormMigrateYesHelp),
+            new(Strings.InitFormChoiceNo, Strings.InitFormMigrateNoHelp),
         };
 
         return new FormField(
-            "Migrate system installs",
+            Strings.InitFormMigrateLabel,
             choices,
             defaultIndex: migrateByDefault ? YesIndex : NoIndex,
             isVisible: isVisible);

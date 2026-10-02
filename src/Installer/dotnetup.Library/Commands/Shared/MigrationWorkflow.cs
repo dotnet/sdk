@@ -7,23 +7,14 @@ using Microsoft.Dotnet.Installation.Internal;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 /// <summary>
-/// Non-interactive helpers that orchestrate migration of system-managed .NET installs into the
-/// dotnetup-managed install root. The interactive prompt that drives this — together with display
-/// formatting and the user-facing yes/no decision — lives on <see cref="Init.InitWorkflows"/>.
+/// Orchestrates migration of system-managed .NET installs into the dotnetup-managed install root.
 /// </summary>
 internal static class MigrationWorkflow
 {
-    /// <summary>
-    /// The number of migration candidates shown before the list is truncated or scrolled — used by
-    /// both the summary preview ("… and N more") and the interactive migration prompt's scroll window.
-    /// </summary>
-    internal const int MigrationPreviewCount = 3;
-
     internal sealed record MigrationSelection(
         InstallComponent Component,
         UpdateChannel Channel,
-        ReleaseVersion ExampleVersion,
-        InstallArchitecture Architecture);
+        ReleaseVersion ExampleVersion);
 
     /// <summary>
     /// Returns the system-managed .NET installs that are candidates for migration into the dotnetup
@@ -82,8 +73,7 @@ internal static class MigrationWorkflow
             deduped.Add(new MigrationSelection(
                 install.Component,
                 new UpdateChannel(channelName),
-                install.Version,
-                install.InstallRoot.Architecture));
+                install.Version));
         }
 
         return deduped;

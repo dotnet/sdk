@@ -177,6 +177,196 @@
   <data name="InitCommandDescription" xml:space="preserve">
     <value>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</value>
   </data>
+  <data name="InitLocalSdkPathMessage" xml:space="preserve">
+    <value>A global.json here specifies a local .NET SDK path, so dotnetup left your environment unchanged. Use 'dotnetup install' to install .NET to that path.</value>
+    <comment>{Locked="global.json"}{Locked=".NET"}{Locked="dotnetup"}{Locked="dotnetup install"}</comment>
+  </data>
+  <data name="InitDryRunNotice" xml:space="preserve">
+    <value>(dry run — no changes were made to your machine)</value>
+  </data>
+  <data name="InitDryRunMigrateCount" xml:space="preserve">
+    <value>Yes ({0} install(s))</value>
+    <comment>{0} is the number of system-managed .NET installations that would be migrated.</comment>
+  </data>
+  <data name="InitDryRunChannelLabel" xml:space="preserve">
+    <value>SDK channel</value>
+    <comment>{Locked="SDK"}</comment>
+  </data>
+  <data name="InitDryRunAccessModeLabel" xml:space="preserve">
+    <value>Access mode</value>
+  </data>
+  <data name="InitDryRunMigrateLabel" xml:space="preserve">
+    <value>Migrate system installs</value>
+  </data>
+  <data name="InitDryRunInstallLocationLabel" xml:space="preserve">
+    <value>Installs in</value>
+  </data>
+  <data name="InitFormWelcome" xml:space="preserve">
+    <value>Welcome to dotnetup!</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="InitFormInstallLocation" xml:space="preserve">
+    <value>dotnetup will install .NET SDKs and runtimes in {0}.</value>
+    <comment>{0} is the styled installation path. {Locked="dotnetup"}{Locked=".NET"}{Locked="SDK"}</comment>
+  </data>
+  <data name="InitFormConfirmationPrompt" xml:space="preserve">
+    <value>Install .NET with these settings?</value>
+    <comment>{Locked=".NET"}</comment>
+  </data>
+  <data name="InitFormAccept" xml:space="preserve">
+    <value>Accept and install</value>
+  </data>
+  <data name="InitFormDefaultSuffix" xml:space="preserve">
+    <value>(default)</value>
+    <comment>Appended to the recommended choice in the init form.</comment>
+  </data>
+  <data name="InitFormNavigationForm" xml:space="preserve">
+    <value>↑/↓ move · Enter edit/accept · Esc quit</value>
+    <comment>{Locked="↑/↓"}{Locked="Enter"}{Locked="Esc"}</comment>
+  </data>
+  <data name="InitFormNavigationField" xml:space="preserve">
+    <value>↑/↓ move · Enter select · Esc back</value>
+    <comment>{Locked="↑/↓"}{Locked="Enter"}{Locked="Esc"}</comment>
+  </data>
+  <data name="InitFormNavigationCustomInput" xml:space="preserve">
+    <value>type · ↑/↓ choose · Enter set · Esc back</value>
+    <comment>{Locked="↑/↓"}{Locked="Enter"}{Locked="Esc"}</comment>
+  </data>
+  <data name="InitFormCustomChannelPrompt" xml:space="preserve">
+    <value>type a channel</value>
+  </data>
+  <data name="InitFormDetailGlobalJsonSource" xml:space="preserve">
+    <value>From global.json:</value>
+    <comment>{Locked="global.json"}</comment>
+  </data>
+  <data name="InitFormDetailShellOnly" xml:space="preserve">
+    <value>Only applications launched from the shell use dotnetup's .NET installs.</value>
+    <comment>{Locked="dotnetup"}{Locked=".NET"}</comment>
+  </data>
+  <data name="InitFormDetailSystemPath" xml:space="preserve">
+    <value>Adds dotnetup's .NET to the system PATH, ahead of any machine-wide install.</value>
+    <comment>{Locked="dotnetup"}{Locked=".NET"}{Locked="PATH"}</comment>
+  </data>
+  <data name="InitFormDetailDotnetRoot" xml:space="preserve">
+    <value>Sets DOTNET_ROOT.</value>
+    <comment>{Locked="DOTNET_ROOT"}</comment>
+  </data>
+  <data name="InitFormDetailEditShellProfile" xml:space="preserve">
+    <value>Edits your shell profile.</value>
+  </data>
+  <data name="InitFormDetailEdits" xml:space="preserve">
+    <value>Edits:</value>
+    <comment>Shown before the path of a shell profile that dotnetup will edit.</comment>
+  </data>
+  <data name="InitFormMigrationSdksLabel" xml:space="preserve">
+    <value>.NET SDKs:</value>
+    <comment>{Locked=".NET"}{Locked="SDK"}</comment>
+  </data>
+  <data name="InitFormMigrationRuntimesLabel" xml:space="preserve">
+    <value>.NET runtimes:</value>
+    <comment>{Locked=".NET"}</comment>
+  </data>
+  <data name="InitFormMigrationAspNetCoreRuntimesLabel" xml:space="preserve">
+    <value>ASP.NET Core runtimes:</value>
+    <comment>{Locked="ASP.NET Core"}</comment>
+  </data>
+  <data name="InitFormMigrationWindowsDesktopRuntimesLabel" xml:space="preserve">
+    <value>.NET Desktop runtimes:</value>
+    <comment>{Locked=".NET Desktop"}</comment>
+  </data>
+  <data name="InitFormMigrationAdditionalVersions" xml:space="preserve">
+    <value>{0}, and {1} more</value>
+    <comment>{0} is a comma-separated list of versions; {1} is the number of additional versions.</comment>
+  </data>
+  <data name="InitFormChannelFromGlobalJson" xml:space="preserve">
+    <value>From your global.json</value>
+    <comment>{Locked="global.json"}</comment>
+  </data>
+  <data name="InitFormChannelRequested" xml:space="preserve">
+    <value>Requested by this install command</value>
+  </data>
+  <data name="InitFormChannelLatestHelp" xml:space="preserve">
+    <value>Latest stable release</value>
+  </data>
+  <data name="InitFormChannelLtsHelp" xml:space="preserve">
+    <value>Long Term Support</value>
+  </data>
+  <data name="InitFormChannelPreviewHelp" xml:space="preserve">
+    <value>Latest preview</value>
+  </data>
+  <data name="InitFormChannelDailyHelp" xml:space="preserve">
+    <value>Latest unsigned daily build</value>
+  </data>
+  <data name="InitFormChannelOther" xml:space="preserve">
+    <value>&lt;other&gt;</value>
+    <comment>Choice for entering a custom .NET channel. Preserve the angle brackets.</comment>
+  </data>
+  <data name="InitFormChannelOtherHelp" xml:space="preserve">
+    <value>Type your own, e.g. 10.0.1xx</value>
+    <comment>10.0.1xx is an example .NET SDK feature-band channel. {Locked="10.0.1xx"}</comment>
+  </data>
+  <data name="InitFormChannelLabel" xml:space="preserve">
+    <value>SDK Channel</value>
+    <comment>{Locked="SDK"}</comment>
+  </data>
+  <data name="InitFormChannelDescription" xml:space="preserve">
+    <value>Determines which version of .NET to install and how it stays updated — 'latest', 'lts', 'preview', 'daily', or a version like '10.0'.</value>
+    <comment>{Locked=".NET"}{Locked="latest"}{Locked="lts"}{Locked="preview"}{Locked="daily"}{Locked="10.0"}</comment>
+  </data>
+  <data name="InitFormAccessModeNoneHelp" xml:space="preserve">
+    <value>Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected.</value>
+    <comment>{Locked=".NET"}{Locked="dotnetup dotnet"}{Locked="dotnet"}{Locked="PATH"}</comment>
+  </data>
+  <data name="InitFormAccessModeShellHelp" xml:space="preserve">
+    <value>Configure your shell profile so shell sessions use dotnetup's .NET installs.</value>
+    <comment>{Locked="dotnetup"}{Locked=".NET"}</comment>
+  </data>
+  <data name="InitFormAccessModeEverywhereHelp" xml:space="preserve">
+    <value>Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation).</value>
+    <comment>{Locked="PATH"}{Locked="dotnetup"}{Locked=".NET"}</comment>
+  </data>
+  <data name="InitFormAccessModeLabel" xml:space="preserve">
+    <value>Access mode</value>
+  </data>
+  <data name="InitFormAccessModeDescription" xml:space="preserve">
+    <value>Controls where the dotnet you install is available. Change it later with 'dotnetup env set'.</value>
+    <comment>{Locked="dotnet"}{Locked="dotnetup env set"}</comment>
+  </data>
+  <data name="InitFormChoiceYes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="InitFormChoiceNo" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="InitFormMigrateYesHelp" xml:space="preserve">
+    <value>Install the SDK and runtime versions you already have system-wide, so those versions stay available.</value>
+    <comment>{Locked="SDK"}</comment>
+  </data>
+  <data name="InitFormMigrateNoHelp" xml:space="preserve">
+    <value>Don't install any additional .NET SDKs or runtimes.</value>
+    <comment>{Locked=".NET"}{Locked="SDK"}</comment>
+  </data>
+  <data name="InitFormMigrateLabel" xml:space="preserve">
+    <value>Migrate system installs</value>
+  </data>
+  <data name="InitBannerDescription" xml:space="preserve">
+    <value>.NET toolchain manager for developers.</value>
+    <comment>{Locked=".NET"}</comment>
+  </data>
+  <data name="InitEnvironmentSetupProgress" xml:space="preserve">
+    <value>Setting up your environment.</value>
+  </data>
+  <data name="InitInstallingToFromGlobalJson" xml:space="preserve">
+    <value>Installing to {0} as specified by {1}.</value>
+    <comment>{0} is the styled installation path; {1} is the styled global.json path.</comment>
+  </data>
+  <data name="InitManagedInstallLocation" xml:space="preserve">
+    <value>You can find dotnetup managed installs at {0}.</value>
+    <comment>{0} is the styled installation path. {Locked="dotnetup"}</comment>
+  </data>
+  <data name="InitSetupComplete" xml:space="preserve">
+    <value>Setup complete!</value>
+  </data>
   <data name="PathGuidanceNone" xml:space="preserve">
     <value>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</value>
   </data>
