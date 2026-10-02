@@ -207,17 +207,6 @@ internal class Layer
                     entry.DataStream.Dispose();
                 }
 
-                static UnixFileMode DetermineFileMode(FileSystemInfo file)
-                {
-                    const UnixFileMode nonExecuteMode = UnixFileMode.UserRead | UnixFileMode.UserWrite |
-                                                        UnixFileMode.GroupRead |
-                                                        UnixFileMode.OtherRead;
-                    const UnixFileMode executeMode = nonExecuteMode | UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute;
-
-                    // On Unix, we can determine the x-bit based on the filesystem permission.
-                    // On Windows, we use executable permissions for all entries.
-                    return (OperatingSystem.IsWindows() || ((file.UnixFileMode | UnixFileMode.UserExecute) != 0)) ? executeMode : nonExecuteMode;
-                }
             }
         }
 
@@ -247,6 +236,18 @@ internal class Layer
         File.Move(tempTarballPath, storedContent, overwrite: true);
 
         return new(storedContent, descriptor);
+    }
+
+    internal static UnixFileMode DetermineFileMode(FileSystemInfo file)
+    {
+        const UnixFileMode nonExecuteMode = UnixFileMode.UserRead | UnixFileMode.UserWrite |
+                                            UnixFileMode.GroupRead |
+                                            UnixFileMode.OtherRead;
+        const UnixFileMode executeMode = nonExecuteMode | UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute;
+
+        // On Unix, we can determine the x-bit based on the filesystem permission.
+        // On Windows, we use executable permissions for all entries.
+        return (OperatingSystem.IsWindows() || ((file.UnixFileMode | UnixFileMode.UserExecute) != 0)) ? executeMode : nonExecuteMode;
     }
 
     internal virtual Stream OpenBackingFile() => File.OpenRead(BackingFile);
