@@ -170,14 +170,13 @@
     <Import Project="Sdk.targets" Sdk="Microsoft.NET.Runtime.WebAssembly.Wasi.Sdk.${NetVersion}" />
   </ImportGroup>
 
+  <PropertyGroup Condition="'$(TargetsCurrent)' == 'true' and '$(_MonoWorkloadTargetsMobile)' == 'true'">
+    <_MonoWorkloadRuntimePackPackageVersion>$(_RuntimePackInWorkloadVersionCurrent)</_MonoWorkloadRuntimePackPackageVersion>
+  </PropertyGroup>
+
   <ItemGroup Condition="'$(TargetsCurrent)' == 'true' and '$(_MonoWorkloadTargetsMobile)' == 'true'">
-    <KnownRuntimePack Update="Microsoft.NETCore.App">
-      <LatestRuntimeFrameworkVersion Condition="'%(KnownRuntimePack.TargetFramework)' == '${NetVersion}.0'">$(_RuntimePackInWorkloadVersionCurrent)</LatestRuntimeFrameworkVersion>
-    </KnownRuntimePack>
     <KnownFrameworkReference Update="Microsoft.NETCore.App">
-      <RuntimePackRuntimeIdentifiers Condition="'%(KnownFrameworkReference.TargetFramework)' == '${NetVersion}.0' and '$(RuntimeIdentifier)' == 'wasi-wasm'">%(RuntimePackRuntimeIdentifiers);wasi-wasm</RuntimePackRuntimeIdentifiers>
-      <LatestRuntimeFrameworkVersion Condition="'%(KnownFrameworkReference.TargetFramework)' == '${NetVersion}.0'">$(_RuntimePackInWorkloadVersionCurrent)</LatestRuntimeFrameworkVersion>
-      <TargetingPackVersion Condition="'%(KnownFrameworkReference.TargetFramework)' == '${NetVersion}.0'">$(_RuntimePackInWorkloadVersionCurrent)</TargetingPackVersion>
+      <TargetingPackVersion Condition="'%(KnownFrameworkReference.TargetFramework)' == '${NetVersion}.0'">$(_MonoWorkloadRuntimePackPackageVersion)</TargetingPackVersion>
     </KnownFrameworkReference>
   </ItemGroup>
 

@@ -65,21 +65,7 @@
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Templates.net12" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Wasi.Sdk" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Sdk.WebAssembly.Pack" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.android-arm" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.android-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.android-x64" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.browser-wasm" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.ios-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.iossimulator-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.iossimulator-x64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.maccatalyst-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.maccatalyst-x64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.osx-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.osx-x64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.tvos-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.tvossimulator-arm64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.tvossimulator-x64" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.wasi-wasm" />
     <!-- Windows runtime packages don't need MSI wrappers - they're included in the SDK, not installed as workloads -->
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" ExcludeAsMsi="true" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-x64" ExcludeAsMsi="true" />
