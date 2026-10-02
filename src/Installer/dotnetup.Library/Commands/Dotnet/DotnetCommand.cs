@@ -16,6 +16,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet;
 /// </summary>
 internal class DotnetCommand : CommandBase
 {
+    protected override bool SafeDuringSelfUpdate => true;
+
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly string[] _forwardedArgs;
 

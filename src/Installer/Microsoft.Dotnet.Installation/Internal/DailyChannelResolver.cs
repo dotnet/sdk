@@ -7,11 +7,10 @@ using Microsoft.Deployment.DotNet.Releases;
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
-/// Resolves daily-build channels (e.g. <c>10.0-daily</c>, <c>daily</c>) to a
-/// concrete <see cref="ReleaseVersion"/> by querying the aka.ms redirect for
-/// the latest daily SDK archive and extracting the version from the redirect
-/// target URL. The resolved version is then handed to the existing blob-feed
-/// download path for the actual install.
+/// Resolves daily .NET channels and dotnetup release channels to a concrete
+/// <see cref="ReleaseVersion"/> by querying an aka.ms redirect and extracting
+/// the version from its target URL. The resolved version is then handed to the
+/// existing blob-feed download path for the actual install.
 /// </summary>
 internal sealed class DailyChannelResolver : IDisposable
 {
@@ -148,10 +147,31 @@ internal sealed class DailyChannelResolver : IDisposable
         return _releaseManifest.GetReleasesIndex().FirstOrDefault()?.LatestReleaseVersion?.Major ?? 0;
     }
 
-    private ReleaseVersion? TryResolvePartialVersion(string partialVersion, string archivePrefix, string rid, string extension)
-    {
-        string akaMsUrl = string.Format(System.Globalization.CultureInfo.InvariantCulture, AkaMsTemplate, partialVersion, archivePrefix, rid, extension);
+    public ReleaseVersion ResolveDotnetupVersion(string rid)
+        => ResolveDotnetupVersion("daily", rid);
 
+    public ReleaseVersion ResolveDotnetupVersion(string channel, string rid)
+    {
+        if (channel is not ("daily" or "preview" or "stable"))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidChannel,
+                $"'{channel}' is not a recognized dotnetup channel. Use 'daily', 'preview', or 'stable'.");
+        }
+
+        string fileName = BlobFeedUrlBuilder.GetDotnetupFileName(rid);
+        string akaMsUrl = $"https://aka.ms/dotnet/dotnetup/{channel}/{fileName}";
+        Uri finalUri = TryResolveRedirect(akaMsUrl, channel)
+            ?? throw new DotnetInstallException(DotnetInstallErrorCode.VersionNotFound, $"No {channel} dotnetup build is available for {rid}.");
+        var version = ExtractVersionFromUrl(finalUri)
+            ?? throw new DotnetInstallException(DotnetInstallErrorCode.ManifestParseFailed, $"Dotnetup {channel} redirect has no concrete version.");
+        var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(version, rid);
+        BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(finalUri, new Uri(location.ArchiveUrl));
+        return version;
+    }
+
+    private Uri? TryResolveRedirect(string akaMsUrl, string channel = "daily")
+    {
         Uri finalUri;
         string? contentType;
         try
@@ -166,14 +186,14 @@ internal sealed class DailyChannelResolver : IDisposable
             finalUri = response.RequestMessage?.RequestUri
                 ?? throw new DotnetInstallException(
                     DotnetInstallErrorCode.NetworkError,
-                    $"Could not determine the redirect target for daily channel '{partialVersion}-daily'.");
+                    $"Could not determine the {channel} channel redirect target via {akaMsUrl}.");
             contentType = response.Content.Headers.ContentType?.MediaType;
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.NetworkError,
-                $"Failed to resolve daily channel '{partialVersion}-daily' via {akaMsUrl}: {ex.Message}",
+                $"Failed to resolve {channel} channel via {akaMsUrl}: {ex.Message}",
                 ex);
         }
 
@@ -184,6 +204,18 @@ internal sealed class DailyChannelResolver : IDisposable
             //  * Content type: the fallback page is text/html rather than a binary archive.
             // Either signal returns null so callers (like the bare 'daily' probe of
             // major+1) can fall back to the next candidate.
+            return null;
+        }
+
+        return finalUri;
+    }
+
+    private ReleaseVersion? TryResolvePartialVersion(string partialVersion, string archivePrefix, string rid, string extension)
+    {
+        string akaMsUrl = string.Format(System.Globalization.CultureInfo.InvariantCulture, AkaMsTemplate, partialVersion, archivePrefix, rid, extension);
+        Uri? finalUri = TryResolveRedirect(akaMsUrl);
+        if (finalUri is null)
+        {
             return null;
         }
 

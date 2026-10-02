@@ -19,7 +19,6 @@ internal class EnvScriptCommand : CommandBase
 
     public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result, "env script")
     {
-        DotnetupTelemetry.Instance.IsShellStartupCommand = true;
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _shellProvider = result.GetValue(EnvScriptCommandParser.ShellOption);
         _dotnetInstallPath = result.GetValue(EnvScriptCommandParser.DotnetInstallPathOption);
@@ -30,6 +29,8 @@ internal class EnvScriptCommand : CommandBase
 
     protected override void ExecuteCore()
     {
+        DotnetupTelemetry.Instance.IsShellStartupCommand = true;
+
         // Check if shell provider was successfully determined
         if (_shellProvider == null)
         {

@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 
@@ -18,6 +19,8 @@ public class DotnetupProgram
 {
     public static int Main(string[] args)
     {
+        _ = DotnetupProcessInfo.ExecutablePath;
+        _ = DotnetupProcessInfo.Version;
         // Detached telemetry-drainer fast path: deliver previously-persisted telemetry and exit,
         // before any other work. See DotnetupTelemetryDrainProcess for the full delivery model.
         if (DotnetupTelemetryDrainProcess.TryRunAsDrainer(args, out var drainExitCode))
@@ -25,38 +28,34 @@ public class DotnetupProgram
             return drainExitCode;
         }
 
-        // Apply the user's UI language before any output (honors DOTNET_CLI_UI_LANGUAGE/VSLANG, and
-        // on Linux—where dotnetup runs invariant—detects the OS locale the runtime cannot).
-        DotnetupUILanguage.Setup();
-        // Handle --debug flag using the standard .NET SDK pattern
-        // This is DEBUG-only and removes the --debug flag from args
-        DotnetupDebugHelper.HandleDebugSwitch(ref args);
+        return InvokeCommand(args, static () => new AutomaticEncodingRestorer());
+    }
 
-        // Start root activity for the entire process. Disposed explicitly in
-        // the finally block below (no `using` here) so the completion event is
-        // emitted before FlushTelemetry shuts down the providers.
-        var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
-
-        // Capture current console encoding so it can be restored on exit.
-        // Uses the same AutomaticEncodingRestorer from the .NET SDK CLI.
-        using AutomaticEncodingRestorer encodingRestorer = new();
-        ConfigureConsoleEncoding();
-        ConfigureConsoleOutput();
-
-        // Show first-run telemetry notice if needed
-        FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
-
+    internal static int InvokeCommand(string[] args, Func<IDisposable> createEncodingRestorer)
+    {
+        TrackedOperation? rootOperation = null;
+        SelfUpdateInvocation? invocation = null;
         int processExitCode = 1;
 
         try
         {
-            processExitCode = InvokeParser(args);
-
+            // Start the root before language and console setup so startup failures are recorded,
+            // including failures creating or disposing the encoding restorer.
+            rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+            if (Environment.GetEnvironmentVariable(SelfUpdateVerifier.Utf8EnvironmentVariable) == "1")
+            {
+                // Establish the private process contract before capturing the encoding, so even
+                // diagnostics printed after restoration (or failed setup) remain UTF-8.
+                ConfigureConsoleEncoding();
+            }
+            processExitCode = ExecuteCommand(args, createEncodingRestorer, ref invocation);
             return processExitCode;
         }
         catch (Exception ex)
         {
-            DotnetupTelemetry.Instance.RecordException(rootOp, ex);
+            processExitCode = 1;
+            rootOperation ??= DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
+            DotnetupTelemetry.Instance.RecordException(rootOperation, ex);
 
             // Log the error and return non-zero exit code
             Console.Error.WriteLine($"Error: {ex.Message}");
@@ -67,10 +66,47 @@ public class DotnetupProgram
         }
         finally
         {
-            TagRootForExitCode(rootOp, processExitCode);
-            rootOp.Dispose(); // emit root event before flush
-            FlushTelemetry(processExitCode);
+            try
+            {
+                if (rootOperation is not null)
+                {
+                    TagRootForExitCode(rootOperation, processExitCode);
+                    rootOperation.Dispose();
+                    FlushTelemetry(processExitCode);
+                }
+            }
+            finally
+            {
+                // Keep invocation locks held through root completion and synchronous telemetry flush.
+                invocation?.Dispose();
+            }
         }
+    }
+
+    private static int ExecuteCommand(string[] args, Func<IDisposable> createEncodingRestorer, ref SelfUpdateInvocation? invocation)
+    {
+        // Apply the user's UI language before normal command output (honors DOTNET_CLI_UI_LANGUAGE/VSLANG,
+        // and on Linux, where dotnetup runs invariant, detects the OS locale the runtime cannot).
+        DotnetupUILanguage.Setup();
+
+        // Handle --debug using the standard .NET SDK pattern.
+        // This is DEBUG-only and removes the flag before parsing command arguments.
+        DotnetupDebugHelper.HandleDebugSwitch(ref args);
+
+        // Capture the console encoding before changing it, using the SDK CLI's AutomaticEncodingRestorer
+        // supplied by Main. Dispose here so restoration failures reach InvokeCommand's error handling.
+        using var encodingRestorer = createEncodingRestorer();
+        ConfigureConsoleEncoding();
+        ConfigureConsoleOutput();
+
+        // Show the telemetry notice before the gate, including when the command will be rejected.
+        FirstRunNotice.ShowIfFirstRun(DotnetupTelemetry.Instance.Enabled);
+        if (DotnetupProcessInfo.IsDirectExecution && DotnetupProcessInfo.ExecutablePath is { } executablePath)
+        {
+            invocation = new SelfUpdateInvocation(executablePath, DotnetupProcessInfo.Version);
+        }
+
+        return Parser.Invoke(args);
     }
 
     /// <summary>
@@ -94,11 +130,6 @@ public class DotnetupProgram
         rootOp.SetStatus(processExitCode == 0 ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
     }
 
-    private static int InvokeParser(string[] args)
-    {
-        return Parser.Invoke(args);
-    }
-
     private static void FlushTelemetry(int exitCode)
     {
         try
@@ -120,9 +151,12 @@ public class DotnetupProgram
     /// </summary>
     private static void ConfigureConsoleEncoding()
     {
-        if (Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1"
-            && UILanguageOverride.OperatingSystemSupportsUtf8())
+        if (Environment.GetEnvironmentVariable(SelfUpdateVerifier.Utf8EnvironmentVariable) == "1" ||
+            (Environment.GetEnvironmentVariable("DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING") != "1"
+            && UILanguageOverride.OperatingSystemSupportsUtf8()))
         {
+            // Private version probes require UTF-8 on both stdout and stderr, regardless of the
+            // inherited console code page or the interactive default-encoding opt-out.
             // Use UTF-8 without BOM to prevent corrupting piped output.
             // Encoding.UTF8 has encoderShouldEmitUTF8Identifier=true, which causes the
             // runtime to write a 3-byte BOM (0xEF 0xBB 0xBF) to stdout when the encoding

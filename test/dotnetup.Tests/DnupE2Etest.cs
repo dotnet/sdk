@@ -377,7 +377,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     /// <summary>
     /// Installs the latest daily-channel SDK end-to-end. Exercises the full path:
     /// `dotnetup sdk daily` → DailyChannelResolver hits aka.ms to discover the latest
-    /// daily prerelease version → DotnetArchiveDownloader pulls the matching archive
+    /// daily prerelease version → DotnetDownloader pulls the matching archive
     /// from the blob feed → install completes and is recorded in the manifest.
     /// </summary>
     [TestMethod]

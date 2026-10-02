@@ -8,9 +8,9 @@ using Microsoft.Deployment.DotNet.Releases;
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
-/// Handles downloading and parsing .NET release manifests to find the correct installer/archive for a given installation.
+/// Resolves and downloads .NET artifacts with hash verification, including unsigned daily dotnetup builds.
 /// </summary>
-internal class DotnetArchiveDownloader : IArchiveDownloader
+internal class DotnetDownloader : IArchiveDownloader
 {
     private const int MaxRetryCount = 3;
     private const int RetryDelayMilliseconds = 1000;
@@ -19,12 +19,12 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     private readonly ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
 
-    public DotnetArchiveDownloader()
+    public DotnetDownloader()
         : this(ReleaseManifest.Default)
     {
     }
 
-    public DotnetArchiveDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null)
+    public DotnetDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null)
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
         _downloadCache = new DownloadCache(cacheDirectory);
@@ -35,22 +35,22 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// <summary>
     /// Downloads the archive from the specified URL to the destination path with progress reporting.
     /// </summary>
-    /// <param name="downloadUrl">The URL to download from</param>
+    /// <param name="download">The resolved artifact and expected hash</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    private async Task DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    private async Task DownloadArchiveAsync(ResolvedDownload download, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         string tempPath = $"{destinationPath}.download";
-        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(destinationPath))!);
 
         for (int attempt = 1; attempt <= MaxRetryCount; attempt++)
         {
             try
             {
-                await DownloadAttemptAsync(downloadUrl, tempPath, destinationPath, progress).ConfigureAwait(false);
+                await DownloadAttemptAsync(download, tempPath, destinationPath, progress).ConfigureAwait(false);
                 return;
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not DotnetInstallException)
             {
                 if (attempt < MaxRetryCount)
                 {
@@ -69,10 +69,14 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         }
     }
 
-    private async Task DownloadAttemptAsync(string downloadUrl, string tempPath, string destinationPath, IProgress<DownloadProgress>? progress)
+    private async Task DownloadAttemptAsync(ResolvedDownload download, string tempPath, string destinationPath, IProgress<DownloadProgress>? progress)
     {
-        using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
+        using var response = await _httpClient.GetAsync(download.DownloadUri, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
+        if (download.IsDotnetup)
+        {
+            BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(response.RequestMessage?.RequestUri, download.DownloadUri);
+        }
 
         long? totalBytes = response.Content.Headers.ContentLength;
         using var contentStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false);
@@ -85,6 +89,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         await fileStream.FlushAsync().ConfigureAwait(false);
         fileStream.Close();
 
+        VerifyFileHash(tempPath, download.ExpectedHash, allowAlternateHashes: !download.IsDotnetup);
         CommitDownload(tempPath, destinationPath);
     }
 
@@ -123,12 +128,41 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// <summary>
     /// Downloads the archive from the specified URL to the destination path (synchronous version).
     /// </summary>
-    /// <param name="downloadUrl">The URL to download from</param>
+    /// <param name="download">The resolved artifact and expected hash</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    private void DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    private void DownloadArchive(ResolvedDownload download, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
-        DownloadArchiveAsync(downloadUrl, destinationPath, progress).GetAwaiter().GetResult();
+        try
+        {
+            DownloadArchiveAsync(download, destinationPath, progress).GetAwaiter().GetResult();
+        }
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.NetworkError, $"Failed to download {download.DownloadUri}: {ex.Message}", ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, $"Cannot write download to {destinationPath}: {ex.Message}", ex);
+        }
+        catch (IOException ex)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, $"Failed to save download to {destinationPath}: {ex.Message}", ex);
+        }
+    }
+
+    public ResolvedDownload ResolveDotnetupDownload(string rid)
+        => ResolveDotnetupDownload("daily", rid);
+
+    public ResolvedDownload ResolveDotnetupDownload(string channel, string rid)
+    {
+        ThrowIfUnsignedDownloadBlocked("dotnetup", channel);
+        using var resolver = new DailyChannelResolver(_releaseManifest, _httpClient);
+        var version = resolver.ResolveDotnetupVersion(channel, rid);
+        var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(version, rid);
+        string hash = TryGetHashFromUrl(location.ChecksumUrl, version, "dotnetup", requirePinnedUri: true)
+            ?? throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, $"No checksum is published for dotnetup {version} ({rid}).");
+        return new ResolvedDownload(new Uri(location.ArchiveUrl), hash, rid, version, IsUnsigned: true);
     }
 
     /// <summary>
@@ -147,22 +181,49 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         string destinationBasePath,
         IProgress<DownloadProgress>? progress = null)
     {
-        using var op = Metrics.Track("download/complete");
-        op.Tag("download.version", resolvedVersion.ToString());
-
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
         string extension = GetExtensionFromUrl(downloadUrl);
-        string destinationPath = destinationBasePath + extension;
+        var download = new ResolvedDownload(
+            new Uri(downloadUrl), expectedHash,
+            DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture), resolvedVersion,
+            IsUnsigned: downloadUrl.StartsWith(BlobFeedUrlBuilder.ArchiveBaseUrl + "/", StringComparison.Ordinal));
+        return DownloadWithVerification(download, destinationBasePath + extension, progress);
+    }
 
+    /// <summary>
+    /// Downloads and verifies an artifact at the exact destination path, without appending an extension.
+    /// </summary>
+    public string DownloadWithVerification(ResolvedDownload download, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    {
+        ArgumentNullException.ThrowIfNull(download);
+        ArgumentException.ThrowIfNullOrEmpty(destinationPath);
+        if (string.IsNullOrEmpty(download.ExpectedHash))
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, "Cannot verify a download without its expected hash.");
+        }
+        if (download.IsUnsigned || download.IsDotnetup)
+        {
+            ThrowIfUnsignedDownloadBlocked(download.IsDotnetup ? "dotnetup" : ".NET", download.Version.ToString());
+        }
+
+        if (download.IsDotnetup)
+        {
+            var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(download.Version, download.Rid);
+            BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(download.DownloadUri, new Uri(location.ArchiveUrl));
+        }
+
+        using var op = Metrics.Track("download/complete");
+        op.Tag("download.version", download.Version.ToString());
+        string downloadUrl = download.DownloadUri.AbsoluteUri;
         op.Tag("download.url_domain", UrlSanitizer.SanitizeDomain(downloadUrl));
+        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(destinationPath))!);
 
-        if (TryServeCachedArchive(downloadUrl, expectedHash, destinationPath, progress))
+        if (TryServeCachedArchive(download, destinationPath, progress))
         {
             return destinationPath;
         }
 
-        DownloadArchive(downloadUrl, destinationPath, progress);
-        VerifyFileHash(destinationPath, expectedHash);
+        DownloadArchive(download, destinationPath, progress);
 
         var fileInfo = new FileInfo(destinationPath);
         op.Tag("download.bytes", fileInfo.Length);
@@ -328,21 +389,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         // unsigned downloads is emitted up-front by the CLI workflow layer (see
         // InstallExecutor.ExecuteInstalls / UpdateWorkflow.InstallVersion via
         // UnsignedSourcePolicy.MayDownloadUnsigned), so no per-fallback warning is needed here.
-        if (UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy,
-                string.Format(
-                    System.Globalization.CultureInfo.CurrentCulture,
-                    Strings.UnsignedDownloadBlockedByPolicy,
-                    installRequest.Component,
-                    resolvedVersion,
-                    UnsignedSourcePolicy.WindowsPolicyKey,
-                    UnsignedSourcePolicy.WindowsPolicyValueName,
-                    UnsignedSourcePolicy.UnixPolicyFile),
-                version: resolvedVersion.ToString(),
-                component: installRequest.Component.ToString());
-        }
+        ThrowIfUnsignedDownloadBlocked(installRequest.Component.ToString(), resolvedVersion.ToString());
 
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var locationsChecked = new List<string>();
@@ -350,7 +397,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         // Prefer tar.gz, fall back to zip if unavailable (older .NET versions may not publish tar.gz for Windows)
         var tarLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".tar.gz");
         locationsChecked.Add(tarLocation.ChecksumUrl);
-        string? hash = TryGetHashFromUrl(tarLocation.ChecksumUrl, resolvedVersion, installRequest.Component);
+        string? hash = TryGetHashFromUrl(tarLocation.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
         if (hash != null)
         {
             return (tarLocation.ArchiveUrl, hash);
@@ -360,7 +407,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         {
             var zipLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".zip");
             locationsChecked.Add(zipLocation.ChecksumUrl);
-            hash = TryGetHashFromUrl(zipLocation.ChecksumUrl, resolvedVersion, installRequest.Component);
+            hash = TryGetHashFromUrl(zipLocation.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
             if (hash != null)
             {
                 return (zipLocation.ArchiveUrl, hash);
@@ -378,7 +425,26 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// Downloads and parses a .sha512 hash file. Returns null if the URL 404s
     /// (the version is not published to the blob feed). Throws for any other error.
     /// </summary>
-    private string? TryGetHashFromUrl(string checksumUrl, ReleaseVersion resolvedVersion, InstallComponent component)
+    private static void ThrowIfUnsignedDownloadBlocked(string component, string version)
+    {
+        if (UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy,
+                string.Format(
+                    System.Globalization.CultureInfo.CurrentCulture,
+                    Strings.UnsignedDownloadBlockedByPolicy,
+                    component,
+                    version,
+                    UnsignedSourcePolicy.WindowsPolicyKey,
+                    UnsignedSourcePolicy.WindowsPolicyValueName,
+                    UnsignedSourcePolicy.UnixPolicyFile),
+                version: version,
+                component: component);
+        }
+    }
+
+    private string? TryGetHashFromUrl(string checksumUrl, ReleaseVersion resolvedVersion, string component, bool requirePinnedUri = false)
     {
         try
         {
@@ -389,10 +455,15 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             }
 
             response.EnsureSuccessStatusCode();
+            if (requirePinnedUri)
+            {
+                BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(response.RequestMessage?.RequestUri, new Uri(checksumUrl));
+            }
+
             string contents = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
             return BlobFeedUrlBuilder.ParseHashFile(contents);
         }
-        catch (HttpRequestException ex)
+        catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.NetworkError,
@@ -412,20 +483,22 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         }
     }
 
-    private bool TryServeCachedArchive(string downloadUrl, string expectedHash, string destinationPath, IProgress<DownloadProgress>? progress)
+    private bool TryServeCachedArchive(ResolvedDownload download, string destinationPath, IProgress<DownloadProgress>? progress)
     {
-        string? cachedFilePath = _downloadCache.GetCachedFilePath(downloadUrl);
+        string? cachedFilePath = _downloadCache.GetCachedFilePath(download.DownloadUri.AbsoluteUri);
         if (cachedFilePath == null)
         {
             return false;
         }
 
+        string tempPath = $"{destinationPath}.download";
         try
         {
-            VerifyFileHash(cachedFilePath, expectedHash);
-            File.Copy(cachedFilePath, destinationPath, overwrite: true);
+            File.Copy(cachedFilePath, tempPath, overwrite: true);
+            VerifyFileHash(tempPath, download.ExpectedHash, allowAlternateHashes: !download.IsDotnetup);
+            CommitDownload(tempPath, destinationPath);
 
-            var cachedFileSize = new FileInfo(cachedFilePath).Length;
+            var cachedFileSize = new FileInfo(destinationPath).Length;
             progress?.Report(new DownloadProgress(cachedFileSize, cachedFileSize));
 
             Metrics.Tag("download.bytes", cachedFileSize);
@@ -435,6 +508,11 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         catch
         {
             return false; // Cached file corrupted — fall through to download
+        }
+        finally
+        {
+            try { File.Delete(tempPath); }
+            catch { }
         }
     }
 
@@ -550,6 +628,11 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// <param name="expectedHash">Expected hash value</param>
     public static void VerifyFileHash(string filePath, string expectedHash)
     {
+        VerifyFileHash(filePath, expectedHash, allowAlternateHashes: true);
+    }
+
+    private static void VerifyFileHash(string filePath, string expectedHash, bool allowAlternateHashes)
+    {
         if (string.IsNullOrEmpty(expectedHash))
         {
             throw new ArgumentException("Expected hash cannot be null or empty", nameof(expectedHash));
@@ -562,7 +645,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         }
 
         // Check if the actual hash is a known acceptable alternate for this expected hash
-        if (s_knownAlternateHashes.TryGetValue(expectedHash, out var alternate) &&
+        if (allowAlternateHashes && s_knownAlternateHashes.TryGetValue(expectedHash, out var alternate) &&
             string.Equals(actualHash, alternate, StringComparison.OrdinalIgnoreCase))
         {
             return;

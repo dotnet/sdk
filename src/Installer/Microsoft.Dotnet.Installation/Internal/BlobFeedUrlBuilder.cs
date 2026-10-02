@@ -48,6 +48,41 @@ internal static class BlobFeedUrlBuilder
             ChecksumUrl: $"{ChecksumBaseUrl}/{componentDir}/{versionString}/{fileName}.sha512");
     }
 
+    public static BlobFeedLocation GetDotnetupFeedLocation(ReleaseVersion version, string rid)
+    {
+        string fileName = GetDotnetupFileName(rid);
+        return new BlobFeedLocation(
+            ArchiveUrl: $"{ArchiveBaseUrl}/dotnetup/{version}/{fileName}",
+            ChecksumUrl: $"{ChecksumBaseUrl}/dotnetup/{version}/{fileName}.sha512");
+    }
+
+    public static string GetDotnetupFileName(string rid)
+    {
+        if (string.IsNullOrEmpty(rid) || rid.Any(character => character is not (>= 'a' and <= 'z') and not (>= '0' and <= '9') and not '-'))
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.InvalidArguments, "Invalid dotnetup runtime identifier.");
+        }
+
+        return $"dotnetup-{rid}{(rid.StartsWith("win-", StringComparison.Ordinal) ? ".exe" : string.Empty)}";
+    }
+
+    public static void ValidatePinnedDotnetupUri(Uri? actualUri, Uri expectedUri)
+    {
+        if (actualUri is null
+            || !actualUri.IsAbsoluteUri
+            || actualUri.Scheme != Uri.UriSchemeHttps
+            || !actualUri.IsDefaultPort
+            || actualUri.UserInfo.Length != 0
+            || actualUri.Query.Length != 0
+            || actualUri.Fragment.Length != 0
+            || !actualUri.AbsoluteUri.Equals(expectedUri.AbsoluteUri, StringComparison.Ordinal))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Dotnetup download did not resolve to the pinned HTTPS feed location '{expectedUri}'.");
+        }
+    }
+
     /// <summary>
     /// Component → directory segment used in blob feed URLs.
     /// </summary>
