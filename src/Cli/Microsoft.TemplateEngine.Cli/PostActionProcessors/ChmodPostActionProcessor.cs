@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 
         public override Guid Id => ActionProcessorId;
 
-        protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath)
+        protected override bool ProcessInternal(IEngineEnvironmentSettings environment, IPostAction actionConfig, ICreationEffects creationEffects, ICreationResult templateCreationResult, string outputBasePath, CancellationToken cancellationToken)
         {
             bool allSucceeded = true;
             foreach (KeyValuePair<string, string> entry in actionConfig.Args)

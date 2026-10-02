@@ -76,15 +76,18 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
         _isRestoring = isRestoring;
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
         {
             try
             {
-                DownloadToOfflineCacheAsync(new DirectoryPath(_downloadToCacheOption), _includePreviews).Wait();
+                DownloadToOfflineCacheAsync(
+                    new DirectoryPath(_downloadToCacheOption),
+                    _includePreviews,
+                    cancellationToken).GetAwaiter().GetResult();
             }
-            catch (Exception e)
+            catch (Exception e) when (e is not OperationCanceledException)
             {
                 throw new GracefulException(string.Format(CliCommandStrings.WorkloadUpdateWorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
             }
@@ -96,19 +99,24 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
                 VerifySignatures,
                 restoreActionConfig: RestoreActionConfiguration);
 
-            var packageUrls = GetUpdatablePackageUrlsAsync(_includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
+            var packageUrls = GetUpdatablePackageUrlsAsync(
+                _includePreviews,
+                cancellationToken,
+                NullReporter.Instance,
+                packageDownloader).GetAwaiter().GetResult();
             Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, WorkloadInstallJsonSerializerContext.Default.IEnumerableString));
         }
         else if (_adManifestOnlyOption)
         {
             bool? shouldUseWorkloadSetsPerGlobalJson = _shouldUseWorkloadSets ?? (SpecifiedWorkloadSetVersionInGlobalJson ? true : null);
             _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
+                cancellationToken,
                 _includePreviews,
                 shouldUseWorkloadSetsPerGlobalJson ?? WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir),
                 string.IsNullOrWhiteSpace(_fromCacheOption) ?
                     null :
                     new DirectoryPath(_fromCacheOption))
-                .Wait();
+                .GetAwaiter().GetResult();
             Reporter.WriteLine();
             Reporter.WriteLine(CliCommandStrings.WorkloadUpdateAdManifestsSucceeded);
         }
@@ -126,15 +134,15 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
                 {
                     _recorder.Run(() =>
                     {
-                        UpdateWorkloads();
+                        UpdateWorkloads(cancellationToken);
                     });
                 }
                 else
                 {
-                    UpdateWorkloads();
+                    UpdateWorkloads(cancellationToken);
                 }
             }
-            catch (Exception e)
+            catch (Exception e) when (e is not OperationCanceledException)
             {
                 // Don't show entire stack trace
                 throw new GracefulException(string.Format(CliCommandStrings.WorkloadUpdateFailed, e.Message), e, isUserError: false);
@@ -148,13 +156,13 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
         return _workloadInstaller.ExitCode;
     }
 
-    private void UpdateWorkloads()
+    private void UpdateWorkloads(CancellationToken cancellationToken)
     {
         DirectoryPath? offlineCache = string.IsNullOrWhiteSpace(_fromCacheOption) ? null : new DirectoryPath(_fromCacheOption);
         var workloadIds = Enumerable.Empty<WorkloadId>();
         RunInNewTransaction(context =>
         {
-            UpdateWorkloadManifests(_recorder, context, offlineCache);
+            UpdateWorkloadManifests(_recorder, context, cancellationToken, offlineCache);
 
             // This depends on getting the available workloads, so it needs to run after manifests have potentially been installed
             workloadIds = WriteSDKInstallRecordsForVSWorkloads(GetUpdatableWorkloads());
@@ -163,16 +171,22 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
             {
                 if (!_historyManifestOnlyOption)
                 {
-                    UpdateInstalledWorkloadsFromHistory(context, offlineCache);
+                    UpdateInstalledWorkloadsFromHistory(context, cancellationToken, offlineCache);
                 }
             }
             else
             {
-                _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, offlineCache);
+                _workloadInstaller.InstallWorkloads(workloadIds, _sdkFeatureBand, context, cancellationToken, offlineCache);
             }
         });
 
-        WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
+        WorkloadInstallCommand.TryRunGarbageCollection(
+            _workloadInstaller,
+            Reporter,
+            Verbosity,
+            workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+            cancellationToken,
+            offlineCache);
 
         //  TODO: potentially only do this in some cases (ie not if global.json specifies workload set)
         _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
@@ -182,7 +196,10 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
         Reporter.WriteLine();
     }
 
-    private void UpdateInstalledWorkloadsFromHistory(ITransactionContext context, DirectoryPath? offlineCache)
+    private void UpdateInstalledWorkloadsFromHistory(
+        ITransactionContext context,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
         if (FromHistory)
         {
@@ -193,7 +210,7 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
             var workloadsToInstall = desiredWorkloads.Except(installedWorkloads).ToList();
             var workloadsToUninstall = installedWorkloads.Except(desiredWorkloads).ToList();
 
-            _workloadInstaller.InstallWorkloads(workloadsToInstall, _sdkFeatureBand, context, offlineCache);
+            _workloadInstaller.InstallWorkloads(workloadsToInstall, _sdkFeatureBand, context, cancellationToken, offlineCache);
 
             foreach (var id in workloadsToUninstall)
             {
@@ -203,21 +220,32 @@ internal sealed class WorkloadUpdateCommand : InstallingWorkloadCommand
         }
     }
 
-    private async Task DownloadToOfflineCacheAsync(DirectoryPath offlineCache, bool includePreviews)
+    private async Task DownloadToOfflineCacheAsync(
+        DirectoryPath offlineCache,
+        bool includePreviews,
+        CancellationToken cancellationToken)
     {
-        await GetDownloads(GetUpdatableWorkloads(), skipManifestUpdate: false, includePreviews, offlineCache.Value);
+        await GetDownloads(GetUpdatableWorkloads(), cancellationToken, skipManifestUpdate: false, includePreviews, offlineCache.Value);
     }
 
-    private async Task<IEnumerable<string>> GetUpdatablePackageUrlsAsync(bool includePreview, IReporter reporter = null, INuGetPackageDownloader packageDownloader = null)
+    private async Task<IEnumerable<string>> GetUpdatablePackageUrlsAsync(
+        bool includePreview,
+        CancellationToken cancellationToken,
+        IReporter reporter = null,
+        INuGetPackageDownloader packageDownloader = null)
     {
         reporter ??= Reporter;
         packageDownloader ??= PackageDownloader;
-        var downloads = await GetDownloads(GetUpdatableWorkloads(reporter), skipManifestUpdate: false, includePreview, reporter: reporter, packageDownloader: packageDownloader);
+        var downloads = await GetDownloads(GetUpdatableWorkloads(reporter), cancellationToken, skipManifestUpdate: false, includePreview, reporter: reporter, packageDownloader: packageDownloader);
 
         var urls = new List<string>();
         foreach (var download in downloads)
         {
-            urls.Add(await packageDownloader.GetPackageUrl(new PackageId(download.NuGetPackageId), new NuGetVersion(download.NuGetPackageVersion), _packageSourceLocation));
+            urls.Add(await packageDownloader.GetPackageUrl(
+                new PackageId(download.NuGetPackageId),
+                cancellationToken,
+                new NuGetVersion(download.NuGetPackageVersion),
+                _packageSourceLocation));
         }
 
         return urls;

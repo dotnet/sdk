@@ -22,8 +22,10 @@ internal class RazorServer(
 
     public RazorPidFile PidFile { get; } = pidFile ?? throw new ArgumentNullException(nameof(pidFile));
 
-    public void Shutdown()
+    public void Shutdown(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (!_fileSystem.File.Exists(PidFile.ServerPath.Value))
         {
             // The razor server path doesn't exist anymore so trying to shut it down would fail
@@ -45,7 +47,7 @@ internal class RazorServer(
             .CaptureStdOut()
             .CaptureStdErr();
 
-        var result = command.Execute();
+        var result = command.Execute(cancellationToken);
         if (result.ExitCode != 0)
         {
             throw new BuildServerException(

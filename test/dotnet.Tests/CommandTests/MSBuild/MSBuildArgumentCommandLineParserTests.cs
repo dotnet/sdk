@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
     [TestClass]
     public class MSBuildArgumentCommandLineParserTests
     {
+        public TestContext TestContext { get; set; } = null!;
 
         [TestMethod]
         [DataRow(new string[] { "-property:prop1=true", "-p:prop2=false" }, true)]
@@ -28,7 +29,9 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         {
             RestoringCommand command = buildCommand ?
                 (RestoringCommand)BuildCommand.FromArgs(arguments) :
-                (RestoringCommand)PublishCommand.FromArgs(arguments);
+                (RestoringCommand)PublishCommand.FromArgs(
+                    arguments,
+                    TestContext.CancellationToken);
             var expectedArguments = arguments.Select(a => a.Replace("-property:", "--property:").Replace("-p:", "--property:"));
             var argString = command.MSBuildArguments;
 

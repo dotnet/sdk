@@ -51,7 +51,7 @@ internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUni
         _recorder.HistoryRecord.CommandName = "uninstall";
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         try
         {
@@ -74,7 +74,9 @@ internal sealed class WorkloadUninstallCommand : WorkloadCommandBase<WorkloadUni
                         .DeleteWorkloadInstallationRecord(workloadId, featureBand);
                 }
 
-                _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+                _workloadInstaller.GarbageCollect(
+                    workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion),
+                    cancellationToken);
 
                 Reporter.WriteLine();
                 Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadUninstallUninstallSucceeded, string.Join(" ", _workloadIds)));

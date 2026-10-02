@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -25,10 +25,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new(new DirectoryPath(Directory.GetCurrentDirectory()), null,
                     new MockFirstPartyNuGetPackageSigningVerifier(), logger, restoreActionConfig: new RestoreActionConfig(NoCache: true));
             string packagePath =
-                await installer.DownloadPackageAsync(new PackageId(packageId), new NuGetVersion(packageVersion));
+                await installer.DownloadPackageAsync(new PackageId(packageId), TestContext.CancellationToken, new NuGetVersion(packageVersion));
             string targetPath = Path.Combine(Path.Combine(Path.GetTempPath(), Path.GetRandomFileName()),
                 "ExtractedPackage");
-            IEnumerable<string> result = await installer.ExtractPackageAsync(packagePath, new DirectoryPath(targetPath));
+            IEnumerable<string> result = await installer.ExtractPackageAsync(packagePath, new DirectoryPath(targetPath), TestContext.CancellationToken);
 
             Directory.Exists(targetPath).Should().BeTrue();
             string[] extractedFiles = Directory.GetFiles(targetPath, "*", SearchOption.AllDirectories);

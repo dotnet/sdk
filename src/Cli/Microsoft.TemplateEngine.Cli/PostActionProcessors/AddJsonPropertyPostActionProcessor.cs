@@ -81,7 +81,8 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             IPostAction action,
             ICreationEffects creationEffects,
             ICreationResult templateCreationResult,
-            string outputBasePath)
+            string outputBasePath,
+            CancellationToken cancellationToken)
         {
             if (!action.Args.TryGetValue(JsonFileNameArgument, out string? jsonFileName))
             {

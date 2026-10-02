@@ -28,12 +28,12 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
 
     public string Name => CliStrings.VBCSCompilerServer;
 
-    public void Shutdown()
+    public void Shutdown(CancellationToken cancellationToken)
     {
         List<string> errors = null;
 
         // Shutdown the compiler from the SDK.
-        execute(_commandFactory.Create("exec", [VBCSCompilerPath, s_shutdownArg]), ref errors);
+        execute(_commandFactory.Create("exec", [VBCSCompilerPath, s_shutdownArg]), cancellationToken, ref errors);
 
         // Shutdown toolset compilers.
         Reporter.Verbose.WriteLine($"Shutting down '{s_toolsetPackageName}' compilers.");
@@ -48,7 +48,7 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
                 Reporter.Verbose.WriteLine($"Found '{vbcsCompilerPath}'.");
                 if (File.Exists(vbcsCompilerPath))
                 {
-                    execute(CommandFactoryUsingResolver.Create(vbcsCompilerPath, [s_shutdownArg]), ref errors);
+                    execute(CommandFactoryUsingResolver.Create(vbcsCompilerPath, [s_shutdownArg]), cancellationToken, ref errors);
                 }
             }
         }
@@ -61,13 +61,13 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
                     string.Join(Environment.NewLine, errors)));
         }
 
-        static void execute(ICommand command, ref List<string> errors)
+        static void execute(ICommand command, CancellationToken cancellationToken, ref List<string> errors)
         {
             command = command
                 .CaptureStdOut()
                 .CaptureStdErr();
 
-            var result = command.Execute();
+            var result = command.Execute(cancellationToken);
             if (result.ExitCode != 0)
             {
                 errors ??= [];

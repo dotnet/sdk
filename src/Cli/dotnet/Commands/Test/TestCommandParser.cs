@@ -21,7 +21,7 @@ internal static class TestCommandParser
 
             case TestCommandDefinition.MicrosoftTestingPlatform mtp:
                 var impl = new MicrosoftTestingPlatformTestCommand();
-                mtp.SetAction(parseResult => impl.Run(parseResult, isHelp: false));
+                mtp.SetAction((parseResult, cancellationToken) => impl.Run(parseResult, isHelp: false, cancellationToken));
                 mtp.CustomHelpLayoutProvider = impl;
                 break;
 

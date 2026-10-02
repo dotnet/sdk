@@ -23,7 +23,7 @@ internal sealed class ToolListGlobalOrToolPathCommand(
     private readonly IReporter _errorReporter = reporter ?? Reporter.Error;
     private readonly CreateToolPackageStore _createToolPackageStore = createToolPackageStore ?? ToolPackageFactory.CreateToolPackageStoreQuery;
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         var toolPathOption = _parseResult.GetValue(Definition.LocationOptions.ToolPathOption);
         var packageIdArgument = _parseResult.GetValue(Definition.PackageIdArgument);

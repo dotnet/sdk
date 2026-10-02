@@ -61,28 +61,33 @@ internal class WorkloadAdvertisingManifestUpdater(
     private readonly IWorkloadManifestInstaller _workloadManifestInstaller = workloadManifestInstaller;
     private readonly bool _displayManifestUpdates = displayManifestUpdates;
 
-    public async Task UpdateAdvertisingManifestsAsync(bool includePreviews, bool useWorkloadSets = false, DirectoryPath? offlineCache = null)
+    public async Task UpdateAdvertisingManifestsAsync(
+        CancellationToken cancellationToken,
+        bool includePreviews,
+        bool useWorkloadSets = false,
+        DirectoryPath? offlineCache = null)
     {
         if (useWorkloadSets)
         {
-            await UpdateManifestWithVersionAsync(WorkloadManifestUpdater.WorkloadSetManifestId, includePreviews, _sdkFeatureBand, null, offlineCache);
+            await UpdateManifestWithVersionAsync(cancellationToken, WorkloadManifestUpdater.WorkloadSetManifestId, includePreviews, _sdkFeatureBand, null, offlineCache);
         }
         else
         {
             // this updates all the manifests
             var manifests = _workloadResolver.GetInstalledManifests();
-            await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
+            await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(cancellationToken, manifest, includePreviews, offlineCache))).ConfigureAwait(false);
             WriteUpdatableWorkloadsFile();
         }
     }
 
-    public async Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync()
+    public async Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync(CancellationToken cancellationToken)
     {
         if (!BackgroundUpdatesAreDisabled() &&
             AdManifestSentinelIsDueForUpdate() &&
-            await UpdatedAdManifestPackagesExistAsync().ConfigureAwait(false))
+            await UpdatedAdManifestPackagesExistAsync(cancellationToken).ConfigureAwait(false))
         {
             await UpdateAdvertisingManifestsAsync(
+                cancellationToken,
                 false,
                 ShouldUseWorkloadSetMode(_sdkFeatureBand, _userProfileDir)).ConfigureAwait(false);
             var sentinelPath = GetAdvertisingManifestSentinelPath(_sdkFeatureBand);
@@ -183,6 +188,7 @@ internal class WorkloadAdvertisingManifestUpdater(
     private IEnumerable<ManifestId> GetInstalledManifestIds() => _workloadResolver.GetInstalledManifests().Select(manifest => new ManifestId(manifest.Id));
 
     private async Task<bool> UpdateManifestWithVersionAsync(
+        CancellationToken cancellationToken,
         string id,
         bool includePreviews,
         SdkFeatureBand band,
@@ -204,7 +210,12 @@ internal class WorkloadAdvertisingManifestUpdater(
                         Path.GetFileName(path).StartsWith(manifestPackageId.ToString(), StringComparison.OrdinalIgnoreCase) &&
                         (packageVersion == null || path.Contains(packageVersion.ToString())))
                         .Max() :
-                    await _nugetPackageDownloader.DownloadPackageAsync(manifestPackageId, packageVersion: packageVersion, packageSourceLocation: _packageSourceLocation, includePreview: includePreviews);
+                    await _nugetPackageDownloader.DownloadPackageAsync(
+                        manifestPackageId,
+                        cancellationToken,
+                        packageVersion: packageVersion,
+                        packageSourceLocation: _packageSourceLocation,
+                        includePreview: includePreviews);
             }
             catch (NuGetPackageNotFoundException)
             {
@@ -216,7 +227,7 @@ internal class WorkloadAdvertisingManifestUpdater(
             }
 
             var adManifestPath = GetAdvertisingManifestPath(_sdkFeatureBand, manifestId);
-            await _workloadManifestInstaller.ExtractManifestAsync(packagePath, adManifestPath);
+            await _workloadManifestInstaller.ExtractManifestAsync(packagePath, adManifestPath, cancellationToken);
 
             // add file that contains the advertised manifest feature band so GetAdvertisingManifestVersionAndWorkloads will use correct feature band, regardless of if rollback occurred or not
             File.WriteAllText(Path.Combine(adManifestPath, "AdvertisedManifestFeatureBand.txt"), band.ToString());
@@ -242,7 +253,7 @@ internal class WorkloadAdvertisingManifestUpdater(
 
             return true;
         }
-        catch (Exception e)
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             if (_displayManifestUpdates)
             {
@@ -273,14 +284,18 @@ internal class WorkloadAdvertisingManifestUpdater(
         }
     }
 
-    private async Task UpdateAdvertisingManifestAsync(WorkloadManifestInfo manifest, bool includePreviews, DirectoryPath? offlineCache = null)
+    private async Task UpdateAdvertisingManifestAsync(
+        CancellationToken cancellationToken,
+        WorkloadManifestInfo manifest,
+        bool includePreviews,
+        DirectoryPath? offlineCache = null)
     {
         var fallbackFeatureBand = new SdkFeatureBand(manifest.ManifestFeatureBand);
         // The bands should be checked in the order defined here.
         SdkFeatureBand[] bands = [_sdkFeatureBand, fallbackFeatureBand];
         foreach (var band in bands.Distinct())
         {
-            if (await UpdateManifestWithVersionAsync(manifest.Id, includePreviews, band, null, offlineCache))
+            if (await UpdateManifestWithVersionAsync(cancellationToken, manifest.Id, includePreviews, band, null, offlineCache))
             {
                 return;
             }
@@ -344,23 +359,25 @@ internal class WorkloadAdvertisingManifestUpdater(
         return true;
     }
 
-    private async Task<bool> UpdatedAdManifestPackagesExistAsync()
+    private async Task<bool> UpdatedAdManifestPackagesExistAsync(CancellationToken cancellationToken)
     {
         var manifests = GetInstalledManifestIds();
         //  TODO: This doesn't seem to account for differing feature bands
-        var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest))).ConfigureAwait(false);
+        var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest, cancellationToken))).ConfigureAwait(false);
         return availableUpdates.Any();
     }
 
-    private async Task<bool> NewerManifestPackageExists(ManifestId manifest)
+    private async Task<bool> NewerManifestPackageExists(ManifestId manifest, CancellationToken cancellationToken)
     {
         try
         {
             var currentVersion = NuGetVersion.Parse(_workloadResolver.GetManifestVersion(manifest.ToString()));
-            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(_workloadManifestInstaller.GetManifestPackageId(manifest, _sdkFeatureBand));
+            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(
+                _workloadManifestInstaller.GetManifestPackageId(manifest, _sdkFeatureBand),
+                cancellationToken);
             return latestVersion > currentVersion;
         }
-        catch (Exception)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
             return false;
         }

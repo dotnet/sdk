@@ -7,6 +7,8 @@ public interface ICommand
 {
     CommandResult Execute();
 
+    CommandResult Execute(CancellationToken cancellationToken);
+
     ICommand WorkingDirectory(string projectDirectory);
 
     ICommand EnvironmentVariable(string name, string? value);

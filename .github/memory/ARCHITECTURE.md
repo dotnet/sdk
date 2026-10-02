@@ -212,3 +212,9 @@ activity during normal completion. Signal shutdown skips the detector wait.
 The adapter does not emit separate detector-health activities. Managed and Native AOT
 hosts reference the detector assembly through their project dependency graphs; only the
 telemetry adapter remains in the AOT shared-source closure.
+
+Managed and Native AOT command execution share
+[`ProcessLifecycle`](../../src/Cli/Microsoft.DotNet.Cli.Utils/ProcessLifecycle.cs) for
+Ctrl+C, SIGTERM, and process-exit cancellation.
+[`ProcessReaper`](../../src/Cli/Microsoft.DotNet.Cli.Utils/ProcessReaper.cs) separately
+coordinates signal forwarding and cleanup for child processes.

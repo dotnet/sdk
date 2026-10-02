@@ -11,6 +11,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
     [TestClass]
     public class DotnetSlnPostActionTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
 
         [TestInitialize]
@@ -230,7 +232,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreSequenceEqual(new[] { projFileFullPath }, callback.Projects);
             Assert.AreEqual(slnFileFullPath, callback.Solution);
@@ -259,7 +262,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreSequenceEqual(new[] { projFileFullPath }, callback.Projects);
             Assert.AreEqual(slnFileFullPath, callback.Solution);
@@ -291,7 +295,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsTrue(callback.InRoot);
             Assert.IsNull(callback.TargetFolder);
@@ -323,7 +328,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsNull(callback.InRoot);
             Assert.AreEqual("src", callback.TargetFolder);
@@ -356,7 +362,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.IsFalse(result);
         }
@@ -371,7 +378,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             public bool? InRoot { get; private set; }
 
-            public bool AddProjectToSolution(string solution, IReadOnlyList<string?> projects, string? targetFolder, bool? inRoot)
+            public bool AddProjectToSolution(string solution, IReadOnlyList<string?> projects, string? targetFolder, bool? inRoot, CancellationToken cancellationToken = default)
             {
                 Solution = solution;
                 Projects = projects;

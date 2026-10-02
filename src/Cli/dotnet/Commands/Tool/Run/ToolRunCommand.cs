@@ -26,12 +26,17 @@ internal sealed class ToolRunCommand : CommandBase<ToolRunCommandDefinition>
         _allowRollForward = result.GetValue(Definition.RollForwardOption);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
-        return ExecuteCommand(_localToolsCommandResolver, _toolCommandName, _forwardArgument, _allowRollForward);
+        return ExecuteCommand(_localToolsCommandResolver, _toolCommandName, _forwardArgument, _allowRollForward, cancellationToken);
     }
 
-    public static int ExecuteCommand(LocalToolsCommandResolver commandResolver, string? toolCommandName, IEnumerable<string>? argumentsToForward, bool allowRollForward)
+    public static int ExecuteCommand(
+        LocalToolsCommandResolver commandResolver,
+        string? toolCommandName,
+        IEnumerable<string>? argumentsToForward,
+        bool allowRollForward,
+        CancellationToken cancellationToken)
     {
         using var _ = Activities.Source.StartActivity("execute-local-tool");
         CommandSpec? commandSpec = commandResolver.ResolveStrict(new CommandResolverArguments()
@@ -46,7 +51,7 @@ internal sealed class ToolRunCommand : CommandBase<ToolRunCommandDefinition>
             throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, toolCommandName)], isUserError: false);
         }
 
-        var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();
+        var result = CommandFactoryUsingResolver.Create(commandSpec).Execute(cancellationToken);
         return result.ExitCode;
     }
 }

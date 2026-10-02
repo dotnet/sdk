@@ -53,7 +53,7 @@ namespace Microsoft.NET.Publish.Tests
             var result = runAppCommand.ToCommand()
                 .CaptureStdErr()
                 .CaptureStdOut()
-                .Execute();
+                .Execute(TestContext.CancellationToken);
 
             result
                 .Should()

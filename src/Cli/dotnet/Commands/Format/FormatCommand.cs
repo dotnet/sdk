@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Cli.Commands.Format;
 public sealed class FormatCommand(IEnumerable<string> argsToForward)
     : FormatForwardingApp(argsToForward)
 {
-    public static int Run(string[] args)
+    public static int Run(string[] args, CancellationToken cancellationToken)
     {
         DebugHelper.HandleDebugSwitch(ref args);
-        return new FormatForwardingApp(args).Execute();
+        return new FormatForwardingApp(args).Execute(cancellationToken);
     }
 }

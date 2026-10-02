@@ -30,7 +30,7 @@ internal class ReferenceListCommand : CommandBase<ListReferenceCommandDefinition
             parseResult);
     }
 
-    public override int Execute()
+    public override int Execute(CancellationToken cancellationToken)
     {
         if (_allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(_fileOrDirectory))
         {

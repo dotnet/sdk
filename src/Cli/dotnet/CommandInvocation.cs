@@ -18,20 +18,20 @@ namespace Microsoft.DotNet.Cli;
 internal static class CommandInvocation
 {
     /// <summary>
-    ///  Invokes a built-in command in-process via <see cref="Parser.Invoke(ParseResult)"/>, applying the
+    ///  Invokes a built-in command in-process via <see cref="Parser.InvokeAsync(ParseResult, CancellationToken)"/>, applying the
     ///  same exit-code handling on both the managed CLI and the NativeAOT bridge (including the "new"
     ///  command's 127 adjustment and <see cref="Parser.ExceptionHandler"/>). Errors are reported and
     ///  converted to an exit code, except that under NativeAOT a <see cref="CommandNotAvailableInAotException"/>
     ///  is allowed to propagate so the bridge can fall back to hosting the managed CLI.
     /// </summary>
-    internal static int ExecuteInternalCommand(ParseResult parseResult)
+    internal static int ExecuteInternalCommand(ParseResult parseResult, CancellationToken cancellationToken)
     {
         Debug.Assert(parseResult.CanBeInvoked());
         int exitCode;
         using var _ = Activities.Source.StartActivity("invocation");
         try
         {
-            exitCode = Parser.Invoke(parseResult);
+            exitCode = Parser.InvokeAsync(parseResult, cancellationToken).GetAwaiter().GetResult();
             if (parseResult.Errors.Any())
             {
                 exitCode = AdjustExitCodeForNew();

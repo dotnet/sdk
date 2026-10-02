@@ -7,9 +7,9 @@ namespace Microsoft.DotNet.Cli.Commands.Fsi;
 
 public sealed class FsiCommand
 {
-    public static int Run(string[] args)
+    public static int Run(string[] args, CancellationToken cancellationToken)
     {
         DebugHelper.HandleDebugSwitch(ref args);
-        return new FsiForwardingApp(args).Execute();
+        return new FsiForwardingApp(args).Execute(cancellationToken);
     }
 }

@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.TemplateEngine.Cli
@@ -23,21 +22,21 @@ namespace Microsoft.TemplateEngine.Cli
         }
 
         /// <summary>
-        /// Writes formatted command output from <paramref name="process"/>.
+        /// Writes formatted command output from <paramref name="commandResult"/>.
         /// </summary>
-        internal static void WriteCommandOutput(this IReporter reporter, Process process)
+        internal static void WriteCommandOutput(this IReporter reporter, CommandResult commandResult)
         {
-            if (process.StartInfo.RedirectStandardOutput || process.StartInfo.RedirectStandardError)
+            if (commandResult.StartInfo.RedirectStandardOutput || commandResult.StartInfo.RedirectStandardError)
             {
                 reporter.WriteLine(LocalizableStrings.CommandOutput);
             }
-            if (process.StartInfo.RedirectStandardOutput)
+            if (commandResult.StartInfo.RedirectStandardOutput)
             {
-                reporter.WriteStdOut(process.StandardOutput.ReadToEnd());
+                reporter.WriteStdOut(commandResult.StdOut ?? string.Empty);
             }
-            if (process.StartInfo.RedirectStandardError)
+            if (commandResult.StartInfo.RedirectStandardError)
             {
-                reporter.WriteStdErr(process.StandardError.ReadToEnd());
+                reporter.WriteStdErr(commandResult.StdErr ?? string.Empty);
             }
         }
 
