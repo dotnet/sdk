@@ -92,7 +92,8 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
                 WorkloadRestoreCommand.DiscoverAllProjects("",
                     [Path.Combine(projectDirectory, "SolutionFilter", "OtherTestProjects.slnf")]);
 
-            result.Should().Contain(f => Path.GetFileName(f) == "TestProject.csproj");
+            result.Should().BeEquivalentTo(
+                new[] { Path.Combine(projectDirectory, "TestProject", "TestProject.csproj") });
             result.Should().OnlyContain(path => File.Exists(path));
         }
     }
