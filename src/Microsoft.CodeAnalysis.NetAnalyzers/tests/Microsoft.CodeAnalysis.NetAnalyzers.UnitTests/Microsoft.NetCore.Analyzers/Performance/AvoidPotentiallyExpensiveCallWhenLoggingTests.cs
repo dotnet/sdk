@@ -3386,6 +3386,76 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task GuardedWorkInStaticLoggerMessageWithMultipleLoggerParameters_NoDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Other logger `{other}` `{argument}`")]
+                    public static partial void TwoLoggers(ILogger logger, ILogger other, string argument);
+                    public static partial void TwoLoggers(ILogger logger, ILogger other, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    void M(ILogger logger, ILogger otherLogger)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.TwoLoggers(logger, otherLogger, ExpensiveMethodCall());
+                            Log.TwoLoggers(other: otherLogger, logger: logger, argument: ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInStaticLoggerMessageWithMultipleLoggerParameters_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Other logger `{other}` `{argument}`")]
+                    public static partial void TwoLoggers(ILogger logger, ILogger other, string argument);
+                    public static partial void TwoLoggers(ILogger logger, ILogger other, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    void M(ILogger logger, ILogger otherLogger)
+                    {
+                        if (otherLogger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.TwoLoggers(logger, otherLogger, [|ExpensiveMethodCall()|]);
+                            Log.TwoLoggers(other: otherLogger, logger: logger, [|argument: ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
         public async Task WrongLogLevelGuardedWorkInStaticLoggerMessage_ReportsDiagnostic_CS()
         {
             string source = """
@@ -6294,6 +6364,32 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     Sub M(logger As ILogger)
                         If _otherLogger.IsEnabled(LogLevel.Information) Then StaticLogLevel(logger, [|ExpensiveMethodCall()|])
                         If logger.IsEnabled(LogLevel.Information) Then StaticLogLevel(_otherLogger, [|ExpensiveMethodCall()|])
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInStaticLoggerMessageWithMultipleLoggerParameters_UsesFirstLoggerParameter_VB()
+        {
+            string source = """
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Partial Class C
+                    <LoggerMessage(EventId:=0, Level:=LogLevel.Information, Message:="Other logger `{other}` `{argument}`")>
+                    Partial Private Shared Sub TwoLoggers(logger As ILogger, other As ILogger, argument As String)
+                    End Sub
+
+                    Sub M(logger As ILogger, otherLogger As ILogger)
+                        If logger.IsEnabled(LogLevel.Information) Then TwoLoggers(other:=otherLogger, logger:=logger, argument:=ExpensiveMethodCall())
+                        If otherLogger.IsEnabled(LogLevel.Information) Then TwoLoggers(other:=otherLogger, logger:=logger, [|argument:=ExpensiveMethodCall()|])
                     End Sub
 
                     Function ExpensiveMethodCall() As String

@@ -462,8 +462,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
 
                     // A [LoggerMessage] method that is not invoked as an extension method gets its logger
-                    // from an ILogger parameter, For example: 'Log.SomeMessage(logger, argument)'.
-                    var loggerArgument = logInvocation.Arguments.FirstOrDefault(a => IsLoggerType(a.Parameter?.Type));
+                    // from an ILogger parameter. For example: 'Log.SomeMessage(logger, argument)'.
+                    // The source generator uses the first ILogger parameter in declaration order, whereas
+                    // the arguments are in call-site order (which can differ when named arguments are used).
+                    var loggerArgument = logInvocation.Arguments
+                        .Where(a => IsLoggerType(a.Parameter?.Type))
+                        .OrderBy(a => a.Parameter!.Ordinal)
+                        .FirstOrDefault();
                     if (loggerArgument is not null)
                     {
                         return SymbolEqualityComparer.Default.Equals(
