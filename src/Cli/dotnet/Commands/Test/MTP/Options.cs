@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -67,3 +68,18 @@ internal record BuildOptions(
 internal readonly record struct TestApplicationPolicy(
     bool FailOnAllSkippedTests,
     string? IgnoredExitCodes);
+
+internal readonly record struct TestApplicationSettings(
+    TestApplicationPolicy Policy,
+    TestResultVisibility TestResultVisibility,
+    int SlowestTestsCount,
+    bool ShowFlakyTests,
+    bool LegacyRetryEnabled)
+{
+    public static TestApplicationSettings Default { get; } = new(
+        default,
+        TestResultVisibility.Failed | TestResultVisibility.Skipped,
+        SlowestTestsCount: 0,
+        ShowFlakyTests: true,
+        LegacyRetryEnabled: false);
+}

@@ -7,7 +7,7 @@ namespace Microsoft.NET.Publish.Tests
 {
     internal static class PublishTestUtils
     {
-#if NET11_0
+#if NET12_0
 
         /// <summary>
         /// This list should contain the TFMs that we're interested in validating publishing support for
