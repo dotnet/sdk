@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // This is the live location of the build
             string templatePackagePath = Path.Combine(
                 RepoTemplatePackages,
-                $"Microsoft.DotNet.Common.ProjectTemplates.{ToolsetInfo.CurrentTargetFrameworkVersion}",
+                "Microsoft.DotNet.Common.ProjectTemplates.12.0",
                 "content");
 
             var dummyLog = new NullTestOutputHelper();
