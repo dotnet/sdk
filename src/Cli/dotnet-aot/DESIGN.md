@@ -129,6 +129,12 @@ Other built-in command shapes are wired with a fallback action that throws
 the bridge catches it (and any unexpected parse-time failure) and transparently
 falls through to the managed CLI.
 
+Before parsing or first-run setup, the bridge applies the same
+`UILanguageOverride` as the managed entry point. The Configurer satellite assemblies
+are supplied to ILC so localized first-run resources are available inside the native
+image. UI culture is not an AOT eligibility condition; only behavior unavailable in
+the native closure triggers managed fallback.
+
 **External command path** — When the parsed command is not a built-in
 (`parseResult.RequiresManagedCommandResolution()`), it is either an external
 tool (`dotnet ef`, a global or local tool, a command on the `PATH`, an app-base
