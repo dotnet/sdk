@@ -7,7 +7,6 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
@@ -28,6 +27,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             Configuration = Option("-c", "Razor configuration name", CommandOptionType.SingleValue);
             ExtensionNames = Option("-n", "extension name", CommandOptionType.MultipleValue);
             ExtensionFilePaths = Option("-e", "extension file path", CommandOptionType.MultipleValue);
+            CSharpLanguageVersion = Option("--csharp-language-version", "csharp language version generated code", CommandOptionType.SingleValue);
             UseSourceGenerator = Option("--use-source-generator", "host the Razor source generator instead of the engine", CommandOptionType.NoValue);
         }
 
@@ -44,6 +44,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         public CommandOption ExtensionNames { get; }
 
         public CommandOption ExtensionFilePaths { get; }
+
+        public CommandOption CSharpLanguageVersion { get; }
 
         public CommandOption UseSourceGenerator { get; }
 
@@ -203,7 +205,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         {
             outputFilePath = Path.Combine(projectDirectory, outputFilePath);
 
-            var parseOptions = RazorSourceGeneratorHost.CreateParseOptions(LanguageVersion.Default);
+            var parseOptions = RazorSourceGeneratorHost.CreateParseOptions(
+                RazorSourceGeneratorHost.GetCSharpLanguageVersion(CSharpLanguageVersion.Value()));
             var compilation = RazorSourceGeneratorHost.CreateCompilation(assemblies, Parent.AssemblyReferenceProvider);
 
             // The generator only discovers tag helpers from references when the project has at least one
