@@ -118,9 +118,7 @@ enable this collection.
 | `dotnet-cli-perf` | `dotnet.cli.activity.duration` | `s` (seconds) | `activity.name` |
 
 Each completed activity from either source (`dotnet-cli` or `dotnet-cli-perf`)
-records its duration, tagged by operation name. Collectors own export and flushing.
-To collect activity spans, subscribe to the relevant activity source; enabling
-metrics alone does not force trace recording.
+records its duration, tagged by operation name. To collect activity spans, subscribe to the relevant activity source. Skipped phases emit no activity; failed invocations still record their duration.
 
 The `dotnet-cli-perf` source contains these activities:
 
@@ -133,18 +131,6 @@ The `dotnet-cli-perf` source contains these activities:
 | `test-project-discovery` | Microsoft.Testing.Platform (MTP) outer- and inner-framework project evaluation for automatic device selection. |
 | `test-target-framework-discovery` | MTP framework evaluation when `--device` is given without a target framework. |
 | `test-environment-discovery` | MTP environment-variable support checks and properties-file preparation before a project build. |
-
-Skipped phases emit no activity; failed invocations still record their duration.
-Interactive device/framework prompts are excluded. Separate restore and build
-invocations produce separate submission activities.
-
-Timings are **inclusive**: do not add nested durations or subtract independently
-aggregated percentiles. Preparation can itself evaluate or build projects, so these
-are not startup-to-first-submission measurements. Timing scopes do not change
-forwarded trace context.
-
-Without a collector for the performance source or histogram, the new activities are
-not created. Initialization and sampling checks still have a cost.
 
 ## Common Properties Collected
 
