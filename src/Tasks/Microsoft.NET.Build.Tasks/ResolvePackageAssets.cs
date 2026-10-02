@@ -1727,8 +1727,10 @@ namespace Microsoft.NET.Build.Tasks
                         // file systems when the locale-specific assets are copied.
                         try
                         {
-                            // NLS and ICU disagree on pseudo-locale casing. Lowercase satellite directories
-                            // work with both, without changing assembly culture or manifest resource names.
+                            // NLS and ICU disagree on casing for these three Windows pseudo-locales:
+                            // https://learn.microsoft.com/windows/win32/intl/pseudo-locales
+                            // This is a casing compatibility rule, not a general pseudo-locale classifier.
+                            // Lowercase directories work with both, without changing assembly culture or resource names.
                             bool isPseudoLocale = string.Equals(locale, "qps-ploc", StringComparison.OrdinalIgnoreCase)
                                 || string.Equals(locale, "qps-plocm", StringComparison.OrdinalIgnoreCase)
                                 || string.Equals(locale, "qps-ploca", StringComparison.OrdinalIgnoreCase);
