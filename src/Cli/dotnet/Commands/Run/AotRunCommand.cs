@@ -177,6 +177,7 @@ internal static class AotRunCommand
         }
 
         CommonRunHelpers.ApplyLaunchEnvironmentVariables(
+            entryPointFileFullPath,
             profileResult.Profile,
             environmentVariables,
             (name, value) => launchEnvironment[name] = value);

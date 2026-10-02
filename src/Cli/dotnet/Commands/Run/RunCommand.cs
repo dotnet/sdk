@@ -443,6 +443,7 @@ public class RunCommand
             .WorkingDirectory(workingDirectory);
 
         CommonRunHelpers.ApplyLaunchEnvironmentVariables(
+            ProjectOrEntryPointPath,
             launchSettings,
             EnvironmentVariables,
             (name, value) => command.EnvironmentVariable(name, value));
@@ -683,6 +684,7 @@ public class RunCommand
         }
 
         CommonRunHelpers.ApplyLaunchEnvironmentVariables(
+            ProjectOrEntryPointPath,
             launchSettings,
             runtimeEnvironmentVariables,
             (name, value) => command.EnvironmentVariable(name, value));

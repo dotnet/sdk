@@ -19,9 +19,9 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_ROOT = nameof(DOTNET_ROOT);
     /// <summary>
     /// Set by <c>dotnet run</c> on processes it launches for a launch profile with <c>"commandName": "Executable"</c>.
-    /// Signals to nested SDK commands (such as the <c>dotnet run</c> started by a <c>dotnet watch</c> that the profile launched)
-    /// that a launch profile has already been applied to the environment of the current process,
-    /// so that they don't apply the default launch profile on top of it.
+    /// Contains the full path of the originating project or entry-point file, so nested SDK commands
+    /// skip only that project's default launch profile. Removed from the application's environment
+    /// when it is launched without an Executable profile.
     /// </summary>
     public static readonly string DOTNET_LAUNCH_PROFILE_APPLIED = nameof(DOTNET_LAUNCH_PROFILE_APPLIED);
     public static readonly string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);

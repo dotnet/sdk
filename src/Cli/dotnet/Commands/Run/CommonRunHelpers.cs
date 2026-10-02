@@ -151,13 +151,9 @@ internal static class CommonRunHelpers
             return LaunchProfileParseResult.Success(model: null);
         }
 
-        // If this process was launched by a launch profile with "commandName": "Executable"
-        // (e.g. a profile that runs `dotnet watch run`), that profile has already been applied to
-        // the environment of this process. Applying the default launch profile on top of it would
-        // silently override the settings of the profile the user selected.
-        // A launch profile requested explicitly still takes precedence.
-        // See https://github.com/dotnet/sdk/issues/56023.
-        if (string.IsNullOrEmpty(launchProfile) && HasLaunchProfileBeenApplied())
+        // An Executable profile may launch `dotnet watch run` for this project. Do not let the
+        // default profile overwrite its environment, but still honor other projects and explicit profiles.
+        if (string.IsNullOrEmpty(launchProfile) && HasLaunchProfileBeenApplied(projectOrEntryPointFilePath))
         {
             return LaunchProfileParseResult.Success(model: null);
         }
@@ -201,10 +197,12 @@ internal static class CommonRunHelpers
     /// <summary>
     /// Applies launch-profile environment variables followed by command-line or evaluated overrides.
     /// </summary>
+    /// <param name="projectOrEntryPointFilePath">The project or entry-point path that owns the launch profile.</param>
     /// <param name="launchProfile">The selected launch profile.</param>
     /// <param name="environmentVariables">Environment variables that override profile values.</param>
     /// <param name="apply">Applies one environment variable to the launch.</param>
     public static void ApplyLaunchEnvironmentVariables(
+        string projectOrEntryPointFilePath,
         LaunchProfile? launchProfile,
         IReadOnlyDictionary<string, string> environmentVariables,
         Action<string, string?> apply)
@@ -221,14 +219,16 @@ internal static class CommonRunHelpers
             {
                 apply(name, value);
             }
+        }
 
-            if (launchProfile is ExecutableLaunchProfile)
-            {
-                // The launched process is an arbitrary executable that may itself invoke SDK commands
-                // that launch the application (e.g. `dotnet watch run`). Let those commands know that
-                // a launch profile has already been applied to the environment they inherit.
-                apply(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED, "1");
-            }
+        if (launchProfile is ExecutableLaunchProfile)
+        {
+            apply(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED, Path.GetFullPath(projectOrEntryPointFilePath));
+        }
+        else if (Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED) is not null)
+        {
+            // Consume the marker only in the application's environment, so a watch parent can reuse it on restart.
+            apply(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED, null);
         }
 
         foreach ((string name, string value) in environmentVariables)
@@ -238,11 +238,13 @@ internal static class CommonRunHelpers
     }
 
     /// <summary>
-    /// Returns true if the environment of the current process has been configured by a launch profile
-    /// with <c>"commandName": "Executable"</c> that launched this process.
+    /// Returns true if an Executable launch profile for this project or entry point has already been applied.
     /// </summary>
-    private static bool HasLaunchProfileBeenApplied()
-        => Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED) is "1";
+    private static bool HasLaunchProfileBeenApplied(string projectOrEntryPointFilePath)
+        => string.Equals(
+            Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED),
+            Path.GetFullPath(projectOrEntryPointFilePath),
+            OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 
 #if !CLI_AOT
     /// <summary>

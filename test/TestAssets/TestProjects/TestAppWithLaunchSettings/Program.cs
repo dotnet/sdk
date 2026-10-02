@@ -12,6 +12,7 @@ namespace ConsoleApplication
             Console.WriteLine("Hello world");
             Console.WriteLine($"env: MyCoolEnvironmentVariableKey={Environment.GetEnvironmentVariable("MyCoolEnvironmentVariableKey")}");
             Console.WriteLine($"env: DOTNET_LAUNCH_PROFILE={Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")}");
+            Console.WriteLine($"env: DOTNET_LAUNCH_PROFILE_APPLIED={Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE_APPLIED") ?? "<unset>"}");
             Console.WriteLine($"env: ASPNETCORE_URLS={Environment.GetEnvironmentVariable("ASPNETCORE_URLS")}");
             Console.WriteLine($"env: Configuration={Environment.GetEnvironmentVariable("Configuration")}");
             if (args.Length > 0)
