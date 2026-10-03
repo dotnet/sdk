@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(["--os", "os"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--os", "os"], msbuildPath, TestCommandServices.CreateNonLLM());
                 var expectedArch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
 
                 List<string> expectedArgs = [.. ExpectedPrefix, .. DefaultArgs, $"--property:RuntimeIdentifier=os-{expectedArch}", .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch"], msbuildPath, TestCommandServices.CreateNonLLM());
                 var expectedOs = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" :
                     RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" :
                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch", "--os", "os"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch", "--os", "os"], msbuildPath, TestCommandServices.CreateNonLLM());
                 List<string> expectedArgs = [.. ExpectedPrefix, .. DefaultArgs, "--property:RuntimeIdentifier=os-arch", .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
                 expectedArgs.Should().BeSubsetOf(command.GetArgumentTokensToMSBuild());
             });
@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch", "--os", "os", "--self-contained"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch", "--os", "os", "--self-contained"], msbuildPath, TestCommandServices.CreateNonLLM());
                 string[] expectedArgs = [
                     .. ExpectedPrefix,
                     .. DefaultArgs,
@@ -151,7 +151,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "amd64", "--os", "os"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "amd64", "--os", "os"], msbuildPath, TestCommandServices.CreateNonLLM());
                 List<string> expectedArgs = [.. ExpectedPrefix, .. DefaultArgs, "--property:RuntimeIdentifier=os-x64", .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
                 expectedArgs.Should().BeSubsetOf(command.GetArgumentTokensToMSBuild());
             });
@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
                 {
                     var msbuildPath = "<msbuildpath>";
-                    var command = (RestoringCommand)BuildCommand.FromArgs(["--os", "os"], msbuildPath);
+                    var command = (RestoringCommand)BuildCommand.FromArgs(["--os", "os"], msbuildPath, TestCommandServices.CreateNonLLM());
                     var expectedArch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
                     List<string> expectedArgs = [.. ExpectedPrefix, .. DefaultArgs, $"--property:RuntimeIdentifier=os-{expectedArch}", .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
                     expectedArgs.Should().BeSubsetOf(command.GetArgumentTokensToMSBuild());
@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
                 {
                     var msbuildPath = "<msbuildpath>";
-                    var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch"], msbuildPath);
+                    var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch"], msbuildPath, TestCommandServices.CreateNonLLM());
                     var expectedOs = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" :
                         RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" :
                         RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :
@@ -204,4 +204,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-
