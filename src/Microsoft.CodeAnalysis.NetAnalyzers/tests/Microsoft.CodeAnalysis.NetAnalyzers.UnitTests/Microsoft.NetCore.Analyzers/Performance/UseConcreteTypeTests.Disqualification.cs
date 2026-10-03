@@ -3,12 +3,181 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Performance.UseConcreteTypeAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     [TestClass]
     public partial class UseConcreteTypeTests
     {
+        [TestMethod]
+        [WorkItem(56233, "https://github.com/dotnet/sdk/issues/56233")]
+        public async Task ShouldNotTrigger_MixedAnonymousAndConcreteMethodReturns_CSharp()
+        {
+            await TestCSAsync("""
+                class ConcreteType
+                {
+                    private object GetNewConcreteTypeInstance(bool returnAnonymousObjectInstead)
+                    {
+                        if (returnAnonymousObjectInstead)
+                        {
+                            return new { };
+                        }
+
+                        return new ConcreteType();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(50366, "https://github.com/dotnet/sdk/issues/50366")]
+        public async Task ShouldNotTrigger_AnonymousLocalMethodReturn_CSharp()
+        {
+            await TestCSAsync("""
+                class C
+                {
+                    private object BuildObject()
+                    {
+                        var outputData = new
+                        {
+                            Name = "Alex"
+                        };
+
+                        return outputData;
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(56233, "https://github.com/dotnet/sdk/issues/56233")]
+        public async Task ShouldNotTrigger_NestedAnonymousMethodReturn_CSharp()
+        {
+            await TestCSAsync("""
+                using System.Linq;
+
+                class C
+                {
+                    private object BuildArray() => new[] { new { Name = "Alex" } };
+
+                    private object BuildList() => new[] { new { Name = "Alex" } }.ToList();
+                }
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(56233, "https://github.com/dotnet/sdk/issues/56233")]
+        public async Task ShouldNotTrigger_AnonymousContainingTypeMethodReturn_CSharp()
+        {
+            await TestCSAsync("""
+                class C
+                {
+                    private object BuildObject() => Create(new { Name = "Alex" });
+
+                    private static Outer<T>.Inner Create<T>(T value) => new();
+                }
+
+                class Outer<T>
+                {
+                    public class Inner
+                    {
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(56233, "https://github.com/dotnet/sdk/issues/56233")]
+        public async Task ShouldNotTrigger_WhenAnotherReturnOperationWasNotExplicitlyHandled_CSharp()
+        {
+            await TestCSAsync("""
+                record RecordType(int Value);
+
+                class C
+                {
+                    private object BuildObject(bool returnRecord, RecordType record)
+                    {
+                        if (returnRecord)
+                        {
+                            return record with { Value = 1 };
+                        }
+
+                        return new C();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(56233, "https://github.com/dotnet/sdk/issues/56233")]
+        public async Task ShouldNotTrigger_AnonymousAssignments_CSharp()
+        {
+            await TestCSAsync("""
+                class C
+                {
+                    private object _field = new { Name = "Alex" };
+
+                    public void M()
+                    {
+                        _field.ToString();
+
+                        object local = new { Name = "Alex" };
+                        local.ToString();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(56233, "https://github.com/dotnet/sdk/issues/56233")]
+        public async Task ShouldNotTrigger_MixedAnonymousAndConcreteMethodReturns_VisualBasic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class ConcreteType
+                    Private Function GetNewConcreteTypeInstance(returnAnonymousObjectInstead As Boolean) As Object
+                        If returnAnonymousObjectInstead Then
+                            Return New With {.Name = "Alex"}
+                        End If
+
+                        Return New ConcreteType()
+                    End Function
+                End Class
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(50366, "https://github.com/dotnet/sdk/issues/50366")]
+        public async Task ShouldNotTrigger_AnonymousLocalMethodReturn_VisualBasic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class C
+                    Private Function BuildObject() As Object
+                        Dim outputData = New With {
+                            .Name = "Alex"
+                        }
+
+                        Return outputData
+                    End Function
+                End Class
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(56233, "https://github.com/dotnet/sdk/issues/56233")]
+        public async Task ShouldNotTrigger_NestedAnonymousMethodReturn_VisualBasic()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class C
+                    Private Function BuildArray() As Object
+                        Return {New With {.Name = "Alex"}}
+                    End Function
+                End Class
+                """);
+        }
+
         [TestMethod]
         [DynamicData(nameof(DisqualifiedSources))]
         public async Task Disqualication(string insert)

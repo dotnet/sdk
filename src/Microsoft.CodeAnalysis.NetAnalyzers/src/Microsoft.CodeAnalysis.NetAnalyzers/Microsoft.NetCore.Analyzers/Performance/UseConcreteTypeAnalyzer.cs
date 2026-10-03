@@ -124,7 +124,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
             context.RegisterCompilationStartAction(context =>
             {
                 var voidType = context.Compilation.GetSpecialType(SpecialType.System_Void);
-                var publicOrInternalColl = Collector.GetInstance(voidType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
+                var objectType = context.Compilation.GetSpecialType(SpecialType.System_Object);
+                var publicOrInternalColl = Collector.GetInstance(voidType, objectType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
 
                 context.RegisterSymbolStartAction(context =>
                 {
@@ -135,7 +136,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return;
                     }
 
-                    var coll = Collector.GetInstance(voidType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
+                    var coll = Collector.GetInstance(voidType, objectType, symbol => symbol.IsInSource() && context.Options.MatchesConfiguredVisibility(UseConcreteTypeForMethodReturn, symbol, context.Compilation, SymbolVisibilityGroup.Private));
 
                     // we accumulate a bunch of info in the collector object
                     context.RegisterOperationAction(context => coll.HandleInvocation((IInvocationOperation)context.Operation), OperationKind.Invocation);
@@ -261,6 +262,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 if (assignedNull || fromType.NullableAnnotation == NullableAnnotation.Annotated)
                 {
                     toType = toType.WithNullableAnnotation(NullableAnnotation.Annotated);
+                }
+
+                if (ContainsAnonymousType(toType))
+                {
+                    // Anonymous types cannot be named in a declaration, including when nested in another type.
+                    return;
                 }
 
                 if (!toType.DerivesFrom(fromType.OriginalDefinition))
@@ -400,6 +407,16 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);
+
+            static bool ContainsAnonymousType(ITypeSymbol type)
+                => type switch
+                {
+                    IArrayTypeSymbol arrayType => ContainsAnonymousType(arrayType.ElementType),
+                    INamedTypeSymbol namedType => namedType.IsAnonymousType
+                        || namedType.TypeArguments.Any(ContainsAnonymousType)
+                        || namedType.ContainingType is { } containingType && ContainsAnonymousType(containingType),
+                    _ => false,
+                };
 
             static string GetTypeName(ITypeSymbol type) => type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
         }
