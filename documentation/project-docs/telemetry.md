@@ -5,6 +5,7 @@
 - [.NET SDK Telemetry Documentation](#net-sdk-telemetry-documentation)
   - [Table of Contents](#table-of-contents)
   - [How to Control Telemetry](#how-to-control-telemetry)
+  - [CLI Activity Duration Metrics](#cli-activity-duration-metrics)
   - [Common Properties Collected](#common-properties-collected)
   - [Telemetry Events](#telemetry-events)
     - [Core CLI Events](#core-cli-events)
@@ -105,6 +106,31 @@ log are unaffected. Set `DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT` to disable i
 - **First Time Use**: Telemetry is only collected after the first-time-use notice has been shown and accepted (tracked via sentinel file)
 
 - **Event Namespace**: All telemetry events are automatically prefixed with `dotnet/cli/`
+
+## CLI Activity Duration Metrics
+
+Performance collectors such as PerfStar can opt into CLI phase timings by enabling
+the `dotnet-cli-perf` meter. Built-in SDK telemetry and its OTLP exporter do not
+enable this collection.
+
+| Meter | Instrument | Unit | Tag |
+| --- | --- | --- | --- |
+| `dotnet-cli-perf` | `dotnet.cli.activity.duration` | `s` (seconds) | `activity.name` |
+
+Each completed activity from either source (`dotnet-cli` or `dotnet-cli-perf`)
+records its duration, tagged by operation name. To collect activity spans, subscribe to the relevant activity source. Skipped phases emit no activity; failed invocations still record their duration.
+
+The `dotnet-cli-perf` source contains these activities:
+
+| Activity | Measured work |
+| --- | --- |
+| `msbuild-submission` | Synchronous MSBuild invocation, including child/server wait time. For file-based projects, covers `BeginBuild` through `EndBuild`. |
+| `release-property-discovery` | Project/solution discovery and `PackRelease` / `PublishRelease` evaluation to choose the default configuration. |
+| `project-selection` | Run/test project loading, evaluation when needed, and project-instance creation, including cached snapshots. |
+| `device-discovery` | Optional restore, `ComputeAvailableDevices` execution, and reading its results. |
+| `test-project-discovery` | Microsoft.Testing.Platform (MTP) outer- and inner-framework project evaluation for automatic device selection. |
+| `test-target-framework-discovery` | MTP framework evaluation when `--device` is given without a target framework. |
+| `test-environment-discovery` | MTP environment-variable support checks and properties-file preparation before a project build. |
 
 ## Common Properties Collected
 
