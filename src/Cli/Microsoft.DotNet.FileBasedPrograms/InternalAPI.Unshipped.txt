@@ -1,6 +1,7 @@
 const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.MappingPropertyName = "FileBasedProgramsItemMapping" -> string!
 const Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective" -> string!
 const Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.FromRefDirectiveMetadataName = "FileBasedProgramsFromRefDirective" -> string!
+const Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.IncludeDirectiveMetadataNames = "FileBasedProgramsIncludeDirectiveMetadataNames" -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.CSharpDirective(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude
@@ -10,6 +11,8 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.ItemType.ini
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.Kind.get -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExcludeKind
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.Kind.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.KindToMSBuildString() -> string!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.Metadata.get -> System.Collections.Immutable.ImmutableArray<(string! Name, string! Value)>
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.Metadata.init -> void
 Microsoft.DotNet.FileBasedPrograms.IBuildService
 Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectInstanceFromProjectRootElementAsync(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>? additionalGlobalProperties) -> System.Threading.Tasks.ValueTask<Microsoft.DotNet.FileBasedPrograms.IProjectInstance!>
 Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectRootElement(System.Xml.XmlReader! xmlReader, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, string! entryPointFilePath) -> Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!
@@ -35,8 +38,12 @@ Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.Exp
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.ExplicitProjectItem(string! ItemType, string! Include) -> void
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.Include.get -> string!
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.Include.init -> void
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.IsUpdate.get -> bool
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.IsUpdate.init -> void
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.ItemType.get -> string!
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.ItemType.init -> void
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.Metadata.get -> System.Collections.Immutable.ImmutableArray<(string! Name, string! Value)>
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.Metadata.init -> void
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetItemMappingAsync(Microsoft.DotNet.FileBasedPrograms.IProjectInstance! project, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError) -> System.Threading.Tasks.ValueTask<System.Collections.Immutable.ImmutableArray<(string! Extension, string! ItemType)>>
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.RequestedTargets.get -> string![]?
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.Result

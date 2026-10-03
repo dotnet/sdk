@@ -771,14 +771,18 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     }
 
     /// <summary>
-    /// Parses a directive that expects exactly one token (its value) and no metadata.
+    /// Parses a directive that expects a value, optionally followed by metadata.
     /// Reports an error and returns <see langword="null"/> on empty or extra tokens.
     /// Unquoted whitespace is accepted as part of the value for backward compatibility
     /// (see <see cref="TokenizeWithLegacyFallback"/>).
     /// </summary>
-    private static string? ParseSingleValue(in ParseContext context)
+    private static string? ParseSingleValue(
+        in ParseContext context,
+        bool allowMetadata,
+        out ImmutableArray<(string Name, string Value)> metadata)
     {
-        if (TokenizeWithLegacyFallback(context, nameSeparator: null, allowMetadata: false, out _) is not { } tokens)
+        metadata = default;
+        if (TokenizeWithLegacyFallback(context, nameSeparator: null, allowMetadata, out _) is not { } tokens)
         {
             return null;
         }
@@ -789,9 +793,15 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return null;
         }
 
-        if (tokens.Length > 1)
+        if (!allowMetadata && tokens.Length > 1)
         {
             context.ReportError(string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, context.DirectiveKind));
+            return null;
+        }
+
+        metadata = ParseMetadata(context, tokens, start: 1);
+        if (metadata.IsDefault)
+        {
             return null;
         }
 
@@ -1261,18 +1271,32 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         public string? ItemType { get; init; }
 
+        public ImmutableArray<(string Name, string Value)> Metadata { get; init; }
+
         public static new IncludeOrExclude? Parse(in ParseContext context)
         {
-            if (ParseSingleValue(context) is not { } value)
+            var kind = KindFromString(context.DirectiveKind);
+            if (ParseSingleValue(context, allowMetadata: kind == IncludeOrExcludeKind.Include, out var metadata) is not { } value)
             {
                 return null;
+            }
+
+            foreach (var (name, _) in metadata)
+            {
+                if (MetadataNameComparer.Equals(name, VirtualProjectBuilder.FromIncludeDirectiveMetadataName) ||
+                    MetadataNameComparer.Equals(name, VirtualProjectBuilder.IncludeDirectiveMetadataNames))
+                {
+                    context.ReportError(string.Format(FileBasedProgramsResources.ConflictingDirectiveMetadata, name));
+                    return null;
+                }
             }
 
             return new IncludeOrExclude(context.Info)
             {
                 OriginalName = value,
                 Name = value,
-                Kind = KindFromString(context.DirectiveKind),
+                Kind = kind,
+                Metadata = metadata,
             };
         }
 
@@ -1308,6 +1332,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 Name = Name,
                 Kind = Kind,
                 ItemType = itemType,
+                Metadata = Metadata,
             };
         }
 
@@ -1324,6 +1349,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 Name = name,
                 Kind = Kind,
                 ItemType = ItemType,
+                Metadata = Metadata,
             };
         }
 
@@ -1357,7 +1383,13 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             };
         }
 
-        public override string ToString() => $"#:{KindToString()} {QuoteIfNeeded(Name)}";
+        public override string ToString()
+        {
+            var builder = new StringBuilder($"#:{KindToString()} ");
+            builder.Append(QuoteIfNeeded(Name));
+            AppendMetadata(builder, Metadata);
+            return builder.ToString();
+        }
 
         /// <summary>
         /// Parses a <paramref name="value"/> in the format <c>.protobuf=Protobuf;.cshtml=Content</c>.
@@ -1391,9 +1423,10 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                     continue;
                 }
 
-                if (itemType.IsWhiteSpace())
+                string? errorMessage = "";
+                if (itemType.Length == 0 || !IsValidMSBuildName(itemType, out errorMessage))
                 {
-                    ReportError(string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType, pair));
+                    ReportError(string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType, pair, errorMessage));
                     continue;
                 }
 
