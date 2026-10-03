@@ -682,6 +682,13 @@ public class RunCommand
             }
         }
 
+        // An explicit workingDirectory in the launch profile wins over the RunWorkingDirectory
+        // MSBuild property, matching how Visual Studio and other IDEs resolve the two.
+        if (launchSettings?.WorkingDirectory is { } launchProfileWorkingDirectory)
+        {
+            command.WorkingDirectory(launchProfileWorkingDirectory);
+        }
+
         CommonRunHelpers.ApplyLaunchEnvironmentVariables(
             launchSettings,
             runtimeEnvironmentVariables,
