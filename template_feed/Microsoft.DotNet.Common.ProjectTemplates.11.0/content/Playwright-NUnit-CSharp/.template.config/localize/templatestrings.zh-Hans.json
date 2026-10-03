@@ -9,7 +9,7 @@
   "symbols/Framework/choices/net11.0/description": "目标 net11.0",
   "symbols/EnablePack/description": "是否(通过 \"dotnet pack\")为项目启用打包。",
   "symbols/EnablePack/displayName": "启用包",
-  "symbols/skipRestore/description": "如果指定，则在创建时跳过项目的自动还原。",
+  "symbols/skipRestore/description": "如果已指定，则在创建时跳过项目的自动还原。",
   "symbols/skipRestore/displayName": "跳过还原",
   "symbols/langVersion/description": "在创建的项目文件中设置 LangVersion 属性",
   "symbols/langVersion/displayName": "语言版本",

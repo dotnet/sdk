@@ -157,6 +157,21 @@ namespace dotnet.Tests
         }
 
         [TestMethod]
+        [DataRow("-mt")]
+        [DataRow("-mt:")]
+        [DataRow("\"--mt:false\"")]
+        public void GetBuildOptions_PreservesMultiThreadedArgAfterDoubleDash(string argument)
+        {
+            var mtpCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = mtpCommand.Parse(["-mt:false", "--", argument]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            buildOptions.MSBuildArgs.Should().Contain("-mt:false").And.NotContain(argument);
+            buildOptions.TestApplicationArguments.Should().Contain(argument);
+        }
+
+        [TestMethod]
         public void GetBuildOptions_LeavesUnknownArgumentsAsTestApplicationArguments()
         {
             var mtpCommand = new TestCommandDefinition.MicrosoftTestingPlatform();

@@ -38,11 +38,10 @@ namespace Microsoft.NET.ILLink.Tests
                 .And.NotHaveStdOutContaining("error IL2075");
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
+        // https://github.com/dotnet/sdk/issues/49665
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         [DataRow("net5.0")]
-        [DataRow("netcoreapp3.1")]
         public void ILLink_displays_informational_warning_up_to_net5_by_default(string targetFramework)
         {
             var projectName = "HelloWorld";

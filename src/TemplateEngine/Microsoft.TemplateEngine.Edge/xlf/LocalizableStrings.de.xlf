@@ -87,7 +87,7 @@
       </trans-unit>
       <trans-unit id="FolderInstaller_InstallResult_Error_FolderDoesNotExist">
         <source>The folder {0} doesn't exist.</source>
-        <target state="translated">Der Ordner \"{0}\" ist nicht vorhanden.</target>
+        <target state="translated">Der Ordner "{0}" ist nicht vorhanden.</target>
         <note />
       </trans-unit>
       <trans-unit id="Generic_Constraint_WrongConfigurationCTA">
@@ -107,7 +107,7 @@
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_MultipleInstallersCanBeUsed">
         <source>{0} can be installed by several installers. Specify the installer name to be used.</source>
-        <target state="translated">\"{0}\" kann von mehreren Installern installiert werden. Geben Sie den Namen des zu verwendenden Installers an.</target>
+        <target state="translated">"{0}" kann von mehreren Installern installiert werden. Geben Sie den Namen des zu verwendenden Installers an.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageAlreadyInstalled">
@@ -117,7 +117,7 @@
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackageProvider_InstallResult_Error_PackageCannotBeInstalled">
         <source>{0} cannot be installed.</source>
-        <target state="translated">\"{0}\" kann nicht installiert werden.</target>
+        <target state="translated">"{0}" kann nicht installiert werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageAlreadyInstalled">
@@ -127,7 +127,7 @@
       </trans-unit>
       <trans-unit id="GlobalSettingsTemplatePackagesProvider_Info_PackageUninstalled">
         <source>{0} was successfully uninstalled.</source>
-        <target state="translated">\"{0}\" wurde erfolgreich deinstalliert.</target>
+        <target state="translated">"{0}" wurde erfolgreich deinstalliert.</target>
         <note />
       </trans-unit>
       <trans-unit id="GlobalSettings_Error_CorruptedSettings">
@@ -164,17 +164,17 @@
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSource">
         <source>Failed to load the NuGet source {0}.</source>
-        <target state="translated">Fehler beim Laden der NuGet-Quelle \"{0}\".</target>
+        <target state="translated">Fehler beim Laden der NuGet-Quelle "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToLoadSources">
         <source>Failed to load NuGet sources configured for the folder {0}.</source>
-        <target state="translated">Fehler beim Laden der für den Ordner \"{0}\" konfigurierten NuGet-Quellen.</target>
+        <target state="translated">Fehler beim Laden der für den Ordner "{0}" konfigurierten NuGet-Quellen.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FailedToReadPackage">
         <source>Failed to read package information from NuGet source {0}.</source>
-        <target state="translated">Fehler beim Lesen von Paketinformationen aus der NuGet-Quelle \"{0}\".</target>
+        <target state="translated">Fehler beim Lesen von Paketinformationen aus der NuGet-Quelle "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Error_FileAlreadyExists">
@@ -199,7 +199,7 @@
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToDownload">
         <source>Failed to download {0} from NuGet feed {1}.</source>
-        <target state="translated">Fehler beim Herunterladen von \"{0}\" aus dem NuGet-Feed {1}.</target>
+        <target state="translated">Fehler beim Herunterladen von "{0}" aus dem NuGet-Feed {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_FailedToLoadSource">
@@ -214,17 +214,17 @@
       </trans-unit>
       <trans-unit id="NuGetApiPackageManager_Warning_PackageNotFound">
         <source>{0} is not found in NuGet feeds {1}.</source>
-        <target state="translated">\"{0}\" wurde in NuGet-Feeds \"{1}\" nicht gefunden.</target>
+        <target state="translated">"{0}" wurde in NuGet-Feeds "{1}" nicht gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_CopyFailed">
         <source>Failed to copy package {0} to {1}.</source>
-        <target state="translated">Fehler beim Kopieren des Pakets \"{0}\" in {1}.</target>
+        <target state="translated">Fehler beim Kopieren des Pakets "{0}" in {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FailedToReadPackage">
         <source>Failed to read content of package {0}.</source>
-        <target state="translated">Der Inhalt des Pakets \"{0}\" konnte nicht gelesen werden.</target>
+        <target state="translated">Der Inhalt des Pakets "{0}" konnte nicht gelesen werden.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FileAlreadyExists">
@@ -240,7 +240,7 @@
       <trans-unit id="NuGetInstaller_InstallResult_Error_InstallGeneric">
         <source>Failed to install the package {0}.
 Details: {1}.</source>
-        <target state="translated">Fehler beim Installieren des Pakets \"{0}\".
+        <target state="translated">Fehler beim Installieren des Pakets "{0}".
 Details: {1}.</target>
         <note />
       </trans-unit>
@@ -282,14 +282,14 @@ Details: {1}.</target>
       <trans-unit id="NuGetInstaller_InstallResult_Error_UninstallGeneric">
         <source>Failed to uninstall the package {0}.
 Details: {1}.</source>
-        <target state="translated">Fehler beim Deinstallieren des Pakets \"{0}\".
+        <target state="translated">Fehler beim Deinstallieren des Pakets "{0}".
 Details: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_UpdateCheckGeneric">
         <source>Failed to check the update for the package {0}.
 Details: {1}.</source>
-        <target state="translated">Fehler beim Überprüfen des Updates für das Paket \"{0}\".
+        <target state="translated">Fehler beim Überprüfen des Updates für das Paket "{0}".
 Details: {1}.</target>
         <note />
       </trans-unit>
@@ -376,7 +376,7 @@ Details: {1}.</target>
         <source>Failed to create template.
 Details: {0}</source>
         <target state="translated">Fehler beim Erstellen der Vorlage.
-Details: {0}.</target>
+Details: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
@@ -407,7 +407,7 @@ Details: {0}.</target>
       <trans-unit id="TemplatePackageManager_Error_FailedToGetTemplatePackages">
         <source>Failed to retrieve template packages from provider '{0}'.
 Details: {1}</source>
-        <target state="translated">Fehler beim Abrufen von Vorlagenpaketen vom Anbieter “{0}”.
+        <target state="translated">Fehler beim Abrufen von Vorlagenpaketen vom Anbieter '{0}'.
 Details: {1}</target>
         <note>{0} - provider name (not localized). Last line should not end with a period - period is already included in {1}.</note>
       </trans-unit>
@@ -431,9 +431,9 @@ The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
         <target state="translated">
-Die folgenden Vorlagen verwenden die gleiche Identität "{0}":
+Die folgenden Vorlagen verwenden dieselbe Identität '{0}':
 {1}
-Die Vorlage aus "{2}" wird verwendet. Deinstallieren Sie die in Konflikt stehenden Vorlagenpakete, um diesen Konflikt zu beheben.</target>
+Die Vorlage aus '{2}' wird verwendet. Deinstallieren Sie die in Konflikt stehenden Vorlagenpakete, um diesen Konflikt zu beheben.</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'

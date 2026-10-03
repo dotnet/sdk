@@ -444,6 +444,24 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [TestMethod]
+        public async Task WhenVersionCheckIsCanceledItShouldStop()
+        {
+            ParseResult result = Parser.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
+            var command = new ToolInstallGlobalOrToolPathCommand(
+                result,
+                _createToolPackageStoreDownloaderUninstaller,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
+                _reporter);
+
+            command.Execute().Should().Be(0);
+
+            Func<Task> execute = () => command.ExecuteAsync(new CancellationToken(canceled: true));
+
+            await execute.Should().ThrowAsync<OperationCanceledException>();
+        }
+
+        [TestMethod]
         public void WhenInstallWithHigherVersionItShouldUpdate()
         {
             AddHigherToolPackageVersionToFeed();
@@ -1002,6 +1020,5 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 }";
     }
 }
-
 
 

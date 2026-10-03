@@ -89,7 +89,4 @@
   
   <String Id="VisualStudioWarning" Value="Visual Studio에서 .NET [VERSIONMAJOR].[VERSIONMINOR]을(를) 사용하려는 경우 Visual Studio 2026 [MINIMUMVSVERSION] 이상이 필요합니다. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;자세히 알아보세요&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="설치를 클릭하면 다음 사용 약관에 동의하는 것입니다."/>
-  <String Id="InstallPathx64x86" Value="x64 SDK 설치의 설치 경로: &quot; [DOTNETHOME_x64]&quot; x86 SDK 설치의 경우와 같을 수 없습니다. &quot; [DOTNETHOME_X86]&quot;"/>
-  <String Id="InstallPathARM64x86" Value="ARM64 SDK 설치의 설치 경로: &quot; [DOTNETHOME_ARM64]&quot; x86 SDK 설치의 경우와 같을 수 없습니다. &quot; [DOTNETHOME_X86]&quot;"/>
-  <String Id="InstallPathARM64x64" Value="ARM64 SDK 설치의 설치 경로: &quot; [DOTNETHOME_ARM64]&quot; x64 SDK 설치의 경우와 같을 수 없습니다. &quot; [DOTNETHOME_X64]&quot;"/>
 </WixLocalization>

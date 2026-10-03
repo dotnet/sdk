@@ -144,6 +144,19 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("\"--mt:false\"")]
+    public void VerboseWithMultiThreadedOption(string option)
+    {
+        var options = VerifyOptions(["--verbose", option, "--", option]);
+
+        Assert.AreEqual(LogLevel.Debug, options.GlobalOptions.LogLevel);
+        AssertEx.SequenceEqual([NugetInteractiveProperty, option], options.BuildArguments);
+        AssertEx.SequenceEqual([option, "--", option], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", option], options.CommandArgumentsForFileDiscovery);
+    }
+
+    [TestMethod]
     public void RunOptions_LaunchProfile_Watch()
     {
         var options = VerifyOptions(["-lp", "P", "run"]);
