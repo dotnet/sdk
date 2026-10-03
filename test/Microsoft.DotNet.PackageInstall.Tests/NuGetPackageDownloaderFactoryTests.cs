@@ -30,9 +30,7 @@ public class NuGetPackageDownloaderFactoryTests : SdkTest
         downloader.Should().BeOfType<NuGetPackageDownloader>();
     }
 
-    // Requesting verification makes the constructor read DOTNET_NUGET_SIGNATURE_VERIFICATION, which another test mutates.
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void CreateForWorkloads_WithAllParameters_ReturnsConfiguredDownloader()
     {
         var tempDir = GetTempDir();
