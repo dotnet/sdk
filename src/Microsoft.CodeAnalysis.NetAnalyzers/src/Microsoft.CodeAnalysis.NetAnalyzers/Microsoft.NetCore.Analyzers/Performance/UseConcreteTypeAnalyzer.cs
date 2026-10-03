@@ -356,6 +356,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return;
                 }
 
+                if (affectedSymbol is not ILocalSymbol &&
+                    ContainsFileLocalType(toType) &&
+                    affectedSymbol.ContainingType is not { IsFileLocal: true })
+                {
+                    // file-local types cannot be used in member signatures of non-file-local types
+                    return;
+                }
+
                 if (!HasEquivalentOrGreaterVisibilityToSymbol(compilation, toType, affectedSymbol))
                 {
                     // the suggested type must have equal or greater visibility than the affected symbol.
@@ -398,6 +406,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 // final check
                 return compilation.IsSymbolAccessibleWithin(type, affectedSymbol.ContainingAssembly);
             }
+
+            static bool ContainsFileLocalType(ITypeSymbol type) => type switch
+            {
+                INamedTypeSymbol namedType =>
+                    namedType.IsFileLocal ||
+                    namedType.TypeArguments.Any(ContainsFileLocalType) ||
+                    (namedType.ContainingType is { } containingType && ContainsFileLocalType(containingType)),
+                IArrayTypeSymbol arrayType => ContainsFileLocalType(arrayType.ElementType),
+                IPointerTypeSymbol pointerType => ContainsFileLocalType(pointerType.PointedAtType),
+                _ => false,
+            };
 
             bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);
 
