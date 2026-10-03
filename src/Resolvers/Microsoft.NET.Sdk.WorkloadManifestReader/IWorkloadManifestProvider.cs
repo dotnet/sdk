@@ -6,7 +6,40 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// <summary>
     /// Specifies how the manifest provider should handle corrupt or missing workload manifests.
     /// </summary>
-    public enum ManifestCorruptionFailureMode
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+    internal enum ManifestCorruptionFailureMode
+    {
+        Repair,
+        Throw,
+        Ignore
+    }
+
+    // Visual Studio uses this type in the public WorkloadResolver.Create signature.
+    // The implementation contract remains internal to avoid exposing its supporting model.
+    public interface IWorkloadManifestProvider
+    {
+    }
+
+    internal interface IWorkloadManifestProviderImplementation : IWorkloadManifestProvider
+    {
+        void RefreshWorkloadManifests();
+        IEnumerable<ReadableWorkloadManifest> GetManifests();
+
+        string GetSdkFeatureBand();
+
+        WorkloadVersionInfo GetWorkloadVersion();
+
+        Dictionary<string, WorkloadSet> GetAvailableWorkloadSets();
+
+        public readonly record struct WorkloadVersionInfo(string Version, bool IsInstalled = true, bool WorkloadSetsEnabledWithoutWorkloadSet = false, string? GlobalJsonPath = null, bool? GlobalJsonSpecifiesWorkloadSets = null);
+    }
+#else
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    enum ManifestCorruptionFailureMode
     {
         /// <summary>
         /// Attempt to repair using the CorruptionRepairer if available, otherwise throw.
@@ -31,7 +64,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// This abstracts out the process of locating and loading a set of manifests to be loaded into a
     /// workload manifest resolver and resolved into a single coherent model.
     /// </summary>
-    public interface IWorkloadManifestProvider
+    partial interface IWorkloadManifestProvider
     {
         void RefreshWorkloadManifests();
         IEnumerable<ReadableWorkloadManifest> GetManifests();
@@ -44,8 +77,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public readonly record struct WorkloadVersionInfo(string Version, bool IsInstalled = true, bool WorkloadSetsEnabledWithoutWorkloadSet = false, string? GlobalJsonPath = null, bool? GlobalJsonSpecifiesWorkloadSets = null);
     }
+#endif
 
-    public record WorkloadVersion
+    partial record WorkloadVersion
     {
         public enum Type
         {

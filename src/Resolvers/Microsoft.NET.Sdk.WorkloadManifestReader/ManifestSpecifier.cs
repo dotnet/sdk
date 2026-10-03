@@ -3,7 +3,7 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public record class ManifestSpecifier(ManifestId Id, ManifestVersion Version, SdkFeatureBand FeatureBand)
+    partial record class ManifestSpecifier(ManifestId Id, ManifestVersion Version, SdkFeatureBand FeatureBand)
     {
         public override string ToString() => $"{Id}: {Version}/{FeatureBand}";
     }
@@ -13,6 +13,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 #if !NET
 namespace System.Runtime.CompilerServices
 {
-    public class IsExternalInit { }
+    internal class IsExternalInit { }
 }
 #endif

@@ -3,9 +3,17 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public class WorkloadManifestInfo
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+    public
+#endif
+    partial class WorkloadManifestInfo
     {
-        public WorkloadManifestInfo(string id, string version, string manifestDirectory, string manifestFeatureBand)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        WorkloadManifestInfo(string id, string version, string manifestDirectory, string manifestFeatureBand)
         {
             Id = id;
             Version = version;
@@ -15,7 +23,17 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public string Id { get; }
         public string Version { get; }
-        public string ManifestDirectory { get; }
-        public string ManifestFeatureBand { get; }
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        string ManifestDirectory { get; }
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        string ManifestFeatureBand { get; }
     }
 }

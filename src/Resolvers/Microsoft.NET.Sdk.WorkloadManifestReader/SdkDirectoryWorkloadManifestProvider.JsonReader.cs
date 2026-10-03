@@ -7,7 +7,10 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public partial class SdkDirectoryWorkloadManifestProvider
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+    public
+#endif
+    partial class SdkDirectoryWorkloadManifestProvider
     {
         static class JsonReader
         {
@@ -79,7 +82,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public class JsonFormatException : Exception
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        class JsonFormatException : Exception
         {
             public JsonFormatException() { }
             public JsonFormatException(string messageFormat, params object?[] args) : base(string.Format(messageFormat, args)) { }

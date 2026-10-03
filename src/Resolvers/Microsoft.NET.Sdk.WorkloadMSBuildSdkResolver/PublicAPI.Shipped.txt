@@ -1,0 +1,6 @@
+#nullable enable
+Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.WorkloadSdkResolver
+Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.WorkloadSdkResolver.WorkloadSdkResolver() -> void
+override Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.WorkloadSdkResolver.Name.get -> string!
+override Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.WorkloadSdkResolver.Priority.get -> int
+override Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.WorkloadSdkResolver.Resolve(Microsoft.Build.Framework.SdkReference! sdkReference, Microsoft.Build.Framework.SdkResolverContext! resolverContext, Microsoft.Build.Framework.SdkResultFactory! factory) -> Microsoft.Build.Framework.SdkResult?

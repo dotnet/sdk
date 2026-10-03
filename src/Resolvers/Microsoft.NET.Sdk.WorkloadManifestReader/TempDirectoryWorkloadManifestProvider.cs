@@ -3,7 +3,13 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public class TempDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+    using WorkloadManifestProviderImplementation = IWorkloadManifestProviderImplementation;
+#else
+    using WorkloadManifestProviderImplementation = IWorkloadManifestProvider;
+#endif
+
+    partial class TempDirectoryWorkloadManifestProvider : WorkloadManifestProviderImplementation
     {
         private readonly string _manifestsPath;
         private readonly string _sdkVersionBand;
@@ -53,7 +59,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
 
         public string GetSdkFeatureBand() => _sdkVersionBand;
-        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new IWorkloadManifestProvider.WorkloadVersionInfo(_sdkVersionBand.ToString() + ".2");
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        public IWorkloadManifestProviderImplementation.WorkloadVersionInfo GetWorkloadVersion() => new(_sdkVersionBand.ToString() + ".2");
+#else
+        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new(_sdkVersionBand.ToString() + ".2");
+#endif
         public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
     }
 }
