@@ -16,7 +16,10 @@
       1. Choose `CA1830` as the rule ID for your rule.
       2. Update the range for `Performance` in [DiagnosticCategoryAndIdRanges.txt](../src/Utilities/Compiler/DiagnosticCategoryAndIdRanges.txt) to `CA1800-CA1830`
 
-      That file records only *merged* work, so the next ID is routinely already claimed by an open PR or an in-flight branch. [`NextDiagnosticId.cs`](../../../.github/skills/add-net-analyzer/scripts/NextDiagnosticId.cs) scans forward past anything claimed in the working tree, on a local branch, or in an open PR's title or body.
+      That file records only *merged* work, so the next ID is routinely already claimed by
+      an open PR or an in-flight branch.
+      [`NextDiagnosticId.cs`](../tools/NextDiagnosticId.cs) scans forward past anything
+      claimed in the working tree, on a local branch, or in an open PR's title or body.
 
    You can refer to the [official documentation](https://learn.microsoft.com/visualstudio/code-quality/code-analysis-for-managed-code-warnings) for all released CA rules by rule category.
 
