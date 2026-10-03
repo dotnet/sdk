@@ -404,10 +404,6 @@
 
       <Net110MonoRuntimePackRids Include="@(Net100MonoRuntimePackRids)" />
 
-      <Net120MonoRuntimePackRids Include="@(Net110MonoRuntimePackRids)" />
-
-      <MonoRuntimePackRids Include="@(Net120MonoRuntimePackRids)" />
-
       <AspNetCore30RuntimePackRids Include="
         win-x64;
         win-x86;
@@ -786,15 +782,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownAspNetCorePack Include="Microsoft.AspNetCore.App.Internal.Assets"
                          TargetFramework="net12.0"
                          AspNetCorePackVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
-
-    <KnownRuntimePack Include="Microsoft.NETCore.App"
-                      TargetFramework="net12.0"
-                      RuntimeFrameworkName="Microsoft.NETCore.App"
-                      LatestRuntimeFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
-                      RuntimePackNamePatterns="Microsoft.NETCore.App.Runtime.Mono.**RID**"
-                      RuntimePackRuntimeIdentifiers="@(MonoRuntimePackRids, '%3B')"
-                      RuntimePackLabels="Mono"
-                      />
 
     <KnownFrameworkReference Include="Microsoft.WindowsDesktop.App"
                               TargetFramework="net12.0"
