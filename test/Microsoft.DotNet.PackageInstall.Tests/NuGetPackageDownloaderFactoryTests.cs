@@ -66,7 +66,6 @@ public class NuGetPackageDownloaderFactoryTests : SdkTest
         downloader.Should().NotBeNull();
     }
 
-    // The production constructor reads this process-wide variable.
     [TestMethod]
     [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void Constructor_WhenVerifyRequestedButPlatformUnsupported_LogsMessage()

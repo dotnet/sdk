@@ -79,5 +79,22 @@ namespace Microsoft.DotNet.Cli.Workload.Restore.Tests
             result.Should().Contain(f => Path.GetFileName(f) == "App.csproj", "from checking the sln file");
             result.Count.Should().Be(1);
         }
+
+        [TestMethod]
+        public void WhenCallWithSlnfInSubdirectoryItResolvesProjectsFromParentSolution()
+        {
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("MultiTestProjectSolutionWithTests")
+                .WithSource()
+                .Path;
+
+            var result =
+                WorkloadRestoreCommand.DiscoverAllProjects("",
+                    [Path.Combine(projectDirectory, "SolutionFilter", "OtherTestProjects.slnf")]);
+
+            result.Should().BeEquivalentTo(
+                new[] { Path.Combine(projectDirectory, "TestProject", "TestProject.csproj") });
+            result.Should().OnlyContain(path => File.Exists(path));
+        }
     }
 }
