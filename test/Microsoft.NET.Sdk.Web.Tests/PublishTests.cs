@@ -119,7 +119,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
         public static IEnumerable<object[]> SupportedTfms { get; } = new List<object[]>
         {
-#if NET11_0
+#if NET12_0
             new object[] { ToolsetInfo.CurrentTargetFramework }
 #else
 #error If building for a newer TFM, please update the values above

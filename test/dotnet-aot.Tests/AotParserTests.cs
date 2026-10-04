@@ -312,6 +312,33 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    [DataRow("package --help")]
+    [DataRow("package update --help")]
+    [DataRow("package add --help")]
+    public void InvokePackageHelp_FallsBackToManaged(string commandLine)
+    {
+        // The managed CLI adds NuGet-contributed `package` subcommands (e.g. `package update`) that are
+        // absent from the static AOT tree. Requesting help suppresses the unknown-subcommand parse
+        // error, so help for the `package` subtree must defer to the managed CLI to list and describe them.
+        var result = Parser.Parse(commandLine.Split(' '));
+        Assert.IsEmpty(result.Errors);
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void ParseNuGetWhyHelp_ResolvesToNuGetTreeForForwarding()
+    {
+        // `nuget why` is contributed only by the managed CLI, but help for anything in the `nuget` tree
+        // is forwarded to the NuGet CLI (which knows `why`) in both modes, so AOT must not need the
+        // subcommand statically. Verify the parse lands in the `nuget` tree with the tokens preserved.
+        var result = Parser.Parse(["nuget", "why", "--help"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreSame(Parser.RootCommand.NuGetCommand, result.CommandResult.Command);
+        Assert.AreSequenceEqual(new[] { "why", "--help" }, result.GetArguments());
+    }
+
+    [TestMethod]
     public void InvokeTestModulesWithoutMatches_IsHandledInAot()
     {
         string rootDirectory = Path.Combine(Path.GetTempPath(), $"aot-test-modules-{Guid.NewGuid():N}");
@@ -358,6 +385,28 @@ public partial class AotParserTests
         {
             Directory.Delete(rootDirectory);
         }
+    }
+
+    [TestMethod]
+    public void ParseTestModules_RejectsRootDirectoryWithoutTestModules()
+    {
+        ParseResult parseResult = ParseAotTestCommand([
+            "--root-directory", Path.GetTempPath(),
+        ]);
+
+        Assert.HasCount(1, parseResult.Errors);
+        parseResult.Errors[0].Message.Should().Contain("--test-modules");
+    }
+
+    [TestMethod]
+    public void ParseTestModules_RejectsNonPositiveParallelism()
+    {
+        ParseResult parseResult = ParseAotTestCommand([
+            "--test-modules", "**/*.dll",
+            "--max-parallel-test-modules", "0",
+        ]);
+
+        Assert.HasCount(1, parseResult.Errors);
     }
 
     [TestMethod]

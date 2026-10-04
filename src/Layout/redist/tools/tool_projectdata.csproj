@@ -11,8 +11,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="$(PkgMicrosoft_NET_ProjectData_Tasks)/lib/netstandard2.0/Microsoft.NET.ProjectData.Schema.props;
-                      $(PkgMicrosoft_NET_ProjectData_Tasks)/lib/netstandard2.0/Microsoft.NET.ProjectData.targets"
+    <Content Include="$(PkgMicrosoft_NET_ProjectData_Tasks)/lib/*/Microsoft.NET.ProjectData.Schema.props;
+                      $(PkgMicrosoft_NET_ProjectData_Tasks)/lib/*/Microsoft.NET.ProjectData.targets"
              Link="%(Filename)%(Extension)"
              CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>

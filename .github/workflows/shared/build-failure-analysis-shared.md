@@ -4,7 +4,7 @@
 # Imported by build-failure-analysis.md (check_run + workflow_dispatch
 # triggers) and build-failure-analysis-command.md (slash command). Holds the
 # analysis prompt plus every frontmatter field gh-aw merges from imports and
-# that both callers configure identically: `network`, `mcp-servers`, `tools`
+# that both callers configure identically: `model`, `network`, `mcp-servers`, `tools`
 # and `safe-outputs`.
 #
 # What deliberately stays in each caller, because gh-aw cannot take it from an
@@ -17,10 +17,20 @@
 #     gh-aw's importable field set; the engine identifier in particular is
 #     always inherited from the importing workflow.
 #
-# Editing any block below changes BOTH workflows. Verify with
-# `gh aw compile --strict` and diff the two .lock.yml files.
+# Editing any block below changes BOTH workflows. Use the v0.89.21 compiler
+# and matching setup runtime. This includes the connection-reset retries when
+# installing Copilot and AWF (dotnet/sdk#56224; github/gh-aw#53112 and
+# github/gh-aw#53154). Regenerate both locks with:
+# gh aw compile build-failure-analysis build-failure-analysis-command
+#   --strict --approve --no-check-update --schedule-seed dotnet/sdk
+#   --action-mode action --action-tag v0.89.21
+#   --validate --actionlint
+# The compiler resolves the action tag to immutable setup-action pins.
 
 description: "Shared body for build-failure-analysis workflows"
+
+# Threat detection inherits this model. Preserve the agent/default overrides.
+model: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'gpt-5.6-sol' }}
 
 network:
   allowed:
@@ -31,26 +41,25 @@ network:
 # artifact, downloaded by the agent job to `/tmp/binlogs`, and mounted
 # read-only into this container at `/data/binlogs` by the gh-aw MCP gateway.
 #
-# NOT pinned by digest, and that is a gh-aw v0.82.9 limitation, not a choice.
+# Older locks did not pin this image by digest because gh-aw v0.82.9 rejected
+# digest-qualified `container` values.
 # This container is handed the binlogs of an unmerged, possibly external PR and
 # its output is what the agent reports back, so "whatever this tag points at
 # today" is a supply-chain decision made by whoever last pushed the tag — and
 # the tag does move: it resolved to sha256:9f1e2c3e8281... from 2026-07-16
 # until 2026-08-03, when it became
 # sha256:ee7b7e5c6e162f3f0061822aa7183260626f1a1e986d04ba9915ab197a37932c.
-# v0.82.9 validates `container` against `^[a-zA-Z0-9][a-zA-Z0-9/:_.-]*$`, which
-# has no `@`, so `image@sha256:...` is rejected at compile time and the
-# generated `download_docker_images.sh` pulls this image by bare tag while every
-# other image in the lock is digest-pinned. gh-aw >= v0.83.x resolves and pins
-# the digest automatically (verified: microsoft/testfx on v0.83.4 emits
-# `digest` + `pinned_image` in its `gh-aw-manifest` and pulls by `@sha256:`), so
-# this is fixed by the compiler bump rather than by editing this line.
+# That version validated `container` against
+# `^[a-zA-Z0-9][a-zA-Z0-9/:_.-]*$`, which has no `@`, so
+# `image@sha256:...` was rejected at compile time. gh-aw v0.89.21 accepts a
+# digest-qualified source value but does not resolve a digest for this custom
+# MCR image automatically, so the digest is pinned explicitly below.
 # Refresh/inspect the current digest with:
 #   docker buildx imagetools inspect \
 #     mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-binlog-mcp-amd64
 mcp-servers:
   binlog-mcp:
-    container: "mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-binlog-mcp-amd64"
+    container: "mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-binlog-mcp-amd64@sha256:95afa9e51653d4ec64bb45d3d3d4d496e650fd6b3b7a305f58592a8f01127225"
     mounts:
       - "/tmp/binlogs:/data/binlogs:ro"
     allowed: ["*"]

@@ -64,9 +64,8 @@ public class NuGetPackageDownloaderFactoryTests : SdkTest
         downloader.Should().NotBeNull();
     }
 
-    // The production constructor reads this process-wide variable, while other tests do not acquire a matching lock.
     [TestMethod]
-    [DoNotParallelize]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void Constructor_WhenVerifyRequestedButPlatformUnsupported_LogsMessage()
     {
         // On non-Windows, requesting verification without the env var should log a message.

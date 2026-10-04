@@ -6532,6 +6532,121 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         }
 
         [TestMethod]
+        public async Task LocalFunction_InvokedFromInterprocedural_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+
+                class A : IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                class Test
+                {
+                    void M1()
+                    {
+                        A a1 = new A();
+                        void Dispose() => a1.Dispose();
+                        M2(Dispose);
+                    }
+
+                    void M2(Action disposeCallback) => disposeCallback();
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task LocalFunction_StaticLocalCallback_DisposesCapturedResourceAsync()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = CSharpLanguageVersion.CSharp8,
+                TestState =
+                {
+                    Sources =
+                    {
+                        """
+                        using System;
+
+                        class A : IDisposable
+                        {
+                            public void Dispose() { }
+                        }
+
+                        class Test
+                        {
+                            void M()
+                            {
+                                var resource = new A();
+                                void Close() => resource.Dispose();
+                                static void Invoke(object callback) => ((Action)callback)();
+                                void Local() => Invoke((Action)Close);
+                                Local();
+                            }
+                        }
+                        """
+                    }
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task LocalFunction_OrdinaryMethodObjectCallback_DisposesCapturedResourceAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+
+                class A : IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                class Test
+                {
+                    static void Invoke(object callback) => ((Action)callback)();
+
+                    void M()
+                    {
+                        var resource = new A();
+                        void Close() => resource.Dispose();
+                        void Local() => Invoke((Action)Close);
+                        Local();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task LocalFunction_ConstructorObjectCallback_DisposesCapturedResourceAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+
+                class A : IDisposable
+                {
+                    public void Dispose() { }
+                }
+
+                class Runner
+                {
+                    public Runner(object callback) => ((Action)callback)();
+                }
+
+                class Test
+                {
+                    void M()
+                    {
+                        var resource = new A();
+                        void Close() => resource.Dispose();
+                        void Local() => new Runner((Action)Close);
+                        Local();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
         [DataRow(DisposeAnalysisKind.AllPaths)]
         [DataRow(DisposeAnalysisKind.AllPathsOnlyNotDisposed)]
         [DataRow(DisposeAnalysisKind.NonExceptionPaths)]
