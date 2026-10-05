@@ -414,12 +414,15 @@ namespace Microsoft.NET.Build.Tests
             var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
             var buildCommand = new BuildCommand(testProjectInstance);
 
-            buildCommand.Execute("/p:Restore=false", "/p:BundledRuntimeAssetRuntimeIdentifiers=linux-x64")
+            buildCommand.Execute("/p:BundledRuntimeAssetRuntimeIdentifiers=linux-x64")
                 .Should()
                 .Pass();
 
             var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
             var depsFilePath = Path.Combine(outputDirectory.FullName, $"{ProjectName}.deps.json");
+            var assetsFilePath = Path.Combine(testProjectInstance.Path, ProjectName, "obj", "project.assets.json");
+            var assetsWriteTime = File.GetLastWriteTimeUtc(assetsFilePath);
+            var depsWriteTime = File.GetLastWriteTimeUtc(depsFilePath);
             using (var deps = JsonDocument.Parse(File.ReadAllText(depsFilePath)))
             {
                 var runtimeTargets = deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
@@ -428,7 +431,13 @@ namespace Microsoft.NET.Build.Tests
                     .Should().ContainSingle(asset => asset.Contains("linux-x64", StringComparison.Ordinal));
             }
 
-            buildCommand.Execute("/p:Restore=false", "/p:BundledRuntimeAssetRuntimeIdentifiers=osx-x64")
+            buildCommand.ShouldRestore = false;
+            buildCommand.Execute("/p:BundledRuntimeAssetRuntimeIdentifiers=linux-x64")
+                .Should()
+                .Pass();
+            File.GetLastWriteTimeUtc(depsFilePath).Should().Be(depsWriteTime);
+
+            buildCommand.Execute("/p:BundledRuntimeAssetRuntimeIdentifiers=osx-x64")
                 .Should()
                 .Pass();
 
@@ -440,7 +449,7 @@ namespace Microsoft.NET.Build.Tests
                     .Should().ContainSingle(asset => asset.Contains("osx-x64", StringComparison.Ordinal));
             }
 
-            buildCommand.Execute("/p:Restore=false")
+            buildCommand.Execute()
                 .Should()
                 .Pass();
 
@@ -450,6 +459,7 @@ namespace Microsoft.NET.Build.Tests
                     .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets");
                 runtimeTargets.EnumerateObject().Should().HaveCount(4);
             }
+            File.GetLastWriteTimeUtc(assetsFilePath).Should().Be(assetsWriteTime);
         }
 
         [TestMethod]
