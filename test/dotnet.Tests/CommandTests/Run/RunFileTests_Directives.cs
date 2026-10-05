@@ -1583,7 +1583,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, "", ".cs=", "")}
+                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, "", ".cs=")}
 
                 {CliCommandStrings.RunCommandException}
                 """);
@@ -1624,6 +1624,12 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             "Compile&Items" => "The '&' character, hexadecimal value 0x26, cannot be included in a name.",
             _ => throw new InvalidOperationException($"Unexpected item type '{itemType}'."),
         };
+        var expectedMessage = string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType.Trim(), mapping);
+        if (errorMessage.Length > 0)
+        {
+            expectedMessage += " " + errorMessage;
+        }
+
         File.WriteAllText(programPath, $"""
             #:property FileBasedProgramsItemMapping="{mapping}"
             #:{kind} *.cs
@@ -1635,7 +1641,7 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             .Execute()
             .Should().Fail()
             .And.HaveStdErr($"""
-                {DirectiveError(programPath, 1, FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType.Trim(), mapping, errorMessage)}
+                {DirectiveError(programPath, 1, "{0}", expectedMessage)}
 
                 {CliCommandStrings.RunCommandException}
                 """);

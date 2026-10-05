@@ -1423,10 +1423,16 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                     continue;
                 }
 
-                string? errorMessage = "";
+                string? errorMessage = null;
                 if (itemType.Length == 0 || !IsValidMSBuildName(itemType, out errorMessage))
                 {
-                    ReportError(string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType, pair, errorMessage));
+                    var message = string.Format(FileBasedProgramsResources.InvalidIncludeExcludeMappingItemType, itemType, pair);
+                    if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        message = $"{message} {errorMessage}";
+                    }
+
+                    ReportError(message);
                     continue;
                 }
 
