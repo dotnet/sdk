@@ -222,7 +222,8 @@ internal class DotnetArchiveExtractor : IDisposable
         var shouldSkipEntry = CreateExistingSubcomponentSkipPredicate(targetDir, _request.Options.Verbosity);
 
         // Extract archive, redirecting muxer to temp path and skipping existing subcomponents
-        if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+        if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) ||
+            archivePath.EndsWith(".tar", StringComparison.OrdinalIgnoreCase))
         {
             _tarArchiveExtractor.Extract(new TarExtractionContext(
                 archivePath,
