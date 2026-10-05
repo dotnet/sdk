@@ -63,8 +63,9 @@ public class SelfUpdateNotifierTests : IDisposable
         requestedChannel.Should().Be(channel);
         output.Contains(BootstrapperStrings.SelfUpdateAvailableNotice, StringComparison.Ordinal)
             .Should().Be(expectedNotice);
+        var expectedMarkerSuffix = expectedNotice ? "" : $"_{latestVersion}";
         Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle()
-            .Which.Should().EndWith($"{_time.GetUtcNow().ToUnixTimeSeconds()}_{latestVersion}.dnupc");
+            .Which.Should().EndWith($"{_time.GetUtcNow().ToUnixTimeSeconds()}{expectedMarkerSuffix}.dnupc");
     }
 
     [TestMethod]
@@ -191,6 +192,21 @@ public class SelfUpdateNotifierTests : IDisposable
         var output = CaptureOutput(notifier.ShowIfUpdateAvailable);
 
         output.Should().Contain(BootstrapperStrings.SelfUpdateAvailableNotice);
+    }
+
+    [TestMethod]
+    public void ShowIfUpdateAvailable_ShowsOnlyOncePerRefresh()
+    {
+        var notifier = CreateNotifier("0.1.0-preview.1", _ => ReleaseVersion.Parse("0.2.0-preview.1"));
+        notifier.Refresh();
+
+        var firstOutput = CaptureOutput(notifier.ShowIfUpdateAvailable);
+        var secondOutput = CaptureOutput(notifier.ShowIfUpdateAvailable);
+
+        firstOutput.Should().Contain(BootstrapperStrings.SelfUpdateAvailableNotice);
+        secondOutput.Should().BeEmpty();
+        Directory.GetFiles(_tempDir, "*.dnupc").Should().ContainSingle()
+            .Which.Should().EndWith($"{_time.GetUtcNow().ToUnixTimeSeconds()}.dnupc");
     }
 
     [TestMethod]

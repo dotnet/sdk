@@ -106,9 +106,11 @@ internal sealed class SelfUpdateNotifier
     {
         try
         {
-            if (GetAvailableUpdate() is not null)
+            var latest = ReadLatestMarker();
+            if (GetAvailableUpdate(latest.Version) is not null)
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Notice(Strings.SelfUpdateAvailableNotice.EscapeMarkup()));
+                MarkUpdateAsShown(latest.Path, latest.UnixSeconds);
             }
         }
         catch (IOException)
@@ -123,7 +125,11 @@ internal sealed class SelfUpdateNotifier
     /// </summary>
     internal ReleaseVersion? GetAvailableUpdate()
     {
-        var latest = ReadLatestMarker().Version;
+        return GetAvailableUpdate(ReadLatestMarker().Version);
+    }
+
+    private ReleaseVersion? GetAvailableUpdate(ReleaseVersion? latest)
+    {
         return latest is not null &&
             SelfUpdateWorkflow.HasSameSemanticChannel(_loadedVersion, latest) &&
             latest.ComparePrecedenceTo(_loadedVersion) > 0
@@ -215,16 +221,48 @@ internal sealed class SelfUpdateNotifier
         }
     }
 
-    private (long UnixSeconds, ReleaseVersion? Version) ReadLatestMarker()
+    private void MarkUpdateAsShown(string? markerPath, long unixSeconds)
     {
-        (long UnixSeconds, ReleaseVersion? Version) latest = default;
+        if (markerPath is null)
+        {
+            return;
+        }
+
+        var shownMarkerPath = Path.Combine(
+            _markerDirectory,
+            $"{unixSeconds.ToString(CultureInfo.InvariantCulture)}{MarkerExtension}");
+        try
+        {
+            File.Move(markerPath, shownMarkerPath);
+        }
+        catch (IOException) when (File.Exists(shownMarkerPath))
+        {
+            try
+            {
+                File.Delete(markerPath);
+            }
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+            {
+                // Best effort: failure can only cause another notice before the next refresh.
+            }
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Best effort: failure can only cause another notice before the next refresh.
+        }
+    }
+
+    private (string? Path, long UnixSeconds, ReleaseVersion? Version) ReadLatestMarker()
+    {
+        (string? Path, long UnixSeconds, ReleaseVersion? Version) latest = default;
         try
         {
             foreach (var path in Directory.EnumerateFiles(_markerDirectory, $"*{MarkerExtension}"))
             {
-                if (TryParseMarker(path, out var marker) && IsNewerMarker(marker, latest))
+                if (TryParseMarker(path, out var marker) &&
+                    IsNewerMarker(marker, (latest.UnixSeconds, latest.Version)))
                 {
-                    latest = marker;
+                    latest = (path, marker.UnixSeconds, marker.Version);
                 }
             }
         }
