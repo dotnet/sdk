@@ -6,12 +6,11 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class SelfUpdateEndToEndTests : SdkTest
+public class SelfUpdateEndToEndTests
 {
     [TestMethod]
     [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]

@@ -8,13 +8,14 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class SelfUpdateWorkflowTests : SdkTest
+public class SelfUpdateWorkflowTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public void MissingLeaseOwnerIsRejectedBeforeResolvingRelease()
     {
@@ -249,7 +250,7 @@ public class SelfUpdateWorkflowTests : SdkTest
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     [UnsupportedOSPlatform("windows")]
     [DataRow(448, false)]
     [DataRow(448, true)]

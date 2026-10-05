@@ -17,14 +17,15 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.NET.TestFramework;
 using DotnetCommand = Microsoft.DotNet.Tools.Bootstrapper.Commands.Dotnet.DotnetCommand;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class SelfUpdateStartupTests : SdkTest
+public class SelfUpdateStartupTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public void RemovedBuildIdentityOptionIsRejected()
     {

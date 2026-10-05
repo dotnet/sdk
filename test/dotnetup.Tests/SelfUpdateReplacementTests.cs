@@ -10,14 +10,15 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>Transaction tests deliberately use non-executable bytes: recovery must never run either file.</summary>
 [TestClass]
-public class SelfUpdateReplacementTests : SdkTest
+public class SelfUpdateReplacementTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public void PathsAreCanonicalSiblingsWithUniqueBackups()
     {

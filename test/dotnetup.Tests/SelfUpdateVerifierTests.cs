@@ -7,13 +7,14 @@ using System.Text;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class SelfUpdateVerifierTests : SdkTest
+public class SelfUpdateVerifierTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     [DataRow("valid")]
     [DataRow("none")]

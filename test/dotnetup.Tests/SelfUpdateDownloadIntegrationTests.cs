@@ -6,12 +6,11 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class SelfUpdateDownloadIntegrationTests : SdkTest
+public class SelfUpdateDownloadIntegrationTests
 {
     [TestInitialize]
     public void AllowUnsignedSource() => UnsignedSourcePolicy.OverrideForTesting = () => false;

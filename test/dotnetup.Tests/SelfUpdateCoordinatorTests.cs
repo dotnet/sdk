@@ -4,13 +4,14 @@
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class SelfUpdateCoordinatorTests : SdkTest
+public class SelfUpdateCoordinatorTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     private DirectoryInfo _directory = null!;
     private string _updatePath = null!;
     private string _activityPath = null!;

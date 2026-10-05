@@ -72,7 +72,7 @@ public class NonSafeCommandGateTests
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void InvalidVersionOutputReleasesActivityLock()
     {
         using var files = new SelfUpdateTestFiles(mode: "empty");

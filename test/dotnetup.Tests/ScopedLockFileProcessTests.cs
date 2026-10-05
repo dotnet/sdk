@@ -6,12 +6,10 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.NET.TestFramework;
-
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class ScopedLockFileProcessTests : SdkTest
+public class ScopedLockFileProcessTests
 {
     private static string s_dotnetPath = null!;
     private static string s_assemblyPath = null!;

@@ -4,13 +4,12 @@
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>Exercises deferred cleanup against isolated installation directories and real file locks.</summary>
 [TestClass]
-public class SelfUpdateCleanupTests : SdkTest
+public class SelfUpdateCleanupTests
 {
     private const int ExpiredBackupAgeDays = 8;
     private const string Version = SelfUpdateTestFiles.OriginalVersion;

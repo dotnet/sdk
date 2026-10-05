@@ -2,12 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.NET.TestFramework;
-
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class ScopedLockFileTests : SdkTest
+public class ScopedLockFileTests
 {
     [TestMethod]
     public void SharedOpenCreatesPermanentEmptyFileCoexistsAndDeniesExclusive()
