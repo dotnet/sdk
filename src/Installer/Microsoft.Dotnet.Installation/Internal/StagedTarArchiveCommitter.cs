@@ -7,63 +7,61 @@ internal static class StagedTarArchiveCommitter
 {
     private const int DirectoryMoveAttempts = 5;
 
-    public static void Commit(string stagingDirectory, TarExtractionContext context)
+    public static void Commit(string stagedInstallRoot, TarExtractionContext context)
     {
         Directory.CreateDirectory(context.TargetDirectory);
 
-        foreach (string topLevelDirectory in Directory.EnumerateDirectories(stagingDirectory))
+        foreach (string stagedInstallRootSubdirectory in Directory.EnumerateDirectories(stagedInstallRoot))
         {
-            string topLevelName = Path.GetFileName(topLevelDirectory);
-            if (!SubcomponentResolver.TryGetDepth(topLevelName, out int depth))
+            string subdirectoryName = Path.GetFileName(stagedInstallRootSubdirectory);
+            if (SubcomponentResolver.TryGetDepth(subdirectoryName, out int depth))
             {
-                continue;
+                CommitKnownSubdirectories(stagedInstallRoot, stagedInstallRootSubdirectory, subdirectoryName, depth, context);
             }
-
-            CommitKnownSubcomponents(stagingDirectory, topLevelDirectory, topLevelName, depth, context);
+            else
+            {
+                // metadata and swidtag are decidedly not known subcomponents, but they should be copied
+                string destination = Path.Combine(context.TargetDirectory, subdirectoryName);
+                MergeDirectory(stagedInstallRootSubdirectory, destination);
+            }
         }
 
-        foreach (string stagedFile in Directory.EnumerateFiles(stagingDirectory))
+        foreach (string stagedFile in Directory.EnumerateFiles(stagedInstallRoot))
         {
             CommitRootFile(stagedFile, context);
         }
-
-        foreach (string stagedDirectory in Directory.EnumerateDirectories(stagingDirectory))
-        {
-            string destination = Path.Combine(context.TargetDirectory, Path.GetFileName(stagedDirectory));
-            MergeDirectory(stagedDirectory, destination);
-        }
     }
 
-    private static void CommitKnownSubcomponents(
-        string stagingDirectory,
-        string topLevelDirectory,
-        string topLevelName,
+    private static void CommitKnownSubdirectories(
+        string stagedInstallRoot,
+        string stagedInstallRootSubdirectory,
+        string subdirectoryName,
         int depth,
         TarExtractionContext context)
     {
-        string[] stagedSubcomponents = [.. EnumerateDirectoriesAtDepth(topLevelDirectory, depth - 1)];
-        foreach (string stagedSubcomponent in stagedSubcomponents)
+        string[] stagedSubdirectory = [.. EnumerateDirectoriesAtDepth(stagedInstallRootSubdirectory, depth - 1)];
+        foreach (string subdirectory in stagedSubdirectory)
         {
-            string relativePath = Path.GetRelativePath(stagingDirectory, stagedSubcomponent);
-            string archivePath = relativePath.Replace(Path.DirectorySeparatorChar, '/') + "/";
-            context.OnEntryExtracted?.Invoke(archivePath);
+            string relativePath = Path.GetRelativePath(stagedInstallRoot, subdirectory);
+            string archiveEntryName  = relativePath.Replace(Path.DirectorySeparatorChar, '/') + "/";
+            context.OnEntryExtracted?.Invoke(archiveEntryName);
 
             string destination = Path.Combine(context.TargetDirectory, relativePath);
-            if (context.ShouldSkipEntry?.Invoke(archivePath) == true || Directory.Exists(destination))
+            if (context.ShouldSkipEntry?.Invoke(archiveEntryName) == true || Directory.Exists(destination))
             {
                 // Remove skipped content before the remaining staging tree is merged. Leaving it
                 // here would overwrite the existing live subcomponent during the merge below.
-                Directory.Delete(stagedSubcomponent, recursive: true);
+                Directory.Delete(subdirectory, recursive: true);
                 continue;
             }
 
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-            MoveDirectoryWithRetry(stagedSubcomponent, destination);
+            MoveDirectoryWithRetry(subdirectory, destination);
         }
 
-        if (Directory.Exists(topLevelDirectory))
+        if (Directory.Exists(stagedInstallRootSubdirectory))
         {
-            MergeDirectory(topLevelDirectory, Path.Combine(context.TargetDirectory, topLevelName));
+            MergeDirectory(stagedInstallRootSubdirectory, Path.Combine(context.TargetDirectory, subdirectoryName));
         }
     }
 
