@@ -528,5 +528,56 @@ namespace Microsoft.NET.Build.Tests
             sqliteAssets.Should().ContainSingle(asset =>
                 asset.EndsWith("runtimes/linux-x64/native/libsqlite3.so", StringComparison.Ordinal));
         }
+
+        [TestMethod]
+        [DataRow("linux-x64", "osx-x64")]
+        [DataRow("", "linux-x64")]
+        [DataRow("linux-x64", "")]
+        [DataRow("linux-x64", "linux-x64")]
+        public void It_uses_the_publish_runtime_asset_filter_when_publishing_without_build(string buildFilter, string publishFilter)
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = buildFilter;
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: $"{buildFilter}-{publishFilter}");
+            var buildCommand = new BuildCommand(testProjectInstance);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var buildDepsPath = Path.Combine(buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName, $"{ProjectName}.deps.json");
+            string buildDepsContents = File.ReadAllText(buildDepsPath);
+
+            var publishCommand = new PublishCommand(testProjectInstance) { ShouldRestore = false };
+            publishCommand.Execute("/p:NoBuild=true", $"/p:BundledRuntimeAssetRuntimeIdentifiers={publishFilter}")
+                .Should()
+                .Pass();
+
+            var outputDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+            using var deps = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputDirectory.FullName, $"{ProjectName}.deps.json")));
+            var runtimeTargets = deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets");
+            string[] expectedAssets = publishFilter == ""
+                ? ["runtimes/linux-x64/native/libsqlite3.so", "runtimes/osx-x64/native/libsqlite3.dylib",
+                   "runtimes/win7-x64/native/sqlite3.dll", "runtimes/win7-x86/native/sqlite3.dll"]
+                : publishFilter == "linux-x64"
+                    ? ["runtimes/linux-x64/native/libsqlite3.so"]
+                    : ["runtimes/osx-x64/native/libsqlite3.dylib"];
+            runtimeTargets.EnumerateObject().Select(asset => asset.Name).Should().BeEquivalentTo(expectedAssets);
+            Directory.GetFiles(outputDirectory.FullName, "*sqlite3*", SearchOption.AllDirectories)
+                .Select(path => Path.GetRelativePath(outputDirectory.FullName, path).Replace(Path.DirectorySeparatorChar, '/'))
+                .Should().BeEquivalentTo(expectedAssets);
+            File.ReadAllText(buildDepsPath).Should().Be(buildDepsContents);
+        }
     }
 }

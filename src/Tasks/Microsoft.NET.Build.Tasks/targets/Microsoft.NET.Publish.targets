@@ -731,7 +731,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SelectRuntimeIdentifierSpecificItems
         Items="@(_RuntimeAssetsForPublishFilter)"
         TargetRuntimeIdentifier="%(_RuntimeAssetFilterRids.Identity)"
-        RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)">
+        RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+        Condition="'@(_RuntimeAssetsForPublishFilter)' != ''">
       <Output TaskParameter="SelectedItems" ItemName="_FilteredRuntimeAssetsForPublish" />
     </SelectRuntimeIdentifierSpecificItems>
 
@@ -1210,7 +1211,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_ComputeUseBuildDependencyFile"
-          DependsOnTargets="_ComputePackageReferencePublish;
+          DependsOnTargets="_ComputeBundledRuntimeAssetRuntimeIdentifiersMatchBuild;
+                            _ComputePackageReferencePublish;
                             _ParseTargetManifestFiles">
     <!-- Check to see whether we can re-use the .deps.json file from the build for publish, or whether we have to
          generate a different one. -->
@@ -1220,7 +1222,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                           '@(RuntimeStorePackages)' == '' and
                                           '$(PreserveStoreLayout)' != 'true' and
                                           '$(PublishTrimmed)' != 'true' and
-                                          '$(_TrimRuntimeAssets)' != 'true'">true</_UseBuildDependencyFile>
+                                          '$(_TrimRuntimeAssets)' != 'true' and
+                                          '$(_BundledRuntimeAssetRuntimeIdentifiersMatchBuild)' == 'true'">true</_UseBuildDependencyFile>
     </PropertyGroup>
 
   </Target>
@@ -1412,6 +1415,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeFileVersionsInDependencyFile)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(RuntimeIdentifierGraphPath)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeProjectsNotInAssetsFileInDepsFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
     </ItemGroup>
 
     <Hash ItemsToHash="@(_GeneratePublishDependencyFilePropertyInputsCacheToHash)">

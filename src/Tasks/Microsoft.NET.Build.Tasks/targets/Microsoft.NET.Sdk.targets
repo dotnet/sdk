@@ -370,6 +370,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <Target Name="_ComputeBundledRuntimeAssetRuntimeIdentifiersMatchBuild">
+    <ItemGroup>
+      <_CurrentBundledRuntimeAssetRuntimeIdentifiers Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_CurrentBundledRuntimeAssetRuntimeIdentifiers)">
+      <Output TaskParameter="HashResult" PropertyName="_CurrentBundledRuntimeAssetRuntimeIdentifiersHash" />
+    </Hash>
+
+    <ReadLinesFromFile File="$(_GenerateBuildDependencyFilePropertyInputsCache)" Condition="Exists('$(_GenerateBuildDependencyFilePropertyInputsCache)')">
+      <Output TaskParameter="Lines" ItemName="_BuildBundledRuntimeAssetRuntimeIdentifiersHash" />
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <_BundledRuntimeAssetRuntimeIdentifiersMatchBuild Condition="Exists('$(_GenerateBuildDependencyFilePropertyInputsCache)') and '@(_BuildBundledRuntimeAssetRuntimeIdentifiersHash)' == '$(_CurrentBundledRuntimeAssetRuntimeIdentifiersHash)'">true</_BundledRuntimeAssetRuntimeIdentifiersMatchBuild>
+    </PropertyGroup>
+  </Target>
+
   <!-- To achieve incremental build with property change. When any property changes, WriteOnlyWhenDifferent will be triggered to write cache file.
   And the cache file's timestamp will be later, and it then triggers the incremental build.-->
   <Target Name="_GenerateRuntimeConfigurationFilesInputCache" DependsOnTargets="_DefaultMicrosoftNETPlatformLibrary">
