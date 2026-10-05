@@ -350,6 +350,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <!-- GenerateBuildDependencyFile (above) uses this cache as a timestamp input for its GenerateDepsFile task.
+       FilterRuntimeAssetsByRuntimeIdentifier in Microsoft.PackageDependencyResolution.targets changes
+       RuntimeTargetsCopyLocalItems, passed to GenerateDepsFile as ResolvedRuntimeTargetsFiles, without changing ProjectAssetsFile.
+       Hash the filter, including an empty value, so changing or clearing it regenerates the build manifest.
+       WriteOnlyWhenDifferent preserves incremental builds when the filter is unchanged. -->
   <Target Name="_GenerateBuildDependencyFileInputCache">
     <ItemGroup>
       <_GenerateBuildDependencyFilePropertyInputsCacheToHash Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
@@ -370,6 +375,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <!-- _ComputeUseBuildDependencyFile in Microsoft.NET.Publish.targets uses this comparison to decide whether to reuse build deps.
+       Use the same hash inputs as _GenerateBuildDependencyFileInputCache, but do not update its saved build hash.
+       With NoBuild=true, a different filter requires GeneratePublishDependencyFile to run its GenerateDepsFile task.
+       A missing cache cannot prove that the build manifest used the current filter, so it also prevents reuse. -->
   <Target Name="_ComputeBundledRuntimeAssetRuntimeIdentifiersMatchBuild">
     <ItemGroup>
       <_CurrentBundledRuntimeAssetRuntimeIdentifiers Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
