@@ -21,6 +21,17 @@ internal sealed class IndexedStringResourceTable : DisposableBase
     /// <param name="reader">The indexed reader whose lifetime transfers to the table.</param>
     /// <param name="options">The table loading options.</param>
     /// <returns>A validated indexed string table.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="reader"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="options"/> contains an unknown flag.</exception>
+    /// <exception cref="BadImageFormatException">
+    ///  The resource data is malformed or contains a null resource.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    ///  The table contains a non-string resource and
+    ///  <see cref="StringResourceManagerOptions.IgnoreNonStringResources"/> is not set.
+    /// </exception>
+    /// <exception cref="IOException">The resource backing cannot be read.</exception>
+    /// <exception cref="ObjectDisposedException">The reader has been disposed.</exception>
     internal static IndexedStringResourceTable Create(
         IStringResourceReader reader,
         StringResourceManagerOptions options)
@@ -61,6 +72,9 @@ internal sealed class IndexedStringResourceTable : DisposableBase
     /// </summary>
     /// <param name="name">The resource name.</param>
     /// <returns>The string value, or <see langword="null"/> when the name is absent or not a string.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="name"/> is <see langword="null"/>.</exception>
+    /// <exception cref="BadImageFormatException">The resource data is malformed.</exception>
+    /// <exception cref="IOException">The resource backing cannot be read.</exception>
     /// <exception cref="ObjectDisposedException">The table has been disposed.</exception>
     internal string? Lookup(string name)
     {
