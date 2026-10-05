@@ -7,11 +7,3 @@ internal interface ITarArchiveExtractor
 {
     void Extract(TarExtractionContext context);
 }
-
-internal sealed record TarExtractionContext(
-    string ArchivePath,
-    string TargetDirectory,
-    IProgressTask? ProgressTask = null,
-    MuxerHandler? MuxerHandler = null,
-    Action<string>? OnEntryExtracted = null,
-    Func<string, bool>? ShouldSkipEntry = null);
