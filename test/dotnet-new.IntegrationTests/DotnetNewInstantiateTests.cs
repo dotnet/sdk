@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string workingDirectory = CreateTemporaryFolder();
 
-            new DotnetNewCommand(_log, "console")
+            new DotnetNewCommand(_log, "console", "--no-restore")
                 .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
