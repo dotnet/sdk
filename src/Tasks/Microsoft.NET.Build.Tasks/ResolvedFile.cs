@@ -45,7 +45,8 @@ namespace Microsoft.NET.Build.Tasks
 
         public ResolvedFile(string sourcePath, string destinationSubDirectory, PackageIdentity package,
             AssetType assetType = AssetType.None,
-            string pathInPackage = null)
+            string pathInPackage = null,
+            string runtimeIdentifier = null)
         {
             SourcePath = Path.GetFullPath(sourcePath);
             DestinationSubDirectory = destinationSubDirectory;
@@ -53,6 +54,7 @@ namespace Microsoft.NET.Build.Tasks
             PackageName = package.Id;
             PackageVersion = package.Version.ToString();
             PathInPackage = pathInPackage;
+            RuntimeIdentifier = runtimeIdentifier;
         }
 
         public ResolvedFile(ITaskItem item, bool isRuntimeTarget)

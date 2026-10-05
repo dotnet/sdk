@@ -496,5 +496,37 @@ namespace Microsoft.NET.Build.Tests
 
             outputDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
+
+        [TestMethod]
+        public void It_filters_runtime_assets_when_preserving_store_layout_during_publish()
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = "linux-x64";
+            testProject.AdditionalProperties["PreserveStoreLayout"] = "true";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testProjectInstance);
+
+            publishCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+            var sqliteAssets = Directory.GetFiles(outputDirectory.FullName, "*sqlite3*", SearchOption.AllDirectories)
+                .Select(path => Path.GetRelativePath(outputDirectory.FullName, path).Replace(Path.DirectorySeparatorChar, '/'));
+
+            sqliteAssets.Should().ContainSingle(asset =>
+                asset.EndsWith("runtimes/linux-x64/native/libsqlite3.so", StringComparison.Ordinal));
+        }
     }
 }
