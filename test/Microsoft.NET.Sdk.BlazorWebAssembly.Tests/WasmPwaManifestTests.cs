@@ -202,6 +202,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("17.12")]
+        [Ignore("https://github.com/dotnet/runtime/issues/135218")]
         public void Publish_DeterministicAcrossBuilds_WhenNoSourcesChange()
         {
             // Arrange
