@@ -28,7 +28,7 @@ internal static class StagedTarArchiveCommitter
 
         foreach (string stagedFile in Directory.EnumerateFiles(stagedInstallRoot))
         {
-            CommitRootFile(stagedFile, context);
+            CommitInstallRootFile(stagedFile, context);
         }
     }
 
@@ -43,7 +43,7 @@ internal static class StagedTarArchiveCommitter
         foreach (string subdirectory in stagedSubdirectory)
         {
             string relativePath = Path.GetRelativePath(stagedInstallRoot, subdirectory);
-            string archiveEntryName  = relativePath.Replace(Path.DirectorySeparatorChar, '/') + "/";
+            string archiveEntryName = relativePath.Replace(Path.DirectorySeparatorChar, '/') + "/";
             context.OnEntryExtracted?.Invoke(archiveEntryName);
 
             string destination = Path.Combine(context.TargetDirectory, relativePath);
@@ -65,13 +65,14 @@ internal static class StagedTarArchiveCommitter
         }
     }
 
-    private static void CommitRootFile(string stagedFile, TarExtractionContext context)
+    private static void CommitInstallRootFile(string stagedFile, TarExtractionContext context)
     {
         string fileName = Path.GetFileName(stagedFile);
         if (context.MuxerHandler is not null &&
             string.Equals(fileName, MuxerHandler.MuxerEntryName, StringComparison.Ordinal))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(context.MuxerHandler.TempMuxerPath)!);
+            // This is not the actual muxer, whose replacement is handled separately by the MuxerHandler.
             File.Move(stagedFile, context.MuxerHandler.TempMuxerPath, overwrite: true);
             context.MuxerHandler.MuxerWasExtracted = true;
             return;
