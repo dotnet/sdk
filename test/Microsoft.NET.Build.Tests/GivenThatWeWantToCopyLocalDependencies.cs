@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
@@ -505,6 +506,62 @@ namespace Microsoft.NET.Build.Tests
             };
 
             outputDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void It_deduplicates_runtime_assets_selected_by_overlapping_runtime_identifiers(bool publish)
+        {
+            const string ProjectName = "OverlappingRuntimeAssets";
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = "linux-x64;linux-musl-x64";
+            testProject.AdditionalProperties["PreserveStoreLayout"] = "true";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+            testProject.ProjectChanges.Add(project =>
+            {
+                project.Root!.Add(XElement.Parse("""
+                    <Target Name="RecordFilteredRuntimeAssets" AfterTargets="FilterRuntimeAssetsByRuntimeIdentifier">
+                      <WriteLinesToFile File="$(IntermediateOutputPath)filtered-runtime-assets.txt"
+                                        Lines="@(RuntimeTargetsCopyLocalItems)"
+                                        Overwrite="true" />
+                    </Target>
+                    """));
+                project.Root.Add(XElement.Parse("""
+                    <Target Name="RecordResolvedPublishAssets" AfterTargets="_ResolveCopyLocalAssetsForPublish">
+                      <WriteLinesToFile File="$(IntermediateOutputPath)resolved-publish-assets.txt"
+                                        Lines="@(_ResolvedCopyLocalPublishAssets)"
+                                        Overwrite="true" />
+                    </Target>
+                    """));
+            });
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: publish.ToString());
+            MSBuildCommand command = publish ? new PublishCommand(testProjectInstance) : new BuildCommand(testProjectInstance);
+            command.Execute().Should().Pass();
+
+            var intermediateDirectory = command.GetIntermediateDirectory(testProject.TargetFrameworks).FullName;
+            File.ReadAllLines(Path.Combine(intermediateDirectory, "filtered-runtime-assets.txt"))
+                .Should().ContainSingle(asset => Path.GetFileName(asset) == "libsqlite3.so");
+            if (publish)
+            {
+                var publishAssets = File.ReadAllLines(Path.Combine(intermediateDirectory, "resolved-publish-assets.txt"));
+                publishAssets.Should().ContainSingle(asset => Path.GetFileName(asset) == "libsqlite3.so");
+                publishAssets.Should().ContainSingle(asset => Path.GetFileName(asset) == "Newtonsoft.Json.dll");
+            }
+
+            var outputDirectory = command.GetOutputDirectory(testProject.TargetFrameworks).FullName;
+            using var deps = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputDirectory, $"{ProjectName}.deps.json")));
+            deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets").EnumerateObject()
+                .Should().ContainSingle(asset => asset.Name == "runtimes/linux-x64/native/libsqlite3.so");
         }
 
         [TestMethod]
