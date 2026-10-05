@@ -167,25 +167,35 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Expand gradually: plain trimming of .NET 11+ C# desktop/server executables only.
          Keep eligibility separate from the public switch so explicit true cannot opt unsupported
          modes into a graph that omits their Build prerequisites. Existing AOT eligibility is unchanged. -->
-    <_SupportsOptimizedTrimmedPublish Condition="
+    <_IsPlainTrimmedPublish Condition="
         '$(PublishTrimmed)' == 'true' and '$(PublishAot)' != 'true' and
+        '$(PublishSingleFile)' != 'true' and '$(PublishReadyToRun)' != 'true'">true</_IsPlainTrimmedPublish>
+    <_IsOptimizedTrimmedPublishProject Condition="
         '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
         $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '11.0')) and
         '$(Language)' == 'C#' and '$(_IsExecutable)' == 'true' and '$(SelfContained)' == 'true' and
-        '$(TargetPlatformIdentifier)' == '' and
-        ('$(RuntimeIdentifier)' == 'win-x64' or '$(RuntimeIdentifier)' == 'win-arm64' or
-         '$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64' or
-         '$(RuntimeIdentifier)' == 'linux-musl-x64' or '$(RuntimeIdentifier)' == 'linux-musl-arm64' or
-         '$(RuntimeIdentifier)' == 'osx-x64' or '$(RuntimeIdentifier)' == 'osx-arm64') and
-        '$(PublishSingleFile)' != 'true' and '$(PublishReadyToRun)' != 'true' and
-        '$(UsingMicrosoftNETSdkWeb)' != 'true' and '$(UsingMicrosoftNETSdkRazor)' != 'true' and
-        '$(UsingMicrosoftNETSdkWorker)' != 'true' and '$(UsingMicrosoftNETSdkWebAssembly)' != 'true' and
-        '$(UseMaui)' != 'true' and '$(UseWPF)' != 'true' and '$(UseWindowsForms)' != 'true' and
-        '$(EnableComHosting)' != 'true' and '$(UseIJWHost)' != 'true' and
-        '$(EnableDynamicLoading)' != 'true' and '$(RegisterForComInterop)' != 'true' and
-        '$(GenerateSerializationAssemblies)' != 'On' and
-        '$(PublishProtocol)' != 'ClickOnce' and '$(GenerateClickOnceManifests)' != 'true' and
-        '$(PackAsTool)' != 'true'">true</_SupportsOptimizedTrimmedPublish>
+        '$(TargetPlatformIdentifier)' == ''">true</_IsOptimizedTrimmedPublishProject>
+    <_IsOptimizedTrimmedPublishRuntime Condition="
+        '$(RuntimeIdentifier)' == 'win-x64' or '$(RuntimeIdentifier)' == 'win-arm64' or
+        '$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64' or
+        '$(RuntimeIdentifier)' == 'linux-musl-x64' or '$(RuntimeIdentifier)' == 'linux-musl-arm64' or
+        '$(RuntimeIdentifier)' == 'osx-x64' or '$(RuntimeIdentifier)' == 'osx-arm64'">true</_IsOptimizedTrimmedPublishRuntime>
+    <_HasExcludedOptimizedTrimmedPublishSdk Condition="
+        '$(UsingMicrosoftNETSdkWeb)' == 'true' or '$(UsingMicrosoftNETSdkRazor)' == 'true' or
+        '$(UsingMicrosoftNETSdkWorker)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true' or
+        '$(UseMaui)' == 'true' or '$(UseWPF)' == 'true' or '$(UseWindowsForms)' == 'true'">true</_HasExcludedOptimizedTrimmedPublishSdk>
+    <_HasExcludedOptimizedTrimmedPublishIntegration Condition="
+        '$(EnableComHosting)' == 'true' or '$(UseIJWHost)' == 'true' or
+        '$(EnableDynamicLoading)' == 'true' or '$(RegisterForComInterop)' == 'true' or
+        '$(GenerateSerializationAssemblies)' == 'On' or
+        '$(PublishProtocol)' == 'ClickOnce' or '$(GenerateClickOnceManifests)' == 'true' or
+        '$(PackAsTool)' == 'true'">true</_HasExcludedOptimizedTrimmedPublishIntegration>
+    <_SupportsOptimizedTrimmedPublish Condition="
+        '$(_IsPlainTrimmedPublish)' == 'true' and
+        '$(_IsOptimizedTrimmedPublishProject)' == 'true' and
+        '$(_IsOptimizedTrimmedPublishRuntime)' == 'true' and
+        '$(_HasExcludedOptimizedTrimmedPublishSdk)' != 'true' and
+        '$(_HasExcludedOptimizedTrimmedPublishIntegration)' != 'true'">true</_SupportsOptimizedTrimmedPublish>
     <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and
                                    ('$(PublishAot)' == 'true' or '$(_SupportsOptimizedTrimmedPublish)' == 'true')">true</UseOptimizedPublish>
     <_UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == 'true' and
