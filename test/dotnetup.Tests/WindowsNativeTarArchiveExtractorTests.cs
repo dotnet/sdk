@@ -88,6 +88,7 @@ public class WindowsNativeTarArchiveExtractorTests
             executable.Should().Be("tar.exe");
             arguments.Should().ContainInOrder("-xzf", "archive.tar.gz", "-C");
             stagingDirectory = GetStagingDirectory(arguments);
+            Path.GetDirectoryName(stagingDirectory).Should().Be(Path.GetFullPath(targetDirectory));
 
             string sdkDirectory = Path.Combine(stagingDirectory, "sdk", "11.0.100");
             Directory.CreateDirectory(sdkDirectory);
@@ -133,6 +134,7 @@ public class WindowsNativeTarArchiveExtractorTests
         var runner = new CallbackTarProcessRunner((_, arguments) =>
         {
             stagingDirectory = GetStagingDirectory(arguments);
+            Path.GetDirectoryName(stagingDirectory).Should().Be(Path.GetFullPath(targetDirectory));
             Directory.CreateDirectory(Path.Combine(stagingDirectory, "sdk", "11.0.100"));
             File.WriteAllText(Path.Combine(stagingDirectory, "sdk", "11.0.100", "partial.dll"), "partial");
             return new NativeTarProcessResult(2, "archive read failed");

@@ -30,6 +30,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
 
         try
         {
+            Directory.CreateDirectory(context.TargetDirectory);
             Directory.CreateDirectory(stagingDirectory);
 
             // -x extracts from the archive named by -f; -z enables gzip decompression.
@@ -94,19 +95,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
 
     private static string CreateStagingDirectoryPath(string targetDirectory)
     {
-        string fullTargetPath = Path.TrimEndingDirectorySeparator(Path.GetFullPath(targetDirectory));
-        string? parentDirectory = Directory.GetParent(fullTargetPath)?.FullName
-            ?? Path.GetPathRoot(fullTargetPath);
-        if (string.IsNullOrEmpty(parentDirectory))
-        {
-            throw new IOException(string.Format(
-                CultureInfo.CurrentCulture,
-                Strings.NativeTarStagingLocationUnavailable,
-                targetDirectory));
-        }
-
-        string targetName = Path.GetFileName(fullTargetPath);
-        return Path.Combine(parentDirectory, $".{targetName}.dotnetup-staging-{Guid.NewGuid():N}");
+        return Path.Combine(Path.GetFullPath(targetDirectory), $".dotnetup-staging-{Guid.NewGuid():N}");
     }
 
     private static void TryDeleteDirectory(string path)

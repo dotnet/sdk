@@ -156,10 +156,6 @@
   <data name="NativeTarBothExtractorsFailed" xml:space="preserve">
     <value>Both Windows native TAR extraction and the .NET TAR fallback failed.</value>
   </data>
-  <data name="NativeTarStagingLocationUnavailable" xml:space="preserve">
-    <value>Could not determine a staging location for '{0}'.</value>
-    <comment>{0}=target installation directory.</comment>
-  </data>
   <data name="NativeTarFallbackWarning" xml:space="preserve">
     <value>Warning: {0} Falling back to the .NET TAR extractor.</value>
     <comment>{0}=reason native TAR extraction could not be used.</comment>
