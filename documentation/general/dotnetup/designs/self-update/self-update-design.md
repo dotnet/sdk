@@ -4,6 +4,8 @@
 
 The command resolves the latest release for the selected RID from the release channel.
 
+![dotnetup self update demonstration](dotnetup-self-update.gif)
+
 When `--channel` is omitted, [SelfUpdateDefaultChannel](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateDefaultChannel.cs)
 derives it from the running build's SemVer prerelease label: no label selects `stable`, a
 `preview` label selects `preview`, and any other label (including local development builds)
