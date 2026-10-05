@@ -188,21 +188,32 @@ public class DotnetArchiveDownloaderTests
         byte[] content = new byte[200_000];
         RandomNumberGenerator.Fill(content);
         string expectedHash = Convert.ToHexString(SHA512.HashData(content)).ToLowerInvariant();
-        var download = new ResolvedDownload(
-            new Uri("https://example.test/archive.tar.gz"),
-            expectedHash,
-            "win-x64",
-            ReleaseVersion.Parse("11.0.100"));
+        const string downloadUrl = "https://example.test/archive.tar.gz";
         using var httpClient = new HttpClient(new StaticContentHandler(content));
-        var downloader = new DotnetDownloader(
+        var downloader = new DotnetArchiveDownloader(
             new ReleaseManifest(),
             httpClient,
             Path.Combine(testEnv.TempRoot, "cache"));
         string destination = Path.Combine(testEnv.TempRoot, "archive.tar.gz");
 
-        downloader.DownloadWithVerification(download, destination).Should().Be(destination);
+        downloader.DownloadArchive(downloadUrl, expectedHash, destination);
 
         File.ReadAllBytes(destination).Should().Equal(content);
+    }
+
+    [TestMethod]
+    public void DownloadArchive_HashMismatchDoesNotCommitArchive()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        using var httpClient = new HttpClient(new StaticContentHandler("wrong content"u8.ToArray()));
+        var downloader = new DotnetArchiveDownloader(new ReleaseManifest(), httpClient);
+        string destination = Path.Combine(testEnv.TempRoot, "archive.tar.gz");
+        string expectedHash = Convert.ToHexString(SHA512.HashData("expected content"u8.ToArray()));
+
+        Assert.ThrowsExactly<DotnetInstallException>(() =>
+            downloader.DownloadArchive("https://example.test/archive.tar.gz", expectedHash, destination));
+
+        File.Exists(destination).Should().BeFalse();
     }
 
     private sealed class StaticContentHandler(byte[] content) : HttpMessageHandler

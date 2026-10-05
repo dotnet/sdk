@@ -36,6 +36,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// Downloads the archive from the specified URL to the destination path with progress reporting.
     /// </summary>
     /// <param name="downloadUrl">The URL to download from</param>
+    /// <param name="expectedHash">The hash expected for the downloaded archive</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
     private async Task DownloadArchiveAsync(string downloadUrl, string expectedHash, string destinationPath, IProgress<DownloadProgress>? progress = null)
@@ -50,7 +51,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                 await DownloadAttemptAsync(downloadUrl, expectedHash, tempPath, destinationPath, progress).ConfigureAwait(false);
                 return;
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not DotnetInstallException)
             {
                 if (attempt < MaxRetryCount)
                 {
@@ -149,9 +150,10 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// Downloads the archive from the specified URL to the destination path (synchronous version).
     /// </summary>
     /// <param name="downloadUrl">The URL to download from</param>
+    /// <param name="expectedHash">The hash expected for the downloaded archive</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    private void DownloadArchive(string downloadUrl, string expectedHash, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    internal void DownloadArchive(string downloadUrl, string expectedHash, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         DownloadArchiveAsync(downloadUrl, expectedHash, destinationPath, progress).GetAwaiter().GetResult();
     }
