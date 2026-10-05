@@ -97,6 +97,35 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         }
 
         [TestMethod]
+        [DataRow(InstallComponent.SDK)]
+        [DataRow(InstallComponent.Runtime)]
+        [DataRow(InstallComponent.ASPNETCore)]
+        public void FindRelease_LatestAndSpecificSelectMatchingComponent(InstallComponent component)
+        {
+            var releases = new TrackingReleaseManifest().Releases;
+            IEnumerable<ReleaseComponent> matchingComponents = releases.SelectMany(release =>
+                component == InstallComponent.SDK
+                    ? release.Sdks.Cast<ReleaseComponent>()
+                    : release.Runtimes
+                        .Where(runtime => ReleaseManifest.IsMatchingRuntimeComponent(runtime.Name, component))
+                        .Cast<ReleaseComponent>());
+
+            ReleaseComponent latest = matchingComponents.First();
+            ReleaseComponent specific = matchingComponents.Last();
+
+            ReleaseManifest.FindLatestRelease(releases, component).Should().BeSameAs(latest);
+            ReleaseManifest.FindSpecificRelease(releases, specific.Version, component).Should().BeSameAs(specific);
+            ReleaseManifest.FindSpecificRelease(releases, new ReleaseVersion(99, 0, 0), component).Should().BeNull();
+        }
+
+        [TestMethod]
+        public void FindLatestRelease_NoReleases_ReturnsNull()
+        {
+            ReleaseManifest.FindLatestRelease(null, InstallComponent.SDK).Should().BeNull();
+            ReleaseManifest.FindLatestRelease([], InstallComponent.SDK).Should().BeNull();
+        }
+
+        [TestMethod]
         public void GetLatestVersionForChannel_FeatureBand_ReturnsLatestVersion()
         {
             var manifest = new ChannelVersionResolver();

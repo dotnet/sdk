@@ -321,7 +321,7 @@ internal class ChannelVersionResolver
         }
         else if (minor >= 0 && featureBand == null) // Major.Minor (e.g., "9.0")
         {
-            return GetLatestReleaseVersion(_releaseManifest.GetReleases(major, minor), component);
+            return ReleaseManifest.FindLatestRelease(_releaseManifest.GetReleases(major, minor), component)?.Version;
         }
         else if (minor >= 0 && featureBand is not null) // Not Fully Qualified Feature band Version (e.g., "9.0.1xx")
         {
@@ -408,40 +408,6 @@ internal class ChannelVersionResolver
         };
 
         return latestVersion;
-    }
-
-    private static ReleaseVersion? GetLatestReleaseVersion(
-        IEnumerable<ProductRelease>? releases,
-        InstallComponent component)
-    {
-        if (releases is null)
-        {
-            return null;
-        }
-
-        foreach (ProductRelease release in releases)
-        {
-            if (component == InstallComponent.SDK)
-            {
-                ReleaseVersion? sdkVersion = release.Sdks.FirstOrDefault()?.Version;
-                if (sdkVersion is not null)
-                {
-                    return sdkVersion;
-                }
-            }
-            else
-            {
-                ReleaseVersion? runtimeVersion = release.Runtimes
-                    .FirstOrDefault(runtime => ReleaseManifest.IsMatchingRuntimeComponent(runtime.Name, component))
-                    ?.Version;
-                if (runtimeVersion is not null)
-                {
-                    return runtimeVersion;
-                }
-            }
-        }
-
-        return null;
     }
 
     /// <summary>

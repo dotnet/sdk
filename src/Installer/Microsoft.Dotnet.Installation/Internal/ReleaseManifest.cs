@@ -155,7 +155,7 @@ internal class ReleaseManifest
             // Both direct major/minor lookup and index fallback route through GetReleases,
             // ensuring the per-channel JSON is signature-verified and process-cached before
             // its contents select an archive.
-            var release = FindRelease(releases, resolvedVersion, installRequest.Component);
+            var release = FindSpecificRelease(releases, resolvedVersion, installRequest.Component);
             if (release is null)
             {
                 return FindReleaseFileResult.ReleaseNotFound;
@@ -293,17 +293,33 @@ internal class ReleaseManifest
     }
 
     /// <summary>
-    /// Finds the specific release for the given version.
+    /// Finds the component with the requested version in manifest order.
     /// </summary>
-    private static ReleaseComponent? FindRelease(ReadOnlyCollection<ProductRelease> releases, ReleaseVersion resolvedVersion, InstallComponent component)
+    internal static ReleaseComponent? FindSpecificRelease(
+        IEnumerable<ProductRelease>? releases, ReleaseVersion resolvedVersion, InstallComponent component)
+        => FindRelease(releases, component, version => version.Equals(resolvedVersion));
+
+    /// <summary>
+    /// Finds the first matching component in manifest order.
+    /// </summary>
+    internal static ReleaseComponent? FindLatestRelease(IEnumerable<ProductRelease>? releases, InstallComponent component)
+        => FindRelease(releases, component, _ => true);
+
+    private static ReleaseComponent? FindRelease(
+        IEnumerable<ProductRelease>? releases, InstallComponent component, Func<ReleaseVersion, bool> matchesVersion)
     {
+        if (releases is null)
+        {
+            return null;
+        }
+
         foreach (var release in releases)
         {
             if (component == InstallComponent.SDK)
             {
                 foreach (var sdk in release.Sdks)
                 {
-                    if (sdk.Version.Equals(resolvedVersion))
+                    if (matchesVersion(sdk.Version))
                     {
                         return sdk;
                     }
@@ -313,7 +329,7 @@ internal class ReleaseManifest
             {
                 foreach (var runtime in release.Runtimes.Where(r => IsMatchingRuntimeComponent(r.Name, component)))
                 {
-                    if (runtime.Version.Equals(resolvedVersion))
+                    if (matchesVersion(runtime.Version))
                     {
                         return runtime;
                     }
