@@ -725,8 +725,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="'$(BundledRuntimeAssetRuntimeIdentifiers)' != '' and '$(RuntimeIdentifierGraphPath)' != '' and Exists('$(RuntimeIdentifierGraphPath)')">
       <_RuntimeAssetsForPublishFilter Include="@(_ResolvedCopyLocalPublishAssets)"
                                        Condition="'%(_ResolvedCopyLocalPublishAssets.RuntimeIdentifier)' != ''" />
-      <_NonRuntimeAssetsForPublishFilter Include="@(_ResolvedCopyLocalPublishAssets)"
-                                          Condition="'%(_ResolvedCopyLocalPublishAssets.RuntimeIdentifier)' == ''" />
       <_RuntimeAssetFilterRids Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
     </ItemGroup>
 
@@ -739,9 +737,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <ItemGroup Condition="'$(BundledRuntimeAssetRuntimeIdentifiers)' != '' and '$(RuntimeIdentifierGraphPath)' != '' and Exists('$(RuntimeIdentifierGraphPath)')">
       <_ResolvedCopyLocalPublishAssets Remove="@(_RuntimeAssetsForPublishFilter)" />
-      <_ResolvedCopyLocalPublishAssets Include="@(_NonRuntimeAssetsForPublishFilter);@(_FilteredRuntimeAssetsForPublish->Distinct())" />
+      <_ResolvedCopyLocalPublishAssets Include="@(_FilteredRuntimeAssetsForPublish->Distinct())" />
       <_RuntimeAssetsForPublishFilter Remove="@(_RuntimeAssetsForPublishFilter)" />
-      <_NonRuntimeAssetsForPublishFilter Remove="@(_NonRuntimeAssetsForPublishFilter)" />
       <_FilteredRuntimeAssetsForPublish Remove="@(_FilteredRuntimeAssetsForPublish)" />
       <_RuntimeAssetFilterRids Remove="@(_RuntimeAssetFilterRids)" />
     </ItemGroup>
