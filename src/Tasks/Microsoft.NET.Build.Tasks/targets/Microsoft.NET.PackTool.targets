@@ -306,7 +306,8 @@ NOTE: This file is imported from the following contexts, so be aware when writin
                  ResourceName="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21" />
 
     <NETSdkError Condition=" '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and
-                            !('$(_ToolPackWasSelfContained)' == 'true' and ('$(_IsRidSpecific)' == 'true' or '$(CreateRidSpecificToolPackages)' == 'true'))"
+                            !('$(_ToolPackWasSelfContained)' == 'true' and ('$(_IsRidSpecific)' == 'true' or
+                              ('$(CreateRidSpecificToolPackages)' == 'true' and '$(_UserSpecifiedToolPackageRids)' != '')))"
              ResourceName="PackAsToolCannotSupportTargetPlatformIdentifier" />
   </Target>
 

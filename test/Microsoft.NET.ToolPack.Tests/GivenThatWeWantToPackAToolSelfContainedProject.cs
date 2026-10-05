@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
 using NuGet.Packaging;
@@ -14,38 +15,46 @@ namespace Microsoft.NET.ToolPack.Tests
     public class GivenThatWeWantToPackAToolSelfContainedProject : SdkTest
     {
         [TestMethod]
-        [DataRow("RuntimeIdentifier")]
-        [DataRow("RuntimeIdentifiers")]
-        [DataRow(null)]
-        public void Windows_targeted_tool_requires_a_RID_specific_self_contained_implementation(string runtimeIdentifiersProperty)
+        [DataRow(true, true)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        public void Windows_targeted_tool_requires_a_self_contained_RID_specific_implementation(bool selfContained, bool hasRidSpecificImplementation)
         {
             TestAsset asset = TestAssetsManager
-                .CopyTestAsset("PortableTool", nameof(Windows_targeted_tool_requires_a_RID_specific_self_contained_implementation), identifier: runtimeIdentifiersProperty ?? "None")
+                .CopyTestAsset("PortableTool", nameof(Windows_targeted_tool_requires_a_self_contained_RID_specific_implementation), identifier: $"{selfContained}-{hasRidSpecificImplementation}")
                 .WithSource()
                 .WithTargetFramework($"{ToolsetInfo.CurrentTargetFramework}-windows")
                 .WithProjectChanges(project =>
                 {
                     XNamespace ns = project.Root.Name.Namespace;
                     XElement properties = project.Root.Elements(ns + "PropertyGroup").First();
-                    properties.Add(new XElement(ns + "SelfContained", "true"));
+                    properties.Add(new XElement(ns + "SelfContained", selfContained.ToString().ToLowerInvariant()));
                     properties.Add(new XElement(ns + "EnableWindowsTargeting", "true"));
-                    if (runtimeIdentifiersProperty is not null)
+                    if (hasRidSpecificImplementation)
                     {
-                        properties.Add(new XElement(ns + runtimeIdentifiersProperty, "win-x64"));
+                        properties.Add(new XElement(ns + "RuntimeIdentifiers", "win-x64"));
                     }
                 });
 
             var packCommand = new PackCommand(asset);
             CommandResult result = packCommand.Execute();
 
-            if (runtimeIdentifiersProperty is not null)
+            if (selfContained && hasRidSpecificImplementation)
             {
                 result.Should().Pass();
-                string packagePath = runtimeIdentifiersProperty == "RuntimeIdentifiers"
-                    ? Directory.GetFiles(packCommand.GetPackageDirectory().FullName, "*.win-x64.*.nupkg").Single()
-                    : packCommand.GetNuGetPackage();
+                string packagePath = Directory.GetFiles(packCommand.GetPackageDirectory().FullName, "*.win-x64.*.nupkg").Single();
                 using var package = new PackageArchiveReader(packagePath);
                 package.GetFiles().Should().Contain("tools/any/win-x64/consoledemo.exe");
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    && RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                {
+                    CommandResult toolResult = new DotnetToolCommand(Log, "exec", "consoledemo", "--yes", "--source", packCommand.GetPackageDirectory().FullName)
+                        .WithWorkingDirectory(asset.TestRoot)
+                        .Execute();
+                    toolResult.Should().Pass();
+                    toolResult.StdOut.Should().Contain("Hello World from Global Tool");
+                }
             }
             else
             {
@@ -53,7 +62,7 @@ namespace Microsoft.NET.ToolPack.Tests
             }
         }
 
-//  TODO: Add tests for Self-contained / AOT tools, which are now supported
+//  TODO: Add tests for AOT tools, which are now supported
 
         //[TestMethod]
         //public void It_should_fail_with_error_message()
