@@ -512,6 +512,44 @@ public class DotnetArchiveExtractorTests
     }
 
     [TestMethod]
+    public void Commit_ExtractsUncompressedTarArchive_Correctly()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var version = new ReleaseVersion(9, 0, 0);
+        var request = new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel("9.0"),
+            InstallComponent.Runtime,
+            new InstallRequestOptions());
+
+        using var tarStream = new MemoryStream();
+        using (var writer = new TarWriter(tarStream, leaveOpen: true))
+        {
+            writer.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "shared/Microsoft.NETCore.App/9.0.0/System.Runtime.dll")
+            {
+                DataStream = new MemoryStream("runtime-content"u8.ToArray()),
+            });
+        }
+
+        var mockDownloader = new MockArchiveDownloader
+        {
+            FakeArchiveContent = tarStream.ToArray(),
+            ArchiveFileExtension = ".tar"
+        };
+
+        using var extractor = new DotnetArchiveExtractor(
+            request, version, new ReleaseManifest(), new NullProgressTarget(), mockDownloader);
+
+        extractor.Prepare();
+        extractor.Commit();
+
+        string runtimeFile = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "9.0.0", "System.Runtime.dll");
+        File.ReadAllText(runtimeFile).Should().Be("runtime-content");
+    }
+
+    [TestMethod]
     public void Commit_ExtractsTarGzArchive_WhenDecompressedTarPathAlreadyExists()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();

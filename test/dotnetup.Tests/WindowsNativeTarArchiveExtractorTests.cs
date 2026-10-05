@@ -52,6 +52,30 @@ public class WindowsNativeTarArchiveExtractorTests
             .Should().Be("sdk content");
     }
 
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void Extract_UsesWindowsTarForUncompressedArchive()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        string archivePath = Path.Combine(testEnv.TempRoot, "sdk archive.tar");
+        using (FileStream archive = File.Create(archivePath))
+        using (var writer = new TarWriter(archive))
+        {
+            writer.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "./sdk/11.0.100/sdk.dll")
+            {
+                DataStream = new MemoryStream("sdk content"u8.ToArray()),
+            });
+        }
+
+        var fallback = new RecordingTarExtractor();
+        var extractor = new WindowsNativeTarArchiveExtractor(fallback);
+
+        extractor.Extract(new TarExtractionContext(archivePath, testEnv.InstallPath));
+
+        fallback.WasCalled.Should().BeFalse();
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100", "sdk.dll"))
+            .Should().Be("sdk content");
+    }
+
     [TestMethod]
     public void Extract_CommitsVersionDirectoriesAndPreservesHardlinks()
     {

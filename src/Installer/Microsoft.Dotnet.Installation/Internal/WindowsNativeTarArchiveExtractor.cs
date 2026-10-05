@@ -9,6 +9,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
 {
     private const string TarExecutable = "tar.exe";
     private const string ExtractGzipArchiveArgument = "-xzf";
+    private const string ExtractTarArchiveArgument = "-xf";
     private const string ChangeDirectoryArgument = "-C";
 
     private readonly ITarArchiveExtractor _fallbackExtractor;
@@ -31,11 +32,14 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
         {
             Directory.CreateDirectory(stagingDirectory);
 
-            // -xzf extracts (-x) a gzip archive (-z) from the following file (-f).
+            // -x extracts from the archive named by -f; -z enables gzip decompression.
             // -C changes to the staging directory before writing archive entries.
+            string extractArgument = context.ArchivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
+                ? ExtractGzipArchiveArgument
+                : ExtractTarArchiveArgument;
             NativeTarProcessResult result = _processRunner.Run(
                 TarExecutable,
-                [ExtractGzipArchiveArgument, context.ArchivePath, ChangeDirectoryArgument, stagingDirectory]);
+                [extractArgument, context.ArchivePath, ChangeDirectoryArgument, stagingDirectory]);
             if (result.StartFailure is not null)
             {
                 nativeFailure = new InvalidOperationException(
