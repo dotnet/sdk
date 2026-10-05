@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
@@ -393,6 +394,62 @@ namespace Microsoft.NET.Build.Tests
             };
 
             outputDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
+
+        [TestMethod]
+        public void It_regenerates_the_build_deps_file_when_BundledRuntimeAssetRuntimeIdentifiers_changes()
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var buildCommand = new BuildCommand(testProjectInstance);
+
+            buildCommand.Execute("/p:Restore=false", "/p:BundledRuntimeAssetRuntimeIdentifiers=linux-x64")
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
+            var depsFilePath = Path.Combine(outputDirectory.FullName, $"{ProjectName}.deps.json");
+            using (var deps = JsonDocument.Parse(File.ReadAllText(depsFilePath)))
+            {
+                var runtimeTargets = deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                    .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets");
+                runtimeTargets.EnumerateObject().Select(asset => asset.Name)
+                    .Should().ContainSingle(asset => asset.Contains("linux-x64", StringComparison.Ordinal));
+            }
+
+            buildCommand.Execute("/p:Restore=false", "/p:BundledRuntimeAssetRuntimeIdentifiers=osx-x64")
+                .Should()
+                .Pass();
+
+            using (var deps = JsonDocument.Parse(File.ReadAllText(depsFilePath)))
+            {
+                var runtimeTargets = deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                    .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets");
+                runtimeTargets.EnumerateObject().Select(asset => asset.Name)
+                    .Should().ContainSingle(asset => asset.Contains("osx-x64", StringComparison.Ordinal));
+            }
+
+            buildCommand.Execute("/p:Restore=false")
+                .Should()
+                .Pass();
+
+            using (var deps = JsonDocument.Parse(File.ReadAllText(depsFilePath)))
+            {
+                var runtimeTargets = deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                    .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets");
+                runtimeTargets.EnumerateObject().Should().HaveCount(4);
+            }
         }
 
         [TestMethod]
