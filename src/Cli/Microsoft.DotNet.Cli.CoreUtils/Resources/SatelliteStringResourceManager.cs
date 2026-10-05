@@ -33,9 +33,9 @@ namespace Microsoft.DotNet.Cli.Resources;
 ///  </para>
 ///  <para>
 ///   Loaded source tables and culture chains are cached until <see cref="ReleaseAllResources()"/> is
-///   called. Each localized file candidate is opened at most once per cache generation, including
-///   during concurrent first lookup. Caller-supplied neutral managers remain caller-owned and are not
-///   released by this manager.
+///   called. Successful loads and missing-source results are cached, including during concurrent
+///   first lookup. Failed loads throw directly and are retried on the next lookup. Caller-supplied
+///   neutral managers remain caller-owned and are not released by this manager.
 ///  </para>
 ///  <para>
 ///   Runtime assembly metadata and successful or missing satellite bind results are cached per
@@ -72,7 +72,7 @@ namespace Microsoft.DotNet.Cli.Resources;
 ///   supported.
 ///  </para>
 /// </remarks>
-public sealed partial class SatelliteStringResourceManager : StringResourceManager
+public sealed class SatelliteStringResourceManager : StringResourceManager
 {
     private readonly string _resourceName;
     private readonly SatelliteStringResourceSourceKind _sourceKind;
@@ -80,16 +80,12 @@ public sealed partial class SatelliteStringResourceManager : StringResourceManag
     private readonly Assembly? _resourceAssembly;
     private readonly ManagedAssemblyStringResourceSource? _resourceAssemblySource;
     private readonly string? _resourceAssemblySimpleNameAlias;
-    private readonly StringResourceManager _neutralResources;
     private readonly Func<string, MappedMemoryManager> _openFile;
     private readonly SatelliteStringResourceProbeMode _probeMode;
     private volatile SatelliteStringResourceSourceMetadata? _neutralSourceMetadata;
-    private object? _localizedLoadGate;
-    private int _localizedGeneration;
-    private Dictionary<string, CultureCache>? _cultureCaches;
-    private Dictionary<string, LocalizedStringResourceTableCache>? _sourceTables;
-
-    private volatile CultureCache? _lastCultureCache;
+    private readonly Lock _localizedLoadGate = new();
+    private Dictionary<string, IndexedStringResourceTable[]>? _cultureTables;
+    private Dictionary<string, IndexedStringResourceTable?>? _sourceTables;
 
     private static readonly Func<string, MappedMemoryManager> s_openFile = MappedMemoryManager.CreateFromFile;
 
@@ -723,7 +719,6 @@ public sealed partial class SatelliteStringResourceManager : StringResourceManag
         _resourceAssembly = resourceAssembly;
         _resourceAssemblySource = resourceAssemblySource;
         _resourceAssemblySimpleNameAlias = resourceAssemblySimpleNameAlias;
-        _neutralResources = neutralResources;
         _openFile = openFile;
         _probeMode = probeMode;
     }
@@ -747,93 +742,55 @@ public sealed partial class SatelliteStringResourceManager : StringResourceManag
     ///  A configured source contains malformed data or a null resource.
     /// </exception>
     /// <exception cref="IOException">A configured file or stream cannot be read.</exception>
+    /// <exception cref="ObjectDisposedException">A resource backing has been disposed.</exception>
     public override string? GetString(string name, CultureInfo? culture)
     {
         ArgumentNullException.ThrowIfNull(name);
         culture ??= CultureInfo.CurrentUICulture;
 
-        while (true)
+        foreach (IndexedStringResourceTable table in GetCultureTables(culture))
         {
-            CultureCache cache = GetCultureCache(culture);
-            bool stale = false;
-            foreach (IndexedStringResourceTable table in cache.Tables)
+            string? value = table.Lookup(name);
+            if (value is not null)
             {
-                StringResourceLookupKind result = table.Lookup(name, out string? value);
-                if (result == StringResourceLookupKind.Found)
-                {
-                    return value;
-                }
-
-                if (result == StringResourceLookupKind.Stale)
-                {
-                    stale = true;
-                    break;
-                }
-            }
-
-            if (!stale)
-            {
-                return _neutralResources.GetString(name, culture);
+                return value;
             }
         }
+
+        return base.GetString(name, culture);
     }
 
     /// <summary>
     ///  Releases localized state and any neutral manager created by this instance. A caller-supplied
     ///  neutral manager remains unchanged.
     /// </summary>
-    public override void ReleaseAllResources() => ReleaseAllResourcesCore(waitingForLoad: null);
-
-    /// <summary>
-    ///  Releases resources and invokes <paramref name="waitingForLoad"/> after detecting a contended
-    ///  localized load gate.
-    /// </summary>
-    /// <param name="waitingForLoad">The callback invoked before waiting for the localized load gate.</param>
-    internal new void ReleaseAllResources(Action waitingForLoad)
-    {
-        ArgumentNullException.ThrowIfNull(waitingForLoad);
-        ReleaseAllResourcesCore(waitingForLoad);
-    }
-
-    private void ReleaseAllResourcesCore(Action? waitingForLoad)
+    /// <remarks>
+    ///  <para>
+    ///   Callers must ensure no resource lookups are in progress when releasing resources.
+    ///  </para>
+    /// </remarks>
+    public override void ReleaseAllResources()
     {
         ExceptionDispatchInfo? releaseFailure = null;
-        object loadGate = GetLocalizedLoadGate();
-        bool lockTaken = Monitor.TryEnter(loadGate);
-        if (!lockTaken)
+        lock (_localizedLoadGate)
         {
-            waitingForLoad?.Invoke();
-            Monitor.Enter(loadGate, ref lockTaken);
-        }
-
-        try
-        {
-            Dictionary<string, LocalizedStringResourceTableCache>? sourceTables = _sourceTables;
-            _localizedGeneration = unchecked(_localizedGeneration + 1);
-            _lastCultureCache = null;
-            _cultureCaches = null;
+            Dictionary<string, IndexedStringResourceTable?>? sourceTables = _sourceTables;
+            _cultureTables = null;
             _sourceTables = null;
 
             if (sourceTables is not null)
             {
-                foreach (LocalizedStringResourceTableCache table in sourceTables.Values)
+                foreach (IndexedStringResourceTable? table in sourceTables.Values)
                 {
                     try
                     {
-                        table.Release();
+                        table?.Dispose();
                     }
                     catch (Exception exception)
                     {
                         releaseFailure ??= ExceptionDispatchInfo.Capture(exception);
                     }
                 }
-            }
-        }
-        finally
-        {
-            if (lockTaken)
-            {
-                Monitor.Exit(loadGate);
             }
         }
 
@@ -849,42 +806,20 @@ public sealed partial class SatelliteStringResourceManager : StringResourceManag
         releaseFailure?.Throw();
     }
 
-    private CultureCache GetCultureCache(CultureInfo culture)
+    private IndexedStringResourceTable[] GetCultureTables(CultureInfo culture)
     {
-        int generation = Volatile.Read(ref _localizedGeneration);
-        CultureCache? cache = _lastCultureCache;
-        if (cache is not null
-            && cache.Generation == generation
-            && string.Equals(cache.CultureName, culture.Name, StringComparison.Ordinal))
+        lock (_localizedLoadGate)
         {
-            return cache;
-        }
-
-        lock (GetLocalizedLoadGate())
-        {
-            generation = Volatile.Read(ref _localizedGeneration);
-            cache = _lastCultureCache;
-            if (cache is not null
-                && cache.Generation == generation
-                && string.Equals(cache.CultureName, culture.Name, StringComparison.Ordinal))
+            if (_cultureTables is not null
+                && _cultureTables.TryGetValue(culture.Name, out IndexedStringResourceTable[]? tables))
             {
-                return cache;
-            }
-
-            if (_cultureCaches is not null
-                && _cultureCaches.TryGetValue(culture.Name, out cache)
-                && cache.Generation == generation)
-            {
-                _lastCultureCache = cache;
-                return cache;
+                return tables;
             }
 
             SatelliteStringResourceSourceMetadata metadata = GetSourceMetadata();
-            IndexedStringResourceTable[] tables = LoadCultureChain(culture, metadata);
-            cache = new(culture.Name, generation, tables);
-            (_cultureCaches ??= [with(StringComparer.Ordinal)])[culture.Name] = cache;
-            _lastCultureCache = cache;
-            return cache;
+            tables = LoadCultureChain(culture, metadata);
+            (_cultureTables ??= [with(StringComparer.Ordinal)])[culture.Name] = tables;
+            return tables;
         }
     }
 
@@ -930,22 +865,14 @@ public sealed partial class SatelliteStringResourceManager : StringResourceManag
         SatelliteStringResourceSourceMetadata metadata)
     {
         _sourceTables ??= [with(StringComparer.Ordinal)];
-        if (_sourceTables.TryGetValue(culture.Name, out LocalizedStringResourceTableCache? cache))
+        if (_sourceTables.TryGetValue(culture.Name, out IndexedStringResourceTable? table))
         {
-            return cache.Table;
+            return table;
         }
 
-        try
-        {
-            cache = new(TryLoadSourceTable(culture, metadata));
-        }
-        catch (Exception exception)
-        {
-            cache = new(exception);
-        }
-
-        _sourceTables.Add(culture.Name, cache);
-        return cache.Table;
+        table = TryLoadSourceTable(culture, metadata);
+        _sourceTables.Add(culture.Name, table);
+        return table;
     }
 
     /// <summary>
@@ -962,7 +889,7 @@ public sealed partial class SatelliteStringResourceManager : StringResourceManag
         if (_resourceAssemblySource is not null)
         {
             SatelliteStringResourceSourceMetadata externalMetadata =
-                _neutralResources.GetManagedAssemblySourceMetadata(_resourceAssemblySource);
+                GetManagedAssemblySourceMetadata(_resourceAssemblySource);
 
             string satelliteAssemblyFileName = externalMetadata.SatelliteAssemblyFileName
                 ?? throw new InvalidOperationException("The satellite assembly filename was not initialized.");
@@ -977,7 +904,7 @@ public sealed partial class SatelliteStringResourceManager : StringResourceManag
             return metadata;
         }
 
-        Assembly? resourceAssembly = _resourceAssembly ?? _neutralResources.SourceAssembly;
+        Assembly? resourceAssembly = _resourceAssembly ?? SourceAssembly;
         if (resourceAssembly is null)
         {
             metadata = new(
@@ -1110,18 +1037,6 @@ public sealed partial class SatelliteStringResourceManager : StringResourceManag
         {
             return null;
         }
-    }
-
-    private object GetLocalizedLoadGate()
-    {
-        object? gate = Volatile.Read(ref _localizedLoadGate);
-        if (gate is not null)
-        {
-            return gate;
-        }
-
-        object newGate = new();
-        return Interlocked.CompareExchange(ref _localizedLoadGate, newGate, comparand: null) ?? newGate;
     }
 
     private static void ValidatePathSegment(string value, string paramName)

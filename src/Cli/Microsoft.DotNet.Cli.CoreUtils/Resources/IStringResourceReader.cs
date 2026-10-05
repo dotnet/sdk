@@ -37,8 +37,17 @@ internal interface IStringResourceReader : IDisposable
     /// <summary>
     ///  Looks up and decodes one intrinsic string.
     /// </summary>
+    /// <remarks>
+    ///  <para>
+    ///   Implementations are responsible for supporting concurrent calls to this method.
+    ///   Any synchronization required by the backing belongs to the reader.
+    ///  </para>
+    ///  <para>
+    ///   Callers must coordinate disposal with active lookups. Supporting concurrent lookup does
+    ///   not imply that disposal may overlap reader use.
+    ///  </para>
+    /// </remarks>
     /// <param name="name">The resource name.</param>
-    /// <param name="value">The decoded string when found.</param>
-    /// <returns>The lookup result.</returns>
-    StringResourceLookupKind Lookup(string name, out string? value);
+    /// <returns>The decoded string, or <see langword="null"/> when the name is absent or not a string.</returns>
+    string? Lookup(string name);
 }
