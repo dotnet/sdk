@@ -150,8 +150,7 @@ function evidenceFingerprint(group, references) {
         version: 1,
         kind: group.kind,
         ids: group.ids,
-        source: unique(group.sources.map(source => normalizeActionSource(
-            group.kind === 'ignore' ? source.excerpt : source.seedText))),
+        source: unique(group.sources.map(source => normalizeActionSource(source.seedText))),
         conditions: group.additionalConditions,
         references: references.map(reference => ({
             key: reference.key, kind: reference.kind, state: reference.state,
@@ -260,7 +259,7 @@ function commentCovered(issue, entry, repository, ambiguousNames) {
                 block.includes(`<!-- stale-reference-evidence:v2:${id}:${evidenceFingerprint({ ...entry.group, ids: [id] }, entry.references)} -->`)) &&
                 entry.group.testNames.every(name => block.includes(`Fully qualified test: ${inlineCode(name)}`)) &&
                 entry.group.sources.every(source =>
-                    normalizeActionSource(block).includes(normalizeActionSource(source.excerpt))) &&
+                    normalizeActionSource(block).includes(normalizeActionSource(source.seedText))) &&
                 entry.group.additionalConditions.every(condition => block.includes(fenced(condition))) &&
                 entry.references.every(reference => body.includes(referenceResolution(reference)))) ||
                 Boolean(findOpenDuplicate([{ ...issue, body: body.slice(0, body.indexOf('<!-- stale-reference-target:v2:')) }],

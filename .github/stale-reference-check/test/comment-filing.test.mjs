@@ -156,13 +156,31 @@ test('new-format ignored-test prerequisites append fresh evidence without duplic
 
 test('ignored-test formatting and line moves do not append unchanged evidence', async () => {
     const input = { ...todo('Test'), kind: 'ignore', testNames: ['N.C.Test'],
-        sourceExcerpt: `[Ignore("${blocker}")]` };
+        seedText: `[Ignore("${blocker}")]`, sourceExcerpt: `[Ignore("${blocker}")]` };
     const api = mock();
     await run(api, [input]);
     const result = await run(api, [{ ...input, startLine: 200, endLine: 200,
         sourceExcerpt: `    ${input.sourceExcerpt}   ` }], { headSha: 'b'.repeat(40) });
     assert.equal(result.created.length + result.updated.length, 0);
     assert.equal(result.skipped[0].reason, 'open-duplicate');
+});
+
+test('fresh ignored-test interpretations selecting wider or narrower spans do not append evidence', async () => {
+    const seedText = `[Ignore("${blocker}")]`;
+    const input = { ...todo('Test'), kind: 'ignore', testNames: ['N.C.Test'], seedText };
+    const narrow = { ...input, sourceExcerpt: seedText };
+    const wide = { ...input, endLine: 11, sourceExcerpt: `${seedText}\npublic void Test()` };
+    for (const [first, repeat] of [[wide, narrow], [narrow, wide]]) {
+        const api = mock();
+        const original = await run(api, [first]);
+        const result = await run(api, [repeat]);
+        assert.equal(result.created.length + result.updated.length + result.proposed.length, 0);
+        assert.equal(result.skipped[0].reason, 'open-duplicate');
+        assert.equal(api.state.open[0].body, original.created[0].body);
+        assert.equal(api.calls.updates.length, 0);
+        const changed = await run(api, [{ ...repeat, additionalConditions: ['Consume the fixed version.'] }]);
+        assert.equal(changed.updated.length, 1);
+    }
 });
 
 test('source excerpts containing findings boundaries are deferred before any mutation', async () => {

@@ -223,6 +223,10 @@ previous tracking history. Target IDs remain independent of this grouping.
 Ignored-test evidence also carries a per-test fingerprint so a class-wide ignore
 can add uncovered members without suppressing them because another member is
 already tracked.
+Evidence fingerprints for both ignored tests and comments use the verified,
+normalized seed text, not the model-selected excerpt range. Selecting a wider or
+narrower excerpt on a fresh interpretation does not append unchanged evidence;
+changed seed text, prerequisites, or blocker-resolution state remain distinct.
 
 Blocker-container identity is separate from source-target identity and uses
 canonical GitHub repository/number keys, so URL aliases identify the same blocker.
