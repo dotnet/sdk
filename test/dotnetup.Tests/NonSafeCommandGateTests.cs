@@ -72,7 +72,7 @@ public class NonSafeCommandGateTests
     }
 
     [TestMethod]
-    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
     public void InvalidVersionOutputReleasesActivityLock()
     {
         using var files = new SelfUpdateTestFiles(mode: "empty");
@@ -180,7 +180,7 @@ public class NonSafeCommandGateTests
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     [UnsupportedOSPlatform("windows")]
     public void UnwritableUnixDirectoryWithoutLockFileReportsPermissionDenied()
     {
