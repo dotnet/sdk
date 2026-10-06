@@ -84,13 +84,13 @@ public sealed partial class GetWorkloadManifestLayout : Task
                 !destinations.TryGetValue(path, out string? destination) || !HasSameOwnedCasing(root, path, destination)));
             OwnedDirectories = ToItems(directories);
             EmptyDirectories = ToItems(directories.Where(path => !Directory.EnumerateFileSystemEntries(path).Any()));
-            return true;
         }
         catch (Exception exception)
         {
             Log.LogErrorFromException(exception, showStackTrace: true);
-            return false;
         }
+
+        return !Log.HasLoggedErrors;
     }
 
     private List<string> ValidateMappings(string root)
