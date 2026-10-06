@@ -24,6 +24,11 @@ dotnetup sdk uninstall <CHANNEL> [options]
 The stored SDK channel or exact version to remove. Matching is
 case-insensitive.
 
+Uninstall accepts one argument. It matches the stored spec name, not the
+version that another spec currently resolves to. For example, if only `latest`
+is tracked, `uninstall 11.0` does not remove that spec even when it selects an
+11.0 SDK. A single channel can match multiple installed versions.
+
 ## Options
 
 | Option | Description |
@@ -31,7 +36,20 @@ case-insensitive.
 | `--source <explicit\|globaljson\|all>` | Remove specifications from the selected source. The default is `explicit`. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
+| `--interactive [true\|false]` | Enable confirmation prompts. Defaults to enabled outside CI when input and output are not redirected. |
+| `--non-interactive` | Proceed without confirmation, even if `--interactive` is enabled. |
 | `-?`, `-h`, `--help` | Show command help. |
+
+## Behavior
+
+Uninstall removes matching specifications, then runs garbage collection for the
+whole root. Another specification can keep a requested SDK installed, and
+unreferenced installations outside the requested channel can also be removed.
+Before changing state, the command lists requested installations that will remain
+(and the specs keeping them installed) and additional installations that will be
+removed. When either warning applies in interactive mode, press **Y** or **Enter**
+to proceed, or **N** or **Esc** to cancel without removing specs or files.
+Warnings are still printed in non-interactive mode, but no confirmation is required.
 
 ## Examples
 
