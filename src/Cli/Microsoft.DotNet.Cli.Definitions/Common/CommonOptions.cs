@@ -251,9 +251,8 @@ internal static class CommonOptions
     /// <param name="acceptArgument">Whether the option accepts an boolean argument. If false, the option will be a flag.</param>
     /// <remarks>
     /// If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
-    /// If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
     /// </remarks>
-    public static Option<bool> CreateInteractiveOption(bool acceptArgument = false, bool hidden = false) =>
+    public static Option<bool> CreateInteractiveOption(bool acceptArgument = true, bool hidden = false) =>
         new(InteractiveOptionName)
         {
             Description = CommandDefinitionStrings.CommandInteractiveOptionDescription,

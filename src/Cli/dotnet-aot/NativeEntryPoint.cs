@@ -277,6 +277,8 @@ static unsafe partial class NativeEntryPoint
 
             mainActivity?.AddTag("process.exit.code", exitCode);
             mainActivity?.SetStatus(success ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+            mainActivity?.SetEndTime(DateTime.UtcNow);
+            Telemetry.TelemetryClient.WaitForInternalMicrosoftDetection();
             mainActivity?.Stop();
             Telemetry.TelemetryClient.FlushProviders();
 

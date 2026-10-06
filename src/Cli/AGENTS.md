@@ -51,6 +51,7 @@ rest are supporting libraries:
 |---------|------|
 | `dotnet` | Primary managed executable — every command's handler lives here under `Commands/`. |
 | `Microsoft.DotNet.Cli.Definitions` | AOT-safe command tree (parsed by both hosts). |
+| `Microsoft.DotNet.Cli.InternalMicrosoft` | AOT-safe Microsoft-internal classification, probes, and cache. It does not emit telemetry. |
 | `dotnet-aot` + `dn` | NativeAOT shared library + native host exe. |
 | `Microsoft.DotNet.Cli.Utils` | MSBuild/NuGet/process/system abstractions used across the CLI. |
 | `Microsoft.DotNet.Cli.CoreUtils` | Low-level version/file/env-variable parsing. |
