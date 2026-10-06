@@ -62,6 +62,15 @@ Triage and PR review meetings are Wednesdays each week. If your PR is passing ch
 Codeflow is handled by [darc](https://github.com/dotnet/arcade/blob/main/Documentation/Darc.md). Codeflow comes from three runtime branches and a dozen tools branches.
 `@dotnet/domestic-cat` will monitor codeflow and approve passing PRs (as all PRs require 1 approver) and ping the owning team for any failures.
 
+### Reviewer assignment for dependency flow PRs
+Some dependency sources are reviewed by a specific team rather than by `@dotnet/domestic-cat`. The [assign-dependency-flow-reviewers](https://github.com/dotnet/sdk/blob/main/.github/workflows/assign-dependency-flow-reviewers.yml) workflow inspects PR titles of the form `Update dependencies from <org>/<repo>` (including the `[branch] ` prefixed variant) and requests a review from the owning team:
+
+| Dependency source | Reviewer team |
+| --- | --- |
+| `microsoft/testfx` | `@dotnet/dotnet-testing-admin` |
+
+To route another dependency source, add an entry to the `reviewerTeamsBySourceRepo` map in that workflow.
+
 ## Internal Builds
 
 The .NET SDK [Installer](https://github.com/dotnet/installer) is what allows the .NET SDK to be installed on a machine for usage in a proper developer environment, rather than for developing the .NET SDK itself. The installer has nightly builds that align with the .NET SDK which you can find [here](https://github.com/dotnet/installer#installers-and-binaries).
