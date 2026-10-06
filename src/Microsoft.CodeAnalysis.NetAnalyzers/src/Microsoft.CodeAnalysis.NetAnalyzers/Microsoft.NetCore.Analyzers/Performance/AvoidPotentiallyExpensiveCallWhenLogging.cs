@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -451,28 +452,37 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return false;
                     }
 
-                    if (AreSameInstance(GetInstanceResolvingConditionalAccess(logInvocation), isEnabledInstance))
+                    // A [LoggerMessage] method with an ILogger parameter gets its logger from the first such parameter in
+                    // declaration order, which may be an extension method's 'this' parameter. For example:
+                    // 'Log.SomeMessage(logger, argument)' or 'logger.SomeMessage(argument)'. Like the source generator,
+                    // this uses the declared (not substituted) parameter types, so a 'T where T : ILogger' parameter
+                    // without a 'class' constraint is never the logger, even when 'T' is inferred as a reference type.
+                    var loggerParameter = logTargetMethod.OriginalDefinition.Parameters.FirstOrDefault(p => IsLoggerType(p.Type));
+                    if (loggerParameter is not null)
                     {
-                        return true;
-                    }
-
-                    // A [LoggerMessage] method that is not invoked as an extension method gets its logger
-                    // from an ILogger parameter. For example: 'Log.SomeMessage(logger, argument)'.
-                    // The source generator uses the first ILogger parameter in declaration order, whereas
-                    // the arguments are in call-site order (which can differ when named arguments are used).
-                    var loggerArgument = logInvocation.Arguments
-                        .Where(a => IsLoggerType(a.Parameter?.Type))
-                        .OrderBy(a => a.Parameter!.Ordinal)
-                        .FirstOrDefault();
-                    if (loggerArgument is not null)
-                    {
-                        return AreSameInstance(loggerArgument.Value, isEnabledInstance);
+                        return AreSameInstance(GetOperationForLoggerParameter(loggerParameter), isEnabledInstance);
                     }
 
                     // An instance [LoggerMessage] method without an ILogger parameter gets its logger from the single
                     // ILogger field accessible from the containing type's hierarchy or, if none exists, an ILogger
                     // primary constructor parameter of its containing type. For example: 'this.SomeMessage(argument)'.
                     return !logTargetMethod.IsStatic && IsGeneratorSelectedLoggerMember(isEnabledInstance);
+                }
+
+                // Returns the operation that supplies the value of the given parameter of 'logTargetMethod'. Arguments are in
+                // call-site order (which differs from declaration order when named arguments are used), so they are matched
+                // by ordinal. VB represents an extension method invoked on a receiver as a reduced method whose receiver is
+                // the invocation's 'Instance' and whose parameters exclude the 'this' parameter.
+                IOperation? GetOperationForLoggerParameter(IParameterSymbol loggerParameter)
+                {
+                    var ordinalOffset = logInvocation.TargetMethod.ReducedFrom is not null ? 1 : 0;
+                    if (ordinalOffset == 1 && loggerParameter.Ordinal == 0)
+                    {
+                        return ResolveConditionalAccessInstance(logInvocation.Instance);
+                    }
+
+                    var loggerArgument = logInvocation.Arguments.FirstOrDefault(a => a.Parameter?.Ordinal + ordinalOffset == loggerParameter.Ordinal);
+                    return ResolveConditionalAccessInstance(loggerArgument?.Value);
                 }
 
                 // Unlike 'WalkDownConversion()' alone, this also strips parentheses (e.g. '(logger)'), which can wrap
@@ -581,14 +591,18 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 // Mirrors the logging source generator's own field/parameter resolution ('FindLoggerField'): search
                 // the containing type and its base types (skipping private fields inherited from a base type) for a
                 // single ILogger-typed field, falling back to an ILogger-typed parameter of a (non-record) primary
-                // constructor only when no field is found. Returns 'null' when no logger member is found or when
-                // more than one candidate exists, since the generator itself reports an error and does not emit the
-                // method in that case.
+                // constructor that is not shadowed by a non-logger field, only when no field is found. Returns 'null'
+                // when no logger member is found or when more than one candidate exists, since the generator itself
+                // reports an error and does not emit the method in that case.
                 ISymbol? GetGeneratorSelectedLoggerMember(INamedTypeSymbol containingType)
                 {
                     IFieldSymbol? loggerField = null;
                     var currentType = containingType;
                     var onMostDerivedType = true;
+
+                    // Like the source generator, track the names of accessible non-logger fields: such a field shadows a
+                    // primary constructor parameter with the same name, so that parameter cannot be used as the logger.
+                    using var shadowedNames = PooledHashSet<string>.GetInstance(StringComparer.Ordinal);
 
                     while (currentType is { SpecialType: not SpecialType.System_Object })
                     {
@@ -599,8 +613,14 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                 continue;
                             }
 
-                            if (!field.CanBeReferencedByName || !IsLoggerType(field.Type))
+                            if (!field.CanBeReferencedByName)
                             {
+                                continue;
+                            }
+
+                            if (!IsLoggerType(field.Type))
+                            {
+                                shadowedNames.Add(field.Name);
                                 continue;
                             }
 
@@ -638,7 +658,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                         foreach (var parameter in constructor.Parameters)
                         {
-                            if (!IsLoggerType(parameter.Type))
+                            if (!IsLoggerType(parameter.Type) || shadowedNames.Contains(parameter.Name))
                             {
                                 continue;
                             }
@@ -680,8 +700,11 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
 
                 static IOperation? GetInstanceResolvingConditionalAccess(IInvocationOperation invocation)
+                    => ResolveConditionalAccessInstance(invocation.GetInstance());
+
+                static IOperation? ResolveConditionalAccessInstance(IOperation? operation)
                 {
-                    var instance = WalkDownParenthesesAndConversions(invocation.GetInstance());
+                    var instance = WalkDownParenthesesAndConversions(operation);
 
                     if (instance is IConditionalAccessInstanceOperation conditionalAccessInstance)
                     {

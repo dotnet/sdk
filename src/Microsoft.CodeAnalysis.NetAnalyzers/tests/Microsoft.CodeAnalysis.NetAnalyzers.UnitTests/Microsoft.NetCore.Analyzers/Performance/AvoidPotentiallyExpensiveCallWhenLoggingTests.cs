@@ -3357,6 +3357,180 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task GuardedWorkInLoggerMessageWithGenericLoggerConstraintInferredAsReferenceType_NoDiagnostic_CS()
+        {
+            // The source generator classifies the declared 'TLogger' parameter type, which has only a boxing
+            // conversion to 'ILogger', so 'logger' is the logger even when 'TLogger' is inferred as 'ILogger'
+            // (for which the substituted parameter type would have an identity conversion) at the call site.
+            // This also applies when 'candidate' is an extension method's receiver.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+
+                    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void ExtensionMessage<TLogger>(this TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void ExtensionMessage<TLogger>(this TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+                }
+
+                struct FakeLogger : ILogger
+                {
+                    public IDisposable BeginScope<TState>(TState state) { return default; }
+                    public bool IsEnabled(LogLevel logLevel) { return true; }
+                    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) { }
+                }
+
+                class C
+                {
+                    void M(ILogger candidate, FakeLogger fakeCandidate, ILogger logger)
+                    {
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            Log.Message(candidate, logger, ExpensiveMethodCall());
+                            candidate.ExtensionMessage(logger, ExpensiveMethodCall());
+                            fakeCandidate.ExtensionMessage(logger, ExpensiveMethodCall());
+                            candidate.ExtensionMessage(argument: ExpensiveMethodCall(), logger: logger);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInLoggerMessageWithGenericLoggerConstraint_ReportsDiagnostic_CS()
+        {
+            // Guarding the 'TLogger' candidate (including an extension method's receiver) does not guard the
+            // generated method, which logs through the later 'logger' parameter.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void Message<TLogger>(TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+
+                    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Candidate `{candidate}` `{argument}`")]
+                    public static partial void ExtensionMessage<TLogger>(this TLogger candidate, ILogger logger, string argument) where TLogger : ILogger;
+                    public static partial void ExtensionMessage<TLogger>(this TLogger candidate, ILogger logger, string argument) where TLogger : ILogger { } // Normally provided by the logging source generator.
+                }
+
+                struct FakeLogger : ILogger
+                {
+                    public IDisposable BeginScope<TState>(TState state) { return default; }
+                    public bool IsEnabled(LogLevel logLevel) { return true; }
+                    public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) { }
+                }
+
+                class C
+                {
+                    void M(ILogger candidate, FakeLogger fakeCandidate, ILogger logger)
+                    {
+                        if (candidate.IsEnabled(LogLevel.Information))
+                        {
+                            Log.Message(candidate, logger, [|ExpensiveMethodCall()|]);
+                            candidate.ExtensionMessage(logger, [|ExpensiveMethodCall()|]);
+                            candidate?.ExtensionMessage(logger, [|ExpensiveMethodCall()|]);
+                        }
+
+                        if (fakeCandidate.IsEnabled(LogLevel.Information))
+                        {
+                            fakeCandidate.ExtensionMessage(logger, [|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithShadowedPrimaryConstructorLoggerParameter_NoDiagnostic_CS()
+        {
+            // The non-logger 'logger' field shadows the 'logger' primary constructor parameter, so the source
+            // generator skips that parameter and uses 'other', which is therefore not ambiguous.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C(ILogger logger, string name, ILogger other)
+                {
+                    private readonly object logger = logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (other.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInInstanceLoggerMessageWithOnlyShadowedPrimaryConstructorLoggerParameter_ReportsDiagnostic_CS()
+        {
+            // The only 'ILogger' primary constructor parameter is shadowed by a non-logger field, so the source
+            // generator reports an error and does not emit the method, and no guard can be recognized for it.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class C(ILogger logger)
+                {
+                    private readonly object logger = logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (((ILogger)logger).IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source, CodeAnalysis.CSharp.LanguageVersion.CSharp12);
+        }
+
+        [TestMethod]
         public async Task GuardedWorkInInstanceLoggerMessageWithStaticLoggerField_NoDiagnostic_CS()
         {
             string source = """
@@ -6653,6 +6827,37 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         Return "very expensive call"
                     End Function
                 End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task GuardedWorkInExtensionLoggerMessageWithGenericLoggerConstraint_UsesLoggerParameter_VB()
+        {
+            // 'TLogger' has only a boxing conversion to 'ILogger', so the source generator uses the 'logger'
+            // parameter rather than the extension method's receiver.
+            string source = """
+                Imports System
+                Imports System.Runtime.CompilerServices
+                Imports Microsoft.Extensions.Logging
+
+                Partial Module C
+                    <Extension>
+                    <LoggerMessage(EventId:=0, Level:=LogLevel.Information, Message:="Candidate `{candidate}` `{argument}`")>
+                    Partial Private Sub Message(Of TLogger As ILogger)(candidate As TLogger, logger As ILogger, argument As String)
+                    End Sub
+
+                    Sub M(candidate As ILogger, logger As ILogger)
+                        If logger.IsEnabled(LogLevel.Information) Then candidate.Message(logger, ExpensiveMethodCall())
+                        If logger.IsEnabled(LogLevel.Information) Then candidate.Message(argument:=ExpensiveMethodCall(), logger:=logger)
+                        If candidate.IsEnabled(LogLevel.Information) Then candidate.Message(logger, [|ExpensiveMethodCall()|])
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Module
                 """;
 
             await VerifyBasicDiagnosticAsync(source);
