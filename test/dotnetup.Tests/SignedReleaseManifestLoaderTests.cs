@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -387,6 +388,75 @@ public class SignedReleaseManifestLoaderTests
     }
 
     [TestMethod]
+    public void ReleaseManifest_ConcurrentDirect404_CachesSuccessfulIndexFallback()
+    {
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        using var loader = new FallbackReleaseLoader(entered, release, TestContext.CancellationToken);
+        var manifest = new FixtureIndexReleaseManifest(loader);
+        Task<ReadOnlyCollection<ProductRelease>?> first = Task.Run(() => manifest.GetReleases(5, 0));
+        entered.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken).Should().BeTrue();
+        Task<ReadOnlyCollection<ProductRelease>?> second = Task.Run(() => manifest.GetReleases(5, 0));
+        try
+        {
+            release.Set();
+            Task.WhenAll(first, second).Wait(TestContext.CancellationToken);
+        }
+        finally
+        {
+            release.Set();
+        }
+
+        first.Result.Should().BeSameAs(loader.Releases);
+        second.Result.Should().BeSameAs(loader.Releases);
+        manifest.GetReleases(5, 0).Should().BeSameAs(loader.Releases);
+        manifest.GetReleases(manifest.GetReleasesIndex().First(p => p.ProductVersion == "5.0"))
+            .Should().BeSameAs(loader.Releases);
+        loader.DirectRequestCount.Should().Be(1);
+        loader.IndexedRequestCount.Should().Be(1);
+    }
+
+    private sealed class FallbackReleaseLoader(
+        ManualResetEventSlim entered,
+        ManualResetEventSlim release,
+        CancellationToken cancellationToken)
+        : SignedReleaseManifestLoader(
+            new HttpClient(),
+            new SignatureVerificationOptions(new X509Certificate2Collection(), new X509Certificate2Collection()),
+            new Uri(TestIndexUrl))
+    {
+        private int _directRequestCount;
+        private int _indexedRequestCount;
+        public int DirectRequestCount => _directRequestCount;
+        public int IndexedRequestCount => _indexedRequestCount;
+        public ReadOnlyCollection<ProductRelease> Releases { get; } =
+            Product.GetReleasesAsync(Path.Combine(
+                GetFixtureRoot(), "5.0", "releases.json")).GetAwaiter().GetResult();
+
+        public override ReadOnlyCollection<ProductRelease> GetVerifiedReleases(int major, int minor)
+        {
+            Interlocked.Increment(ref _directRequestCount);
+            entered.Set();
+            release.Wait(TimeSpan.FromSeconds(10), cancellationToken);
+            throw new HttpRequestException("Direct endpoint missing", null, HttpStatusCode.NotFound);
+        }
+
+        public override ReadOnlyCollection<ProductRelease> GetVerifiedReleases(Product product)
+        {
+            Interlocked.Increment(ref _indexedRequestCount);
+            return Releases;
+        }
+    }
+
+    private static string GetFixtureRoot()
+    {
+        string repoRoot = typeof(SignedReleaseManifestLoaderTests).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .First(attribute => attribute.Key == "RepoRoot").Value!;
+        return Path.Combine(repoRoot, "test", "TestAssets", "TestReleases", "TestRelease");
+    }
+
+    [TestMethod]
     public void ReleaseManifest_Direct500_DoesNotLoadIndexAndCanRetry()
     {
         const string channelUrl = "https://example.test/release-metadata/5.0/releases.json";
@@ -414,11 +484,8 @@ public class SignedReleaseManifestLoaderTests
         public override ProductCollection GetReleasesIndex()
         {
             IndexRequestCount++;
-            string repoRoot = typeof(SignedReleaseManifestLoaderTests).Assembly
-                .GetCustomAttributes<AssemblyMetadataAttribute>()
-                .First(attribute => attribute.Key == "RepoRoot").Value!;
             return ProductCollection.GetFromFileAsync(
-                Path.Combine(repoRoot, "test", "TestAssets", "TestReleases", "TestRelease", "releases-index.json"),
+                Path.Combine(GetFixtureRoot(), "releases-index.json"),
                 downloadLatest: false).GetAwaiter().GetResult();
         }
     }
