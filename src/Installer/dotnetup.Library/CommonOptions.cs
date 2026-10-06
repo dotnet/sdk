@@ -37,7 +37,7 @@ internal class CommonOptions
 
     public static readonly Option<bool> NonInteractiveOption = new("--non-interactive")
     {
-        Description = "Proceed without prompting for confirmation.",
+        Description = Strings.CommandNonInteractiveOptionDescription,
         Arity = ArgumentArity.Zero
     };
 

@@ -34,7 +34,7 @@ find the stored value.
 | `--source <explicit\|globaljson\|all>` | Remove specifications from the selected source. The default is `explicit`. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Select the installation root. Without this option, use the current managed root or the default installation root. |
-| `--interactive [true\|false]` | Enable confirmation prompts. Defaults to enabled outside CI when input and output are not redirected. |
+| `--interactive [true\|false]` | Enable confirmation prompts. Defaults to enabled outside CI when output is not redirected. Redirected input alone does not disable confirmation. |
 | `--non-interactive` | Proceed without confirmation, even if `--interactive` is enabled. |
 | `-?`, `-h`, `--help` | Show command help. |
 

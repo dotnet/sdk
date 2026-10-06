@@ -120,6 +120,9 @@
   <data name="CommandInteractiveOptionDescription" xml:space="preserve">
     <value>Allows the command to stop and wait for user input or action.</value>
   </data>
+  <data name="CommandNonInteractiveOptionDescription" xml:space="preserve">
+    <value>Proceed without prompting for confirmation.</value>
+  </data>
   <data name="InfoOptionDescription" xml:space="preserve">
     <value>Display dotnetup information.</value>
   </data>

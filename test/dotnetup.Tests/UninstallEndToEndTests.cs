@@ -18,6 +18,20 @@ public class UninstallEndToEndTests : IDisposable
     private readonly UninstallTestEnvironment _fixture = new();
 
     [TestMethod]
+    [DataRow("sdk")]
+    [DataRow("runtime")]
+    [DataRow("alias")]
+    public void UninstallHelp_ShowsNonInteractiveOptionDescription(string noun)
+    {
+        string[] command = noun == "alias" ? ["uninstall", "--help"] : [noun, "uninstall", "--help"];
+
+        var output = Run(command, out var exitCode);
+
+        exitCode.Should().Be(0, output);
+        output.Should().Contain("--non-interactive").And.Contain(Strings.CommandNonInteractiveOptionDescription);
+    }
+
+    [TestMethod]
     [DataRow("sdk", "11.0", InstallComponent.SDK, "11.0.100")]
     [DataRow("runtime", "11.0", InstallComponent.Runtime, "11.0.0")]
     [DataRow("runtime", "runtime@11.0", InstallComponent.Runtime, "11.0.0")]

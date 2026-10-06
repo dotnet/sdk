@@ -12,6 +12,11 @@
         <target state="new">Allows the command to stop and wait for user input or action.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandNonInteractiveOptionDescription">
+        <source>Proceed without prompting for confirmation.</source>
+        <target state="new">Proceed without prompting for confirmation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ConfirmationNo">
         <source>No</source>
         <target state="new">No</target>
