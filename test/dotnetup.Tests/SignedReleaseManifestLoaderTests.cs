@@ -416,6 +416,37 @@ public class SignedReleaseManifestLoaderTests
         loader.IndexedRequestCount.Should().Be(1);
     }
 
+    [TestMethod]
+    public void ReleaseManifest_ProductLookup_SucceedsAfterMissingNumericLookup()
+    {
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        using var loader = new FallbackReleaseLoader(entered, release, TestContext.CancellationToken);
+        var manifest = new FixtureIndexReleaseManifest(loader, "VulnerabilityTestRelease");
+        Product product = ProductCollection.GetFromFileAsync(
+            Path.Combine(GetFixtureRoot(), "releases-index.json"),
+            downloadLatest: false).GetAwaiter().GetResult().First(p => p.ProductVersion == "5.0");
+
+        Task<ReadOnlyCollection<ProductRelease>?> numericLookup = Task.Run(() => manifest.GetReleases(5, 0));
+        entered.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken).Should().BeTrue();
+        Task<ReadOnlyCollection<ProductRelease>> productLookup = Task.Run(() => manifest.GetReleases(product));
+        try
+        {
+            release.Set();
+            Task.WhenAll((Task)numericLookup, productLookup).Wait(TestContext.CancellationToken);
+        }
+        finally
+        {
+            release.Set();
+        }
+
+        numericLookup.Result.Should().BeNull();
+        productLookup.Result.Should().BeSameAs(loader.Releases);
+        manifest.GetReleases(product).Should().BeSameAs(loader.Releases);
+        loader.DirectRequestCount.Should().Be(1);
+        loader.IndexedRequestCount.Should().Be(1);
+    }
+
     private sealed class FallbackReleaseLoader(
         ManualResetEventSlim entered,
         ManualResetEventSlim release,
@@ -477,7 +508,9 @@ public class SignedReleaseManifestLoaderTests
         handler.RequestCount.Should().Be(2);
     }
 
-    private sealed class FixtureIndexReleaseManifest(SignedReleaseManifestLoader loader) : ReleaseManifest(loader)
+    private sealed class FixtureIndexReleaseManifest(
+        SignedReleaseManifestLoader loader,
+        string fixtureFolder = "TestRelease") : ReleaseManifest(loader)
     {
         public int IndexRequestCount { get; private set; }
 
@@ -485,7 +518,7 @@ public class SignedReleaseManifestLoaderTests
         {
             IndexRequestCount++;
             return ProductCollection.GetFromFileAsync(
-                Path.Combine(GetFixtureRoot(), "releases-index.json"),
+                Path.Combine(Path.GetDirectoryName(GetFixtureRoot())!, fixtureFolder, "releases-index.json"),
                 downloadLatest: false).GetAwaiter().GetResult();
         }
     }

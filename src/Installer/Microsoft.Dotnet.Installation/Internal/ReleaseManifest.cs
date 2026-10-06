@@ -220,12 +220,15 @@ internal class ReleaseManifest
     public virtual ReadOnlyCollection<ProductRelease> GetReleases(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
-        ReadOnlyCollection<ProductRelease>? releases;
-        do
+        ReadOnlyCollection<ProductRelease>? releases = GetCachedReleases(
+            product.ProductVersion, () => _loader.Value.GetVerifiedReleases(product));
+        // A concurrent numeric lookup may have cached "product not found" before this
+        // caller supplied the Product. Use its signed URL rather than retrying that race.
+        if (releases is null)
         {
-            releases = GetCachedReleases(product.ProductVersion, () => _loader.Value.GetVerifiedReleases(product));
+            releases = _loader.Value.GetVerifiedReleases(product);
+            _releaseCache.TryAdd(product.ProductVersion, new Lazy<ReadOnlyCollection<ProductRelease>?>(releases));
         }
-        while (releases is null);
         return releases;
     }
 
@@ -264,6 +267,8 @@ internal class ReleaseManifest
             ReadOnlyCollection<ProductRelease>? releases = lazy.Value;
             if (releases is null)
             {
+                // The direct endpoint returned 404 and the signed index has no matching
+                // product. Do not cache absence: a caller with a Product can still load it.
                 _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>?>>(productVersion, lazy));
             }
             return releases;
