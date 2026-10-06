@@ -332,7 +332,7 @@ namespace Microsoft.NET.Build.Tests
         [OSCondition(OperatingSystems.Windows)]
         public void SupportedOSPlatformVersionCanBeSetInDirectoryBuildTargets()
         {
-            var testProject = new TestProject("SupportedOSPlatform")
+            var testProject = new TestProject("DBPSupportedOS")
             {
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0"
             };
