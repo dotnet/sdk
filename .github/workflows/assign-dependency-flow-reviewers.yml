@@ -27,7 +27,7 @@ jobs:
             // optionally prefixed with the target branch, e.g. "[release/10.0.1xx] Update ...".
             // Map each source repository to the teams that own reviewing those updates.
             const reviewerTeamsBySourceRepo = {
-              'microsoft/testfx': ['dotnet-testing-admin'],
+              'microsoft/testfx': ['dotnet-testing'],
             };
 
             const pr = context.payload.pull_request;

@@ -67,7 +67,7 @@ Some dependency sources are reviewed by a specific team rather than by `@dotnet/
 
 | Dependency source | Reviewer team |
 | --- | --- |
-| `microsoft/testfx` | `@dotnet/dotnet-testing-admin` |
+| `microsoft/testfx` | `@dotnet/dotnet-testing` |
 
 To route another dependency source, add an entry to the `reviewerTeamsBySourceRepo` map in that workflow.
 
