@@ -1,4 +1,5 @@
 # Pipeline: https://dev.azure.com/dnceng/internal/_build?definitionId=286
+# Test-only PR to validate VMR security fixes against SDK tests.
 
 trigger:
   batch: true
