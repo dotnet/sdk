@@ -72,6 +72,25 @@ test('accepts XML workaround conditions and historical irrelevant classification
     assert.equal((await validate(f, [result(candidate)]))[0].status, 'irrelevant');
 });
 
+test('array-valued DataRow attributes validate ignored tests in either attribute order', async t => {
+    const ignore = `[Ignore("${url}")]`;
+    const data = '[DataRow(new int[] { 1, 2 })]';
+    for (const attributes of [[ignore, data], [data, ignore]]) {
+        const source = ['namespace Sample.Tests;', 'class Cases {', '[DataTestMethod]',
+            ...attributes, 'public void Run(int[] values) {}', '}'].join('\n');
+        const f = await fixture(t, source);
+        const candidate = f.manifest.candidates[0];
+        const raw = [result(candidate, [action(candidate)])];
+        const validated = await validate(f, raw);
+        assert.equal(validated[0].actions[0].testNames[0], 'Sample.Tests.Cases.Run');
+        assert.deepEqual(await validateSnapshotInterpretations({ schemaVersion: 1, results: raw }, f.manifest, {
+            sources: { [candidate.path]: source + '\n' }, expectedCandidateIds: [candidate.id],
+        }), validated);
+        const cache = mergeCache(null, f.manifest, validated, { nextCursor: 0 });
+        assert.deepEqual(await validate(f, getCachedResults(cache, f.manifest)), validated);
+    }
+});
+
 test('comment identity is source-owned, independent of model qualification, spans and line shifts', async t => {
     const source = [
         'namespace Sample.Tests;',

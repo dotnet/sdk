@@ -54,6 +54,8 @@ Sibling declarations cannot supply a fictitious parent type or namespace.
 Fresh snapshot submissions and restored cache results receive the same check
 before filing. Supplied-evidence requirements still apply; ambiguous ownership
 or unsupported generic containing types must be deferred, not guessed.
+Array initializers within attributes remain part of the declaration header,
+including `DataRow` attributes before or after the `Ignore`.
 
 Files without any GitHub issue/PR URL are eliminated before interpretation.
 Initial context is 20 lines on either side of a hit. Overlapping ranges are

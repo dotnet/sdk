@@ -120,9 +120,26 @@ export function ignoredTestDeclaration(lines, seedLine) {
     const scopes = [];
     let fileNamespace = [];
     let header = [];
+    let brackets = 0;
+    let parentheses = 0;
     let declaration;
     for (const token of csharpTokens(lines.join('\n'))) {
         if (token.kind === 'comment') continue;
+        if (token.kind === 'code') {
+            if (token.value === '[') brackets++;
+            else if (token.value === ']') {
+                requireSource(brackets > 0, 'unmatched closing bracket.');
+                brackets--;
+            } else if (token.value === '(') parentheses++;
+            else if (token.value === ')') {
+                requireSource(parentheses > 0, 'unmatched closing parenthesis.');
+                parentheses--;
+            }
+        }
+        if (brackets || parentheses) {
+            header.push(token);
+            continue;
+        }
         if (token.kind === 'code' && ['{', ';', '=>'].includes(token.value)) {
             const tokens = withoutAttributes(header);
             const text = headerText(tokens.map(item => item.kind === 'literal'
@@ -161,7 +178,8 @@ export function ignoredTestDeclaration(lines, seedLine) {
             header.push(token);
         }
     }
-    requireSource(scopes.length === 0 && declaration, 'unclosed scope or missing Ignore declaration.');
+    requireSource(scopes.length === 0 && brackets === 0 && parentheses === 0 && declaration,
+        'unclosed scope or missing Ignore declaration.');
     return declaration;
 }
 

@@ -39,6 +39,29 @@ test('ignored-test declaration chains ignore sibling types, literals and complet
     ], 3), /ambiguous Ignore declaration ownership/);
 });
 
+test('ignored-test declarations retain array-valued attributes in either order', () => {
+    const ignore = '[Ignore("https://github.com/dotnet/sdk/issues/123")]';
+    const data = '[DataRow(new object[] { new int[] { 1, 2 }, "value" })]';
+    for (const attributes of [[ignore, data], [data, ignore]]) {
+        const lines = [
+            'namespace N.Tests;',
+            'class Cases {',
+            '[DataTestMethod]',
+            ...attributes,
+            'public void Run(int[] values, string text) {}',
+            '}',
+        ];
+        assert.deepEqual(ignoredTestDeclaration(lines, lines.indexOf(ignore) + 1),
+            { prefix: 'N.Tests.Cases', method: 'Run' });
+    }
+    for (const attribute of ['[DataRow(new[] { 1, 2 })', '[DataRow(1]']) {
+        assert.throws(() => ignoredTestDeclaration([
+            'namespace N.Tests;', 'class Cases {', ignore, attribute,
+            'public void Run(int value) {}', '}',
+        ], 3), /unclosed scope or missing Ignore declaration/);
+    }
+});
+
 test('C# literals, comments, attributes and nested scopes cannot fabricate declaration paths', () => {
     const lines = [
         'namespace Outer { namespace Inner {',
