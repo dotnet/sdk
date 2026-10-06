@@ -63,7 +63,7 @@ Codeflow is handled by [darc](https://github.com/dotnet/arcade/blob/main/Documen
 `@dotnet/domestic-cat` will monitor codeflow and approve passing PRs (as all PRs require 1 approver) and ping the owning team for any failures.
 
 ### Reviewer assignment for dependency flow PRs
-Some dependency sources are reviewed by a specific team rather than by `@dotnet/domestic-cat`. The [assign-dependency-flow-reviewers](https://github.com/dotnet/sdk/blob/main/.github/workflows/assign-dependency-flow-reviewers.yml) workflow inspects PR titles of the form `Update dependencies from <org>/<repo>` (including the `[branch] ` prefixed variant) and requests a review from the owning team:
+Some dependency sources are reviewed by a specific team rather than by `@dotnet/domestic-cat`. For PRs authored by the trusted Maestro bot, the [assign-dependency-flow-reviewers](https://github.com/dotnet/sdk/blob/main/.github/workflows/assign-dependency-flow-reviewers.yml) workflow inspects titles of the form `Update dependencies from <org>/<repo>` (including the `[branch] ` prefixed variant) and requests a review from the owning team:
 
 | Dependency source | Reviewer team |
 | --- | --- |

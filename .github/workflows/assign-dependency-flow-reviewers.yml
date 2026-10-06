@@ -31,6 +31,13 @@ jobs:
             };
 
             const pr = context.payload.pull_request;
+            const trustedAuthors = new Set(['dotnet-maestro[bot]', 'dotnet-maestro']);
+            const author = pr.user.login.toLowerCase();
+            if (!trustedAuthors.has(author)) {
+              console.log(`PR author is not a trusted dependency flow bot, skipping: ${author}`);
+              return;
+            }
+
             const title = pr.title ?? '';
             const match = title.match(/^(?:\[[^\]]+\]\s*)?Update dependencies from (\S+\/\S+?)(?:\s.*)?$/i);
             if (!match) {
