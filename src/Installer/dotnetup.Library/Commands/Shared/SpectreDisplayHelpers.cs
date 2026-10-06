@@ -39,7 +39,7 @@ internal static class SpectreDisplayHelpers
     internal static ConfirmResult Confirm(string prompt)
     {
         SpectreAnsiConsole.Markup(string.Format(CultureInfo.InvariantCulture,
-            "{0} [{1}]([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)[/] ", prompt.EscapeMarkup(), DotnetupTheme.Current.Brand));
+            "{0} [{1}]{2}[/] ", prompt.EscapeMarkup(), DotnetupTheme.Current.Brand, Strings.ConfirmationOptionsWithKeyboardHints));
         return ReadConfirm(ConfirmResult.Yes);
     }
 
@@ -65,7 +65,7 @@ internal static class SpectreDisplayHelpers
                 SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  [{0}]• [{1}]{2}[/][/]", dim, accent, item.EscapeMarkup()));
             }
 
-            string promptSuffix = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/] ", confirmPrompt, brand);
+            string promptSuffix = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/] ", confirmPrompt.EscapeMarkup(), brand, Strings.ConfirmationOptions);
             SpectreAnsiConsole.Markup(promptSuffix);
             var result = ReadConfirm(defaultValue: ConfirmResult.Yes);
             SpectreAnsiConsole.WriteLine();
@@ -194,7 +194,8 @@ internal static class SpectreDisplayHelpers
 
         if (offset > 0)
         {
-            rows.Add(new Markup(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more above[/]", dim, Constants.Symbols.UpTriangle, offset)));
+            rows.Add(new Markup("  " + DotnetupTheme.Dim(string.Format(CultureInfo.InvariantCulture,
+                Strings.ScrollMoreAbove, Constants.Symbols.UpTriangle, offset))));
         }
         else
         {
@@ -209,7 +210,8 @@ internal static class SpectreDisplayHelpers
         int remaining = items.Count - offset - visibleCount;
         if (remaining > 0)
         {
-            rows.Add(new Markup(string.Format(CultureInfo.InvariantCulture, "  [{0}]{1} {2} more below (use {3}{4} arrows)[/]", dim, Constants.Symbols.DownTriangle, remaining, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow)));
+            rows.Add(new Markup("  " + DotnetupTheme.Dim(string.Format(CultureInfo.InvariantCulture,
+                Strings.ScrollMoreBelow, Constants.Symbols.DownTriangle, remaining, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow))));
         }
         else
         {
@@ -218,12 +220,12 @@ internal static class SpectreDisplayHelpers
 
         if (confirmPrompt is not null)
         {
-            string promptHint = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]([bold underline]Y[/]/n)[/]", confirmPrompt, DotnetupTheme.Current.Brand);
+            string promptHint = string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", confirmPrompt.EscapeMarkup(), DotnetupTheme.Current.Brand, Strings.ConfirmationOptions);
             rows.Add(new Markup(promptHint));
         }
         else if (remaining <= 0)
         {
-            rows.Add(new Markup(string.Format(CultureInfo.InvariantCulture, "  [{0}](Press Enter to continue)[/]", dim)));
+            rows.Add(new Markup("  " + DotnetupTheme.Dim(Strings.ScrollContinue.EscapeMarkup())));
         }
 
         return new Rows(rows);
@@ -250,10 +252,10 @@ internal static class SpectreDisplayHelpers
         {
             string answer = result switch
             {
-                ConfirmResult.Yes => "Yes",
-                _ => "No",
+                ConfirmResult.Yes => Strings.ConfirmationYes,
+                _ => Strings.ConfirmationNo,
             };
-            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", confirmPrompt, brand, answer));
+            SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "{0} [{1}]{2}[/]", confirmPrompt.EscapeMarkup(), brand, answer.EscapeMarkup()));
             SpectreAnsiConsole.WriteLine();
         }
     }
@@ -275,15 +277,15 @@ internal static class SpectreDisplayHelpers
             switch (key.Key)
             {
                 case ConsoleKey.Enter:
-                    string defaultLabel = defaultValue == ConfirmResult.Yes ? "Yes" : "No";
-                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]{1}[/]", brand, defaultLabel));
+                    string defaultLabel = defaultValue == ConfirmResult.Yes ? Strings.ConfirmationYes : Strings.ConfirmationNo;
+                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]{1}[/]", brand, defaultLabel.EscapeMarkup()));
                     return defaultValue;
                 case ConsoleKey.Y:
-                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]Yes[/]", brand));
+                    SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand(Strings.ConfirmationYes.EscapeMarkup()));
                     return ConfirmResult.Yes;
                 case ConsoleKey.N:
                 case ConsoleKey.Escape:
-                    SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]No[/]", brand));
+                    SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand(Strings.ConfirmationNo.EscapeMarkup()));
                     return ConfirmResult.No;
             }
         }
@@ -297,14 +299,14 @@ internal static class SpectreDisplayHelpers
             var input = Console.ReadLine()?.Trim();
             if (input is null || string.Equals(input, "n", StringComparison.OrdinalIgnoreCase) || input == "\u001b")
             {
-                SpectreAnsiConsole.WriteLine("No");
+                SpectreAnsiConsole.WriteLine(Strings.ConfirmationNo);
                 return ConfirmResult.No;
             }
 
             if (input.Length == 0 || string.Equals(input, "y", StringComparison.OrdinalIgnoreCase))
             {
                 var result = input.Length == 0 ? defaultValue : ConfirmResult.Yes;
-                SpectreAnsiConsole.WriteLine(result == ConfirmResult.Yes ? "Yes" : "No");
+                SpectreAnsiConsole.WriteLine(result == ConfirmResult.Yes ? Strings.ConfirmationYes : Strings.ConfirmationNo);
                 return result;
             }
         }

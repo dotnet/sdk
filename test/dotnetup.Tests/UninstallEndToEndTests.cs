@@ -76,6 +76,8 @@ public class UninstallEndToEndTests : IDisposable
         exitCode.Should().Be(accept ? 0 : 1, output);
         AssertWarningCounts(output, retained: 0, unexpected: 1, prompts: 1);
         output.Should().Contain(".NET SDK 9.0.100 will be uninstalled");
+        output.Should().Contain("(Y/n; Enter to proceed, Esc to cancel)");
+        output.Should().MatchRegex($@"Enter to proceed, Esc to cancel\)\s+{(accept ? "Yes" : "No")}\b");
         output.Should().Contain("Install spec '11.0' (.NET SDK; source: Explicit) will be removed from tracking.");
         output.Should().NotContain("retained versions");
         output.IndexOf("will be removed from tracking", StringComparison.Ordinal)

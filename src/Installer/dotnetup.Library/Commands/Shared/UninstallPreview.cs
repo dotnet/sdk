@@ -29,13 +29,14 @@ internal static class UninstallPreview
             }
 
             hasWarnings = true;
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                $"[{DotnetupTheme.Current.Accent}]{target.Component.GetDisplayName()} {target.Version}[/] will [bold]not[/] be uninstalled because it has other install specs that require it:");
+            AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, Strings.UninstallRetainedInstallation,
+                DotnetupTheme.Accent($"{target.Component.GetDisplayName()} {target.Version}".EscapeMarkup())));
             foreach (var spec in specs)
             {
                 var source = spec.GlobalJsonPath ?? spec.InstallSource.ToString();
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"  {spec.Component.GetDisplayName()} {spec.VersionOrChannel} [{DotnetupTheme.Current.Dim}](source: {source})[/]");
+                AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture,
+                    "  {0} {1} {2}", spec.Component.GetDisplayName().EscapeMarkup(), spec.VersionOrChannel.EscapeMarkup(),
+                    DotnetupTheme.Dim(string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecSource, source.EscapeMarkup()))));
             }
         }
 
@@ -51,8 +52,8 @@ internal static class UninstallPreview
                 !ReleaseVersion.TryParse(i.Version, out var version) || !channel.Matches(version)))
         {
             hasWarnings = true;
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                $"[{DotnetupTheme.Current.Accent}]{installation.Component.GetDisplayName()} {installation.Version}[/] will be [bold]uninstalled[/] because it is no longer referenced by any install specs.");
+            AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, Strings.UninstallUnexpectedRemoval,
+                DotnetupTheme.Accent($"{installation.Component.GetDisplayName()} {installation.Version}".EscapeMarkup())));
         }
 
         if (hasWarnings)
@@ -68,14 +69,15 @@ internal static class UninstallPreview
         AnsiConsole.WriteLine();
         if (hasRetainedTargets)
         {
-            AnsiConsole.WriteLine("The retained versions listed above will remain installed. To fully uninstall them, you must also remove the other install specs keeping them installed.");
+            AnsiConsole.WriteLine(Strings.UninstallRetainedGuidance);
         }
 
         foreach (var spec in specsToRemove.DistinctBy(s => (s.Component, s.VersionOrChannel, s.InstallSource, s.GlobalJsonPath)))
         {
             var source = spec.GlobalJsonPath ?? spec.InstallSource.ToString();
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                $"Install spec '[{DotnetupTheme.Current.Accent}]{spec.VersionOrChannel}[/]' ({spec.Component.GetDisplayName()}; source: {source}) will be removed from tracking.");
+            AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, Strings.UninstallRemovalSummary,
+                DotnetupTheme.Accent(spec.VersionOrChannel.EscapeMarkup()), spec.Component.GetDisplayName().EscapeMarkup(),
+                source.EscapeMarkup()));
         }
     }
 

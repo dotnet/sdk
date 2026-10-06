@@ -43,7 +43,7 @@ internal class UninstallWorkflow
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.UninstallTargetNotFound,
-                $"No tracked installations found at {resolvedInstallPath}.");
+                string.Format(CultureInfo.InvariantCulture, Strings.UninstallNoTrackedInstallations, resolvedInstallPath));
         }
 
         var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
@@ -58,7 +58,7 @@ internal class UninstallWorkflow
 
         RemoveSpecsAndRunGc(manifest, manifestData, installRoot, matchingSpecs, targetedInstallations, interactive, confirm);
 
-        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]Done.[/]");
+        AnsiConsole.MarkupLine(DotnetupTheme.Brand(Strings.CommandDone.EscapeMarkup()));
     }
 
     private static List<InstallSpec> FindMatchingSpecs(
@@ -79,7 +79,8 @@ internal class UninstallWorkflow
             ReportNoMatchingSpecs(allMatchingSpecs, matchingSpecs, sourceFilter, componentFilter, versionOrChannel, root.Path);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.UninstallTargetNotFound,
-                $"No tracked installations matched component={componentFilter}, version='{versionOrChannel}', source={sourceFilter} at {root.Path}.");
+                string.Format(CultureInfo.InvariantCulture, Strings.UninstallNoMatchingInstallations,
+                    componentFilter, versionOrChannel, sourceFilter, root.Path));
         }
 
         return matchingSpecs;
@@ -99,28 +100,34 @@ internal class UninstallWorkflow
         {
             if (sourceFilter != InstallSource.All)
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Warning}]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}', but matching specs exist with other sources:[/]");
+                AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
+                    Strings.UninstallSourceNotFound, sourceFilter.ToString().EscapeMarkup(),
+                    componentFilter.GetDisplayName().EscapeMarkup(), versionOrChannel.EscapeMarkup())));
             }
             else
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}', but matching specs exist with other sources:[/]");
+                AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
+                    Strings.UninstallSpecNotFoundWithOtherSources, componentFilter.GetDisplayName().EscapeMarkup(),
+                    versionOrChannel.EscapeMarkup())));
             }
 
             foreach (var spec in otherSourceSpecs)
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [{DotnetupTheme.Current.Dim}]{spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()} (source: {spec.InstallSource})[/]");
+                AnsiConsole.MarkupLine("  " + DotnetupTheme.Dim(string.Format(CultureInfo.InvariantCulture,
+                    "{0} {1} {2}", spec.Component.GetDisplayName().EscapeMarkup(), spec.VersionOrChannel.EscapeMarkup(),
+                    string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecSource, spec.InstallSource))));
             }
 
             if (sourceFilter != InstallSource.All)
             {
-                AnsiConsole.MarkupLine(DotnetupTheme.Dim("Use --source all to target these specs."));
+                AnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.UninstallUseAllSources.EscapeMarkup()));
             }
         }
         else
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}' at {resolvedInstallPath.EscapeMarkup()}.[/]");
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
+                Strings.UninstallSpecNotFound, componentFilter.GetDisplayName().EscapeMarkup(),
+                versionOrChannel.EscapeMarkup(), resolvedInstallPath.EscapeMarkup())));
         }
     }
 
@@ -143,14 +150,16 @@ internal class UninstallWorkflow
         var hasWarnings = UninstallPreview.Display(
             plan, targetedInstallations, matchingSpecs[0].Component, matchingSpecs[0].VersionOrChannel, matchingSpecs);
         if (hasWarnings && interactive &&
-            (confirm?.Invoke() ?? SpectreDisplayHelpers.Confirm("Proceed with uninstall?")) != ConfirmResult.Yes)
+            (confirm?.Invoke() ?? SpectreDisplayHelpers.Confirm(Strings.UninstallConfirmationPrompt)) != ConfirmResult.Yes)
         {
-            throw new DotnetInstallException(DotnetInstallErrorCode.OperationCancelled, "Uninstall cancelled. No install specs or files were removed.");
+            throw new DotnetInstallException(DotnetInstallErrorCode.OperationCancelled, Strings.UninstallCancelled);
         }
 
         foreach (var spec in matchingSpecs.DistinctBy(s => (s.Component, s.VersionOrChannel, s.InstallSource, s.GlobalJsonPath)))
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Dereferenced {spec.Component.GetDisplayName()} [{DotnetupTheme.Current.Accent}]{spec.VersionOrChannel}[/] [{DotnetupTheme.Current.Dim}](source: {spec.InstallSource})[/]");
+            AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, Strings.UninstallDereferencedSpec,
+                spec.Component.GetDisplayName().EscapeMarkup(), DotnetupTheme.Accent(spec.VersionOrChannel.EscapeMarkup()),
+                DotnetupTheme.Dim(string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecSource, spec.InstallSource))));
         }
 
         GarbageCollectionRunner.ApplyAndDisplay(new GarbageCollector(manifest), plan);

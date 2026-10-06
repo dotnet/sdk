@@ -157,6 +157,21 @@ public class UninstallPreviewTests
             .Should().BeLessThan(output.IndexOf("Install spec", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    [ResourceLock(WellKnownResources.Console)]
+    [DataRow("8[red]")]
+    [DataRow("8{0}")]
+    public void Display_RemovalSummary_EscapesSpecValuesInResourceFormat(string channel)
+    {
+        var plan = CreatePlan([], [], ["sdk/9.0.100"]);
+
+        var output = Render(plan, [], InstallComponent.SDK, "8", out var warned,
+            [new InstallSpec { Component = InstallComponent.SDK, VersionOrChannel = channel }]);
+
+        warned.Should().BeTrue();
+        output.Should().Contain($"Install spec '{channel}' (.NET SDK; source: Explicit) will be removed from tracking.");
+    }
+
     private static GarbageCollectionPlan CreatePlan(
         Dictionary<Installation, List<InstallSpec>> installSpecsByInstallation, List<Installation> removals, List<string> paths)
     {

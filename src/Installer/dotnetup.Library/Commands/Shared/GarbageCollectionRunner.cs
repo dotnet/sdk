@@ -35,7 +35,7 @@ internal static class GarbageCollectionRunner
     private static List<string> DisplayResults(Func<List<string>> collect, bool showEmptyMessage)
     {
         Debug.Assert(ScopedMutex.CurrentThreadHoldsMutex, "GarbageCollectionRunner.RunAndDisplay must be called while holding the mutex.");
-        AnsiConsole.WriteLine("Removing unused installations...");
+        AnsiConsole.WriteLine(Strings.GarbageCollectionRemovingInstallations);
 
         var deleted = collect();
 
@@ -43,12 +43,12 @@ internal static class GarbageCollectionRunner
         {
             foreach (var d in deleted)
             {
-                AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  Removed {0}", DotnetupTheme.Dim(d.EscapeMarkup())));
+                AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, Strings.GarbageCollectionRemovedPath, DotnetupTheme.Dim(d.EscapeMarkup())));
             }
         }
         else if (showEmptyMessage)
         {
-            AnsiConsole.MarkupLine(DotnetupTheme.Dim("No files were removed."));
+            AnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.GarbageCollectionNoFilesRemoved.EscapeMarkup()));
         }
 
         return deleted;
