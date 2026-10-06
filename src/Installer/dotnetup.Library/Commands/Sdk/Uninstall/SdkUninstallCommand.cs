@@ -20,6 +20,7 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result, "sd
             _installPath,
             _versionOrChannel,
             _sourceFilter,
-            InstallComponent.SDK);
+            InstallComponent.SDK,
+            ParseResult.GetValue(CommonOptions.InteractiveOption) && !ParseResult.GetValue(CommonOptions.NonInteractiveOption));
     }
 }

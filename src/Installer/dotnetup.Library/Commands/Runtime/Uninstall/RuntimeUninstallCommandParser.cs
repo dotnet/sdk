@@ -25,6 +25,8 @@ internal static class RuntimeUninstallCommandParser
         command.Options.Add(CommonOptions.SourceOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.InstallPathOption);
+        command.Options.Add(CommonOptions.InteractiveOption);
+        command.Options.Add(CommonOptions.NonInteractiveOption);
 
         command.SetAction(parseResult => new RuntimeUninstallCommand(parseResult).Execute());
 

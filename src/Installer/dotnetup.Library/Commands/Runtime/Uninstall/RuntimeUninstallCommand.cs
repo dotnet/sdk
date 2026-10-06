@@ -31,6 +31,7 @@ internal class RuntimeUninstallCommand(ParseResult result) : CommandBase(result,
             _installPath,
             versionOrChannel,
             _sourceFilter,
-            component);
+            component,
+            ParseResult.GetValue(CommonOptions.InteractiveOption) && !ParseResult.GetValue(CommonOptions.NonInteractiveOption));
     }
 }

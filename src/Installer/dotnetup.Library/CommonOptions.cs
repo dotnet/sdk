@@ -35,6 +35,12 @@ internal class CommonOptions
         Arity = ArgumentArity.ZeroOrOne
     };
 
+    public static readonly Option<bool> NonInteractiveOption = new("--non-interactive")
+    {
+        Description = "Proceed without prompting for confirmation.",
+        Arity = ArgumentArity.Zero
+    };
+
     /// <summary>
     /// Hidden test hook: preview the <c>dotnetup init</c> form and the settings it would apply
     /// without installing anything or changing the environment.
