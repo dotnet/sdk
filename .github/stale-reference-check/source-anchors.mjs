@@ -104,6 +104,67 @@ function containerHeader(tokens) {
         && /^@?[\p{L}_]/u.test(tokens[index + 1]?.value ?? ''));
 }
 
+function withoutAttributes(tokens) {
+    let depth = 0;
+    return tokens.filter(token => {
+        if (token.kind === 'code' && token.value === '[') depth++;
+        const attribute = depth > 0;
+        if (token.kind === 'code' && token.value === ']') depth--;
+        return !attribute;
+    });
+}
+
+// Proves the ordered declaration chain, without treating names in sibling scopes,
+// comments, or string literals as enclosing namespaces/types.
+export function ignoredTestDeclaration(lines, seedLine) {
+    const scopes = [];
+    let fileNamespace = [];
+    let header = [];
+    let declaration;
+    for (const token of csharpTokens(lines.join('\n'))) {
+        if (token.kind === 'comment') continue;
+        if (token.kind === 'code' && ['{', ';', '=>'].includes(token.value)) {
+            const tokens = withoutAttributes(header);
+            const text = headerText(tokens.map(item => item.kind === 'literal'
+                ? { ...item, value: '_literal_' } : item));
+            const namespace = /^namespace\s+(@?\w+(?:\.@?\w+)*)$/.exec(text);
+            const type = /\b(?:class|struct)\s+(@?\w+)(?!\w)/.exec(text);
+            const method = /\b(?:void|Task|ValueTask)(?:<[^>]+>)?\s+(@?\w+)\s*\(/.exec(text);
+            const decorated = header.some(item => item.kind === 'code' &&
+                /^(?:Ignore|IgnoreAttribute)$/.test(item.value) && item.startLine === seedLine);
+            if (decorated) {
+                requireSource(!declaration && scopes.every(scope => scope.names && !scope.generic),
+                    'ambiguous Ignore declaration ownership.');
+                requireSource(type || method, 'unsupported Ignore declaration.');
+                requireSource(!type || !text.slice(type.index + type[0].length).trimStart().startsWith('<'),
+                    'generic ignored type identity is unsupported.');
+                const names = [...fileNamespace, ...scopes.flatMap(scope => scope.names),
+                    ...(type ? [type[1].replace(/^@/, '')] : [])];
+                requireSource(names.length >= 2, 'Ignore has no namespace/containing-type chain.');
+                declaration = { prefix: names.join('.'), method: type ? null : method[1].replace(/^@/, '') };
+            }
+            if (token.value === '{') {
+                const names = namespace ? namespace[1].split('.').map(name => name.replace(/^@/, ''))
+                    : type ? [type[1].replace(/^@/, '')] : null;
+                scopes.push({ names, generic: Boolean(type &&
+                    text.slice(type.index + type[0].length).trimStart().startsWith('<')) });
+            } else if (namespace && token.value === ';') {
+                requireSource(!scopes.length && !fileNamespace.length, 'ambiguous file-scoped namespace.');
+                fileNamespace = namespace[1].split('.').map(name => name.replace(/^@/, ''));
+            }
+            header = [];
+        } else if (token.kind === 'code' && token.value === '}') {
+            requireSource(scopes.length > 0, 'unmatched closing brace.');
+            scopes.pop();
+            header = [];
+        } else {
+            header.push(token);
+        }
+    }
+    requireSource(scopes.length === 0 && declaration, 'unclosed scope or missing Ignore declaration.');
+    return declaration;
+}
+
 function recordComment(sites, token, anchor) {
     const site = { anchor };
     for (let line = token.startLine; line <= token.endLine; line++) {

@@ -3,11 +3,41 @@
 
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { sourceAnchors } from '../source-anchors.mjs';
+import { ignoredTestDeclaration, sourceAnchors } from '../source-anchors.mjs';
 
 const seed = '// TODO https://github.com/dotnet/sdk/issues/123';
 const anchor = (lines, file = 'src/File.cs', line = lines.findIndex(text => text.includes('TODO')) + 1) =>
     sourceAnchors(lines, file)(line);
+
+test('ignored-test declaration chains ignore sibling types, literals and completed nested scopes', () => {
+    const lines = [
+        'namespace Outer { namespace Inner {',
+        'class Unrelated<T> {}',
+        'class Container {',
+        'class Finished {}',
+        '[Attribute("namespace Fake { class Pretend {")]',
+        '[Ignore("https://github.com/dotnet/sdk/issues/123")]',
+        '[TestMethod]',
+        'public void Run(string value = "class Fake") {',
+        'var braces = "} }";',
+        '} } } }',
+    ];
+    assert.deepEqual(ignoredTestDeclaration(lines, 6), { prefix: 'Outer.Inner.Container', method: 'Run' });
+    assert.deepEqual(ignoredTestDeclaration([
+        'namespace N.Tests;',
+        'class Cases {',
+        '[Ignore("https://github.com/dotnet/sdk/issues/123")]',
+        'public void Run() => Call();',
+        '}',
+    ], 3), { prefix: 'N.Tests.Cases', method: 'Run' });
+    assert.throws(() => ignoredTestDeclaration([
+        'namespace N.Tests;',
+        'class Cases<T> {',
+        '[Ignore("https://github.com/dotnet/sdk/issues/123")]',
+        'public void Run() {}',
+        '}',
+    ], 3), /ambiguous Ignore declaration ownership/);
+});
 
 test('C# literals, comments, attributes and nested scopes cannot fabricate declaration paths', () => {
     const lines = [

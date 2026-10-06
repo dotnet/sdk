@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { collect, git } from '../collect.mjs';
 import { createGitRepo } from './fixture.mjs';
-import { getCachedResults, mergeCache, readContext, selectBatch, validateInterpretations } from '../interpretations.mjs';
+import { getCachedResults, mergeCache, readContext, selectBatch, validateInterpretations, validateSnapshotInterpretations } from '../interpretations.mjs';
 import { finalize, targetIds } from '../finalize.mjs';
 import { createGitHubMock } from './github-mock.mjs';
 
@@ -278,6 +278,57 @@ test('test identities must name the type that contains the Ignore', async t => {
     await assert.rejects(validate(f, [result(candidate, [action(candidate, { testNames: ['Sample.Tests.Other.Run'] })])]),
         /does not contain the Ignore/);
     assert.equal((await validate(f, [result(candidate, [action(candidate)])]))[0].actions[0].testNames[0], 'Sample.Tests.Cases.Run');
+});
+
+test('rejects fabricated containing-type chains in fresh, snapshot and cached ignored tests', async t => {
+    const source = [
+        'namespace Sample.Tests;',
+        'class PretendParent {}',
+        'class Cases {',
+        `[Ignore("${url}")]`,
+        '[TestMethod]',
+        'public void Run() {}',
+        '}',
+    ].join('\n');
+    const f = await fixture(t, source);
+    const candidate = f.manifest.candidates[0];
+    const fabricated = 'Sample.Tests.PretendParent.Cases.Run';
+    const raw = result(candidate, [action(candidate, { testNames: [fabricated] })]);
+    await assert.rejects(validate(f, [raw]), /ordered namespace\/containing-type chain/);
+    await assert.rejects(validateSnapshotInterpretations({ schemaVersion: 1, results: [raw] }, f.manifest, {
+        sources: { [candidate.path]: source + '\n' }, expectedCandidateIds: [candidate.id],
+    }), /ordered namespace\/containing-type chain/);
+    const valid = await validate(f, [result(candidate, [action(candidate)])]);
+    const cache = mergeCache(null, f.manifest, valid, { nextCursor: 0 });
+    cache.entries[candidate.id].actions[0].testNames = [fabricated];
+    const cached = getCachedResults(cache, f.manifest);
+    await assert.rejects(validateInterpretations({ schemaVersion: 1, results: cached }, f.manifest, {
+        repoRoot: f.root, expectedCandidateIds: [candidate.id],
+    }), /ordered namespace\/containing-type chain/);
+});
+
+test('ordered namespace and type identities reject reordering and sibling namespace borrowing', async t => {
+    const source = [
+        'namespace Sample.Tests { class Other {} }',
+        'namespace Actual { namespace Nested {',
+        'class Outer { class Cases {',
+        `[Ignore("${url}")]`,
+        '[TestMethod]',
+        'public void Run() {}',
+        '}}}}',
+    ].join('\n');
+    const f = await fixture(t, source);
+    const candidate = f.manifest.candidates[0];
+    for (const name of ['Sample.Tests.Outer.Cases.Run', 'Sample.Actual.Nested.Outer.Cases.Run',
+        'Sample.Tests.Nested.Actual.Outer.Cases.Run']) {
+        await assert.rejects(validate(f, [result(candidate, [action(candidate, { testNames: [name] })])]));
+    }
+    // The supplied-evidence check still conservatively rejects ambiguous namespace windows.
+    const nested = await fixture(t, source.split('\n').slice(1).join('\n'));
+    const nestedCandidate = nested.manifest.candidates[0];
+    assert.equal((await validate(nested, [result(nestedCandidate, [action(nestedCandidate, {
+        testNames: ['Actual.Nested.Outer.Cases.Run'],
+    })])]))[0].actions[0].testNames[0], 'Actual.Nested.Outer.Cases.Run');
 });
 
 test('source edits outside snippets, forged evidence, traversal and sibling prefixes are rejected', async t => {

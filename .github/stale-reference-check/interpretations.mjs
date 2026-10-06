@@ -3,7 +3,7 @@
 
 import { assertRepoPath, numberedContext, readSource, sourceId, sourceLines } from './collect.mjs';
 import { numberPattern, ownerPattern, referenceUrlPattern, repositoryPattern, shorthandPattern } from './references.mjs';
-import { sourceAnchors } from './source-anchors.mjs';
+import { ignoredTestDeclaration, sourceAnchors } from './source-anchors.mjs';
 
 const statuses = new Set(['actionable', 'irrelevant', 'insufficient_context']);
 const kinds = new Set(['ignore', 'todo', 'workaround']);
@@ -181,7 +181,7 @@ function checkTestNames(action, source, candidate, evidence) {
     }
 }
 
-function validateAction(action, candidate, evidence, enriched = false, commentAnchor) {
+function validateAction(action, candidate, evidence, enriched = false, commentAnchor, testDeclaration) {
     keys(action, enriched ? enrichedActionKeys : rawActionKeys, 'Action');
     requireCondition(kinds.has(action.kind), 'Invalid action kind.');
     text(action.anchor, 'Action anchor', 1024);
@@ -215,6 +215,17 @@ function validateAction(action, candidate, evidence, enriched = false, commentAn
         requireCondition(/(?:\[|<|,)\s*(?:[\w.]+\.)?Ignore(?:Attribute)?\b/.test(attributeContext),
             'Ignore action must identify an actual attribute, not an incidental mention.');
         checkTestNames(action, evidenceText(evidence), candidate, evidence);
+        if (testDeclaration) {
+            const declaration = testDeclaration();
+            for (const name of action.testNames) {
+                const identity = name.replace(/\(.*$/, '').split('.').map(segment => segment.replace(/^@/, '')).join('.');
+                const prefix = identity.slice(0, identity.lastIndexOf('.'));
+                const method = identity.slice(identity.lastIndexOf('.') + 1);
+                requireCondition(prefix === declaration.prefix &&
+                    (declaration.method === null || method === declaration.method),
+                'Test identity does not match the ordered namespace/containing-type chain of the Ignore.');
+            }
+        }
     } else {
         requireCondition(action.testNames === undefined || (Array.isArray(action.testNames) && action.testNames.length === 0),
             'Only ignore actions may identify tests.');
@@ -234,7 +245,7 @@ function validateAction(action, candidate, evidence, enriched = false, commentAn
     return result;
 }
 
-function validateResult(result, candidate, { cached = false, commentAnchor } = {}) {
+function validateResult(result, candidate, { cached = false, commentAnchor, testDeclaration } = {}) {
     keys(result, cached ? ['candidateId', 'status', 'reason', 'actions', 'contextExpansions']
         : ['candidateId', 'status', 'reason', 'actions'], 'Interpretation result');
     requireCondition(result.candidateId === candidate.id && statuses.has(result.status), 'Invalid interpretation identity or status.');
@@ -244,7 +255,7 @@ function validateResult(result, candidate, { cached = false, commentAnchor } = {
         'Actionable results require actions; other statuses must not contain actions.');
     const expansions = expansionsFor(candidate, cached ? result.contextExpansions ?? [] : undefined);
     const evidence = evidenceFor(candidate, expansions);
-    const actions = result.actions.map(action => validateAction(action, candidate, evidence, cached, commentAnchor));
+    const actions = result.actions.map(action => validateAction(action, candidate, evidence, cached, commentAnchor, testDeclaration));
     requireCondition(new Set(actions.map(action => JSON.stringify(action))).size === actions.length, 'Duplicate actions.');
     const validated = {
         candidateId: result.candidateId, status: result.status, reason: result.reason, actions,
@@ -427,7 +438,8 @@ async function validateWithSources(payload, manifest, expectedCandidateIds, cont
                 if (!anchors.has(fileKey)) anchors.set(fileKey, sourceAnchors(lines, candidate.path));
                 return anchors.get(fileKey)(candidate.seedLine);
             };
-            results.push(validateResult(result, candidate, { cached, commentAnchor }));
+            const testDeclaration = () => ignoredTestDeclaration(lines, candidate.seedLine);
+            results.push(validateResult(result, candidate, { cached, commentAnchor, testDeclaration }));
         } catch (error) {
             throw new Error(`Candidate ${candidate.id}: ${error.message}`, { cause: error });
         }

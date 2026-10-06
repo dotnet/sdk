@@ -48,6 +48,12 @@ The checker's own synthetic test cases are also excluded from discovery.
 The collector is deliberately not a general-purpose parser of every language.
 Ignore validation understands C# MSTest declarations only; Visual Basic
 sources are not collected.
+The host also checks the ordered namespace and containing-type chain against the
+verified full source using the lexer in [source-anchors.mjs](source-anchors.mjs).
+Sibling declarations cannot supply a fictitious parent type or namespace.
+Fresh snapshot submissions and restored cache results receive the same check
+before filing. Supplied-evidence requirements still apply; ambiguous ownership
+or unsupported generic containing types must be deferred, not guessed.
 
 Files without any GitHub issue/PR URL are eliminated before interpretation.
 Initial context is 20 lines on either side of a hit. Overlapping ranges are
