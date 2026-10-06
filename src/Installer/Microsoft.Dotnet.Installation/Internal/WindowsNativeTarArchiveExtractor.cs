@@ -30,8 +30,6 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
             Environment.SystemDirectory,
             Environment.GetFolderPath(Environment.SpecialFolder.Windows),
             Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess);
-        Exception? nativeFailure = null;
-
         try
         {
             Directory.CreateDirectory(context.TargetDirectory);
@@ -47,7 +45,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
                 [extractArgument, context.ArchivePath, ChangeDirectoryArgument, stagingDirectory]);
             if (result.StartFailure is not null)
             {
-                nativeFailure = new InvalidOperationException(
+                var nativeFailure = new InvalidOperationException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.NativeTarStartFailed,
@@ -62,7 +60,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
 
             if (result.ExitCode != 0)
             {
-                nativeFailure = new InvalidOperationException(CreateFailureMessage(
+                var nativeFailure = new InvalidOperationException(CreateFailureMessage(
                     tarExecutable,
                     result.ExitCode!.Value,
                     result.StandardError,

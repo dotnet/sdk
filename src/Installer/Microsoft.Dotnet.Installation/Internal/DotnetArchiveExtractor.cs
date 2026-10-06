@@ -312,10 +312,7 @@ internal class DotnetArchiveExtractor : IDisposable
     {
         using var zip = ZipFile.OpenRead(archivePath);
         IProgressTask? entryProgressTask = installTask?.RequiresKnownMaximum == true ? installTask : null;
-        if (entryProgressTask is not null)
-        {
-            entryProgressTask.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1;
-        }
+        entryProgressTask?.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1;
 
         foreach (var entry in zip.Entries)
         {
