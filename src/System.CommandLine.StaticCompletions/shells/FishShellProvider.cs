@@ -131,7 +131,7 @@ public class FishShellProvider : IShellProvider
             // Single-value options (arity exactly 1): skip the next token
             var singleValueNames = valueOptions
                 .Where(o => o.Arity.MaximumNumberOfValues == 1)
-                .SelectMany(o => SanitizeOptionNames(o.Names()))
+                .SelectMany(o => o.Names())
                 .ToArray();
             if (singleValueNames.Length > 0)
             {
@@ -148,7 +148,7 @@ public class FishShellProvider : IShellProvider
                 .GroupBy(o => o.Arity.MaximumNumberOfValues);
             foreach (var group in multiValueByArity)
             {
-                var names = string.Join(" ", group.SelectMany(o => SanitizeOptionNames(o.Names())));
+                var names = string.Join(" ", group.SelectMany(o => o.Names()));
                 writer.WriteLine($"case {names}");
                 writer.Indent++;
                 WriteMultiValueSkipLoop(writer, group.Key);

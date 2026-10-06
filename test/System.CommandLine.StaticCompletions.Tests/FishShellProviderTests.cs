@@ -130,4 +130,19 @@ public class FishShellProviderTests : VerifyMSTest.VerifyBase
         };
         await provider.Verify(command, TestContext);
     }
+
+    [TestMethod]
+    public async Task WindowsStyleValueAliasesAreRecognizedByStateWalker()
+    {
+        var verbosityOption = new Option<string>("--verbosity", "/verbosity")
+        {
+            Description = "Set verbosity level"
+        };
+        Command command = new Command("mycommand")
+        {
+            verbosityOption,
+            new Command("quiet")
+        };
+        await provider.Verify(command, TestContext);
+    }
 }

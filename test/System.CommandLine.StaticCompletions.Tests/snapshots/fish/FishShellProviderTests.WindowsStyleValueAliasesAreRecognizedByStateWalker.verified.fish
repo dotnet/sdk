@@ -1,4 +1,4 @@
-﻿# fish completions for mycommand
+# fish completions for mycommand
 
 function _mycommand
     set -l tokens (commandline -opc)
@@ -10,9 +10,9 @@ function _mycommand
         switch $state
             case 0
                 switch $word
-                    case subcommand
+                    case quiet
                         set state 1
-                    case --verbosity /verbosity -verbosity -v
+                    case --verbosity /verbosity
                         set i (math $i + 1)
                 end
         end
@@ -35,11 +35,8 @@ function _mycommand
         switch $state
             case 0
                 switch $opt
-                    case --verbosity -verbosity -v
+                    case --verbosity
                         if test $values_after -lt 1
-                            printf '%s\n' 'detailed'
-                            printf '%s\n' 'normal'
-                            printf '%s\n' 'quiet'
                             return
                         end
                 end
@@ -48,12 +45,8 @@ function _mycommand
     
     switch $state
         case 0
-            printf '%s\n' 'subcommand'
-            printf '%s\n' '--verbose'
-            printf '%s\n' '-v'
+            printf '%s\n' 'quiet'
             printf '%s\t%s\n' '--verbosity' 'Set verbosity level'
-            printf '%s\t%s\n' '-verbosity' 'Set verbosity level'
-            printf '%s\t%s\n' '-v' 'Set verbosity level'
         case 1
     end
 end
