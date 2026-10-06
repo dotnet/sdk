@@ -49,6 +49,9 @@ or if additional installations will be removed. Either warning requires
 confirmation in interactive mode: **Y** or **Enter** proceeds; **N** or **Esc**
 cancels without removing specs or files. Non-interactive mode prints the warnings
 and proceeds without prompting.
+The preview ends by identifying each spec that will be removed from tracking,
+including its component and source. If a runtime is retained by other specs,
+proceeding removes the requested specs but leaves that runtime installed.
 
 ## Examples
 

@@ -17,7 +17,7 @@ internal static class UninstallPreview
 {
     internal static bool Display(
         GarbageCollectionPlan plan, List<Installation> targets,
-        InstallComponent requestedComponent, string versionOrChannel)
+        InstallComponent requestedComponent, string versionOrChannel, IReadOnlyList<InstallSpec> specsToRemove)
     {
         var hasWarnings = false;
         foreach (var target in targets.DistinctBy(i => (i.Component, i.Version)))
@@ -39,6 +39,7 @@ internal static class UninstallPreview
             }
         }
 
+        var hasRetainedTargets = hasWarnings;
         var deletedPaths = plan.PathsToDelete.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var unexpected = plan.InstallationsToRemove.Except(targets)
             .Where(i => plan.GetPrimaryPath(i) is { } path && deletedPaths.Contains(path))
@@ -54,7 +55,28 @@ internal static class UninstallPreview
                 $"[{DotnetupTheme.Current.Accent}]{installation.Component.GetDisplayName()} {installation.Version}[/] will be [bold]uninstalled[/] because it is no longer referenced by any install specs.");
         }
 
+        if (hasWarnings)
+        {
+            DisplayRemovalSummary(specsToRemove, hasRetainedTargets);
+        }
+
         return hasWarnings;
+    }
+
+    private static void DisplayRemovalSummary(IReadOnlyList<InstallSpec> specsToRemove, bool hasRetainedTargets)
+    {
+        AnsiConsole.WriteLine();
+        if (hasRetainedTargets)
+        {
+            AnsiConsole.WriteLine("The retained versions listed above will remain installed. To fully uninstall them, you must also remove the other install specs keeping them installed.");
+        }
+
+        foreach (var spec in specsToRemove.DistinctBy(s => (s.Component, s.VersionOrChannel, s.InstallSource, s.GlobalJsonPath)))
+        {
+            var source = spec.GlobalJsonPath ?? spec.InstallSource.ToString();
+            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
+                $"Install spec '[{DotnetupTheme.Current.Accent}]{spec.VersionOrChannel}[/]' ({spec.Component.GetDisplayName()}; source: {source}) will be removed from tracking.");
+        }
     }
 
     private static void AddUntrackedRemovals(

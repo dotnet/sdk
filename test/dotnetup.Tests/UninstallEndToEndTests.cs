@@ -33,6 +33,7 @@ public class UninstallEndToEndTests : IDisposable
 
         exitCode.Should().Be(0, output);
         AssertWarningCounts(output, retained: 0, unexpected: 0, prompts: 0);
+        output.Should().NotContain("will be removed from tracking");
         _fixture.ReadRoot().Installations.Should().BeEmpty();
         _fixture.ReadRoot().InstallSpecs.Should().BeEmpty();
         AssertFilesRemoved(component, version);
@@ -75,6 +76,10 @@ public class UninstallEndToEndTests : IDisposable
         exitCode.Should().Be(accept ? 0 : 1, output);
         AssertWarningCounts(output, retained: 0, unexpected: 1, prompts: 1);
         output.Should().Contain(".NET SDK 9.0.100 will be uninstalled");
+        output.Should().Contain("Install spec '11.0' (.NET SDK; source: Explicit) will be removed from tracking.");
+        output.Should().NotContain("retained versions");
+        output.IndexOf("will be removed from tracking", StringComparison.Ordinal)
+            .Should().BeLessThan(output.IndexOf("Proceed with uninstall?", StringComparison.Ordinal));
         if (accept)
         {
             _fixture.ReadRoot().Installations.Should().BeEmpty();
@@ -262,6 +267,11 @@ public class UninstallEndToEndTests : IDisposable
         AssertWarningCounts(output, retained: 1, unexpected: 0, prompts: 1);
         output.Should().Contain($"{component.GetDisplayName()} 11 (source: Explicit)");
         output.Should().Contain($"{component.GetDisplayName()} {otherSpec} (source: Explicit)");
+        Count(output, "The retained versions listed above will remain installed.").Should().Be(1);
+        var removalMessage = $"Install spec '{request}' ({component.GetDisplayName()}; source: Explicit) will be removed from tracking.";
+        Count(output, removalMessage).Should().Be(1);
+        output.IndexOf(removalMessage, StringComparison.Ordinal)
+            .Should().BeLessThan(output.IndexOf("Proceed with uninstall?", StringComparison.Ordinal));
         _fixture.ReadRoot().Installations.Should().ContainSingle();
         _fixture.ReadRoot().InstallSpecs.Select(s => s.VersionOrChannel).Should().BeEquivalentTo(["11", otherSpec]);
     }
@@ -418,6 +428,49 @@ public class UninstallEndToEndTests : IDisposable
         output.Should().Contain("modified outside of dotnetup");
         File.ReadAllText(_fixture.Environment.ManifestPath).Should().Be(before);
         Directory.Exists(Path.Combine(_fixture.Environment.InstallPath, "sdk", "11.0.100")).Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void SourceAll_ListsEachSpecBeforeConfirmationWithoutDeletingGlobalJson(bool accept)
+    {
+        _fixture.AddInstallation(InstallComponent.SDK, "11.0.100");
+        _fixture.AddSpecs(InstallComponent.SDK, "11.0", "11");
+        var directory = Path.Combine(_fixture.Environment.TempRoot, "[repository]");
+        Directory.CreateDirectory(directory);
+        var globalJson = Path.Combine(directory, "global.json");
+        const string GlobalJsonContents = """{"sdk":{"version":"11.0.100"}}""";
+        File.WriteAllText(globalJson, GlobalJsonContents);
+        _fixture.AlterManifest(root => root.InstallSpecs.Add(new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "11.0",
+            InstallSource = InstallSource.GlobalJson, GlobalJsonPath = globalJson
+        }));
+        var before = File.ReadAllText(_fixture.Environment.ManifestPath);
+
+        var output = Run(["sdk", "uninstall", "11.0"], out var exitCode,
+            accept ? "y\n" : "n\n", "--source", "all");
+
+        exitCode.Should().Be(accept ? 0 : 1, output);
+        AssertWarningCounts(output, retained: 1, unexpected: 0, prompts: 1);
+        Count(output, "will be removed from tracking.").Should().Be(2);
+        var explicitMessage = "Install spec '11.0' (.NET SDK; source: Explicit) will be removed from tracking.";
+        var globalJsonMessage = $"Install spec '11.0' (.NET SDK; source: {globalJson}) will be removed from tracking.";
+        output.Should().Contain(explicitMessage).And.Contain(globalJsonMessage);
+        output.IndexOf(explicitMessage, StringComparison.Ordinal)
+            .Should().BeLessThan(output.IndexOf("Proceed with uninstall?", StringComparison.Ordinal));
+        output.IndexOf(globalJsonMessage, StringComparison.Ordinal)
+            .Should().BeLessThan(output.IndexOf("Proceed with uninstall?", StringComparison.Ordinal));
+        File.ReadAllText(globalJson).Should().Be(GlobalJsonContents);
+        if (accept)
+        {
+            _fixture.ReadRoot().InstallSpecs.Should().ContainSingle().Which.VersionOrChannel.Should().Be("11");
+        }
+        else
+        {
+            File.ReadAllText(_fixture.Environment.ManifestPath).Should().Be(before);
+        }
     }
 
     private string Run(string[] command, out int exitCode, string input = "y\n", params string[] options)

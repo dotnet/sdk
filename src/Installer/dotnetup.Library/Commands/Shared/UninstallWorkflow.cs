@@ -140,7 +140,9 @@ internal class UninstallWorkflow
         }
 
         var plan = GarbageCollector.CreatePlan(installRoot, manifestData);
-        if (UninstallPreview.Display(plan, targetedInstallations, matchingSpecs[0].Component, matchingSpecs[0].VersionOrChannel) && interactive &&
+        var hasWarnings = UninstallPreview.Display(
+            plan, targetedInstallations, matchingSpecs[0].Component, matchingSpecs[0].VersionOrChannel, matchingSpecs);
+        if (hasWarnings && interactive &&
             (confirm?.Invoke() ?? SpectreDisplayHelpers.Confirm("Proceed with uninstall?")) != ConfirmResult.Yes)
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.OperationCancelled, "Uninstall cancelled. No install specs or files were removed.");

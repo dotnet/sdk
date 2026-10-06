@@ -35,6 +35,8 @@ public class UninstallPreviewTests
         output.Should().Contain("8.0.100 (source: Explicit)");
         output.Should().Contain("8.0.1xx");
         output.Should().Contain(globalJson);
+        output.Should().Contain("The retained versions listed above will remain installed.");
+        output.Should().Contain("Install spec '8' (.NET SDK; source: Explicit) will be removed from tracking.");
     }
 
     [TestMethod]
@@ -127,6 +129,34 @@ public class UninstallPreviewTests
         output.Should().BeEmpty();
     }
 
+    [TestMethod]
+    [ResourceLock(WellKnownResources.Console)]
+    public void Display_RemovalSummary_DistinguishesSourcesAndDeduplicatesSpecs()
+    {
+        var globalJson = Path.Combine(Path.GetTempPath(), "[repository]", "global.json");
+        var explicitSpec = new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "8", InstallSource = InstallSource.Explicit
+        };
+        var globalJsonSpec = new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "8",
+            InstallSource = InstallSource.GlobalJson, GlobalJsonPath = globalJson
+        };
+        var plan = CreatePlan([], [], ["sdk/9.0.100"]);
+
+        var output = Render(plan, [], InstallComponent.SDK, "8", out var warned,
+            [explicitSpec, globalJsonSpec, explicitSpec]);
+
+        warned.Should().BeTrue();
+        output.Split("will be removed from tracking.").Should().HaveCount(3);
+        output.Should().Contain("Install spec '8' (.NET SDK; source: Explicit) will be removed from tracking.");
+        output.Should().Contain($"Install spec '8' (.NET SDK; source: {globalJson}) will be removed from tracking.");
+        output.Should().NotContain("retained versions");
+        output.IndexOf("will be uninstalled", StringComparison.Ordinal)
+            .Should().BeLessThan(output.IndexOf("Install spec", StringComparison.Ordinal));
+    }
+
     private static GarbageCollectionPlan CreatePlan(
         Dictionary<Installation, List<InstallSpec>> references, List<Installation> removals, List<string> paths)
     {
@@ -135,7 +165,8 @@ public class UninstallPreviewTests
     }
 
     private static string Render(
-        GarbageCollectionPlan plan, List<Installation> targets, InstallComponent component, string channel, out bool warned)
+        GarbageCollectionPlan plan, List<Installation> targets, InstallComponent component, string channel, out bool warned,
+        List<InstallSpec>? specsToRemove = null)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         using var writer = new StringWriter();
@@ -150,7 +181,8 @@ public class UninstallPreviewTests
             });
             console.Profile.Width = 240;
             AnsiConsole.Console = console;
-            warned = UninstallPreview.Display(plan, targets, component, channel);
+            specsToRemove ??= [new InstallSpec { Component = component, VersionOrChannel = channel, InstallSource = InstallSource.Explicit }];
+            warned = UninstallPreview.Display(plan, targets, component, channel, specsToRemove);
             return writer.ToString();
         }
         finally
