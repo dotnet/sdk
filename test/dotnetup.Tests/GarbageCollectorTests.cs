@@ -13,6 +13,73 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class GarbageCollectorTests
 {
     [TestMethod]
+    public void CreatePlan_ResolvesOnlyLatestMatchesWithoutWritingOrDeleting()
+    {
+        using var environment = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(environment.ManifestPath);
+        var root = new DotnetInstallRoot(environment.InstallPath, InstallArchitecture.x64);
+        environment.StubComponentDirectories(root.Path, (InstallComponent.SDK, "8.0.100"), (InstallComponent.SDK, "8.0.101"));
+        foreach (var version in new[] { "8.0.100", "8.0.101" })
+        {
+            manifest.AddInstallation(root, new Installation
+            {
+                Component = InstallComponent.SDK, Version = version, Subcomponents = [$"sdk/{version}"]
+            });
+        }
+
+        manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "8", InstallSource = InstallSource.Explicit
+        });
+        var before = File.ReadAllText(environment.ManifestPath);
+
+        var plan = GarbageCollector.CreatePlan(root, manifest.ReadManifest());
+
+        plan.References.Should().ContainSingle();
+        plan.References.Keys.Single().Version.Should().Be("8.0.101");
+        plan.InstallationsToRemove.Should().ContainSingle().Which.Version.Should().Be("8.0.100");
+        plan.PathsToDelete.Should().BeEquivalentTo(["sdk/8.0.100"]);
+        File.ReadAllText(environment.ManifestPath).Should().Be(before);
+        Directory.Exists(Path.Combine(root.Path, "sdk", "8.0.100")).Should().BeTrue();
+
+        Directory.CreateDirectory(Path.Combine(root.Path, "sdk", "9.0.100"));
+        new GarbageCollector(manifest).Apply(plan).Should().BeEquivalentTo(plan.PathsToDelete);
+        Directory.Exists(Path.Combine(root.Path, "sdk", "9.0.100")).Should().BeTrue();
+        manifest.GetInstallations(root).Should().ContainSingle().Which.Version.Should().Be("8.0.101");
+    }
+
+    [TestMethod]
+    public void CreatePlan_RefreshesGlobalJsonWithoutPersistingAndApplyUsesSnapshot()
+    {
+        using var environment = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(environment.ManifestPath);
+        var root = new DotnetInstallRoot(environment.InstallPath, InstallArchitecture.x64);
+        var globalJson = Path.Combine(environment.TempRoot, "global.json");
+        File.WriteAllText(globalJson, """{"sdk":{"version":"8.0.100"}}""");
+        environment.StubComponentDirectories(root.Path, (InstallComponent.SDK, "8.0.100"));
+        manifest.AddInstallation(root, new Installation
+        {
+            Component = InstallComponent.SDK, Version = "8.0.100", Subcomponents = ["sdk/8.0.100"]
+        });
+        manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "9.0.100",
+            InstallSource = InstallSource.GlobalJson, GlobalJsonPath = globalJson
+        });
+        var before = File.ReadAllText(environment.ManifestPath);
+
+        var plan = GarbageCollector.CreatePlan(root, manifest.ReadManifest());
+
+        plan.References.Values.Single().Single().VersionOrChannel.Should().Be("8.0.1xx");
+        File.ReadAllText(environment.ManifestPath).Should().Be(before);
+        File.Delete(globalJson);
+        new GarbageCollector(manifest).Apply(plan).Should().BeEmpty();
+        manifest.GetInstallations(root).Should().ContainSingle();
+    }
+
+    [TestMethod]
     public void RemovesUnreferencedInstallationRecords()
     {
         using var testEnv = new TestEnvironment();

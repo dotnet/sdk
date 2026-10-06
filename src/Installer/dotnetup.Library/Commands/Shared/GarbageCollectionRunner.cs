@@ -22,11 +22,22 @@ internal static class GarbageCollectionRunner
     /// <returns>The list of deleted subcomponent paths.</returns>
     public static List<string> RunAndDisplay(string? manifestPath, DotnetInstallRoot installRoot, bool showEmptyMessage = false)
     {
+        var gc = new GarbageCollector(new DotnetupSharedManifest(manifestPath));
+        return DisplayResults(() => gc.Collect(installRoot), showEmptyMessage);
+    }
+
+    internal static List<string> ApplyAndDisplay(
+        GarbageCollector collector, GarbageCollectionPlan plan)
+    {
+        return DisplayResults(() => collector.Apply(plan), showEmptyMessage: true);
+    }
+
+    private static List<string> DisplayResults(Func<List<string>> collect, bool showEmptyMessage)
+    {
         Debug.Assert(ScopedMutex.CurrentThreadHoldsMutex, "GarbageCollectionRunner.RunAndDisplay must be called while holding the mutex.");
         AnsiConsole.WriteLine("Removing unused installations...");
 
-        var gc = new GarbageCollector(new DotnetupSharedManifest(manifestPath));
-        var deleted = gc.Collect(installRoot);
+        var deleted = collect();
 
         if (deleted.Count > 0)
         {
