@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
@@ -236,8 +237,7 @@ internal static class DotnetupTestUtilities
         string fallbackConfiguration = "Debug";
 #endif
 
-        string repoRoot = GetRepositoryRoot();
-        string artifactsDir = Environment.GetEnvironmentVariable("ArtifactsDir") ?? Path.Combine(repoRoot, "artifacts");
+        string artifactsDir = GetArtifactsDirectory();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
 
         // Since .NET 8, RuntimeInformation.RuntimeIdentifier returns the portable RID
@@ -317,6 +317,19 @@ internal static class DotnetupTestUtilities
             $"dotnetup executable not found under '{primaryDir}'. " +
             $"Run 'dotnet publish src/Installer/dotnetup/dotnetup.csproj -c {configuration} --self-contained' to produce the AOT binary, " +
             $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
+    }
+
+    private static string GetArtifactsDirectory()
+    {
+        string? artifactsDir = Environment.GetEnvironmentVariable("ArtifactsDir") ??
+            typeof(DotnetupTestUtilities).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .SingleOrDefault(attribute => attribute.Key == "ArtifactsDir")?.Value;
+        if (string.IsNullOrWhiteSpace(artifactsDir))
+        {
+            throw new InvalidOperationException("The dotnetup.Tests assembly must record a non-empty ArtifactsDir build property.");
+        }
+
+        return Path.GetFullPath(artifactsDir);
     }
 
     /// <summary>
