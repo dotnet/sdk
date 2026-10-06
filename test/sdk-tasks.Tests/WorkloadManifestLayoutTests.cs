@@ -61,26 +61,29 @@ public class WorkloadManifestLayoutTests : SdkTest
     public void TreatsCaseVariantDirectoriesAsDistinctOnCaseSensitiveFileSystems()
     {
         string root = TestAssetsManager.CreateTestDirectory().Path;
-        const string lowerBand = "11.0.100-alpha";
-        const string upperBand = "11.0.100-ALPHA";
-        string existing = CreateFile(root, Path.Combine(lowerBand, "test.manifest", "1.0.0", "WorkloadManifest.json"));
-        Directory.CreateDirectory(Path.Combine(root, upperBand, "test.manifest", "1.0.0"));
-
-        string[] bands = Directory.EnumerateDirectories(root).Select(Path.GetFileName).ToArray()!;
-        if (!bands.Contains(lowerBand, StringComparer.Ordinal) || !bands.Contains(upperBand, StringComparer.Ordinal))
-        {
-            Assert.Inconclusive("The file system does not support distinct case-variant directories.");
-        }
+        string layout = Path.Combine(root, "layout");
+        const string lowerManifest = "test.manifest";
+        const string upperManifest = "TEST.MANIFEST";
+        string band = Path.Combine(layout, "11.0.100");
+        string existing = CreateFile(band, Path.Combine(lowerManifest, "1.0.0", "WorkloadManifest.json"));
+        Directory.CreateDirectory(Path.Combine(band, upperManifest, "1.0.0"));
 
         string source = CreateFile(root, "input");
         var task = new GetWorkloadManifestLayout
         {
-            LayoutRoot = root,
-            SourceFiles = [Input(source, Path.Combine(root, upperBand, "test.manifest", "1.0.0", "WorkloadManifest.json"))],
+            LayoutRoot = layout,
+            SourceFiles = [Input(source, Path.Combine(band, upperManifest, "1.0.0", "WorkloadManifest.json"))],
             BuildEngine = new MockBuildEngine()
         };
 
         task.Execute().Should().BeTrue();
+
+        string[] manifests = Directory.EnumerateDirectories(band).Select(Path.GetFileName).ToArray()!;
+        if (!manifests.Contains(lowerManifest, StringComparer.Ordinal) || !manifests.Contains(upperManifest, StringComparer.Ordinal))
+        {
+            Assert.Inconclusive("The file system does not support distinct case-variant directories.");
+        }
+
         task.StaleOutputs.Select(item => item.ItemSpec).Should().Contain(Path.GetFullPath(existing));
     }
 
