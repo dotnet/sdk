@@ -96,7 +96,7 @@ internal class ReleaseManifest
     // is required: ConcurrentDictionary.GetOrAdd does NOT guarantee single-invocation of the
     // value factory under concurrent access. Without Lazy<T>, two PrepareInstall threads asking
     // for the same channel could each download + verify the same JSON.
-    private readonly ConcurrentDictionary<string, Lazy<ReadOnlyCollection<ProductRelease>>> _releaseCache = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, Lazy<ReadOnlyCollection<ProductRelease>?>> _releaseCache = new(StringComparer.Ordinal);
 
     // Lazy<T>'s default mode is ExecutionAndPublication, so the orchestrator's parallel
     // PrepareConcurrent calls cannot double-instantiate the loader.
@@ -220,7 +220,13 @@ internal class ReleaseManifest
     public virtual ReadOnlyCollection<ProductRelease> GetReleases(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
-        return GetCachedReleases(product.ProductVersion, () => _loader.Value.GetVerifiedReleases(product));
+        ReadOnlyCollection<ProductRelease>? releases;
+        do
+        {
+            releases = GetCachedReleases(product.ProductVersion, () => _loader.Value.GetVerifiedReleases(product));
+        }
+        while (releases is null);
+        return releases;
     }
 
     /// <summary>
@@ -231,34 +237,42 @@ internal class ReleaseManifest
     public virtual ReadOnlyCollection<ProductRelease>? GetReleases(int major, int minor)
     {
         string productVersion = $"{major}.{minor}";
-        try
+        return GetCachedReleases(productVersion, () =>
         {
-            return GetCachedReleases(productVersion, () => _loader.Value.GetVerifiedReleases(major, minor));
-        }
-        catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
-        {
-            Product? product = FindProduct(GetReleasesIndex(), productVersion);
-            return product is null ? null : GetReleases(product);
-        }
+            try
+            {
+                return _loader.Value.GetVerifiedReleases(major, minor);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                Product? product = FindProduct(GetReleasesIndex(), productVersion);
+                return product is null ? null : _loader.Value.GetVerifiedReleases(product);
+            }
+        });
     }
 
-    private ReadOnlyCollection<ProductRelease> GetCachedReleases(
+    private ReadOnlyCollection<ProductRelease>? GetCachedReleases(
         string productVersion,
-        Func<ReadOnlyCollection<ProductRelease>> valueFactory)
+        Func<ReadOnlyCollection<ProductRelease>?> valueFactory)
     {
         var lazy = _releaseCache.GetOrAdd(productVersion, _ =>
-            new Lazy<ReadOnlyCollection<ProductRelease>>(
+            new Lazy<ReadOnlyCollection<ProductRelease>?>(
                 valueFactory,
                 LazyThreadSafetyMode.ExecutionAndPublication));
         try
         {
-            return lazy.Value;
+            ReadOnlyCollection<ProductRelease>? releases = lazy.Value;
+            if (releases is null)
+            {
+                _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>?>>(productVersion, lazy));
+            }
+            return releases;
         }
         catch
         {
             // Atomic compare-and-remove: only remove the failed Lazy, not a replacement another
             // thread may have installed after observing the same failure.
-            _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>>>(productVersion, lazy));
+            _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>?>>(productVersion, lazy));
             throw;
         }
     }
