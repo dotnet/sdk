@@ -598,6 +598,16 @@ test("helper CI verifies native gateway compatibility when the generated workflo
     assert.doesNotMatch(workflow, /COPILOT_PAT|issues: write/);
 });
 
+test("helper CI triggers on Issue Monster changes and runs its regression suite", async () =>
+{
+    const workflow = await readFile(path.join(workflowDirectory, "stale-reference-check-tests.yml"), "utf8");
+    const triggers = workflow.match(/  pull_request:\r?\n    paths:\r?\n([\s\S]*?)  workflow_dispatch:/)?.[1];
+    assert.ok(triggers, "Expected a pull-request path filter.");
+    assert.ok(triggers.includes("'.github/scripts/issue-monster-search.js'"));
+    assert.ok(triggers.includes("'.github/scripts/issue-monster-search.test.js'"));
+    assert.match(workflow, /run: node --test \.github\/stale-reference-check\/test\/\*\.test\.mjs \.github\/scripts\/issue-monster-search\.test\.js/);
+});
+
 test("all entry points retain telemetry and immutable action pins", async () =>
 {
     for (const file of ["stale-reference-check.yml", "stale-reference-interpret.md", "stale-reference-check-tests.yml"])

@@ -347,6 +347,9 @@ node --test .github\stale-reference-check\test\*.test.mjs
 The [helper test workflow](../workflows/stale-reference-check-tests.yml) runs
 these tests on relevant pull requests without invoking the interpreter or
 granting issue-write permissions.
+It also triggers on changes to the [Issue Monster search script](../scripts/issue-monster-search.js)
+and runs its [regression tests](../scripts/issue-monster-search.test.js) with the
+workflow-helper suite.
 It also runs an independent Docker-backed
 [`gateway-smoke.mjs`](test/gateway-smoke.mjs) protocol check against the pinned
 image. With Docker running (Linux containers), run it locally using:
