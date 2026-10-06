@@ -29,6 +29,9 @@ internal class GarbageCollector
         return Apply(CreatePlan(installRoot, _manifest.ReadManifest()));
     }
 
+    /// <summary>
+    /// Plans installation-record and directory removals, updating only the in-memory manifest.
+    /// </summary>
     internal static GarbageCollectionPlan CreatePlan(DotnetInstallRoot installRoot, DotnetupManifestData manifest)
     {
         var root = manifest.DotnetRoots.FirstOrDefault(r =>
@@ -43,7 +46,7 @@ internal class GarbageCollector
         // Step 1: Refresh global.json install specs
         RefreshGlobalJsonSpecs(root);
 
-        // Step 2: For each install spec, resolve the latest matching installation and mark it to keep
+        // Step 2: Group install specs by their latest matching installation
         var installSpecsByInstallation = new Dictionary<Installation, List<InstallSpec>>();
         foreach (var spec in root.InstallSpecs)
         {
@@ -60,7 +63,7 @@ internal class GarbageCollector
             }
         }
 
-        // Step 3: Find unmarked installation records
+        // Step 3: Keep selected component/version pairs and plan removal of other records
         var installationsToKeep = installSpecsByInstallation.Keys.Select(i => (i.Component, i.Version)).ToHashSet();
         var installationsToRemove = root.Installations
             .Where(i => !installationsToKeep.Contains((i.Component, i.Version)))
@@ -80,6 +83,10 @@ internal class GarbageCollector
             FindOrphanedSubcomponents(installRoot.Path, referencedSubcomponents));
     }
 
+    /// <summary>
+    /// Removes planned installation records, persists the manifest, and deletes planned directories.
+    /// Does not resolve install specs or rescan the disk.
+    /// </summary>
     internal List<string> Apply(GarbageCollectionPlan plan)
     {
         if (plan.Root is null)
@@ -155,7 +162,7 @@ internal class GarbageCollector
     }
 
     /// <summary>
-    /// Walks the dotnet root and deletes subcomponent folders not in the referenced set.
+    /// Walks the dotnet root and lists subcomponent folders not in the referenced set, without deleting them.
     /// </summary>
     private static List<string> FindOrphanedSubcomponents(string dotnetRootPath, HashSet<string> referencedSubcomponents)
     {
