@@ -506,7 +506,7 @@ public class UninstallEndToEndTests : IDisposable
             },
             standardInput: input, timeoutMilliseconds: 60_000);
         exitCode = result.exitCode;
-        return Regex.Replace(result.output, @"\s+", " ");
+        return ConsoleOutputNormalizer.Normalize(result.output);
     }
 
     private static void AssertWarningCounts(string output, int retained, int unexpected, int prompts)

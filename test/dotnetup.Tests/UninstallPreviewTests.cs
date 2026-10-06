@@ -5,6 +5,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -198,7 +199,7 @@ public class UninstallPreviewTests
             AnsiConsole.Console = console;
             specsToRemove ??= [new InstallSpec { Component = component, VersionOrChannel = channel, InstallSource = InstallSource.Explicit }];
             warned = UninstallPreview.Display(plan, targets, component, channel, specsToRemove);
-            return writer.ToString();
+            return ConsoleOutputNormalizer.StripAnsi(writer.ToString());
         }
         finally
         {
