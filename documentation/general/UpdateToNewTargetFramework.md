@@ -119,18 +119,69 @@ Verify that:
 Run the focused framework-reference, default-runtime-version, and self-contained
 runtime-pack tests that consume the built bundled versions props.
 
-### 3. Flow product dependencies and update the bootstrap SDK
+### 3. Retarget sources independently of the bootstrap SDK
+
+Arcade can build sources targeting `netN.0` with a stage-0 SDK that supports only
+`net(N-1).0`. Its `TargetingPacks.BeforeCommonTargets.targets` copies known pack metadata
+from a supported baseline and changes the `TargetFramework` metadata. Configure this
+after the Arcade props import in [`Directory.Build.props`](../../Directory.Build.props):
+
+- Set `NetCurrent` to `netN.0` and keep `SdkTargetFramework` derived from it.
+- Explicitly set `TargetingPackBaselineTargetFramework` to the supported `net(N-1).0`;
+  do not assume Arcade's default baseline is the previous major version.
+- Set `TargetingPackCurrentTargetFramework` to `$(SdkTargetFramework)`. These explicit
+  properties also allow targeting independently of Arcade's `NetCurrent` default.
+- Raise the repository build's `NETCoreAppMaximumVersion` for the new source TFM.
+
+Keep both `sdk.version` and `tools.dotnet` in `global.json` unchanged for this step.
+This changes the source TFM, not the reference-pack API surface or the runtime used to
+execute the resulting tools. Inspect the copied versions and generated runtimeconfig
+files, then build with the exact pinned stage-0 SDK.
+
+Check the pinned Arcade implementation's coverage. It creates Core framework, apphost,
+Crossgen2, ILCompiler, ILLink, Mono, and NativeAOT entries, but not ASP.NET Core entries.
+SDK sources that reference ASP.NET Core need a conditional baseline copy while stage 0
+lacks the new entry; see [`Directory.Build.targets`](../../Directory.Build.targets).
+An older bootstrap can also lack pruning data for the new TFM. Scope
+`LoadPrunePackageDataFromNearestFramework` to the new source framework (including
+platform-qualified variants) and the older bootstrap, and remove it after the bootstrap
+update. Use the baseline data instead of allowing missing data and leaving normally
+pruned packages in the dependency graph.
+
+Preserve the live reference-pack overrides for the baseline framework, not just packages
+whose major version matches the new source TFM. Otherwise compilation uses the older
+bootstrap reference pack while the layout ships newer runtime packages. This can leave
+framework assemblies copied beside SDK tools. For example, an SDK-local dependency
+injection abstractions assembly can load into MSBuild's logger context while options
+loads from the shared runtime, causing incompatible `IServiceCollection` type identities.
+Check package conflict resolution and the final layout as well as restore.
+
+Update task/tool lookup paths and TFM-specific API baselines with the source outputs.
+Keep paths into externally produced packages, such as F# and WindowsDesktop, on their
+actual packaged TFM until those producers retarget. Distinguish the compiled SDK TFM
+from generated test-app defaults in
+[`ToolsetInfo.cs`](../../test/Microsoft.NET.TestFramework/ToolsetInfo.cs).
+
+Also preserve compatibility for SDK packages consumed by other repositories during
+stage-2 source-build. For example,
+[`WorkloadManifestReader`](../../src/Resolvers/Microsoft.NET.Sdk.WorkloadManifestReader/Microsoft.NET.Sdk.WorkloadManifestReader.csproj)
+temporarily includes a previous-TFM target in source-only builds so Arcade's workload
+tasks can consume the newly source-built package before Arcade retargets. Validate both
+the online build and the offline rebuild using its outputs; the online build alone can
+hide this mismatch by consuming older, previously-source-built packages.
+
+### 4. Flow product dependencies and update the bootstrap SDK
 
 - Flow netN runtime, WindowsDesktop, and ASP.NET Core dependencies.
-- Update `global.json` to a bootstrap SDK build that supports targeting netN.
+- Update `global.json` separately to a bootstrap SDK build that supports targeting netN.
 - Update restore-toolset inputs for the `N-1` runtime where required.
 
 Do not hand-edit generated dependency-flow properties. Follow the repository's
 dependency-flow process so versions, manifests, and feeds remain consistent.
 
-### 4. Retarget the SDK, tests, and templates
+### 5. Advance product defaults, tests, and templates
 
-- Retarget the SDK to `netN.0`.
+- Confirm SDK sources and all task/tool lookup paths target `netN.0`.
 - Update the shared test framework constants in
   [`ToolsetInfo.cs`](../../test/Microsoft.NET.TestFramework/ToolsetInfo.cs).
 - Retarget default templates to `netN.0`.
@@ -142,8 +193,22 @@ temporary transition changes with `NetTFMUpdate` so they can be found and remove
 
 Templates from other repositories, such as WindowsDesktop templates, may need to remain
 pinned to `N-1` until their netN packages are available.
+If the bundled SDK still supports only `N-1`, also keep the bundled web/MCP templates
+and test-app ASP.NET package references on `N-1`: netN templates generate projects
+that the bundled SDK cannot build, and netN ASP.NET packages may no longer support
+net(N-1) test apps. Keep the temporary versions in `eng/ManualVersions.props` rather
+than changing Maestro-generated dependency versions, and advance them together once
+the SDK supports targeting netN. The Windows SDK bundle must also select the template
+MSI for `TemplateFrameworkVersion`, which can differ from the SDK's product version
+during this transition. Keep the shared MSI filename aligned for the SDK bundle and
+Visual Studio redist package ([`GenerateMSIs.targets`](../../src/Layout/redist/targets/GenerateMSIs.targets),
+[`VS.Redist.Common.NetCore.Templates.proj`](../../src/Layout/VS.Redist.Common.NetCore.Templates/VS.Redist.Common.NetCore.Templates.proj)).
 
-### 5. Unwind temporary transition changes
+Default-template tests should compare against `ToolsetInfo.CurrentTargetFramework`,
+not the newest installed runtime, which can already be netN during this transition
+(see [`ProjectBuildTests`](../../test/EndToEnd.Tests/ProjectBuildTests.cs)).
+
+### 6. Unwind temporary transition changes
 
 - Re-enable or unpin tests and templates disabled during branding and runtime flow.
 - Search for and remove all temporary `NetTFMUpdate` changes.

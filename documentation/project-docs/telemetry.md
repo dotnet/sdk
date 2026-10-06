@@ -5,6 +5,7 @@
 - [.NET SDK Telemetry Documentation](#net-sdk-telemetry-documentation)
   - [Table of Contents](#table-of-contents)
   - [How to Control Telemetry](#how-to-control-telemetry)
+  - [CLI Activity Duration Metrics](#cli-activity-duration-metrics)
   - [Common Properties Collected](#common-properties-collected)
   - [Telemetry Events](#telemetry-events)
     - [Core CLI Events](#core-cli-events)
@@ -106,6 +107,31 @@ log are unaffected. Set `DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT` to disable i
 
 - **Event Namespace**: All telemetry events are automatically prefixed with `dotnet/cli/`
 
+## CLI Activity Duration Metrics
+
+Performance collectors such as PerfStar can opt into CLI phase timings by enabling
+the `dotnet-cli-perf` meter. Built-in SDK telemetry and its OTLP exporter do not
+enable this collection.
+
+| Meter | Instrument | Unit | Tag |
+| --- | --- | --- | --- |
+| `dotnet-cli-perf` | `dotnet.cli.activity.duration` | `s` (seconds) | `activity.name` |
+
+Each completed activity from either source (`dotnet-cli` or `dotnet-cli-perf`)
+records its duration, tagged by operation name. To collect activity spans, subscribe to the relevant activity source. Skipped phases emit no activity; failed invocations still record their duration.
+
+The `dotnet-cli-perf` source contains these activities:
+
+| Activity | Measured work |
+| --- | --- |
+| `msbuild-submission` | Synchronous MSBuild invocation, including child/server wait time. For file-based projects, covers `BeginBuild` through `EndBuild`. |
+| `release-property-discovery` | Project/solution discovery and `PackRelease` / `PublishRelease` evaluation to choose the default configuration. |
+| `project-selection` | Run/test project loading, evaluation when needed, and project-instance creation, including cached snapshots. |
+| `device-discovery` | Optional restore, `ComputeAvailableDevices` execution, and reading its results. |
+| `test-project-discovery` | Microsoft.Testing.Platform (MTP) outer- and inner-framework project evaluation for automatic device selection. |
+| `test-target-framework-discovery` | MTP framework evaluation when `--device` is given without a target framework. |
+| `test-environment-discovery` | MTP environment-variable support checks and properties-file preparation before a project build. |
+
 ## Common Properties Collected
 
 Every telemetry event automatically includes these common properties:
@@ -132,6 +158,49 @@ Every telemetry event automatically includes these common properties:
 | **Libc Release** | Libc release information | Libc release version |
 | **Libc Version** | Libc version information | Libc version number |
 | **SessionId** | Unique session identifier | GUID or CI-specific correlation identifier |
+
+### Microsoft-internal user classification
+
+When telemetry is enabled, the CLI asynchronously determines whether the current user is
+internal to Microsoft and enriches trace activities with these tags:
+
+| Tag | Description |
+| --- | --- |
+| `dotnet.cli.is_microsoft_internal` | `true` when a probe finds Microsoft-internal evidence. It is `false` when detection completes without that evidence. |
+| `dotnet.cli.microsoft_internal_source` | The probe that found the evidence. Emitted only for a positive result. |
+| `dotnet.cli.microsoft_internal_alias` | A normalized local account alias when local identity evidence supplies one. Emitted only for a positive result outside CI. |
+| `dotnet.cli.microsoft_internal_domain` | A normalized corporate domain when local identity evidence supplies one. Emitted only for a positive result outside CI. |
+
+The detector first uses local OS and account evidence. Outside CI, it can also use
+existing GitHub CLI, Copilot CLI, or GitHub-token environment credentials to ask GitHub
+whether the authenticated account is a member of the `microsoft` organization. Tokens
+are sent only to GitHub's API for that check; they are not cached or added to telemetry.
+GitHub logins are not used as telemetry aliases. GitHub identity probes are skipped in
+CI, and alias and domain tags are suppressed in CI.
+
+The implementation of this classification is isolated in the AOT-compatible
+[`Microsoft.DotNet.Cli.InternalMicrosoft`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft)
+library. It does not reference OpenTelemetry or emit telemetry. Each detection mechanism
+implements
+[`IInternalMicrosoftDetectionProvider`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/Internal/InternalMicrosoftDetectionProvider.cs).
+The detector filters providers by platform and CI support, groups them into ordered
+stages, and owns orchestration, deadlines, result selection, and caching.
+
+The CLI telemetry adapter maps the classification result to tags on normal CLI
+activities. It does not emit separate detector-health activities.
+
+Results are cached for six hours under
+`~/.dotnet/internal-microsoft/detector.json` (relative to the configured .NET user
+profile). The cache contains the classification, source, CI mode, and timestamp. Outside
+CI, it can also contain an optional local alias and domain. The cache never contains
+credentials. Failed or timed-out detection is not cached. Probe execution, diagnostics,
+and shutdown waiting are bounded. Detection begins after telemetry-provider construction,
+is not synchronously awaited during startup, and cannot indefinitely delay command
+completion. See
+[`InternalMicrosoftDetector`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetector.cs)
+and
+[`InternalMicrosoftTelemetry`](../../src/Cli/dotnet/Telemetry/InternalMicrosoft/InternalMicrosoftTelemetry.cs)
+for the separate detection and telemetry integration layers.
 
 ## Telemetry Events
 

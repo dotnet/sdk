@@ -245,7 +245,7 @@
           Outputs="$(SdkBundleFile)">
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
-      <LatestTemplateInstallerComponent Include="@(TemplatesMsi)" Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/>
+      <LatestTemplateInstallerComponent Include="@(TemplatesMsi)" Condition="'%(TemplatesMajorMinorVersion)' == '$(TemplateFrameworkVersion)'"/>
     </ItemGroup>
 
     <PropertyGroup>

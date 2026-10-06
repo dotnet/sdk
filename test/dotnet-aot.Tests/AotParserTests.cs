@@ -388,6 +388,28 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void ParseTestModules_RejectsRootDirectoryWithoutTestModules()
+    {
+        ParseResult parseResult = ParseAotTestCommand([
+            "--root-directory", Path.GetTempPath(),
+        ]);
+
+        Assert.HasCount(1, parseResult.Errors);
+        parseResult.Errors[0].Message.Should().Contain("--test-modules");
+    }
+
+    [TestMethod]
+    public void ParseTestModules_RejectsNonPositiveParallelism()
+    {
+        ParseResult parseResult = ParseAotTestCommand([
+            "--test-modules", "**/*.dll",
+            "--max-parallel-test-modules", "0",
+        ]);
+
+        Assert.HasCount(1, parseResult.Errors);
+    }
+
+    [TestMethod]
     [DataRow("test --project sample.csproj")]
     [DataRow("test --test-modules **/*.dll --framework net10.0")]
     [DataRow("test --test-modules **/*.dll --unknown-option")]

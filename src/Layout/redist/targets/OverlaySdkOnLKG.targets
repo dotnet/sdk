@@ -54,9 +54,17 @@
       <_BuiltAspNetCoreSharedFxFile Include="$(TestHostDotNetRoot)shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)/**/*" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_Stage0MonoToolchainManifestTargets Include="$(_DotNetHiveRoot)sdk-manifests/**/microsoft.net.workload.mono.toolchain.current/*/WorkloadManifest.targets" />
+      <_BuiltMonoToolchainManifestTargets Include="$(RedistInstallerLayoutPath)sdk-manifests/**/microsoft.net.workload.mono.toolchain.current/*/WorkloadManifest.targets" />
+      <_Stage2MonoToolchainManifestTargets Include="@(_BuiltMonoToolchainManifestTargets->'$(TestHostDotNetRoot)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
     <OverrideAndCreateBundledNETCoreAppPackageVersion
       Stage0BundledVersionsPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
-      Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
+      Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"
+      Stage0MonoToolchainManifestTargetsPaths="@(_Stage0MonoToolchainManifestTargets)"
+      Stage2MonoToolchainManifestTargetsPaths="@(_Stage2MonoToolchainManifestTargets)"/>
   
     <!-- Pass the credential provider plugin path to the subprocess so it can authenticate
          with internal NuGet feeds. DOTNET_CLI_HOME redirection causes NuGet to look for

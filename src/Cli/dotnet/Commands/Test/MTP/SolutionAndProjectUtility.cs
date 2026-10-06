@@ -8,6 +8,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -139,30 +140,32 @@ internal static class SolutionAndProjectUtility
         }
 
         var actualSolutionFiles = GetSolutionFilePaths(directory);
+        var solutionFilterFiles = GetSolutionFilterFilePaths(directory);
+        var solutionFiles = actualSolutionFiles.Concat(solutionFilterFiles).ToArray();
 
-        if (actualSolutionFiles.Length == 0)
+        if (solutionFiles.Length == 0)
         {
             return (false, string.Format(CliStrings.SolutionDoesNotExist, directory + Path.DirectorySeparatorChar));
         }
 
-        if (actualSolutionFiles.Length > 1)
+        if (solutionFiles.Length > 1)
         {
             return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory + Path.DirectorySeparatorChar));
         }
 
-        solutionFilePath = actualSolutionFiles[0];
+        solutionFilePath = solutionFiles[0];
         return (true, string.Empty);
     }
 
-    private static string[] GetSolutionFilePaths(string directory) => [
-            .. Directory.GetFiles(directory, CliConstants.SolutionExtensionPattern, SearchOption.TopDirectoryOnly),
-            .. Directory.GetFiles(directory, CliConstants.SolutionXExtensionPattern, SearchOption.TopDirectoryOnly)
-        ];
+    private static string[] GetSolutionFilePaths(string directory)
+        => GetFilesWithExtensions(directory, ".sln", ".slnx");
 
     private static string[] GetSolutionFilterFilePaths(string directory)
-    {
-        return Directory.GetFiles(directory, CliConstants.SolutionFilterExtensionPattern, SearchOption.TopDirectoryOnly);
-    }
+        => GetFilesWithExtensions(directory, ".slnf");
+
+    private static string[] GetFilesWithExtensions(string directory, params string[] extensions)
+        => [.. Directory.EnumerateFiles(directory, "*", SearchOption.TopDirectoryOnly)
+            .Where(path => extensions.Contains(Path.GetExtension(path), StringComparer.OrdinalIgnoreCase))];
 
     private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 
@@ -325,7 +328,7 @@ internal static class SolutionAndProjectUtility
             // (a "diamond") is only tested once, while the same project referenced with a *different*
             // configuration/platform is still tested for each distinct combination. This also guards against
             // cycles (a traversal project that transitively references itself).
-            visitedTraversalProjects ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            visitedTraversalProjects ??= CreateTraversalProjectVisitSet();
             visitedTraversalProjects.Add(GetTraversalVisitKey(Path.GetFullPath(projectFilePath), configuration, platform));
 
             foreach (var reference in GetTraversalReferencedProjects(projectInstance, configuration, platform))
@@ -429,6 +432,9 @@ internal static class SolutionAndProjectUtility
     private static string GetTraversalVisitKey(string fullPath, string? configuration, string? platform)
         => $"{fullPath}|{configuration}|{platform}";
 
+    internal static HashSet<string> CreateTraversalProjectVisitSet()
+        => new(FileUtilities.PathComparer);
+
     /// <summary>
     /// Returns the projects a traversal project references. The globs and conditions in the traversal
     /// project are already expanded by MSBuild during evaluation, so the resolved <c>ProjectReference</c>
@@ -496,6 +502,8 @@ internal static class SolutionAndProjectUtility
         {
             return null;
         }
+
+        using var activity = Activities.PerformanceSource.StartActivity("test-project-discovery");
 
         var collection = buildSession.ProjectCollection;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
