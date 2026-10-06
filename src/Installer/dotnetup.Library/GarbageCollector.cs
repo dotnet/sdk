@@ -44,16 +44,16 @@ internal class GarbageCollector
         RefreshGlobalJsonSpecs(root);
 
         // Step 2: For each install spec, resolve the latest matching installation and mark it to keep
-        var references = new Dictionary<Installation, List<InstallSpec>>();
+        var installSpecsByInstallation = new Dictionary<Installation, List<InstallSpec>>();
         foreach (var spec in root.InstallSpecs)
         {
             var matchingInstallation = ResolveLatestMatchingInstallation(spec, root.Installations);
             if (matchingInstallation is not null)
             {
-                if (!references.TryGetValue(matchingInstallation, out var specs))
+                if (!installSpecsByInstallation.TryGetValue(matchingInstallation, out var specs))
                 {
                     specs = [];
-                    references.Add(matchingInstallation, specs);
+                    installSpecsByInstallation.Add(matchingInstallation, specs);
                 }
 
                 specs.Add(spec);
@@ -61,7 +61,7 @@ internal class GarbageCollector
         }
 
         // Step 3: Find unmarked installation records
-        var installationsToKeep = references.Keys.Select(i => (i.Component, i.Version)).ToHashSet();
+        var installationsToKeep = installSpecsByInstallation.Keys.Select(i => (i.Component, i.Version)).ToHashSet();
         var installationsToRemove = root.Installations
             .Where(i => !installationsToKeep.Contains((i.Component, i.Version)))
             .ToList();
@@ -76,7 +76,7 @@ internal class GarbageCollector
             }
         }
 
-        return new GarbageCollectionPlan(manifest, root, references, installationsToRemove,
+        return new GarbageCollectionPlan(manifest, root, installSpecsByInstallation, installationsToRemove,
             FindOrphanedSubcomponents(installRoot.Path, referencedSubcomponents));
     }
 

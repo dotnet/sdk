@@ -36,8 +36,8 @@ public class GarbageCollectorTests
 
         var plan = GarbageCollector.CreatePlan(root, manifest.ReadManifest());
 
-        plan.References.Should().ContainSingle();
-        plan.References.Keys.Single().Version.Should().Be("8.0.101");
+        plan.InstallSpecsByInstallation.Should().ContainSingle();
+        plan.InstallSpecsByInstallation.Keys.Single().Version.Should().Be("8.0.101");
         plan.InstallationsToRemove.Should().ContainSingle().Which.Version.Should().Be("8.0.100");
         plan.PathsToDelete.Should().BeEquivalentTo(["sdk/8.0.100"]);
         File.ReadAllText(environment.ManifestPath).Should().Be(before);
@@ -72,7 +72,7 @@ public class GarbageCollectorTests
 
         var plan = GarbageCollector.CreatePlan(root, manifest.ReadManifest());
 
-        plan.References.Values.Single().Single().VersionOrChannel.Should().Be("8.0.1xx");
+        plan.InstallSpecsByInstallation.Values.Single().Single().VersionOrChannel.Should().Be("8.0.1xx");
         File.ReadAllText(environment.ManifestPath).Should().Be(before);
         File.Delete(globalJson);
         new GarbageCollector(manifest).Apply(plan).Should().BeEmpty();

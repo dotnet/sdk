@@ -10,20 +10,20 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 internal sealed class GarbageCollectionPlan(
     DotnetupManifestData manifest,
     DotnetRootEntry? root,
-    Dictionary<Installation, List<InstallSpec>> references,
+    Dictionary<Installation, List<InstallSpec>> installSpecsByInstallation,
     List<Installation> installationsToRemove,
     List<string> pathsToDelete)
 {
     internal DotnetupManifestData Manifest { get; } = manifest;
     internal DotnetRootEntry? Root { get; } = root;
-    internal IReadOnlyDictionary<Installation, List<InstallSpec>> References { get; } = references;
+    internal IReadOnlyDictionary<Installation, List<InstallSpec>> InstallSpecsByInstallation { get; } = installSpecsByInstallation;
     internal IReadOnlyList<Installation> InstallationsToRemove { get; } = installationsToRemove;
     internal IReadOnlyList<string> PathsToDelete { get; } = pathsToDelete;
 
     internal List<InstallSpec> GetReferencingSpecs(Installation installation)
     {
         var primaryPath = GetPrimaryPath(installation);
-        return References.Where(pair => pair.Key == installation ||
+        return InstallSpecsByInstallation.Where(pair => pair.Key == installation ||
                 (primaryPath is not null && pair.Key.Subcomponents.Contains(primaryPath, StringComparer.OrdinalIgnoreCase)))
             .SelectMany(pair => pair.Value)
             .DistinctBy(spec => (spec.Component, spec.VersionOrChannel, spec.InstallSource, spec.GlobalJsonPath))

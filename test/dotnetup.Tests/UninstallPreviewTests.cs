@@ -158,10 +158,10 @@ public class UninstallPreviewTests
     }
 
     private static GarbageCollectionPlan CreatePlan(
-        Dictionary<Installation, List<InstallSpec>> references, List<Installation> removals, List<string> paths)
+        Dictionary<Installation, List<InstallSpec>> installSpecsByInstallation, List<Installation> removals, List<string> paths)
     {
         var root = new DotnetRootEntry { Path = Path.GetTempPath() };
-        return new GarbageCollectionPlan(new DotnetupManifestData { DotnetRoots = [root] }, root, references, removals, paths);
+        return new GarbageCollectionPlan(new DotnetupManifestData { DotnetRoots = [root] }, root, installSpecsByInstallation, removals, paths);
     }
 
     private static string Render(
