@@ -40,38 +40,44 @@ internal static class UninstallPreview
             }
         }
 
-        var hasRetainedTargets = hasWarnings;
         var deletedPaths = plan.PathsToDelete.ToHashSet(StringComparer.OrdinalIgnoreCase);
         var unexpected = plan.InstallationsToRemove.Except(targets)
             .Where(i => plan.GetPrimaryPath(i) is { } path && deletedPaths.Contains(path))
             .ToList();
         AddUntrackedRemovals(plan, targets, unexpected);
         var channel = new UpdateChannel(versionOrChannel);
+        var requestedPathPrefix = requestedComponent == InstallComponent.SDK
+            ? "sdk/"
+            : $"shared/{requestedComponent.GetFrameworkName()}/";
+        var removesRequestedFiles = plan.PathsToDelete.Any(path =>
+            path.StartsWith(requestedPathPrefix, StringComparison.OrdinalIgnoreCase) &&
+            ReleaseVersion.TryParse(path[requestedPathPrefix.Length..], out var version) && channel.Matches(version));
+        var removalMessage = removesRequestedFiles
+            ? Strings.UninstallUnexpectedAdditionalRemoval
+            : Strings.UninstallUnexpectedRemoval;
         foreach (var installation in unexpected.DistinctBy(i => (i.Component, i.Version))
-            .Where(i => i.Component != requestedComponent ||
-                !ReleaseVersion.TryParse(i.Version, out var version) || !channel.Matches(version)))
+            .Where(i => !MatchesRequest(i, requestedComponent, channel)))
         {
             hasWarnings = true;
-            AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, Strings.UninstallUnexpectedRemoval,
+            AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, removalMessage,
                 DotnetupTheme.Accent($"{installation.Component.GetDisplayName()} {installation.Version}".EscapeMarkup())));
         }
 
         if (hasWarnings)
         {
-            DisplayRemovalSummary(specsToRemove, hasRetainedTargets);
+            DisplayRemovalSummary(specsToRemove);
         }
 
         return hasWarnings;
     }
 
-    private static void DisplayRemovalSummary(IReadOnlyList<InstallSpec> specsToRemove, bool hasRetainedTargets)
+    private static bool MatchesRequest(Installation installation, InstallComponent component, UpdateChannel channel) =>
+        installation.Component == component &&
+        ReleaseVersion.TryParse(installation.Version, out var version) && channel.Matches(version);
+
+    private static void DisplayRemovalSummary(IReadOnlyList<InstallSpec> specsToRemove)
     {
         AnsiConsole.WriteLine();
-        if (hasRetainedTargets)
-        {
-            AnsiConsole.WriteLine(Strings.UninstallRetainedGuidance);
-        }
-
         foreach (var spec in specsToRemove.DistinctBy(s => (s.Component, s.VersionOrChannel, s.InstallSource, s.GlobalJsonPath)))
         {
             var source = spec.GlobalJsonPath ?? spec.InstallSource.ToString();

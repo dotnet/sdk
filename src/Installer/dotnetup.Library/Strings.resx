@@ -401,8 +401,9 @@ Or open a new terminal.</value>
     <value>{0} will be [bold]uninstalled[/] because it is no longer referenced by any install specs.</value>
     <comment>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</comment>
   </data>
-  <data name="UninstallRetainedGuidance" xml:space="preserve">
-    <value>The retained versions listed above will remain installed. To fully uninstall them, you must also remove the other install specs keeping them installed.</value>
+  <data name="UninstallUnexpectedAdditionalRemoval" xml:space="preserve">
+    <value>{0} will [bold]also[/] be [bold]uninstalled[/] because it is no longer referenced by any install specs.</value>
+    <comment>{0} is a highlighted component name and installed version. Used only when the operation also removes files for the requested component and channel. {Locked="[bold]"}{Locked="[/]"}</comment>
   </data>
   <data name="InstallSpecSource" xml:space="preserve">
     <value>(source: {0})</value>

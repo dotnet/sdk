@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+using BootstrapperStrings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -28,7 +29,7 @@ public class UninstallEndToEndTests : IDisposable
         var output = Run(command, out var exitCode);
 
         exitCode.Should().Be(0, output);
-        output.Should().Contain("--non-interactive").And.Contain(Strings.CommandNonInteractiveOptionDescription);
+        output.Should().Contain("--non-interactive").And.Contain(BootstrapperStrings.CommandNonInteractiveOptionDescription);
     }
 
     [TestMethod]
@@ -89,7 +90,7 @@ public class UninstallEndToEndTests : IDisposable
 
         exitCode.Should().Be(accept ? 0 : 1, output);
         AssertWarningCounts(output, retained: 0, unexpected: 1, prompts: 1);
-        output.Should().Contain(".NET SDK 9.0.100 will be uninstalled");
+        output.Should().Contain(".NET SDK 9.0.100 will also be uninstalled");
         output.Should().Contain("(Y/n; Enter to proceed, Esc to cancel)");
         output.Should().MatchRegex($@"Enter to proceed, Esc to cancel\)\s+{(accept ? "Yes" : "No")}\b");
         output.Should().Contain("Install spec '11.0' (.NET SDK; source: Explicit) will be removed from tracking.");
@@ -233,7 +234,7 @@ public class UninstallEndToEndTests : IDisposable
 
         exitCode.Should().Be(0, output);
         AssertWarningCounts(output, retained: 0, unexpected: 1, prompts: 1);
-        output.Should().Contain($"{otherComponent.GetDisplayName()} {other} will be uninstalled");
+        output.Should().Contain($"{otherComponent.GetDisplayName()} {other} will also be uninstalled");
         _fixture.ReadRoot().Installations.Should().BeEmpty();
     }
 
@@ -283,7 +284,7 @@ public class UninstallEndToEndTests : IDisposable
         AssertWarningCounts(output, retained: 1, unexpected: 0, prompts: 1);
         output.Should().Contain($"{component.GetDisplayName()} 11 (source: Explicit)");
         output.Should().Contain($"{component.GetDisplayName()} {otherSpec} (source: Explicit)");
-        Count(output, "The retained versions listed above will remain installed.").Should().Be(1);
+        output.Should().NotContain("The retained versions listed above");
         var removalMessage = $"Install spec '{request}' ({component.GetDisplayName()}; source: Explicit) will be removed from tracking.";
         Count(output, removalMessage).Should().Be(1);
         output.IndexOf(removalMessage, StringComparison.Ordinal)
@@ -427,6 +428,8 @@ public class UninstallEndToEndTests : IDisposable
         AssertWarningCounts(output, retained: 1, unexpected: 1, prompts: 1);
         Count(output, ".NET SDK latest (source: Explicit)").Should().Be(1);
         Count(output, "Removed sdk/9.0.100").Should().Be(1);
+        output.Should().Contain(".NET SDK 9.0.100 will be uninstalled");
+        output.Should().NotContain("will also be uninstalled");
     }
 
     [TestMethod]
@@ -489,6 +492,22 @@ public class UninstallEndToEndTests : IDisposable
         }
     }
 
+    [TestMethod]
+    public void UntrackedRequestedRuntimeFiles_RemoveOrphanSdkWithAlsoWarning()
+    {
+        _fixture.AddInstallation(InstallComponent.SDK, "9.0.100", "shared/Microsoft.NETCore.App/11.0.0");
+        _fixture.AddSpecs(InstallComponent.Runtime, "11.0");
+
+        var output = Run(["runtime", "uninstall", "11.0"], out var exitCode);
+
+        exitCode.Should().Be(0, output);
+        AssertWarningCounts(output, retained: 0, unexpected: 1, prompts: 1);
+        output.Should().Contain(".NET SDK 9.0.100 will also be uninstalled");
+        _fixture.ReadRoot().Installations.Should().BeEmpty();
+        AssertFilesRemoved(InstallComponent.SDK, "9.0.100");
+        AssertFilesRemoved(InstallComponent.Runtime, "11.0.0");
+    }
+
     private string Run(string[] command, out int exitCode, string input = "y\n", params string[] options)
     {
         var environment = _fixture.Environment;
@@ -512,7 +531,8 @@ public class UninstallEndToEndTests : IDisposable
     private static void AssertWarningCounts(string output, int retained, int unexpected, int prompts)
     {
         Count(output, "will not be uninstalled").Should().Be(retained, output);
-        Count(output, "will be uninstalled").Should().Be(unexpected, output);
+        var unexpectedCount = Count(output, "will be uninstalled") + Count(output, "will also be uninstalled");
+        unexpectedCount.Should().Be(unexpected, output);
         Count(output, "Proceed with uninstall?").Should().Be(prompts, output);
     }
 

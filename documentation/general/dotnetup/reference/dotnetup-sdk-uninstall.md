@@ -50,6 +50,8 @@ Before changing state, the command lists requested installations that will remai
 removed. When either warning applies in interactive mode, press **Y** or **Enter**
 to proceed, or **N** or **Esc** to cancel without removing specs or files.
 Warnings are still printed in non-interactive mode, but no confirmation is required.
+The additional-removal warning says "also" only when files for a requested SDK
+will be removed too.
 The preview ends by identifying each spec that will be removed from tracking,
 including its component and source. Retained versions stay installed after
 proceeding. Removing a spec sourced from `global.json` does not delete that file.

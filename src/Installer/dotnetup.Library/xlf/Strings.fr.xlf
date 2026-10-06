@@ -496,11 +496,6 @@ Or open a new terminal.</target>
         <target state="new">Install spec '{0}' ({1}; source: {2}) will be removed from tracking.</target>
         <note>{0} is a highlighted version or channel; {1} is a component name; {2} is an install-source identifier or a global.json path.</note>
       </trans-unit>
-      <trans-unit id="UninstallRetainedGuidance">
-        <source>The retained versions listed above will remain installed. To fully uninstall them, you must also remove the other install specs keeping them installed.</source>
-        <target state="new">The retained versions listed above will remain installed. To fully uninstall them, you must also remove the other install specs keeping them installed.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UninstallRetainedInstallation">
         <source>{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</source>
         <target state="new">{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</target>
@@ -520,6 +515,11 @@ Or open a new terminal.</target>
         <source>No {0} install spec found for '{1}', but matching specs exist with other sources:</source>
         <target state="new">No {0} install spec found for '{1}', but matching specs exist with other sources:</target>
         <note>{0} is a component name; {1} is a version or channel.</note>
+      </trans-unit>
+      <trans-unit id="UninstallUnexpectedAdditionalRemoval">
+        <source>{0} will [bold]also[/] be [bold]uninstalled[/] because it is no longer referenced by any install specs.</source>
+        <target state="new">{0} will [bold]also[/] be [bold]uninstalled[/] because it is no longer referenced by any install specs.</target>
+        <note>{0} is a highlighted component name and installed version. Used only when the operation also removes files for the requested component and channel. {Locked="[bold]"}{Locked="[/]"}</note>
       </trans-unit>
       <trans-unit id="UninstallUnexpectedRemoval">
         <source>{0} will be [bold]uninstalled[/] because it is no longer referenced by any install specs.</source>

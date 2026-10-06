@@ -36,7 +36,7 @@ public class UninstallPreviewTests
         output.Should().Contain("8.0.100 (source: Explicit)");
         output.Should().Contain("8.0.1xx");
         output.Should().Contain(globalJson);
-        output.Should().Contain("The retained versions listed above will remain installed.");
+        output.Should().NotContain("The retained versions listed above");
         output.Should().Contain("Install spec '8' (.NET SDK; source: Explicit) will be removed from tracking.");
     }
 
@@ -171,6 +171,94 @@ public class UninstallPreviewTests
 
         warned.Should().BeTrue();
         output.Should().Contain($"Install spec '{channel}' (.NET SDK; source: Explicit) will be removed from tracking.");
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.Console)]
+    [DataRow(InstallComponent.SDK, true)]
+    [DataRow(InstallComponent.SDK, false)]
+    [DataRow(InstallComponent.Runtime, true)]
+    [DataRow(InstallComponent.Runtime, false)]
+    public void Display_UnexpectedRemoval_SaysAlsoOnlyWhenRequestedFilesAreRemoved(
+        InstallComponent component, bool removesRequestedFiles)
+    {
+        var target = new Installation
+        {
+            Component = component, Version = component == InstallComponent.SDK ? "8.0.100" : "8.0.0"
+        };
+        var unexpected = new Installation { Component = InstallComponent.SDK, Version = "9.0.100" };
+        var removals = new List<Installation> { unexpected };
+        var paths = new List<string> { "sdk/9.0.100" };
+        var installSpecsByInstallation = new Dictionary<Installation, List<InstallSpec>>();
+        if (removesRequestedFiles)
+        {
+            removals.Add(target);
+            paths.Add(component == InstallComponent.SDK ? "sdk/8.0.100" : "shared/Microsoft.NETCore.App/8.0.0");
+        }
+        else
+        {
+            installSpecsByInstallation[target] = [new InstallSpec { Component = component, VersionOrChannel = "8.0" }];
+        }
+
+        var output = Render(CreatePlan(installSpecsByInstallation, removals, paths), [target], component, "8", out var warned);
+
+        warned.Should().BeTrue();
+        output.Should().Contain(removesRequestedFiles
+            ? ".NET SDK 9.0.100 will also be uninstalled"
+            : ".NET SDK 9.0.100 will be uninstalled");
+        output.Should().NotContain("The retained versions listed above");
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.Console)]
+    public void Display_UntrackedRequestedFilesRemoved_SaysAlsoForOtherOrphans()
+    {
+        var plan = CreatePlan([], [], ["sdk/8.0.100", "sdk/9.0.100"]);
+
+        var output = Render(plan, [], InstallComponent.SDK, "8", out var warned);
+
+        warned.Should().BeTrue();
+        output.Should().Contain(".NET SDK 9.0.100 will also be uninstalled");
+        output.Should().NotContain(".NET SDK 8.0.100 will");
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.Console)]
+    public void Display_RuntimeRecordRemovedButFilesKeptBySdk_DoesNotSayAlso()
+    {
+        var runtime = new Installation { Component = InstallComponent.Runtime, Version = "8.0.0" };
+        var sdk = new Installation
+        {
+            Component = InstallComponent.SDK, Version = "8.0.100",
+            Subcomponents = ["sdk/8.0.100", "shared/Microsoft.NETCore.App/8.0.0"]
+        };
+        var sdkSpec = new InstallSpec { Component = InstallComponent.SDK, VersionOrChannel = "8" };
+        var plan = CreatePlan(new Dictionary<Installation, List<InstallSpec>> { [sdk] = [sdkSpec] },
+            [runtime], ["sdk/9.0.100"]);
+
+        var output = Render(plan, [runtime], InstallComponent.Runtime, "8", out var warned);
+
+        warned.Should().BeTrue();
+        output.Should().Contain("dotnet (runtime) 8.0.0 will not be uninstalled");
+        output.Should().Contain(".NET SDK 9.0.100 will be uninstalled");
+        output.Should().NotContain("will also be uninstalled");
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.Console)]
+    public void Display_UntrackedRequestedRuntimeFilesRemovedWithOrphanSdk_SaysAlso()
+    {
+        var sdk = new Installation
+        {
+            Component = InstallComponent.SDK, Version = "9.0.100",
+            Subcomponents = ["sdk/9.0.100", "shared/Microsoft.NETCore.App/8.0.0"]
+        };
+        var plan = CreatePlan([], [sdk], sdk.Subcomponents);
+
+        var output = Render(plan, [], InstallComponent.Runtime, "8", out var warned);
+
+        warned.Should().BeTrue();
+        output.Should().Contain(".NET SDK 9.0.100 will also be uninstalled");
     }
 
     private static GarbageCollectionPlan CreatePlan(
