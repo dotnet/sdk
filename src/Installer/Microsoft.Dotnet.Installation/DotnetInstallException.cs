@@ -139,6 +139,9 @@ public enum DotnetInstallErrorCode
     /// product state rather than invalid user input.
     /// </summary>
     InvalidModeSelection,
+
+    /// <summary>The user declined confirmation of an operation.</summary>
+    OperationCancelled,
 }
 
 /// <summary>
