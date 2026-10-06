@@ -14,7 +14,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _ownsProgressReporter = true;
     private readonly int _versionDisplayWidth;
-    private readonly ITarArchiveExtractor _tarArchiveExtractor;
+    internal ITarArchiveExtractor TarArchiveExtractor { get; set; }
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -67,7 +67,7 @@ internal class DotnetArchiveExtractor : IDisposable
         _resolvedVersion = resolvedVersion;
         _versionDisplayWidth = versionDisplayWidth;
         var dotnetTarArchiveExtractor = new DotnetTarArchiveExtractor();
-        _tarArchiveExtractor = OperatingSystem.IsWindows()
+        TarArchiveExtractor = OperatingSystem.IsWindows()
             ? new WindowsNativeTarArchiveExtractor(dotnetTarArchiveExtractor)
             : dotnetTarArchiveExtractor;
         ScratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
@@ -163,6 +163,10 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             throw;
         }
+        catch (AggregateException ex) when (ex.InnerExceptions is [_, InvalidDataException or UnauthorizedAccessException])
+        {
+            throw CreateFallbackInstallException(ex);
+        }
         catch (InvalidDataException ex)
         {
             throw new DotnetInstallException(
@@ -201,6 +205,20 @@ internal class DotnetArchiveExtractor : IDisposable
         }
     }
 
+    private DotnetInstallException CreateFallbackInstallException(AggregateException exception)
+    {
+        Exception fallbackFailure = exception.InnerExceptions[1];
+        bool corrupt = fallbackFailure is InvalidDataException;
+        return new DotnetInstallException(
+            corrupt ? DotnetInstallErrorCode.ArchiveCorrupted : DotnetInstallErrorCode.PermissionDenied,
+            corrupt
+                ? $"Archive is corrupted or truncated for version {_resolvedVersion}: {fallbackFailure.Message}"
+                : $"Permission denied while extracting .NET archive for version {_resolvedVersion}: {fallbackFailure.Message}",
+            exception,
+            version: _resolvedVersion.ToString(),
+            component: _request.Component.ToString());
+    }
+
     /// <summary>
     /// Extracts the archive directly to the target directory with special handling for muxer.
     /// Combines extraction and installation into a single operation.
@@ -225,7 +243,7 @@ internal class DotnetArchiveExtractor : IDisposable
         if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) ||
             archivePath.EndsWith(".tar", StringComparison.OrdinalIgnoreCase))
         {
-            _tarArchiveExtractor.Extract(new TarExtractionContext(
+            TarArchiveExtractor.Extract(new TarExtractionContext(
                 archivePath,
                 targetDir,
                 installTask,
