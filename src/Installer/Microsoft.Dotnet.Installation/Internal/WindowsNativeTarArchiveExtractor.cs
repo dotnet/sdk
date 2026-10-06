@@ -26,10 +26,11 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
     public void Extract(TarExtractionContext context)
     {
         string stagingDirectory = CreateStagingDirectoryPath(context.TargetDirectory);
-        // Sysnative bypasses WOW64 redirection to the native System32, but only a 32-bit
-        // process on 64-bit Windows can use this virtual directory. WiX makes the same choice:
+        // A 32-bit process on 64-bit Windows uses the virtual Sysnative alias to reach
+        // native System32 without WOW64 redirection; 64-bit processes cannot use it.
         // https://learn.microsoft.com/windows/win32/winprog64/file-system-redirector
-        // https://github.com/dotnet/wix/blob/e64459c5618fe7403752d7bbfe1e547a09b6763a/src/burn/engine/msuengine.cpp#L221
+        // VS Code makes the same process/OS architecture choice for powershell.exe:
+        // https://github.com/microsoft/vscode/blob/3dabe9b5512f025eb64934ce456f4867ec6a11c9/src/vs/base/node/powershell.ts#L236-L240
         string tarExecutable = GetTarExecutable(
             Environment.SystemDirectory,
             Environment.GetFolderPath(Environment.SpecialFolder.Windows),
