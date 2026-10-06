@@ -26,6 +26,10 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
     public void Extract(TarExtractionContext context)
     {
         string stagingDirectory = CreateStagingDirectoryPath(context.TargetDirectory);
+        string tarExecutable = GetTarExecutable(
+            Environment.SystemDirectory,
+            Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+            Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess);
         Exception? nativeFailure = null;
 
         try
@@ -39,7 +43,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
                 ? ExtractGzipArchiveArgument
                 : ExtractTarArchiveArgument;
             NativeTarProcessResult result = _processRunner.Run(
-                TarExecutable,
+                tarExecutable,
                 [extractArgument, context.ArchivePath, ChangeDirectoryArgument, stagingDirectory]);
             if (result.StartFailure is not null)
             {
@@ -47,7 +51,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
                     string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.NativeTarStartFailed,
-                        TarExecutable,
+                        tarExecutable,
                         result.StartFailure.Message),
                     result.StartFailure);
                 ReportFallback(nativeFailure.Message);
@@ -59,7 +63,7 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
             if (result.ExitCode != 0)
             {
                 nativeFailure = new InvalidOperationException(CreateFailureMessage(
-                    TarExecutable,
+                    tarExecutable,
                     result.ExitCode!.Value,
                     result.StandardError,
                     context.ArchivePath,
@@ -76,6 +80,14 @@ internal sealed class WindowsNativeTarArchiveExtractor : ITarArchiveExtractor
         {
             TryDeleteDirectory(stagingDirectory);
         }
+    }
+
+    internal static string GetTarExecutable(string systemDirectory, string windowsDirectory, bool useSysnative)
+    {
+        string candidate = useSysnative
+            ? Path.Combine(windowsDirectory, "Sysnative", TarExecutable)
+            : Path.Combine(systemDirectory, TarExecutable);
+        return File.Exists(candidate) ? candidate : TarExecutable;
     }
 
     private void ExtractWithFallback(TarExtractionContext context, Exception nativeFailure)

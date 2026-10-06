@@ -27,6 +27,32 @@ public class WindowsNativeTarArchiveExtractorTests
         result.StartFailure.Should().BeNull();
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void GetTarExecutable_UsesSystemCopyBeforeWorkingDirectory(bool useSysnative)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        string windowsDirectory = Path.Combine(testEnv.TempRoot, "Windows");
+        string systemDirectory = Path.Combine(windowsDirectory, "System32");
+        string trustedDirectory = useSysnative
+            ? Path.Combine(windowsDirectory, "Sysnative")
+            : systemDirectory;
+        Directory.CreateDirectory(trustedDirectory);
+        string trustedTar = Path.Combine(trustedDirectory, "tar.exe");
+        File.WriteAllText(trustedTar, "system copy");
+        string workingDirectory = Path.Combine(testEnv.TempRoot, "working");
+        Directory.CreateDirectory(workingDirectory);
+        File.WriteAllText(Path.Combine(workingDirectory, "tar.exe"), "working directory copy");
+
+        WindowsNativeTarArchiveExtractor.GetTarExecutable(systemDirectory, windowsDirectory, useSysnative)
+            .Should().Be(trustedTar);
+
+        File.Delete(trustedTar);
+        WindowsNativeTarArchiveExtractor.GetTarExecutable(systemDirectory, windowsDirectory, useSysnative)
+            .Should().Be("tar.exe", "machines without the system copy still use PATH and managed fallback");
+    }
+
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void Extract_UsesWindowsTarForGzipArchive()
     {
@@ -85,7 +111,10 @@ public class WindowsNativeTarArchiveExtractorTests
 
         var runner = new CallbackTarProcessRunner((executable, arguments) =>
         {
-            executable.Should().Be("tar.exe");
+            executable.Should().Be(WindowsNativeTarArchiveExtractor.GetTarExecutable(
+                Environment.SystemDirectory,
+                Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                Environment.Is64BitOperatingSystem && !Environment.Is64BitProcess));
             arguments.Should().ContainInOrder("-xzf", "archive.tar.gz", "-C");
             stagingDirectory = GetStagingDirectory(arguments);
             Path.GetDirectoryName(stagingDirectory).Should().Be(Path.GetFullPath(targetDirectory));
