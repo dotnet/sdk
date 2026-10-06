@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+import { createHash } from 'node:crypto';
+
 function requireSource(condition, message) {
     if (!condition) throw new Error(`Cannot establish comment site identity: ${message}`);
 }
@@ -276,11 +278,27 @@ function xmlSites(source) {
     return sites;
 }
 
+// Other collected languages have no structural parser here. Their verified neighboring
+// nonblank lines provide a bounded textual identity, not proof of comment syntax or ownership.
+function textSites(lines) {
+    const sites = new Map();
+    const nonblank = lines.map((text, index) => ({ text: text.trim(), line: index + 1 }))
+        .filter(item => item.text);
+    for (const [index, item] of nonblank.entries()) {
+        const neighborhood = [nonblank[index - 1]?.text ?? null, nonblank[index + 1]?.text ?? null];
+        sites.set(item.line, {
+            anchor: `text: ${createHash('sha256').update(JSON.stringify(neighborhood)).digest('hex')}`,
+        });
+    }
+    return sites;
+}
+
 // This is a lexical source-site path, not a compiler symbol or a model assertion.
 // Indistinguishable repeated comments are rejected rather than assigned shifting ordinals.
 export function sourceAnchors(lines, path) {
     const source = lines.join('\n');
-    const sites = path.endsWith('.cs') ? csharpSites(source) : xmlSites(source);
+    const textual = !/\.(?:cs|xml|props|targets|proj|projitems|csproj|vbproj|fsproj|slnx|nuspec|config)$/i.test(path);
+    const sites = /\.cs$/i.test(path) ? csharpSites(source) : textual ? textSites(lines) : xmlSites(source);
     const identities = new Map();
     const ambiguous = new Set();
     for (const [line, site] of sites) {
@@ -295,7 +313,8 @@ export function sourceAnchors(lines, path) {
     return seedLine => {
         const site = sites.get(seedLine);
         requireSource(site !== undefined, 'the action seed is not a comment.');
-        requireSource(!ambiguous.has(seedLine), 'identical comments have the same structural anchor; defer this candidate.');
+        requireSource(!ambiguous.has(seedLine), `identical comments have the same ${textual
+            ? 'source neighborhood' : 'structural anchor'}; defer this candidate.`);
         requireSource(site.anchor.length <= 1024 && !/[\x00-\x1f\x7f]/.test(site.anchor),
             'the structural anchor is not bounded single-line text.');
         return site.anchor;

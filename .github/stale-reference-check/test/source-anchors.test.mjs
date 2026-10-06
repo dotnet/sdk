@@ -62,6 +62,27 @@ test('ignored-test declarations retain array-valued attributes in either order',
     }
 });
 
+test('non-C#/XML source sites use verified textual neighborhoods, not XML parsing', () => {
+    for (const [file, comment] of [
+        ['eng/check.js', '//'], ['eng/check.ps1', '#'], ['eng/check.py', '#'],
+        ['eng/check.sh', '#'], ['eng/check.cmd', 'REM'], ['src/check.fs', '//'],
+        ['src/check.cpp', '//'], ['eng/check.yml', '#'], ['Dockerfile', '#'],
+        ['src/check.razor', '@*'],
+    ]) {
+        const lines = ['first()', `${comment} TODO remove after https://github.com/dotnet/sdk/issues/123`,
+            'second()', 'third()', `${comment} TODO remove after https://github.com/dotnet/sdk/issues/123`, 'fourth()'];
+        const sites = sourceAnchors(lines, file);
+        assert.match(sites(2), /^text: [a-f0-9]{64}$/);
+        assert.notEqual(sites(2), sites(5), file);
+        assert.equal(sites(2), sourceAnchors(['', ...lines], file)(3), file);
+        assert.equal(sites(2), sourceAnchors(lines.map(line => `    ${line}`), file)(2), file);
+    }
+    const repeated = ['before()', seed, 'after()', '', 'before()', seed, 'after()'];
+    const sites = sourceAnchors(repeated, 'eng/check.js');
+    assert.throws(() => sites(2), /identical.*neighborhood/);
+    assert.throws(() => sites(6), /identical.*neighborhood/);
+});
+
 test('C# literals, comments, attributes and nested scopes cannot fabricate declaration paths', () => {
     const lines = [
         'namespace Outer { namespace Inner {',

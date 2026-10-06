@@ -72,6 +72,45 @@ test('accepts XML workaround conditions and historical irrelevant classification
     assert.equal((await validate(f, [result(candidate)]))[0].status, 'irrelevant');
 });
 
+test('non-C#/XML comments validate, replay cache and retain source-owned filing identities', async t => {
+    for (const [file, comment] of [
+        ['eng/check.js', '//'], ['eng/check.ps1', '#'], ['eng/check.py', '#'],
+        ['eng/check.sh', '#'], ['eng/check.cmd', 'REM'], ['src/check.fs', '//'],
+        ['src/check.cpp', '//'], ['eng/check.yml', '#'], ['Dockerfile', '#'],
+        ['src/check.razor', '@*'],
+    ]) {
+        const source = ['first()', `${comment} TODO remove after ${url}`, 'second()',
+            'third()', `${comment} TODO remove after ${url}`, 'fourth()'].join('\n');
+        const f = await fixture(t, source, file);
+        assert.equal(f.manifest.candidates.length, 2, file);
+        const raw = f.manifest.candidates.map(candidate =>
+            result(candidate, [action(candidate, { anchor: 'Model.Owner' })]));
+        const validated = await validate(f, raw);
+        const ids = validated.map(item => targetIds('dotnet/sdk', item.actions[0]));
+        assert.notDeepEqual(ids[0], ids[1], file);
+        assert.ok(validated.every(item => item.actions[0].anchor.startsWith('text: ')));
+        const snapshot = await validateSnapshotInterpretations({ schemaVersion: 1, results: raw }, f.manifest, {
+            sources: { [file]: source + '\n' }, expectedCandidateIds: f.manifest.candidates.map(candidate => candidate.id),
+        });
+        assert.deepEqual(snapshot, validated);
+        const cache = mergeCache(null, f.manifest, validated, { nextCursor: 0 });
+        const restored = getCachedResults(JSON.parse(JSON.stringify(cache)), f.manifest);
+        assert.deepEqual(await validate(f, restored), validated);
+        const reinterpreted = await validate(f, f.manifest.candidates.map(candidate =>
+            result(candidate, [action(candidate, { anchor: 'Another.Model.Owner', endLine: candidate.seedLine + 1 })])));
+        assert.deepEqual(reinterpreted.map(item => targetIds('dotnet/sdk', item.actions[0])), ids);
+        const api = createGitHubMock();
+        const fileActions = actions => finalize({ github: api.github, repository: 'dotnet/sdk',
+            headSha: f.manifest.headSha, actions: actions.flatMap(item => item.actions),
+            dryRun: false, logger: { warn() {} } });
+        assert.equal((await fileActions(validated)).created.length, 1);
+        const repeat = await fileActions(reinterpreted);
+        assert.equal(repeat.created.length + repeat.updated.length + repeat.proposed.length, 0, file);
+        restored[0].actions[0].anchor = 'Forged.Owner';
+        await assert.rejects(validate(f, restored), /anchor.*provenance/i);
+    }
+});
+
 test('array-valued DataRow attributes validate ignored tests in either attribute order', async t => {
     const ignore = `[Ignore("${url}")]`;
     const data = '[DataRow(new int[] { 1, 2 })]';
@@ -89,6 +128,17 @@ test('array-valued DataRow attributes validate ignored tests in either attribute
         const cache = mergeCache(null, f.manifest, validated, { nextCursor: 0 });
         assert.deepEqual(await validate(f, getCachedResults(cache, f.manifest)), validated);
     }
+});
+
+test('non-C#/XML comments with indistinguishable neighborhoods must be deferred', async t => {
+    const source = ['before()', `// TODO ${url}`, 'after()', '',
+        'before()', `// TODO ${url}`, 'after()'].join('\n');
+    const f = await fixture(t, source, 'eng/check.js');
+    await assert.rejects(validate(f, f.manifest.candidates.map(candidate =>
+        result(candidate, [action(candidate)]))), /identical comments.*neighborhood/);
+    const deferred = await validate(f, f.manifest.candidates.map(candidate =>
+        result(candidate, [], 'insufficient_context')));
+    assert.equal(Object.keys(mergeCache(null, f.manifest, deferred, { nextCursor: 0 }).entries).length, 0);
 });
 
 test('comment identity is source-owned, independent of model qualification, spans and line shifts', async t => {

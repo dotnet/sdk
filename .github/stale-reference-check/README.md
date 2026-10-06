@@ -8,7 +8,7 @@ removed.
 The [driver](../workflows/stale-reference-check.yml) runs on its configured
 target branch. It never creates more than **five** total open tracking issues
 (labeled `stale-issue-detection`); once that many are open, creation halts until
-a human closes some of them, but eligible additions to existing file-level
+a human closes some of them, but eligible additions to existing blocker-set
 issues can still be appended. It never changes source,
 opens a pull request, comments on an existing issue, or removes an Ignore.
 Generated tracking issues and interpretation caches use the workflow's target
@@ -77,6 +77,14 @@ context expansion, not to guess a fully qualified name. Non-Ignore anchors suppl
 by the model are hints, not trusted identities. The host replaces them with a
 deterministic [lexical source-site path](source-anchors.mjs) derived from the verified complete file:
 C# namespace/declaration/block headers, or XML element names and sorted attributes.
+Other collected formats use a source-owned textual anchor: a hash of the nearest
+nonblank line before and after the seed, with indentation trimmed. This preserves
+script and other non-C#/XML discovery without interpreting those files as XML or
+trusting a model-supplied owner. It does not prove comment syntax or semantic ownership;
+the interpreter must still establish an actionable source construct. Blank-line
+insertions and indentation changes preserve this anchor, but changes to either
+neighbor can change it. Identical normalized seeds with identical neighborhoods are
+ambiguous and must be deferred rather than assigned line-based identities.
 This is not a compiler symbol or proof of semantic ownership. Comments preceding
 declarations/elements use the following structural site; other comments use their
 containing scope. Unsupported or ambiguous structures, including indistinguishable
@@ -203,7 +211,9 @@ Durable identity is separate from interpretation-cache identity:
   of line number, source commit, data rows, and original reference.
 - TODO/workaround: repository path, source-derived structural anchor, and
   normalized seed comment, not model anchor spelling or model-selected span.
-  Surrounding excerpt changes alone do not append another evidence block.
+  For non-C#/XML formats the anchor is the textual neighborhood described above;
+  changing a neighboring nonblank line can change the target identity. Other
+  surrounding excerpt changes alone do not append another evidence block.
   Cached comment anchors are recomputed and checked against committed source
   before filing; these identity rules invalidate earlier interpretation caches.
 
