@@ -36,6 +36,13 @@ internal enum ScrollAction
 
 internal static class SpectreDisplayHelpers
 {
+    internal static ConfirmResult Confirm(string prompt)
+    {
+        SpectreAnsiConsole.Markup(string.Format(CultureInfo.InvariantCulture,
+            "{0} [{1}]([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)[/] ", prompt.EscapeMarkup(), DotnetupTheme.Current.Brand));
+        return ReadConfirm(ConfirmResult.Yes);
+    }
+
     /// <summary>
     /// Renders a scrollable list with an inline confirmation prompt.
     /// The prompt is shown below the list and Enter accepts the default (yes).
@@ -171,6 +178,7 @@ internal static class SpectreDisplayHelpers
             ConsoleKey.Enter => ScrollAction.Accept,
             ConsoleKey.Y => ScrollAction.Accept,
             ConsoleKey.N => ScrollAction.Decline,
+            ConsoleKey.Escape => ScrollAction.Decline,
             _ => ScrollAction.None,
         };
     }
@@ -255,6 +263,11 @@ internal static class SpectreDisplayHelpers
     /// </summary>
     private static ConfirmResult ReadConfirm(ConfirmResult defaultValue)
     {
+        if (Console.IsInputRedirected)
+        {
+            return ReadRedirectedConfirm(defaultValue);
+        }
+
         string brand = DotnetupTheme.Current.Brand;
         while (true)
         {
@@ -269,8 +282,30 @@ internal static class SpectreDisplayHelpers
                     SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]Yes[/]", brand));
                     return ConfirmResult.Yes;
                 case ConsoleKey.N:
+                case ConsoleKey.Escape:
                     SpectreAnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "[{0}]No[/]", brand));
                     return ConfirmResult.No;
+            }
+        }
+
+    }
+
+    private static ConfirmResult ReadRedirectedConfirm(ConfirmResult defaultValue)
+    {
+        while (true)
+        {
+            var input = Console.ReadLine()?.Trim();
+            if (input is null || string.Equals(input, "n", StringComparison.OrdinalIgnoreCase) || input == "\u001b")
+            {
+                SpectreAnsiConsole.WriteLine("No");
+                return ConfirmResult.No;
+            }
+
+            if (input.Length == 0 || string.Equals(input, "y", StringComparison.OrdinalIgnoreCase))
+            {
+                var result = input.Length == 0 ? defaultValue : ConfirmResult.Yes;
+                SpectreAnsiConsole.WriteLine(result == ConfirmResult.Yes ? "Yes" : "No");
+                return result;
             }
         }
     }
