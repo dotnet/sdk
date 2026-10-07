@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Formats.Tar;
 using System.IO.Compression;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -15,6 +14,7 @@ internal class DotnetArchiveExtractor : IDisposable
     private readonly IArchiveDownloader _archiveDownloader;
     private readonly bool _ownsProgressReporter = true;
     private readonly int _versionDisplayWidth;
+    internal ITarArchiveExtractor TarArchiveExtractor { get; set; }
     private MuxerHandler? MuxerHandler { get; set; }
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
@@ -66,6 +66,10 @@ internal class DotnetArchiveExtractor : IDisposable
         _request = request;
         _resolvedVersion = resolvedVersion;
         _versionDisplayWidth = versionDisplayWidth;
+        var dotnetTarArchiveExtractor = new DotnetTarArchiveExtractor();
+        TarArchiveExtractor = OperatingSystem.IsWindows()
+            ? new WindowsNativeTarArchiveExtractor(dotnetTarArchiveExtractor)
+            : dotnetTarArchiveExtractor;
         ScratchDownloadDirectory = Directory.CreateTempSubdirectory().FullName;
 
         if (archiveDownloader != null)
@@ -159,6 +163,10 @@ internal class DotnetArchiveExtractor : IDisposable
         {
             throw;
         }
+        catch (AggregateException ex) when (ex.InnerExceptions is [_, InvalidDataException or UnauthorizedAccessException])
+        {
+            throw CreateFallbackInstallException(ex);
+        }
         catch (InvalidDataException ex)
         {
             throw new DotnetInstallException(
@@ -197,6 +205,20 @@ internal class DotnetArchiveExtractor : IDisposable
         }
     }
 
+    private DotnetInstallException CreateFallbackInstallException(AggregateException exception)
+    {
+        Exception fallbackFailure = exception.InnerExceptions[1];
+        bool corrupt = fallbackFailure is InvalidDataException;
+        return new DotnetInstallException(
+            corrupt ? DotnetInstallErrorCode.ArchiveCorrupted : DotnetInstallErrorCode.PermissionDenied,
+            corrupt
+                ? $"Archive is corrupted or truncated for version {_resolvedVersion}: {fallbackFailure.Message}"
+                : $"Permission denied while extracting .NET archive for version {_resolvedVersion}: {fallbackFailure.Message}",
+            exception,
+            version: _resolvedVersion.ToString(),
+            component: _request.Component.ToString());
+    }
+
     /// <summary>
     /// Extracts the archive directly to the target directory with special handling for muxer.
     /// Combines extraction and installation into a single operation.
@@ -218,9 +240,16 @@ internal class DotnetArchiveExtractor : IDisposable
         var shouldSkipEntry = CreateExistingSubcomponentSkipPredicate(targetDir, _request.Options.Verbosity);
 
         // Extract archive, redirecting muxer to temp path and skipping existing subcomponents
-        if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
+        if (archivePath.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase) ||
+            archivePath.EndsWith(".tar", StringComparison.OrdinalIgnoreCase))
         {
-            ExtractTarArchive(archivePath, targetDir, installTask, MuxerHandler, TrackSubcomponent, shouldSkipEntry);
+            TarArchiveExtractor.Extract(new TarExtractionContext(
+                archivePath,
+                targetDir,
+                installTask,
+                MuxerHandler,
+                TrackSubcomponent,
+                shouldSkipEntry));
         }
         else
         {
@@ -266,167 +295,15 @@ internal class DotnetArchiveExtractor : IDisposable
         };
     }
 
-    /// <summary>
-    /// Resolves the destination path for an archive entry, redirecting the muxer to a temp path if needed.
-    /// </summary>
-    /// <param name="entryName">The entry name/path from the archive.</param>
-    /// <param name="targetDir">The target extraction directory.</param>
-    /// <param name="muxerHandler">Optional muxer handler for redirecting muxer entries.</param>
-    /// <returns>The resolved destination path.</returns>
-    private static string ResolveEntryDestPath(string entryName, string targetDir, MuxerHandler? muxerHandler)
-    {
-        // Normalize entry name by stripping leading "./" prefix (common in tar archives)
-        string normalizedName = entryName.StartsWith("./", StringComparison.Ordinal)
-            ? entryName.Substring(2)
-            : entryName;
-
-        if (muxerHandler != null && normalizedName == MuxerHandler.MuxerEntryName)
-        {
-            muxerHandler.MuxerWasExtracted = true;
-            return muxerHandler.TempMuxerPath;
-        }
-
-        string destPath = Path.GetFullPath(Path.Combine(targetDir, normalizedName));
-        string fullTargetDir = Path.GetFullPath(targetDir) + Path.DirectorySeparatorChar;
-        if (!destPath.StartsWith(fullTargetDir, DotnetupUtilities.PathComparison) &&
-            !string.Equals(destPath, Path.GetFullPath(targetDir), DotnetupUtilities.PathComparison))
-        {
-            throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveCorrupted,
-                $"Archive entry '{entryName}' would extract outside target directory.");
-        }
-
-        return destPath;
-    }
-
-    /// <summary>
-    /// Extracts a tar or tar.gz archive to the target directory.
-    /// </summary>
     internal static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
-    {
-        bool isGzip = IsGzipArchive(archivePath);
-
-        // Hold a read handle on the archive throughout the entire extraction to prevent garbage collectors reaping the archive.
-        using var archiveStream = new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.Read);
-
-        long totalEntries = CountTarEntries(archiveStream, isGzip);
-        installTask?.MaxValue = totalEntries > 0 ? totalEntries : 1;
-
-        archiveStream.Seek(0, SeekOrigin.Begin);
-        ExtractTarContents(archiveStream, isGzip, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
-    }
-
-    /// <summary>
-    /// Determines whether the archive at the given path is gzip-compressed based on its file extension.
-    /// </summary>
-    private static bool IsGzipArchive(string archivePath)
-        => archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Wraps an already-open tar archive stream for reading, layering in gzip decompression when needed.
-    /// The returned <see cref="OwnedTarStream"/> is always safe to dispose without closing the underlying
-    /// <paramref name="archiveStream"/>.
-    /// </summary>
-    private static OwnedTarStream OpenTarReadStream(Stream archiveStream, bool isGzip)
-        => isGzip
-            ? new OwnedTarStream(new GZipStream(archiveStream, CompressionMode.Decompress, leaveOpen: true))
-            : new OwnedTarStream(archiveStream, ownsStream: false);
-
-    /// <summary>
-    /// Counts the number of entries in a tar archive for progress reporting.
-    /// </summary>
-    private static long CountTarEntries(Stream archiveStream, bool isGzip)
-    {
-        long totalFiles = 0;
-        using OwnedTarStream tarStream = OpenTarReadStream(archiveStream, isGzip);
-        using var tarReader = new TarReader(tarStream.Stream, leaveOpen: true);
-        while (tarReader.GetNextEntry() is not null)
-        {
-            totalFiles++;
-        }
-
-        return totalFiles;
-    }
-
-    private static void ExtractTarContents(Stream archiveStream, bool isGzip, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler, Action<string>? onEntryExtracted, Func<string, bool>? shouldSkipEntry)
-    {
-        using OwnedTarStream tarStream = OpenTarReadStream(archiveStream, isGzip);
-        using var tarReader = new TarReader(tarStream.Stream, leaveOpen: true);
-        TarEntry? entry;
-
-        // Defer hard link creation until after all regular files are extracted,
-        // since the target file may not exist yet when the hard link entry is encountered.
-        var deferredHardLinks = new List<(string DestPath, string TargetPath)>();
-
-        while ((entry = tarReader.GetNextEntry()) is not null)
-        {
-            bool skip = shouldSkipEntry?.Invoke(entry.Name) ?? false;
-            if (!skip)
-            {
-                ProcessTarEntry(entry, targetDir, muxerHandler, deferredHardLinks);
-            }
-
-            onEntryExtracted?.Invoke(entry.Name);
-            installTask?.Value += 1;
-        }
-
-        CreateDeferredHardLinks(deferredHardLinks);
-    }
-
-    private static void ProcessTarEntry(TarEntry entry, string targetDir, MuxerHandler? muxerHandler, List<(string DestPath, string TargetPath)> deferredHardLinks)
-    {
-        if (entry.EntryType == TarEntryType.RegularFile)
-        {
-            string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-            entry.ExtractToFile(destPath, overwrite: true);
-        }
-        else if (entry.EntryType == TarEntryType.Directory)
-        {
-            string dirPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-            Directory.CreateDirectory(dirPath);
-
-            if (entry.Mode != default && !OperatingSystem.IsWindows())
-            {
-                File.SetUnixFileMode(dirPath, entry.Mode);
-            }
-        }
-        else if (entry.EntryType == TarEntryType.SymbolicLink)
-        {
-            string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-
-            if (File.Exists(destPath) || Directory.Exists(destPath))
-            {
-                File.Delete(destPath);
-            }
-
-            File.CreateSymbolicLink(destPath, entry.LinkName!);
-        }
-        else if (entry.EntryType == TarEntryType.HardLink)
-        {
-            string destPath = ResolveEntryDestPath(entry.Name, targetDir, muxerHandler);
-            string linkTargetPath = ResolveEntryDestPath(entry.LinkName!, targetDir, muxerHandler);
-            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
-            deferredHardLinks.Add((destPath, linkTargetPath));
-        }
-        else
-        {
-            Console.Error.WriteLine($"Warning: Skipping unsupported tar entry type '{entry.EntryType}' for '{entry.Name}'.");
-        }
-    }
-
-    private static void CreateDeferredHardLinks(List<(string DestPath, string TargetPath)> deferredHardLinks)
-    {
-        foreach (var (destPath, targetPath) in deferredHardLinks)
-        {
-            if (File.Exists(destPath))
-            {
-                File.Delete(destPath);
-            }
-
-            File.CreateHardLink(destPath, targetPath);
-        }
-    }
+        => new DotnetTarArchiveExtractor().Extract(
+            new TarExtractionContext(
+                archivePath,
+                targetDir,
+                installTask,
+                muxerHandler,
+                onEntryExtracted,
+                shouldSkipEntry));
 
     /// <summary>
     /// Extracts a zip archive to the target directory.
@@ -434,7 +311,8 @@ internal class DotnetArchiveExtractor : IDisposable
     private static void ExtractZipArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
         using var zip = ZipFile.OpenRead(archivePath);
-        installTask?.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1;
+        IProgressTask? entryProgressTask = installTask?.RequiresKnownMaximum == true ? installTask : null;
+        entryProgressTask?.MaxValue = zip.Entries.Count > 0 ? zip.Entries.Count : 1;
 
         foreach (var entry in zip.Entries)
         {
@@ -449,14 +327,14 @@ internal class DotnetArchiveExtractor : IDisposable
                 }
                 else
                 {
-                    string destPath = ResolveEntryDestPath(entry.FullName, targetDir, muxerHandler);
+                    string destPath = ArchiveEntryPathResolver.ResolveDestination(entry.FullName, targetDir, muxerHandler);
                     Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
                     entry.ExtractToFile(destPath, overwrite: true);
                 }
             }
 
             onEntryExtracted?.Invoke(entry.FullName);
-            installTask?.Value += 1;
+            entryProgressTask?.Value += 1;
         }
     }
 

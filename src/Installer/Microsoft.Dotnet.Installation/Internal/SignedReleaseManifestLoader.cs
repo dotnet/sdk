@@ -27,7 +27,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// thread-safe; the temp directory is per-instance.
 /// </para>
 /// </summary>
-internal sealed class SignedReleaseManifestLoader : IDisposable
+internal class SignedReleaseManifestLoader : IDisposable
 {
     private static readonly TimeSpan s_manifestFetchTimeout = TimeSpan.FromSeconds(30);
 
@@ -88,7 +88,7 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
     /// same signed index byte-for-byte resolve channel URLs against the mirror, not back to
     /// <c>builds.dotnet.microsoft.com</c>.
     /// </summary>
-    public ReadOnlyCollection<ProductRelease> GetVerifiedReleases(Product product)
+    public virtual ReadOnlyCollection<ProductRelease> GetVerifiedReleases(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
 
@@ -111,6 +111,24 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         {
             // See note in GetVerifiedReleasesIndex: the deployment library returns a fully-
             // parsed collection synchronously, so the verified JSON is no longer needed.
+            TryDeleteFile(tempPath);
+        }
+    }
+
+    /// <summary>
+    /// Downloads and verifies the release manifest for a known product version without first
+    /// downloading the release index.
+    /// </summary>
+    public virtual ReadOnlyCollection<ProductRelease> GetVerifiedReleases(int major, int minor)
+    {
+        Uri channelUrl = GetReleaseUriForProductVersion(major, minor);
+        string tempPath = DownloadAndVerify(channelUrl);
+        try
+        {
+            return Product.GetReleasesAsync(tempPath).GetAwaiter().GetResult();
+        }
+        finally
+        {
             TryDeleteFile(tempPath);
         }
     }
@@ -159,6 +177,9 @@ internal sealed class SignedReleaseManifestLoader : IDisposable
         };
         return builder.Uri;
     }
+
+    internal Uri GetReleaseUriForProductVersion(int major, int minor) =>
+        new(_indexUrl, $"{major}.{minor}/releases.json");
 
     /// <summary>
     /// Downloads JSON bytes, fetches the sibling <c>.p7s</c>, runs signature verification, and

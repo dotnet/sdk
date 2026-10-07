@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Net;
 using System.Net.Http;
@@ -28,6 +29,8 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [TestClass]
 public class SignedReleaseManifestLoaderTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     private static SignedReleaseManifestLoader CreateLoader(string indexUrl) => new(
         new HttpClient(), // never sent on; loader constructor doesn't do IO besides mkdtemp
         new SignatureVerificationOptions(new X509Certificate2Collection(), new X509Certificate2Collection()),
@@ -194,6 +197,16 @@ public class SignedReleaseManifestLoaderTests
         rebased.UserInfo.Should().BeEmpty();
     }
 
+    [TestMethod]
+    public void GetReleaseUriForProductVersion_UsesConfiguredIndexDirectory()
+    {
+        using var loader = CreateLoader("https://mirror.corp.com:8443/custom/release-metadata/releases-index.json");
+
+        Uri channelUrl = loader.GetReleaseUriForProductVersion(11, 0);
+
+        channelUrl.Should().Be("https://mirror.corp.com:8443/custom/release-metadata/11.0/releases.json");
+    }
+
     // ---------------- DownloadAndVerify orchestration (HTTP failure / tamper mapping) ----------------
     //
     // These tests cover the orchestration path inside SignedReleaseManifestLoader.DownloadAndVerify
@@ -295,6 +308,219 @@ public class SignedReleaseManifestLoaderTests
 
         act.Should().Throw<DotnetInstallException>()
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
+    }
+
+    [TestMethod]
+    public void GetVerifiedReleases_DirectProductSignatureFailure_DoesNotFetchIndex()
+    {
+        const string channelUrl = "https://example.test/release-metadata/11.0/releases.json";
+        const string channelSigUrl = "https://example.test/release-metadata/11.0/releases-directory.json.20260505084330.p7s";
+        byte[] signedJson = LoadSignedJson();
+        byte[] tamperedJson = [.. signedJson, (byte)' '];
+        var handler = new StubHandler
+        {
+            { channelUrl, _ => OkBytes(tamperedJson) },
+            { channelSigUrl, _ => OkBytes(LoadSignedP7s()) },
+        };
+        using var loader = CreateLoaderWithHandler(handler);
+
+        Action act = () => loader.GetVerifiedReleases(11, 0);
+
+        act.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
+        handler.RequestCount.Should().Be(2);
+    }
+
+    [TestMethod]
+    public void ReleaseManifest_Direct404_UsesIndexFallbackWithinCachedLookup()
+    {
+        const string channelUrl = "https://example.test/release-metadata/5.0/releases.json";
+        var handler = new StubHandler
+        {
+            { channelUrl, _ => new HttpResponseMessage(HttpStatusCode.NotFound) },
+        };
+        using var loader = CreateLoaderWithHandler(handler);
+        var manifest = new FixtureIndexReleaseManifest(loader);
+
+        Action act = () => manifest.GetReleases(5, 0);
+
+        act.Should().Throw<HttpRequestException>()
+            .Which.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        manifest.IndexRequestCount.Should().Be(1);
+        handler.RequestCount.Should().Be(2, "the index product URL is attempted after the direct endpoint");
+    }
+
+    [TestMethod]
+    public void ReleaseManifest_ConcurrentDirect404_DoesNotRecursivelyEvaluateCache()
+    {
+        const string channelUrl = "https://example.test/release-metadata/5.0/releases.json";
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        var handler = new StubHandler
+        {
+            { channelUrl, _ =>
+                {
+                    entered.Set();
+                    release.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken);
+                    return new HttpResponseMessage(HttpStatusCode.NotFound);
+                }
+            },
+        };
+        using var loader = CreateLoaderWithHandler(handler);
+        var manifest = new FixtureIndexReleaseManifest(loader);
+
+        Task<Exception?> first = Task.Run(() => Record.Exception(() => manifest.GetReleases(5, 0)));
+        entered.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken).Should().BeTrue();
+        Task<Exception?> second = Task.Run(() => Record.Exception(() => manifest.GetReleases(5, 0)));
+        try
+        {
+            release.Set();
+            Task.WhenAll(first, second).Wait(TestContext.CancellationToken);
+        }
+        finally
+        {
+            release.Set();
+        }
+
+        first.Result.Should().BeOfType<HttpRequestException>();
+        second.Result.Should().BeOfType<HttpRequestException>();
+        manifest.IndexRequestCount.Should().BeGreaterThan(0);
+    }
+
+    [TestMethod]
+    public void ReleaseManifest_ConcurrentDirect404_CachesSuccessfulIndexFallback()
+    {
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        using var loader = new FallbackReleaseLoader(entered, release, TestContext.CancellationToken);
+        var manifest = new FixtureIndexReleaseManifest(loader);
+        Task<ReadOnlyCollection<ProductRelease>?> first = Task.Run(() => manifest.GetReleases(5, 0));
+        entered.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken).Should().BeTrue();
+        Task<ReadOnlyCollection<ProductRelease>?> second = Task.Run(() => manifest.GetReleases(5, 0));
+        try
+        {
+            release.Set();
+            Task.WhenAll(first, second).Wait(TestContext.CancellationToken);
+        }
+        finally
+        {
+            release.Set();
+        }
+
+        first.Result.Should().BeSameAs(loader.Releases);
+        second.Result.Should().BeSameAs(loader.Releases);
+        manifest.GetReleases(5, 0).Should().BeSameAs(loader.Releases);
+        manifest.GetReleases(manifest.GetReleasesIndex().First(p => p.ProductVersion == "5.0"))
+            .Should().BeSameAs(loader.Releases);
+        loader.DirectRequestCount.Should().Be(1);
+        loader.IndexedRequestCount.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void ReleaseManifest_ProductLookup_SucceedsAfterMissingNumericLookup()
+    {
+        using var entered = new ManualResetEventSlim();
+        using var release = new ManualResetEventSlim();
+        using var loader = new FallbackReleaseLoader(entered, release, TestContext.CancellationToken);
+        var manifest = new FixtureIndexReleaseManifest(loader, "VulnerabilityTestRelease");
+        Product product = ProductCollection.GetFromFileAsync(
+            Path.Combine(GetFixtureRoot(), "releases-index.json"),
+            downloadLatest: false).GetAwaiter().GetResult().First(p => p.ProductVersion == "5.0");
+
+        Task<ReadOnlyCollection<ProductRelease>?> numericLookup = Task.Run(() => manifest.GetReleases(5, 0));
+        entered.Wait(TimeSpan.FromSeconds(10), TestContext.CancellationToken).Should().BeTrue();
+        Task<ReadOnlyCollection<ProductRelease>> productLookup = Task.Run(() => manifest.GetReleases(product));
+        try
+        {
+            release.Set();
+            Task.WhenAll((Task)numericLookup, productLookup).Wait(TestContext.CancellationToken);
+        }
+        finally
+        {
+            release.Set();
+        }
+
+        numericLookup.Result.Should().BeNull();
+        productLookup.Result.Should().BeSameAs(loader.Releases);
+        manifest.GetReleases(product).Should().BeSameAs(loader.Releases);
+        loader.DirectRequestCount.Should().Be(1);
+        loader.IndexedRequestCount.Should().Be(1);
+    }
+
+    private sealed class FallbackReleaseLoader(
+        ManualResetEventSlim entered,
+        ManualResetEventSlim release,
+        CancellationToken cancellationToken)
+        : SignedReleaseManifestLoader(
+            new HttpClient(),
+            new SignatureVerificationOptions(new X509Certificate2Collection(), new X509Certificate2Collection()),
+            new Uri(TestIndexUrl))
+    {
+        private int _directRequestCount;
+        private int _indexedRequestCount;
+        public int DirectRequestCount => _directRequestCount;
+        public int IndexedRequestCount => _indexedRequestCount;
+        public ReadOnlyCollection<ProductRelease> Releases { get; } =
+            Product.GetReleasesAsync(Path.Combine(
+                GetFixtureRoot(), "5.0", "releases.json")).GetAwaiter().GetResult();
+
+        public override ReadOnlyCollection<ProductRelease> GetVerifiedReleases(int major, int minor)
+        {
+            Interlocked.Increment(ref _directRequestCount);
+            entered.Set();
+            release.Wait(TimeSpan.FromSeconds(10), cancellationToken);
+            throw new HttpRequestException("Direct endpoint missing", null, HttpStatusCode.NotFound);
+        }
+
+        public override ReadOnlyCollection<ProductRelease> GetVerifiedReleases(Product product)
+        {
+            Interlocked.Increment(ref _indexedRequestCount);
+            return Releases;
+        }
+    }
+
+    private static string GetFixtureRoot()
+    {
+        string repoRoot = typeof(SignedReleaseManifestLoaderTests).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .First(attribute => attribute.Key == "RepoRoot").Value!;
+        return Path.Combine(repoRoot, "test", "TestAssets", "TestReleases", "TestRelease");
+    }
+
+    [TestMethod]
+    public void ReleaseManifest_Direct500_DoesNotLoadIndexAndCanRetry()
+    {
+        const string channelUrl = "https://example.test/release-metadata/5.0/releases.json";
+        var handler = new StubHandler
+        {
+            { channelUrl, _ => new HttpResponseMessage(HttpStatusCode.InternalServerError) },
+        };
+        using var loader = CreateLoaderWithHandler(handler);
+        var manifest = new FixtureIndexReleaseManifest(loader);
+
+        for (int attempt = 0; attempt < 2; attempt++)
+        {
+            Action act = () => manifest.GetReleases(5, 0);
+            act.Should().Throw<HttpRequestException>()
+                .Which.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        }
+        manifest.IndexRequestCount.Should().Be(0);
+        handler.RequestCount.Should().Be(2);
+    }
+
+    private sealed class FixtureIndexReleaseManifest(
+        SignedReleaseManifestLoader loader,
+        string fixtureFolder = "TestRelease") : ReleaseManifest(loader)
+    {
+        public int IndexRequestCount { get; private set; }
+
+        public override ProductCollection GetReleasesIndex()
+        {
+            IndexRequestCount++;
+            return ProductCollection.GetFromFileAsync(
+                Path.Combine(Path.GetDirectoryName(GetFixtureRoot())!, fixtureFolder, "releases-index.json"),
+                downloadLatest: false).GetAwaiter().GetResult();
+        }
     }
 
     [TestMethod]

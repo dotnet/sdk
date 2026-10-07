@@ -126,4 +126,6 @@ internal sealed class ShimmerProgressTask : IProgressTask, IDisposable
         get => _inner.MaxValue;
         set => _inner.MaxValue = value;
     }
+
+    public bool RequiresKnownMaximum => _inner.RequiresKnownMaximum;
 }

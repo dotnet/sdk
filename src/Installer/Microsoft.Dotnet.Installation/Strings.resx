@@ -145,4 +145,27 @@
     <value>.NET {0} {1} has no released artifacts for user-level installation. Choose a different version or install it at the system level.</value>
     <comment>{0}=component name (e.g. WindowsDesktop), {1}=resolved version. Shown when a release publishes only non-installable artifacts (e.g. .exe installers) for the platform and dotnetup cannot perform a user-level install.</comment>
   </data>
+  <data name="NativeTarProcessStartReturnedFalse" xml:space="preserve">
+    <value>The process API returned false while starting native TAR executable '{0}'.</value>
+    <comment>{0}=native TAR executable name or path.</comment>
+  </data>
+  <data name="NativeTarStartFailed" xml:space="preserve">
+    <value>Failed to start native TAR executable '{0}': {1}</value>
+    <comment>{0}=native TAR executable name or path, {1}=process-start failure message.</comment>
+  </data>
+  <data name="NativeTarBothExtractorsFailed" xml:space="preserve">
+    <value>Both Windows native TAR extraction and the .NET TAR fallback failed.</value>
+  </data>
+  <data name="NativeTarFallbackWarning" xml:space="preserve">
+    <value>Warning: {0} Falling back to the .NET TAR extractor.</value>
+    <comment>{0}=reason native TAR extraction could not be used.</comment>
+  </data>
+  <data name="NativeTarStandardErrorDetails" xml:space="preserve">
+    <value> Error output: {0}</value>
+    <comment>{0}=bounded standard-error output from the native TAR process. The leading space separates this optional sentence from the preceding failure message.</comment>
+  </data>
+  <data name="NativeTarExtractionFailed" xml:space="preserve">
+    <value>Native TAR executable '{0}' exited with code {1} while extracting '{2}' to '{3}'.{4}</value>
+    <comment>{0}=native TAR executable name or path, {1}=exit code, {2}=archive path, {3}=staging destination, {4}=optional standard-error details.</comment>
+  </data>
 </root>

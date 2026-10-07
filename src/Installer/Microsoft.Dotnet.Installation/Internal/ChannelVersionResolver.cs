@@ -46,7 +46,7 @@ internal class ChannelVersionResolver
     /// </summary>
     internal const int MaxReasonableMajorVersion = 99;
 
-    private readonly ReleaseManifest _releaseManifest = new();
+    private readonly ReleaseManifest _releaseManifest = ReleaseManifest.Default;
     private DailyChannelResolver? _dailyChannelResolver;
 
     public ChannelVersionResolver()
@@ -63,7 +63,7 @@ internal class ChannelVersionResolver
     [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Kept as instance for API symmetry with other resolver methods and to allow future stateful caching.")]
     public IEnumerable<string> GetSupportedChannels(bool includeFeatureBands = true)
     {
-        var productIndex = ReleaseManifest.Default.GetReleasesIndex();
+        var productIndex = _releaseManifest.GetReleasesIndex();
         return [..KnownChannelKeywords,
             ..productIndex
                 .Where(p => p.IsSupported)
@@ -71,7 +71,7 @@ internal class ChannelVersionResolver
                 .SelectMany(p => GetChannelsForProduct(p, includeFeatureBands))
         ];
 
-        static IEnumerable<string> GetChannelsForProduct(Product product, bool includeFeatureBands)
+        IEnumerable<string> GetChannelsForProduct(Product product, bool includeFeatureBands)
         {
             if (!includeFeatureBands)
             {
@@ -79,7 +79,7 @@ internal class ChannelVersionResolver
             }
 
             return [product.ProductVersion,
-                ..ReleaseManifest.Default.GetReleases(product)
+                .._releaseManifest.GetReleases(product)
                     .SelectMany(r => r.Sdks)
                     .Select(sdk => sdk.Version)
                     .OrderByDescending(v => v)
@@ -286,17 +286,17 @@ internal class ChannelVersionResolver
 
         if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
+            var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestVersionByReleaseType(productIndex, ReleaseType.LTS, component);
         }
         else if (string.Equals(channel.Name, PreviewChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
+            var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestPreviewVersion(productIndex, component);
         }
         else if (string.Equals(channel.Name, LatestChannel, StringComparison.OrdinalIgnoreCase))
         {
-            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
+            var productIndex = _releaseManifest.GetReleasesIndex();
             return GetLatestActiveVersion(productIndex, component);
         }
 
@@ -314,19 +314,18 @@ internal class ChannelVersionResolver
             return new ReleaseVersion(channel.Name);
         }
 
-        // Load the index manifest
-        var index = ReleaseManifest.Default.GetReleasesIndex();
         if (minor < 0)
         {
+            var index = _releaseManifest.GetReleasesIndex();
             return GetLatestVersionForMajorOrMajorMinor(index, major, component); // Major Only (e.g., "9")
         }
         else if (minor >= 0 && featureBand == null) // Major.Minor (e.g., "9.0")
         {
-            return GetLatestVersionForMajorOrMajorMinor(index, major, component, minor);
+            return ReleaseManifest.FindLatestRelease(_releaseManifest.GetReleases(major, minor), component)?.Version;
         }
         else if (minor >= 0 && featureBand is not null) // Not Fully Qualified Feature band Version (e.g., "9.0.1xx")
         {
-            return GetLatestVersionForFeatureBand(index, major, minor, featureBand, component);
+            return GetLatestVersionForFeatureBand(_releaseManifest.GetReleases(major, minor), featureBand, component);
         }
 
         return null;
@@ -432,21 +431,19 @@ internal class ChannelVersionResolver
     /// <summary>
     /// Gets the latest version for a feature band channel (e.g., "9.0.1xx").
     /// </summary>
-    private static ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
+    private static ReleaseVersion? GetLatestVersionForFeatureBand(
+        IEnumerable<ProductRelease>? releases,
+        string featureBand,
+        InstallComponent component)
     {
         if (component != InstallComponent.SDK)
         {
             return null;
         }
 
-        var validProducts = GetProductsInMajorOrMajorMinor(index, major, minor);
-        var latestProduct = validProducts.FirstOrDefault();
-        var releases = latestProduct is not null
-            ? ReleaseManifest.Default.GetReleases(latestProduct).ToList()
-            : [];
         var normalizedFeatureBand = NormalizeFeatureBandInput(featureBand);
 
-        foreach (var release in releases)
+        foreach (var release in releases ?? [])
         {
             foreach (var sdk in release.Sdks)
             {

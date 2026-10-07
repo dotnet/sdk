@@ -113,6 +113,54 @@ public class DotnetArchiveExtractorTests
     }
 
     [TestMethod]
+    [DataRow("corrupt", DotnetInstallErrorCode.ArchiveCorrupted)]
+    [DataRow("permission", DotnetInstallErrorCode.PermissionDenied)]
+    [DataRow("io", DotnetInstallErrorCode.ExtractionFailed)]
+    public void Commit_WhenNativeAndManagedTarFail_ClassifiesManagedFailure(
+        string failure, DotnetInstallErrorCode expectedCode)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var request = new DotnetInstallRequest(
+            new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture()),
+            new UpdateChannel("9.0"),
+            InstallComponent.Runtime,
+            new InstallRequestOptions());
+        var downloader = new MockArchiveDownloader { ArchiveFileExtension = ".tar" };
+        using var extractor = new DotnetArchiveExtractor(
+            request, new ReleaseVersion(9, 0, 0), new ReleaseManifest(),
+            new NullProgressTarget(), downloader);
+        Exception managedFailure = failure switch
+        {
+            "corrupt" => new InvalidDataException("managed archive failure"),
+            "permission" => new UnauthorizedAccessException("managed permission failure"),
+            _ => new IOException("managed IO failure"),
+        };
+        extractor.TarArchiveExtractor = new WindowsNativeTarArchiveExtractor(
+            new FailingTarExtractor(managedFailure),
+            new FailingNativeTarRunner());
+
+        extractor.Prepare();
+        DotnetInstallException exception = Assert.ThrowsExactly<DotnetInstallException>(extractor.Commit);
+
+        exception.ErrorCode.Should().Be(expectedCode);
+        var bothFailures = exception.InnerException.Should().BeOfType<AggregateException>().Subject;
+        bothFailures.InnerExceptions.Should().HaveCount(2);
+        bothFailures.InnerExceptions[0].Message.Should().Contain("native failure");
+        bothFailures.InnerExceptions[1].Should().BeSameAs(managedFailure);
+    }
+
+    private sealed class FailingTarExtractor(Exception failure) : ITarArchiveExtractor
+    {
+        public void Extract(TarExtractionContext context) => throw failure;
+    }
+
+    private sealed class FailingNativeTarRunner : INativeTarProcessRunner
+    {
+        public NativeTarProcessResult Run(string executable, IReadOnlyList<string> arguments)
+            => new(7, "native failure");
+    }
+
+    [TestMethod]
     public void Dispose_CleansUpTemporaryFiles()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -178,6 +226,7 @@ public class DotnetArchiveExtractorTests
         call.Version.Should().Be(version);
         call.DestinationPath.Should().StartWith(extractor.ScratchDownloadDirectory);
         call.DestinationPath.Should().EndWith(DotnetupTestUtilities.DefaultArchiveFileExtension);
+        call.HasProgressReporter.Should().BeFalse();
 
         _log.WriteLine($"Download was called with version {call.Version} to {call.DestinationPath}");
     }
@@ -314,6 +363,56 @@ public class DotnetArchiveExtractorTests
 
         File.Exists(nestedPath).Should().BeTrue();
         File.ReadAllText(nestedPath).Should().Be("content-of-sub/nested.txt");
+    }
+
+    [TestMethod]
+    public void ExtractTarContents_SkipsEntryProgressForCompletionOnlyTask()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var tarPath = Path.Combine(testEnv.TempRoot, "test.tar");
+        var extractDir = Path.Combine(testEnv.TempRoot, "extracted");
+        Directory.CreateDirectory(extractDir);
+
+        var defaultMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead;
+        CreateTarWithPermissions(tarPath,
+            ("hello.txt", defaultMode, isDirectory: false),
+            ("sub/nested.txt", defaultMode, isDirectory: false));
+
+        var task = new TestProgressTask(requiresKnownMaximum: false)
+        {
+            MaxValue = 17,
+            Value = 3,
+        };
+
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, task);
+
+        task.MaxValue.Should().Be(17);
+        task.Value.Should().Be(3);
+        File.Exists(Path.Combine(extractDir, "hello.txt")).Should().BeTrue();
+        File.Exists(Path.Combine(extractDir, "sub", "nested.txt")).Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ExtractTarContents_ReportsEntryProgressWhenMaximumIsRequired()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var tarPath = Path.Combine(testEnv.TempRoot, "test.tar");
+        var extractDir = Path.Combine(testEnv.TempRoot, "extracted");
+        Directory.CreateDirectory(extractDir);
+
+        var defaultMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.GroupRead | UnixFileMode.OtherRead;
+        CreateTarWithPermissions(tarPath,
+            ("hello.txt", defaultMode, isDirectory: false),
+            ("sub/nested.txt", defaultMode, isDirectory: false));
+
+        var task = new TestProgressTask(requiresKnownMaximum: true);
+
+        DotnetArchiveExtractor.ExtractTarArchive(tarPath, extractDir, task);
+
+        task.MaxValue.Should().Be(2);
+        task.Value.Should().Be(2);
     }
 
     [TestMethod]
@@ -461,6 +560,44 @@ public class DotnetArchiveExtractorTests
     }
 
     [TestMethod]
+    public void Commit_ExtractsUncompressedTarArchive_Correctly()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var version = new ReleaseVersion(9, 0, 0);
+        var request = new DotnetInstallRequest(
+            installRoot,
+            new UpdateChannel("9.0"),
+            InstallComponent.Runtime,
+            new InstallRequestOptions());
+
+        using var tarStream = new MemoryStream();
+        using (var writer = new TarWriter(tarStream, leaveOpen: true))
+        {
+            writer.WriteEntry(new PaxTarEntry(TarEntryType.RegularFile, "shared/Microsoft.NETCore.App/9.0.0/System.Runtime.dll")
+            {
+                DataStream = new MemoryStream("runtime-content"u8.ToArray()),
+            });
+        }
+
+        var mockDownloader = new MockArchiveDownloader
+        {
+            FakeArchiveContent = tarStream.ToArray(),
+            ArchiveFileExtension = ".tar"
+        };
+
+        using var extractor = new DotnetArchiveExtractor(
+            request, version, new ReleaseManifest(), new NullProgressTarget(), mockDownloader);
+
+        extractor.Prepare();
+        extractor.Commit();
+
+        string runtimeFile = Path.Combine(testEnv.InstallPath, "shared", "Microsoft.NETCore.App", "9.0.0", "System.Runtime.dll");
+        File.ReadAllText(runtimeFile).Should().Be("runtime-content");
+    }
+
+    [TestMethod]
     public void Commit_ExtractsTarGzArchive_WhenDecompressedTarPathAlreadyExists()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -586,5 +723,12 @@ public class DotnetArchiveExtractorTests
 
         return ms.ToArray();
     }
-}
 
+    private sealed class TestProgressTask(bool requiresKnownMaximum) : IProgressTask
+    {
+        public string Description { get; set; } = string.Empty;
+        public double Value { get; set; }
+        public double MaxValue { get; set; }
+        public bool RequiresKnownMaximum { get; } = requiresKnownMaximum;
+    }
+}

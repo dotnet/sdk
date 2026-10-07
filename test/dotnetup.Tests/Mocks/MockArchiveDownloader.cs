@@ -42,7 +42,8 @@ internal class MockArchiveDownloader : IArchiveDownloader
     public record DownloadCall(
         DotnetInstallRequest Request,
         ReleaseVersion Version,
-        string DestinationPath);
+        string DestinationPath,
+        bool HasProgressReporter);
 
     /// <summary>
     /// The extension to append to the base path. Defaults to <see cref="DotnetupTestUtilities.DefaultArchiveFileExtension"/>.
@@ -56,7 +57,7 @@ internal class MockArchiveDownloader : IArchiveDownloader
         IProgress<DownloadProgress>? progress = null)
     {
         string destinationPath = destinationBasePath + ArchiveFileExtension;
-        DownloadCalls.Add(new DownloadCall(installRequest, resolvedVersion, destinationPath));
+        DownloadCalls.Add(new DownloadCall(installRequest, resolvedVersion, destinationPath, progress is not null));
 
         if (ExceptionToThrow != null)
         {

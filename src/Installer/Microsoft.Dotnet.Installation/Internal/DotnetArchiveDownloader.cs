@@ -36,9 +36,10 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// Downloads the archive from the specified URL to the destination path with progress reporting.
     /// </summary>
     /// <param name="downloadUrl">The URL to download from</param>
+    /// <param name="expectedHash">The hash expected for the downloaded archive</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    private async Task DownloadArchiveAsync(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    private async Task DownloadArchiveAsync(string downloadUrl, string expectedHash, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
         string tempPath = $"{destinationPath}.download";
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
@@ -47,10 +48,10 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         {
             try
             {
-                await DownloadAttemptAsync(downloadUrl, tempPath, destinationPath, progress).ConfigureAwait(false);
+                await DownloadAttemptAsync(downloadUrl, expectedHash, tempPath, destinationPath, progress).ConfigureAwait(false);
                 return;
             }
-            catch (Exception)
+            catch (Exception ex) when (ex is not DotnetInstallException)
             {
                 if (attempt < MaxRetryCount)
                 {
@@ -69,7 +70,7 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         }
     }
 
-    private async Task DownloadAttemptAsync(string downloadUrl, string tempPath, string destinationPath, IProgress<DownloadProgress>? progress)
+    private async Task DownloadAttemptAsync(string downloadUrl, string expectedHash, string tempPath, string destinationPath, IProgress<DownloadProgress>? progress)
     {
         using var response = await _httpClient.GetAsync(downloadUrl, HttpCompletionOption.ResponseHeadersRead).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -80,35 +81,60 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         const int fileStreamBufferSize = 8192;
         using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, fileStreamBufferSize, useAsync: true);
 
-        await CopyStreamWithProgressAsync(contentStream, fileStream, totalBytes, progress).ConfigureAwait(false);
+        string actualHash = progress is null
+            ? await CopyStreamAndHashAsync(contentStream, fileStream).ConfigureAwait(false)
+            : await CopyStreamWithProgressAndHashAsync(contentStream, fileStream, totalBytes, progress).ConfigureAwait(false);
 
         await fileStream.FlushAsync().ConfigureAwait(false);
         fileStream.Close();
 
+        VerifyHash(actualHash, expectedHash);
         CommitDownload(tempPath, destinationPath);
     }
 
-    private static async Task CopyStreamWithProgressAsync(Stream source, Stream destination, long? totalBytes, IProgress<DownloadProgress>? progress)
+    private static async Task<string> CopyStreamWithProgressAndHashAsync(
+        Stream source,
+        Stream destination,
+        long? totalBytes,
+        IProgress<DownloadProgress> progress)
     {
         var buffer = new byte[81920]; // 80KB buffer
         long bytesRead = 0;
         int read;
         var lastProgressReport = DateTime.MinValue;
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA512);
 
         while ((read = await source.ReadAsync(buffer).ConfigureAwait(false)) > 0)
         {
             await destination.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
+            hash.AppendData(buffer, 0, read);
             bytesRead += read;
 
             var now = DateTime.UtcNow;
             if ((now - lastProgressReport).TotalMilliseconds > 100)
             {
                 lastProgressReport = now;
-                progress?.Report(new DownloadProgress(bytesRead, totalBytes));
+                progress.Report(new DownloadProgress(bytesRead, totalBytes));
             }
         }
 
-        progress?.Report(new DownloadProgress(bytesRead, totalBytes));
+        progress.Report(new DownloadProgress(bytesRead, totalBytes));
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+    }
+
+    private static async Task<string> CopyStreamAndHashAsync(Stream source, Stream destination)
+    {
+        var buffer = new byte[81920];
+        int read;
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA512);
+
+        while ((read = await source.ReadAsync(buffer).ConfigureAwait(false)) > 0)
+        {
+            await destination.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
+            hash.AppendData(buffer, 0, read);
+        }
+
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
     }
 
     private static void CommitDownload(string tempPath, string destinationPath)
@@ -124,11 +150,12 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// Downloads the archive from the specified URL to the destination path (synchronous version).
     /// </summary>
     /// <param name="downloadUrl">The URL to download from</param>
+    /// <param name="expectedHash">The hash expected for the downloaded archive</param>
     /// <param name="destinationPath">The local path to save the downloaded file</param>
     /// <param name="progress">Optional progress reporting</param>
-    private void DownloadArchive(string downloadUrl, string destinationPath, IProgress<DownloadProgress>? progress = null)
+    internal void DownloadArchive(string downloadUrl, string expectedHash, string destinationPath, IProgress<DownloadProgress>? progress = null)
     {
-        DownloadArchiveAsync(downloadUrl, destinationPath, progress).GetAwaiter().GetResult();
+        DownloadArchiveAsync(downloadUrl, expectedHash, destinationPath, progress).GetAwaiter().GetResult();
     }
 
     /// <summary>
@@ -161,14 +188,13 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             return destinationPath;
         }
 
-        DownloadArchive(downloadUrl, destinationPath, progress);
-        VerifyFileHash(destinationPath, expectedHash);
+        DownloadArchive(downloadUrl, expectedHash, destinationPath, progress);
 
         var fileInfo = new FileInfo(destinationPath);
         op.Tag("download.bytes", fileInfo.Length);
         op.Tag("download.from_cache", false);
 
-        try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
+        try { _downloadCache.AddToCache(downloadUrl, destinationPath, preferHardLink: true); }
         catch { /* Ignore errors adding to cache - it's not critical */ }
 
         return destinationPath;
@@ -420,10 +446,12 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
             return false;
         }
 
+        string tempPath = $"{destinationPath}.download";
         try
         {
-            VerifyFileHash(cachedFilePath, expectedHash);
-            File.Copy(cachedFilePath, destinationPath, overwrite: true);
+            _downloadCache.MaterializeFile(cachedFilePath, tempPath, preferHardLink: true);
+            VerifyFileHash(tempPath, expectedHash);
+            CommitDownload(tempPath, destinationPath);
 
             var cachedFileSize = new FileInfo(cachedFilePath).Length;
             progress?.Report(new DownloadProgress(cachedFileSize, cachedFileSize));
@@ -435,6 +463,11 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
         catch
         {
             return false; // Cached file corrupted — fall through to download
+        }
+        finally
+        {
+            try { File.Delete(tempPath); }
+            catch { }
         }
     }
 
@@ -550,12 +583,16 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
     /// <param name="expectedHash">Expected hash value</param>
     public static void VerifyFileHash(string filePath, string expectedHash)
     {
+        VerifyHash(ComputeFileHash(filePath), expectedHash);
+    }
+
+    private static void VerifyHash(string actualHash, string expectedHash)
+    {
         if (string.IsNullOrEmpty(expectedHash))
         {
             throw new ArgumentException("Expected hash cannot be null or empty", nameof(expectedHash));
         }
 
-        string actualHash = ComputeFileHash(filePath);
         if (string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
         {
             return;

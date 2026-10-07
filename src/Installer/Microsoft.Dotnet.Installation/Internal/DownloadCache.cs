@@ -23,9 +23,17 @@ internal class DownloadCache
     private readonly string _cacheDirectory;
     private readonly string _cacheIndexPath;
     private readonly Dictionary<string, string> _cacheIndex;
+    private readonly Func<string, string, bool> _tryCreateHardLink;
+    private readonly object _sync = new();
 
     public DownloadCache(string? cacheDirectory = null)
+        : this(cacheDirectory, TryCreateHardLink)
     {
+    }
+
+    internal DownloadCache(string? cacheDirectory, Func<string, string, bool> tryCreateHardLink)
+    {
+        ArgumentNullException.ThrowIfNull(tryCreateHardLink);
         // DownloadCache lives in the layer-agnostic Microsoft.Dotnet.Installation
         // library and cannot reference DotnetupPaths (which lives in the
         // higher-level dotnetup.Library). Callers that know the dotnetup-specific
@@ -42,6 +50,7 @@ internal class DownloadCache
             "downloadcache");
         _cacheIndexPath = Path.Combine(_cacheDirectory, "cache-index.json");
         _cacheIndex = LoadCacheIndex();
+        _tryCreateHardLink = tryCreateHardLink;
     }
 
     /// <summary>
@@ -51,18 +60,21 @@ internal class DownloadCache
     /// <returns>The path to the cached file, or null if not found</returns>
     public string? GetCachedFilePath(string downloadUrl)
     {
-        if (_cacheIndex.TryGetValue(downloadUrl, out string? fileName))
+        lock (_sync)
         {
-            string filePath = Path.Combine(_cacheDirectory, fileName);
-            if (File.Exists(filePath))
+            if (_cacheIndex.TryGetValue(downloadUrl, out string? fileName))
             {
-                return filePath;
+                string filePath = Path.Combine(_cacheDirectory, fileName);
+                if (File.Exists(filePath))
+                {
+                    return filePath;
+                }
+                // File was deleted, remove from index
+                _cacheIndex.Remove(downloadUrl);
+                SaveCacheIndex();
             }
-            // File was deleted, remove from index
-            _cacheIndex.Remove(downloadUrl);
-            SaveCacheIndex();
+            return null;
         }
-        return null;
     }
 
     /// <summary>
@@ -70,28 +82,64 @@ internal class DownloadCache
     /// </summary>
     /// <param name="downloadUrl">The URL the file was downloaded from</param>
     /// <param name="sourceFilePath">The path to the file to cache</param>
-    public void AddToCache(string downloadUrl, string sourceFilePath)
+    /// <param name="preferHardLink">Whether to avoid copying by creating a hardlink when supported.</param>
+    public void AddToCache(string downloadUrl, string sourceFilePath, bool preferHardLink = false)
     {
-        // Ensure cache directory exists
-        Directory.CreateDirectory(_cacheDirectory);
-
-        // Use the filename from the download URL
-        string fileName = GetFileNameFromUrl(downloadUrl);
-        string cachedFilePath = Path.Combine(_cacheDirectory, fileName);
-
-        // Skip if this filename is already cached for a different URL
-        // (collision case - we'll download the right file when needed and hash check will catch it)
-        if (_cacheIndex.ContainsValue(fileName) && !_cacheIndex.ContainsKey(downloadUrl))
+        lock (_sync)
         {
-            return;
+            Directory.CreateDirectory(_cacheDirectory);
+
+            string fileName = GetFileNameFromUrl(downloadUrl);
+            string cachedFilePath = Path.Combine(_cacheDirectory, fileName);
+
+            // Skip if this filename is already cached for a different URL
+            // (collision case - we'll download the right file when needed and hash check will catch it)
+            if (_cacheIndex.ContainsValue(fileName) && !_cacheIndex.ContainsKey(downloadUrl))
+            {
+                return;
+            }
+
+            string tempCachePath = Path.Combine(_cacheDirectory, $".{fileName}.{Guid.NewGuid():N}.tmp");
+            try
+            {
+                MaterializeFile(sourceFilePath, tempCachePath, preferHardLink);
+                File.Move(tempCachePath, cachedFilePath, overwrite: true);
+            }
+            finally
+            {
+                try { File.Delete(tempCachePath); }
+                catch { }
+            }
+
+            _cacheIndex[downloadUrl] = fileName;
+            SaveCacheIndex();
+        }
+    }
+
+    internal void MaterializeFile(string sourceFilePath, string destinationFilePath, bool preferHardLink)
+    {
+        if (File.Exists(destinationFilePath))
+        {
+            File.Delete(destinationFilePath);
         }
 
-        // Copy the file to the cache
-        File.Copy(sourceFilePath, cachedFilePath, overwrite: true);
+        if (!preferHardLink || !_tryCreateHardLink(sourceFilePath, destinationFilePath))
+        {
+            File.Copy(sourceFilePath, destinationFilePath);
+        }
+    }
 
-        // Update the index
-        _cacheIndex[downloadUrl] = fileName;
-        SaveCacheIndex();
+    private static bool TryCreateHardLink(string sourceFilePath, string destinationFilePath)
+    {
+        try
+        {
+            File.CreateHardLink(destinationFilePath, sourceFilePath);
+            return true;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or PlatformNotSupportedException or NotSupportedException)
+        {
+            return false;
+        }
     }
 
     /// <summary>

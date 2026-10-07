@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.Collections.ObjectModel;
+using System.Net;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal.Signing;
 
@@ -95,7 +96,7 @@ internal class ReleaseManifest
     // is required: ConcurrentDictionary.GetOrAdd does NOT guarantee single-invocation of the
     // value factory under concurrent access. Without Lazy<T>, two PrepareInstall threads asking
     // for the same channel could each download + verify the same JSON.
-    private readonly ConcurrentDictionary<string, Lazy<ReadOnlyCollection<ProductRelease>>> _releaseCache = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, Lazy<ReadOnlyCollection<ProductRelease>?>> _releaseCache = new(StringComparer.Ordinal);
 
     // Lazy<T>'s default mode is ExecutionAndPublication, so the orchestrator's parallel
     // PrepareConcurrent calls cannot double-instantiate the loader.
@@ -145,15 +146,16 @@ internal class ReleaseManifest
     {
         try
         {
-            var productCollection = GetReleasesIndex();
-            var product = FindProduct(productCollection, resolvedVersion);
-            if (product is null)
+            var releases = GetReleases(resolvedVersion.Major, resolvedVersion.Minor);
+            if (releases is null)
             {
                 return FindReleaseFileResult.ProductNotFound;
             }
-            // Routes through GetReleases(product) so the per-channel JSON is signature-verified
-            // (and per-process cached) before we trust its contents to drive the archive download.
-            var release = FindRelease(GetReleases(product), resolvedVersion, installRequest.Component);
+
+            // Both direct major/minor lookup and index fallback route through GetReleases,
+            // ensuring the per-channel JSON is signature-verified and process-cached before
+            // its contents select an archive.
+            var release = FindSpecificRelease(releases, resolvedVersion, installRequest.Component);
             if (release is null)
             {
                 return FindReleaseFileResult.ReleaseNotFound;
@@ -202,12 +204,12 @@ internal class ReleaseManifest
     /// process for the index JSON, matching the per-product cache contract below.
     /// TODO: Caching of the manifest or product collection after the program exits would be ideal.
     /// </summary>
-    public ProductCollection GetReleasesIndex() => _productCollection.Value;
+    public virtual ProductCollection GetReleasesIndex() => _productCollection.Value;
 
     /// <summary>
     /// Returns releases for a product. Downloaded + signature-verified once per process per
     /// product, then served from <see cref="_releaseCache"/>. <see cref="Lazy{T}"/> guarantees the
-    /// verify runs exactly once even under concurrent <see cref="GetReleases"/> calls.
+    /// verify runs exactly once even under concurrent <see cref="GetReleases(Product)"/> calls.
     ///
     /// <para>
     /// On failure, the cache entry is removed so a retry within the same process gets a fresh
@@ -215,34 +217,76 @@ internal class ReleaseManifest
     /// block recovery from transient errors (503, network blips) for the rest of the process.
     /// </para>
     /// </summary>
-    public ReadOnlyCollection<ProductRelease> GetReleases(Product product)
+    public virtual ReadOnlyCollection<ProductRelease> GetReleases(Product product)
     {
         ArgumentNullException.ThrowIfNull(product);
-        var lazy = _releaseCache.GetOrAdd(product.ProductVersion, _ =>
-            new Lazy<ReadOnlyCollection<ProductRelease>>(
-                () => _loader.Value.GetVerifiedReleases(product),
+        ReadOnlyCollection<ProductRelease>? releases = GetCachedReleases(
+            product.ProductVersion, () => _loader.Value.GetVerifiedReleases(product));
+        // A concurrent numeric lookup may have cached "product not found" before this
+        // caller supplied the Product. Use its signed URL rather than retrying that race.
+        if (releases is null)
+        {
+            releases = _loader.Value.GetVerifiedReleases(product);
+            _releaseCache.TryAdd(product.ProductVersion, new Lazy<ReadOnlyCollection<ProductRelease>?>(releases));
+        }
+        return releases;
+    }
+
+    /// <summary>
+    /// Returns releases for a known major/minor product without loading the release index.
+    /// A missing direct endpoint falls back through the signed index for compatibility with
+    /// mirrors that do not expose the standard release-metadata directory layout.
+    /// </summary>
+    public virtual ReadOnlyCollection<ProductRelease>? GetReleases(int major, int minor)
+    {
+        string productVersion = $"{major}.{minor}";
+        return GetCachedReleases(productVersion, () =>
+        {
+            try
+            {
+                return _loader.Value.GetVerifiedReleases(major, minor);
+            }
+            catch (HttpRequestException ex) when (ex.StatusCode == HttpStatusCode.NotFound)
+            {
+                Product? product = FindProduct(GetReleasesIndex(), productVersion);
+                return product is null ? null : _loader.Value.GetVerifiedReleases(product);
+            }
+        });
+    }
+
+    private ReadOnlyCollection<ProductRelease>? GetCachedReleases(
+        string productVersion,
+        Func<ReadOnlyCollection<ProductRelease>?> valueFactory)
+    {
+        var lazy = _releaseCache.GetOrAdd(productVersion, _ =>
+            new Lazy<ReadOnlyCollection<ProductRelease>?>(
+                valueFactory,
                 LazyThreadSafetyMode.ExecutionAndPublication));
         try
         {
-            return lazy.Value;
+            ReadOnlyCollection<ProductRelease>? releases = lazy.Value;
+            if (releases is null)
+            {
+                // The direct endpoint returned 404 and the signed index has no matching
+                // product. Do not cache absence: a caller with a Product can still load it.
+                _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>?>>(productVersion, lazy));
+            }
+            return releases;
         }
         catch
         {
-            // Atomic compare-and-remove: only drop the failed entry, not a fresh one another
-            // thread may have already swapped in.
-            _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>>>(product.ProductVersion, lazy));
+            // Atomic compare-and-remove: only remove the failed Lazy, not a replacement another
+            // thread may have installed after observing the same failure.
+            _releaseCache.TryRemove(new KeyValuePair<string, Lazy<ReadOnlyCollection<ProductRelease>?>>(productVersion, lazy));
             throw;
         }
     }
 
     /// <summary>
-    /// Finds the product for the given version.
+    /// Finds the product matching a major/minor product-version identifier.
     /// </summary>
-    private static Product? FindProduct(ProductCollection productCollection, ReleaseVersion releaseVersion)
-    {
-        var majorMinor = $"{releaseVersion.Major}.{releaseVersion.Minor}";
-        return productCollection.FirstOrDefault(p => p.ProductVersion == majorMinor);
-    }
+    private static Product? FindProduct(ProductCollection productCollection, string productVersion) =>
+        productCollection.FirstOrDefault(p => p.ProductVersion == productVersion);
 
     /// <summary>
     /// Determines whether a runtime component's display name matches the requested install component type.
@@ -268,17 +312,33 @@ internal class ReleaseManifest
     }
 
     /// <summary>
-    /// Finds the specific release for the given version.
+    /// Finds the component with the requested version in manifest order.
     /// </summary>
-    private static ReleaseComponent? FindRelease(ReadOnlyCollection<ProductRelease> releases, ReleaseVersion resolvedVersion, InstallComponent component)
+    internal static ReleaseComponent? FindSpecificRelease(
+        IEnumerable<ProductRelease>? releases, ReleaseVersion resolvedVersion, InstallComponent component)
+        => FindRelease(releases, component, version => version.Equals(resolvedVersion));
+
+    /// <summary>
+    /// Finds the first matching component in manifest order.
+    /// </summary>
+    internal static ReleaseComponent? FindLatestRelease(IEnumerable<ProductRelease>? releases, InstallComponent component)
+        => FindRelease(releases, component, _ => true);
+
+    private static ReleaseComponent? FindRelease(
+        IEnumerable<ProductRelease>? releases, InstallComponent component, Func<ReleaseVersion, bool> matchesVersion)
     {
+        if (releases is null)
+        {
+            return null;
+        }
+
         foreach (var release in releases)
         {
             if (component == InstallComponent.SDK)
             {
                 foreach (var sdk in release.Sdks)
                 {
-                    if (sdk.Version.Equals(resolvedVersion))
+                    if (matchesVersion(sdk.Version))
                     {
                         return sdk;
                     }
@@ -288,7 +348,7 @@ internal class ReleaseManifest
             {
                 foreach (var runtime in release.Runtimes.Where(r => IsMatchingRuntimeComponent(r.Name, component)))
                 {
-                    if (runtime.Version.Equals(resolvedVersion))
+                    if (matchesVersion(runtime.Version))
                     {
                         return runtime;
                     }
