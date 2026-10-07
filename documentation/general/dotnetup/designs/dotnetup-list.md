@@ -1,5 +1,8 @@
 # dotnetup list Command
 
+> Historical design: the current relationship-based text output is documented
+> in the [command reference](../reference/dotnetup-list.md).
+
 ## Overview
 
 The `list` command displays all .NET SDKs and runtimes that are managed by dotnetup. This provides visibility into what dotnetup has installed and is tracking in its manifest.

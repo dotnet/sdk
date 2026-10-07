@@ -21,22 +21,45 @@ dotnetup install
 
 If the nearest `global.json` has an `sdk.version`, `dotnetup` derives an
 install specification from the version and `rollForward` value. It records
-the full path to the file as the specification source. If no usable
-`global.json` exists, the command uses the `latest` channel.
+the full path to the file as the specification source. If no `global.json` is
+found, or it has no `sdk.version`, the command uses the `latest` channel.
+Unreadable files or invalid SDK settings are reported as errors.
 
 ## rollForward mapping
 
 `dotnetup` maps `global.json` SDK selection policies to updateable channels:
 
-| `rollForward` value | Stored dotnetup requirement for SDK `10.0.103` |
+| `rollForward` value | Dotnetup channel for SDK `10.0.103` |
 | --- | --- |
-| Omitted or `latestPatch` | `10.0.1xx` |
-| `latestFeature` | `10.0` |
-| `latestMinor` | `10` |
-| `latestMajor` | `latest` |
-| `disable`, `patch`, `feature`, `minor`, or `major` | `10.0.103` |
+| Omitted, `patch`, or `latestPatch` | `10.0.1xx` |
+| `feature` or `latestFeature` | `10.0` |
+| `minor` or `latestMinor` | `10` |
+| `major` or `latestMajor` | `latest` |
+| `disable` | Exactly `10.0.103` |
 
-The exact-version mappings are pinned and are not advanced by an update.
+Dotnetup always chooses the latest eligible SDK in that scope, never an SDK
+older than `sdk.version`. For example, `10.0.103` with an omitted `rollForward`
+or `patch` can update to `10.0.105`, but not `10.0.202`. `disable` requires the
+exact version currently specified in the file.
+
+`allowPrerelease: false` excludes preview SDKs unless `sdk.version` itself is
+a prerelease. When omitted, prerelease SDKs are eligible. This also applies
+to repository requirements that map to `latest`; the standalone `latest`
+channel continues to select stable releases.
+
+Dotnetup selects the greatest matching version regardless of support phase.
+Maintenance and end-of-life releases remain eligible, but an older release
+does not take precedence over a newer matching version.
+
+Install and update read the current file to choose an available SDK. List and
+garbage collection use the same rules to choose among installed SDKs. Garbage
+collection keeps the selected SDK and removes other SDKs unless another
+requirement needs them.
+
+This is dotnetup's SDK management policy, not the .NET host's SDK selection
+algorithm. Dotnetup treats the non-`latest` policies as their `latest` counterparts
+without rewriting `rollForward` in the file. The `dotnet` host still applies its
+own rules when running a command.
 
 ## Installation path from global.json
 
@@ -65,18 +88,18 @@ detected text encoding.
 
 ## Remove a repository requirement
 
-A tracked `global.json` specification is refreshed during garbage collection.
-If the file no longer exists or no longer contains an SDK version, the
-specification is removed.
+Update `sdk.version` to change a repository's SDK requirement. To remove the
+requirement, remove `sdk.version` or delete `global.json` if the file is no longer
+needed. Dotnetup picks up these changes during garbage collection and removes
+unused installations.
 
-You can also remove it explicitly. Match the stored channel and select the
-`globaljson` source:
+`dotnetup sdk uninstall` removes command-line and migration requirements, not
+repository requirements. Use `dotnetup list` to find the `global.json` path.
 
-```dotnetcli
-dotnetup sdk uninstall 10.0.1xx --source globaljson
-```
-
-Use `dotnetup list` to find the stored channel and source path.
+If `global.json` cannot be read or contains an invalid SDK requirement, dotnetup
+reports a warning and keeps the requirement visible, but it does not keep an SDK
+based on the file's previously recorded version or channel. Other valid
+requirements can still keep that SDK installed.
 
 ## See also
 

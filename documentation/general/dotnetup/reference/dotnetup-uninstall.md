@@ -25,13 +25,14 @@ dotnetup uninstall <CHANNEL> [options]
 `CHANNEL`
 
 The stored SDK channel or exact version to remove. Use `dotnetup list` to
-find the stored value.
+find the stored value. Matching command-line and migration specifications are
+removed together. Repository requirements are not removed by this command;
+update or delete the corresponding `global.json` file instead.
 
 ## Options
 
 | Option | Description |
 | --- | --- |
-| `--source <explicit\|globaljson\|all>` | Remove specifications from the selected source. The default is `explicit`. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Select the installation root. Without this option, use the current managed root or the default installation root. |
 | `--interactive [true\|false]` | Enable confirmation prompts. Defaults to enabled outside CI when output is not redirected. Redirected input alone does not disable confirmation. |
@@ -40,16 +41,10 @@ find the stored value.
 
 ## Examples
 
-Remove an explicit feature-band requirement:
+Remove a command-line or migration feature-band requirement:
 
 ```dotnetcli
 dotnetup uninstall 10.0.1xx
-```
-
-Remove matching requirements from any source:
-
-```dotnetcli
-dotnetup uninstall 10.0.1xx --source all
 ```
 
 An installation remains when another specification still refers to it. Garbage

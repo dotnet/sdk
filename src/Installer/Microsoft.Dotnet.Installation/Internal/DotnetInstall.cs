@@ -61,7 +61,7 @@ internal record InstallRequestOptions()
     /// The source of this install request.
     /// Used when recording install specs in the manifest.
     /// </summary>
-    public InstallRequestSource InstallSource { get; init; } = InstallRequestSource.Explicit;
+    public InstallSource InstallSource { get; init; } = InstallSource.Explicit;
 
     /// <summary>
     /// The path to the global.json file that triggered this install, if applicable.
@@ -100,13 +100,4 @@ internal enum Verbosity
     Normal = 1,
     Detailed = 2,
     // Future: Diagnostic = 3,
-}
-
-/// <summary>
-/// The source that triggered an install request.
-/// </summary>
-internal enum InstallRequestSource
-{
-    Explicit,
-    GlobalJson,
 }

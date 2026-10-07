@@ -5,7 +5,6 @@ using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Dotnet.Installation.Internal;
-using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 
@@ -118,107 +117,9 @@ internal static class InstallationLister
         return (specs, installations);
     }
 
-    private const int IndentSize = 2;
-
-    private static string Indent(int level, string text) => $"{new string(' ', level * IndentSize)}{text}";
-
     public static void WriteHumanReadable(TextWriter writer, ListData listData)
     {
-        // Create an AnsiConsole that writes to our TextWriter
-        var console = AnsiConsole.Create(new AnsiConsoleSettings
-        {
-            Out = new AnsiConsoleOutput(writer)
-        });
-
-        writer.WriteLine();
-        console.MarkupLine($"{Strings.ListHeaderTitle} [{DotnetupTheme.Current.Dim}]{Strings.ListHeaderSubtitle}[/]:");
-        writer.WriteLine();
-
-        if (listData.InstallSpecs.Count == 0 && listData.Installations.Count == 0)
-        {
-            writer.WriteLine(Indent(1, Strings.ListNoInstallations));
-        }
-        else
-        {
-
-            // Group by install root for cleaner display
-            var allRoots = listData.InstallSpecs.Select(s => s.InstallRoot)
-                .Union(listData.Installations.Select(i => i.InstallRoot))
-                .Distinct();
-
-            foreach (var rootPath in allRoots)
-            {
-                writer.WriteLine(Indent(1, rootPath));
-
-                var specs = listData.InstallSpecs.Where(s => s.InstallRoot == rootPath).ToList();
-                DisplayInstallSpecs(writer, console, specs);
-
-                var installs = listData.Installations.Where(i => i.InstallRoot == rootPath).ToList();
-                DisplayInstallations(writer, console, installs);
-
-                writer.WriteLine();
-            }
-        }
-
-        writer.WriteLine($"{Strings.ListTotal}: {listData.Installations.Count}");
-    }
-
-    private static void DisplayInstallSpecs(TextWriter writer, IAnsiConsole console, List<InstallSpecInfo> specs)
-    {
-        if (specs.Count > 0)
-        {
-            writer.WriteLine();
-            writer.WriteLine(Indent(2, "Tracked channels:"));
-
-            var specGrid = CreateIndentedGrid();
-
-            foreach (var spec in specs.OrderBy(s => s.Component).ThenBy(s => s.VersionOrChannel))
-            {
-                string sourceDisplay = spec.Source == InstallSource.GlobalJson && spec.GlobalJsonPath is not null
-                    ? spec.GlobalJsonPath
-                    : spec.Source.ToString().ToLowerInvariant();
-
-                specGrid.AddRow(
-                    $"{spec.Component.GetDisplayName()} {spec.VersionOrChannel}",
-                    $"[{DotnetupTheme.Current.Dim}](source: {sourceDisplay.EscapeMarkup()})[/]"
-                );
-            }
-
-            console.Write(specGrid);
-        }
-    }
-
-    private static void DisplayInstallations(TextWriter writer, IAnsiConsole console, List<InstallationInfo> installs)
-    {
-        if (installs.Count > 0)
-        {
-            writer.WriteLine();
-            writer.WriteLine(Indent(2, "Installed versions:"));
-
-            var installGrid = CreateIndentedGrid();
-
-            foreach (var install in installs.OrderBy(i => i.Component).ThenBy(i => i.Version))
-            {
-                string status = install.IsValid == false
-                    ? $"[{DotnetupTheme.Current.Error}]({install.Architecture} — invalid: {install.ValidationFailure})[/]"
-                    : $"({install.Architecture})";
-
-                installGrid.AddRow(
-                    $"{install.Component.GetDisplayName()} {install.Version}",
-                    status
-                );
-            }
-
-            console.Write(installGrid);
-        }
-    }
-
-    private static Grid CreateIndentedGrid()
-    {
-        var grid = new Grid();
-        grid.AddColumn(new GridColumn().PadLeft(3 * IndentSize).PadRight(IndentSize).NoWrap());
-        grid.AddColumn(new GridColumn().NoWrap());
-        return grid;
+        InstallationListRenderer.Write(writer, listData);
     }
 
     public static void WriteJson(TextWriter writer, ListData listData)
