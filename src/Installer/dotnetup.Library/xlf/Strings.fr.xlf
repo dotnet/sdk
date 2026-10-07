@@ -2,9 +2,39 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="fr" original="../Strings.resx">
     <body>
+      <trans-unit id="CommandDone">
+        <source>Done.</source>
+        <target state="new">Done.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
         <source>Allows the command to stop and wait for user input or action.</source>
         <target state="new">Allows the command to stop and wait for user input or action.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandNonInteractiveOptionDescription">
+        <source>Proceed without prompting for confirmation.</source>
+        <target state="new">Proceed without prompting for confirmation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfirmationNo">
+        <source>No</source>
+        <target state="new">No</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfirmationOptions">
+        <source>([bold underline]Y[/]/n)</source>
+        <target state="new">([bold underline]Y[/]/n)</target>
+        <note>Confirmation hint. Y/N key bindings are not localized. {Locked}</note>
+      </trans-unit>
+      <trans-unit id="ConfirmationOptionsWithKeyboardHints">
+        <source>([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)</source>
+        <target state="new">([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)</target>
+        <note>Confirmation hint. Y/N key bindings are not localized. {Locked="[bold underline]Y[/]/n"}</note>
+      </trans-unit>
+      <trans-unit id="ConfirmationYes">
+        <source>Yes</source>
+        <target state="new">Yes</target>
         <note />
       </trans-unit>
       <trans-unit id="DotnetCommandDescription">
@@ -286,6 +316,21 @@ Or open a new terminal.</target>
         <target state="new">Output format (text or json).</target>
         <note />
       </trans-unit>
+      <trans-unit id="GarbageCollectionNoFilesRemoved">
+        <source>No files were removed.</source>
+        <target state="new">No files were removed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GarbageCollectionRemovedPath">
+        <source>  Removed {0}</source>
+        <target state="new">  Removed {0}</target>
+        <note>{0} is a highlighted relative directory path.</note>
+      </trans-unit>
+      <trans-unit id="GarbageCollectionRemovingInstallations">
+        <source>Removing unused installations...</source>
+        <target state="new">Removing unused installations...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="HelpConfigCommandsTitle">
         <source>Configuration Commands:</source>
         <target state="new">Configuration Commands:</target>
@@ -346,6 +391,11 @@ Or open a new terminal.</target>
         <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstallSpecSource">
+        <source>(source: {0})</source>
+        <target state="new">(source: {0})</target>
+        <note>{0} is an install-source identifier or a global.json path.</note>
+      </trans-unit>
       <trans-unit id="ListCommandDescription">
         <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
         <target state="new">List installed .NET SDKs and runtimes managed by dotnetup.</target>
@@ -396,10 +446,90 @@ Or open a new terminal.</target>
         <target state="new">.NET toolchain manager for user level installs.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ScrollContinue">
+        <source>(Press Enter to continue)</source>
+        <target state="new">(Press Enter to continue)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ScrollMoreAbove">
+        <source>{0} {1} more above</source>
+        <target state="new">{0} {1} more above</target>
+        <note>{0} is an up-triangle symbol; {1} is the number of entries above the visible list.</note>
+      </trans-unit>
+      <trans-unit id="ScrollMoreBelow">
+        <source>{0} {1} more below (use {2}{3} arrows)</source>
+        <target state="new">{0} {1} more below (use {2}{3} arrows)</target>
+        <note>{0} is a down-triangle symbol; {1} is the number of entries below the visible list; {2} and {3} are up/down arrow symbols.</note>
+      </trans-unit>
       <trans-unit id="TelemetryNotice">
         <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>
         <target state="new">dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</target>
         <note />
+      </trans-unit>
+      <trans-unit id="UninstallCancelled">
+        <source>Uninstall cancelled. No install specs or files were removed.</source>
+        <target state="new">Uninstall cancelled. No install specs or files were removed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UninstallConfirmationPrompt">
+        <source>Proceed with uninstall?</source>
+        <target state="new">Proceed with uninstall?</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UninstallDereferencedSpec">
+        <source>Dereferenced {0} {1} {2}</source>
+        <target state="new">Dereferenced {0} {1} {2}</target>
+        <note>{0} is a component name; {1} is a highlighted version or channel; {2} is the formatted install-source description.</note>
+      </trans-unit>
+      <trans-unit id="UninstallNoMatchingInstallations">
+        <source>No tracked installations matched component={0}, version='{1}', source={2} at {3}.</source>
+        <target state="new">No tracked installations matched component={0}, version='{1}', source={2} at {3}.</target>
+        <note>{0} is a component identifier; {1} is a version or channel; {2} is an install-source identifier; {3} is the installation root path.</note>
+      </trans-unit>
+      <trans-unit id="UninstallNoTrackedInstallations">
+        <source>No tracked installations found at {0}.</source>
+        <target state="new">No tracked installations found at {0}.</target>
+        <note>{0} is the installation root path.</note>
+      </trans-unit>
+      <trans-unit id="UninstallRemovalSummary">
+        <source>Install spec '{0}' ({1}; source: {2}) will be removed from tracking.</source>
+        <target state="new">Install spec '{0}' ({1}; source: {2}) will be removed from tracking.</target>
+        <note>{0} is a highlighted version or channel; {1} is a component name; {2} is an install-source identifier or a global.json path.</note>
+      </trans-unit>
+      <trans-unit id="UninstallRetainedInstallation">
+        <source>{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</source>
+        <target state="new">{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</target>
+        <note>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</note>
+      </trans-unit>
+      <trans-unit id="UninstallSourceNotFound">
+        <source>No [bold]{0}[/] {1} install spec found for '{2}', but matching specs exist with other sources:</source>
+        <target state="new">No [bold]{0}[/] {1} install spec found for '{2}', but matching specs exist with other sources:</target>
+        <note>{0} is an install-source identifier; {1} is a component name; {2} is a version or channel. {Locked="[bold]"}{Locked="[/]"}</note>
+      </trans-unit>
+      <trans-unit id="UninstallSpecNotFound">
+        <source>No {0} install spec found for '{1}' at {2}.</source>
+        <target state="new">No {0} install spec found for '{1}' at {2}.</target>
+        <note>{0} is a component name; {1} is a version or channel; {2} is the installation root path.</note>
+      </trans-unit>
+      <trans-unit id="UninstallSpecNotFoundWithOtherSources">
+        <source>No {0} install spec found for '{1}', but matching specs exist with other sources:</source>
+        <target state="new">No {0} install spec found for '{1}', but matching specs exist with other sources:</target>
+        <note>{0} is a component name; {1} is a version or channel.</note>
+      </trans-unit>
+      <trans-unit id="UninstallUnexpectedAdditionalRemoval">
+        <source>{0} will [bold]also[/] be [bold]uninstalled[/] because it is no longer referenced by any install specs.</source>
+        <target state="new">{0} will [bold]also[/] be [bold]uninstalled[/] because it is no longer referenced by any install specs.</target>
+        <note>{0} is a highlighted component name and installed version. Used only when the operation also removes files for the requested component and channel. {Locked="[bold]"}{Locked="[/]"}</note>
+      </trans-unit>
+      <trans-unit id="UninstallUnexpectedRemoval">
+        <source>{0} will be [bold]uninstalled[/] because it is no longer referenced by any install specs.</source>
+        <target state="new">{0} will be [bold]uninstalled[/] because it is no longer referenced by any install specs.</target>
+        <note>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</note>
+      </trans-unit>
+      <trans-unit id="UninstallUseAllSources">
+        <source>Use {0} {1} to target these specs.</source>
+        <target state="new">Use {0} {1} to target these specs.</target>
+        <note>{0} is the source option name; {1} is the install-source value that selects every source.</note>
       </trans-unit>
     </body>
   </file>

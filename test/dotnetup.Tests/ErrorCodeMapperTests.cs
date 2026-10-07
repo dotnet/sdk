@@ -15,6 +15,16 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
 public class ErrorCodeMapperTests
 {
     [TestMethod]
+    public void OperationCancelled_IsReportedAsUserError()
+    {
+        var info = ErrorCodeMapper.GetErrorInfo(
+            new DotnetInstallException(DotnetInstallErrorCode.OperationCancelled, "Uninstall cancelled."));
+
+        info.ErrorType.Should().Be(nameof(DotnetInstallErrorCode.OperationCancelled));
+        info.Category.Should().Be(ErrorCategory.User);
+    }
+
+    [TestMethod]
     public void GetErrorInfo_IOException_DiskFull_MapsCorrectly()
     {
         // HResult for ERROR_DISK_FULL

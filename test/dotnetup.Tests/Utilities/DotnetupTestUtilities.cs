@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
@@ -236,7 +237,7 @@ internal static class DotnetupTestUtilities
         string fallbackConfiguration = "Debug";
 #endif
 
-        string repoRoot = GetRepositoryRoot();
+        string artifactsDir = GetArtifactsDirectory();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
 
         // Since .NET 8, RuntimeInformation.RuntimeIdentifier returns the portable RID
@@ -250,7 +251,7 @@ internal static class DotnetupTestUtilities
 
         foreach (string config in configurationsToSearch)
         {
-            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
+            string configDir = Path.Combine(artifactsDir, "bin", "dotnetup", config);
 
             if (!Directory.Exists(configDir))
             {
@@ -285,7 +286,7 @@ internal static class DotnetupTestUtilities
         // Fall back to managed build output (same search order)
         foreach (string config in configurationsToSearch)
         {
-            string configDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", config);
+            string configDir = Path.Combine(artifactsDir, "bin", "dotnetup", config);
 
             if (!Directory.Exists(configDir))
             {
@@ -311,11 +312,24 @@ internal static class DotnetupTestUtilities
             }
         }
 
-        string primaryDir = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup", configuration);
+        string primaryDir = Path.Combine(artifactsDir, "bin", "dotnetup", configuration);
         throw new FileNotFoundException(
             $"dotnetup executable not found under '{primaryDir}'. " +
             $"Run 'dotnet publish src/Installer/dotnetup/dotnetup.csproj -c {configuration} --self-contained' to produce the AOT binary, " +
             $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
+    }
+
+    private static string GetArtifactsDirectory()
+    {
+        string? artifactsDir = Environment.GetEnvironmentVariable("ArtifactsDir") ??
+            typeof(DotnetupTestUtilities).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .SingleOrDefault(attribute => attribute.Key == "ArtifactsDir")?.Value;
+        if (string.IsNullOrWhiteSpace(artifactsDir))
+        {
+            throw new InvalidOperationException("The dotnetup.Tests assembly must record a non-empty ArtifactsDir build property.");
+        }
+
+        return Path.GetFullPath(artifactsDir);
     }
 
     /// <summary>
@@ -325,12 +339,16 @@ internal static class DotnetupTestUtilities
     /// <param name="captureOutput">Whether to capture and return the output</param>
     /// <param name="workingDirectory">Working directory for the process</param>
     /// <param name="environmentVariables">Additional environment variables to set on the process</param>
+    /// <param name="standardInput">Input to write before closing the child's input stream.</param>
+    /// <param name="timeoutMilliseconds">Maximum process duration, or infinite for existing long-running scenarios.</param>
     /// <returns>A tuple with exit code and captured output (if requested)</returns>
     public static (int exitCode, string output) RunDotnetupProcess(
         string[] args,
         bool captureOutput = false,
         string? workingDirectory = null,
-        Dictionary<string, string>? environmentVariables = null)
+        Dictionary<string, string>? environmentVariables = null,
+        string? standardInput = null,
+        int timeoutMilliseconds = System.Threading.Timeout.Infinite)
     {
         string dotnetupPath = GetDotnetupExecutablePath();
 
@@ -341,41 +359,14 @@ internal static class DotnetupTestUtilities
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;
         process.StartInfo.RedirectStandardError = captureOutput;
+        process.StartInfo.RedirectStandardInput = standardInput is not null;
         process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
 
-        // Suppress the .NET welcome message / first-run experience in test output
-        process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
-
-        // Disable ANSI color codes so that string assertions on captured output
-        // are not broken by escape sequences inserted at line-wrap boundaries.
-        process.StartInfo.Environment["NO_COLOR"] = "1";
-
-        // Apply any additional environment variables
-        if (environmentVariables != null)
-        {
-            foreach (var kvp in environmentVariables)
-            {
-                process.StartInfo.Environment[kvp.Key] = kvp.Value;
-            }
-        }
-
+        ConfigureProcessEnvironment(process.StartInfo, environmentVariables);
         StringBuilder outputBuilder = new();
         if (captureOutput)
         {
-            process.OutputDataReceived += (sender, e) =>
-            {
-                if (e.Data != null)
-                {
-                    outputBuilder.AppendLine(e.Data);
-                }
-            };
-            process.ErrorDataReceived += (sender, e) =>
-            {
-                if (e.Data != null)
-                {
-                    outputBuilder.AppendLine(e.Data);
-                }
-            };
+            CaptureProcessOutput(process, outputBuilder);
         }
 
         process.Start();
@@ -386,8 +377,59 @@ internal static class DotnetupTestUtilities
             process.BeginErrorReadLine();
         }
 
+        if (standardInput is not null)
+        {
+            process.StandardInput.Write(standardInput);
+            process.StandardInput.Close();
+        }
+
+        if (!process.WaitForExit(timeoutMilliseconds))
+        {
+            process.Kill(entireProcessTree: true);
+            process.WaitForExit();
+            throw new TimeoutException($"dotnetup did not exit within {timeoutMilliseconds} ms. Output:\n{outputBuilder}");
+        }
+
         process.WaitForExit();
         return (process.ExitCode, outputBuilder.ToString());
+    }
+
+    private static void ConfigureProcessEnvironment(
+        ProcessStartInfo startInfo, Dictionary<string, string>? environmentVariables)
+    {
+        // Suppress the .NET welcome message / first-run experience in test output
+        startInfo.Environment["DOTNET_NOLOGO"] = "1";
+
+        // Disable ANSI color codes so that string assertions on captured output
+        // are not broken by escape sequences inserted at line-wrap boundaries.
+        startInfo.Environment["NO_COLOR"] = "1";
+
+        // Apply any additional environment variables
+        if (environmentVariables != null)
+        {
+            foreach (var kvp in environmentVariables)
+            {
+                startInfo.Environment[kvp.Key] = kvp.Value;
+            }
+        }
+
+    }
+
+    private static void CaptureProcessOutput(Process process, StringBuilder outputBuilder)
+    {
+        void AppendLine(string? line)
+        {
+            if (line is not null)
+            {
+                lock (outputBuilder)
+                {
+                    outputBuilder.AppendLine(line);
+                }
+            }
+        }
+
+        process.OutputDataReceived += (_, e) => AppendLine(e.Data);
+        process.ErrorDataReceived += (_, e) => AppendLine(e.Data);
     }
 
     private static string GetRepositoryRoot()

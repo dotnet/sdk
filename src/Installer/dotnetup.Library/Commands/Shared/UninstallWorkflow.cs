@@ -21,12 +21,17 @@ internal class UninstallWorkflow
     /// <param name="versionOrChannel">The channel/version to uninstall.</param>
     /// <param name="sourceFilter">Which install source to filter by.</param>
     /// <param name="componentFilter">Which component to target.</param>
-    public static void Execute(string? manifestPath, string? installPath, string versionOrChannel, InstallSource sourceFilter, InstallComponent componentFilter)
+    /// <param name="interactive">Whether to confirm unexpected outcomes before changing state.</param>
+    /// <param name="confirm">Optional confirmation callback for testing.</param>
+    public static void Execute(
+        string? manifestPath, string? installPath, string versionOrChannel,
+        InstallSource sourceFilter, InstallComponent componentFilter, bool interactive = false,
+        Func<ConfirmResult>? confirm = null)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
         var manifest = new DotnetupSharedManifest(manifestPath);
-        var manifestData = manifest.ReadManifest();
+        var manifestData = manifest.ReadManifest(persistPruning: false);
 
         var dotnetEnvironment = new DotnetEnvironmentManager();
         string resolvedInstallPath = ResolveInstallPath(installPath, dotnetEnvironment);
@@ -38,12 +43,27 @@ internal class UninstallWorkflow
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.UninstallTargetNotFound,
-                $"No tracked installations found at {resolvedInstallPath}.");
+                string.Format(CultureInfo.InvariantCulture, Strings.UninstallNoTrackedInstallations, resolvedInstallPath));
         }
 
         var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
 
-        // Find all specs matching the channel and component
+        var matchingSpecs = FindMatchingSpecs(root, versionOrChannel, sourceFilter, componentFilter);
+
+        var targetedInstallations = root.Installations
+            .Where(i => i.Component == componentFilter &&
+                        matchingSpecs.Any(s => new UpdateChannel(s.VersionOrChannel).Matches(
+                            new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(i.Version))))
+            .ToList();
+
+        RemoveSpecsAndRunGc(manifest, manifestData, installRoot, matchingSpecs, targetedInstallations, interactive, confirm);
+
+        AnsiConsole.MarkupLine(DotnetupTheme.Brand(Strings.CommandDone.EscapeMarkup()));
+    }
+
+    private static List<InstallSpec> FindMatchingSpecs(
+        DotnetRootEntry root, string versionOrChannel, InstallSource sourceFilter, InstallComponent componentFilter)
+    {
         var allMatchingSpecs = root.InstallSpecs
             .Where(s => s.Component == componentFilter &&
                         string.Equals(s.VersionOrChannel, versionOrChannel, StringComparison.OrdinalIgnoreCase))
@@ -56,26 +76,14 @@ internal class UninstallWorkflow
 
         if (matchingSpecs.Count == 0)
         {
-            ReportNoMatchingSpecs(allMatchingSpecs, matchingSpecs, sourceFilter, componentFilter, versionOrChannel, resolvedInstallPath);
+            ReportNoMatchingSpecs(allMatchingSpecs, matchingSpecs, sourceFilter, componentFilter, versionOrChannel, root.Path);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.UninstallTargetNotFound,
-                $"No tracked installations matched component={componentFilter}, version='{versionOrChannel}', source={sourceFilter} at {resolvedInstallPath}.");
+                string.Format(CultureInfo.InvariantCulture, Strings.UninstallNoMatchingInstallations,
+                    componentFilter, versionOrChannel, sourceFilter, root.Path));
         }
 
-        // Snapshot installations matching the target component/channel before GC
-        var targetedInstallations = root.Installations
-            .Where(i => i.Component == componentFilter &&
-                        matchingSpecs.Any(s => new UpdateChannel(s.VersionOrChannel).Matches(
-                            new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(i.Version))))
-            .Select(i => (i.Component, i.Version))
-            .ToHashSet();
-
-        RemoveSpecsAndRunGc(manifest, installRoot, matchingSpecs, manifestPath);
-
-        // Check if the targeted installations are still present (referenced by another spec)
-        CheckAndReportStillPresent(manifestPath, installRoot, targetedInstallations);
-
-        AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]Done.[/]");
+        return matchingSpecs;
     }
 
     private static void ReportNoMatchingSpecs(
@@ -92,65 +100,73 @@ internal class UninstallWorkflow
         {
             if (sourceFilter != InstallSource.All)
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Warning}]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}', but matching specs exist with other sources:[/]");
+                AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
+                    Strings.UninstallSourceNotFound, sourceFilter.ToString().EscapeMarkup(),
+                    componentFilter.GetDisplayName().EscapeMarkup(), versionOrChannel.EscapeMarkup())));
             }
             else
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}', but matching specs exist with other sources:[/]");
+                AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
+                    Strings.UninstallSpecNotFoundWithOtherSources, componentFilter.GetDisplayName().EscapeMarkup(),
+                    versionOrChannel.EscapeMarkup())));
             }
 
             foreach (var spec in otherSourceSpecs)
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [{DotnetupTheme.Current.Dim}]{spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()} (source: {spec.InstallSource})[/]");
+                AnsiConsole.MarkupLine("  " + DotnetupTheme.Dim(string.Format(CultureInfo.InvariantCulture,
+                    "{0} {1} {2}", spec.Component.GetDisplayName().EscapeMarkup(), spec.VersionOrChannel.EscapeMarkup(),
+                    string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecSource, spec.InstallSource))));
             }
 
             if (sourceFilter != InstallSource.All)
             {
-                AnsiConsole.MarkupLine(DotnetupTheme.Dim("Use --source all to target these specs."));
+                AnsiConsole.MarkupLine(DotnetupTheme.Dim(string.Format(
+                    CultureInfo.InvariantCulture,
+                    Strings.UninstallUseAllSources,
+                    CommonOptions.SourceOption.Name,
+                    InstallSource.All.ToString().ToLowerInvariant()).EscapeMarkup()));
             }
         }
         else
         {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}' at {resolvedInstallPath.EscapeMarkup()}.[/]");
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
+                Strings.UninstallSpecNotFound, componentFilter.GetDisplayName().EscapeMarkup(),
+                versionOrChannel.EscapeMarkup(), resolvedInstallPath.EscapeMarkup())));
         }
     }
 
     private static void RemoveSpecsAndRunGc(
         DotnetupSharedManifest manifest,
+        DotnetupManifestData manifestData,
         DotnetInstallRoot installRoot,
         List<InstallSpec> matchingSpecs,
-        string? manifestPath)
+        List<Installation> targetedInstallations,
+        bool interactive,
+        Func<ConfirmResult>? confirm)
     {
-        // Remove the install spec(s)
+        var root = manifestData.DotnetRoots.First(r => r.Path == installRoot.Path && r.Architecture == installRoot.Architecture);
         foreach (var spec in matchingSpecs)
         {
-            manifest.RemoveInstallSpec(installRoot, spec);
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"Dereferenced {spec.Component.GetDisplayName()} [{DotnetupTheme.Current.Accent}]{spec.VersionOrChannel}[/] [{DotnetupTheme.Current.Dim}](source: {spec.InstallSource})[/]");
+            root.InstallSpecs.Remove(spec);
         }
 
-        // Run garbage collection
-        GarbageCollectionRunner.RunAndDisplay(manifestPath, installRoot, showEmptyMessage: true);
-    }
-
-    private static void CheckAndReportStillPresent(
-        string? manifestPath,
-        DotnetInstallRoot installRoot,
-        HashSet<(InstallComponent Component, string Version)> targetedInstallations)
-    {
-        if (targetedInstallations.Count > 0)
+        var plan = GarbageCollector.CreatePlan(installRoot, manifestData);
+        var hasWarnings = UninstallPreview.Display(
+            plan, targetedInstallations, matchingSpecs[0].Component, matchingSpecs[0].VersionOrChannel, matchingSpecs);
+        if (hasWarnings && interactive &&
+            (confirm?.Invoke() ?? SpectreDisplayHelpers.Confirm(Strings.UninstallConfirmationPrompt)) != ConfirmResult.Yes)
         {
-            var updatedManifest = new DotnetupSharedManifest(manifestPath);
-            var stillPresent = updatedManifest.GetInstallations(installRoot)
-                .Where(i => targetedInstallations.Contains((i.Component, i.Version)))
-                .ToList();
-
-            if (stillPresent.Count > 0)
-            {
-                AnsiConsole.MarkupLine(DotnetupTheme.Dim("Some installations were not removed because they are still referenced by other install specs."));
-            }
+            throw new DotnetInstallException(DotnetInstallErrorCode.OperationCancelled, Strings.UninstallCancelled);
         }
+
+        foreach (var spec in matchingSpecs.DistinctBy(s => (s.Component, s.VersionOrChannel, s.InstallSource, s.GlobalJsonPath)))
+        {
+            AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, Strings.UninstallDereferencedSpec,
+                spec.Component.GetDisplayName().EscapeMarkup(), DotnetupTheme.Accent(spec.VersionOrChannel.EscapeMarkup()),
+                DotnetupTheme.Dim(string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecSource, spec.InstallSource))));
+        }
+
+        GarbageCollectionRunner.ApplyAndDisplay(new GarbageCollector(manifest), plan);
     }
 
     /// <summary>
