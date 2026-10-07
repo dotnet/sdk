@@ -12,6 +12,8 @@
     <ExcludeFromDotNetBuild Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Linked shared types must not become public API in this host assembly. -->
+    <DefineConstants>$(DefineConstants);INTERNALIZE_SHARED_TYPES</DefineConstants>
 
     <!--
       Mark as Native AOT compatible. This will enable relevant analyzers.
@@ -57,10 +59,16 @@
   <!-- To reduce dll load (cause RPS perf regression). Directly compile files from Microsoft.DotNet.NativeWrapper, Microsoft.DotNet.SdkResolver, and the workload resolver -->
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
-    <Compile Include="..\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
-    <Compile Include="..\Microsoft.DotNet.SdkResolver\**\*.cs" LinkBase="Microsoft.DotNet.SdkResolver" />
+    <Compile Include="..\Microsoft.DotNet.NativeWrapper\**\*.cs"
+             Exclude="..\Microsoft.DotNet.NativeWrapper\PublicExports.cs"
+             LinkBase="Microsoft.DotNet.NativeWrapper" />
+    <Compile Include="..\Microsoft.DotNet.SdkResolver\**\*.cs"
+             Exclude="..\Microsoft.DotNet.SdkResolver\PublicExports.cs"
+             LinkBase="Microsoft.DotNet.SdkResolver" />
     <Compile Include="..\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\CachingWorkloadResolver.cs" LinkBase="Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver" />
-    <Compile Include="..\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="Microsoft.NET.Sdk.WorkloadManifestReader" />
+    <Compile Include="..\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs"
+             Exclude="..\Microsoft.NET.Sdk.WorkloadManifestReader\PublicExports.cs"
+             LinkBase="Microsoft.NET.Sdk.WorkloadManifestReader" />
     <Compile Include="..\..\Cli\Microsoft.DotNet.Cli.CoreUtils\SdkPaths.cs" LinkBase="Cli" />
     <Compile Include="..\..\Cli\dotnet\Commands\Workload\Install\WorkloadInstallRecords\**\*.cs"
              Exclude="..\..\Cli\dotnet\Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs"
@@ -77,6 +85,7 @@
     <!-- Netfx version builds against the lowest version of these dependencies that's guaranteed to be shipped with MSBuild in VS -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" Condition="'$(DotNetBuildSourceOnly)' != 'true'" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" VersionOverride="$(MicrosoftDeploymentDotNetReleasesToolsetPackageVersion)" />
     <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />

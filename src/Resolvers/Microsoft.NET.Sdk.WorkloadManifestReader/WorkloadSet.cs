@@ -7,7 +7,7 @@ using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public class WorkloadSet
+    partial class WorkloadSet
     {
         public Dictionary<ManifestId, (ManifestVersion Version, SdkFeatureBand FeatureBand)> ManifestVersions = new();
 

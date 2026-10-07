@@ -7,13 +7,27 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.NET.Sdk.Localization;
 using Microsoft.DotNet.Cli.Commands;
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+using WorkloadManifestProviderImplementation = Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProviderImplementation;
+using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProviderImplementation;
+#else
+using WorkloadManifestProviderImplementation = Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.IWorkloadManifestProvider;
+#endif
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public partial class SdkDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+    public
+#endif
+    partial class SdkDirectoryWorkloadManifestProvider : WorkloadManifestProviderImplementation
     {
-        public const string WorkloadSetsFolderName = "workloadsets";
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        const string WorkloadSetsFolderName = "workloadsets";
 
         private readonly string? _sdkRootPath;
         private readonly string? _sdkOrUserLocalPath;
@@ -36,19 +50,34 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// Optional hook that allows the CLI to ensure workload manifests are available (and repaired if necessary)
         /// before this provider attempts to enumerate them.
         /// </summary>
-        public IWorkloadManifestCorruptionRepairer? CorruptionRepairer { get; set; }
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        IWorkloadManifestCorruptionRepairer? CorruptionRepairer { get; set; }
 
         /// <summary>
         /// Specifies how this provider should handle corrupt or missing workload manifests.
         /// Default is <see cref="ManifestCorruptionFailureMode.Repair"/>.
         /// </summary>
-        public ManifestCorruptionFailureMode CorruptionFailureMode { get; set; } = ManifestCorruptionFailureMode.Repair;
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        ManifestCorruptionFailureMode CorruptionFailureMode { get; set; } = ManifestCorruptionFailureMode.Repair;
 
         /// <summary>
         /// Gets the resolved workload set, if any. This is populated during construction/refresh
         /// and does not trigger corruption checking.
         /// </summary>
-        public WorkloadSet? ResolvedWorkloadSet => _workloadSet;
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        WorkloadSet? ResolvedWorkloadSet => _workloadSet;
 
         //  This will be non-null if there is an error loading manifests that should be thrown when they need to be accessed.
         //  We delay throwing the error so that in the case where global.json specifies a workload set that isn't installed,
@@ -61,7 +90,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         {
         }
 
-        public static SdkDirectoryWorkloadManifestProvider ForWorkloadSet(string sdkRootPath, string sdkVersion, string? userProfileDir, string workloadSetVersion)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        static SdkDirectoryWorkloadManifestProvider ForWorkloadSet(string sdkRootPath, string sdkVersion, string? userProfileDir, string workloadSetVersion)
         {
             return new SdkDirectoryWorkloadManifestProvider(sdkRootPath, sdkVersion, Environment.GetEnvironmentVariable, userProfileDir, globalJsonPath: null, workloadSetVersion);
         }
@@ -137,7 +171,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             RefreshWorkloadManifests();
         }
 
-        public void RefreshWorkloadManifests()
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        void RefreshWorkloadManifests()
         {
             //  Reset exception state, we may be refreshing manifests after a missing workload set was installed
             _exceptionToThrow = null;
@@ -264,7 +303,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public WorkloadVersionInfo GetWorkloadVersion()
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        WorkloadVersionInfo GetWorkloadVersion()
         {
             if (CorruptionRepairer != null)
             {
@@ -320,7 +364,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public IEnumerable<ReadableWorkloadManifest> GetManifests()
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        IEnumerable<ReadableWorkloadManifest> GetManifests()
         {
             if (CorruptionRepairer != null)
             {
@@ -568,7 +617,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// Checks if the workload set has any manifests that are missing from disk.
         /// This checks all manifest roots (including user-local installs).
         /// </summary>
-        public bool HasMissingManifests(WorkloadSet workloadSet)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        bool HasMissingManifests(WorkloadSet workloadSet)
         {
             foreach (var manifestEntry in workloadSet.ManifestVersions)
             {
@@ -584,12 +638,22 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         /// <summary>
         /// Returns installed workload sets that are available for this SDK (ie are in the same feature band)
         /// </summary>
-        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        Dictionary<string, WorkloadSet> GetAvailableWorkloadSets()
         {
             return GetAvailableWorkloadSetsInternal(null);
         }
 
-        public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets(SdkFeatureBand workloadSetFeatureBand)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        Dictionary<string, WorkloadSet> GetAvailableWorkloadSets(SdkFeatureBand workloadSetFeatureBand)
         {
             return GetAvailableWorkloadSetsInternal(workloadSetFeatureBand);
         }
@@ -655,12 +719,22 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        public string GetSdkFeatureBand()
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        string GetSdkFeatureBand()
         {
             return _sdkVersionBand.ToString();
         }
 
-        public static string? GetGlobalJsonPath(string? globalJsonStartDir)
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        internal
+#else
+        public
+#endif
+        static string? GetGlobalJsonPath(string? globalJsonStartDir)
         {
             string? directory = globalJsonStartDir;
             while (directory != null)
@@ -674,5 +748,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
             return null;
         }
+
+#if TEMPLATE_LOCATOR_PUBLIC_WORKLOAD_API
+        void WorkloadManifestProviderImplementation.RefreshWorkloadManifests() => RefreshWorkloadManifests();
+        IEnumerable<ReadableWorkloadManifest> WorkloadManifestProviderImplementation.GetManifests() => GetManifests();
+        string WorkloadManifestProviderImplementation.GetSdkFeatureBand() => GetSdkFeatureBand();
+        WorkloadVersionInfo WorkloadManifestProviderImplementation.GetWorkloadVersion() => GetWorkloadVersion();
+        Dictionary<string, WorkloadSet> WorkloadManifestProviderImplementation.GetAvailableWorkloadSets() => GetAvailableWorkloadSets();
+#endif
     }
 }

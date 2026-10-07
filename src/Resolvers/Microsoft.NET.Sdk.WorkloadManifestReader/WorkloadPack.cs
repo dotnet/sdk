@@ -3,7 +3,7 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public class WorkloadPack
+    partial class WorkloadPack
     {
         public WorkloadPack(WorkloadPackId id, string version, WorkloadPackKind kind, Dictionary<string, WorkloadPackId>? aliasTo)
         {

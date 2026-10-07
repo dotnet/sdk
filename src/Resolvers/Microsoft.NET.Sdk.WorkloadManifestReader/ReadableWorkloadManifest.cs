@@ -3,7 +3,7 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public class ReadableWorkloadManifest
+    partial class ReadableWorkloadManifest
     {
         public string ManifestId { get; }
 

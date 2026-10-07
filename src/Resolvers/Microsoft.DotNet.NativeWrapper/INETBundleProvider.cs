@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-    public interface INETBundleProvider
+    partial interface INETBundleProvider
     {
         NetEnvironmentInfo GetDotnetEnvironmentInfo(string dotnetDir);
     }
