@@ -11,6 +11,39 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 public class ContainerArchiveTests
 {
     [TestMethod]
+    public async Task Failed_archive_write_preserves_existing_archive()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(directory);
+        string archivePath = Path.Combine(directory, "image.tar.gz");
+        await File.WriteAllTextAsync(archivePath, "existing", TestContext.CancellationToken);
+        ArchiveFileRegistry registry = new(archivePath);
+        DestinationImageReference destination = new(registry, "repository", ["tag"]);
+
+        try
+        {
+            await Assert.ThrowsExactlyAsync<IOException>(
+                () => registry.LoadAsync(
+                    new object(),
+                    default,
+                    destination,
+                    TestContext.CancellationToken,
+                    async (_, _, _, stream, cancellationToken) =>
+                    {
+                        await stream.WriteAsync("partial"u8.ToArray(), cancellationToken);
+                        throw new IOException("write interrupted");
+                    }));
+
+            Assert.AreEqual("existing", await File.ReadAllTextAsync(archivePath, TestContext.CancellationToken));
+            Assert.HasCount(1, Directory.GetFiles(directory));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public async Task Rejects_unsupported_manifest_media_type()
     {
         BuiltImage image = new()
