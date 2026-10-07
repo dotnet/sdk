@@ -95,8 +95,8 @@ internal sealed partial class CSharpCompilerCommand
 
         List<string> arguments = ["/noconfig", "/nologo", $"@{EscapeSingleArg(rspPath)}"];
 
-        // Set PreferredUILang.
-        if (CscArguments.IsDefaultOrEmpty && // only do this in the csc-only fast path (not csc-after-msbuild fast path)
+        // Set PreferredUILang for csc-only fast path. In csc-after-msbuild, this is populated by the msbuild task.
+        if (CscArguments.IsDefaultOrEmpty && 
             Environment.GetEnvironmentVariable("PreferredUILang") is { Length: > 0 } preferredUILang)
         {
             arguments.Add($"/preferreduilang:{preferredUILang}");
