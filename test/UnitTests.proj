@@ -210,6 +210,12 @@
       <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\BundledTemplates.targets">
         <DestinationFolder>Layout/</DestinationFolder>
       </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\BundledManifests.targets">
+        <DestinationFolder>Layout/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Workloads\Manifests\Directory.Build.targets;$(RepoRoot)src\Workloads\Manifests\manifest-packages.csproj">
+        <DestinationFolder>Layout/Workloads/Manifests/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
       <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\GenerateMSIs.targets">
         <DestinationFolder>Layout/</DestinationFolder>
       </TestExecutionDirectoryFiles>
