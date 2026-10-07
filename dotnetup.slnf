@@ -7,7 +7,8 @@
       "src\\Installer\\dotnetup.Library\\dotnetup.Library.csproj",
       "src\\Installer\\Microsoft.Dotnet.Installation\\Microsoft.Dotnet.Installation.csproj",
       "test\\Microsoft.DotNet.Cli.Telemetry.Tests\\Microsoft.DotNet.Cli.Telemetry.Tests.csproj",
-      "test\\dotnetup.Tests\\dotnetup.Tests.csproj"
+      "test\\dotnetup.Tests\\dotnetup.Tests.csproj",
+      "test\\Microsoft.NET.TestFramework.MSTest\\Microsoft.NET.TestFramework.MSTest.csproj"
     ]
   }
 }
