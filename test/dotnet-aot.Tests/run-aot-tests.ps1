@@ -188,6 +188,9 @@ if (-not $resourceSdkDirectory) {
 }
 $resourceDotnetRoot = Split-Path $redistSdkRoot
 $layoutRoot = Join-Path $aotPublishDir "layout"
+if (Test-Path -LiteralPath $layoutRoot) {
+    Remove-Item -LiteralPath $layoutRoot -Recurse -Force
+}
 New-Item -ItemType Directory -Force -Path $layoutRoot | Out-Null
 Get-ChildItem $resourceDotnetRoot -Force |
     Copy-Item -Destination $layoutRoot -Recurse -Force

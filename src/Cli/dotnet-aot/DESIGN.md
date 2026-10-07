@@ -294,7 +294,12 @@ the AOT integration.
 
 The native test runners default to the shipping `ExternalLocalized` mode and
 assemble an isolated copy of the complete redist SDK layout. The candidate
-native library replaces the copy under `sdk/<version>`. The SDK directory
+native library replaces the copy under `sdk/<version>`. The layout
+is staged from scratch on every run, including `NoBuild` runs; only the
+per-mode `layout` subdirectory is removed, preserving the published candidate
+library outside that directory. This prevents removed deployment files from
+surviving a rerun.
+The SDK directory
 passed by `dn` must be the directory containing the library it loads, including
 when testing a non-default resource mode. Preserve hidden deployment files,
 especially the SDK's `.version`, so native and managed cache validation use the
