@@ -46,6 +46,7 @@ public class DailyChannelResolverTests
         resolver.ResolveDotnetupVersion("win-x64").ToString().Should().Be("0.1.0-preview.1");
 
         handler.Methods.Should().Equal(HttpMethod.Head);
+        handler.RequestsUseNoCache.Should().Equal(true);
     }
 
     [TestMethod]
@@ -64,6 +65,7 @@ public class DailyChannelResolverTests
         resolver.ResolveDotnetupVersion("win-x64").ToString().Should().Be("0.1.0-preview.1");
 
         handler.Methods.Should().Equal(HttpMethod.Head, HttpMethod.Get);
+        handler.RequestsUseNoCache.Should().Equal(true, true);
     }
 
     [TestMethod]
@@ -397,10 +399,13 @@ public class DailyChannelResolverTests
 
         public List<HttpMethod> Methods { get; } = [];
 
+        public List<bool> RequestsUseNoCache { get; } = [];
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string url = request.RequestUri!.ToString();
             Methods.Add(request.Method);
+            RequestsUseNoCache.Add(request.Headers.CacheControl?.NoCache == true);
             if (request.Method == HttpMethod.Head && HeadStatus is HttpStatusCode headStatus)
             {
                 return Task.FromResult(new HttpResponseMessage(headStatus) { RequestMessage = request });

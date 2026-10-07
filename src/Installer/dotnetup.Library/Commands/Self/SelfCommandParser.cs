@@ -16,10 +16,10 @@ internal static class SelfCommandParser
         Description = Strings.SelfUpdateForceOptionDescription,
     };
 
-    internal static Option<bool> NoWarnOption { get; } = new("--nowarn")
+    internal static Option<bool> UpdateNotificationsOption { get; } = new("--update-notifications")
     {
-        Description = Strings.SelfUpdateNoWarnOptionDescription,
-        Arity = ArgumentArity.ZeroOrOne,
+        Description = Strings.SelfUpdateNotificationsOptionDescription,
+        Arity = ArgumentArity.ExactlyOne,
     };
 
     public static Command GetCommand()
@@ -28,15 +28,15 @@ internal static class SelfCommandParser
         var update = new Command("update", Strings.SelfUpdateCommandDescription);
         update.Options.Add(ChannelOption);
         update.Options.Add(ForceOption);
-        update.Options.Add(NoWarnOption);
+        update.Options.Add(UpdateNotificationsOption);
         update.Options.Add(CommonOptions.NoProgressOption);
         update.Validators.Add(static result =>
         {
-            // --nowarn only changes a setting, so options that shape an update would be ignored.
-            if (IsExplicit(result.GetResult(NoWarnOption)) &&
+            // --update-notifications only changes a setting, so options that shape an update would be ignored.
+            if (IsExplicit(result.GetResult(UpdateNotificationsOption)) &&
                 (IsExplicit(result.GetResult(ChannelOption)) || IsExplicit(result.GetResult(ForceOption))))
             {
-                result.AddError(Strings.SelfUpdateNoWarnConflict);
+                result.AddError(Strings.SelfUpdateNotificationsConflict);
             }
         });
         update.SetAction(result => new SelfUpdateCommand(result).Execute());

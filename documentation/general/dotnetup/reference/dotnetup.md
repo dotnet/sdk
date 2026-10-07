@@ -18,7 +18,7 @@ dotnetup [command] [options]
 dotnetup
 dotnetup --info [--format <text|json>] [--no-list]
 dotnetup self update [--channel <daily|preview|stable>] [--force] [--no-progress]
-dotnetup self update --nowarn [<true|false>]
+dotnetup self update --update-notifications <true|false>
 ```
 
 ## Description
@@ -130,9 +130,10 @@ During an interactive `dotnetup`, `install`, `sdk install`, `runtime install`, `
 `sdk update`, or `runtime update`, dotnetup may write a notice to standard output when a
 newer build is available on the running build's channel.
 
-`dotnetup self update --nowarn` turns the notice off by setting `updateNotifications` to
-`false` in `dotnetup.config.json`. It does not update dotnetup and cannot be combined with
-`--channel` or `--force`. `dotnetup self update --nowarn false` turns the notice back on.
+`dotnetup self update --update-notifications false` turns the notice off by setting
+`updateNotifications` to `false` in `dotnetup.config.json`. It does not update dotnetup
+and cannot be combined with `--channel` or `--force`.
+`dotnetup self update --update-notifications true` turns the notice back on.
 
 ## Examples
 

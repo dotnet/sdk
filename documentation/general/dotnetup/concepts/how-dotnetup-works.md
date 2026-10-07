@@ -110,7 +110,8 @@ The dotnetup data directory contains these user-level state files:
 | `update-checks/` | Stores dotnetup update-check timestamps and available versions. |
 
 Do not edit these files. Use `dotnetup install`, `update`, `uninstall`,
-`env`, and `self update --nowarn` commands to change the related state.
+`env`, and `self update --update-notifications <true|false>` commands to change the
+related state.
 
 The `DOTNET_DOTNETUP_DATA_DIR` environment variable changes the data
 directory. The `--manifest-path` option changes only the manifest used by one

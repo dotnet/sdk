@@ -15,10 +15,10 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
     private readonly string? _channel = result.GetValue(SelfCommandParser.ChannelOption);
     private readonly bool _force = result.GetValue(SelfCommandParser.ForceOption);
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
-    // Null unless --nowarn was passed; '--nowarn false' turns notifications back on. Boolean options
-    // always have an implicit result, so only an explicit one counts.
-    private readonly bool? _updateNotifications = result.GetResult(SelfCommandParser.NoWarnOption) is { Implicit: false }
-        ? !result.GetValue(SelfCommandParser.NoWarnOption)
+    // Null unless --update-notifications was passed. Boolean options always have an implicit result,
+    // so only an explicit one counts.
+    private readonly bool? _updateNotifications = result.GetResult(SelfCommandParser.UpdateNotificationsOption) is { Implicit: false }
+        ? result.GetValue(SelfCommandParser.UpdateNotificationsOption)
         : null;
     private readonly Func<DotnetDownloader> _createDownloader = static () => new DotnetDownloader();
 

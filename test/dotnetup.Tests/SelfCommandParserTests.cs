@@ -61,38 +61,42 @@ public class SelfCommandParserTests
     [DataRow("self update --channel servicing")]
     [DataRow("self update --unknown")]
     [DataRow("self update 1.0")]
-    [DataRow("self update --nowarn invalid")]
+    [DataRow("self update --update-notifications")]
+    [DataRow("self update --update-notifications invalid")]
+    [DataRow("self update --nowarn")]
     public void RejectsInvalidArguments(string commandLine)
     {
         Parser.Parse(commandLine.Split(' ')).Errors.Should().NotBeEmpty();
     }
 
     [TestMethod]
-    [DataRow("self update --nowarn", true)]
-    [DataRow("self update --nowarn true", true)]
-    [DataRow("self update --nowarn false", false)]
-    [DataRow("self update --nowarn --no-progress", true)]
-    public void ParsesNoWarnOption(string commandLine, bool expected)
+    [DataRow("self update --update-notifications true", true)]
+    [DataRow("self update --update-notifications false", false)]
+    [DataRow("self update --update-notifications true --no-progress", true)]
+    public void ParsesUpdateNotificationsOption(string commandLine, bool expected)
     {
         var result = Parser.Parse(commandLine.Split(' '));
 
         result.Errors.Should().BeEmpty();
-        result.GetValue(SelfCommandParser.NoWarnOption).Should().Be(expected);
+        result.GetValue(SelfCommandParser.UpdateNotificationsOption).Should().Be(expected);
     }
 
     [TestMethod]
-    [DataRow("self update --nowarn --channel daily")]
-    [DataRow("self update --nowarn false --force")]
-    public void RejectsNoWarnWithUpdateOptions(string commandLine)
+    [DataRow("self update --update-notifications true --channel daily")]
+    [DataRow("self update --update-notifications false --force")]
+    public void RejectsUpdateNotificationsWithUpdateOptions(string commandLine)
     {
         Parser.Parse(commandLine.Split(' ')).Errors.Select(error => error.Message)
-            .Should().Contain(BootstrapperStrings.SelfUpdateNoWarnConflict);
+            .Should().Contain(BootstrapperStrings.SelfUpdateNotificationsConflict);
     }
 
     [TestMethod]
-    public void NoWarnChangesSettingWithoutUpdating()
+    public void UpdateNotificationsChangesSettingWithoutUpdating()
     {
-        var dataDirectory = Path.Combine(Path.GetTempPath(), "dotnetup-nowarn-tests", Guid.NewGuid().ToString("N"));
+        var dataDirectory = Path.Combine(
+            Path.GetTempPath(),
+            "dotnetup-update-notifications-tests",
+            Guid.NewGuid().ToString("N"));
         DotnetupPaths.SetTestDataDirectoryOverride(dataDirectory);
         var originalOut = Console.Out;
         using var output = new StringWriter(CultureInfo.InvariantCulture);
@@ -100,11 +104,11 @@ public class SelfCommandParserTests
         try
         {
             // No SelfUpdateInvocation exists in the test host, so reaching the update path would fail.
-            new SelfUpdateCommand(Parser.Parse(["self", "update", "--nowarn"])).Execute().Should().Be(0);
+            new SelfUpdateCommand(Parser.Parse(["self", "update", "--update-notifications", "false"])).Execute().Should().Be(0);
             DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeFalse();
             DotnetupConfig.Exists().Should().BeFalse();
 
-            new SelfUpdateCommand(Parser.Parse(["self", "update", "--nowarn", "false"])).Execute().Should().Be(0);
+            new SelfUpdateCommand(Parser.Parse(["self", "update", "--update-notifications", "true"])).Execute().Should().Be(0);
             DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeTrue();
 
             output.ToString().Should().BeEmpty();
@@ -121,17 +125,21 @@ public class SelfCommandParserTests
     [DataRow("self update")]
     [DataRow("self update --no-progress")]
     [DataRow("self update --channel daily --force")]
-    public void UpdateWithoutNoWarnDoesNotChangeSetting(string commandLine)
+    public void UpdateWithoutUpdateNotificationsDoesNotChangeSetting(string commandLine)
     {
-        var dataDirectory = Path.Combine(Path.GetTempPath(), "dotnetup-nowarn-tests", Guid.NewGuid().ToString("N"));
+        var dataDirectory = Path.Combine(
+            Path.GetTempPath(),
+            "dotnetup-update-notifications-tests",
+            Guid.NewGuid().ToString("N"));
         DotnetupPaths.SetTestDataDirectoryOverride(dataDirectory);
         var originalConsole = AnsiConsole.Console;
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         AnsiConsole.Console = CreateConsole(output);
         try
         {
-            // Boolean options always receive an implicit parse result; only an explicit --nowarn
-            // may skip the update. Without a process invocation, the update path fails.
+            // Boolean options always receive an implicit parse result; only an explicit
+            // --update-notifications may skip the update. Without a process invocation, the
+            // update path fails.
             new SelfUpdateCommand(Parser.Parse(commandLine.Split(' '))).Execute().Should().Be(1);
 
             File.Exists(DotnetupPaths.ConfigPath).Should().BeFalse();
@@ -164,7 +172,7 @@ public class SelfCommandParserTests
         output.ToString().Should().Contain(BootstrapperStrings.SelfUpdateCommandDescription)
             .And.Contain("--channel")
             .And.Contain("--force")
-            .And.Contain("--nowarn")
+            .And.Contain("--update-notifications")
             .And.Contain("--no-progress");
     }
 

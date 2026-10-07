@@ -241,7 +241,7 @@ remove `dotnetup` from `PATH`** — it removes the Unix profile line and the Win
   "schemaVersion": "1",
   "accessMode": "shell",       // renamed from "pathPreference"
   "dotnetupOnPath": true,      // new; defaults to true when absent
-  "updateNotifications": true  // defaults to true when absent; set by `self update --nowarn`
+  "updateNotifications": true  // defaults to true when absent; set by `self update --update-notifications`
 }
 ```
 
@@ -252,7 +252,7 @@ reader simply does not honor the legacy shape:
 
 - The legacy `pathPreference` property name is ignored (an unknown property does not crash).
 - Only a config that records `accessMode` counts as completed setup. A config without it, such as a
-  legacy config or one written only by `self update --nowarn`, is treated as not set up, so
+  legacy config or one written only by `self update --update-notifications`, is treated as not set up, so
   first-use onboarding still runs and `env` commands report that no configuration exists.
 - Only the current `accessMode` values `none` / `shell` / `everywhere` (case-insensitive) are
   accepted; a pre-rename enum spelling is treated as a corrupt value.

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Http.Headers;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -231,6 +232,7 @@ internal sealed class DailyChannelResolver : IDisposable
     private HttpResponseMessage Send(HttpMethod method, string url)
     {
         using var request = new HttpRequestMessage(method, url);
+        request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
         return _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
     }
 

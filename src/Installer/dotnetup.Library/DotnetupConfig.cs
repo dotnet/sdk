@@ -68,7 +68,7 @@ internal class DotnetupConfigData
     /// <summary>
     /// Whether install and update commands may mention that a newer dotnetup is available.
     /// Defaults to <c>true</c> (and when absent from an older config). Set by
-    /// <c>dotnetup self update --nowarn</c>.
+    /// <c>dotnetup self update --update-notifications true|false</c>.
     /// </summary>
     public bool UpdateNotifications { get; set; } = true;
 }

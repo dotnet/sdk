@@ -412,9 +412,9 @@ Or open a new terminal.</target>
         <note>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateAvailableNotice">
-        <source>An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --nowarn'.</source>
-        <target state="new">An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --nowarn'.</target>
-        <note>{Locked="dotnetup"} {Locked="'dotnetup self update'"} {Locked="'dotnetup self update --nowarn'"}</note>
+        <source>An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --update-notifications false'.</source>
+        <target state="new">An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --update-notifications false'.</target>
+        <note>{Locked="dotnetup"} {Locked="'dotnetup self update'"} {Locked="'dotnetup self update --update-notifications false'"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateBusyCommand">
         <source>Dotnetup is busy with another command. Try self-update again after that command completes.</source>
@@ -486,20 +486,20 @@ Or open a new terminal.</target>
         <target state="new">Official daily dotnetup builds also use the 'preview' label, so this build might be from the daily channel. To update from daily builds, run 'dotnetup self update --channel daily'.</target>
         <note>{Locked="dotnetup"} {Locked="'preview'"} {Locked="dotnetup self update --channel daily"}</note>
       </trans-unit>
-      <trans-unit id="SelfUpdateNoWarnConflict">
-        <source>'--nowarn' only changes the update notification setting and cannot be combined with '--channel' or '--force'.</source>
-        <target state="new">'--nowarn' only changes the update notification setting and cannot be combined with '--channel' or '--force'.</target>
-        <note>{Locked="'--nowarn'"} {Locked="'--channel'"} {Locked="'--force'"}</note>
-      </trans-unit>
-      <trans-unit id="SelfUpdateNoWarnOptionDescription">
-        <source>Stop mentioning available dotnetup updates after install and update commands, without updating dotnetup. Pass 'false' to show them again.</source>
-        <target state="new">Stop mentioning available dotnetup updates after install and update commands, without updating dotnetup. Pass 'false' to show them again.</target>
-        <note>{Locked="dotnetup"} {Locked="'false'"}</note>
-      </trans-unit>
       <trans-unit id="SelfUpdateNotificationsConfigUnreadable">
         <source>The update notification setting was not changed because the dotnetup config file at {0} could not be read. Fix or delete the file, and then try again.</source>
         <target state="new">The update notification setting was not changed because the dotnetup config file at {0} could not be read. Fix or delete the file, and then try again.</target>
         <note>{Locked="dotnetup"} {0} is the path to the dotnetup config file.</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateNotificationsConflict">
+        <source>'--update-notifications' only changes the update notification setting and cannot be combined with '--channel' or '--force'.</source>
+        <target state="new">'--update-notifications' only changes the update notification setting and cannot be combined with '--channel' or '--force'.</target>
+        <note>{Locked="'--update-notifications'"} {Locked="'--channel'"} {Locked="'--force'"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateNotificationsOptionDescription">
+        <source>Set whether install and update commands mention available dotnetup updates, without updating dotnetup.</source>
+        <target state="new">Set whether install and update commands mention available dotnetup updates, without updating dotnetup.</target>
+        <note>{Locked="dotnetup"}</note>
       </trans-unit>
       <trans-unit id="SelfUpdateRequiresCanonicalName">
         <source>Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</source>
