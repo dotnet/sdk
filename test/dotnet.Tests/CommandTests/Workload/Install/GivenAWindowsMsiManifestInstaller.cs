@@ -4,8 +4,12 @@
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.InternalAbstractions;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using NuGet.Configuration;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests;
 
@@ -40,6 +44,27 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
 
         packageId.ToString().Should().Be(
             $"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture}".ToLowerInvariant());
+    }
+
+    [TestMethod]
+    public async Task ExtractManifestVerifiesMsiBeforeAdminInstall()
+    {
+        using var temporaryDirectory = new TemporaryDirectory();
+        var downloader = new MsiPackageDownloader();
+        string? verifiedMsiPath = null;
+        var installer = new WindowsMsiManifestInstaller(
+            downloader,
+            verifyPackageSignature: msiPath =>
+            {
+                verifiedMsiPath = msiPath;
+                throw new InvalidOperationException("Package signature verification failed.");
+            });
+
+        InvalidOperationException exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => installer.ExtractManifestAsync("fake.nupkg", Path.Combine(temporaryDirectory.DirectoryPath, "manifest")));
+
+        exception.Message.Should().Be("Package signature verification failed.");
+        verifiedMsiPath.Should().Be(downloader.MsiPath);
     }
 
     // MSIs built with WiX v3 collapse the Program Files directory into the administrative install target.
@@ -86,4 +111,57 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
 
         WindowsMsiManifestInstaller.FindExtractedManifestFolder(testDirectory).Should().BeNull();
     }
+
+#nullable disable
+    private sealed class MsiPackageDownloader : INuGetPackageDownloader
+    {
+        public string MsiPath { get; private set; } = string.Empty;
+
+        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+        {
+            string dataPath = Path.Combine(targetFolder.Value, "data");
+            Directory.CreateDirectory(dataPath);
+            MsiPath = Path.Combine(dataPath, "test.msi");
+            File.WriteAllText(MsiPath, string.Empty);
+            File.WriteAllText(Path.Combine(dataPath, "msi.json"), """{"Payload":"test.msi"}""");
+            return Task.FromResult(Enumerable.Empty<string>());
+        }
+
+        public Task<string> DownloadPackageAsync(
+            PackageId packageId,
+            NuGetVersion packageVersion = null,
+            PackageSourceLocation packageSourceLocation = null,
+            bool includePreview = false,
+            bool? includeUnlisted = null,
+            DirectoryPath? downloadFolder = null,
+            PackageSourceMapping packageSourceMapping = null) => throw new NotImplementedException();
+
+        public Task<string> GetPackageUrl(
+            PackageId packageId,
+            NuGetVersion packageVersion = null,
+            PackageSourceLocation packageSourceLocation = null,
+            bool includePreview = false) => throw new NotImplementedException();
+
+        public Task<NuGetVersion> GetLatestPackageVersion(
+            PackageId packageId,
+            PackageSourceLocation packageSourceLocation = null,
+            bool includePreview = false) => throw new NotImplementedException();
+
+        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(
+            PackageId packageId,
+            int numberOfResults,
+            PackageSourceLocation packageSourceLocation = null,
+            bool includePreview = false) => throw new NotImplementedException();
+
+        public Task<NuGetVersion> GetBestPackageVersionAsync(
+            PackageId packageId,
+            VersionRange versionRange,
+            PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
+
+        public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
+            PackageId packageId,
+            VersionRange versionRange,
+            PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
+    }
+#nullable restore
 }
