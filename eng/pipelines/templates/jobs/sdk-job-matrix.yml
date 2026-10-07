@@ -4,6 +4,9 @@ parameters:
   locBranch: ''
   runTests: true
   timeoutInMinutes: ''
+  buildVariants:
+  - name: ''
+    properties: ''
   additionalWindowsJobParameterSets: []
   ### WINDOWS ###
   windowsJobParameterSets:
