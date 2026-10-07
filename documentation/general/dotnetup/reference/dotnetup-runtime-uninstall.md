@@ -24,13 +24,14 @@ dotnetup runtime uninstall <COMPONENT_SPEC> [options]
 
 The stored runtime requirement to remove. Use
 `component@version-or-channel` to select a component. A value without a
-component selects the core .NET runtime.
+component selects the core .NET runtime. Matching command-line and migration
+specifications are removed together. A runtime remains installed if another
+requirement or an installed SDK still needs it.
 
 ## Options
 
 | Option | Description |
 | --- | --- |
-| `--source <explicit\|globaljson\|all>` | Remove specifications from the selected source. The default is `explicit`. Runtime specifications are normally explicit. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `-?`, `-h`, `--help` | Show command help. |

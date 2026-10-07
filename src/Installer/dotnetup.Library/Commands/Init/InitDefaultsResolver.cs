@@ -9,9 +9,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
 /// Resolves the defaults and supporting context used by the init form. Resolution here is
-/// side-effect-free: it performs no network calls, writes no console output, and does not throw on
-/// an unresolvable channel. The actual install requests are resolved separately (and only once the
-/// user accepts the form) via <see cref="ResolveDefaultRequests"/>, so simply viewing or exiting
+/// side-effect-free: it performs no network calls and writes no console output. Invalid repository
+/// requirements are reported as errors. The actual install requests are resolved separately (and
+/// only once the user accepts the form) via <see cref="ResolveDefaultRequests"/>, so viewing or exiting
 /// the form never triggers version resolution.
 /// </summary>
 internal static class InitDefaultsResolver
@@ -187,10 +187,22 @@ internal static class InitDefaultsResolver
     /// </summary>
     private static DefaultChannelDisplay ResolveChannelDisplay(GlobalJsonInfo globalJson)
     {
-        if (globalJson.GlobalJsonPath is not null
-            && GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath) is { } channel)
+        if (globalJson.GlobalJsonPath is not null)
         {
-            return new DefaultChannelDisplay(channel, globalJson.GlobalJsonPath);
+            var evaluation = InstallSpecResolver.Evaluate(new InstallSpec
+            {
+                Component = InstallComponent.SDK,
+                InstallSource = InstallSource.GlobalJson,
+                GlobalJsonPath = globalJson.GlobalJsonPath
+            });
+            if (evaluation.Error is not null)
+            {
+                throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
+            }
+            if (evaluation.Spec is { } channel)
+            {
+                return new DefaultChannelDisplay(channel.Name, globalJson.GlobalJsonPath);
+            }
         }
 
         return new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, null);

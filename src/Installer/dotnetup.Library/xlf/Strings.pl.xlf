@@ -286,6 +286,26 @@ Or open a new terminal.</target>
         <target state="new">Output format (text or json).</target>
         <note />
       </trans-unit>
+      <trans-unit id="GlobalJsonInvalidContents">
+        <source>Expected a JSON object.</source>
+        <target state="new">Expected a JSON object.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonInvalidRollForward">
+        <source>Invalid rollForward policy: '{0}'.</source>
+        <target state="new">Invalid rollForward policy: '{0}'.</target>
+        <note>{Locked="rollForward"}</note>
+      </trans-unit>
+      <trans-unit id="GlobalJsonInvalidSdkVersion">
+        <source>Invalid SDK version: '{0}'.</source>
+        <target state="new">Invalid SDK version: '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonMissingPath">
+        <source>The registration does not contain a global.json path.</source>
+        <target state="new">The registration does not contain a global.json path.</target>
+        <note>{Locked="global.json"}</note>
+      </trans-unit>
       <trans-unit id="HelpConfigCommandsTitle">
         <source>Configuration Commands:</source>
         <target state="new">Configuration Commands:</target>
@@ -346,19 +366,44 @@ Or open a new terminal.</target>
         <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InstallSpecRequirementError">
+        <source>Warning: Cannot read {0}: {1}</source>
+        <target state="new">Warning: Cannot read {0}: {1}</target>
+        <note>0: global.json path, 1: error details.</note>
+      </trans-unit>
       <trans-unit id="ListCommandDescription">
         <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
         <target state="new">List installed .NET SDKs and runtimes managed by dotnetup.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListHeaderSubtitle">
-        <source>(managed by dotnetup)</source>
-        <target state="new">(managed by dotnetup)</target>
+      <trans-unit id="ListCommandLineSource">
+        <source>Command line</source>
+        <target state="new">Command line</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListHeaderTitle">
-        <source>Installations</source>
-        <target state="new">Installations</target>
+      <trans-unit id="ListComponentColumn">
+        <source>Component</source>
+        <target state="new">Component</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListInstallationCount">
+        <source>{0} installations</source>
+        <target state="new">{0} installations</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListInstalledVersionColumn">
+        <source>Installed version</source>
+        <target state="new">Installed version</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListInvalidInstallation">
+        <source>{0} (invalid)</source>
+        <target state="new">{0} (invalid)</target>
+        <note>0: installed version.</note>
+      </trans-unit>
+      <trans-unit id="ListMigrationSource">
+        <source>Migration</source>
+        <target state="new">Migration</target>
         <note />
       </trans-unit>
       <trans-unit id="ListNoInstallations">
@@ -371,10 +416,80 @@ Or open a new terminal.</target>
         <target state="new">Skip verifying that each installation is valid.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListTotal">
-        <source>Total</source>
-        <target state="new">Total</target>
+      <trans-unit id="ListNotInstalled">
+        <source>Not installed</source>
+        <target state="new">Not installed</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ListOneInstallation">
+        <source>1 installation</source>
+        <target state="new">1 installation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListOneRuntime">
+        <source>1 runtime</source>
+        <target state="new">1 runtime</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListOneSdk">
+        <source>1 SDK</source>
+        <target state="new">1 SDK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListOneSpec">
+        <source>1 install spec</source>
+        <target state="new">1 install spec</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListRuntimeComponent">
+        <source>.NET Runtime</source>
+        <target state="new">.NET Runtime</target>
+        <note>{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="ListRuntimeCount">
+        <source>{0} runtimes</source>
+        <target state="new">{0} runtimes</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSdkCount">
+        <source>{0} SDKs</source>
+        <target state="new">{0} SDKs</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSourceColumn">
+        <source>Source</source>
+        <target state="new">Source</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSpecColumn">
+        <source>Install spec</source>
+        <target state="new">Install spec</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSpecCount">
+        <source>{0} install specs</source>
+        <target state="new">{0} install specs</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListSummary">
+        <source>{0}; {1} ({2}, {3})</source>
+        <target state="new">{0}; {1} ({2}, {3})</target>
+        <note>Formatted counts including labels: 0: install specs, 1: distinct installations, 2: SDKs, 3: runtimes.</note>
+      </trans-unit>
+      <trans-unit id="ListUnavailable">
+        <source>Unavailable</source>
+        <target state="new">Unavailable</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListUnknown">
+        <source>Unknown</source>
+        <target state="new">Unknown</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ListValidationError">
+        <source>Warning: {0} {1} is invalid: {2}</source>
+        <target state="new">Warning: {0} {1} is invalid: {2}</target>
+        <note>0: component, 1: version, 2: validation failure.</note>
       </trans-unit>
       <trans-unit id="PathGuidanceEverywhere">
         <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>

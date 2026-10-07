@@ -369,7 +369,8 @@ Use these source labels rather than `Explicit`:
 | Migration | Added when bringing an existing SDK into dotnetup management, as in scenario 1. |
 | Repository file path | The registered `global.json` supplying the SDK requirement. |
 
-Migration is a proposed distinct origin, not a claim about today's stored types.
+New migrations record a distinct origin. Existing `Explicit` specs, including
+older migrations whose origin cannot be recovered, remain command-line specs.
 
 ```text
 Component        Install spec                                                  Source                           Installed version
@@ -416,16 +417,24 @@ The current implementation is context, not evidence that the proposed experience
 already works:
 
 - [`UninstallWorkflow.Execute`](../../../../src/Installer/dotnetup.Library/Commands/Shared/UninstallWorkflow.cs)
-  matches stored specs by component, version/channel string, and source before
-  calling garbage collection. It can report that target installations remain.
+  matches command-line and migration specs by component and version/channel
+  string before calling garbage collection. Repository specs are not removed by
+  uninstall. It can report that target installations remain.
 - [`GarbageCollector.Collect`](../../../../src/Installer/dotnetup.Library/GarbageCollector.cs)
-  refreshes repository specs, retains the latest matching installation for each,
-  and removes other installations across the root.
-- [`GlobalJsonChannelResolver.ResolveChannel`](../../../../src/Installer/dotnetup.Library/GlobalJsonChannelResolver.cs)
-  reduces repository requirements to channel strings. Correct SDK selection
-  cannot assume that this preserves the full SDK requirement.
-- [`InstallationLister`](../../../../src/Installer/dotnetup.Library/Commands/List/ListCommand.cs)
-  displays separate "Tracked channels" and "Installed versions" sections.
+  refreshes repository specs, retains the installation selected by each current
+  requirement, and removes other installations across the root.
+- [`InstallSpecResolver`](../../../../src/Installer/dotnetup.Library/InstallSpecResolver.cs)
+  evaluates saved specs for install, update, the text list, garbage collection,
+  and uninstall's retained-SDK reporting.
+  [`GlobalJsonChannelResolver`](../../../../src/Installer/dotnetup.Library/GlobalJsonChannelResolver.cs)
+  normalizes repository policies into the shared
+  [`UpdateChannel`](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/UpdateChannel.cs)
+  model, including minimum-version and prerelease constraints. Non-`latest`
+  policies use the corresponding latest scope; `disable` requires an exact
+  version. Original file settings remain available for table formatting.
+- [`InstallationListRenderer`](../../../../src/Installer/dotnetup.Library/Commands/List/InstallationListRenderer.cs)
+  implements the relationship-based text table, including migration provenance
+  recorded by new installs. The JSON relationship changes remain separate.
   [`InstallSpec` and `Installation`](../../../../src/Installer/dotnetup.Library/DotnetupManifestData.cs)
   are separate manifest concepts.
 - The current [`SDK install`](../reference/dotnetup-sdk-install.md) and

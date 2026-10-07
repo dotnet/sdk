@@ -41,15 +41,22 @@ dotnetup list
 
 For an SDK version such as `10.0.103`, dotnetup maps `rollForward` as follows:
 
-| `rollForward` value | Stored dotnetup channel |
+| `rollForward` value | Dotnetup channel |
 | --- | --- |
-| Omitted or `latestPatch` | `10.0.1xx` |
-| `latestFeature` | `10.0` |
-| `latestMinor` | `10` |
-| `latestMajor` | `latest` |
-| `disable`, `patch`, `feature`, `minor`, or `major` | Exact version `10.0.103` |
+| Omitted, `patch`, or `latestPatch` | `10.0.1xx` |
+| `feature` or `latestFeature` | `10.0` |
+| `minor` or `latestMinor` | `10` |
+| `major` or `latestMajor` | `latest` |
+| `disable` | Exact version `10.0.103` |
 
-An exact requirement is pinned and is not changed by `dotnetup update`.
+Dotnetup selects the latest eligible SDK in that scope, with `sdk.version` as
+the minimum and `allowPrerelease` controlling preview eligibility. `disable`
+requires the exact version currently in the file. Install and update read the
+file again, so editing its version or policy changes the requirement.
+
+The non-`latest` policies use their `latest` counterparts for dotnetup management;
+the .NET host's selection rules are unchanged. See
+[repository SDK rules](../concepts/repositories.md#rollforward-mapping).
 
 ## Use `sdk.paths`
 
@@ -95,14 +102,14 @@ other properties, and detected text encoding.
 
 ## Remove a repository requirement
 
-Run the uninstall command from any directory and select `globaljson` as the
-source:
+Remove `sdk.version` from `global.json`, or delete the file if it is no longer
+needed. Dotnetup picks up the removal during garbage collection and removes
+files only when no remaining requirement needs them.
 
-```dotnetcli
-dotnetup sdk uninstall 10.0.1xx --source globaljson
-```
+To use a different SDK instead, update `sdk.version` and run
+`dotnetup sdk install` from the repository directory.
 
-`dotnetup` removes files only when no remaining requirement needs them.
+`dotnetup sdk uninstall` does not remove repository requirements.
 
 ## See also
 

@@ -63,7 +63,7 @@ internal static class DotnetupTestUtilities
     /// <summary>
     /// Builds command line arguments for SDK uninstall
     /// </summary>
-    public static string[] BuildSdkUninstallArguments(string channel, string installPath, string? manifestPath = null, string? source = null)
+    public static string[] BuildSdkUninstallArguments(string channel, string installPath, string? manifestPath = null)
     {
         var commandArgs = new List<string>(["sdk", "uninstall", channel, "--install-path", installPath]);
 
@@ -72,29 +72,19 @@ internal static class DotnetupTestUtilities
             commandArgs.AddRange(["--manifest-path", manifestPath]);
         }
 
-        if (!string.IsNullOrEmpty(source))
-        {
-            commandArgs.AddRange(["--source", source]);
-        }
-
         return [.. commandArgs];
     }
 
     /// <summary>
     /// Builds command line arguments for runtime uninstall using component@version syntax
     /// </summary>
-    public static string[] BuildRuntimeUninstallArguments(string componentSpec, string installPath, string? manifestPath = null, string? source = null)
+    public static string[] BuildRuntimeUninstallArguments(string componentSpec, string installPath, string? manifestPath = null)
     {
         var commandArgs = new List<string>(["runtime", "uninstall", componentSpec, "--install-path", installPath]);
 
         if (!string.IsNullOrEmpty(manifestPath))
         {
             commandArgs.AddRange(["--manifest-path", manifestPath]);
-        }
-
-        if (!string.IsNullOrEmpty(source))
-        {
-            commandArgs.AddRange(["--source", source]);
         }
 
         return [.. commandArgs];

@@ -15,12 +15,18 @@ selected component.
 
 | Channel | SDK selection |
 | --- | --- |
-| `latest` | Latest active stable .NET SDK release |
-| `lts` | Latest stable release whose support phase is LTS |
-| `preview` | Latest active preview or GoLive SDK. Selects an active release when no preview is available. |
+| `latest` | Latest stable .NET SDK release |
+| `lts` | Latest stable release from an LTS product |
+| `preview` | Latest .NET SDK release, including prereleases |
 | `daily` | Latest available daily build from the daily channel search |
 
 `sts` is not a supported named channel.
+
+Published releases remain eligible regardless of support phase, including
+Maintenance and end-of-life releases. Dotnetup selects the greatest matching
+version, rather than preferring an older version that is still in support.
+For example, `preview` selects stable .NET 11 over its earlier previews, then
+moves to .NET 12 when a newer preview is published.
 
 ## Numeric SDK channels
 

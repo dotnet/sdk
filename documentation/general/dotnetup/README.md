@@ -92,9 +92,9 @@ An SDK channel tells `dotnetup` which SDK to install and how to update it.
 
 | Channel form | Example | Result |
 | --- | --- | --- |
-| Latest stable | `latest` | Latest active stable SDK |
-| Latest LTS | `lts` | Latest active stable LTS SDK |
-| Latest preview | `preview` | Latest preview SDK |
+| Latest stable | `latest` | Latest stable SDK |
+| Latest LTS | `lts` | Latest stable LTS SDK |
+| Latest including previews | `preview` | Latest SDK, including prereleases |
 | Latest daily | `daily` | Latest available daily SDK |
 | Major | `10` | Latest SDK for the specified major version |
 | Major and minor | `10.0` | Latest SDK for the specified major and minor version |

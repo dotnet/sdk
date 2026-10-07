@@ -141,17 +141,93 @@
   <data name="ListNoVerifyOptionDescription" xml:space="preserve">
     <value>Skip verifying that each installation is valid.</value>
   </data>
-  <data name="ListHeaderTitle" xml:space="preserve">
-    <value>Installations</value>
-  </data>
-  <data name="ListHeaderSubtitle" xml:space="preserve">
-    <value>(managed by dotnetup)</value>
-  </data>
   <data name="ListNoInstallations" xml:space="preserve">
     <value>(none)</value>
   </data>
-  <data name="ListTotal" xml:space="preserve">
-    <value>Total</value>
+  <data name="ListComponentColumn" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="ListSpecColumn" xml:space="preserve">
+    <value>Install spec</value>
+  </data>
+  <data name="ListSourceColumn" xml:space="preserve">
+    <value>Source</value>
+  </data>
+  <data name="ListInstalledVersionColumn" xml:space="preserve">
+    <value>Installed version</value>
+  </data>
+  <data name="ListCommandLineSource" xml:space="preserve">
+    <value>Command line</value>
+  </data>
+  <data name="ListMigrationSource" xml:space="preserve">
+    <value>Migration</value>
+  </data>
+  <data name="ListRuntimeComponent" xml:space="preserve">
+    <value>.NET Runtime</value>
+    <comment>{Locked=".NET"}</comment>
+  </data>
+  <data name="ListNotInstalled" xml:space="preserve">
+    <value>Not installed</value>
+  </data>
+  <data name="ListUnknown" xml:space="preserve">
+    <value>Unknown</value>
+  </data>
+  <data name="ListUnavailable" xml:space="preserve">
+    <value>Unavailable</value>
+  </data>
+  <data name="ListSummary" xml:space="preserve">
+    <value>{0}; {1} ({2}, {3})</value>
+    <comment>Formatted counts including labels: 0: install specs, 1: distinct installations, 2: SDKs, 3: runtimes.</comment>
+  </data>
+  <data name="ListOneSpec" xml:space="preserve">
+    <value>1 install spec</value>
+  </data>
+  <data name="ListSpecCount" xml:space="preserve">
+    <value>{0} install specs</value>
+  </data>
+  <data name="ListOneInstallation" xml:space="preserve">
+    <value>1 installation</value>
+  </data>
+  <data name="ListInstallationCount" xml:space="preserve">
+    <value>{0} installations</value>
+  </data>
+  <data name="ListOneSdk" xml:space="preserve">
+    <value>1 SDK</value>
+  </data>
+  <data name="ListSdkCount" xml:space="preserve">
+    <value>{0} SDKs</value>
+  </data>
+  <data name="ListOneRuntime" xml:space="preserve">
+    <value>1 runtime</value>
+  </data>
+  <data name="ListRuntimeCount" xml:space="preserve">
+    <value>{0} runtimes</value>
+  </data>
+  <data name="ListInvalidInstallation" xml:space="preserve">
+    <value>{0} (invalid)</value>
+    <comment>0: installed version.</comment>
+  </data>
+  <data name="ListValidationError" xml:space="preserve">
+    <value>Warning: {0} {1} is invalid: {2}</value>
+    <comment>0: component, 1: version, 2: validation failure.</comment>
+  </data>
+  <data name="InstallSpecRequirementError" xml:space="preserve">
+    <value>Warning: Cannot read {0}: {1}</value>
+    <comment>0: global.json path, 1: error details.</comment>
+  </data>
+  <data name="GlobalJsonInvalidContents" xml:space="preserve">
+    <value>Expected a JSON object.</value>
+  </data>
+  <data name="GlobalJsonInvalidSdkVersion" xml:space="preserve">
+    <value>Invalid SDK version: '{0}'.</value>
+  </data>
+  <data name="GlobalJsonInvalidRollForward" xml:space="preserve">
+    <value>Invalid rollForward policy: '{0}'.</value>
+    <comment>{Locked="rollForward"}</comment>
+  </data>
+  <data name="GlobalJsonMissingPath" xml:space="preserve">
+    <value>The registration does not contain a global.json path.</value>
+    <comment>{Locked="global.json"}</comment>
   </data>
   <data name="RootCommandDescription" xml:space="preserve">
     <value>.NET toolchain manager for user level installs.</value>
