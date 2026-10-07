@@ -294,6 +294,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         {
             string packagePath = null;
             string tempBackupDir = null;
+            bool directoryExists = Directory.Exists(targetFolder) && Directory.GetFileSystemEntries(targetFolder).Any();
 
             transactionContext.Run(
                 action: () =>
@@ -313,7 +314,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     }
 
                     //  If target directory already exists, back it up in case we roll back
-                    if (Directory.Exists(targetFolder) && Directory.GetFileSystemEntries(targetFolder).Any())
+                    if (directoryExists)
                     {
                         tempBackupDir = Path.Combine(_tempPackagesDir.Value, $"{packageId} - {packageVersion}-backup");
                         if (Directory.Exists(tempBackupDir))
@@ -330,7 +331,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 {
                     if (!string.IsNullOrEmpty(tempBackupDir) && Directory.Exists(tempBackupDir))
                     {
+                        // Remove the newly extracted contents before restoring the original directory.
+                        Directory.Delete(targetFolder, recursive: true);
                         FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempBackupDir, targetFolder));
+                    }
+                    else if (!directoryExists && Directory.Exists(targetFolder))
+                    {
+                        // The transaction created this directory, so rollback must remove it.
+                        Directory.Delete(targetFolder, recursive: true);
                     }
                 },
                 cleanup: () =>
