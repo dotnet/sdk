@@ -729,14 +729,6 @@ jobs:
                       _,
                   ) = eocd
                   trailer_offset = eocd_offset
-                  needs_zip64 = (
-                      disk_number == 0xFFFF
-                      or central_directory_disk == 0xFFFF
-                      or entries_on_disk == 0xFFFF
-                      or entry_count == 0xFFFF
-                      or central_directory_size == 0xFFFFFFFF
-                      or central_directory_offset == 0xFFFFFFFF
-                  )
                   locator_offset = eocd_offset - zip64_locator_struct.size
                   locator_data = b""
                   if locator_offset >= 0:
@@ -747,9 +739,7 @@ jobs:
                       and locator_data[:4] == b"PK\x06\x07"
                   )
 
-                  if needs_zip64 or has_zip64_locator:
-                      if not has_zip64_locator:
-                          invalid_archive()
+                  if has_zip64_locator:
                       locator_signature, zip64_disk, zip64_offset, total_disks = (
                           zip64_locator_struct.unpack(locator_data)
                       )
@@ -860,19 +850,21 @@ jobs:
             # --- Extract validated binlogs ---
             # Preserve in-archive paths under a fresh directory so duplicate
             # basenames in separate folders do not overwrite each other.
-            # `unzip` exit 11 means "no files matched" -- the artifact simply
-            # carries no binlog. In the `leg` layout the candidate set is every
-            # artifact on the build, so non-log artifacts (e.g.
-            # `BuildConfiguration`) legitimately hit this; it is not a read
-            # failure and must not fail the run closed. Any other non-zero exit
-            # (corrupt archive, timeout) still counts as an unreadable leg.
+            # Use the same ZipFile parser that was validated above. Info-ZIP also
+            # interprets mode-bearing extra fields, so handing the archive to
+            # `unzip` here would let the validator see a regular entry that the
+            # extractor materializes as a symlink or special file.
             #
-            # Both cases `continue`, so nothing was written to "${AX_DIR}" and the
+            # A zero count means the artifact simply carries no binlog. In the
+            # `leg` layout the candidate set is every artifact on the build, so
+            # non-log artifacts (e.g. `BuildConfiguration`) legitimately hit
+            # this and must not fail the run closed.
+            #
+            # Both skip cases `continue`, so nothing was written to "${AX_DIR}" and the
             # uncompressed budget below is left untouched. Charging it for an
             # archive that extracted nothing would let one large binlog-free
             # artifact push a genuinely useful later leg past MAX_TOTAL_BYTES
             # and trip the fail-closed check on a build that was fine.
-            uz=0
             # Extraction shares the deadline with the transfers. Otherwise a run that
             # spent most of its budget downloading could still queue one bounded
             # extraction per artifact and walk the job past `timeout-minutes` without
@@ -882,13 +874,40 @@ jobs:
               echo "::warning::Fetch budget exhausted before extracting ${safe_name}; stopping."; budget_hit=1; break
             fi
             [ "${TIME_LEFT}" -gt 120 ] && TIME_LEFT=120
-            timeout "${TIME_LEFT}" unzip -o "${ZIP_TMP}" '*.binlog' -d "${AX_DIR}" >/dev/null 2>&1 || uz=$?
-            if [ "${uz}" -eq 11 ]; then
+            EXTRACTED=$(timeout "${TIME_LEFT}" python3 - "${ZIP_TMP}" "${AX_DIR}" 2>/dev/null <<'PY'
+          import os
+          import shutil
+          import sys
+          import zipfile
+
+          archive_path = sys.argv[1]
+          destination_root = os.path.realpath(sys.argv[2])
+          extracted = 0
+          with zipfile.ZipFile(archive_path) as archive:
+              for entry in archive.infolist():
+                  name = entry.filename.replace("\\", "/")
+                  if entry.is_dir() or not name.endswith(".binlog"):
+                      continue
+                  destination = os.path.realpath(
+                      os.path.join(destination_root, *name.split("/"))
+                  )
+                  if os.path.commonpath((destination_root, destination)) != destination_root:
+                      raise RuntimeError("archive entry escaped extraction root")
+                  os.makedirs(os.path.dirname(destination), exist_ok=True)
+                  with archive.open(entry) as source, open(destination, "wb") as target:
+                      shutil.copyfileobj(source, target, length=1024 * 1024)
+                  extracted += 1
+          print(extracted)
+          PY
+            )
+            extract_rc=$?
+            if [ "${extract_rc}" -ne 0 ] || ! printf '%s' "${EXTRACTED}" | grep -qE '^[0-9]+$'; then
+              echo "::warning::Skipping ${safe_name}: extraction failed or timed out."; legs_failed=$((legs_failed + 1)); continue
+            fi
+            if [ "${EXTRACTED}" -eq 0 ]; then
               echo "${safe_name}: no binlog inside; nothing to stage from this artifact."; continue
             fi
-            if [ "${uz}" -ne 0 ]; then
-              echo "::warning::Skipping ${safe_name}: extraction failed or timed out (unzip exit ${uz})."; legs_failed=$((legs_failed + 1)); continue
-            fi
+            # --- Stage extracted binlogs ---
             # Consume the cumulative budget only once the archive actually
             # extracted — not on a suspicious-path or extraction-failure skip
             # above — so a skipped leg can't wrongly exhaust the budget and
