@@ -51,20 +51,30 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
     {
         using var temporaryDirectory = new TemporaryDirectory();
         var downloader = new MsiPackageDownloader();
+        var callOrder = new List<string>();
         string? verifiedMsiPath = null;
+        string? installedMsiPath = null;
         var installer = new WindowsMsiManifestInstaller(
             downloader,
             verifyPackageSignature: msiPath =>
             {
+                callOrder.Add("verify");
                 verifiedMsiPath = msiPath;
-                throw new InvalidOperationException("Package signature verification failed.");
+            },
+            installProduct: (msiPath, _) =>
+            {
+                callOrder.Add("install");
+                installedMsiPath = msiPath;
+                throw new InvalidOperationException("Admin install reached.");
             });
 
         InvalidOperationException exception = await Assert.ThrowsExactlyAsync<InvalidOperationException>(
             () => installer.ExtractManifestAsync("fake.nupkg", Path.Combine(temporaryDirectory.DirectoryPath, "manifest")));
 
-        exception.Message.Should().Be("Package signature verification failed.");
+        exception.Message.Should().Be("Admin install reached.");
+        callOrder.Should().Equal("verify", "install");
         verifiedMsiPath.Should().Be(downloader.MsiPath);
+        installedMsiPath.Should().Be(downloader.MsiPath);
     }
 
     // MSIs built with WiX v3 collapse the Program Files directory into the administrative install target.
