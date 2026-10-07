@@ -548,6 +548,7 @@ jobs:
           MAX_UNZIP_BYTES=2147483648    # 2 GB uncompressed per artifact
           MAX_TOTAL_BYTES=4294967296    # 4 GB uncompressed across all artifacts
           MAX_TOTAL_ZIP_BYTES=3221225472 # 3 GB compressed downloaded in total
+          MAX_ZIP_ENTRIES=65536
           # `--max-time` is per attempt, so `--retry N` multiplies it: the whole
           # download phase, not one transfer, is what has to fit inside this job's
           # `timeout-minutes`. Give the loop a wall-clock deadline and derive every
@@ -696,14 +697,50 @@ jobs:
             if [ $((TOTAL_BYTES + UNCOMP)) -gt "${MAX_TOTAL_BYTES}" ]; then
               echo "::warning::Cumulative uncompressed budget ${MAX_TOTAL_BYTES} reached at ${safe_name}; stopping extraction."; budget_hit=1; break
             fi
-            # Refuse the archive if any entry path is absolute or has a `..`
-            # component (defense-in-depth over unzip's own traversal guard),
-            # then extract `*.binlog` entries *preserving* their in-archive
-            # paths (no `-j`) under a fresh dir + timeout, so two binlogs that
-            # share a basename in different folders don't overwrite each other.
-            if unzip -Z1 "${ZIP_TMP}" 2>/dev/null | grep -qE '(^/|(^|/)\.\.(/|$))'; then
-              echo "::warning::Skipping ${safe_name}: archive has a suspicious (absolute or ..) entry path."; legs_failed=$((legs_failed + 1)); continue
+            # --- Validate ZIP entry metadata before extraction ---
+            # Refuse path escapes and special Unix entry types before `unzip`
+            # can materialize anything. A symlink followed by a nested binlog
+            # can otherwise redirect extraction outside AX_DIR.
+            timeout 60 python3 - "${ZIP_TMP}" "${MAX_ZIP_ENTRIES}" 2>/dev/null <<'PY'
+          import stat
+          import sys
+          import zipfile
+
+          archive_path = sys.argv[1]
+          max_entries = int(sys.argv[2])
+          with zipfile.ZipFile(archive_path) as archive:
+              entries = archive.infolist()
+              if len(entries) > max_entries:
+                  raise SystemExit(4)
+              for entry in entries:
+                  name = entry.filename.replace("\\", "/")
+                  parts = name.split("/")
+                  if (
+                      not name
+                      or "\0" in name
+                      or name.startswith("/")
+                      or ".." in parts
+                      or (len(parts[0]) >= 2 and parts[0][0].isalpha() and parts[0][1] == ":")
+                  ):
+                      raise SystemExit(2)
+                  file_type = stat.S_IFMT((entry.external_attr >> 16) & 0xFFFF)
+                  if file_type not in (0, stat.S_IFREG, stat.S_IFDIR):
+                      raise SystemExit(3)
+          PY
+            zscan_rc=$?
+            if [ "${zscan_rc}" -ne 0 ]; then
+              case "${zscan_rc}" in
+                2) echo "::warning::Skipping ${safe_name}: archive has a suspicious entry path." ;;
+                3) echo "::warning::Skipping ${safe_name}: archive has a symlink, device, or other unsupported entry type." ;;
+                4) echo "::warning::Skipping ${safe_name}: archive exceeds the ${MAX_ZIP_ENTRIES}-entry limit." ;;
+                *) echo "::warning::Skipping ${safe_name}: archive entry validation failed or timed out." ;;
+              esac
+              legs_failed=$((legs_failed + 1))
+              continue
             fi
+            # --- Extract validated binlogs ---
+            # Preserve in-archive paths under a fresh directory so duplicate
+            # basenames in separate folders do not overwrite each other.
             # `unzip` exit 11 means "no files matched" -- the artifact simply
             # carries no binlog. In the `leg` layout the candidate set is every
             # artifact on the build, so non-log artifacts (e.g.
