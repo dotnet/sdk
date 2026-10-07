@@ -32,6 +32,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.DiskFull => ErrorCategory.User,
             DotnetInstallErrorCode.NetworkError => ErrorCategory.User,
             DotnetInstallErrorCode.InvalidArguments => ErrorCategory.User,
+            DotnetInstallErrorCode.OperationCancelled => ErrorCategory.User,
 
             // Product errors - issues we can take action on
             DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,

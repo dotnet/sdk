@@ -22,9 +22,7 @@ internal static class RuntimeUninstallCommandParser
         Command command = new("uninstall", "Removes a .NET Runtime Installation.");
 
         command.Arguments.Add(ComponentSpecArgument);
-        command.Options.Add(CommonOptions.SourceOption);
-        command.Options.Add(CommonOptions.ManifestPathOption);
-        command.Options.Add(CommonOptions.InstallPathOption);
+        CommonOptions.AddUninstallOptions(command);
 
         command.SetAction(parseResult => new RuntimeUninstallCommand(parseResult).Execute());
 

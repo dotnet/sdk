@@ -26,45 +26,52 @@ internal class GarbageCollector
     /// </summary>
     public List<string> Collect(DotnetInstallRoot installRoot)
     {
-        var deletedPaths = new List<string>();
-        var manifest = _manifest.ReadManifest();
+        return Apply(CreatePlan(installRoot, _manifest.ReadManifest()));
+    }
 
+    /// <summary>
+    /// Plans installation-record and directory removals, updating only the in-memory manifest.
+    /// </summary>
+    internal static GarbageCollectionPlan CreatePlan(DotnetInstallRoot installRoot, DotnetupManifestData manifest)
+    {
         var root = manifest.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) &&
             r.Architecture == installRoot.Architecture);
 
         if (root is null)
         {
-            return deletedPaths;
+            return new GarbageCollectionPlan(manifest, null, [], [], []);
         }
 
         // Step 1: Refresh global.json install specs
         RefreshGlobalJsonSpecs(root);
 
-        // Step 2: For each install spec, resolve the latest matching installation and mark it to keep
-        var installationsToKeep = new HashSet<(InstallComponent Component, string Version)>();
+        // Step 2: Group install specs by their latest matching installation
+        var installSpecsByInstallation = new Dictionary<Installation, List<InstallSpec>>();
         foreach (var spec in root.InstallSpecs)
         {
             var matchingInstallation = ResolveLatestMatchingInstallation(spec, root.Installations);
             if (matchingInstallation is not null)
             {
-                installationsToKeep.Add((matchingInstallation.Component, matchingInstallation.Version));
+                if (!installSpecsByInstallation.TryGetValue(matchingInstallation, out var specs))
+                {
+                    specs = [];
+                    installSpecsByInstallation.Add(matchingInstallation, specs);
+                }
+
+                specs.Add(spec);
             }
         }
 
-        // Step 3: Remove unmarked installation records from the manifest
+        // Step 3: Keep selected component/version pairs and plan removal of other records
+        var installationsToKeep = installSpecsByInstallation.Keys.Select(i => (i.Component, i.Version)).ToHashSet();
         var installationsToRemove = root.Installations
             .Where(i => !installationsToKeep.Contains((i.Component, i.Version)))
             .ToList();
 
-        foreach (var installation in installationsToRemove)
-        {
-            root.Installations.Remove(installation);
-        }
-
         // Step 4: Collect all subcomponents still referenced by remaining installations
         var referencedSubcomponents = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var installation in root.Installations)
+        foreach (var installation in root.Installations.Except(installationsToRemove))
         {
             foreach (var sub in installation.Subcomponents)
             {
@@ -72,14 +79,29 @@ internal class GarbageCollector
             }
         }
 
-        // Step 5: Write the updated manifest before deleting files, so that a crash
-        // during deletion leaves the manifest consistent (orphaned dirs are cleaned next GC).
-        _manifest.WriteManifest(manifest);
+        return new GarbageCollectionPlan(manifest, root, installSpecsByInstallation, installationsToRemove,
+            FindOrphanedSubcomponents(installRoot.Path, referencedSubcomponents));
+    }
 
-        // Step 6: Walk the dotnet root on disk and delete orphaned subcomponent folders
-        deletedPaths = DeleteOrphanedSubcomponents(installRoot.Path, referencedSubcomponents);
+    /// <summary>
+    /// Removes planned installation records, persists the manifest, and deletes planned directories.
+    /// Does not resolve install specs or rescan the disk.
+    /// </summary>
+    internal List<string> Apply(GarbageCollectionPlan plan)
+    {
+        if (plan.Root is null)
+        {
+            return [];
+        }
 
-        return deletedPaths;
+        foreach (var installation in plan.InstallationsToRemove)
+        {
+            plan.Root.Installations.Remove(installation);
+        }
+
+        // Persist before deletion so a crash leaves orphaned directories for the next GC.
+        _manifest.WriteManifest(plan.Manifest);
+        return DeleteOrphanedSubcomponents(plan.Root.Path, plan.PathsToDelete);
     }
 
     /// <summary>
@@ -140,18 +162,15 @@ internal class GarbageCollector
     }
 
     /// <summary>
-    /// Walks the dotnet root and deletes subcomponent folders not in the referenced set.
+    /// Walks the dotnet root and lists subcomponent folders not in the referenced set, without deleting them.
     /// </summary>
-    private static List<string> DeleteOrphanedSubcomponents(string dotnetRootPath, HashSet<string> referencedSubcomponents)
+    private static List<string> FindOrphanedSubcomponents(string dotnetRootPath, HashSet<string> referencedSubcomponents)
     {
-        using var op = Metrics.Track("gc/delete-orphaned-subcomponents", activityName: "gc.delete-orphaned-subcomponents");
-        var deleted = new List<string>();
-        var failedCount = 0;
-        string? lastFailedPath = null;
+        var paths = new List<string>();
 
         if (!Directory.Exists(dotnetRootPath))
         {
-            return deleted;
+            return paths;
         }
 
         foreach (var topLevelDir in Directory.GetDirectories(dotnetRootPath))
@@ -175,19 +194,34 @@ internal class GarbageCollector
                 var relativePath = Path.GetRelativePath(dotnetRootPath, subDir).Replace('\\', '/');
                 if (!referencedSubcomponents.Contains(relativePath))
                 {
-                    try
-                    {
-                        Directory.Delete(subDir, recursive: true);
-                        deleted.Add(relativePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
-                        ++failedCount;
-                        lastFailedPath = relativePath;
-                        DotnetupTelemetry.Instance.RecordException(op, ex, errorCode: "gc.delete_failed");
-                    }
+                    paths.Add(relativePath);
                 }
+            }
+        }
+
+        return paths;
+    }
+
+    private static List<string> DeleteOrphanedSubcomponents(string dotnetRootPath, IReadOnlyList<string> paths)
+    {
+        using var op = Metrics.Track("gc/delete-orphaned-subcomponents", activityName: "gc.delete-orphaned-subcomponents");
+        var deleted = new List<string>();
+        var failedCount = 0;
+        string? lastFailedPath = null;
+
+        foreach (var relativePath in paths)
+        {
+            try
+            {
+                Directory.Delete(Path.Combine(dotnetRootPath, relativePath), recursive: true);
+                deleted.Add(relativePath);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Warning: Could not delete '{relativePath}': {ex.Message}");
+                ++failedCount;
+                lastFailedPath = relativePath;
+                DotnetupTelemetry.Instance.RecordException(op, ex, errorCode: "gc.delete_failed");
             }
         }
 
