@@ -42,6 +42,40 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
             $"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture}".ToLowerInvariant());
     }
 
+    [TestMethod]
+    public async Task ExtractManifestAsyncVerifiesTheResolvedMsiPathBeforeAdminInstall()
+    {
+        using var temporaryDirectory = new TemporaryDirectory();
+        string? expectedMsiPath = null;
+        var downloader = new Mock<INuGetPackageDownloader>();
+        downloader.Setup(d => d.ExtractPackageAsync(It.IsAny<string>(), It.IsAny<DirectoryPath>()))
+            .Returns((string _, DirectoryPath targetFolder) =>
+            {
+                string dataPath = Path.Combine(targetFolder.Value, "data");
+                Directory.CreateDirectory(dataPath);
+                expectedMsiPath = Path.Combine(dataPath, "payload.msi");
+                File.WriteAllText(Path.Combine(dataPath, "msi.json"), """{"Payload":"payload.msi"}""");
+                File.WriteAllText(expectedMsiPath, string.Empty);
+                return Task.FromResult<IEnumerable<string>>(Array.Empty<string>());
+            });
+
+        string? verifiedMsiPath = null;
+        var expectedException = new VerificationCallbackInvokedException();
+        var installer = new WindowsMsiManifestInstaller(
+            downloader.Object,
+            verifyPackageSignature: msiPath =>
+            {
+                verifiedMsiPath = msiPath;
+                throw expectedException;
+            });
+
+        var exception = await Assert.ThrowsExactlyAsync<VerificationCallbackInvokedException>(
+            () => installer.ExtractManifestAsync("manifest.nupkg", Path.Combine(temporaryDirectory.DirectoryPath, "target")));
+
+        Assert.AreSame(expectedException, exception);
+        Assert.AreEqual(expectedMsiPath, verifiedMsiPath);
+    }
+
     // MSIs built with WiX v3 collapse the Program Files directory into the administrative install target.
     [TestMethod]
     public void FindExtractedManifestFolderLocatesTheManifestInTheWiXV3AdminInstallLayout()
@@ -85,5 +119,9 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
         Directory.CreateDirectory(Path.Combine(testDirectory, "unexpected", "PFiles64", "dotnet", "sdk-manifests", "6.0.100", "test.manifest"));
 
         WindowsMsiManifestInstaller.FindExtractedManifestFolder(testDirectory).Should().BeNull();
+    }
+
+    private sealed class VerificationCallbackInvokedException : Exception
+    {
     }
 }

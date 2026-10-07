@@ -169,7 +169,7 @@ internal class MsiPackageCache(
     /// this method logs a skip message and returns without checking.</para>
     /// </remarks>
     /// <param name="msiPath">The full path of the MSI to verify.</param>
-    private void VerifyPackageSignature(string msiPath)
+    internal void VerifyPackageSignature(string msiPath)
     {
         if (!VerifyMsiSignature)
         {
