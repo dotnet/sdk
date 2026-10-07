@@ -112,6 +112,7 @@ public class TelemetryClient : ITelemetryClient
         s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
+            .AddMeter(Activities.PerformanceSource.Name)
             .AddRuntimeInstrumentation();
 
         if (s_enableOtlpExporter)
@@ -122,6 +123,7 @@ public class TelemetryClient : ITelemetryClient
         s_tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddSource(Activities.Source.Name)
+            .AddSource(Activities.PerformanceSource.Name)
             .AddProcessor(new InternalMicrosoftTelemetryProcessor(s_internalMicrosoftTelemetry))
             .SetSampler(new AlwaysOnSampler());
 

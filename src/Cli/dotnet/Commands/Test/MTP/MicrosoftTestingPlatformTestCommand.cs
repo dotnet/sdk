@@ -1450,15 +1450,20 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 globalProperties,
                 logger is null ? null : [logger],
                 ToolsetDefinitionLocations.Default);
-            var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
+            string targetFramework;
+            string targetFrameworks;
+            using (Activities.PerformanceSource.StartActivity("test-target-framework-discovery"))
             {
-                GlobalProperties = globalProperties,
-                EvaluationStage = ProjectEvaluationStage.Properties,
-                ProjectCollection = collection,
-            });
+                var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
+                {
+                    GlobalProperties = globalProperties,
+                    EvaluationStage = ProjectEvaluationStage.Properties,
+                    ProjectCollection = collection,
+                });
 
-            var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
-            var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+                targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
+                targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
+            }
 
             // Only prompt if multi-targeted (no single TargetFramework set)
             if (string.IsNullOrEmpty(targetFramework) && !string.IsNullOrEmpty(targetFrameworks))
