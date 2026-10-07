@@ -66,6 +66,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets"
     Condition="$(_IsNotSetContainersTargetsDir) AND Exists('$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets')" />
 
+  <!-- Preserve a ProjectData writer already imported by a host through the common-targets hooks. -->
   <Import Project="$(MSBuildThisFileDirectory)..\..\..\ProjectData\Microsoft.NET.ProjectData.targets"
-          Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\ProjectData\Microsoft.NET.ProjectData.targets')" />
+          Condition="'$(_ProjectDataTaskAssembly)' == '' and Exists('$(MSBuildThisFileDirectory)..\..\..\ProjectData\Microsoft.NET.ProjectData.targets')" />
 </Project>
