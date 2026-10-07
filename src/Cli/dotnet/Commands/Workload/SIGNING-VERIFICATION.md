@@ -107,7 +107,9 @@ for the full verification pipeline.
 
 ### When it runs
 When retrieving MSI payloads from the cache in `MsiPackageCache.TryGetPayloadFromCache()`,
-before any MSI installation or repair.
+before any MSI installation or repair. For workload manifest MSI packages, verification also
+runs in `WindowsMsiManifestInstaller.ExtractManifestAsync()` before the administrative install
+that extracts the manifest.
 
 ### What it checks (two sequential steps)
 1. **`Signature.IsAuthenticodeSigned()`** — `WinVerifyTrust` with full chain and revocation check.
