@@ -44,7 +44,7 @@ public class SharedSecretProviderTests
         Assert.AreEqual(secretBase64, decrypted);
     }
 
-    // Equivalent to getSecret function in WebSocketScriptInjection.js:
+    // Equivalent to the browser tools client's shared-secret encryption:
     public static string GetEncryptedSecret(string key, RSAParameters publicKeyParameters, byte[] secret)
     {
         // Import server key for RSA-OAEP

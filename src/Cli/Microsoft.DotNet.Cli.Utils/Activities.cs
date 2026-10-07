@@ -3,6 +3,8 @@
 
 #if NET
 
+using System.Diagnostics.Metrics;
+
 namespace Microsoft.DotNet.Cli.Utils;
 
 /// <summary>
@@ -12,10 +14,43 @@ public static class Activities
 {
     /// <summary>
     /// The main entrypoint for creating <see cref="Activity">Activities</see> in the .NET CLI.
-    /// All activities created in the CLI should use this <see cref="ActivitySource"/>, to allow
-    /// consumers to easily filter and trace CLI activities.
+    /// Activities intended for collection by the SDK's built-in telemetry should use this
+    /// <see cref="ActivitySource"/>, allowing consumers to easily filter and trace CLI activities.
     /// </summary>
     public static ActivitySource Source { get; } = new("dotnet-cli", Product.Version);
+
+    /// <summary>
+    /// Creates detailed performance activities for opt-in collectors, separate from built-in telemetry.
+    /// </summary>
+    public static ActivitySource PerformanceSource { get; } = new("dotnet-cli-perf", Product.Version);
+
+    private static readonly Meter s_meter = new(PerformanceSource.Name, Product.Version);
+    private static readonly Histogram<double> s_activityDuration = s_meter.CreateHistogram<double>(
+        "dotnet.cli.activity.duration",
+        unit: "s",
+        description: "Duration of a dotnet CLI activity.");
+
+    private static readonly ActivityListener s_metricsListener = new()
+    {
+        ShouldListenTo = source => source.Name == Source.Name || source.Name == PerformanceSource.Name,
+        // Collect metrics on demand.
+        Sample = (ref ActivityCreationOptions<ActivityContext> _) =>
+            s_activityDuration.Enabled ? ActivitySamplingResult.AllData : ActivitySamplingResult.None,
+        ActivityStopped = activity =>
+        {
+            if (s_activityDuration.Enabled)
+            {
+                s_activityDuration.Record(
+                    activity.Duration.TotalSeconds,
+                    new KeyValuePair<string, object?>("activity.name", activity.OperationName));
+            }
+        },
+    };
+
+    static Activities()
+    {
+        ActivitySource.AddActivityListener(s_metricsListener);
+    }
 
     /// <summary>
     /// The environment variable used to transfer the chain of parent activity IDs.

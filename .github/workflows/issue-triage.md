@@ -69,10 +69,6 @@ network:
     - github
     - aka.ms
 
-pre-steps:
-  - name: Force fresh Copilot CLI install
-    run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
-
 tools:
   # cli-proxy + github.mode: gh-proxy route GitHub tools and Safe Outputs through the
   # generated CLI proxy instead of the native HTTP MCP endpoint on the internal awmg-mcpg

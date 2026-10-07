@@ -14,7 +14,6 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<UseCountProperlyAnalyzer, CSharpDoNotUseCountWhenAnyCanBeUsedFixer>;
     using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<UseCountProperlyAnalyzer, BasicDoNotUseCountWhenAnyCanBeUsedFixer>;
 
-    [TestClass]
     public abstract class DoNotUseCountWhenAnyCanBeUsedTests : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
         protected DoNotUseCountWhenAnyCanBeUsedTests(TestsSourceCodeProvider sourceProvider, VerifierBase verifier)
@@ -1501,7 +1500,6 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
     // Tests from DoNotUseCountWhenAnyCanBeUsedTests does not apply for concurrent/immutable collections.
     // Only test scenarios with predicate, otherwise we would get CA1836.
-    [TestClass]
     public abstract class DoNotUseCountAsyncWhenAnyCanBeUsedOverlapTests
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {

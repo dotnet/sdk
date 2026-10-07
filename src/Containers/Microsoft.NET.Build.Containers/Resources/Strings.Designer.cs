@@ -421,6 +421,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to authentication challenge origin &apos;{0}&apos; does not match registry origin &apos;{1}&apos;.
+        /// </summary>
+        internal static string InvalidAuthResponse_UnexpectedAuthOrigin {
+            get {
+                return ResourceManager.GetString("InvalidAuthResponse_UnexpectedAuthOrigin", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER1019: The registry &apos;{0}&apos; returned an invalid authentication response: {1}.
         /// </summary>
         internal static string InvalidRegistryAuthResponse {
@@ -435,6 +444,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string InvalidContainerImageFormat {
             get {
                 return ResourceManager.GetString("InvalidContainerImageFormat", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER2032: SOURCE_DATE_EPOCH value &apos;{0}&apos; is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset..
+        /// </summary>
+        internal static string InvalidSourceDateEpoch {
+            get {
+                return ResourceManager.GetString("InvalidSourceDateEpoch", resourceCulture);
             }
         }
         

@@ -1,8 +1,8 @@
 <Project>
 
-  <!-- Set TemplateFrameworkVersion to a different value than '$(MajorMinorVersion)' during rebranding. -->
+  <!-- NetTFMUpdate: Re-enable when bundled templates support targeting net12. -->
+  <!-- <TemplateFrameworkVersion>$(MajorMinorVersion)</TemplateFrameworkVersion> -->
   <PropertyGroup>
-    <TemplateFrameworkVersion>$(MajorMinorVersion)</TemplateFrameworkVersion>
     <_IncrementalLayoutStateDirectory>$(IntermediateOutputPath)incremental-layout\</_IncrementalLayoutStateDirectory>
     <_TemplatesSdkLayoutStatePrefix>$(_IncrementalLayoutStateDirectory)templates-sdk-$(ProductMonikerRid)</_TemplatesSdkLayoutStatePrefix>
     <_TemplatesSdkLayoutInputManifest>$(_TemplatesSdkLayoutStatePrefix).inputs</_TemplatesSdkLayoutInputManifest>
