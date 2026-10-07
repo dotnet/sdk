@@ -22,8 +22,9 @@ namespace Microsoft.DotNet.Cli.Resources;
 /// </remarks>
 public static class StringResourceManagerProvider
 {
-    private static readonly object s_runtimeSatelliteProvider = new();
-    private static object? s_selectedProvider;
+    private static readonly Func<string, Assembly, StringResourceManager> s_runtimeSatelliteProvider =
+        SatelliteStringResourceManager.FromRuntimeSatellites;
+    private static Func<string, Assembly, StringResourceManager>? s_selectedProvider;
 
     /// <summary>
     ///  Registers the provider used by generated localized string resource accessors.
@@ -67,20 +68,12 @@ public static class StringResourceManagerProvider
         ArgumentNullException.ThrowIfNull(baseName);
         ArgumentNullException.ThrowIfNull(ownerAssembly);
 
-        object selectedProvider = Volatile.Read(ref s_selectedProvider)
+        Func<string, Assembly, StringResourceManager> provider = Volatile.Read(ref s_selectedProvider)
             ?? Interlocked.CompareExchange(
                 ref s_selectedProvider,
                 s_runtimeSatelliteProvider,
                 comparand: null)
             ?? s_runtimeSatelliteProvider;
-
-        if (ReferenceEquals(selectedProvider, s_runtimeSatelliteProvider))
-        {
-            return SatelliteStringResourceManager.FromRuntimeSatellites(baseName, ownerAssembly);
-        }
-
-        Func<string, Assembly, StringResourceManager> provider =
-            (Func<string, Assembly, StringResourceManager>)selectedProvider;
 
         StringResourceManager? manager = provider(baseName, ownerAssembly);
         return manager

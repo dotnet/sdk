@@ -15,8 +15,8 @@ namespace Microsoft.DotNet.Cli.Resources;
 /// <remarks>
 ///  <para>
 ///   Resource loading is deferred until the first lookup. The manager retains the indexed source
-///   backing, decodes only requested strings, and caches the last decoded string for subsequent
-///   lookup without allocation.
+///   backing and decodes only the requested string on each lookup. Decoded values are not cached
+///   by the manager; generated resource accessors cache their property values.
 ///  </para>
 ///  <para>
 ///   The <c>culture</c> argument to <see cref="GetString(string, CultureInfo?)"/> is
@@ -31,8 +31,8 @@ namespace Microsoft.DotNet.Cli.Resources;
 ///  <para>
 ///   Files are memory-mapped and runtime manifest resources are read directly from their unmanaged
 ///   backing. Other stream-factory sources must be readable and seekable. A source backing is opened
-///   once per cache generation, retained until <see cref="ReleaseAllResources()"/>, and never copied
-///   in full merely to parse it.
+///   on demand, retained after a successful load until <see cref="ReleaseAllResources()"/>, and
+///   never copied in full merely to parse it. Failed loads throw directly and are not cached.
 ///  </para>
 /// </remarks>
 public class StringResourceManager
@@ -41,9 +41,8 @@ public class StringResourceManager
     private readonly object _source;
     private readonly bool _ownsNeutralResources;
     private readonly StringResourceManagerOptions _options;
-    private object? _loadGate;
-    private int _generation;
-    private volatile StringResourceTableCache? _cache;
+    private readonly Lock _loadGate = new();
+    private volatile IndexedStringResourceTable? _table;
 
     /// <summary>
     ///  Initializes a manager for the binary <c>.resources</c> file at <paramref name="resourcesFile"/>.
@@ -373,20 +372,7 @@ public class StringResourceManager
     /// <summary>
     ///  The base name of the resource table.
     /// </summary>
-    public virtual string BaseName
-    {
-        get
-        {
-            string? baseName = _baseName;
-            if (baseName is not null)
-            {
-                return baseName;
-            }
-
-            baseName = Path.GetFileNameWithoutExtension((string)_source);
-            return Interlocked.CompareExchange(ref _baseName, baseName, comparand: null) ?? baseName;
-        }
-    }
+    public virtual string BaseName => _baseName ??= Path.GetFileNameWithoutExtension((string)_source);
 
     /// <summary>
     ///  The resource loading options.
@@ -419,6 +405,7 @@ public class StringResourceManager
     ///  <see cref="StringResourceManagerOptions.IgnoreNonStringResources"/> is not set.
     /// </exception>
     /// <exception cref="IOException">The configured file or stream cannot be read.</exception>
+    /// <exception cref="ObjectDisposedException">The resource backing has been disposed.</exception>
     public virtual string? GetString(string name) => GetString(name, culture: null);
 
     /// <summary>
@@ -438,35 +425,28 @@ public class StringResourceManager
     ///  <see cref="StringResourceManagerOptions.IgnoreNonStringResources"/> is not set.
     /// </exception>
     /// <exception cref="IOException">The configured file or stream cannot be read.</exception>
+    /// <exception cref="ObjectDisposedException">The resource backing has been disposed.</exception>
     public virtual string? GetString(string name, CultureInfo? culture)
     {
         ArgumentNullException.ThrowIfNull(name);
-        StringResourceLookupKind result = LookupString(name, out string? value);
-        return result switch
+        if (_source is StringResourceManager neutralResources)
         {
-            StringResourceLookupKind.Found => value,
-            StringResourceLookupKind.Missing => null,
-            _ => throw new InvalidOperationException("The resource lookup result is invalid.")
-        };
+            return neutralResources.GetString(name, culture);
+        }
+
+        IndexedStringResourceTable table = _table ?? GetOrLoadTable();
+        return table.Lookup(name);
     }
 
     /// <summary>
     ///  Releases the cached string table. The next lookup reloads it from the configured source.
     /// </summary>
-    public virtual void ReleaseAllResources() => ReleaseAllResourcesCore(waitingForLoad: null);
-
-    /// <summary>
-    ///  Releases resources and invokes <paramref name="waitingForLoad"/> after detecting a contended
-    ///  load gate.
-    /// </summary>
-    /// <param name="waitingForLoad">The callback invoked before waiting for the load gate.</param>
-    internal void ReleaseAllResources(Action waitingForLoad)
-    {
-        ArgumentNullException.ThrowIfNull(waitingForLoad);
-        ReleaseAllResourcesCore(waitingForLoad);
-    }
-
-    private void ReleaseAllResourcesCore(Action? waitingForLoad)
+    /// <remarks>
+    ///  <para>
+    ///   Callers must ensure no resource lookups are in progress when releasing resources.
+    ///  </para>
+    /// </remarks>
+    public virtual void ReleaseAllResources()
     {
         if (_source is StringResourceManager neutralResources)
         {
@@ -478,40 +458,28 @@ public class StringResourceManager
             return;
         }
 
-        object loadGate = GetLoadGate();
-        bool lockTaken = Monitor.TryEnter(loadGate);
-        if (!lockTaken)
+        lock (_loadGate)
         {
-            waitingForLoad?.Invoke();
-            Monitor.Enter(loadGate, ref lockTaken);
-        }
-
-        try
-        {
-            StringResourceTableCache? cache = _cache;
-            _generation = unchecked(_generation + 1);
-            _cache = null;
-            cache?.Release();
-        }
-        finally
-        {
-            if (lockTaken)
-            {
-                Monitor.Exit(loadGate);
-            }
+            IndexedStringResourceTable? table = _table;
+            _table = null;
+            table?.Dispose();
         }
     }
 
     /// <summary>
     ///  The source assembly, if this manager is assembly-backed.
     /// </summary>
-    internal Assembly? SourceAssembly => _source as Assembly;
+    internal Assembly? SourceAssembly => _source is StringResourceManager neutralResources
+        ? neutralResources.SourceAssembly
+        : _source as Assembly;
 
     /// <summary>
     ///  The managed assembly file source, if this manager parses an assembly as data.
     /// </summary>
     internal ManagedAssemblyStringResourceSource? ManagedAssemblySource =>
-        _source as ManagedAssemblyStringResourceSource;
+        _source is StringResourceManager neutralResources
+            ? neutralResources.ManagedAssemblySource
+            : _source as ManagedAssemblyStringResourceSource;
 
     /// <summary>
     ///  Gets metadata for this manager's managed assembly file after ensuring its table is loaded.
@@ -521,82 +489,26 @@ public class StringResourceManager
     internal SatelliteStringResourceSourceMetadata GetManagedAssemblySourceMetadata(
         ManagedAssemblyStringResourceSource source)
     {
+        if (_source is StringResourceManager neutralResources)
+        {
+            return neutralResources.GetManagedAssemblySourceMetadata(source);
+        }
+
         if (!ReferenceEquals(_source, source))
         {
             throw new InvalidOperationException("The managed assembly source does not belong to this manager.");
         }
 
-        _ = GetOrLoadCache().Table;
+        _ = GetOrLoadTable();
         return source.Metadata;
     }
 
-    /// <summary>
-    ///  Looks up a name in this manager's single resource table.
-    /// </summary>
-    /// <param name="name">The resource name.</param>
-    /// <param name="value">The string value when found.</param>
-    /// <returns>The lookup result.</returns>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal StringResourceLookupKind LookupString(string name, out string? value)
+    private IndexedStringResourceTable GetOrLoadTable()
     {
-        if (_source is StringResourceManager neutralResources)
+        lock (_loadGate)
         {
-            value = neutralResources.GetString(name);
-            return value is null ? StringResourceLookupKind.Missing : StringResourceLookupKind.Found;
+            return _table ??= LoadTable();
         }
-
-        while (true)
-        {
-            int generation = Volatile.Read(ref _generation);
-            StringResourceTableCache? cache = _cache;
-            if (cache is null || cache.Generation != generation)
-            {
-                cache = GetOrLoadCache();
-            }
-
-            StringResourceLookupKind result = cache.Table.Lookup(name, out value);
-            if (result != StringResourceLookupKind.Stale)
-            {
-                return result;
-            }
-        }
-    }
-
-    private StringResourceTableCache GetOrLoadCache()
-    {
-        lock (GetLoadGate())
-        {
-            int generation = Volatile.Read(ref _generation);
-            StringResourceTableCache? cache = _cache;
-            if (cache is not null && cache.Generation == generation)
-            {
-                return cache;
-            }
-
-            try
-            {
-                cache = new(generation, LoadTable());
-            }
-            catch (Exception exception)
-            {
-                cache = new(generation, exception);
-            }
-
-            _cache = cache;
-            return cache;
-        }
-    }
-
-    private object GetLoadGate()
-    {
-        object? gate = Volatile.Read(ref _loadGate);
-        if (gate is not null)
-        {
-            return gate;
-        }
-
-        object newGate = new();
-        return Interlocked.CompareExchange(ref _loadGate, newGate, comparand: null) ?? newGate;
     }
 
     private IndexedStringResourceTable LoadTable()

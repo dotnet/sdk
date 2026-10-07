@@ -142,10 +142,12 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
-$managedTestModule = Get-ChildItem ([System.IO.Path]::Combine($repoRoot, "artifacts", "bin", "dotnet-aot.Tests", $Configuration)) `
-    -Recurse -Filter "dotnet-aot.Tests.dll" -ErrorAction SilentlyContinue |
-    Where-Object { $_.FullName -like "*$RuntimeIdentifier*" } |
-    Select-Object -First 1 -ExpandProperty FullName
+$managedTestModule = & $dotnet msbuild $testProject -getProperty:TargetPath `
+    -p:Configuration=$Configuration -p:RuntimeIdentifier=$RuntimeIdentifier `
+    -p:PublishAotTests=true -p:_DotnetAotResourceMode=$ResourceMode -nologo
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not determine the managed test module path."
+}
 
 # Run
 if (-not (Test-Path $exePath)) {
@@ -161,19 +163,13 @@ if (-not (Test-Path $dnPath)) {
     Write-Host "ERROR: Published dn host not found at $dnPath" -ForegroundColor Red
     exit 1
 }
-if (-not $managedTestModule) {
+if (-not $managedTestModule -or -not (Test-Path $managedTestModule)) {
     Write-Host "ERROR: Managed test module not found for Native AOT integration validation." -ForegroundColor Red
     exit 1
 }
 
 Write-Host "Running AOT tests..." -ForegroundColor Yellow
 Write-Host ""
-
-$sdkDirectory = & $dotnet --info 2>$null | ForEach-Object {
-    if ($_ -match '^\s*Base Path:\s*(.+?)\s*$') {
-        $Matches[1]
-    }
-} | Select-Object -First 1
 
 $redistSdkRoot = [System.IO.Path]::Combine(
     $repoRoot,
@@ -190,14 +186,12 @@ if (-not $resourceSdkDirectory) {
     Write-Host "ERROR: $ResourceMode requires a built $Configuration redist SDK containing managed owner assemblies and satellites." -ForegroundColor Red
     exit 1
 }
-$sdkDirectory = $resourceSdkDirectory
+Get-ChildItem $resourceSdkDirectory |
+    Where-Object { $_.Name -ne $aotLibraryName } |
+    Copy-Item -Destination $aotPublishDir -Recurse -Force
+$sdkDirectory = $aotPublishDir
 $resourceDotnetRoot = Split-Path $redistSdkRoot
 $resourceDotnetHost = Join-Path $resourceDotnetRoot $dotnetName
-
-if (-not $sdkDirectory) {
-    Write-Host "ERROR: Could not determine the bootstrap SDK directory." -ForegroundColor Red
-    exit 1
-}
 
 $environment = @{
     DOTNET_AOT_LIBRARY_DIR = $aotPublishDir

@@ -146,11 +146,17 @@ if [[ -z "$BOOTSTRAP_SDK_DIRECTORY" ]]; then
 fi
 
 REDIST_SDK_ROOT="$REPO_ROOT/artifacts/bin/redist/$CONFIGURATION/dotnet/sdk"
-SDK_DIRECTORY="$({ find "$REDIST_SDK_ROOT" -mindepth 1 -maxdepth 1 -type d -print 2>/dev/null || true; } | sort -r | head -1)"
-if [[ -z "$SDK_DIRECTORY" ]]; then
+RESOURCE_SDK_DIRECTORY="$({ find "$REDIST_SDK_ROOT" -mindepth 1 -maxdepth 1 -type d -print 2>/dev/null || true; } | sort -r | head -1)"
+if [[ -z "$RESOURCE_SDK_DIRECTORY" ]]; then
     echo "ERROR: $RESOURCE_MODE requires a built $CONFIGURATION redist SDK containing managed owner assemblies and satellites."
     exit 1
 fi
+for entry in "$RESOURCE_SDK_DIRECTORY"/*; do
+    if [[ "$(basename "$entry")" != "$AOT_LIBRARY_NAME" ]]; then
+        cp -R "$entry" "$AOT_PUBLISH_DIR/"
+    fi
+done
+SDK_DIRECTORY="$AOT_PUBLISH_DIR"
 RESOURCE_DOTNET_ROOT="$(dirname "$REDIST_SDK_ROOT")"
 RESOURCE_DOTNET_HOST="$RESOURCE_DOTNET_ROOT/dotnet"
 TEST_DOTNET_ROOT="$RESOURCE_DOTNET_ROOT"
@@ -166,8 +172,10 @@ fi
 export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
 export DOTNET_AOT_TEST_RESOURCE_MODE="$RESOURCE_MODE"
 export DOTNET_AOT_TEST_DN_PATH="$DN_PATH"
-MANAGED_TEST_MODULE="$(find "$REPO_ROOT/artifacts/bin/dotnet-aot.Tests/$CONFIGURATION" -path "*/$RID/dotnet-aot.Tests.dll" -print -quit)"
-if [[ -z "$MANAGED_TEST_MODULE" ]]; then
+MANAGED_TEST_MODULE="$("$DOTNET" msbuild "$TEST_PROJECT" -getProperty:TargetPath \
+    -p:Configuration="$CONFIGURATION" -p:RuntimeIdentifier="$RID" \
+    -p:PublishAotTests=true -p:_DotnetAotResourceMode="$RESOURCE_MODE" -nologo)"
+if [[ -z "$MANAGED_TEST_MODULE" || ! -f "$MANAGED_TEST_MODULE" ]]; then
     echo "ERROR: Managed test module not found for Native AOT integration validation."
     exit 1
 fi

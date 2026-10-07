@@ -76,6 +76,36 @@ public sealed class StringResourceManagerTests
     }
 
     [TestMethod]
+    public void ValidSatellite_ReadsLocalizedStringsAndFallsBackToNeutral()
+    {
+        string assemblyDirectory = Path.GetDirectoryName(s_testAssembly.Location)
+            ?? throw new InvalidOperationException("The test assembly has no directory.");
+        string baseName = ResourceTestUtilities.NeutralBaseName;
+
+        SatelliteStringResourceManager fromSatelliteDirectory =
+            SatelliteStringResourceManager.FromSatelliteDirectory(
+                baseName,
+                assemblyDirectory,
+                s_testAssembly,
+                SatelliteStringResourceProbeMode.Strict);
+        SatelliteStringResourceManager fromAssemblyFiles =
+            SatelliteStringResourceManager.FromAssemblyFiles(
+                baseName,
+                s_testAssembly.Location,
+                assemblyDirectory,
+                SatelliteStringResourceProbeMode.Strict);
+
+        CultureInfo french = CultureInfo.GetCultureInfo("fr");
+        CultureInfo frenchCanadian = CultureInfo.GetCultureInfo("fr-CA");
+        Assert.AreEqual("Bonjour", fromSatelliteDirectory.GetString("Greeting", french));
+        Assert.AreEqual("Bonjour", fromSatelliteDirectory.GetString("Greeting", frenchCanadian));
+        Assert.AreEqual("Neutral", fromSatelliteDirectory.GetString("NeutralOnly", frenchCanadian));
+        Assert.AreEqual("Bonjour", fromAssemblyFiles.GetString("Greeting", french));
+        Assert.AreEqual("Bonjour", fromAssemblyFiles.GetString("Greeting", frenchCanadian));
+        Assert.AreEqual("Neutral", fromAssemblyFiles.GetString("NeutralOnly", frenchCanadian));
+    }
+
+    [TestMethod]
     public void FromSatelliteDirectory_FallbackOnFailure_SkipsMalformedCandidate()
     {
         using TestDirectory directory = new(TestRunDirectory);
@@ -123,6 +153,179 @@ public sealed class StringResourceManagerTests
                 s_testAssembly,
                 "WrongOwner",
                 SatelliteStringResourceProbeMode.FallbackOnFailure));
+    }
+
+    [TestMethod]
+    public void GetString_StreamFactoryFailure_RetriesAndCachesSuccessfulLoad()
+    {
+        byte[] resources = ResourceTestUtilities.WriteResources(("Greeting", "Hello"));
+        IOException failure = new("Factory failure.");
+        int invocationCount = 0;
+        StringResourceManager manager = new(
+            "Strings",
+            () =>
+            {
+                if (++invocationCount == 1)
+                {
+                    throw failure;
+                }
+
+                return new MemoryStream(resources, writable: false);
+            });
+
+        try
+        {
+            IOException actual = Assert.ThrowsExactly<IOException>(() => manager.GetString("Greeting"));
+            Assert.AreSame(failure, actual);
+            Assert.AreEqual("Hello", manager.GetString("Greeting"));
+            Assert.AreEqual("Hello", manager.GetString("Greeting"));
+            Assert.AreEqual(2, invocationCount);
+        }
+        finally
+        {
+            manager.ReleaseAllResources();
+        }
+    }
+
+    [TestMethod]
+    public void GetString_MalformedStream_RetriesAndDisposesEachAttempt()
+    {
+        MemoryStream? lastStream = null;
+        int invocationCount = 0;
+        StringResourceManager manager = new(
+            "Strings",
+            () =>
+            {
+                invocationCount++;
+                lastStream = new(new byte[64], writable: false);
+                return lastStream;
+            });
+
+        try
+        {
+            for (int i = 0; i < 2; i++)
+            {
+                Assert.ThrowsExactly<ArgumentException>(() => manager.GetString("Greeting"));
+                Assert.IsNotNull(lastStream);
+                Assert.IsFalse(lastStream.CanRead);
+            }
+
+            Assert.AreEqual(2, invocationCount);
+        }
+        finally
+        {
+            manager.ReleaseAllResources();
+        }
+    }
+
+    [TestMethod]
+    public void GetString_LocalizedFailure_RetriesRepairedSourceWithoutRelease()
+    {
+        using TestDirectory directory = new(TestRunDirectory);
+        const string baseName = "Strings";
+        string cultureDirectory = Path.Combine(directory.Path, "fr");
+        Directory.CreateDirectory(cultureDirectory);
+        File.WriteAllBytes(Path.Combine(cultureDirectory, $"{baseName}.resources"), new byte[64]);
+        StringResourceManager neutral = new(
+            baseName,
+            () => new MemoryStream(
+                ResourceTestUtilities.WriteResources(("Greeting", "Hello")),
+                writable: false));
+        SatelliteStringResourceManager manager = SatelliteStringResourceManager.FromResourcesDirectory(
+            baseName,
+            directory.Path,
+            neutral);
+
+        try
+        {
+            CultureInfo french = CultureInfo.GetCultureInfo("fr");
+            Assert.ThrowsExactly<ArgumentException>(() => manager.GetString("Greeting", french));
+            ResourceTestUtilities.WriteResources(directory.Path, "fr", baseName, ("Greeting", "Bonjour"));
+
+            Assert.AreEqual("Bonjour", manager.GetString("Greeting", french));
+        }
+        finally
+        {
+            manager.ReleaseAllResources();
+            neutral.ReleaseAllResources();
+        }
+    }
+
+    [TestMethod]
+    public void GetString_MissingLocalizedSource_RemainsCachedUntilRelease()
+    {
+        using TestDirectory directory = new(TestRunDirectory);
+        const string baseName = "Strings";
+        byte[] resources = ResourceTestUtilities.WriteResources(("Greeting", "Hello"));
+        StringResourceManager neutral = new(
+            baseName,
+            () => new MemoryStream(resources, writable: false));
+        SatelliteStringResourceManager manager = SatelliteStringResourceManager.FromResourcesDirectory(
+            baseName,
+            directory.Path,
+            neutral);
+
+        try
+        {
+            CultureInfo french = CultureInfo.GetCultureInfo("fr");
+            Assert.AreEqual("Hello", manager.GetString("Greeting", french));
+            ResourceTestUtilities.WriteResources(directory.Path, "fr", baseName, ("Greeting", "Bonjour"));
+            Assert.AreEqual("Hello", manager.GetString("Greeting", french));
+
+            manager.ReleaseAllResources();
+
+            Assert.AreEqual("Bonjour", manager.GetString("Greeting", french));
+        }
+        finally
+        {
+            manager.ReleaseAllResources();
+            neutral.ReleaseAllResources();
+        }
+    }
+
+    [TestMethod]
+    public void GetString_CallerOwnedEmbeddedManager_ForwardsRequestedCulture()
+    {
+        using TestDirectory directory = new(TestRunDirectory);
+        string baseName = ResourceTestUtilities.NeutralBaseName;
+        EmbeddedStringResourceManager neutral = new(baseName, s_testAssembly);
+        SatelliteStringResourceManager manager = SatelliteStringResourceManager.FromResourcesDirectory(
+            baseName,
+            directory.Path,
+            neutral);
+
+        try
+        {
+            Assert.AreEqual("Bonjour", manager.GetString("Greeting", CultureInfo.GetCultureInfo("fr")));
+        }
+        finally
+        {
+            manager.ReleaseAllResources();
+            neutral.ReleaseAllResources();
+        }
+    }
+
+    [TestMethod]
+    public void ReleaseAllResources_CompletedLookup_ReloadsStreamSource()
+    {
+        byte[] first = ResourceTestUtilities.WriteResources(("Greeting", "First"));
+        byte[] second = ResourceTestUtilities.WriteResources(("Greeting", "Second"));
+        int invocationCount = 0;
+        StringResourceManager manager = new(
+            "Strings",
+            () => new MemoryStream(++invocationCount == 1 ? first : second, writable: false));
+
+        try
+        {
+            Assert.AreEqual("First", manager.GetString("Greeting"));
+            manager.ReleaseAllResources();
+            Assert.AreEqual("Second", manager.GetString("Greeting"));
+            Assert.AreEqual(2, invocationCount);
+        }
+        finally
+        {
+            manager.ReleaseAllResources();
+        }
     }
 
     [TestMethod]

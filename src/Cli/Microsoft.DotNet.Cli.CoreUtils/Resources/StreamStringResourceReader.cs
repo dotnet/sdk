@@ -2,18 +2,20 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using System.Threading;
 
 namespace Microsoft.DotNet.Cli.Resources.Internal;
 
 /// <summary>
 ///  Reads an indexed version-2 resource table directly from an owned seekable stream.
 /// </summary>
-internal sealed class StreamStringResourceReader : IStringResourceReader
+internal sealed class StreamStringResourceReader : DisposableBase, IStringResourceReader
 {
     private const int MagicNumber = unchecked((int)0xBEEFCACE);
     private const int SupportedVersion = 2;
 
     private readonly BinaryReader _reader;
+    private readonly Lock _lock = new();
     private readonly long _resourceOffset;
     private readonly int[] _nameHashes;
     private readonly int[] _namePositions;
@@ -158,112 +160,124 @@ internal sealed class StreamStringResourceReader : IStringResourceReader
     /// <inheritdoc/>
     public ResourceTypeCode GetResourceTypeCode(int index)
     {
-        int dataPosition = ReadDataPosition(index);
-        _reader.BaseStream.Position = checked(_dataSectionOffset + dataPosition);
-        return ReadResourceTypeCode();
+        ObjectDisposedException.ThrowIf(Disposed, this);
+        lock (_lock)
+        {
+            int dataPosition = ReadDataPosition(index);
+            _reader.BaseStream.Position = checked(_dataSectionOffset + dataPosition);
+            return ReadResourceTypeCode();
+        }
     }
 
     /// <inheritdoc/>
     public string GetResourceName(int index)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(index);
-        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, ResourceCount);
-        _reader.BaseStream.Position = checked(_nameSectionOffset + _namePositions[index]);
-        int byteLength = Read7BitEncodedInt32();
-        if (byteLength < 0 || (byteLength & 1) != 0)
+        ObjectDisposedException.ThrowIf(Disposed, this);
+        lock (_lock)
         {
-            throw new BadImageFormatException("A resource name is invalid.");
-        }
-
-        if (byteLength > _reader.BaseStream.Length - _reader.BaseStream.Position)
-        {
-            throw new BadImageFormatException("A resource name is truncated.");
-        }
-
-        byte[] bytes = _reader.ReadBytes(byteLength);
-        if (bytes.Length != byteLength)
-        {
-            throw new BadImageFormatException("A resource name is truncated.");
-        }
-
-        return Encoding.Unicode.GetString(bytes);
-    }
-
-    /// <inheritdoc/>
-    public string GetString(int index)
-    {
-        int dataPosition = ReadDataPosition(index);
-        _reader.BaseStream.Position = checked(_dataSectionOffset + dataPosition);
-        if (ReadResourceTypeCode() != ResourceTypeCode.String)
-        {
-            throw new InvalidOperationException("The resource is not a string.");
-        }
-
-        return _reader.ReadString();
-    }
-
-    /// <inheritdoc/>
-    public StringResourceLookupKind Lookup(string name, out string? value)
-    {
-        ArgumentNullException.ThrowIfNull(name);
-        int hash = ResourceNameHash.Compute(name);
-        int index = Array.BinarySearch(_nameHashes, hash);
-        if (index < 0)
-        {
-            value = null;
-            return StringResourceLookupKind.Missing;
-        }
-
-        int first = index;
-        while (first > 0 && _nameHashes[first - 1] == hash)
-        {
-            first--;
-        }
-
-        int last = index;
-        while (last < ResourceCount - 1 && _nameHashes[last + 1] == hash)
-        {
-            last++;
-        }
-
-        for (int i = first; i <= last; i++)
-        {
-            _reader.BaseStream.Position = checked(_nameSectionOffset + _namePositions[i]);
+            ArgumentOutOfRangeException.ThrowIfNegative(index);
+            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, ResourceCount);
+            _reader.BaseStream.Position = checked(_nameSectionOffset + _namePositions[index]);
             int byteLength = Read7BitEncodedInt32();
             if (byteLength < 0 || (byteLength & 1) != 0)
             {
                 throw new BadImageFormatException("A resource name is invalid.");
             }
 
-            if (byteLength != checked(name.Length * sizeof(char)) || !NameEquals(name))
+            if (byteLength > _reader.BaseStream.Length - _reader.BaseStream.Position)
             {
-                continue;
+                throw new BadImageFormatException("A resource name is truncated.");
             }
 
-            int dataPosition = _reader.ReadInt32();
-            if (dataPosition < 0 || dataPosition >= _reader.BaseStream.Length - _dataSectionOffset)
+            byte[] bytes = _reader.ReadBytes(byteLength);
+            if (bytes.Length != byteLength)
             {
-                throw new BadImageFormatException("A resource data offset is invalid.");
+                throw new BadImageFormatException("A resource name is truncated.");
             }
 
-            _reader.BaseStream.Position = _dataSectionOffset + dataPosition;
-            ResourceTypeCode typeCode = ReadResourceTypeCode();
-            if (typeCode != ResourceTypeCode.String)
-            {
-                value = null;
-                return StringResourceLookupKind.Missing;
-            }
-
-            value = _reader.ReadString();
-            return StringResourceLookupKind.Found;
+            return Encoding.Unicode.GetString(bytes);
         }
-
-        value = null;
-        return StringResourceLookupKind.Missing;
     }
 
     /// <inheritdoc/>
-    public void Dispose() => _reader.Dispose();
+    public string GetString(int index)
+    {
+        ObjectDisposedException.ThrowIf(Disposed, this);
+        lock (_lock)
+        {
+            int dataPosition = ReadDataPosition(index);
+            _reader.BaseStream.Position = checked(_dataSectionOffset + dataPosition);
+            if (ReadResourceTypeCode() != ResourceTypeCode.String)
+            {
+                throw new InvalidOperationException("The resource is not a string.");
+            }
+
+            return _reader.ReadString();
+        }
+    }
+
+    /// <inheritdoc/>
+    public string? Lookup(string name)
+    {
+        ObjectDisposedException.ThrowIf(Disposed, this);
+        ArgumentNullException.ThrowIfNull(name);
+        lock (_lock)
+        {
+            int hash = ResourceNameHash.Compute(name);
+            int index = Array.BinarySearch(_nameHashes, hash);
+            if (index < 0)
+            {
+                return null;
+            }
+
+            int first = index;
+            while (first > 0 && _nameHashes[first - 1] == hash)
+            {
+                first--;
+            }
+
+            int last = index;
+            while (last < ResourceCount - 1 && _nameHashes[last + 1] == hash)
+            {
+                last++;
+            }
+
+            for (int i = first; i <= last; i++)
+            {
+                _reader.BaseStream.Position = checked(_nameSectionOffset + _namePositions[i]);
+                int byteLength = Read7BitEncodedInt32();
+                if (byteLength < 0 || (byteLength & 1) != 0)
+                {
+                    throw new BadImageFormatException("A resource name is invalid.");
+                }
+
+                if (byteLength != checked(name.Length * sizeof(char)) || !NameEquals(name))
+                {
+                    continue;
+                }
+
+                int dataPosition = _reader.ReadInt32();
+                if (dataPosition < 0 || dataPosition >= _reader.BaseStream.Length - _dataSectionOffset)
+                {
+                    throw new BadImageFormatException("A resource data offset is invalid.");
+                }
+
+                _reader.BaseStream.Position = _dataSectionOffset + dataPosition;
+                ResourceTypeCode typeCode = ReadResourceTypeCode();
+                if (typeCode != ResourceTypeCode.String)
+                {
+                    return null;
+                }
+
+                return _reader.ReadString();
+            }
+
+            return null;
+        }
+    }
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing) => _reader.Dispose();
 
     private int ReadDataPosition(int index)
     {

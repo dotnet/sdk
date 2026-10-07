@@ -281,6 +281,18 @@ aliased, while version and signing identity remain anchored to the generated
 native owner. Resource lookup is string-only and never activates serialized
 types.
 
+The provider reuses the shared [CoreUtils resource runtime](../Microsoft.DotNet.Cli.CoreUtils/Resources/StringResourceManager.cs).
+Managers retain successfully loaded tables, not decoded strings, and retry
+failed loads on the next lookup. The [generated accessors](../Microsoft.DotNet.Cli.Resources.Generator/CSharpResourceRenderer.cs)
+own property-value caching and replace that cache when their culture changes.
+No additional table-cache or reader-synchronization wrappers are needed in
+the AOT integration.
+
+The native test runners assemble the redist SDK payload beside the candidate
+native library without overwriting that library. The SDK directory passed by
+`dn` must be the directory containing the library it loads, including when
+testing a non-default resource mode.
+
 `AotResources.targets` removes `@(IlcSatelliteAssembly)` before ILC writes the
 response file in both external modes. `ExternalAllSubstitutions.xml` removes the
 ten SDK-owned neutral CLI resource tables. A content hash in the copied

@@ -96,12 +96,65 @@ public class GeneratedResourceRuntimeTests
             });
         Type resourceType = generatedAssembly.GetGeneratedType();
         PropertyInfo greeting = GetRequiredProperty(resourceType, "Greeting");
+        StringResourceManager manager = (StringResourceManager)GetRequiredProperty(
+            resourceType,
+            "ResourceManager").GetValue(null)!;
+
+        string? firstUncached = manager.GetString("Greeting");
+        string? secondUncached = manager.GetString("Greeting");
+
+        firstUncached.Should().Be("Runtime value");
+        secondUncached.Should().Be(firstUncached).And.NotBeSameAs(firstUncached);
 
         object? first = greeting.GetValue(null);
         object? second = greeting.GetValue(null);
 
         first.Should().Be("Runtime value");
         second.Should().BeSameAs(first);
+    }
+
+    [TestMethod]
+    public void GeneratedProperty_FailedTableLoad_RetriesWithoutRecreatingManager()
+    {
+        int managerCount = 0;
+        int loadCount = 0;
+        StringResourceManagerProvider.Register(
+            (baseName, ownerAssembly) =>
+            {
+                managerCount++;
+                return new StringResourceManager(
+                    baseName,
+                    () =>
+                    {
+                        if (++loadCount == 1)
+                        {
+                            throw new IOException("Transient resource read failure.");
+                        }
+
+                        return ownerAssembly.GetManifestResourceStream(baseName + ".resources")
+                            ?? throw new MissingManifestResourceException(baseName);
+                    });
+            });
+        GeneratorTestResult result = GeneratorTestHarness.Run(
+            GeneratorTestResource.Selected(SimpleResource),
+            GeneratorTestResource.Sibling(SimpleResource, "fr"));
+        using GeneratedAssembly generatedAssembly = result.Emit(
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                ["Greeting"] = "Runtime value"
+            });
+        PropertyInfo greeting = GetRequiredProperty(generatedAssembly.GetGeneratedType(), "Greeting");
+
+        Action firstRead = () => greeting.GetValue(null);
+        firstRead.Should().Throw<TargetInvocationException>()
+            .Which.InnerException.Should().BeOfType<IOException>();
+
+        object? value = greeting.GetValue(null);
+
+        value.Should().Be("Runtime value");
+        greeting.GetValue(null).Should().BeSameAs(value);
+        managerCount.Should().Be(1);
+        loadCount.Should().Be(2);
     }
 
     [TestMethod]

@@ -11,6 +11,8 @@ namespace Microsoft.DotNet.Cli.Resources.Internal;
 /// </summary>
 internal sealed class ManagedAssemblyIdentity
 {
+    private const int PublicKeyTokenLength = 8;
+
     private readonly byte[] _publicKeyToken;
 
     /// <summary>
@@ -20,12 +22,25 @@ internal sealed class ManagedAssemblyIdentity
     /// <param name="version">The assembly version.</param>
     /// <param name="cultureName">The assembly culture name, or an empty string for neutral.</param>
     /// <param name="publicKeyToken">The public key token, or an empty array for an unsigned assembly.</param>
+    /// <exception cref="ArgumentNullException">
+    ///  <paramref name="publicKeyToken"/> is <see langword="null"/>.
+    /// </exception>
+    /// <exception cref="BadImageFormatException">
+    ///  <paramref name="publicKeyToken"/> is neither empty nor eight bytes.
+    /// </exception>
     internal ManagedAssemblyIdentity(
         string name,
         Version version,
         string cultureName,
         byte[] publicKeyToken)
     {
+        ArgumentNullException.ThrowIfNull(publicKeyToken);
+        if (publicKeyToken.Length != 0 && publicKeyToken.Length != PublicKeyTokenLength)
+        {
+            throw new BadImageFormatException(
+                $"The assembly public key token must be empty or exactly {PublicKeyTokenLength} bytes.");
+        }
+
         Name = name;
         Version = version;
         CultureName = cultureName;

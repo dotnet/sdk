@@ -86,6 +86,12 @@ if (-not $Rid) {
     $Rid = "$os-$arch"
 }
 
+$targetFramework = & $dotnet msbuild (Join-Path $repoRoot "src/Cli/dotnet-aot/dotnet-aot.csproj") `
+    -getProperty:TargetFramework -p:Configuration=$Configuration -p:RuntimeIdentifier=$Rid -nologo
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($targetFramework)) {
+    throw "Could not determine the dotnet-aot target framework."
+}
+
 Write-Host "Repo root:     $repoRoot"
 Write-Host "Configuration: $Configuration"
 Write-Host "RID:           $Rid"
@@ -94,9 +100,8 @@ Write-Host "Mode:          $Mode"
 Write-Host "Resources:     $ResourceMode"
 Write-Host ""
 
-function Resolve-PublishPath([string]$relativeGlob) {
-    # Globs the TFM folder so paths are not pinned to a specific net version.
-    return (Resolve-Path (Join-Path $repoRoot $relativeGlob) -ErrorAction SilentlyContinue |
+function Resolve-PublishPath([string]$relativePath) {
+    return (Resolve-Path (Join-Path $repoRoot $relativePath) -ErrorAction SilentlyContinue |
         Select-Object -First 1).Path
 }
 
@@ -116,10 +121,9 @@ if (-not $NoBuild) {
     & $dotnet build (Join-Path $repoRoot "src/Cli/dotnet/dotnet.csproj") -c $Configuration
     if ($LASTEXITCODE -ne 0) { throw "managed dotnet build failed." }
 
-    $dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/*/$Rid/publish"
-    $aotDll = Resolve-PublishPath "artifacts/bin/dotnet-aot/$Configuration/*/$Rid/publish/$aotLibName"
-    $managedDir = (Get-ChildItem -Directory (Join-Path $repoRoot "artifacts/bin/dotnet/$Configuration") |
-        Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
+    $dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/$targetFramework/$Rid/publish"
+    $aotDll = Resolve-PublishPath "artifacts/bin/dotnet-aot/$Configuration/$targetFramework/$Rid/publish/$aotLibName"
+    $managedDir = Resolve-PublishPath "artifacts/bin/dotnet/$Configuration/$targetFramework"
 
     if (-not $dnPublishDir) { throw "Could not locate the dn publish directory after build." }
     if (-not $aotDll) { throw "Could not locate $aotLibName after publish." }
@@ -145,10 +149,7 @@ if (-not $NoBuild) {
         "System.CommandLine.StaticCompletions"
     )
     foreach ($projectName in $resourceOwnerProjects) {
-        $projectOutputRoot = Join-Path $repoRoot "artifacts/bin/$projectName/$Configuration"
-        $projectOutput = Get-ChildItem $projectOutputRoot -Directory -ErrorAction SilentlyContinue |
-            Sort-Object LastWriteTime -Descending |
-            Select-Object -First 1 -ExpandProperty FullName
+        $projectOutput = Resolve-PublishPath "artifacts/bin/$projectName/$Configuration/$targetFramework"
         if (-not $projectOutput) {
             throw "Could not locate the $projectName output required by $ResourceMode."
         }
@@ -156,7 +157,7 @@ if (-not $NoBuild) {
     }
 }
 
-$dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/*/$Rid/publish"
+$dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/$targetFramework/$Rid/publish"
 if (-not $dnPublishDir) { throw "dn publish directory not found. Run without -NoBuild first." }
 
 $dnExe = Join-Path $dnPublishDir $dnExeName
