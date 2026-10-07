@@ -325,8 +325,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     // --- Install Spec operations ---
     // An InstallSpec records the user's *intent*: "I want SDK channel 9.0" or
-    // "global.json pins SDK 9.0.100". The update command iterates specs to
-    // know which channels to resolve. A spec can exist without a corresponding
+    // "follow this global.json". Repository specs are identified by path, not
+    // by their cached channel. A spec can exist without a corresponding
     // Installation (e.g., after uninstall + re-add), and an Installation can
     // exist without a spec (e.g., --untracked installs).
 
@@ -340,22 +340,23 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public void AddInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
     {
-        if (spec.InstallSource == InstallSource.All)
+        if (!Enum.IsDefined(spec.InstallSource))
         {
-            throw new ArgumentException("InstallSource.All cannot be used in manifest data. It is only valid as a filter.", nameof(spec));
+            throw new ArgumentException("Unknown install source.", nameof(spec));
         }
 
         var manifest = ReadManifest();
         var root = GetOrAddDotnetRoot(manifest, installRoot.Path, installRoot.Architecture);
 
         // Don't add duplicate install specs
-        if (!root.InstallSpecs.Any(s =>
-            s.Component == spec.Component &&
-            s.VersionOrChannel == spec.VersionOrChannel &&
-            s.InstallSource == spec.InstallSource &&
-            s.GlobalJsonPath == spec.GlobalJsonPath))
+        var existing = root.InstallSpecs.FirstOrDefault(s => SameSpec(s, spec));
+        if (existing is null)
         {
             root.InstallSpecs.Add(spec);
+        }
+        else if (spec.InstallSource == InstallSource.GlobalJson)
+        {
+            existing.VersionOrChannel = spec.VersionOrChannel;
         }
 
         WriteManifest(manifest);
@@ -372,14 +373,16 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             return;
         }
 
-        root.InstallSpecs.RemoveAll(s =>
-            s.Component == spec.Component &&
-            s.VersionOrChannel == spec.VersionOrChannel &&
-            s.InstallSource == spec.InstallSource &&
-            s.GlobalJsonPath == spec.GlobalJsonPath);
+        root.InstallSpecs.RemoveAll(s => SameSpec(s, spec));
 
         WriteManifest(manifest);
     }
+
+    private static bool SameSpec(InstallSpec left, InstallSpec right) =>
+        left.Component == right.Component && left.InstallSource == right.InstallSource
+        && (left.InstallSource == InstallSource.GlobalJson
+            ? DotnetupUtilities.PathsEqual(left.GlobalJsonPath, right.GlobalJsonPath)
+            : left.VersionOrChannel == right.VersionOrChannel && left.GlobalJsonPath == right.GlobalJsonPath);
 
     // --- Installation operations ---
     // An Installation records a *fact*: "SDK 9.0.103 is on disk at this root".
@@ -482,11 +485,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         {
             Component = installRequest.Component,
             VersionOrChannel = installRequest.Channel.Name,
-            InstallSource = installRequest.Options.InstallSource switch
-            {
-                InstallRequestSource.GlobalJson => InstallSource.GlobalJson,
-                _ => InstallSource.Explicit,
-            },
+            InstallSource = installRequest.Options.InstallSource,
             GlobalJsonPath = installRequest.Options.GlobalJsonPath
         });
     }

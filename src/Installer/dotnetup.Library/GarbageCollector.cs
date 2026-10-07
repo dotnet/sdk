@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -38,21 +37,9 @@ internal class GarbageCollector
             return deletedPaths;
         }
 
-        // Step 1: Refresh global.json install specs
-        RefreshGlobalJsonSpecs(root);
+        var installationsToKeep = ResolveInstallationsToKeep(root);
 
-        // Step 2: For each install spec, resolve the latest matching installation and mark it to keep
-        var installationsToKeep = new HashSet<(InstallComponent Component, string Version)>();
-        foreach (var spec in root.InstallSpecs)
-        {
-            var matchingInstallation = ResolveLatestMatchingInstallation(spec, root.Installations);
-            if (matchingInstallation is not null)
-            {
-                installationsToKeep.Add((matchingInstallation.Component, matchingInstallation.Version));
-            }
-        }
-
-        // Step 3: Remove unmarked installation records from the manifest
+        // Remove unmarked installation records from the manifest.
         var installationsToRemove = root.Installations
             .Where(i => !installationsToKeep.Contains((i.Component, i.Version)))
             .ToList();
@@ -62,7 +49,7 @@ internal class GarbageCollector
             root.Installations.Remove(installation);
         }
 
-        // Step 4: Collect all subcomponents still referenced by remaining installations
+        // Collect all subcomponents still referenced by remaining installations.
         var referencedSubcomponents = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var installation in root.Installations)
         {
@@ -72,71 +59,42 @@ internal class GarbageCollector
             }
         }
 
-        // Step 5: Write the updated manifest before deleting files, so that a crash
+        // Write the updated manifest before deleting files, so that a crash
         // during deletion leaves the manifest consistent (orphaned dirs are cleaned next GC).
         _manifest.WriteManifest(manifest);
 
-        // Step 6: Walk the dotnet root on disk and delete orphaned subcomponent folders
+        // Walk the dotnet root on disk and delete orphaned subcomponent folders.
         deletedPaths = DeleteOrphanedSubcomponents(installRoot.Path, referencedSubcomponents);
 
         return deletedPaths;
     }
 
-    /// <summary>
-    /// Refreshes global.json install specs. Removes specs whose global.json file no longer
-    /// exists or no longer specifies a version. Updates the channel if the version changed.
-    /// </summary>
-    private static void RefreshGlobalJsonSpecs(DotnetRootEntry root)
+    private static HashSet<(InstallComponent Component, string Version)> ResolveInstallationsToKeep(DotnetRootEntry root)
     {
-        var globalJsonSpecs = root.InstallSpecs
-            .Where(s => s.InstallSource == InstallSource.GlobalJson)
-            .ToList();
-
-        foreach (var spec in globalJsonSpecs)
+        var installationsToKeep = new HashSet<(InstallComponent Component, string Version)>();
+        foreach (var spec in root.InstallSpecs.ToList())
         {
-            if (string.IsNullOrEmpty(spec.GlobalJsonPath) || !File.Exists(spec.GlobalJsonPath))
+            var resolution = InstallSpecResolver.Resolve(spec, root.Installations);
+            if (!resolution.IsActive)
             {
                 root.InstallSpecs.Remove(spec);
                 continue;
             }
-
-            var resolvedChannel = GlobalJsonChannelResolver.ResolveChannel(spec.GlobalJsonPath);
-            if (resolvedChannel is null)
+            if (resolution.Error is not null)
             {
-                // global.json no longer specifies an SDK version
-                root.InstallSpecs.Remove(spec);
-                continue;
+                Console.Error.WriteLine(resolution.Error);
             }
-
-            // Update the channel if it changed
-            if (!string.Equals(spec.VersionOrChannel, resolvedChannel, StringComparison.OrdinalIgnoreCase))
+            if (spec.InstallSource == InstallSource.GlobalJson && resolution.Spec is { } requirement)
             {
-                spec.VersionOrChannel = resolvedChannel;
+                // Preserve the legacy manifest shape; the file remains authoritative.
+                spec.VersionOrChannel = requirement.Name;
+            }
+            if (resolution.Installation is { } matchingInstallation)
+            {
+                installationsToKeep.Add((matchingInstallation.Component, matchingInstallation.Version));
             }
         }
-    }
-
-    /// <summary>
-    /// Finds the latest installation record that matches an install spec.
-    /// </summary>
-    private static Installation? ResolveLatestMatchingInstallation(InstallSpec spec, List<Installation> installations)
-    {
-        var matchingInstallations = installations
-            .Where(i => i.Component == spec.Component && ReleaseVersion.TryParse(i.Version, out var v) && new UpdateChannel(spec.VersionOrChannel).Matches(v))
-            .ToList();
-
-        if (matchingInstallations.Count == 0)
-        {
-            return null;
-        }
-
-        // Return the one with the highest version
-        return matchingInstallations
-            .Select(i => (Installation: i, Version: ReleaseVersion.TryParse(i.Version, out var v) ? v : null))
-            .Where(x => x.Version is not null)
-            .OrderByDescending(x => x.Version)
-            .Select(x => x.Installation)
-            .FirstOrDefault();
+        return installationsToKeep;
     }
 
     /// <summary>

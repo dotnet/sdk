@@ -13,7 +13,7 @@ using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
-/// Tests for install path validation logic in <see cref="InstallWorkflow"/>.
+/// Tests for install path validation, repository channel resolution, and onboarding in <see cref="InstallWorkflow"/>.
 /// Regression coverage: the --untracked flag must bypass the "untracked artifacts" check
 /// so that users can install to paths with existing .NET artifacts not in the manifest.
 /// </summary>
@@ -34,6 +34,41 @@ public class InstallWorkflowTests : IDisposable
     {
         DotnetupPaths.ClearTestDataDirectoryOverride();
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
+    }
+
+    [TestMethod]
+    [DataRow(null, "10.0.1xx")]
+    [DataRow("patch", "10.0.1xx")]
+    [DataRow("feature", "10.0")]
+    [DataRow("minor", "10")]
+    [DataRow("major", "latest")]
+    [DataRow("disable", "10.0.103")]
+    public void ResolveChannel_UsesGlobalJsonConstraints(string? policy, string expectedChannel)
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        var policyProperty = policy is null ? "" : $""","rollForward":"{policy}" """;
+        File.WriteAllText(path, $$$"""{"sdk":{"version":"10.0.103","allowPrerelease":false{{{policyProperty}}}}}""");
+
+        var (channel, fromFile) = InstallWorkflow.ResolveChannel(
+            InstallComponent.SDK, null, new GlobalJsonInfo { GlobalJsonPath = path });
+
+        fromFile.Should().BeTrue();
+        channel.Name.Should().Be(expectedChannel);
+        channel.MinimumVersion!.ToString().Should().Be("10.0.103");
+        channel.AllowPrerelease.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void ResolveChannel_MalformedGlobalJsonReportsContextResolutionFailure()
+    {
+        var path = Path.Combine(_tempDir, "global.json");
+        File.WriteAllText(path, "{broken");
+
+        var resolve = () => InstallWorkflow.ResolveChannel(
+            InstallComponent.SDK, null, new GlobalJsonInfo { GlobalJsonPath = path });
+
+        resolve.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
     }
 
     #region ValidateNoUntrackedArtifacts

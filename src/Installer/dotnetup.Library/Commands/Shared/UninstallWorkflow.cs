@@ -19,9 +19,8 @@ internal class UninstallWorkflow
     /// <param name="manifestPath">Custom manifest path, or null for default.</param>
     /// <param name="installPath">Specific install path, or null for default.</param>
     /// <param name="versionOrChannel">The channel/version to uninstall.</param>
-    /// <param name="sourceFilter">Which install source to filter by.</param>
     /// <param name="componentFilter">Which component to target.</param>
-    public static void Execute(string? manifestPath, string? installPath, string versionOrChannel, InstallSource sourceFilter, InstallComponent componentFilter)
+    public static void Execute(string? manifestPath, string? installPath, string versionOrChannel, InstallComponent componentFilter)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -49,17 +48,16 @@ internal class UninstallWorkflow
                         string.Equals(s.VersionOrChannel, versionOrChannel, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
-        // Filter by source
         var matchingSpecs = allMatchingSpecs
-            .Where(s => sourceFilter == InstallSource.All || s.InstallSource == sourceFilter)
+            .Where(s => s.InstallSource is InstallSource.Explicit or InstallSource.Migration)
             .ToList();
 
         if (matchingSpecs.Count == 0)
         {
-            ReportNoMatchingSpecs(allMatchingSpecs, matchingSpecs, sourceFilter, componentFilter, versionOrChannel, resolvedInstallPath);
+            ReportRepositoryRequirements(allMatchingSpecs);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.UninstallTargetNotFound,
-                $"No tracked installations matched component={componentFilter}, version='{versionOrChannel}', source={sourceFilter} at {resolvedInstallPath}.");
+                $"No command-line or migration install spec found for {componentFilter.GetDisplayName()} '{versionOrChannel}' at {resolvedInstallPath}.");
         }
 
         // Snapshot installations matching the target component/channel before GC
@@ -78,42 +76,16 @@ internal class UninstallWorkflow
         AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Brand}]Done.[/]");
     }
 
-    private static void ReportNoMatchingSpecs(
-        List<InstallSpec> allMatchingSpecs,
-        List<InstallSpec> matchingSpecs,
-        InstallSource sourceFilter,
-        InstallComponent componentFilter,
-        string versionOrChannel,
-        string resolvedInstallPath)
+    private static void ReportRepositoryRequirements(IEnumerable<InstallSpec> specs)
     {
-        // Check if there are matches with other sources
-        var otherSourceSpecs = allMatchingSpecs.Except(matchingSpecs).ToList();
-        if (otherSourceSpecs.Count > 0)
+        var repositorySpecs = specs.Where(s => s.InstallSource == InstallSource.GlobalJson).ToList();
+        if (repositorySpecs.Count > 0)
         {
-            if (sourceFilter != InstallSource.All)
+            AnsiConsole.MarkupLine(DotnetupTheme.Dim("To change or remove a repository SDK requirement, update or delete its global.json file:"));
+            foreach (var spec in repositorySpecs)
             {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Warning}]No [bold]{sourceFilter}[/] {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}', but matching specs exist with other sources:[/]");
+                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [{DotnetupTheme.Current.Dim}]{spec.GlobalJsonPath}[/]");
             }
-            else
-            {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture,
-                    $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}', but matching specs exist with other sources:[/]");
-            }
-
-            foreach (var spec in otherSourceSpecs)
-            {
-                AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"  [{DotnetupTheme.Current.Dim}]{spec.Component.GetDisplayName()} {spec.VersionOrChannel.EscapeMarkup()} (source: {spec.InstallSource})[/]");
-            }
-
-            if (sourceFilter != InstallSource.All)
-            {
-                AnsiConsole.MarkupLine(DotnetupTheme.Dim("Use --source all to target these specs."));
-            }
-        }
-        else
-        {
-            AnsiConsole.MarkupLineInterpolated(CultureInfo.InvariantCulture, $"[{DotnetupTheme.Current.Warning}]No {componentFilter.GetDisplayName()} install spec found for '{versionOrChannel.EscapeMarkup()}' at {resolvedInstallPath.EscapeMarkup()}.[/]");
         }
     }
 
@@ -142,13 +114,17 @@ internal class UninstallWorkflow
         if (targetedInstallations.Count > 0)
         {
             var updatedManifest = new DotnetupSharedManifest(manifestPath);
-            var stillPresent = updatedManifest.GetInstallations(installRoot)
+            var installations = updatedManifest.GetInstallations(installRoot).ToList();
+            var stillPresent = installations
                 .Where(i => targetedInstallations.Contains((i.Component, i.Version)))
                 .ToList();
 
             if (stillPresent.Count > 0)
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Dim("Some installations were not removed because they are still referenced by other install specs."));
+                ReportRepositoryRequirements(updatedManifest.GetInstallSpecs(installRoot)
+                    .Where(s => InstallSpecResolver.Resolve(s, installations).Installation is { } selected
+                        && stillPresent.Contains(selected)));
             }
         }
     }

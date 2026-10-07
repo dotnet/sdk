@@ -4,76 +4,68 @@
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Shared utility for resolving the SDK channel (feature band) from a global.json file.
-/// Takes into account the rollForward policy.
+/// Reads repository SDK settings and normalizes them to a channel with minimum-version
+/// and prerelease constraints. Dotnetup always selects the latest eligible version;
+/// only disable pins an exact version. The file itself is never changed here.
 /// </summary>
 internal static class GlobalJsonChannelResolver
 {
-    /// <summary>
-    /// Reads a global.json file and derives the SDK channel from the specified version,
-    /// respecting the rollForward policy.
-    /// <para>
-    /// Roll-forward mapping:
-    /// <list type="bullet">
-    /// <item><c>disable</c>, <c>patch</c>, <c>feature</c>, <c>minor</c>, <c>major</c> — pin to exact version</item>
-    /// <item><c>latestPatch</c> (default) — feature band channel (e.g., <c>10.0.1xx</c>)</item>
-    /// <item><c>latestFeature</c> — major.minor channel (e.g., <c>10.0</c>)</item>
-    /// <item><c>latestMinor</c> — major-only channel (e.g., <c>10</c>)</item>
-    /// <item><c>latestMajor</c> — <c>latest</c></item>
-    /// </list>
-    /// </para>
-    /// Returns null if the file doesn't exist, can't be parsed, or doesn't specify an SDK version.
-    /// </summary>
-    public static string? ResolveChannel(string globalJsonPath)
+    private static readonly GlobalJsonContentsJsonContext s_jsonContext = new(new JsonSerializerOptions
     {
-        if (!File.Exists(globalJsonPath))
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        AllowTrailingCommas = true
+    });
+
+    /// <summary>
+    /// Reads the original SDK settings for display as well as requirement evaluation.
+    /// Missing SDK versions produce no requirement; malformed settings throw.
+    /// </summary>
+    public static GlobalJsonContents.SdkSection? ReadSdkSection(string globalJsonPath)
+    {
+        using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
+        var contents = JsonSerializer.Deserialize(stream, s_jsonContext.GlobalJsonContents)
+            ?? throw new JsonException(Strings.GlobalJsonInvalidContents);
+        if (contents.Sdk is not { Version: not null } sdk)
         {
             return null;
         }
-
-        try
+        var policy = sdk.RollForward?.ToLowerInvariant();
+        if (policy is not (null or "disable" or "patch" or "feature" or "minor" or "major"
+            or "latestpatch" or "latestfeature" or "latestminor" or "latestmajor"))
         {
-            using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
-            var contents = JsonSerializer.Deserialize(stream, GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
-
-            if (contents?.Sdk?.Version is not { } versionString || string.IsNullOrWhiteSpace(versionString))
-            {
-                return null;
-            }
-
-            var rollForward = contents.Sdk.RollForward;
-            return DeriveChannel(versionString, rollForward);
+            throw new JsonException(string.Format(CultureInfo.InvariantCulture, Strings.GlobalJsonInvalidRollForward, sdk.RollForward));
         }
-        catch (JsonException)
+        if (!ReleaseVersion.TryParse(sdk.Version, out _))
         {
-            return null;
+            throw new JsonException(string.Format(CultureInfo.InvariantCulture, Strings.GlobalJsonInvalidSdkVersion, sdk.Version));
         }
+        return sdk;
     }
 
     /// <summary>
-    /// Derives the channel from an SDK version string and roll-forward policy.
+    /// Converts validated SDK settings to the same channel model used by standalone specs.
+    /// A prerelease request permits prereleases even if allowPrerelease is false.
     /// </summary>
-    internal static string? DeriveChannel(string versionString, string? rollForward)
+    public static UpdateChannel CreateChannel(GlobalJsonContents.SdkSection sdk)
     {
-        if (!ReleaseVersion.TryParse(versionString, out var version))
+        var version = new ReleaseVersion(sdk.Version!);
+        var name = sdk.RollForward?.ToLowerInvariant() switch
         {
-            return null;
-        }
-
-        // For rollForward values without "latest", pin to the exact version
-        return rollForward?.ToLowerInvariant() switch
-        {
-            "disable" or "patch" or "feature" or "minor" or "major" => versionString,
-            "latestfeature" => string.Create(CultureInfo.InvariantCulture, $"{version.Major}.{version.Minor}"),
-            "latestminor" => string.Create(CultureInfo.InvariantCulture, $"{version.Major}"),
-            "latestmajor" => "latest",
-            // Default (null or "latestPatch") — feature band channel
+            "disable" => sdk.Version!,
+            "feature" or "latestfeature" => string.Create(CultureInfo.InvariantCulture, $"{version.Major}.{version.Minor}"),
+            "minor" or "latestminor" => string.Create(CultureInfo.InvariantCulture, $"{version.Major}"),
+            "major" or "latestmajor" => "latest",
+            // null, patch, and latestPatch all stay within the requested feature band.
             _ => DeriveFeatureBandChannel(version),
         };
+        return new UpdateChannel(name, version,
+            (sdk.AllowPrerelease ?? true) || !string.IsNullOrEmpty(version.Prerelease));
     }
 
     /// <summary>

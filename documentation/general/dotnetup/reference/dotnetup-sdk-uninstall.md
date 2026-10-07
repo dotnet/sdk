@@ -22,13 +22,16 @@ dotnetup sdk uninstall <CHANNEL> [options]
 `CHANNEL`
 
 The stored SDK channel or exact version to remove. Matching is
-case-insensitive.
+case-insensitive. Matching command-line and migration specifications are removed
+together. An SDK remains installed if another requirement still needs it.
+
+Repository requirements are not removed by this command. To change or remove
+one, update or delete the corresponding `global.json` file.
 
 ## Options
 
 | Option | Description |
 | --- | --- |
-| `--source <explicit\|globaljson\|all>` | Remove specifications from the selected source. The default is `explicit`. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `-?`, `-h`, `--help` | Show command help. |
@@ -37,6 +40,6 @@ case-insensitive.
 
 ```dotnetcli
 dotnetup sdk uninstall latest
-dotnetup sdk uninstall 10.0.1xx --source globaljson
-dotnetup sdk uninstall preview --source all --install-path .\.dotnet
+dotnetup sdk uninstall 10.0.1xx
+dotnetup sdk uninstall preview --install-path .\.dotnet
 ```

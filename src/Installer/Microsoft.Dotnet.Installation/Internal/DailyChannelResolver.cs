@@ -143,8 +143,7 @@ internal sealed class DailyChannelResolver : IDisposable
 
     private int GetLatestManifestMajor()
     {
-        // The manifest is designed so that the first product is always the latest major
-        // (same assumption ChannelVersionResolver.GetLatestVersionForMajorOrMajorMinor relies on).
+        // The manifest is designed so that the first product is always the latest major.
         return _releaseManifest.GetReleasesIndex().FirstOrDefault()?.LatestReleaseVersion?.Major ?? 0;
     }
 

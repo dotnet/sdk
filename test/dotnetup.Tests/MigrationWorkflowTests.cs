@@ -280,6 +280,52 @@ public class MigrationWorkflowTests : IDisposable
         result.Should().HaveCount(2);
         result.Should().ContainSingle(r => r.Request.Component == InstallComponent.SDK && r.Request.Channel.Name == "10.0.1xx");
         result.Should().ContainSingle(r => r.Request.Component == InstallComponent.Runtime && r.Request.Channel.Name == "10.0" && r.ResolvedVersion.ToString() == "10.0.4");
+        result.Single(r => r.Request.Component == InstallComponent.SDK).Request.Options.InstallSource.Should().Be(InstallSource.Explicit);
+        result.Single(r => r.Request.Component == InstallComponent.Runtime).Request.Options.InstallSource.Should().Be(InstallSource.Migration);
+    }
+
+    [TestMethod]
+    public void MergeInstallRequests_RecordsMigrationSourceForEveryComponent()
+    {
+        var installRoot = new DotnetInstallRoot(_tempDir, InstallerUtilities.GetDefaultInstallArchitecture());
+        string manifestPath = Path.Combine(_tempDir, "manifest.json");
+        var primaryRequest = new ResolvedInstallRequest(
+            new DotnetInstallRequest(installRoot, new UpdateChannel("9.0.1xx"), InstallComponent.SDK,
+                new InstallRequestOptions
+                {
+                    InstallSource = InstallSource.GlobalJson,
+                    GlobalJsonPath = Path.Combine(_tempDir, "global.json"),
+                    ManifestPath = manifestPath
+                }),
+            new ReleaseVersion("9.0.100"));
+        List<MigrationWorkflow.MigrationSelection> migrations =
+        [
+            CreateMigration(InstallComponent.SDK, "10.0.1xx", "10.0.100"),
+            CreateMigration(InstallComponent.Runtime, "10.0", "10.0.5"),
+            CreateMigration(InstallComponent.ASPNETCore, "10.0", "10.0.5"),
+            CreateMigration(InstallComponent.WindowsDesktop, "10.0", "10.0.5"),
+        ];
+
+        var requests = MigrationWorkflow.MergeInstallRequests([primaryRequest], migrations, installRoot, manifestPath: manifestPath);
+        requests[0].Should().BeSameAs(primaryRequest);
+        requests.Skip(1).Should().OnlyContain(r => r.Request.Options.InstallSource == InstallSource.Migration
+            && r.Request.Options.GlobalJsonPath == null && r.Request.Options.ManifestPath == manifestPath);
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(manifestPath);
+        foreach (var request in requests)
+        {
+            manifest.RecordInstallSpec(request.Request);
+        }
+
+        var specs = new DotnetupSharedManifest(manifestPath).GetInstallSpecs(installRoot).ToList();
+        specs.Should().HaveCount(5);
+        specs.Single(s => s.VersionOrChannel == "9.0.1xx").InstallSource.Should().Be(InstallSource.GlobalJson);
+        specs.Where(s => s.InstallSource == InstallSource.Migration).Select(s => s.Component)
+            .Should().BeEquivalentTo(migrations.Select(m => m.Component));
+        MigrationWorkflow.BuildMigrationSelections(
+            [new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK)],
+            installRoot, manifestPath).Should().BeEmpty();
     }
 
     private static MigrationWorkflow.MigrationSelection CreateMigration(

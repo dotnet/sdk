@@ -92,9 +92,9 @@ An SDK channel tells `dotnetup` which SDK to install and how to update it.
 
 | Channel form | Example | Result |
 | --- | --- | --- |
-| Latest stable | `latest` | Latest active stable SDK |
-| Latest LTS | `lts` | Latest active stable LTS SDK |
-| Latest preview | `preview` | Latest preview SDK |
+| Latest stable | `latest` | Latest stable SDK |
+| Latest LTS | `lts` | Latest stable LTS SDK |
+| Latest including previews | `preview` | Latest SDK, including prereleases |
 | Latest daily | `daily` | Latest available daily SDK |
 | Major | `10` | Latest SDK for the specified major version |
 | Major and minor | `10.0` | Latest SDK for the specified major and minor version |
@@ -158,6 +158,7 @@ Run `dotnetup init` again to change the setup.
 ## Maintainer documentation
 
 - [Design notes](designs/)
+- [Uninstall and relationship-based list proposal](designs/dotnetup-uninstall.md)
 - [How dotnetup is included in the SDK](dotnetup_in_sdk.md)
 - [Release engineering](releasing.md)
 - [Signature verification](signature-verification.md)

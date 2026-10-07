@@ -29,7 +29,6 @@ internal static class SdkUninstallCommandParser
         Command command = new("uninstall", "Removes an install spec and cleans up unused installations");
 
         command.Arguments.Add(ChannelArgument);
-        command.Options.Add(CommonOptions.SourceOption);
         command.Options.Add(CommonOptions.ManifestPathOption);
         command.Options.Add(CommonOptions.InstallPathOption);
 

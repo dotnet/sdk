@@ -9,7 +9,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 internal class SdkUninstallCommand(ParseResult result) : CommandBase(result, "sdk/uninstall")
 {
     private readonly string _versionOrChannel = result.GetValue(SdkUninstallCommandParser.ChannelArgument)!;
-    private readonly InstallSource _sourceFilter = result.GetValue(CommonOptions.SourceOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
 
@@ -19,7 +18,6 @@ internal class SdkUninstallCommand(ParseResult result) : CommandBase(result, "sd
             _manifestPath,
             _installPath,
             _versionOrChannel,
-            _sourceFilter,
             InstallComponent.SDK);
     }
 }

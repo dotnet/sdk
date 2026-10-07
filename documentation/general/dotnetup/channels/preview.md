@@ -1,15 +1,16 @@
 ---
 title: Use the dotnetup preview channel
-description: Install and update supported .NET preview releases with dotnetup.
+description: Install and update .NET releases, including previews, with dotnetup.
 ms.topic: how-to
 ms.date: 08/07/2026
 ---
 
 # Use the dotnetup preview channel
 
-The `preview` channel selects the latest available preview or GoLive .NET
-release. If no active preview is available, the resolver selects an active
-release.
+The `preview` channel selects the greatest available .NET version, whether
+stable or prerelease, regardless of support phase. For example, it selects
+stable .NET 11 over its earlier previews, then .NET 12 when a newer preview
+is published.
 
 ## Install a preview SDK
 

@@ -183,24 +183,24 @@ internal class InstallWorkflow
         // Validate the channel format before any network calls so bogus inputs (e.g. "preview-daily",
         // "100-daily", typos) fail fast with a clean InvalidChannel error instead of bubbling up as
         // a 404 from the release manifest or aka.ms redirect.
-        if (!ChannelVersionResolver.IsValidChannelFormat(channel))
+        if (!ChannelVersionResolver.IsValidChannelFormat(channel.Name))
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InvalidChannel,
-                $"'{channel}' is not a recognized .NET version or channel for {component.GetDisplayName()}. "
+                $"'{channel.Name}' is not a recognized .NET version or channel for {component.GetDisplayName()}. "
                 + "Use a channel like 'latest', 'lts', 'preview', a version scope like '10.0' or '10.0.1xx', "
                 + "a daily-build scope like '10.0-daily' or '10.0.1xx-daily', or a fully-qualified version like '10.0.103'.");
         }
 
         var request = new DotnetInstallRequest(
             installRoot,
-            new UpdateChannel(channel),
+            channel,
             component,
             new InstallRequestOptions
             {
                 ManifestPath = _command.ManifestPath,
                 RequireMuxerUpdate = _command.RequireMuxerUpdate,
-                InstallSource = isFromGlobalJson ? InstallRequestSource.GlobalJson : InstallRequestSource.Explicit,
+                InstallSource = isFromGlobalJson ? InstallSource.GlobalJson : InstallSource.Explicit,
                 GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
                 Untracked = _command.Untracked,
                 Verbosity = _command.Verbosity
@@ -212,7 +212,7 @@ internal class InstallWorkflow
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.VersionNotFound,
-                $"Could not resolve channel '{channel}' to a .NET version for {component.GetDisplayName()}.");
+                $"Could not resolve channel '{channel.Name}' to a .NET version for {component.GetDisplayName()}.");
         }
 
         var resolved = new ResolvedInstallRequest(request, resolvedVersion);
@@ -220,7 +220,7 @@ internal class InstallWorkflow
         RecordInstallTelemetry(
             component, explicitChannel,
             _command.InstallPath, globalJson,
-            pathResolution, channel, resolved);
+            pathResolution, channel.Name, resolved);
 
         return resolved;
     }
@@ -230,33 +230,40 @@ internal class InstallWorkflow
     /// For SDK installs with no explicit channel, tries to infer from global.json.
     /// Falls back to "latest" if nothing else applies.
     /// </summary>
-    private static (string Channel, bool IsFromGlobalJson) ResolveChannel(
+    internal static (UpdateChannel Channel, bool IsFromGlobalJson) ResolveChannel(
         InstallComponent component,
         string? explicitChannel,
         GlobalJsonInfo? globalJson)
     {
         if (explicitChannel is not null)
         {
-            return (explicitChannel, false);
+            return (new UpdateChannel(explicitChannel), false);
         }
 
         if (component == InstallComponent.SDK && globalJson?.GlobalJsonPath is not null)
         {
-            string? channelFromGlobalJson = GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath);
-            if (channelFromGlobalJson is not null)
+            var evaluation = InstallSpecResolver.Evaluate(new InstallSpec
+            {
+                Component = component, InstallSource = InstallSource.GlobalJson, GlobalJsonPath = globalJson.GlobalJsonPath
+            });
+            if (evaluation.Error is not null)
+            {
+                throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
+            }
+            if (evaluation.Spec is { } channelFromGlobalJson)
             {
                 SpectreAnsiConsole.MarkupLine(string.Format(
                     CultureInfo.InvariantCulture,
                     "[{0}]{1} {2} will be installed since {3} specifies that version.[/]",
                     DotnetupTheme.Current.Dim,
                     component.GetDisplayName(),
-                    channelFromGlobalJson,
+                    channelFromGlobalJson.Name,
                     globalJson.GlobalJsonPath));
                 return (channelFromGlobalJson, true);
             }
         }
 
-        return (ChannelVersionResolver.LatestChannel, false);
+        return (new UpdateChannel(ChannelVersionResolver.LatestChannel), false);
     }
 
     /// <summary>

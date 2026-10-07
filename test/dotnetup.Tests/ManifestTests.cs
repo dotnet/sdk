@@ -19,6 +19,31 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class ManifestTests
 {
     [TestMethod]
+    public void RepositorySpecIdentityDoesNotDependOnCachedChannel()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+        var path = Path.Combine(testEnv.TempRoot, "global.json");
+        var original = new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
+            VersionOrChannel = "10.0.1xx", GlobalJsonPath = path
+        };
+        manifest.AddInstallSpec(root, original);
+        manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
+            VersionOrChannel = "11", GlobalJsonPath = Path.Combine(testEnv.TempRoot, ".", "global.json")
+        });
+        manifest.GetInstallSpecs(root).Should().ContainSingle().Which.VersionOrChannel.Should().Be("11");
+
+        manifest.RemoveInstallSpec(root, original);
+        manifest.GetInstallSpecs(root).Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void NewManifestCreatesValidJson()
     {
         using var testEnv = new TestEnvironment();
@@ -102,6 +127,66 @@ public class ManifestTests
     }
 
     [TestMethod]
+    [DataRow("")]
+    [DataRow("\"installSource\": \"Explicit\",")]
+    [DataRow("\"installSource\": 0,")]
+    public void ExistingSpecsRemainCommandLine(string sourceProperty)
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        File.WriteAllText(testEnv.ManifestPath, $$"""
+            {
+              "schemaVersion": "1",
+              "dotnetRoots": [{
+                "path": {{JsonSerializer.Serialize(testEnv.InstallPath)}},
+                "architecture": "x64",
+                "installSpecs": [{
+                  {{sourceProperty}}
+                  "component": "SDK",
+                  "versionOrChannel": "10.0.1xx"
+                }]
+              }]
+            }
+            """);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var data = manifest.ReadManifest();
+        data.DotnetRoots.Single().InstallSpecs.Single().InstallSource.Should().Be(InstallSource.Explicit);
+
+        manifest.WriteManifest(data);
+        manifest.ReadManifest().DotnetRoots.Single().InstallSpecs.Single().InstallSource.Should().Be(InstallSource.Explicit);
+    }
+
+    [TestMethod]
+    [DataRow(false, false, 1)]
+    [DataRow(true, false, 0)]
+    [DataRow(false, true, 0)]
+    public void RecordMigrationSpec_RespectsTrackingFlags(bool untracked, bool skipRecording, int count)
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+        var request = new DotnetInstallRequest(installRoot, new UpdateChannel("10.0.1xx"), InstallComponent.SDK,
+            new InstallRequestOptions
+            {
+                InstallSource = InstallSource.Migration,
+                Untracked = untracked,
+                SkipInstallSpecRecording = skipRecording
+            });
+
+        manifest.RecordInstallSpec(request);
+        manifest.RecordInstallSpec(request);
+
+        var specs = manifest.GetInstallSpecs(installRoot).ToList();
+        specs.Should().HaveCount(count);
+        specs.Should().OnlyContain(s => s.InstallSource == InstallSource.Migration && s.GlobalJsonPath == null);
+        if (count > 0)
+        {
+            File.ReadAllText(testEnv.ManifestPath).Should().Contain("\"installSource\": \"Migration\"");
+        }
+    }
+
+    [TestMethod]
     public void LegacyFormatThrowsError()
     {
         using var testEnv = new TestEnvironment();
@@ -117,6 +202,22 @@ public class ManifestTests
         act.Should().Throw<DotnetInstallException>()
             .Where(e => e.ErrorCode == DotnetInstallErrorCode.LocalManifestCorrupted)
             .WithMessage("*legacy format*no longer supported*");
+    }
+
+    [TestMethod]
+    public void AddInstallSpec_RejectsUndefinedSourceValue()
+    {
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+
+        var act = () => manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "10.0", InstallSource = (InstallSource)int.MaxValue
+        });
+
+        act.Should().Throw<ArgumentException>();
     }
 
     [TestMethod]
@@ -303,9 +404,11 @@ public class ManifestTests
     }
 
     [TestMethod]
-    public void Update_ExplicitSpec_RecordsInstallation_WithoutDuplicatingSpec()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Update_StandaloneSpec_RecordsInstallation_WithoutDuplicatingSpec(bool migrated)
     {
-        // Same as above but with an Explicit spec instead of GlobalJson
+        // Updates preserve the standalone spec's original source.
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
@@ -317,12 +420,12 @@ public class ManifestTests
         // Create component directories so ReadManifest() pruning keeps them.
         testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "9.0.100"), (InstallComponent.SDK, "9.0.200"));
 
-        // Initial state: Explicit spec + installation at 9.0.100
+        // Initial state: standalone spec + installation at 9.0.100
         manifest.AddInstallSpec(installRoot, new InstallSpec
         {
             Component = InstallComponent.SDK,
             VersionOrChannel = "9.0",
-            InstallSource = InstallSource.Explicit
+            InstallSource = migrated ? InstallSource.Migration : InstallSource.Explicit
         });
         manifest.AddInstallation(installRoot, install100);
 
@@ -331,6 +434,8 @@ public class ManifestTests
 
         // Should still have exactly 1 install spec
         manifest.GetInstallSpecs(installRoot).Should().ContainSingle();
+        manifest.GetInstallSpecs(installRoot).Single().InstallSource.Should()
+            .Be(migrated ? InstallSource.Migration : InstallSource.Explicit);
 
         // Should have both installations
         manifest.GetInstallations(installRoot).Should().HaveCount(2);

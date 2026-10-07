@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -222,46 +221,6 @@ internal class ChannelVersionResolver
     }
 
     /// <summary>
-    /// Parses a version channel string into its components.
-    /// </summary>
-    /// <param name="channel">Channel string to parse (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "10.0.100-preview.1.32640")</param>
-    /// <returns>Tuple containing (major, minor, featureBand, isFullySpecified)</returns>
-    private static (int Major, int Minor, string? FeatureBand, bool IsFullySpecified) ParseVersionChannel(UpdateChannel channel)
-    {
-        // Strip any prerelease/build suffix (e.g., "-preview.3.26170.106") before
-        // splitting on '.', otherwise the prerelease dots inflate parts.Length and
-        // parts[2] becomes something like "100-preview" which fails int.TryParse.
-        var name = channel.Name;
-        var dashIndex = name.IndexOf('-', StringComparison.Ordinal);
-        var hasPrerelease = dashIndex >= 0;
-        var versionPart = hasPrerelease ? name.Substring(0, dashIndex) : name;
-
-        var parts = versionPart.Split('.');
-        int major = parts.Length > 0 && int.TryParse(parts[0], out var m) ? m : -1;
-        int minor = parts.Length > 1 && int.TryParse(parts[1], out var n) ? n : -1;
-
-        // Check if we have a feature band (like 1xx) or a fully specified patch
-        string? featureBand = null;
-        bool isFullySpecified = false;
-
-        if (parts.Length >= 3)
-        {
-            if (!hasPrerelease && parts[2].EndsWith("xx", StringComparison.OrdinalIgnoreCase))
-            {
-                // Feature band pattern (e.g., "1xx"). Feature bands cannot carry a prerelease suffix (enforced by IsValidPatchPart).
-                featureBand = parts[2].Substring(0, parts[2].Length - 2);
-            }
-            else if (int.TryParse(parts[2], out _))
-            {
-                // Fully specified version, with or without prerelease (e.g., "9.0.103" or "10.0.100-preview.1.32640").
-                isFullySpecified = true;
-            }
-        }
-
-        return (major, minor, featureBand, isFullySpecified);
-    }
-
-    /// <summary>
     /// Finds the latest fully specified version for a given channel string (major, major.minor, or feature band).
     /// </summary>
     /// <param name="channel">Channel string (e.g., "9", "9.0", "9.0.1xx", "9.0.103", "lts", "preview", "10.0.1xx-daily")</param>
@@ -271,189 +230,70 @@ internal class ChannelVersionResolver
     /// link). Optional; defaults to the current process architecture. Ignored for non-daily channels.
     /// </param>
     /// <returns>Latest fully specified version string, or null if not found</returns>
-    [SuppressMessage("Performance", "CA1822:Mark members as static", Justification = "Kept as instance for API symmetry with other resolver methods and to allow future stateful caching.")]
     public ReleaseVersion? GetLatestVersionForChannel(UpdateChannel channel, InstallComponent component, InstallArchitecture? architecture = null)
     {
         // Daily channels are resolved via aka.ms redirect rather than the release manifest.
         if (channel.IsDaily)
         {
             _dailyChannelResolver ??= new DailyChannelResolver(_releaseManifest);
-            return _dailyChannelResolver.Resolve(
+            var dailyVersion = _dailyChannelResolver.Resolve(
                 channel,
                 architecture ?? InstallerUtilities.GetDefaultInstallArchitecture(),
                 component);
+            return dailyVersion is not null && channel.Matches(dailyVersion) ? dailyVersion : null;
         }
 
-        if (string.Equals(channel.Name, LtsChannel, StringComparison.OrdinalIgnoreCase))
+        if (ReleaseVersion.TryParse(channel.Name, out var exact))
         {
-            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
-            return GetLatestVersionByReleaseType(productIndex, ReleaseType.LTS, component);
-        }
-        else if (string.Equals(channel.Name, PreviewChannel, StringComparison.OrdinalIgnoreCase))
-        {
-            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
-            return GetLatestPreviewVersion(productIndex, component);
-        }
-        else if (string.Equals(channel.Name, LatestChannel, StringComparison.OrdinalIgnoreCase))
-        {
-            var productIndex = ReleaseManifest.Default.GetReleasesIndex();
-            return GetLatestActiveVersion(productIndex, component);
+            return channel.Matches(exact) ? exact : null;
         }
 
-        var (major, minor, featureBand, isFullySpecified) = ParseVersionChannel(channel);
-
-        // If major is invalid, return null
-        if (major < 0)
+        if (!IsValidChannelFormat(channel.Name)
+            || (component != InstallComponent.SDK && channel.IsSdkVersionOrFeatureBand()))
         {
             return null;
         }
 
-        // If the version is already fully specified, just return it as-is
-        if (isFullySpecified)
+        var manifest = ReleaseManifest.Default;
+        return GetLatestMatchingVersion(channel, component, manifest.GetReleasesIndex(), manifest.GetReleases);
+    }
+
+    /// <summary>
+    /// Selects the latest matching component version from eligible release products.
+    /// Loads eligible products newest-first, stopping when a matching version is found.
+    /// </summary>
+    internal static ReleaseVersion? GetLatestMatchingVersion(
+        UpdateChannel channel,
+        InstallComponent component,
+        IEnumerable<Product> index,
+        Func<Product, IEnumerable<ProductRelease>> getReleases)
+    {
+        var parts = channel.Name.Split('.');
+        var products = index.Where(product =>
         {
-            return new ReleaseVersion(channel.Name);
+            var productVersion = new Version(product.ProductVersion);
+            return (channel.MinimumVersion is null || productVersion.Major >= channel.MinimumVersion.Major)
+                && (!int.TryParse(parts[0], out var major) || productVersion.Major == major)
+                && (parts.Length < 2 || !int.TryParse(parts[1], out var minor) || productVersion.Minor == minor);
+        });
+        if (channel.Name.Equals(LtsChannel, StringComparison.OrdinalIgnoreCase))
+        {
+            products = products.Where(p => p.ReleaseType == ReleaseType.LTS);
         }
 
-        // Load the index manifest
-        var index = ReleaseManifest.Default.GetReleasesIndex();
-        if (minor < 0)
+        // Component versions follow the product's major/minor, so older products
+        // cannot provide a greater match once this product satisfies the request.
+        foreach (var product in products.OrderByDescending(p => new Version(p.ProductVersion)))
         {
-            return GetLatestVersionForMajorOrMajorMinor(index, major, component); // Major Only (e.g., "9")
-        }
-        else if (minor >= 0 && featureBand == null) // Major.Minor (e.g., "9.0")
-        {
-            return GetLatestVersionForMajorOrMajorMinor(index, major, component, minor);
-        }
-        else if (minor >= 0 && featureBand is not null) // Not Fully Qualified Feature band Version (e.g., "9.0.1xx")
-        {
-            return GetLatestVersionForFeatureBand(index, major, minor, featureBand, component);
-        }
-
-        return null;
-    }
-
-    private static IEnumerable<Product> GetProductsInMajorOrMajorMinor(IEnumerable<Product> index, int major, int? minor = null)
-    {
-        var validProducts = index.Where(p => minor is not null ? p.ProductVersion.Equals($"{major}.{minor}", StringComparison.Ordinal) : p.ProductVersion.StartsWith($"{major}.", StringComparison.Ordinal));
-        return validProducts;
-    }
-
-    /// <summary>
-    /// Gets the latest version for a major-only channel (e.g., "9").
-    /// </summary>
-    private static ReleaseVersion? GetLatestVersionForMajorOrMajorMinor(IEnumerable<Product> index, int major, InstallComponent component, int? minor = null)
-    {
-        // Assumption: The manifest is designed so that the first product for a major version will always be latest.
-        Product? latestProductWithMajor = GetProductsInMajorOrMajorMinor(index, major, minor).FirstOrDefault();
-        return GetLatestReleaseVersionInProduct(latestProductWithMajor, component);
-    }
-
-    /// <summary>
-    /// Gets the latest version based on support status (LTS or STS).
-    /// </summary>
-    /// <param name="index">The product collection to search</param>
-    /// <param name="releaseType">The release type to filter by (LTS or STS)</param>
-    /// <param name="component">The component to check (ie SDK or runtime)</param>
-    /// <returns>Latest stable version string matching the support status, or null if none found</returns>
-    private static ReleaseVersion? GetLatestVersionByReleaseType(IEnumerable<Product> index, ReleaseType releaseType, InstallComponent component)
-    {
-        var correctPhaseProducts = index?.Where(p => p.ReleaseType == releaseType) ?? Enumerable.Empty<Product>();
-        return GetLatestActiveVersion(correctPhaseProducts, component);
-    }
-
-    /// <summary>
-    /// Gets the latest preview version available.
-    /// </summary>
-    /// <param name="index">The product collection to search</param>
-    /// <param name="component">The component to check (ie SDK or runtime)</param>
-    /// <returns>Latest preview or GoLive version string, or null if none found</returns>
-    private static ReleaseVersion? GetLatestPreviewVersion(IEnumerable<Product> index, InstallComponent component)
-    {
-        ReleaseVersion? latestPreviewVersion = GetLatestVersionBySupportPhase(index, component, [SupportPhase.Preview, SupportPhase.GoLive]);
-        if (latestPreviewVersion is not null)
-        {
-            return latestPreviewVersion;
-        }
-
-        return GetLatestVersionBySupportPhase(index, component, [SupportPhase.Active]);
-    }
-
-    /// <summary>
-    /// Gets the latest version across all available products that matches the support phase.
-    /// </summary>
-    private static ReleaseVersion? GetLatestActiveVersion(IEnumerable<Product> index, InstallComponent component)
-    {
-        return GetLatestVersionBySupportPhase(index, component, [SupportPhase.Active]);
-    }
-    /// <summary>
-    /// Gets the latest version across all available products that matches the support phase.
-    /// </summary>
-    private static ReleaseVersion? GetLatestVersionBySupportPhase(IEnumerable<Product> index, InstallComponent component, SupportPhase[] acceptedSupportPhases)
-    {
-        // A version in preview/ga/rtm support is considered Go Live and not Active.
-        var activeSupportProducts = index?.Where(p => acceptedSupportPhases.Contains(p.SupportPhase));
-
-        // The manifest is designed so that the first product will always be latest.
-        Product? latestActiveSupportProduct = activeSupportProducts?.FirstOrDefault();
-
-        return GetLatestReleaseVersionInProduct(latestActiveSupportProduct, component);
-    }
-
-    private static ReleaseVersion? GetLatestReleaseVersionInProduct(Product? product, InstallComponent component)
-    {
-        // Assumption: The latest runtime version will always be the same across runtime components.
-        ReleaseVersion? latestVersion = component switch
-        {
-            InstallComponent.SDK => product?.LatestSdkVersion,
-            _ => product?.LatestRuntimeVersion
-        };
-
-        return latestVersion;
-    }
-
-    /// <summary>
-    ///  Replaces user input feature band strings into the full feature band.
-    ///  This would convert '1xx' into '100'.
-    ///  100 is not necessarily the latest but it is the feature band.
-    ///  The other number in the band is the patch.
-    /// </summary>
-    /// <param name="band"></param>
-    /// <returns></returns>
-    private static int NormalizeFeatureBandInput(string band)
-    {
-        var bandString = band
-            .Replace("X", "x", StringComparison.Ordinal)
-            .Replace("x", "0", StringComparison.Ordinal)
-            .PadRight(3, '0')
-            .Substring(0, 3);
-        return int.Parse(bandString, CultureInfo.InvariantCulture);
-    }
-
-    /// <summary>
-    /// Gets the latest version for a feature band channel (e.g., "9.0.1xx").
-    /// </summary>
-    private static ReleaseVersion? GetLatestVersionForFeatureBand(ProductCollection index, int major, int minor, string featureBand, InstallComponent component)
-    {
-        if (component != InstallComponent.SDK)
-        {
-            return null;
-        }
-
-        var validProducts = GetProductsInMajorOrMajorMinor(index, major, minor);
-        var latestProduct = validProducts.FirstOrDefault();
-        var releases = latestProduct is not null
-            ? ReleaseManifest.Default.GetReleases(latestProduct).ToList()
-            : [];
-        var normalizedFeatureBand = NormalizeFeatureBandInput(featureBand);
-
-        foreach (var release in releases)
-        {
-            foreach (var sdk in release.Sdks)
+            var releases = getReleases(product);
+            var versions = component == InstallComponent.SDK
+                ? releases.SelectMany(r => r.Sdks).Select(s => s.Version)
+                : releases.SelectMany(r => r.Runtimes)
+                    .Where(r => ReleaseManifest.IsMatchingRuntimeComponent(r.Name, component)).Select(r => r.Version);
+            var latest = versions.Where(channel.Matches).OrderByDescending(v => v).FirstOrDefault();
+            if (latest is not null)
             {
-                if (sdk.Version.SdkFeatureBand == normalizedFeatureBand)
-                {
-                    return sdk.Version;
-                }
+                return latest;
             }
         }
 

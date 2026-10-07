@@ -60,17 +60,11 @@ To apply the change to this terminal now, run:
 Or open a new terminal.
 
 > dotnetup list
-Installations (managed by dotnetup):
+Component  Install spec  Source        Installed version
+---------  ------------  ------------  ------------------
+SDK        latest        Command line  <resolved-version>
 
-  <default-installation-root>
-
-    Tracked channels:
-      SDK latest  (source: explicit)
-
-    Installed versions:
-      SDK <resolved-version>  (<architecture>)
-
-Total: 1
+1 install spec; 1 installation (1 SDK, 0 runtimes)
 
 > dotnet --version
 <resolved-version>
