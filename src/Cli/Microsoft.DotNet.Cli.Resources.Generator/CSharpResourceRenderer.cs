@@ -101,7 +101,12 @@ internal static class CSharpResourceRenderer
             indent
                 + "    internal __ResourceCache(global::System.Globalization.CultureInfo"
                 + nullableSuffix
-                + " culture) => Culture = culture;");
+                + " culture)");
+
+        AppendLine(builder, indent + "    {");
+        AppendLine(builder, indent + "        Culture = culture;");
+        AppendLine(builder, indent + "        EffectiveCulture = culture ?? global::System.Globalization.CultureInfo.CurrentUICulture;");
+        AppendLine(builder, indent + "    }");
 
         AppendLine(builder);
         AppendLine(
@@ -110,6 +115,9 @@ internal static class CSharpResourceRenderer
                 + "    internal global::System.Globalization.CultureInfo"
                 + nullableSuffix
                 + " Culture { get; }");
+
+        AppendLine(builder);
+        AppendLine(builder, indent + "    internal global::System.Globalization.CultureInfo EffectiveCulture { get; }");
 
         for (int index = 0; index < entries.Length; index++)
         {
@@ -200,8 +208,22 @@ internal static class CSharpResourceRenderer
                 + " Culture");
 
         AppendLine(builder, indent + "{");
-        AppendLine(builder, indent + "    get => s_cache.Culture;");
-        AppendLine(builder, indent + "    set => s_cache = new __ResourceCache(value);");
+        AppendLine(builder, indent + "    get => global::System.Threading.Volatile.Read(ref s_cache).Culture;");
+        AppendLine(builder, indent + "    set => global::System.Threading.Volatile.Write(ref s_cache, new __ResourceCache(value));");
+        AppendLine(builder, indent + "}");
+        AppendLine(builder);
+        RenderAggressiveInlining(builder, indent, features);
+        AppendLine(builder, indent + "private static __ResourceCache GetResourceCache()");
+        AppendLine(builder, indent + "{");
+        AppendLine(builder, indent + "    __ResourceCache cache = global::System.Threading.Volatile.Read(ref s_cache);");
+        AppendLine(builder, indent + "    if (cache.Culture is null && !cache.EffectiveCulture.Equals(global::System.Globalization.CultureInfo.CurrentUICulture))");
+        AppendLine(builder, indent + "    {");
+        AppendLine(builder, indent + "        __ResourceCache replacement = new __ResourceCache(culture: null);");
+        AppendLine(builder, indent + "        global::System.Threading.Interlocked.CompareExchange(ref s_cache, replacement, cache);");
+        AppendLine(builder, indent + "        cache = replacement;");
+        AppendLine(builder, indent + "    }");
+        AppendLine(builder);
+        AppendLine(builder, indent + "    return cache;");
         AppendLine(builder, indent + "}");
     }
 
@@ -264,12 +286,12 @@ internal static class CSharpResourceRenderer
             indent
                 + "private static string GetCachedResourceString(ref string"
                 + nullableSuffix
-                + " value, string resourceKey)");
+                + " value, string resourceKey, global::System.Globalization.CultureInfo culture)");
 
         AppendLine(builder, indent + "{");
         AppendLine(
             builder,
-            indent + "    return value ??= ResourceManager.GetString(resourceKey, Culture)");
+            indent + "    return value ??= ResourceManager.GetString(resourceKey, culture)");
 
         AppendLine(
             builder,
@@ -286,13 +308,13 @@ internal static class CSharpResourceRenderer
                 indent
                     + "private static string GetCachedResourceString(ref string"
                     + nullableSuffix
-                    + " value, string resourceKey, string defaultValue)");
+                    + " value, string resourceKey, global::System.Globalization.CultureInfo culture, string defaultValue)");
 
             AppendLine(builder, indent + "{");
             AppendLine(
                 builder,
                 indent
-                    + "    return value ??= ResourceManager.GetString(resourceKey, Culture) ?? defaultValue;");
+                    + "    return value ??= ResourceManager.GetString(resourceKey, culture) ?? defaultValue;");
 
             AppendLine(builder, indent + "}");
         }
@@ -316,20 +338,26 @@ internal static class CSharpResourceRenderer
         AppendLine(builder, indent + "public static string " + escapedIdentifier);
         AppendLine(builder, indent + "{");
         RenderAggressiveInlining(builder, indent + "    ", features);
-        AppendLine(builder, indent + "    get => GetCachedResourceString(");
-        AppendLine(builder, indent + "        ref s_cache._value" + index + ",");
+        AppendLine(builder, indent + "    get");
+        AppendLine(builder, indent + "    {");
+        AppendLine(builder, indent + "        __ResourceCache cache = GetResourceCache();");
+        AppendLine(builder, indent + "        return GetCachedResourceString(");
+        AppendLine(builder, indent + "            ref cache._value" + index + ",");
         AppendLine(
             builder,
             indent
-                + "        "
+                + "            "
                 + resourceKey
-                + (includeDefaultValues ? "," : ");"));
+                + ",");
+
+        AppendLine(builder, indent + "            cache.EffectiveCulture" + (includeDefaultValues ? "," : ");"));
 
         if (includeDefaultValues)
         {
-            AppendLine(builder, indent + "        " + ToVerbatimLiteral(entry.Value) + ");");
+            AppendLine(builder, indent + "            " + ToVerbatimLiteral(entry.Value) + ");");
         }
 
+        AppendLine(builder, indent + "    }");
         AppendLine(builder, indent + "}");
     }
 

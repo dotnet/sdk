@@ -21,7 +21,7 @@ PRODUCT_PROJECT="$REPO_ROOT/src/Cli/dotnet-aot/dotnet-aot.csproj"
 DN_PROJECT="$REPO_ROOT/src/Cli/dn/dn.csproj"
 
 CONFIGURATION="Debug"
-RESOURCE_MODE="Embedded"
+RESOURCE_MODE="ExternalLocalized"
 RID=""
 NO_BUILD=false
 TRX=false
@@ -151,15 +151,14 @@ if [[ -z "$RESOURCE_SDK_DIRECTORY" ]]; then
     echo "ERROR: $RESOURCE_MODE requires a built $CONFIGURATION redist SDK containing managed owner assemblies and satellites."
     exit 1
 fi
-for entry in "$RESOURCE_SDK_DIRECTORY"/*; do
-    if [[ "$(basename "$entry")" != "$AOT_LIBRARY_NAME" ]]; then
-        cp -R "$entry" "$AOT_PUBLISH_DIR/"
-    fi
-done
-SDK_DIRECTORY="$AOT_PUBLISH_DIR"
 RESOURCE_DOTNET_ROOT="$(dirname "$REDIST_SDK_ROOT")"
-RESOURCE_DOTNET_HOST="$RESOURCE_DOTNET_ROOT/dotnet"
-TEST_DOTNET_ROOT="$RESOURCE_DOTNET_ROOT"
+LAYOUT_ROOT="$AOT_PUBLISH_DIR/layout"
+mkdir -p "$LAYOUT_ROOT"
+cp -R "$RESOURCE_DOTNET_ROOT/." "$LAYOUT_ROOT/"
+SDK_DIRECTORY="$LAYOUT_ROOT/sdk/$(basename "$RESOURCE_SDK_DIRECTORY")"
+cp "$AOT_LIBRARY_PATH" "$SDK_DIRECTORY/$AOT_LIBRARY_NAME"
+RESOURCE_DOTNET_HOST="$LAYOUT_ROOT/dotnet"
+TEST_DOTNET_ROOT="$LAYOUT_ROOT"
 TEST_DOTNET_HOST="$RESOURCE_DOTNET_HOST"
 # Keep resource tests on the redist SDK, but use the bootstrap SDK for managed fallback when the
 # target-architecture redist host cannot execute on the agent.
@@ -182,7 +181,7 @@ fi
 export DOTNET_AOT_TEST_MANAGED_TEST_MODULE="$MANAGED_TEST_MODULE"
 export DOTNET_AOT_TEST_NUGET_CONFIG="$REPO_ROOT/NuGet.config"
 export DOTNET_AOT_SDK_DIR="$SDK_DIRECTORY"
-export DOTNET_AOT_LIBRARY_DIR="$AOT_PUBLISH_DIR"
+export DOTNET_AOT_LIBRARY_DIR="$SDK_DIRECTORY"
 export DOTNET_HOST_PATH="$TEST_DOTNET_HOST"
 export DOTNET_ROOT="$TEST_DOTNET_ROOT"
 

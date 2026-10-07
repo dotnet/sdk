@@ -280,6 +280,6 @@ finally {
             Remove-Item "Env:\$variableName"
         }
     }
-
-    exit $commandExitCode
 }
+
+exit $commandExitCode

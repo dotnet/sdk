@@ -29,9 +29,9 @@ public class ResxSourceGeneratorTests
         result.SingleSource.Should().Contain("private sealed class __ResourceCache");
         result.SingleSource.Should().Contain("private static class __ResourceManagerCache");
         result.SingleSource.Should().Contain(
-            "private static string GetCachedResourceString(ref string? value, string resourceKey)");
-        result.SingleSource.Should().Contain("get => GetCachedResourceString(");
-        result.SingleSource.Should().Contain("ref s_cache._value0");
+            "private static string GetCachedResourceString(ref string? value, string resourceKey, global::System.Globalization.CultureInfo culture)");
+        result.SingleSource.Should().Contain("__ResourceCache cache = GetResourceCache();");
+        result.SingleSource.Should().Contain("ref cache._value0");
         result.SingleSource.Should().Contain("nameof(@Greeting)");
         result.SingleSource.Should().Contain("throw new global::System.Resources.MissingManifestResourceException()");
     }
@@ -48,7 +48,7 @@ public class ResxSourceGeneratorTests
             ?? throw new InvalidOperationException("The generated property getter was not found.");
         IMethodSymbol helper = type.GetMembers("GetCachedResourceString")
             .OfType<IMethodSymbol>()
-            .Single(method => method.Parameters.Length == 2);
+            .Single(method => method.Parameters.Length == 3);
 
         AssertAggressiveInlining(getter);
         AssertAggressiveInlining(helper);
@@ -76,8 +76,8 @@ public class ResxSourceGeneratorTests
         result.GeneratorDiagnostics.Should().BeEmpty();
         result.CompilerErrors.Should().BeEmpty();
         result.SingleSource.Should().Contain(
-            "private static string GetCachedResourceString(ref string? value, string resourceKey, string defaultValue)");
-        result.SingleSource.Should().Contain("ref s_cache._value0");
+            "private static string GetCachedResourceString(ref string? value, string resourceKey, global::System.Globalization.CultureInfo culture, string defaultValue)");
+        result.SingleSource.Should().Contain("ref cache._value0");
         result.SingleSource.Should().Contain("@\"Hello {name}\"");
         result.SingleSource.Should().Contain(
             "global::System.String.Format(global::@Test.@Resources.@Strings.Culture, "
@@ -182,7 +182,7 @@ public class ResxSourceGeneratorTests
         result.GeneratorDiagnostics.Should().BeEmpty();
         result.CompilerErrors.Should().BeEmpty();
         result.SingleSource.Should().Contain("public static string @Greeting_Text");
-        result.SingleSource.Should().Contain("get => GetCachedResourceString(");
+        result.SingleSource.Should().Contain("return GetCachedResourceString(");
         result.SingleSource.Should().Contain("@\"Greeting-Text\"");
     }
 
@@ -462,6 +462,7 @@ public class ResxSourceGeneratorTests
     [DataRow("CreateResourceManager")]
     [DataRow("Culture")]
     [DataRow("GetCachedResourceString")]
+    [DataRow("GetResourceCache")]
     [DataRow("GetResourceString")]
     [DataRow("ResourceManager")]
     [DataRow("s_cache")]

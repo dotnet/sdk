@@ -284,14 +284,21 @@ types.
 The provider reuses the shared [CoreUtils resource runtime](../Microsoft.DotNet.Cli.CoreUtils/Resources/StringResourceManager.cs).
 Managers retain successfully loaded tables, not decoded strings, and retry
 failed loads on the next lookup. The [generated accessors](../Microsoft.DotNet.Cli.Resources.Generator/CSharpResourceRenderer.cs)
-own property-value caching and replace that cache when their culture changes.
+own property-value caching and replace that cache when their effective culture
+changes. With no explicit `Culture`, each property lookup follows the calling
+thread's `CurrentUICulture`. The cached value and lookup culture come from the
+same cache snapshot, so concurrent callers cannot populate another culture's
+cache.
 No additional table-cache or reader-synchronization wrappers are needed in
 the AOT integration.
 
-The native test runners assemble the redist SDK payload beside the candidate
-native library without overwriting that library. The SDK directory passed by
-`dn` must be the directory containing the library it loads, including when
-testing a non-default resource mode.
+The native test runners default to the shipping `ExternalLocalized` mode and
+assemble an isolated copy of the complete redist SDK layout. The candidate
+native library replaces the copy under `sdk/<version>`. The SDK directory
+passed by `dn` must be the directory containing the library it loads, including
+when testing a non-default resource mode. Preserve hidden deployment files,
+especially the SDK's `.version`, so native and managed cache validation use the
+same SDK identity in CI.
 
 `AotResources.targets` removes `@(IlcSatelliteAssembly)` before ILC writes the
 response file in both external modes. `ExternalAllSubstitutions.xml` removes the

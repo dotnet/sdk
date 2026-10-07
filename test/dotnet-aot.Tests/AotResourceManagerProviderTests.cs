@@ -9,6 +9,17 @@ namespace Microsoft.DotNet.Cli.Tests;
 public class AotResourceManagerProviderTests
 {
     [TestMethod]
+    public void Configure_EmptySdkDirectory_FailsWithoutChangingConfiguration()
+    {
+        bool wasConfigured = AotResourceManagerProvider.IsConfigured;
+
+        Assert.IsFalse(AotResourceManagerProvider.TryConfigure(string.Empty, out Exception? error));
+
+        Assert.IsInstanceOfType<ArgumentException>(error);
+        Assert.AreEqual(wasConfigured, AotResourceManagerProvider.IsConfigured);
+    }
+
+    [TestMethod]
     public void ExternalNeutralPreflight_MissingOwnerFailsBeforeRegistration()
     {
         string directory = Directory.CreateTempSubdirectory("dotnet-aot-resource-preflight-").FullName;

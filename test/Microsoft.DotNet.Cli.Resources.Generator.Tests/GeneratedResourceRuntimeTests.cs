@@ -181,6 +181,98 @@ public class GeneratedResourceRuntimeTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void GeneratedProperty_AmbientCultureChanges_RefreshesCachedValue(bool includeDefaults)
+    {
+        using GeneratedAssembly generatedAssembly = CreateCultureAwareAssembly(includeDefaults);
+        Type resourceType = generatedAssembly.GetGeneratedType();
+        PropertyInfo greeting = GetRequiredProperty(resourceType, "Greeting");
+        PropertyInfo culture = GetRequiredProperty(resourceType, "Culture");
+        CultureInfo originalCulture = CultureInfo.CurrentUICulture;
+
+        try
+        {
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            object? english = greeting.GetValue(null);
+            english.Should().Be("en-US");
+            greeting.GetValue(null).Should().BeSameAs(english);
+
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr");
+            object? french = greeting.GetValue(null);
+            french.Should().Be("fr");
+            greeting.GetValue(null).Should().BeSameAs(french);
+            culture.GetValue(null).Should().BeNull();
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = originalCulture;
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public async Task GeneratedProperty_ConcurrentAmbientCultures_StayIsolated(bool includeDefaults)
+    {
+        using GeneratedAssembly generatedAssembly = CreateCultureAwareAssembly(includeDefaults);
+        PropertyInfo greeting = GetRequiredProperty(generatedAssembly.GetGeneratedType(), "Greeting");
+        using Barrier barrier = new(participantCount: 2);
+
+        await Task.WhenAll(
+            Task.Run(() => ReadCulture("en-US"), TestContext.CancellationToken),
+            Task.Run(() => ReadCulture("fr"), TestContext.CancellationToken));
+
+        void ReadCulture(string name)
+        {
+            CultureInfo originalCulture = CultureInfo.CurrentUICulture;
+            try
+            {
+                CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo(name);
+                for (int iteration = 0; iteration < 100; iteration++)
+                {
+                    barrier.SignalAndWait(TimeSpan.FromSeconds(10), TestContext.CancellationToken).Should().BeTrue();
+                    greeting.GetValue(null).Should().Be(name);
+                }
+            }
+            finally
+            {
+                CultureInfo.CurrentUICulture = originalCulture;
+            }
+        }
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void GeneratedProperty_ExplicitCultureOverridesAmbient_UntilReset(bool includeDefaults)
+    {
+        using GeneratedAssembly generatedAssembly = CreateCultureAwareAssembly(includeDefaults);
+        Type resourceType = generatedAssembly.GetGeneratedType();
+        PropertyInfo greeting = GetRequiredProperty(resourceType, "Greeting");
+        PropertyInfo culture = GetRequiredProperty(resourceType, "Culture");
+        CultureInfo originalCulture = CultureInfo.CurrentUICulture;
+
+        try
+        {
+            culture.SetValue(null, CultureInfo.GetCultureInfo("fr"));
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("en-US");
+            object? french = greeting.GetValue(null);
+            french.Should().Be("fr");
+
+            CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("ja");
+            greeting.GetValue(null).Should().BeSameAs(french);
+
+            culture.SetValue(null, null);
+            greeting.GetValue(null).Should().Be("ja");
+        }
+        finally
+        {
+            CultureInfo.CurrentUICulture = originalCulture;
+        }
+    }
+
+    [TestMethod]
     public void GeneratedProperty_MissingRequiredResource_Throws()
     {
         GeneratorTestResult result = GeneratorTestHarness.Run(
@@ -275,6 +367,29 @@ public class GeneratedResourceRuntimeTests
         object? formatted = formatGreeting.Invoke(null, ["unused", "Ada"]);
 
         formatted.Should().Be("Hello Ada");
+    }
+
+    public TestContext TestContext { get; set; } = null!;
+
+    private static GeneratedAssembly CreateCultureAwareAssembly(bool includeDefaults)
+    {
+        StringResourceManagerProvider.Register(
+            static (baseName, assembly) => new CultureAwareResourceManager(baseName, assembly));
+        Dictionary<string, string> metadata = new(StringComparer.Ordinal)
+        {
+            ["IncludeDefaultValues"] = includeDefaults ? "true" : "false"
+        };
+        GeneratorTestResult result = GeneratorTestHarness.Run(
+            GeneratorTestResource.Selected(SimpleResource, metadata: metadata),
+            GeneratorTestResource.Sibling(SimpleResource, "fr"));
+        return result.Emit(new Dictionary<string, string>(StringComparer.Ordinal));
+    }
+
+    private sealed class CultureAwareResourceManager(string baseName, Assembly assembly)
+        : StringResourceManager(baseName, assembly)
+    {
+        public override string? GetString(string name, CultureInfo? culture)
+            => new string((culture ?? CultureInfo.CurrentUICulture).Name.AsSpan());
     }
 
     private static PropertyInfo GetRequiredProperty(Type type, string name)

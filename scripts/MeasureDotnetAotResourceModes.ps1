@@ -182,6 +182,7 @@ function Invoke-Dotnet(
     $startInfo.Environment["DOTNET_SKIP_FIRST_TIME_EXPERIENCE"] = "1"
     $startInfo.Environment["DOTNET_NOLOGO"] = "1"
     $startInfo.Environment["DOTNET_CLI_HOME"] = $cliHome
+    $startInfo.Environment["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = "0"
     if ($culture.Length -eq 0) {
         [void]$startInfo.Environment.Remove("DOTNET_CLI_UI_LANGUAGE")
     }

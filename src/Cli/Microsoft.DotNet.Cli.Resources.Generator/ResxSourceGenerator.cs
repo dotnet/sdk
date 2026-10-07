@@ -226,6 +226,7 @@ public sealed class ResxSourceGenerator : IIncrementalGenerator
             "CreateResourceManager",
             "Culture",
             "GetCachedResourceString",
+            "GetResourceCache",
             "GetResourceString",
             "ResourceManager",
             "s_cache",

@@ -19,7 +19,7 @@
     The RID to publish for. Auto-detected if not specified.
 
 .PARAMETER ResourceMode
-    NativeAOT resource mode: Embedded, ExternalLocalized, or ExternalAll.
+    NativeAOT resource mode: Embedded, ExternalLocalized (default), or ExternalAll.
 
 .PARAMETER NoBuild
     Skip the publish step and run a previously published binary.
@@ -44,7 +44,7 @@ param(
     [string]$Configuration = "Debug",
     [string]$RuntimeIdentifier,
     [ValidateSet("Embedded", "ExternalLocalized", "ExternalAll")]
-    [string]$ResourceMode = "Embedded",
+    [string]$ResourceMode = "ExternalLocalized",
     [switch]$NoBuild,
     [switch]$Trx,
     [string]$ResultsDirectory,
@@ -186,15 +186,17 @@ if (-not $resourceSdkDirectory) {
     Write-Host "ERROR: $ResourceMode requires a built $Configuration redist SDK containing managed owner assemblies and satellites." -ForegroundColor Red
     exit 1
 }
-Get-ChildItem $resourceSdkDirectory |
-    Where-Object { $_.Name -ne $aotLibraryName } |
-    Copy-Item -Destination $aotPublishDir -Recurse -Force
-$sdkDirectory = $aotPublishDir
 $resourceDotnetRoot = Split-Path $redistSdkRoot
-$resourceDotnetHost = Join-Path $resourceDotnetRoot $dotnetName
+$layoutRoot = Join-Path $aotPublishDir "layout"
+New-Item -ItemType Directory -Force -Path $layoutRoot | Out-Null
+Get-ChildItem $resourceDotnetRoot -Force |
+    Copy-Item -Destination $layoutRoot -Recurse -Force
+$sdkDirectory = [System.IO.Path]::Combine($layoutRoot, "sdk", (Split-Path $resourceSdkDirectory -Leaf))
+Copy-Item $aotLibraryPath (Join-Path $sdkDirectory $aotLibraryName) -Force
+$resourceDotnetHost = Join-Path $layoutRoot $dotnetName
 
 $environment = @{
-    DOTNET_AOT_LIBRARY_DIR = $aotPublishDir
+    DOTNET_AOT_LIBRARY_DIR = $sdkDirectory
     DOTNET_AOT_SDK_DIR = $sdkDirectory
     DOTNET_AOT_TEST_DN_PATH = $dnPath
     DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
@@ -202,7 +204,7 @@ $environment = @{
     DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
     DOTNET_AOT_TEST_RESOURCE_MODE = $ResourceMode
     DOTNET_HOST_PATH = $resourceDotnetHost
-    DOTNET_ROOT = $resourceDotnetRoot
+    DOTNET_ROOT = $layoutRoot
 }
 $previousEnvironment = @{}
 foreach ($entry in $environment.GetEnumerator()) {

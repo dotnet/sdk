@@ -2,12 +2,29 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
 [TestClass]
 public class AotResourceCatalogTests
 {
+    [TestMethod]
+    public void NativeSdkDirectoryPreservesDeploymentIdentity()
+    {
+        if (System.Runtime.CompilerServices.RuntimeFeature.IsDynamicCodeSupported)
+        {
+            return;
+        }
+
+        string? sdkDirectory = Environment.GetEnvironmentVariable("DOTNET_AOT_TEST_SDK_DIRECTORY");
+        Assert.IsFalse(string.IsNullOrEmpty(sdkDirectory));
+        Assert.AreEqual("sdk", Path.GetFileName(Path.GetDirectoryName(sdkDirectory)));
+        DotnetVersionFile versionFile = new(Path.Join(sdkDirectory, ".version"));
+        Assert.IsTrue(versionFile.Exists);
+        Assert.AreEqual(versionFile.BuildNumber, Path.GetFileName(sdkDirectory));
+    }
+
     [TestMethod]
     public void CompiledResourceModeMatchesRequestedMode()
     {
