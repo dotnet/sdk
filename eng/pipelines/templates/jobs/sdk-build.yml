@@ -120,6 +120,17 @@ jobs:
       - template: /eng/pipelines/templates/steps/sdk-build-step.yml
         parameters:
           buildParameters: ${{ parameters }}
+          commonBuildArguments: >-
+            ${{ parameters.publishArgument }}
+            ${{ parameters.signArgument }}
+            ${{ parameters.projectsArgument }}
+            /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
+            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+            /p:PgoInstrument=${{ parameters.pgoInstrument }}
+            ${{ parameters.osProperties }}
+            ${{ parameters.runtimeSourceProperties }}
+            ${{ parameters.officialBuildProperties }}
+            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
           variant: ${{ variant }}
 
     ############### TESTING ###############
