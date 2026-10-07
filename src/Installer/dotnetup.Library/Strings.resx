@@ -434,8 +434,8 @@ Or open a new terminal.</value>
     <comment>{0} is a component name; {1} is a version or channel; {2} is the installation root path.</comment>
   </data>
   <data name="UninstallUseAllSources" xml:space="preserve">
-    <value>Use --source all to target these specs.</value>
-    <comment>{Locked="--source all"}</comment>
+    <value>Use {0} {1} to target these specs.</value>
+    <comment>{0} is the source option name; {1} is the install-source value that selects every source.</comment>
   </data>
   <data name="UninstallConfirmationPrompt" xml:space="preserve">
     <value>Proceed with uninstall?</value>

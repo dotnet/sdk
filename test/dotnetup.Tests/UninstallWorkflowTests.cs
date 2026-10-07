@@ -189,13 +189,18 @@ public class UninstallWorkflowTests
     }
 
     [TestMethod]
-    [DataRow(new[] { "sdk", "uninstall", "8", "--non-interactive" })]
-    [DataRow(new[] { "uninstall", "8", "--non-interactive" })]
-    [DataRow(new[] { "runtime", "uninstall", "8", "--non-interactive" })]
-    public void Parser_UninstallAcceptsNonInteractive(string[] args)
+    [DataRow(new[] { "sdk", "uninstall", "8", "--source", "all", "--manifest-path", "manifest.json", "--install-path", "dotnet", "--interactive", "false", "--non-interactive" })]
+    [DataRow(new[] { "uninstall", "8", "--source", "all", "--manifest-path", "manifest.json", "--install-path", "dotnet", "--interactive", "false", "--non-interactive" })]
+    [DataRow(new[] { "runtime", "uninstall", "8", "--source", "all", "--manifest-path", "manifest.json", "--install-path", "dotnet", "--interactive", "false", "--non-interactive" })]
+    public void Parser_UninstallAcceptsSharedOptions(string[] args)
     {
         var result = Parser.Parse(args);
+
         result.Errors.Should().BeEmpty();
+        result.GetValue(CommonOptions.SourceOption).Should().Be(InstallSource.All);
+        result.GetValue(CommonOptions.ManifestPathOption).Should().Be("manifest.json");
+        result.GetValue(CommonOptions.InstallPathOption).Should().Be("dotnet");
+        result.GetValue(CommonOptions.InteractiveOption).Should().BeFalse();
         result.GetValue(CommonOptions.NonInteractiveOption).Should().BeTrue();
     }
 

@@ -120,7 +120,11 @@ internal class UninstallWorkflow
 
             if (sourceFilter != InstallSource.All)
             {
-                AnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.UninstallUseAllSources.EscapeMarkup()));
+                AnsiConsole.MarkupLine(DotnetupTheme.Dim(string.Format(
+                    CultureInfo.InvariantCulture,
+                    Strings.UninstallUseAllSources,
+                    CommonOptions.SourceOption.Name,
+                    InstallSource.All.ToString().ToLowerInvariant()).EscapeMarkup()));
             }
         }
         else

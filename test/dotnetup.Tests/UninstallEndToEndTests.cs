@@ -450,6 +450,29 @@ public class UninstallEndToEndTests : IDisposable
     }
 
     [TestMethod]
+    public void SourceMismatch_GuidanceUsesCurrentOptionNameAndAllValue()
+    {
+        _fixture.AddInstallation(InstallComponent.SDK, "11.0.100");
+        var directory = Path.Combine(_fixture.Environment.TempRoot, "[repository]");
+        Directory.CreateDirectory(directory);
+        var globalJson = Path.Combine(directory, "global.json");
+        File.WriteAllText(globalJson, """{"sdk":{"version":"11.0.100"}}""");
+        _fixture.AlterManifest(root => root.InstallSpecs.Add(new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "11.0",
+            InstallSource = InstallSource.GlobalJson, GlobalJsonPath = globalJson
+        }));
+        var before = File.ReadAllText(_fixture.Environment.ManifestPath);
+
+        var output = Run(["sdk", "uninstall", "11.0"], out var exitCode);
+
+        exitCode.Should().Be(1, output);
+        output.Should().Contain(
+            $"Use {CommonOptions.SourceOption.Name} {InstallSource.All.ToString().ToLowerInvariant()} to target these specs.");
+        File.ReadAllText(_fixture.Environment.ManifestPath).Should().Be(before);
+    }
+
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public void SourceAll_ListsEachSpecBeforeConfirmationWithoutDeletingGlobalJson(bool accept)

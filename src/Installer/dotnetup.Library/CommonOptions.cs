@@ -131,6 +131,15 @@ internal class CommonOptions
         Arity = ArgumentArity.ZeroOrOne
     };
 
+    public static void AddUninstallOptions(Command command)
+    {
+        command.Options.Add(SourceOption);
+        command.Options.Add(ManifestPathOption);
+        command.Options.Add(InstallPathOption);
+        command.Options.Add(InteractiveOption);
+        command.Options.Add(NonInteractiveOption);
+    }
+
     /// <summary>
     /// Creates a channel argument for SDK commands.
     /// Each command needs its own Argument instance (System.CommandLine requirement),

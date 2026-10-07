@@ -527,9 +527,9 @@ Or open a new terminal.</target>
         <note>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</note>
       </trans-unit>
       <trans-unit id="UninstallUseAllSources">
-        <source>Use --source all to target these specs.</source>
-        <target state="new">Use --source all to target these specs.</target>
-        <note>{Locked="--source all"}</note>
+        <source>Use {0} {1} to target these specs.</source>
+        <target state="new">Use {0} {1} to target these specs.</target>
+        <note>{0} is the source option name; {1} is the install-source value that selects every source.</note>
       </trans-unit>
     </body>
   </file>
