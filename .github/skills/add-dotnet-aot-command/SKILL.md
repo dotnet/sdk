@@ -164,8 +164,7 @@ Review `AotSubstitutions.targets` and every
 descriptor's signature and caller assumptions after command/dependency changes. Remove or
 narrow a substitution before making its excluded behavior reachable; throwing bodies are
 not successful fallbacks. Preserve cultures and the full definition/help resource surface.
-Keep platform provider construction behind direct OS intrinsics and keep Linux's WSL
-parsers. Validate substitutions in a clean native publish and native execution, not only
+Validate substitutions in a clean native publish and native execution, not only
 managed tests. ILC does not support every ILLink substitution body.
 
 ### 5. Preserve both preprocessor views

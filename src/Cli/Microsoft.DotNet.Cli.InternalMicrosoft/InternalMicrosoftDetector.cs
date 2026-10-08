@@ -16,25 +16,18 @@ internal sealed class InternalMicrosoftDetector : IInternalMicrosoftDetector
 
     private static readonly TimeSpan s_cacheRefreshInterval = TimeSpan.FromHours(6);
     private static readonly TimeSpan s_cancelledProbeDrainTimeout = TimeSpan.FromSeconds(1);
-    private static IReadOnlyList<IInternalMicrosoftDetectionProvider> CreateCommonProviders() =>
+    private static readonly IReadOnlyList<IInternalMicrosoftDetectionProvider> s_defaultProviders =
     [
+        new MacPlatformSsoDetectionProvider(),
         new EnvironmentGitHubTokenDetectionProvider(),
         new GitHubCliDetectionProvider(
             "gh CLI GitHub org membership",
             "gh",
             static context => !context.IsCIEnvironment),
-        new CopilotCliDetectionProvider()
-    ];
-
-    private static IReadOnlyList<IInternalMicrosoftDetectionProvider> CreateWindowsProviders() =>
-    [
+        new CopilotCliDetectionProvider(),
         new WindowsUserDnsDomainDetectionProvider(),
         new WindowsVisualStudioAccountDetectionProvider(),
-        new WindowsWorkplaceJoinDetectionProvider()
-    ];
-
-    private static IReadOnlyList<IInternalMicrosoftDetectionProvider> CreateWslProviders() =>
-    [
+        new WindowsWorkplaceJoinDetectionProvider(),
         new WslWindowsUserDnsDomainDetectionProvider(),
         new WslVisualStudioAccountDetectionProvider(),
         new WslWindowsWorkplaceJoinDetectionProvider(),
@@ -43,25 +36,6 @@ internal sealed class InternalMicrosoftDetector : IInternalMicrosoftDetector
             "gh.exe",
             static context => context.IsWsl && !context.IsCIEnvironment)
     ];
-
-    internal static IReadOnlyList<IInternalMicrosoftDetectionProvider> CreateProductionProviders()
-    {
-        List<IInternalMicrosoftDetectionProvider> providers = [];
-        if (OperatingSystem.IsMacOS())
-        {
-            providers.Add(new MacPlatformSsoDetectionProvider());
-        }
-        providers.AddRange(CreateCommonProviders());
-        if (OperatingSystem.IsWindows())
-        {
-            providers.AddRange(CreateWindowsProviders());
-        }
-        if (OperatingSystem.IsLinux())
-        {
-            providers.AddRange(CreateWslProviders());
-        }
-        return providers;
-    }
 
     private readonly string _cacheFilePath;
     private readonly TimeProvider _timeProvider;
@@ -84,10 +58,7 @@ internal sealed class InternalMicrosoftDetector : IInternalMicrosoftDetector
                 InternalMicrosoftDetectionContext.GetHomeDirectory(),
                 isCIEnvironment,
                 gitHubUserAgentVersion),
-            new(
-                context => CreateProbeStages(context, CreateProductionProviders()),
-                TimeSpan.FromSeconds(5),
-                static timeout => new CancellationTokenSource(timeout)));
+            InternalMicrosoftDetectorOptions.Default);
 
     internal InternalMicrosoftDetector(
         string cacheFilePath,
@@ -159,18 +130,7 @@ internal sealed class InternalMicrosoftDetector : IInternalMicrosoftDetector
 
     internal static IReadOnlyList<IReadOnlyList<InternalMicrosoftProbe>> CreateDefaultProbeStages(
         InternalMicrosoftDetectionContext context) =>
-        CreateProbeStages(context,
-        [
-            new MacPlatformSsoDetectionProvider(),
-            .. CreateCommonProviders(),
-            .. CreateWindowsProviders(),
-            .. CreateWslProviders()
-        ]);
-
-    private static IReadOnlyList<IReadOnlyList<InternalMicrosoftProbe>> CreateProbeStages(
-        InternalMicrosoftDetectionContext context,
-        IReadOnlyList<IInternalMicrosoftDetectionProvider> providers) =>
-        providers
+        s_defaultProviders
             .Where(provider => provider.IsSupported(context))
             .GroupBy(provider => provider.Stage)
             .OrderBy(group => group.Key)

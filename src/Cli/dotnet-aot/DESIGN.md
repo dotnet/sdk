@@ -74,7 +74,6 @@ apply only when `PublishAot` is enabled, including native-published tests.
 | Descriptor | Assumption to preserve |
 | --- | --- |
 | [Certificate.Substitutions.xml](Certificate.Substitutions.xml) | The [first-run certificate generator](../dotnet/AspNetCoreCertificateGenerator.cs) generates/stores a development certificate without requesting trust. Explicit `dev-certs` executes out of process. `TrustCertificate` is replaced with a throwing body, not successful no-op behavior. Keep certificate generation, storage, and platform state correction. Remove this substitution before introducing in-process trust. |
-| [XmlWriter.Substitutions.xml](XmlWriter.Substitutions.xml) | In-process consumers write XML, not XSLT HTML, text, or auto-detected output. `XmlWriterSettings.OutputMethod` is fixed to XML; async writing, encodings, indentation, XML reading, and validation remain supported. Audit solution/project, NuGet, and other dependency writers when extending the closure. Remove this substitution before enabling another output method. |
 
 For every dependency update, verify descriptor assembly/type/method signatures,
 the caller assumptions, compiler diagnostics, and the native dependency graph.
@@ -84,19 +83,8 @@ behavior tests are required; a managed test run cannot prove the replacement bod
 ILC's supported substitution bodies are narrower than ILLink's. The compiler used
 for this implementation supports Boolean, Int32, and Int32-backed enum constants,
 empty void bodies, and throwing bodies, but rejects a null reference-return stub.
-Consequently the proposed Azure Monitor `Credential` getter substitution is not
-enabled. Reconsider it only with compiler support or a dependency-owned supported
-feature gate; do not remove supported telemetry/authentication code as a workaround.
 
-### Platform provider registration and validation
-
-[InternalMicrosoftDetector](../Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetector.cs)
-guards provider construction with direct `OperatingSystem` intrinsics so ILC can
-discard off-platform implementations. Checking support only after constructing all
-providers does not remove their roots. The injected-context factory remains
-all-platform for tests. Do not eagerly initialize it through
-[InternalMicrosoftDetectorOptions](../Microsoft.DotNet.Cli.InternalMicrosoft/Internal/InternalMicrosoftDetectorOptions.cs).
-Linux retains WSL providers, including parsers for Windows account/workplace data.
+### Validation
 
 Measure the native library with the same RID, configuration, toolchain, and feature
 settings before and after a change. Record actual file bytes separately from
