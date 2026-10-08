@@ -24,7 +24,7 @@ BAR ID - <build-id>
 ```
 
 If the build tags do not include a BAR ID, find it in the `Record candidate BAR ID` step
-or the `ReleaseConfigs` artifact.
+(`RecordCandidateBarId`) or the `ReleaseConfigs` artifact.
 
 Use that numeric Build Asset Registry (BAR) ID when promoting the build. Normal non-test runs
 of the official pipeline are PME-signed and have a `PME Signed` tag. Use the tag to confirm
@@ -42,6 +42,14 @@ Candidate registration and manifest selection are owned by this repository in
 They reuse the pinned Arcade tasks without modifying `eng/common`. Registration validates
 that both candidates are complete and have matching release/build versions before creating
 the BAR record.
+
+The publishing job delegates to separate step templates for
+[registration](../../../eng/pipelines/templates/steps/dotnetup-register-candidates.yml),
+[manifest uploads](../../../eng/pipelines/templates/steps/dotnetup-upload-manifests.yml), and
+[daily promotion](../../../eng/pipelines/templates/steps/dotnetup-publish-daily.yml).
+The .NET 8 SDK installed during promotion is a Darc prerequisite inherited from the
+[Arcade publishing job](../../../eng/common/core-templates/job/publish-build-assets.yml),
+not the SDK used to compile dotnetup.
 
 ## Promote the build
 

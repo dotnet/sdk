@@ -1,0 +1,22 @@
+steps:
+- task: 1ES.PublishPipelineArtifact@1
+  name: PublishCompleteCandidateManifest
+  displayName: '📦 Publish complete BAR manifest'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)/MergedManifest.xml'
+    artifactName: DotnetupCandidateManifest
+    isProduction: false
+- task: 1ES.PublishPipelineArtifact@1
+  name: PublishQualitySpecificManifests
+  displayName: '🗂️ Publish quality-specific manifests'
+  inputs:
+    targetPath: '$(Build.StagingDirectory)/CandidateManifests'
+    artifactName: AssetManifests
+    isProduction: false
+- task: 1ES.PublishPipelineArtifact@1
+  name: PublishCandidateReleaseConfig
+  displayName: '🧾 Publish release configuration'
+  inputs:
+    targetPath: '$(Build.StagingDirectory)/ReleaseConfigs'
+    artifactName: ReleaseConfigs
+    isProduction: false

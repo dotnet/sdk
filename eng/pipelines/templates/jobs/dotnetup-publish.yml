@@ -1,0 +1,30 @@
+parameters:
+  pool: {}
+
+jobs:
+- template: /eng/common/templates-official/job/job.yml
+  parameters:
+    name: Dotnetup_Asset_Registry_Publish
+    displayName: '📦 Register dotnetup candidates and publish daily'
+    pool: ${{ parameters.pool }}
+    timeoutInMinutes: 150
+    enablePublishBuildAssets: false
+    enableTelemetry: true
+    variables:
+    - template: /eng/common/core-templates/post-build/common-variables.yml
+    steps:
+    - checkout: self
+      name: CheckoutDotnetup
+      displayName: '📥 Checkout dotnetup sources'
+      fetchDepth: 3
+    - template: /eng/pipelines/templates/steps/dotnetup-register-candidates.yml
+    - template: /eng/pipelines/templates/steps/dotnetup-upload-manifests.yml
+    - template: /eng/pipelines/templates/steps/dotnetup-publish-daily.yml
+    - task: 1ES.PublishPipelineArtifact@1
+      name: PublishCandidateRegistrationLogs
+      displayName: '📜 Publish candidate registration logs'
+      condition: always()
+      inputs:
+        targetPath: '$(Build.SourcesDirectory)/artifacts/log'
+        artifactName: Logs_Dotnetup_Asset_Registry_Publish
+        isProduction: false

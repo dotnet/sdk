@@ -1,0 +1,34 @@
+steps:
+- template: /eng/common/core-templates/post-build/setup-maestro-vars.yml
+  parameters:
+    BARBuildId: $(BARBuildId)
+    PromoteToChannelIds: ''
+    is1ESPipeline: true
+# Match the Darc prerequisite in Arcade's publish-build-assets.yml.
+- task: UseDotNet@2
+  name: InstallDarcSdk
+  displayName: '🛠️ Install .NET 8 SDK for Darc'
+  inputs:
+    version: 8.0.x
+- powershell: |
+    # Preserve this macro for the promotion pipeline's agent, not this agent.
+    $parameters = '/p:BuildQuality=daily /p:BlobBasePath="' + '$' + '(Build.ArtifactStagingDirectory)/BlobArtifacts/daily/"'
+    Write-Host "##vso[task.setvariable variable=DailyCandidatePublishingParameters]$parameters"
+  name: ConfigureDailyCandidatePublishing
+  displayName: '⚙️ Select daily candidate for promotion'
+- task: AzureCLI@2
+  name: PublishDailyCandidate
+  displayName: '🚀 Publish daily candidate using Darc'
+  inputs:
+    azureSubscription: 'Darc: Maestro Production'
+    scriptType: ps
+    scriptLocation: scriptPath
+    scriptPath: '$(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1'
+    arguments: >-
+      -BuildId $(BARBuildId)
+      -PublishingInfraVersion 3
+      -AzdoToken '$(System.AccessToken)'
+      -WaitPublishingFinish true
+      -ArtifactsPublishingAdditionalParameters '$(DailyCandidatePublishingParameters)'
+      -runtimeSourceFeed https://ci.dot.net/internal
+      -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'

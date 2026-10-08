@@ -1,0 +1,32 @@
+<Project>
+  <Import Project="$(DotnetupArcadeToolsetDir)PublishBuildAssets.proj" />
+
+  <UsingTask TaskName="Microsoft.DotNet.Tools.Dotnetup.BuildTasks.PrepareDotnetupCandidateManifests"
+             TaskFactory="RoslynCodeTaskFactory"
+             AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <Task>
+      <Code Type="Class" Language="cs" Source="$(MSBuildThisFileDirectory)PrepareCandidateManifests.cs" />
+    </Task>
+  </UsingTask>
+
+  <Target Name="ValidateCandidates">
+    <Error Condition="'$(ManifestsPath)' == ''" Text="ManifestsPath is required." />
+    <PrepareDotnetupCandidateManifests ManifestsPath="$(ManifestsPath)" />
+  </Target>
+
+  <Target Name="PrepareCandidateManifests">
+    <PrepareDotnetupCandidateManifests ManifestPath="$(ManifestPath)" OutputDirectory="$(CandidateManifestsPath)" />
+  </Target>
+
+  <Target Name="RegisterCandidates" DependsOnTargets="ValidateCandidates">
+    <Error Condition="'$(CandidateManifestsPath)' == ''" Text="CandidateManifestsPath is required." />
+    <Error Condition="'$(MaestroApiEndpoint)' == ''" Text="MaestroApiEndpoint is required." />
+    <PublishBuildToMaestro ManifestsPath="$(ManifestsPath)"
+                          MaestroApiEndpoint="$(MaestroApiEndpoint)"
+                          RepoRoot="$(RepoRoot)"
+                          AssetVersion="$(Version)"
+                          MergedManifestArtifactName="DotnetupCandidateManifest" />
+    <PrepareDotnetupCandidateManifests ManifestPath="$(BUILD_STAGINGDIRECTORY)\MergedManifest.xml"
+                                      OutputDirectory="$(CandidateManifestsPath)" />
+  </Target>
+</Project>
