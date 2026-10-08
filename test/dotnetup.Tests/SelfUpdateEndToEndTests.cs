@@ -14,7 +14,7 @@ public class SelfUpdateEndToEndTests
 {
     [TestMethod]
     [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
-    public void NativeCopyUpdatesToDailyAndChangesVersion()
+    public void RidNamedNativeCopyUpdatesToDailyAndChangesVersion()
     {
         using var environment = new TestEnvironment();
         string source = DotnetupTestUtilities.GetDotnetupExecutablePath();
@@ -71,7 +71,7 @@ public class SelfUpdateEndToEndTests
     {
         string directory = Path.Combine(environment.TempRoot, "self-update-under-test");
         Directory.CreateDirectory(directory);
-        return Path.Combine(directory, "dotnetup" + DotnetupUtilities.ExeSuffix);
+        return Path.Combine(directory, BlobFeedUrlBuilder.GetDotnetupFileName(CurrentRid()));
     }
 
     private static string CurrentRid()

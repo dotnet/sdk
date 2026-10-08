@@ -596,23 +596,24 @@ public class SelfUpdateWorkflowTests
     }
 
     [TestMethod]
-    public void RenamedExecutableCannotSelfUpdate()
+    public void RenamedExecutableUpdatesItself()
     {
         using var files = new SelfUpdateTestFiles();
         var renamedPath = Path.Combine(files.Paths.DirectoryPath,
             "dotnetup-renamed" + (OperatingSystem.IsWindows() ? ".exe" : string.Empty));
         SelfUpdateTestFiles.WriteExecutable(renamedPath, SelfUpdateTestFiles.OriginalVersion);
-        var renamedBytes = File.ReadAllBytes(renamedPath);
         var workflow = new SelfUpdateTestWorkflow(new SelfUpdatePaths(renamedPath),
-            () => { Assert.Fail("A non-canonical executable must be rejected before resolving a release."); return null!; },
-            (download, path) => Assert.Fail("A non-canonical executable must not download."), CreateImmediateWorkflowCoordinator());
+            () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
+            (download, path) => SelfUpdateTestFiles.WriteExecutable(path, ReleaseVersionString(download)),
+            CreateImmediateWorkflowCoordinator());
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => workflow.Execute());
+        var result = SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow);
 
-        Assert.AreEqual(DotnetInstallErrorCode.DotnetupNonCanonicalExecutableName, exception.ErrorCode);
-        Assert.Contains(renamedPath, exception.Message);
-        Assert.AreSequenceEqual(renamedBytes, File.ReadAllBytes(renamedPath));
-        Assert.IsEmpty(Directory.GetFiles(files.Paths.DirectoryPath, "*.old.*"));
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementVersion, result);
+        Assert.AreEqual(SelfUpdateTestFiles.ReplacementVersion, SelfUpdateVerifier.ReadVersion(renamedPath));
+        var backups = Directory.GetFiles(files.Paths.DirectoryPath, Path.GetFileName(renamedPath) + ".old.*");
+        Assert.HasCount(1, backups);
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalVersion, SelfUpdateVerifier.ReadVersion(backups[0]));
     }
 
     [TestMethod]
