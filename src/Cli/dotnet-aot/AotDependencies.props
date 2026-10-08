@@ -1,5 +1,7 @@
 <Project>
 
+  <Import Project="AotSubstitutions.targets" />
+
   <!--
     Dependencies and runtime configuration shared by the Native AOT product and tests.
     Keep AotSourceFiles.props limited to source and resource inputs.

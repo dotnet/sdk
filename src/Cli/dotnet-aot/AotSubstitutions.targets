@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup Condition="'$(PublishAot)' == 'true'">
+    <IlcArg Include="--substitution:$(MSBuildThisFileDirectory)Certificate.Substitutions.xml" Condition="'$(IncludeAspNetCoreRuntime)' != 'false'" />
+  </ItemGroup>
+</Project>
