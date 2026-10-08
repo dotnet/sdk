@@ -82,11 +82,10 @@ namespace Microsoft.DotNet.Tests
 
             NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
 
-            string projectFolder = null;
+            string packagesPath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "tool-fallback-packages");
 
-            testInstance = testInstance.WithProjectChanges((projectPath, project) =>
+            testInstance = testInstance.WithProjectChanges((_, project) =>
             {
-                projectFolder = Path.GetDirectoryName(projectPath);
                 var ns = project.Root.Name.Namespace;
 
                 //  Remove reference to tool that won't restore on 1.x
@@ -106,12 +105,11 @@ namespace Microsoft.DotNet.Tests
 
                 //  Use project-specific global packages folder
                 project.Root.Element(ns + "PropertyGroup")
-                    .Add(new XElement(ns + "RestorePackagesPath", @"$(MSBuildProjectDirectory)\packages"));
+                    .Add(new XElement(ns + "RestorePackagesPath", packagesPath));
 
             });
 
-            var toolFolder = Path.Combine(projectFolder,
-                                          "packages",
+            var toolFolder = Path.Combine(packagesPath,
                                           ".tools",
                                           toolName);
 

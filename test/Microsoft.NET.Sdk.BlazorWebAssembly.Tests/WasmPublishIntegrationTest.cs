@@ -337,6 +337,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     var itemGroup = new XElement(ns + "PropertyGroup");
                     itemGroup.Add(new XElement("StaticWebAssetBasePath", basePath));
                     itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    itemGroup.Add(new XElement("EnableHotReloadInRuntimeConfigDevFile", false));
                     project.Root.Add(itemGroup);
                 }
 
@@ -1507,6 +1508,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     var ns = project.Root.Name.Namespace;
                     var itemGroup = new XElement(ns + "PropertyGroup");
                     itemGroup.Add(new XElement("WasmFingerprintAssets", false));
+                    itemGroup.Add(new XElement("EnableHotReloadInRuntimeConfigDevFile", false));
                     project.Root.Add(itemGroup);
                 });
 
