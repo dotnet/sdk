@@ -1,0 +1,8 @@
+<linker>
+  <assembly fullname="System.Private.Xml">
+    <type fullname="System.Xml.XmlWriterSettings">
+      <!-- The native CLI writes XML, not XSLT HTML, text, or auto-detected output. -->
+      <method signature="System.Xml.XmlOutputMethod get_OutputMethod()" body="stub" value="0" />
+    </type>
+  </assembly>
+</linker>
