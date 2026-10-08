@@ -41,6 +41,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.DotnetupIdentityUnavailable => ErrorCategory.Product,
             DotnetInstallErrorCode.DotnetupVerificationFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.DotnetupRollbackFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.OperationCancelled => ErrorCategory.User,
 
             // Product errors - issues we can take action on
             DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,

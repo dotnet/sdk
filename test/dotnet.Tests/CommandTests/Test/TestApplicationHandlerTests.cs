@@ -158,6 +158,118 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
+    public void OnHandshakeReceived_WithRetryOrchestrator_EnablesRetryBeforeFirstTestHost()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            showAssembly: true);
+
+        bool orchestratorAccepted = handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                hostType: HandshakeMessageHostTypes.TestHostOrchestrator,
+                orchestratorFeature: "RetryOrchestrator"),
+            gotSupportedVersion: true);
+        bool testHostAccepted = handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                attemptNumber: 1),
+            gotSupportedVersion: true);
+
+        orchestratorAccepted.Should().BeTrue();
+        testHostAccepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        console.GetOutput().Should().Contain("(try 1)");
+    }
+
+    [TestMethod]
+    public void OnHandshakeReceived_WithUnknownOrchestrator_AcceptsWithoutEnablingRetry()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            showAssembly: true);
+
+        bool orchestratorAccepted = handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                hostType: HandshakeMessageHostTypes.TestHostOrchestrator,
+                orchestratorFeature: "FutureOrchestrator"),
+            gotSupportedVersion: true);
+        bool testHostAccepted = handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                attemptNumber: 1),
+            gotSupportedVersion: true);
+
+        orchestratorAccepted.Should().BeTrue();
+        testHostAccepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        console.GetOutput().Should().NotContain("(try 1)");
+    }
+
+    [TestMethod]
+    public void OnHandshakeReceived_WithLegacyRetrySetting_EnablesRetryBeforeFirstTestHost()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            showAssembly: true,
+            testApplicationSettings: new TestApplicationSettings(
+                default,
+                TestResultVisibility.Failed,
+                SlowestTestsCount: 0,
+                ShowFlakyTests: true,
+                LegacyRetryEnabled: true));
+
+        bool accepted = handler.OnHandshakeReceived(
+            BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run),
+            gotSupportedVersion: true);
+
+        accepted.Should().BeTrue();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        console.GetOutput().Should().Contain("(try 1)");
+    }
+
+    [TestMethod]
+    public void OnTestResultsReceived_WithPerApplicationVisibility_UsesModuleSetting()
+    {
+        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            testApplicationSettings: new TestApplicationSettings(
+                default,
+                TestResultVisibility.None,
+                SlowestTestsCount: 0,
+                ShowFlakyTests: true,
+                LegacyRetryEnabled: false));
+
+        handler.OnHandshakeReceived(
+            BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run),
+            gotSupportedVersion: true).Should().BeTrue();
+
+        handler.OnTestResultsReceived(new TestResultMessages(
+            ExecutionId: "exec-1",
+            InstanceId: "inst-1",
+            SuccessfulTestMessages:
+            [
+                new SuccessfulTestResultMessage(
+                    Uid: "test-1",
+                    DisplayName: "Hidden passing test",
+                    State: TestStates.Passed,
+                    Duration: 1,
+                    Reason: null,
+                    StandardOutput: null,
+                    ErrorOutput: null,
+                    SessionUid: null),
+            ],
+            FailedTestMessages: []));
+
+        console.GetOutput().Should().NotContain("Hidden passing test");
+    }
+
+    [TestMethod]
     public void OnHandshakeReceived_WithArtifactPostProcessingCapabilities_RecordsApplication()
     {
         var manager = new ArtifactPostProcessingManager();
@@ -396,6 +508,89 @@ public class TestApplicationHandlerTests : IDisposable
         reporter.HasHandshakeFailure.Should().BeTrue();
     }
 
+    [TestMethod]
+    public void OnTestInProgressReceived_WhenOnlyControllerHandshakeReceived_ReportsProtocolError()
+    {
+        (TestApplicationHandler handler, _, _) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                hostType: "TestHostController",
+                includeInstanceId: false),
+            gotSupportedVersion: true).Should().BeTrue();
+
+        Action act = () => handler.OnTestInProgressReceived(
+            new TestInProgressMessages(
+                ExecutionId: "exec-1",
+                InstanceId: "inst-1",
+                InProgressMessages: [new TestInProgressMessage("test-1", "Test 1")]));
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage(string.Format(
+                CliCommandStrings.UnexpectedMessageWithoutTestHostHandshake,
+                nameof(TestInProgressMessages)));
+    }
+
+    [TestMethod]
+    public void OnTestInProgressReceived_WhenExecutionIdMismatchesHandshake_ReportsProtocolError()
+    {
+        (TestApplicationHandler handler, _, _) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        handler.OnHandshakeReceived(
+            BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run),
+            gotSupportedVersion: true).Should().BeTrue();
+
+        Action act = () => handler.OnTestInProgressReceived(
+            new TestInProgressMessages(
+                ExecutionId: "different-execution",
+                InstanceId: "inst-1",
+                InProgressMessages: [new TestInProgressMessage("test-1", "Test 1")]));
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage(string.Format(
+                CliCommandStrings.DotnetTestMismatchingExecutionId,
+                "different-execution",
+                nameof(TestInProgressMessages),
+                "exec-1"));
+    }
+
+    [TestMethod]
+    [DataRow(nameof(TestInProgressMessages.ExecutionId))]
+    [DataRow(nameof(TestInProgressMessages.InstanceId))]
+    [DataRow(nameof(TestInProgressMessage.Uid))]
+    [DataRow(nameof(TestInProgressMessage.DisplayName))]
+    public void OnTestInProgressReceived_WhenRequiredPropertyIsMissing_ReportsProtocolError(string missingProperty)
+    {
+        (TestApplicationHandler handler, _, _) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        handler.OnHandshakeReceived(
+            BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run),
+            gotSupportedVersion: true).Should().BeTrue();
+
+        var message = new TestInProgressMessages(
+            ExecutionId: missingProperty == nameof(TestInProgressMessages.ExecutionId) ? null : "exec-1",
+            InstanceId: missingProperty == nameof(TestInProgressMessages.InstanceId) ? null : "inst-1",
+            InProgressMessages:
+            [
+                new TestInProgressMessage(
+                    missingProperty == nameof(TestInProgressMessage.Uid) ? null : "test-1",
+                    missingProperty == nameof(TestInProgressMessage.DisplayName) ? null : "Test 1"),
+            ]);
+
+        string messageType = missingProperty is nameof(TestInProgressMessage.Uid) or nameof(TestInProgressMessage.DisplayName)
+            ? nameof(TestInProgressMessage)
+            : nameof(TestInProgressMessages);
+
+        Action act = () => handler.OnTestInProgressReceived(message);
+
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage(string.Format(
+                CliCommandStrings.DotnetTestMissingRequiredMessageProperty,
+                missingProperty,
+                messageType));
+    }
+
     /// <summary>
     /// Old-MTP help path: the test host exits without performing a handshake at all because older
     /// Microsoft.Testing.Platform versions don't handshake on <c>--help</c>. The SDK's existing
@@ -413,6 +608,52 @@ public class TestApplicationHandlerTests : IDisposable
         act.Should().NotThrow();
 
         reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void OnTestProcessExited_WhenSuccessfulTestMapCollectionSuppressesReporting_DoesNotReportFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            collectTestMap: true);
+
+        handler.OnTestProcessExited(exitCode: 0, outputData: string.Empty, errorData: string.Empty);
+
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void OnTestProcessExited_WhenTestMapCollectionFailsWithoutHandshake_ReportsFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            collectTestMap: true);
+
+        handler.OnTestProcessExited(exitCode: 1, outputData: string.Empty, errorData: string.Empty);
+
+        reporter.HasHandshakeFailure.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void OnTestProcessExited_WhenTestMapCollectionReceivesOnlyControllerHandshake_ReportsFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            collectTestMap: true);
+
+        handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                hostType: "TestHostController",
+                includeInstanceId: false),
+            gotSupportedVersion: true).Should().BeTrue();
+
+        handler.OnTestProcessExited(exitCode: 0, outputData: string.Empty, errorData: string.Empty);
+
+        reporter.HasHandshakeFailure.Should().BeTrue();
     }
 
     /// <summary>
@@ -525,7 +766,9 @@ public class TestApplicationHandlerTests : IDisposable
         bool isDiscovery,
         bool showAssembly = false,
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
-        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null)
+        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
+        TestApplicationSettings? testApplicationSettings = null,
+        bool collectTestMap = false)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -559,7 +802,10 @@ public class TestApplicationHandlerTests : IDisposable
             IsHelp: isHelp,
             IsDiscovery: isDiscovery,
             ListTestsFormat: TestListFormat.Text,
-            IsArtifactPostProcessing: artifactPostProcessingInvocation is not null);
+            IsArtifactPostProcessing: artifactPostProcessingInvocation is not null)
+        {
+            CollectTestMap = collectTestMap,
+        };
 
         return (
             new TestApplicationHandler(
@@ -567,7 +813,8 @@ public class TestApplicationHandlerTests : IDisposable
                 module,
                 testOptions,
                 artifactPostProcessingManager,
-                artifactPostProcessingInvocation),
+                artifactPostProcessingInvocation,
+                testApplicationSettings: testApplicationSettings),
             reporter,
             capturingConsole);
     }
@@ -577,6 +824,7 @@ public class TestApplicationHandlerTests : IDisposable
         string hostType = "TestHost",
         bool includeInstanceId = true,
         int? attemptNumber = null,
+        string? orchestratorFeature = null,
         string? supportedPostProcessorKinds = null,
         string? supportedPostProcessorExtensions = null,
         string? supportedTruncatedRunPostProcessorKinds = null,
@@ -607,6 +855,11 @@ public class TestApplicationHandlerTests : IDisposable
         if (attemptNumber.HasValue)
         {
             properties[HandshakeMessagePropertyNames.AttemptNumber] = attemptNumber.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (orchestratorFeature is not null)
+        {
+            properties[HandshakeMessagePropertyNames.OrchestratorFeature] = orchestratorFeature;
         }
 
         if (supportedPostProcessorKinds is not null)

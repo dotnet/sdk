@@ -56,10 +56,13 @@ public class SpectreDisplayHelpersTests
         => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.N)).Should().Be(ScrollAction.Decline);
 
     [TestMethod]
+    public void ConfirmScroll_Escape_Declines()
+        => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.Escape)).Should().Be(ScrollAction.Decline);
+
+    [TestMethod]
     [DataRow(ConsoleKey.A)]
     [DataRow(ConsoleKey.P)]
     [DataRow(ConsoleKey.Spacebar)]
-    [DataRow(ConsoleKey.Escape)]
     public void ConfirmScroll_UnrecognizedKeys_AreIgnored(ConsoleKey key)
         => SpectreDisplayHelpers.MapConfirmScrollKey(Key(key)).Should().Be(ScrollAction.None);
 }

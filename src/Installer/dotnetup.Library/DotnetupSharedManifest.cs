@@ -82,19 +82,20 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     /// Reads the manifest and prunes stale installations whose on-disk
     /// directories no longer exist. This is the standard entry point for
     /// callers that need an accurate view of what is actually installed.
+    /// Set persistPruning to false when preparing a cancellable operation.
     /// Must be called while holding the install-state mutex.
     /// </summary>
-    internal DotnetupManifestData ReadManifest()
+    internal DotnetupManifestData ReadManifest(bool persistPruning = true)
     {
         var manifest = ReadManifestCore();
-        PruneStaleInstallations(manifest);
+        PruneStaleInstallations(manifest, persistPruning);
         return manifest;
     }
 
     /// <summary>
     /// Reads the manifest without pruning. Exposed only for tests that need
     /// to inspect raw manifest data without filesystem side-effects.
-    /// Production code should always use <see cref="ReadManifest()"/>.
+    /// Production code should always use <see cref="ReadManifest(bool)"/>.
     /// </summary>
     internal DotnetupManifestData ReadManifestWithoutPruning() => ReadManifestCore();
 
@@ -508,9 +509,9 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     /// Checks each installation across all roots and removes entries whose
     /// on-disk component directory no longer exists. Roots whose directory
     /// no longer exists are removed entirely. Writes the manifest if any
-    /// entries were pruned.
+    /// entries were pruned, unless persistence is disabled for a preview.
     /// </summary>
-    internal DotnetupManifestData PruneStaleInstallations(DotnetupManifestData manifest)
+    internal DotnetupManifestData PruneStaleInstallations(DotnetupManifestData manifest, bool persist = true)
     {
         bool anyPruned = false;
 
@@ -539,7 +540,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             }
         }
 
-        if (anyPruned)
+        if (anyPruned && persist)
         {
             WriteManifest(manifest);
         }
@@ -557,7 +558,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         return componentDir is not null && Directory.Exists(componentDir);
     }
 
-    private static string? GetComponentDirectory(string rootPath, Installation installation)
+    internal static string? GetComponentDirectory(string rootPath, Installation installation)
     {
         if (string.IsNullOrEmpty(installation.Version))
         {

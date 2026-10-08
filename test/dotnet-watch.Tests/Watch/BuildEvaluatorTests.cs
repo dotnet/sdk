@@ -10,7 +10,10 @@ public partial class BuildEvaluatorTests
 {
     private static readonly MSBuildFileSetFactory.EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>(), projectGraph: null);
 
-    private static DotNetWatchContext CreateContext(bool suppressMSBuildIncrementalism = false)
+    private static DotNetWatchContext CreateContext(
+        bool suppressMSBuildIncrementalism = false,
+        ProcessRunner? processRunner = null,
+        IReadOnlyList<string>? buildArguments = null)
     {
         var environmentOptions = TestOptions.GetEnvironmentOptions() with
         {
@@ -25,11 +28,11 @@ public partial class BuildEvaluatorTests
             Logger = NullLogger.Instance,
             BuildLogger = NullLogger.Instance,
             LoggerFactory = NullLoggerFactory.Instance,
-            ProcessRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
+            ProcessRunner = processRunner ?? new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
             Options = new(),
             MainProjectOptions = TestOptions.ProjectOptions,
             RootProjects = [TestOptions.ProjectOptions.Representation],
-            BuildArguments = [],
+            BuildArguments = buildArguments ?? [],
             EnvironmentOptions = environmentOptions,
             BrowserLauncher = new BrowserLauncher(NullLogger.Instance, processOutputReporter, environmentOptions),
             BrowserRefreshServerFactory = new BrowserRefreshServerFactory()

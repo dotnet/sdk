@@ -14,19 +14,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CA1052FixesNonStaticClassWithOnlyStaticDeclaredMembersCSharpAsync()
         {
-            const string Code = @"
-public class [|C|]
-{
-    public static void SomeMethod() { }
-}
-";
+            const string Code = """
+                public class [|C|]
+                {
+                    public static void SomeMethod() { }
+                }
+                """;
 
-            const string FixedCode = @"
-public static class C
-{
-    public static void SomeMethod() { }
-}
-";
+            const string FixedCode = """
+                public static class C
+                {
+                    public static void SomeMethod() { }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
@@ -34,20 +34,20 @@ public static class C
         [TestMethod]
         public async Task CA1052FixesNonStaticClassWithPublicDefaultConstructorAndStaticMethodCSharpAsync()
         {
-            const string Code = @"
-public class [|C|]
-{
-    public C() { }
-    public static void SomeMethod() { }
-}
-";
+            const string Code = """
+                public class [|C|]
+                {
+                    public C() { }
+                    public static void SomeMethod() { }
+                }
+                """;
 
-            const string FixedCode = @"
-public static class C
-{
-    public static void SomeMethod() { }
-}
-";
+            const string FixedCode = """
+                public static class C
+                {
+                    public static void SomeMethod() { }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
@@ -55,20 +55,20 @@ public static class C
         [TestMethod]
         public async Task CA1052FixesNonStaticClassWithProtectedDefaultConstructorAndStaticMethodCSharpAsync()
         {
-            const string Code = @"
-public class [|C|]
-{
-    protected C() { }
-    public static void SomeMethod() { }
-}
-";
+            const string Code = """
+                public class [|C|]
+                {
+                    protected C() { }
+                    public static void SomeMethod() { }
+                }
+                """;
 
-            const string FixedCode = @"
-public static class C
-{
-    public static void SomeMethod() { }
-}
-";
+            const string FixedCode = """
+                public static class C
+                {
+                    public static void SomeMethod() { }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
@@ -76,20 +76,20 @@ public static class C
         [TestMethod]
         public async Task CA1052FixesNonStaticClassWithPrivateDefaultConstructorAndStaticMethodCSharpAsync()
         {
-            const string Code = @"
-public class [|C|]
-{
-    private C() { }
-    public static void SomeMethod() { }
-}
-";
+            const string Code = """
+                public class [|C|]
+                {
+                    private C() { }
+                    public static void SomeMethod() { }
+                }
+                """;
 
-            const string FixedCode = @"
-public static class C
-{
-    public static void SomeMethod() { }
-}
-";
+            const string FixedCode = """
+                public static class C
+                {
+                    public static void SomeMethod() { }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
@@ -97,30 +97,30 @@ public static class C
         [TestMethod]
         public async Task CA1052FixesNestedPublicNonStaticClassWithPublicDefaultConstructorAndStaticMethodCSharpAsync()
         {
-            const string Code = @"
-public class C
-{
-    public void Moo() { }
+            const string Code = """
+                public class C
+                {
+                    public void Moo() { }
 
-    public class [|CInner|]
-    {
-        public CInner() { }
-        public static void SomeMethod() { }
-    }
-}
-";
+                    public class [|CInner|]
+                    {
+                        public CInner() { }
+                        public static void SomeMethod() { }
+                    }
+                }
+                """;
 
-            const string FixedCode = @"
-public class C
-{
-    public void Moo() { }
+            const string FixedCode = """
+                public class C
+                {
+                    public void Moo() { }
 
-    public static class CInner
-    {
-        public static void SomeMethod() { }
-    }
-}
-";
+                    public static class CInner
+                    {
+                        public static void SomeMethod() { }
+                    }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
@@ -128,23 +128,23 @@ public class C
         [TestMethod]
         public async Task CA1052FixesNestedPublicClassInOtherwiseEmptyNonStaticClassCSharpAsync()
         {
-            const string Code = @"
-public class [|C|]
-{
-    public class CInner
-    {
-    }
-}
-";
+            const string Code = """
+                public class [|C|]
+                {
+                    public class CInner
+                    {
+                    }
+                }
+                """;
 
-            const string FixedCode = @"
-public static class C
-{
-    public class CInner
-    {
-    }
-}
-";
+            const string FixedCode = """
+                public static class C
+                {
+                    public class CInner
+                    {
+                    }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
@@ -152,29 +152,29 @@ public static class C
         [TestMethod]
         public async Task CA1052FixesNestedStaticHolderTypesInOnePassCSharpAsync()
         {
-            const string Code = @"
-public class [|C|]
-{
-    public static void SomeMethod() { }
+            const string Code = """
+                public class [|C|]
+                {
+                    public static void SomeMethod() { }
 
-    public class [|D|]
-    {
-        public static void SomeOtherMethod() { }
-    }
-}
-";
+                    public class [|D|]
+                    {
+                        public static void SomeOtherMethod() { }
+                    }
+                }
+                """;
 
-            const string FixedCode = @"
-public static class C
-{
-    public static void SomeMethod() { }
+            const string FixedCode = """
+                public static class C
+                {
+                    public static void SomeMethod() { }
 
-    public static class D
-    {
-        public static void SomeOtherMethod() { }
-    }
-}
-";
+                    public static class D
+                    {
+                        public static void SomeOtherMethod() { }
+                    }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }

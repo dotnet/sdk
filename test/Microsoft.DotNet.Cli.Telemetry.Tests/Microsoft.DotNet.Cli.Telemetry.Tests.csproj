@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <Nullable>enable</Nullable>
     <!-- Strong naming deprecated on .NET Core -->

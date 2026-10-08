@@ -166,6 +166,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>Self-update was run from an executable that is not named dotnetup(.exe).</summary>
     DotnetupNonCanonicalExecutableName,
+
+    /// <summary>The user declined confirmation of an operation.</summary>
+    OperationCancelled,
 }
 
 /// <summary>

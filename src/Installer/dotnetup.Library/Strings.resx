@@ -220,6 +220,9 @@
     <value>Dotnetup could not access its installation directory '{0}'. Make sure you can read the dotnetup executable and create files in that directory, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</value>
     <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</comment>
   </data>
+  <data name="CommandNonInteractiveOptionDescription" xml:space="preserve">
+    <value>Proceed without prompting for confirmation.</value>
+  </data>
   <data name="InfoOptionDescription" xml:space="preserve">
     <value>Display dotnetup information.</value>
   </data>
@@ -464,5 +467,97 @@ Or open a new terminal.</value>
   <data name="EnvScriptDotnetupOnlyConflict" xml:space="preserve">
     <value>--dotnetup-only cannot be combined with --dotnet or --dotnetup.</value>
     <comment>{Locked="--dotnetup-only"}{Locked="--dotnet"}{Locked="--dotnetup"}</comment>
+  </data>
+  <data name="ConfirmationOptionsWithKeyboardHints" xml:space="preserve">
+    <value>([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)</value>
+    <comment>Confirmation hint. Y/N key bindings are not localized. {Locked="[bold underline]Y[/]/n"}</comment>
+  </data>
+  <data name="ConfirmationOptions" xml:space="preserve">
+    <value>([bold underline]Y[/]/n)</value>
+    <comment>Confirmation hint. Y/N key bindings are not localized. {Locked}</comment>
+  </data>
+  <data name="ConfirmationYes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="ConfirmationNo" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="ScrollMoreAbove" xml:space="preserve">
+    <value>{0} {1} more above</value>
+    <comment>{0} is an up-triangle symbol; {1} is the number of entries above the visible list.</comment>
+  </data>
+  <data name="ScrollMoreBelow" xml:space="preserve">
+    <value>{0} {1} more below (use {2}{3} arrows)</value>
+    <comment>{0} is a down-triangle symbol; {1} is the number of entries below the visible list; {2} and {3} are up/down arrow symbols.</comment>
+  </data>
+  <data name="ScrollContinue" xml:space="preserve">
+    <value>(Press Enter to continue)</value>
+  </data>
+  <data name="UninstallRetainedInstallation" xml:space="preserve">
+    <value>{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</value>
+    <comment>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</comment>
+  </data>
+  <data name="UninstallUnexpectedRemoval" xml:space="preserve">
+    <value>{0} will be [bold]uninstalled[/] because it is no longer referenced by any install specs.</value>
+    <comment>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</comment>
+  </data>
+  <data name="UninstallUnexpectedAdditionalRemoval" xml:space="preserve">
+    <value>{0} will [bold]also[/] be [bold]uninstalled[/] because it is no longer referenced by any install specs.</value>
+    <comment>{0} is a highlighted component name and installed version. Used only when the operation also removes files for the requested component and channel. {Locked="[bold]"}{Locked="[/]"}</comment>
+  </data>
+  <data name="InstallSpecSource" xml:space="preserve">
+    <value>(source: {0})</value>
+    <comment>{0} is an install-source identifier or a global.json path.</comment>
+  </data>
+  <data name="UninstallRemovalSummary" xml:space="preserve">
+    <value>Install spec '{0}' ({1}; source: {2}) will be removed from tracking.</value>
+    <comment>{0} is a highlighted version or channel; {1} is a component name; {2} is an install-source identifier or a global.json path.</comment>
+  </data>
+  <data name="UninstallNoTrackedInstallations" xml:space="preserve">
+    <value>No tracked installations found at {0}.</value>
+    <comment>{0} is the installation root path.</comment>
+  </data>
+  <data name="UninstallNoMatchingInstallations" xml:space="preserve">
+    <value>No tracked installations matched component={0}, version='{1}', source={2} at {3}.</value>
+    <comment>{0} is a component identifier; {1} is a version or channel; {2} is an install-source identifier; {3} is the installation root path.</comment>
+  </data>
+  <data name="UninstallSourceNotFound" xml:space="preserve">
+    <value>No [bold]{0}[/] {1} install spec found for '{2}', but matching specs exist with other sources:</value>
+    <comment>{0} is an install-source identifier; {1} is a component name; {2} is a version or channel. {Locked="[bold]"}{Locked="[/]"}</comment>
+  </data>
+  <data name="UninstallSpecNotFoundWithOtherSources" xml:space="preserve">
+    <value>No {0} install spec found for '{1}', but matching specs exist with other sources:</value>
+    <comment>{0} is a component name; {1} is a version or channel.</comment>
+  </data>
+  <data name="UninstallSpecNotFound" xml:space="preserve">
+    <value>No {0} install spec found for '{1}' at {2}.</value>
+    <comment>{0} is a component name; {1} is a version or channel; {2} is the installation root path.</comment>
+  </data>
+  <data name="UninstallUseAllSources" xml:space="preserve">
+    <value>Use {0} {1} to target these specs.</value>
+    <comment>{0} is the source option name; {1} is the install-source value that selects every source.</comment>
+  </data>
+  <data name="UninstallConfirmationPrompt" xml:space="preserve">
+    <value>Proceed with uninstall?</value>
+  </data>
+  <data name="UninstallCancelled" xml:space="preserve">
+    <value>Uninstall cancelled. No install specs or files were removed.</value>
+  </data>
+  <data name="UninstallDereferencedSpec" xml:space="preserve">
+    <value>Dereferenced {0} {1} {2}</value>
+    <comment>{0} is a component name; {1} is a highlighted version or channel; {2} is the formatted install-source description.</comment>
+  </data>
+  <data name="CommandDone" xml:space="preserve">
+    <value>Done.</value>
+  </data>
+  <data name="GarbageCollectionRemovingInstallations" xml:space="preserve">
+    <value>Removing unused installations...</value>
+  </data>
+  <data name="GarbageCollectionRemovedPath" xml:space="preserve">
+    <value>  Removed {0}</value>
+    <comment>{0} is a highlighted relative directory path.</comment>
+  </data>
+  <data name="GarbageCollectionNoFilesRemoved" xml:space="preserve">
+    <value>No files were removed.</value>
   </data>
 </root>

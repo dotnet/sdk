@@ -59,9 +59,10 @@ public sealed class MSBuildLogger : INodeLogger
     internal const string BuildcheckRunEventName = "buildcheck/run";
     internal const string BuildcheckRuleStatsEventName = "buildcheck/rule";
 
-    // These two events are aggregated and sent at the end of the build.
+    // These events are aggregated and sent at the end of the build.
     internal const string TaskFactoryTelemetryAggregatedEventName = "build/tasks/taskfactory";
     internal const string TasksTelemetryAggregatedEventName = "build/tasks";
+    internal const string MSBuildTaskSubclassedTelemetryAggregatedEventName = "build/tasks/msbuild-subclassed";
     internal const string TasksDetailsTelemetryEventName = "build/tasks/details";
 
     internal const string SdkTaskBaseCatchExceptionTelemetryEventName = "taskBaseCatchException";
@@ -242,20 +243,20 @@ public sealed class MSBuildLogger : INodeLogger
     internal void SendAggregatedEventsOnBuildFinished(ITelemetryClient? telemetry)
     {
         if (telemetry is null) return;
-        if (_aggregatedEvents.TryGetValue(TaskFactoryTelemetryAggregatedEventName, out var taskFactoryData))
+
+        SendAggregatedEvent(telemetry, TaskFactoryTelemetryAggregatedEventName);
+        SendAggregatedEvent(telemetry, TasksTelemetryAggregatedEventName);
+        SendAggregatedEvent(telemetry, MSBuildTaskSubclassedTelemetryAggregatedEventName);
+    }
+
+    private void SendAggregatedEvent(ITelemetryClient telemetry, string eventName)
+    {
+        if (_aggregatedEvents.TryGetValue(eventName, out var eventData))
         {
-            Dictionary<string, string?> taskFactoryProperties = ConvertToStringDictionary(taskFactoryData);
+            Dictionary<string, string?> properties = ConvertToStringDictionary(eventData);
 
-            TrackEvent(telemetry, $"msbuild/{TaskFactoryTelemetryAggregatedEventName}", taskFactoryProperties, toBeHashed: []);
-            _aggregatedEvents.Remove(TaskFactoryTelemetryAggregatedEventName);
-        }
-
-        if (_aggregatedEvents.TryGetValue(TasksTelemetryAggregatedEventName, out var tasksData))
-        {
-            Dictionary<string, string?> tasksProperties = ConvertToStringDictionary(tasksData);
-
-            TrackEvent(telemetry, $"msbuild/{TasksTelemetryAggregatedEventName}", tasksProperties, toBeHashed: []);
-            _aggregatedEvents.Remove(TasksTelemetryAggregatedEventName);
+            TrackEvent(telemetry, $"msbuild/{eventName}", properties, toBeHashed: []);
+            _aggregatedEvents.Remove(eventName);
         }
     }
 
@@ -385,7 +386,9 @@ public sealed class MSBuildLogger : INodeLogger
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)
     {
-        if (args.EventName == TaskFactoryTelemetryAggregatedEventName || args.EventName == TasksTelemetryAggregatedEventName)
+        if (args.EventName == TaskFactoryTelemetryAggregatedEventName ||
+            args.EventName == TasksTelemetryAggregatedEventName ||
+            args.EventName == MSBuildTaskSubclassedTelemetryAggregatedEventName)
         {
             AggregateEvent(args);
         }
@@ -400,7 +403,8 @@ public sealed class MSBuildLogger : INodeLogger
     /// </summary>
     /// <remarks>
     /// MSBuild calls this method after it has emitted the final build telemetry event. This
-    /// method stops the build activity, waits for queued events, and writes the diagnostic
+    /// method waits for queued telemetry and identity enrichment, stops the build activity,
+    /// and writes the diagnostic
     /// log. If this logger initialized the telemetry client, it flushes the process-wide
     /// providers without shutting them down because a persistent server can run later
     /// builds. When the managed CLI runs MSBuild in the same process, the CLI controls the
@@ -408,23 +412,25 @@ public sealed class MSBuildLogger : INodeLogger
     /// </remarks>
     public void Shutdown()
     {
-        StopActivity();
-
+        _activity?.SetEndTime(DateTime.UtcNow);
         if (_telemetry is TelemetryClient telemetryClient)
         {
+            telemetryClient.WaitForPendingEvents();
+            TelemetryClient.WaitForInternalMicrosoftDetection();
+
             if (_initializedTelemetryClient)
             {
                 // A persistent MSBuild server creates a logger for each build. Flush this
                 // request without shutting down the process-wide providers needed by later
                 // builds in the same server process.
+                StopActivity();
                 TelemetryClient.ForceFlushProviders();
-            }
-            else
-            {
-                telemetryClient.WaitForPendingEvents();
+                TelemetryClient.WriteLogIfNecessary();
+                return;
             }
         }
 
+        StopActivity();
         TelemetryClient.WriteLogIfNecessary();
     }
 

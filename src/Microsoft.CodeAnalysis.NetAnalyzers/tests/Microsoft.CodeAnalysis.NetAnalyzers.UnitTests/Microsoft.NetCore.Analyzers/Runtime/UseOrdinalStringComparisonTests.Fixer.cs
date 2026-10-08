@@ -21,122 +21,122 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         public async Task CA1309FixStaticEqualsOverloadCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-                @"
-class C
-{
-    void M(string a, string b)
-    {
-        if (string.[|Equals|](a, b)) { }
-        if (string.Equals(a, b, [|System.StringComparison.CurrentCulture|])) { }
-        if (string.Equals(a, b, [|System.StringComparison.CurrentCultureIgnoreCase|])) { }
-    }
-}
-",
-                @"
-class C
-{
-    void M(string a, string b)
-    {
-        if (string.Equals(a, b, System.StringComparison.Ordinal)) { }
-        if (string.Equals(a, b, System.StringComparison.Ordinal)) { }
-        if (string.Equals(a, b, System.StringComparison.OrdinalIgnoreCase)) { }
-    }
-}
-");
+                """
+                    class C
+                    {
+                        void M(string a, string b)
+                        {
+                            if (string.[|Equals|](a, b)) { }
+                            if (string.Equals(a, b, [|System.StringComparison.CurrentCulture|])) { }
+                            if (string.Equals(a, b, [|System.StringComparison.CurrentCultureIgnoreCase|])) { }
+                        }
+                    }
+                    """,
+                """
+                    class C
+                    {
+                        void M(string a, string b)
+                        {
+                            if (string.Equals(a, b, System.StringComparison.Ordinal)) { }
+                            if (string.Equals(a, b, System.StringComparison.Ordinal)) { }
+                            if (string.Equals(a, b, System.StringComparison.OrdinalIgnoreCase)) { }
+                        }
+                    }
+                    """);
         }
 
         [TestMethod]
         public async Task CA1309FixStaticEqualsOverloadBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-                @"
-Class C
-    Sub M(a As String, b As String)
-        If String.[|Equals|](a, b) Then
-        End If
-        If String.Equals(a, b, [|System.StringComparison.CurrentCulture|]) Then
-        End If
-        If String.Equals(a, b, [|System.StringComparison.CurrentCultureIgnoreCase|]) Then
-        End If
-    End Sub
-End Class
-",
-                @"
-Class C
-    Sub M(a As String, b As String)
-        If String.Equals(a, b, System.StringComparison.Ordinal) Then
-        End If
-        If String.Equals(a, b, System.StringComparison.Ordinal) Then
-        End If
-        If String.Equals(a, b, System.StringComparison.OrdinalIgnoreCase) Then
-        End If
-    End Sub
-End Class
-");
+                """
+                    Class C
+                        Sub M(a As String, b As String)
+                            If String.[|Equals|](a, b) Then
+                            End If
+                            If String.Equals(a, b, [|System.StringComparison.CurrentCulture|]) Then
+                            End If
+                            If String.Equals(a, b, [|System.StringComparison.CurrentCultureIgnoreCase|]) Then
+                            End If
+                        End Sub
+                    End Class
+                    """,
+                """
+                    Class C
+                        Sub M(a As String, b As String)
+                            If String.Equals(a, b, System.StringComparison.Ordinal) Then
+                            End If
+                            If String.Equals(a, b, System.StringComparison.Ordinal) Then
+                            End If
+                            If String.Equals(a, b, System.StringComparison.OrdinalIgnoreCase) Then
+                            End If
+                        End Sub
+                    End Class
+                    """);
         }
 
         [TestMethod]
         public async Task CA1309FixInstanceEqualsOverloadCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-                @"
-class C
-{
-    void M(string a, string b)
-    {
-        if (a.Equals(15)) { }
-        if (a.[|Equals|](b)) { }
-        if (a.Equals(b, System.StringComparison.Ordinal)) { }
-        if (a.Equals(b, [|System.StringComparison.CurrentCulture|])) { }
-    }
-}
-",
-                @"
-class C
-{
-    void M(string a, string b)
-    {
-        if (a.Equals(15)) { }
-        if (a.Equals(b, System.StringComparison.Ordinal)) { }
-        if (a.Equals(b, System.StringComparison.Ordinal)) { }
-        if (a.Equals(b, System.StringComparison.Ordinal)) { }
-    }
-}
-");
+                """
+                    class C
+                    {
+                        void M(string a, string b)
+                        {
+                            if (a.Equals(15)) { }
+                            if (a.[|Equals|](b)) { }
+                            if (a.Equals(b, System.StringComparison.Ordinal)) { }
+                            if (a.Equals(b, [|System.StringComparison.CurrentCulture|])) { }
+                        }
+                    }
+                    """,
+                """
+                    class C
+                    {
+                        void M(string a, string b)
+                        {
+                            if (a.Equals(15)) { }
+                            if (a.Equals(b, System.StringComparison.Ordinal)) { }
+                            if (a.Equals(b, System.StringComparison.Ordinal)) { }
+                            if (a.Equals(b, System.StringComparison.Ordinal)) { }
+                        }
+                    }
+                    """);
         }
 
         [TestMethod]
         public async Task CA1309FixInstanceEqualsOverloadBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-                @"
-Class C
-    Sub M(a As String, b As String)
-        If a.Equals(15) Then
-        End If
-        If a.[|Equals|](b) Then
-        End If
-        If a.Equals(b, System.StringComparison.Ordinal) Then
-        End If
-        If a.Equals(b, [|System.StringComparison.CurrentCulture|]) Then
-        End If
-    End Sub
-End Class
-",
-                @"
-Class C
-    Sub M(a As String, b As String)
-        If a.Equals(15) Then
-        End If
-        If a.Equals(b, System.StringComparison.Ordinal) Then
-        End If
-        If a.Equals(b, System.StringComparison.Ordinal) Then
-        End If
-        If a.Equals(b, System.StringComparison.Ordinal) Then
-        End If
-    End Sub
-End Class
-");
+                """
+                    Class C
+                        Sub M(a As String, b As String)
+                            If a.Equals(15) Then
+                            End If
+                            If a.[|Equals|](b) Then
+                            End If
+                            If a.Equals(b, System.StringComparison.Ordinal) Then
+                            End If
+                            If a.Equals(b, [|System.StringComparison.CurrentCulture|]) Then
+                            End If
+                        End Sub
+                    End Class
+                    """,
+                """
+                    Class C
+                        Sub M(a As String, b As String)
+                            If a.Equals(15) Then
+                            End If
+                            If a.Equals(b, System.StringComparison.Ordinal) Then
+                            End If
+                            If a.Equals(b, System.StringComparison.Ordinal) Then
+                            End If
+                            If a.Equals(b, System.StringComparison.Ordinal) Then
+                            End If
+                        End Sub
+                    End Class
+                    """);
         }
 
         [TestMethod]
@@ -148,62 +148,62 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-class C
-{
-    void M(string a, string b)
-    {
-        System.Globalization.CultureInfo ci = null;
-        System.Globalization.CompareOptions co = System.Globalization.CompareOptions.None;
+                        """
+                            class C
+                            {
+                                void M(string a, string b)
+                                {
+                                    System.Globalization.CultureInfo ci = null;
+                                    System.Globalization.CompareOptions co = System.Globalization.CompareOptions.None;
 
-        // add or correct StringComparison
-        if (string.[|Compare|](a, b) == 0) { }
-        if (string.[|Compare|](a, 0, b, 0, 0) == 0) { }
-        if (string.Compare(a, b, [|System.StringComparison.CurrentCulture|]) == 0) { }
-        if (string.Compare(a, b, [|System.StringComparison.CurrentCultureIgnoreCase|]) == 0) { }
-        if (string.Compare(a, 0, b, 0, 0, [|System.StringComparison.CurrentCulture|]) == 0) { }
+                                    // add or correct StringComparison
+                                    if (string.[|Compare|](a, b) == 0) { }
+                                    if (string.[|Compare|](a, 0, b, 0, 0) == 0) { }
+                                    if (string.Compare(a, b, [|System.StringComparison.CurrentCulture|]) == 0) { }
+                                    if (string.Compare(a, b, [|System.StringComparison.CurrentCultureIgnoreCase|]) == 0) { }
+                                    if (string.Compare(a, 0, b, 0, 0, [|System.StringComparison.CurrentCulture|]) == 0) { }
 
-        // these can't be auto-fixed
-        if (string.[|Compare|](a, b, true) == 0) { }
-        if (string.[|Compare|](a, b, true, ci) == 0) { }
-        if (string.[|Compare|](a, b, ci, co) == 0) { }
-        if (string.[|Compare|](a, 0, b, 0, 0, true) == 0) { }
-        if (string.[|Compare|](a, 0, b, 0, 0, true, ci) == 0) { }
-        if (string.[|Compare|](a, 0, b, 0, 0, ci, co) == 0) { }
-    }
-}
-",
+                                    // these can't be auto-fixed
+                                    if (string.[|Compare|](a, b, true) == 0) { }
+                                    if (string.[|Compare|](a, b, true, ci) == 0) { }
+                                    if (string.[|Compare|](a, b, ci, co) == 0) { }
+                                    if (string.[|Compare|](a, 0, b, 0, 0, true) == 0) { }
+                                    if (string.[|Compare|](a, 0, b, 0, 0, true, ci) == 0) { }
+                                    if (string.[|Compare|](a, 0, b, 0, 0, ci, co) == 0) { }
+                                }
+                            }
+                            """,
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        @"
-class C
-{
-    void M(string a, string b)
-    {
-        System.Globalization.CultureInfo ci = null;
-        System.Globalization.CompareOptions co = System.Globalization.CompareOptions.None;
+                        """
+                            class C
+                            {
+                                void M(string a, string b)
+                                {
+                                    System.Globalization.CultureInfo ci = null;
+                                    System.Globalization.CompareOptions co = System.Globalization.CompareOptions.None;
 
-        // add or correct StringComparison
-        if (string.Compare(a, b, System.StringComparison.Ordinal) == 0) { }
-        if (string.Compare(a, 0, b, 0, 0, System.StringComparison.Ordinal) == 0) { }
-        if (string.Compare(a, b, System.StringComparison.Ordinal) == 0) { }
-        if (string.Compare(a, b, System.StringComparison.OrdinalIgnoreCase) == 0) { }
-        if (string.Compare(a, 0, b, 0, 0, System.StringComparison.Ordinal) == 0) { }
+                                    // add or correct StringComparison
+                                    if (string.Compare(a, b, System.StringComparison.Ordinal) == 0) { }
+                                    if (string.Compare(a, 0, b, 0, 0, System.StringComparison.Ordinal) == 0) { }
+                                    if (string.Compare(a, b, System.StringComparison.Ordinal) == 0) { }
+                                    if (string.Compare(a, b, System.StringComparison.OrdinalIgnoreCase) == 0) { }
+                                    if (string.Compare(a, 0, b, 0, 0, System.StringComparison.Ordinal) == 0) { }
 
-        // these can't be auto-fixed
-        if (string.[|Compare|](a, b, true) == 0) { }
-        if (string.[|Compare|](a, b, true, ci) == 0) { }
-        if (string.[|Compare|](a, b, ci, co) == 0) { }
-        if (string.[|Compare|](a, 0, b, 0, 0, true) == 0) { }
-        if (string.[|Compare|](a, 0, b, 0, 0, true, ci) == 0) { }
-        if (string.[|Compare|](a, 0, b, 0, 0, ci, co) == 0) { }
-    }
-}
-",
+                                    // these can't be auto-fixed
+                                    if (string.[|Compare|](a, b, true) == 0) { }
+                                    if (string.[|Compare|](a, b, true, ci) == 0) { }
+                                    if (string.[|Compare|](a, b, ci, co) == 0) { }
+                                    if (string.[|Compare|](a, 0, b, 0, 0, true) == 0) { }
+                                    if (string.[|Compare|](a, 0, b, 0, 0, true, ci) == 0) { }
+                                    if (string.[|Compare|](a, 0, b, 0, 0, ci, co) == 0) { }
+                                }
+                            }
+                            """,
                     },
 
                     // Not everything is fixed; we use markup to indicate the remaining ones.
@@ -221,80 +221,80 @@ class C
                 {
                     Sources =
                     {
-                        @"
-Class C
-    Sub M(a As String, b As String)
-        Dim ci As System.Globalization.CultureInfo
-        Dim co As System.Globalization.CompareOptions
+                        """
+                            Class C
+                                Sub M(a As String, b As String)
+                                    Dim ci As System.Globalization.CultureInfo
+                                    Dim co As System.Globalization.CompareOptions
 
-        ' add or correct StringComparison
-        If String.[|Compare|](a, b) = 0 Then
-        End If
-        If String.[|Compare|](a, 0, b, 0, 0) = 0 Then
-        End If
-        If String.Compare(a, b, [|System.StringComparison.CurrentCulture|]) = 0 Then
-        End If
-        If String.Compare(a, b, [|System.StringComparison.CurrentCultureIgnoreCase|]) = 0 Then
-        End If
-        If String.Compare(a, 0, b, 0, 0, [|System.StringComparison.CurrentCulture|]) = 0 Then
-        End If
+                                    ' add or correct StringComparison
+                                    If String.[|Compare|](a, b) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, 0, b, 0, 0) = 0 Then
+                                    End If
+                                    If String.Compare(a, b, [|System.StringComparison.CurrentCulture|]) = 0 Then
+                                    End If
+                                    If String.Compare(a, b, [|System.StringComparison.CurrentCultureIgnoreCase|]) = 0 Then
+                                    End If
+                                    If String.Compare(a, 0, b, 0, 0, [|System.StringComparison.CurrentCulture|]) = 0 Then
+                                    End If
 
-        ' these can't be auto-fixed
-        If String.[|Compare|](a, b, True) = 0 Then
-        End If
-        If String.[|Compare|](a, b, True, ci) = 0 Then
-        End If
-        If String.[|Compare|](a, b, ci, co) = 0 Then
-        End If
-        If String.[|Compare|](a, 0, b, 0, 0, True) = 0 Then
-        End If
-        If String.[|Compare|](a, 0, b, 0, 0, True, ci) = 0 Then
-        End If
-        If String.[|Compare|](a, 0, b, 0, 0, ci, co) = 0 Then
-        End If
-    End Sub
-End Class
-",
+                                    ' these can't be auto-fixed
+                                    If String.[|Compare|](a, b, True) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, b, True, ci) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, b, ci, co) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, 0, b, 0, 0, True) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, 0, b, 0, 0, True, ci) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, 0, b, 0, 0, ci, co) = 0 Then
+                                    End If
+                                End Sub
+                            End Class
+                            """,
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        @"
-Class C
-    Sub M(a As String, b As String)
-        Dim ci As System.Globalization.CultureInfo
-        Dim co As System.Globalization.CompareOptions
+                        """
+                            Class C
+                                Sub M(a As String, b As String)
+                                    Dim ci As System.Globalization.CultureInfo
+                                    Dim co As System.Globalization.CompareOptions
 
-        ' add or correct StringComparison
-        If String.Compare(a, b, System.StringComparison.Ordinal) = 0 Then
-        End If
-        If String.Compare(a, 0, b, 0, 0, System.StringComparison.Ordinal) = 0 Then
-        End If
-        If String.Compare(a, b, System.StringComparison.Ordinal) = 0 Then
-        End If
-        If String.Compare(a, b, System.StringComparison.OrdinalIgnoreCase) = 0 Then
-        End If
-        If String.Compare(a, 0, b, 0, 0, System.StringComparison.Ordinal) = 0 Then
-        End If
+                                    ' add or correct StringComparison
+                                    If String.Compare(a, b, System.StringComparison.Ordinal) = 0 Then
+                                    End If
+                                    If String.Compare(a, 0, b, 0, 0, System.StringComparison.Ordinal) = 0 Then
+                                    End If
+                                    If String.Compare(a, b, System.StringComparison.Ordinal) = 0 Then
+                                    End If
+                                    If String.Compare(a, b, System.StringComparison.OrdinalIgnoreCase) = 0 Then
+                                    End If
+                                    If String.Compare(a, 0, b, 0, 0, System.StringComparison.Ordinal) = 0 Then
+                                    End If
 
-        ' these can't be auto-fixed
-        If String.[|Compare|](a, b, True) = 0 Then
-        End If
-        If String.[|Compare|](a, b, True, ci) = 0 Then
-        End If
-        If String.[|Compare|](a, b, ci, co) = 0 Then
-        End If
-        If String.[|Compare|](a, 0, b, 0, 0, True) = 0 Then
-        End If
-        If String.[|Compare|](a, 0, b, 0, 0, True, ci) = 0 Then
-        End If
-        If String.[|Compare|](a, 0, b, 0, 0, ci, co) = 0 Then
-        End If
-    End Sub
-End Class
-",
+                                    ' these can't be auto-fixed
+                                    If String.[|Compare|](a, b, True) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, b, True, ci) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, b, ci, co) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, 0, b, 0, 0, True) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, 0, b, 0, 0, True, ci) = 0 Then
+                                    End If
+                                    If String.[|Compare|](a, 0, b, 0, 0, ci, co) = 0 Then
+                                    End If
+                                End Sub
+                            End Class
+                            """,
                     },
 
                     // Not everything is fixed; we use markup to indicate the remaining ones.
@@ -307,92 +307,92 @@ End Class
         public async Task CA1309FixAllNestedEqualsCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-                @"
-class C
-{
-    void M(string a, string b, string c)
-    {
-        if (a.[|Equals|](b.[|Equals|](c).ToString())) { }
-    }
-}
-",
-                @"
-class C
-{
-    void M(string a, string b, string c)
-    {
-        if (a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.Ordinal)) { }
-    }
-}
-");
+                """
+                    class C
+                    {
+                        void M(string a, string b, string c)
+                        {
+                            if (a.[|Equals|](b.[|Equals|](c).ToString())) { }
+                        }
+                    }
+                    """,
+                """
+                    class C
+                    {
+                        void M(string a, string b, string c)
+                        {
+                            if (a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.Ordinal)) { }
+                        }
+                    }
+                    """);
         }
 
         [TestMethod]
         public async Task CA1309FixAllNestedEqualsBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-                @"
-Class C
-    Sub M(a As String, b As String, c As String)
-        If a.[|Equals|](b.[|Equals|](c).ToString()) Then
-        End If
-    End Sub
-End Class
-",
-                @"
-Class C
-    Sub M(a As String, b As String, c As String)
-        If a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.Ordinal) Then
-        End If
-    End Sub
-End Class
-");
+                """
+                    Class C
+                        Sub M(a As String, b As String, c As String)
+                            If a.[|Equals|](b.[|Equals|](c).ToString()) Then
+                            End If
+                        End Sub
+                    End Class
+                    """,
+                """
+                    Class C
+                        Sub M(a As String, b As String, c As String)
+                            If a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.Ordinal) Then
+                            End If
+                        End Sub
+                    End Class
+                    """);
         }
 
         [TestMethod]
         public async Task CA1309FixAllNestedArgumentCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-                @"
-class C
-{
-    void M(string a, string b, string c)
-    {
-        if (a.Equals(b.Equals(c, [|System.StringComparison.CurrentCulture|]).ToString(), [|System.StringComparison.CurrentCultureIgnoreCase|])) { }
-    }
-}
-",
-                @"
-class C
-{
-    void M(string a, string b, string c)
-    {
-        if (a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.OrdinalIgnoreCase)) { }
-    }
-}
-");
+                """
+                    class C
+                    {
+                        void M(string a, string b, string c)
+                        {
+                            if (a.Equals(b.Equals(c, [|System.StringComparison.CurrentCulture|]).ToString(), [|System.StringComparison.CurrentCultureIgnoreCase|])) { }
+                        }
+                    }
+                    """,
+                """
+                    class C
+                    {
+                        void M(string a, string b, string c)
+                        {
+                            if (a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.OrdinalIgnoreCase)) { }
+                        }
+                    }
+                    """);
         }
 
         [TestMethod]
         public async Task CA1309FixAllNestedArgumentBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-                @"
-Class C
-    Sub M(a As String, b As String, c As String)
-        If a.Equals(b.Equals(c, [|System.StringComparison.CurrentCulture|]).ToString(), [|System.StringComparison.CurrentCultureIgnoreCase|]) Then
-        End If
-    End Sub
-End Class
-",
-                @"
-Class C
-    Sub M(a As String, b As String, c As String)
-        If a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.OrdinalIgnoreCase) Then
-        End If
-    End Sub
-End Class
-");
+                """
+                    Class C
+                        Sub M(a As String, b As String, c As String)
+                            If a.Equals(b.Equals(c, [|System.StringComparison.CurrentCulture|]).ToString(), [|System.StringComparison.CurrentCultureIgnoreCase|]) Then
+                            End If
+                        End Sub
+                    End Class
+                    """,
+                """
+                    Class C
+                        Sub M(a As String, b As String, c As String)
+                            If a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.OrdinalIgnoreCase) Then
+                            End If
+                        End Sub
+                    End Class
+                    """);
         }
 
         [TestMethod]
@@ -400,15 +400,15 @@ End Class
         {
             // No added argument turns Compare(string, string, bool) into an acceptable overload, so
             // the diagnostic is reported without a fix rather than with one that changes nothing.
-            string source = @"
-class C
-{
-    void M(string a, string b)
-    {
-        if (string.[|Compare|](a, b, true) == 0) { }
-    }
-}
-";
+            string source = """
+                class C
+                {
+                    void M(string a, string b)
+                    {
+                        if (string.[|Compare|](a, b, true) == 0) { }
+                    }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
@@ -416,14 +416,14 @@ class C
         [TestMethod]
         public async Task CA1309NoFixOfferedForUnfixableOverloadBasicAsync()
         {
-            string source = @"
-Class C
-    Sub M(a As String, b As String)
-        If String.[|Compare|](a, b, True) = 0 Then
-        End If
-    End Sub
-End Class
-";
+            string source = """
+                Class C
+                    Sub M(a As String, b As String)
+                        If String.[|Compare|](a, b, True) = 0 Then
+                        End If
+                    End Sub
+                End Class
+                """;
 
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }

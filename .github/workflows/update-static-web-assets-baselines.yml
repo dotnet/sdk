@@ -27,7 +27,7 @@ jobs:
     steps:
       - name: Load pull request details
         id: info
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           PR_NUMBER: ${{ github.event.inputs.pr_number }}
         with:
@@ -89,7 +89,7 @@ jobs:
         working-directory: pr
     steps:
       - name: Checkout PR head
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ github.token }}
           fetch-depth: 0
@@ -179,7 +179,7 @@ jobs:
 
       - name: Upload baseline artifacts
         if: steps.evaluate.outputs.status == 'success' && steps.check.outputs.changes == 'true'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: static-web-assets-baselines
           path: pr/__artifacts
@@ -197,7 +197,7 @@ jobs:
 
       - name: Upload failure diagnostics
         if: steps.evaluate.outputs.status == 'failed'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: static-web-assets-baselines-failure
           path: pr/__failure
@@ -219,7 +219,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout PR branch
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ github.token }}
           fetch-depth: 0
@@ -231,14 +231,14 @@ jobs:
 
       - name: Download baseline artifacts
         if: needs.generate.outputs.changes == 'true'
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: static-web-assets-baselines
           path: artifact
 
       - name: Checkout trusted validation script
         if: needs.generate.outputs.changes == 'true'
-        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Always use the canonical validator from the repository's default branch (main), never the PR's copy and
           # never a release branch's copy when this workflow is dispatched from one.
@@ -346,7 +346,7 @@ jobs:
 
       - name: Comment on PR - Success
         if: steps.commit.outcome == 'success'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: |
             ✅ Static web assets baselines were updated and pushed to this pull request. Review [the workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
@@ -364,7 +364,7 @@ jobs:
 
       - name: Comment on PR - No changes
         if: needs.generate.outputs.changes != 'true'
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: |
             ℹ️ No static web assets baselines needed updating. Review [the workflow run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
@@ -389,7 +389,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Download failure diagnostics
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: static-web-assets-baselines-failure
           path: diagnostics
@@ -426,7 +426,7 @@ jobs:
           printf 'body<<EOF\n%s\nEOF\n' "$message" >> "$GITHUB_OUTPUT"
 
       - name: Comment on PR - Failure
-        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         env:
           COMMENT_BODY: ${{ steps.failure-comment.outputs.body }}
           ISSUE_NUMBER: ${{ needs.metadata.outputs.pr_number }}

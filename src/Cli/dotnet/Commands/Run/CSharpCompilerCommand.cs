@@ -118,6 +118,7 @@ internal sealed partial class CSharpCompilerCommand
             buildRequest,
             pipeName: pipeName,
             clientDirectory: ClientDirectory,
+            buildEnvironment: StandardBuildEnvironment.Instance,
             logger,
             cancellationToken: default);
 

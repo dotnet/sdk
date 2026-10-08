@@ -248,6 +248,10 @@
     <value>bearer realm '{0}' is not a valid absolute URI</value>
     <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</comment>
   </data>
+  <data name="InvalidAuthResponse_UnexpectedAuthOrigin" xml:space="preserve">
+    <value>authentication challenge origin '{0}' does not match registry origin '{1}'</value>
+    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the origin that returned the authentication challenge; {1} is the expected registry origin.</comment>
+  </data>
   <data name="InvalidAuthResponse_PrivateIpLiteralRealm" xml:space="preserve">
     <value>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</value>
     <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</comment>

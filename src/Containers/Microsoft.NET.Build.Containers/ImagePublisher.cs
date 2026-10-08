@@ -117,6 +117,10 @@ internal static class ImagePublisher
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToDownloadFromRepository), sourceImageReference);
         }
+        catch (InvalidAuthResponseException e)
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidRegistryAuthResponse), e.Registry, e.Reason);
+        }
         catch (ContainerHttpException e)
         {
             Log.LogErrorFromException(e, true);
@@ -158,6 +162,10 @@ internal static class ImagePublisher
         catch (UnableToAccessRepositoryException)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
+        }
+        catch (InvalidAuthResponseException e)
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidRegistryAuthResponse), e.Registry, e.Reason);
         }
         catch (ContainerHttpException e)
         {

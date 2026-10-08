@@ -6,10 +6,9 @@
 #if NET
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -25,14 +24,18 @@ internal sealed class BrowserRefreshServer(
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory,
-    string middlewareAssemblyPath,
+    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
     string dotnetPath,
+    Func<SharedSecretProvider> sessionKeyFactory,
     WebSocketConfig webSocketConfig,
     bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
+    : AbstractBrowserRefreshServer(configureLaunchEnvironment, sessionKeyFactory, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
     protected override bool SuppressTimeouts
         => suppressTimeouts;
+
+    internal void UpdateSessionKeyFactory(Func<SharedSecretProvider> value)
+        => SetSessionKeyFactory(value);
 
     protected override async ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
     {
@@ -42,30 +45,29 @@ internal sealed class BrowserRefreshServer(
             webSocketConfig = webSocketConfig.WithSecurePort(null);
         }
 
-        var server = await KestrelWebSocketServer.StartServerAsync(webSocketConfig, WebSocketRequestAsync, cancellationToken);
+        // The browser reaches the provider through the application's own origin, so the provider only
+        // listens on loopback. DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME no longer applies to this hop.
+        var router = new BrowserToolsEndpointRouter(this);
+        var server = await KestrelWebSocketServer.StartServerAsync(
+            webSocketConfig.WithHostName(null),
+            context => HandleRequestAsync(context, router),
+            cancellationToken);
 
         // URLs are only available after the server has started.
-        return new WebServerHost(server, server.ServerUrls, virtualDirectory: "/");
+        return new WebServerHost(server, server.ServerUrls, server.HttpServerUrls);
     }
 
-    private async Task WebSocketRequestAsync(HttpContext context)
+    private Task HandleRequestAsync(HttpContext context, BrowserToolsEndpointRouter router)
     {
-        if (!context.WebSockets.IsWebSocketRequest)
+        if (context.WebSockets.IsWebSocketRequest &&
+            (!Uri.TryCreate(context.Request.Headers.Origin.FirstOrDefault(), UriKind.Absolute, out var originUri) ||
+             !webSocketConfig.GetAllowedOriginDomains().Contains(originUri.Host, StringComparer.OrdinalIgnoreCase)))
         {
-            context.Response.StatusCode = 400;
-            return;
+            context.Response.StatusCode = StatusCodes.Status403Forbidden;
+            return Task.CompletedTask;
         }
 
-        if (context.WebSockets.WebSocketRequestedProtocols is not [var subProtocol])
-        {
-            subProtocol = null;
-        }
-
-        var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
-
-        // client socket ownership is transferred to the connection:
-        var connection = OnBrowserConnected(clientSocket, subProtocol);
-        await connection.Disconnected.Task;
+        return router.HandleAsync(context);
     }
 }
 

@@ -18,7 +18,12 @@ on:
   permissions: {}
 
 concurrency:
-  group: ci-quality-monitor
+  # GitHub evaluates workflow concurrency before any job-level `if`. Give
+  # irrelevant check suites and unmerged PR closures unique groups so they
+  # cannot fill the monitor queue before `collect` skips them. Use a new group
+  # for actionable runs to leave the existing, permanently blocked queue
+  # behind.
+  group: ${{ ((((github.event_name == 'check_suite' && github.event.check_suite.app.slug == 'azure-pipelines' && github.event.check_suite.conclusion != 'success') || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || (github.event_name != 'check_suite' && github.event_name != 'pull_request')) && 'ci-quality-monitor-v2') || format('ci-quality-monitor-skip-{0}', github.run_id)) }}
   queue: max
 
 env:

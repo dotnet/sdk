@@ -46,6 +46,7 @@ public class RunTestsScriptTests : SdkTest
         Assert.Contains("--project", result.StdOut);
         Assert.Contains("--filter", result.StdOut);
         Assert.Contains("--framework", result.StdOut);
+        Assert.Contains("--repeat", result.StdOut);
         Assert.Contains("--skip-redist-check", result.StdOut);
         Assert.DoesNotContain("--no-build", result.StdOut);
     }
@@ -73,6 +74,19 @@ public class RunTestsScriptTests : SdkTest
     }
 
     [TestMethod]
+    public async Task NonPositiveRepeatReturnsAParserError()
+    {
+        ScriptResult result = await RunScript(
+            "--project",
+            "test/Missing.Tests.csproj",
+            "--repeat",
+            "0");
+
+        Assert.AreNotEqual(0, result.ExitCode);
+        Assert.Contains("--repeat must be at least 1.", result.StdErr);
+    }
+
+    [TestMethod]
     public async Task RunsSingleTargetMtpProjectWithDiagnostics()
     {
         ScriptResult result = await RunScript(
@@ -86,6 +100,26 @@ public class RunTestsScriptTests : SdkTest
         Assert.Contains($"Framework: {ToolsetInfo.CurrentTargetFramework}", result.StdOut);
         Assert.Contains("TRX: artifacts", result.StdOut);
         Assert.Contains("Binlog: artifacts", result.StdOut);
+    }
+
+    [TestMethod]
+    public async Task RepeatBuildsOnceAndRunsEachIteration()
+    {
+        ScriptResult result = await RunScript(
+            "--project",
+            "test/Microsoft.DotNet.Cli.Utils.Tests/Microsoft.DotNet.Cli.Utils.Tests.csproj",
+            "--filter",
+            "FullyQualifiedName~ArgumentEscaperTests.EscapesArgumentsForProcessStart",
+            "--repeat",
+            "2",
+            "--skip-redist-check");
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        Assert.Contains("Iteration 1/2", result.StdOut);
+        Assert.Contains("Iteration 2/2", result.StdOut);
+        Assert.Contains("Repeat summary: 2 runs", result.StdOut);
+        Assert.AreEqual(1, CountOccurrences(result.StdOut, "Build command:"));
+        Assert.AreEqual(2, CountOccurrences(result.StdOut, "Tests passed."));
     }
 
     [TestMethod]
@@ -166,6 +200,9 @@ public class RunTestsScriptTests : SdkTest
             output.StandardOutput,
             output.StandardError);
     }
+
+    private static int CountOccurrences(string value, string substring) =>
+        value.Split(substring, StringSplitOptions.None).Length - 1;
 
     private sealed record ScriptResult(int ExitCode, string StdOut, string StdErr);
 }

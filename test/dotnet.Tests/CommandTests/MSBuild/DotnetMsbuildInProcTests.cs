@@ -11,6 +11,8 @@ using Microsoft.DotNet.Configurer;
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
     [TestClass]
+    // TelemetryClient static state is process-wide and is accessed by code that cannot participate in a resource lock.
+    [DoNotParallelize]
     public class DotnetMsbuildInProcTests : SdkTest
     {
         public DotnetMsbuildInProcTests()

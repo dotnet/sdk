@@ -8,6 +8,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
 [SupportedOSPlatform("windows")]
+[OSCondition(OperatingSystems.Windows)]
 public class WindowsPathHelperTests
 {
     [TestMethod]

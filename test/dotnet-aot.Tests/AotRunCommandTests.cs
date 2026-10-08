@@ -294,6 +294,86 @@ public class AotRunCommandTests
         }
     }
 
+    /// <summary>Verifies that launch profile arguments requiring MSBuild defer to the managed CLI.</summary>
+    [TestMethod]
+    [DataRow("Project", "ProjectProfile")]
+    [DataRow("Executable", "ExecutableProfile")]
+    public void LaunchProfileWithMSBuildPropertiesFallsBackToManaged(string commandName, string profileName)
+    {
+        var fixture = CreateFixture();
+        try
+        {
+            WriteLaunchSettings(fixture, $$"""
+                {
+                    "profiles": {
+                        "{{profileName}}": {
+                            "commandName": "{{commandName}}",
+                            "executablePath": "profile-executable",
+                            "commandLineArgs": "$(MSBuildProjectDirectory)"
+                        }
+                    }
+                }
+                """);
+            var parseResult = Parser.Parse([
+                "run",
+                "--file", fixture.EntryPointPath,
+                "--no-build",
+                "--launch-profile", profileName,
+            ]);
+
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() =>
+                AotRunCommand.Execute(
+                    parseResult,
+                    static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    fixture.TestDirectory));
+        }
+        finally
+        {
+            DeleteFixture(fixture);
+        }
+    }
+
+    /// <summary>Verifies that launch profile fields requiring MSBuild defer to the managed CLI.</summary>
+    [TestMethod]
+    [DataRow("Executable", "\"executablePath\": \"$(MSBuildProjectDirectory)\"")]
+    [DataRow("Executable", "\"executablePath\": \"profile-executable\", \"workingDirectory\": \"$(MSBuildProjectDirectory)\"")]
+    [DataRow("Executable", "\"executablePath\": \"profile-executable\", \"environmentVariables\": { \"VALUE\": \"$(MSBuildProjectDirectory)\" }")]
+    [DataRow("Project", "\"applicationUrl\": \"$(MSBuildProjectDirectory)\"")]
+    [DataRow("Project", "\"environmentVariables\": { \"VALUE\": \"$(MSBuildProjectDirectory)\" }")]
+    public void LaunchProfileFieldWithMSBuildPropertyFallsBackToManaged(string commandName, string settings)
+    {
+        var fixture = CreateFixture();
+        try
+        {
+            WriteLaunchSettings(fixture, $$"""
+                {
+                    "profiles": {
+                        "Profile": {
+                            "commandName": "{{commandName}}",
+                            {{settings}}
+                        }
+                    }
+                }
+                """);
+            var parseResult = Parser.Parse([
+                "run",
+                "--file", fixture.EntryPointPath,
+                "--no-build",
+                "--launch-profile", "Profile",
+            ]);
+
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() =>
+                AotRunCommand.Execute(
+                    parseResult,
+                    static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    fixture.TestDirectory));
+        }
+        finally
+        {
+            DeleteFixture(fixture);
+        }
+    }
+
     /// <summary>Verifies that a no-build Executable launch profile bypasses the synthetic build cache.</summary>
     [TestMethod]
     public void ExecutableLaunchProfileBypassesSyntheticCache()
@@ -310,7 +390,7 @@ public class AotRunCommandTests
                             "commandName": "Executable",
                             "executablePath": "profile-executable",
                             "workingDirectory": "profile-working-directory",
-                            "commandLineArgs": "profileArg1 profileArg2",
+                            "commandLineArgs": "$(MSBuildProjectDirectory)",
                             "environmentVariables": {
                                 "PROFILE_ONLY": "profile-value",
                                 "OVERRIDE": "profile-value"

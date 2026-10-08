@@ -4,11 +4,11 @@
 using NuGet.Packaging;
 using System.Diagnostics;
 using System.Net.Http.Json;
+using System.Security.Cryptography;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
-using System.Security.Cryptography;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -458,7 +458,7 @@ internal sealed class Registry
                 // Break the loop if successful
                 break;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidAuthResponseException)
             {
                 retryCount++;
                 if (retryCount >= MaxDownloadRetries)

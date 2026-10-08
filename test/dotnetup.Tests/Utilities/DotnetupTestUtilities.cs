@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using Microsoft.Dotnet.Installation;
@@ -222,7 +223,8 @@ internal static class DotnetupTestUtilities
     }
 
     /// <summary>
-    /// Gets the path to the latest Native AOT dotnetup test executable.
+    /// Gets the path to the dotnetup executable for the current build configuration.
+    /// Prefers the AOT-published native binary if available, otherwise falls back to the managed build output.
     /// </summary>
     /// <returns>Full path to dotnetup executable</returns>
     public static string GetDotnetupExecutablePath()
@@ -238,10 +240,94 @@ internal static class DotnetupTestUtilities
             return Path.GetFullPath(explicitPath);
         }
 
-        string repoRoot = GetRepositoryRoot();
+#if DEBUG
+        string configuration = "Debug";
+        string fallbackConfiguration = "Release";
+#else
+        string configuration = "Release";
+        string fallbackConfiguration = "Debug";
+#endif
+
+        string artifactsDir = GetArtifactsDirectory();
         string executableName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
-        string artifactsDirectory = Path.Combine(repoRoot, "artifacts", "bin", "dotnetup");
-        return GetLatestNativeAotExecutablePath(artifactsDirectory, RuntimeInformation.RuntimeIdentifier, executableName);
+
+        // Since .NET 8, RuntimeInformation.RuntimeIdentifier returns the portable RID
+        // the runtime was built with (e.g. "win-x64", "linux-musl-arm64"), which matches
+        // the RID used by `dotnet publish -r` output directories.
+        string rid = RuntimeInformation.RuntimeIdentifier;
+
+        // Try matching configuration first, then fall back to the other.
+        // This handles the common case where publish is done in Release but tests are built in Debug (or vice versa).
+        string[] configurationsToSearch = [configuration, fallbackConfiguration];
+
+        foreach (string config in configurationsToSearch)
+        {
+            string configDir = Path.Combine(artifactsDir, "bin", "dotnetup", config);
+
+            if (!Directory.Exists(configDir))
+            {
+                continue;
+            }
+
+            // Look for the AOT-published native binary under artifacts/bin/dotnetup/{config}/{tfm}/{rid}/publish/
+            // The TFM folder name varies (net10.0, net11.0, etc.) so we search for it.
+            string[] tfmDirs = Directory.GetDirectories(configDir);
+            if (tfmDirs.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", tfmDirs.Select(Path.GetFileName))}. " +
+                    $"Delete the stale TFM directory and rebuild. Paths:\n{string.Join("\n", tfmDirs)}");
+            }
+
+            foreach (string tfmDir in tfmDirs)
+            {
+                string publishedPath = Path.Combine(tfmDir, rid, "publish", executableName);
+                if (File.Exists(publishedPath))
+                {
+                    if (config != configuration)
+                    {
+                        Console.WriteLine($"Note: Using AOT binary from '{config}' configuration (no '{configuration}' AOT binary found).");
+                    }
+
+                    return Path.GetFullPath(publishedPath);
+                }
+            }
+        }
+
+        // Fall back to managed build output (same search order)
+        foreach (string config in configurationsToSearch)
+        {
+            string configDir = Path.Combine(artifactsDir, "bin", "dotnetup", config);
+
+            if (!Directory.Exists(configDir))
+            {
+                continue;
+            }
+
+            string[] fallbackTfmDirs = Directory.GetDirectories(configDir);
+            if (fallbackTfmDirs.Length > 1)
+            {
+                throw new InvalidOperationException(
+                    $"Multiple TFM directories found under '{configDir}': {string.Join(", ", fallbackTfmDirs.Select(Path.GetFileName))}. " +
+                    $"Delete the stale TFM directory and rebuild. Paths:\n{string.Join("\n", fallbackTfmDirs)}");
+            }
+
+            foreach (string tfmDir in fallbackTfmDirs)
+            {
+                string managedPath = Path.Combine(tfmDir, executableName);
+                if (File.Exists(managedPath))
+                {
+                    Console.WriteLine($"Warning: AOT-published native binary not found. Falling back to managed build output at '{managedPath}'.");
+                    return Path.GetFullPath(managedPath);
+                }
+            }
+        }
+
+        string primaryDir = Path.Combine(artifactsDir, "bin", "dotnetup", configuration);
+        throw new FileNotFoundException(
+            $"dotnetup executable not found under '{primaryDir}'. " +
+            $"Run 'dotnet publish src/Installer/dotnetup/dotnetup.csproj -c {configuration} --self-contained' to produce the AOT binary, " +
+            $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
     }
 
     internal static string GetLatestNativeAotExecutablePath(string artifactsDirectory, string rid, string executableName)
@@ -269,6 +355,19 @@ internal static class DotnetupTestUtilities
         return Path.GetFullPath(latestExecutable);
     }
 
+    private static string GetArtifactsDirectory()
+    {
+        string? artifactsDir = Environment.GetEnvironmentVariable("ArtifactsDir") ??
+            typeof(DotnetupTestUtilities).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
+                .SingleOrDefault(attribute => attribute.Key == "ArtifactsDir")?.Value;
+        if (string.IsNullOrWhiteSpace(artifactsDir))
+        {
+            throw new InvalidOperationException("The dotnetup.Tests assembly must record a non-empty ArtifactsDir build property.");
+        }
+
+        return Path.GetFullPath(artifactsDir);
+    }
+
     /// <summary>
     /// Runs the dotnetup executable as a separate process
     /// </summary>
@@ -276,12 +375,18 @@ internal static class DotnetupTestUtilities
     /// <param name="captureOutput">Whether to capture and return the output</param>
     /// <param name="workingDirectory">Working directory for the process</param>
     /// <param name="environmentVariables">Additional environment variables to set on the process</param>
+    /// <param name="standardInput">Input to write before closing the child's input stream.</param>
+    /// <param name="timeoutMilliseconds">Maximum process duration, or infinite for existing long-running scenarios.</param>
+    /// <param name="executablePath">Optional dotnetup executable path override.</param>
+    /// <param name="timeout">Optional process timeout override.</param>
     /// <returns>A tuple with exit code and captured output (if requested)</returns>
     public static (int exitCode, string output) RunDotnetupProcess(
         string[] args,
         bool captureOutput = false,
         string? workingDirectory = null,
         Dictionary<string, string>? environmentVariables = null,
+        string? standardInput = null,
+        int timeoutMilliseconds = System.Threading.Timeout.Infinite,
         string? executablePath = null,
         TimeSpan? timeout = null)
     {
@@ -294,41 +399,14 @@ internal static class DotnetupTestUtilities
         process.StartInfo.CreateNoWindow = true;
         process.StartInfo.RedirectStandardOutput = captureOutput;
         process.StartInfo.RedirectStandardError = captureOutput;
+        process.StartInfo.RedirectStandardInput = standardInput is not null;
         process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
 
-        // Suppress the .NET welcome message / first-run experience in test output
-        process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
-
-        // Disable ANSI color codes so that string assertions on captured output
-        // are not broken by escape sequences inserted at line-wrap boundaries.
-        process.StartInfo.Environment["NO_COLOR"] = "1";
-
-        // Apply any additional environment variables
-        if (environmentVariables != null)
-        {
-            foreach (var kvp in environmentVariables)
-            {
-                process.StartInfo.Environment[kvp.Key] = kvp.Value;
-            }
-        }
-
+        ConfigureProcessEnvironment(process.StartInfo, environmentVariables);
         StringBuilder outputBuilder = new();
         if (captureOutput)
         {
-            process.OutputDataReceived += (sender, e) =>
-            {
-                if (e.Data != null)
-                {
-                    outputBuilder.AppendLine(e.Data);
-                }
-            };
-            process.ErrorDataReceived += (sender, e) =>
-            {
-                if (e.Data != null)
-                {
-                    outputBuilder.AppendLine(e.Data);
-                }
-            };
+            CaptureProcessOutput(process, outputBuilder);
         }
 
         process.Start();
@@ -339,7 +417,17 @@ internal static class DotnetupTestUtilities
             process.BeginErrorReadLine();
         }
 
-        if (timeout is { } limit && !process.WaitForExit((int)limit.TotalMilliseconds))
+        if (standardInput is not null)
+        {
+            process.StandardInput.Write(standardInput);
+            process.StandardInput.Close();
+        }
+
+        int effectiveTimeoutMilliseconds = timeout is { } limit
+            ? checked((int)limit.TotalMilliseconds)
+            : timeoutMilliseconds;
+
+        if (!process.WaitForExit(effectiveTimeoutMilliseconds))
         {
             process.Kill(entireProcessTree: true);
             if (process.WaitForExit(10_000))
@@ -347,11 +435,50 @@ internal static class DotnetupTestUtilities
                 process.WaitForExit();
             }
 
-            throw new TimeoutException($"dotnetup {string.Join(' ', args)} timed out after {limit}. Output:\n{outputBuilder}");
+            string timeoutDescription = timeout is null ? $"{timeoutMilliseconds} ms" : timeout.ToString()!;
+            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {timeoutDescription}. Output:\n{outputBuilder}");
         }
 
         process.WaitForExit();
         return (process.ExitCode, outputBuilder.ToString());
+    }
+
+    private static void ConfigureProcessEnvironment(
+        ProcessStartInfo startInfo, Dictionary<string, string>? environmentVariables)
+    {
+        // Suppress the .NET welcome message / first-run experience in test output
+        startInfo.Environment["DOTNET_NOLOGO"] = "1";
+
+        // Disable ANSI color codes so that string assertions on captured output
+        // are not broken by escape sequences inserted at line-wrap boundaries.
+        startInfo.Environment["NO_COLOR"] = "1";
+
+        // Apply any additional environment variables
+        if (environmentVariables != null)
+        {
+            foreach (var kvp in environmentVariables)
+            {
+                startInfo.Environment[kvp.Key] = kvp.Value;
+            }
+        }
+
+    }
+
+    private static void CaptureProcessOutput(Process process, StringBuilder outputBuilder)
+    {
+        void AppendLine(string? line)
+        {
+            if (line is not null)
+            {
+                lock (outputBuilder)
+                {
+                    outputBuilder.AppendLine(line);
+                }
+            }
+        }
+
+        process.OutputDataReceived += (_, e) => AppendLine(e.Data);
+        process.ErrorDataReceived += (_, e) => AppendLine(e.Data);
     }
 
     private static string GetRepositoryRoot()
