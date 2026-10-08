@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -90,8 +91,60 @@ public class NonSafeCommandGateTests
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
             NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion));
         Assert.AreEqual(DotnetInstallErrorCode.DotnetupIdentityUnavailable, exception.ErrorCode);
+        Assert.AreEqual(Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateIdentityUnavailable, exception.Message);
         using var update = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
         Assert.IsNotNull(update);
+    }
+
+    [TestMethod]
+    public void MissingInstallationDirectoryReportsDirectoryUnavailable()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "missing");
+        var paths = new SelfUpdatePaths(Path.Combine(directory, OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup"));
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            NonSafeCommandGate.Enter(paths, SelfUpdateTestFiles.OriginalVersion));
+
+        Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
+        Assert.AreEqual(
+            string.Format(CultureInfo.CurrentCulture,
+                Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateDirectoryUnavailable, paths.DirectoryPath),
+            exception.Message);
+        Assert.IsInstanceOfType<IOException>(exception.InnerException);
+    }
+
+    [TestMethod]
+    public void InvalidActivityLockPathReportsCoordinationFileFailure()
+    {
+        using var files = new SelfUpdateTestFiles();
+        Directory.CreateDirectory(files.Paths.ActivityLockPath);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion));
+
+        Assert.AreEqual(DotnetInstallErrorCode.PermissionDenied, exception.ErrorCode);
+        Assert.AreEqual(
+            string.Format(CultureInfo.CurrentCulture,
+                Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateActivityLockAccessDenied, files.Paths.ActivityLockPath),
+            exception.Message);
+        Assert.IsInstanceOfType<UnauthorizedAccessException>(exception.InnerException);
+    }
+
+    [TestMethod]
+    public void MissingExecutableReportsExecutableUnavailable()
+    {
+        using var files = new SelfUpdateTestFiles();
+        File.Delete(files.Paths.InstalledPath);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion));
+
+        Assert.AreEqual(DotnetInstallErrorCode.DotnetupIdentityUnavailable, exception.ErrorCode);
+        Assert.AreEqual(
+            string.Format(CultureInfo.CurrentCulture,
+                Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateExecutableUnavailable, files.Paths.InstalledPath),
+            exception.Message);
+        Assert.IsInstanceOfType<FileNotFoundException>(exception.InnerException);
     }
 
     [TestMethod]
@@ -168,7 +221,10 @@ public class NonSafeCommandGateTests
                 NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion));
 
             Assert.AreEqual(DotnetInstallErrorCode.PermissionDenied, exception.ErrorCode);
-            Assert.Contains(files.Paths.DirectoryPath, exception.Message);
+            Assert.AreEqual(
+                string.Format(CultureInfo.CurrentCulture,
+                    Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateActivityLockAccessDenied, files.Paths.ActivityLockPath),
+                exception.Message);
             Assert.IsInstanceOfType<UnauthorizedAccessException>(exception.InnerException);
         }
         finally
@@ -198,7 +254,10 @@ public class NonSafeCommandGateTests
                 NonSafeCommandGate.Enter(files.Paths, SelfUpdateTestFiles.OriginalVersion));
 
             Assert.AreEqual(DotnetInstallErrorCode.PermissionDenied, exception.ErrorCode);
-            Assert.Contains(files.Paths.DirectoryPath, exception.Message);
+            Assert.AreEqual(
+                string.Format(CultureInfo.CurrentCulture,
+                    Microsoft.DotNet.Tools.Bootstrapper.Strings.SelfUpdateActivityLockAccessDenied, files.Paths.ActivityLockPath),
+                exception.Message);
         }
         finally
         {

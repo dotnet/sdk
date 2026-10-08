@@ -8,8 +8,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
 /// <summary>
 /// Rejects busy or stale non-safe invocations before installation state can be accessed.
-/// Unsupported locations (links or reparse points) and access-denied directories are reported as
-/// specific user errors rather than as an unavailable executable identity.
+/// Location, coordination-file, executable-access, and version-query failures are translated at
+/// the operation that failed.
 /// </summary>
 internal static class NonSafeCommandGate
 {
@@ -19,11 +19,9 @@ internal static class NonSafeCommandGate
         try
         {
             // Name-agnostic: renamed executables may run ordinary commands; only self-update needs the canonical name.
-            SelfUpdatePaths.ValidateDirectory(paths.DirectoryPath);
-            lease = ScopedLockFile.TryAcquireShared(paths.ActivityLockPath)
-                ?? throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupUpdateInProgress,
-                    Strings.SelfUpdateInProgress);
-            paths.ValidateExecutable();
+            ValidateDirectory(paths);
+            lease = AcquireActivityLock(paths);
+            ValidateExecutable(paths);
             string installedVersion = ReadInstalledVersion(paths.InstalledPath);
 
             if (!string.Equals(loadedVersion, installedVersion, StringComparison.Ordinal))
@@ -36,6 +34,18 @@ internal static class NonSafeCommandGate
             lease = null;
             return acquired;
         }
+        finally
+        {
+            lease?.Dispose();
+        }
+    }
+
+    private static void ValidateDirectory(SelfUpdatePaths paths)
+    {
+        try
+        {
+            SelfUpdatePaths.ValidateDirectory(paths.DirectoryPath);
+        }
         catch (SelfUpdateLocationException exception)
         {
             throw exception.ToInstallException();
@@ -45,14 +55,52 @@ internal static class NonSafeCommandGate
             throw new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied,
                 string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateDirectoryAccessDenied, paths.DirectoryPath), exception);
         }
-        catch (Exception exception) when (exception is IOException or InvalidDataException)
+        catch (IOException exception)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.InstallFailed,
+                string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateDirectoryUnavailable, paths.DirectoryPath), exception);
+        }
+    }
+
+    private static ScopedLockFile AcquireActivityLock(SelfUpdatePaths paths)
+    {
+        try
+        {
+            return ScopedLockFile.TryAcquireShared(paths.ActivityLockPath)
+                ?? throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupUpdateInProgress,
+                    Strings.SelfUpdateInProgress);
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied,
+                string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateActivityLockAccessDenied, paths.ActivityLockPath), exception);
+        }
+        catch (IOException exception)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.InstallFailed,
+                string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateActivityLockUnavailable, paths.ActivityLockPath), exception);
+        }
+    }
+
+    private static void ValidateExecutable(SelfUpdatePaths paths)
+    {
+        try
+        {
+            paths.ValidateExecutable();
+        }
+        catch (SelfUpdateLocationException exception)
+        {
+            throw exception.ToInstallException();
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied,
+                string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateExecutableAccessDenied, paths.InstalledPath), exception);
+        }
+        catch (IOException exception)
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupIdentityUnavailable,
-                Strings.SelfUpdateIdentityUnavailable, exception);
-        }
-        finally
-        {
-            lease?.Dispose();
+                string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateExecutableUnavailable, paths.InstalledPath), exception);
         }
     }
 

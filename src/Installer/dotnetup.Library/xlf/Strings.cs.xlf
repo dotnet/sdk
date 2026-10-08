@@ -471,6 +471,16 @@ Or open a new terminal.</target>
         <target state="new">Dotnetup could not safely access the self-update files. Check the installation directory's permissions and try again.</target>
         <note>{Locked="Dotnetup"}</note>
       </trans-unit>
+      <trans-unit id="SelfUpdateActivityLockAccessDenied">
+        <source>Dotnetup could not open or create its self-update coordination file '{0}'. Make sure the installation directory is writable, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</source>
+        <target state="new">Dotnetup could not open or create its self-update coordination file '{0}'. Make sure the installation directory is writable, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</target>
+        <note>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the dotnetup activity lock file.</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateActivityLockUnavailable">
+        <source>Dotnetup could not use its self-update coordination file '{0}'. Make sure the installation directory exists and is accessible, and then try again.</source>
+        <target state="new">Dotnetup could not use its self-update coordination file '{0}'. Make sure the installation directory exists and is accessible, and then try again.</target>
+        <note>{Locked="Dotnetup"} {0} is the dotnetup activity lock file.</note>
+      </trans-unit>
       <trans-unit id="SelfUpdateAlreadyUpToDate">
         <source>Dotnetup was not updated. Current version: {0}. Available version: {1}. No newer update is available.</source>
         <target state="new">Dotnetup was not updated. Current version: {0}. Available version: {1}. No newer update is available.</target>
@@ -516,15 +526,30 @@ Or open a new terminal.</target>
         <target state="new">Dotnetup could not access its installation directory '{0}'. Make sure you can read the dotnetup executable and create files in that directory, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</target>
         <note>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</note>
       </trans-unit>
+      <trans-unit id="SelfUpdateDirectoryUnavailable">
+        <source>Dotnetup could not inspect its installation directory '{0}'. Make sure the directory exists and is accessible, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
+        <target state="new">Dotnetup could not inspect its installation directory '{0}'. Make sure the directory exists and is accessible, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
+        <note>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</note>
+      </trans-unit>
       <trans-unit id="SelfUpdateDownloading">
         <source>Downloading dotnetup</source>
         <target state="new">Downloading dotnetup</target>
         <note>{Locked="dotnetup"} Download progress task description.</note>
       </trans-unit>
+      <trans-unit id="SelfUpdateExecutableAccessDenied">
+        <source>Dotnetup could not read the installed executable '{0}'. Make sure the executable is readable, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
+        <target state="new">Dotnetup could not read the installed executable '{0}'. Make sure the executable is readable, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
+        <note>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup executable.</note>
+      </trans-unit>
       <trans-unit id="SelfUpdateExecutableChanged">
         <source>The dotnetup executable has changed. Run the command again to use the updated executable.</source>
         <target state="new">The dotnetup executable has changed. Run the command again to use the updated executable.</target>
         <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateExecutableUnavailable">
+        <source>The installed dotnetup executable '{0}' could not be inspected. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
+        <target state="new">The installed dotnetup executable '{0}' could not be inspected. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>
+        <note>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup executable.</note>
       </trans-unit>
       <trans-unit id="SelfUpdateForceOptionDescription">
         <source>Install the channel's latest dotnetup build even when it is not newer than the current version. This can downgrade dotnetup.</source>

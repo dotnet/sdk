@@ -244,6 +244,26 @@
     <value>Dotnetup could not access its installation directory '{0}'. Make sure you can read the dotnetup executable and create files in that directory, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</value>
     <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</comment>
   </data>
+  <data name="SelfUpdateDirectoryUnavailable" xml:space="preserve">
+    <value>Dotnetup could not inspect its installation directory '{0}'. Make sure the directory exists and is accessible, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</comment>
+  </data>
+  <data name="SelfUpdateActivityLockAccessDenied" xml:space="preserve">
+    <value>Dotnetup could not open or create its self-update coordination file '{0}'. Make sure the installation directory is writable, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the dotnetup activity lock file.</comment>
+  </data>
+  <data name="SelfUpdateActivityLockUnavailable" xml:space="preserve">
+    <value>Dotnetup could not use its self-update coordination file '{0}'. Make sure the installation directory exists and is accessible, and then try again.</value>
+    <comment>{Locked="Dotnetup"} {0} is the dotnetup activity lock file.</comment>
+  </data>
+  <data name="SelfUpdateExecutableAccessDenied" xml:space="preserve">
+    <value>Dotnetup could not read the installed executable '{0}'. Make sure the executable is readable, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup executable.</comment>
+  </data>
+  <data name="SelfUpdateExecutableUnavailable" xml:space="preserve">
+    <value>The installed dotnetup executable '{0}' could not be inspected. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup executable.</comment>
+  </data>
   <data name="CommandNonInteractiveOptionDescription" xml:space="preserve">
     <value>Proceed without prompting for confirmation.</value>
   </data>
