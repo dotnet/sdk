@@ -42,6 +42,26 @@ to `dotnet` and `Microsoft.DotNet.Cli.Utils`. Internal parser APIs are accessibl
 signed `dotnet` assembly through MSBuild's `InternalsVisibleTo`; keep those calls
 managed-only rather than introducing MSBuild dependencies into `Definitions`.
 
+## Native AOT trimming contracts
+
+When changing AOT-linked commands, resources, dependencies, or first-run behavior,
+review the [size and trimming contracts](dotnet-aot/DESIGN.md#size-and-trimming-contracts)
+in the same change. In particular:
+
+- Maintain [AotResourceRoots.txt](dotnet-aot/AotResourceRoots.txt) for computed
+  resource names. Static identifiers and literal keys are retained automatically;
+  generated resource accessors are not roots. Keep command-definition/help resources
+  and all supported cultures intact.
+- Check every method in the [substitution files](dotnet-aot/AotSubstitutions.targets)
+  against new call paths and dependency versions. Remove or narrow a substitution
+  before enabling behavior it excludes. A throwing substitution must stay unreachable.
+- Keep production detection-provider construction behind direct `OperatingSystem`
+  checks. Do not root the all-platform test factory through static initialization.
+  Linux needs WSL providers and their Windows data parsers.
+- Validate a clean native publish, native behavior, and before/after library size.
+  Managed tests alone do not apply ILC substitutions. Check each affected platform
+  and configuration; report those not executed.
+
 ## Where things live
 
 `src/Cli` is a set of projects, not one app. The three above carry commands; the

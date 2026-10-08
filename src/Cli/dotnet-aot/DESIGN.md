@@ -36,6 +36,87 @@ invoking `dotnet`:
 When disabled, every invocation is routed straight to the managed CLI, exactly as it
 behaved before the AOT fast path was enabled by default.
 
+## Size and trimming contracts
+
+The native CLI uses knowledge about its supported command paths to reduce its
+closure. These optimizations must not change the shared command tree, supported
+output, localization, telemetry transports, or managed fallback. Review them when
+adding an AOT command or updating a dependency, not only when working on size.
+
+### Resource filtering
+
+[AotSourceFiles.props](AotSourceFiles.props) imports
+[AotResources.targets](AotResources.targets). After `CoreResGen`, the filter writes
+separate copies of the compiled `CliStrings` and `CliCommandStrings` tables and
+updates `EmbeddedResource.OutputResource`. It leaves the source `.resx`, generated
+accessors, `.xlf`, and full compiled resource files unchanged. This permits a later
+incremental build to restore a newly referenced key. The filter applies the same
+key set to neutral and translated tables and preserves each retained value.
+Command-definition/help resources in the referenced definitions assembly are not
+filtered. Unused MSBuild-task diagnostics are not embedded by the native source list.
+
+The retention scan collects identifiers from the evaluated `Compile` inputs,
+excluding generated resource accessors. It deliberately also retains matching
+tokens in comments, string literals, and inactive preprocessor branches. It is
+conservative, not a native getter-count allowlist: inlined getters do not provide
+a reliable list of required strings.
+
+**Maintain [AotResourceRoots.txt](AotResourceRoots.txt) for every computed resource
+name.** A literal full key is found by the scan; concatenated keys, runtime input,
+and external key tables need explicit roots. Add each possible key on its own
+line and remove obsolete roots when removing the lookup. Unknown explicit roots
+fail the build. If resource access moves out of the linked source closure, add
+its keys explicitly or stop filtering the affected table.
+
+When changing the filter or resource wiring, verify that adding a reference
+restores a pruned key, removing the reference prunes it again, and explicit
+dynamic roots work. Verify retained translations against the original compiled
+tables, not only the test assembly's neutral-language fallback.
+
+### ILC substitutions
+
+[AotDependencies.props](AotDependencies.props) imports
+[AotSubstitutions.targets](AotSubstitutions.targets), which passes each descriptor
+directly to ILC with `IlcArg` and `--substitution`. An ILLink substitution item
+alone does not establish that Native AOT used the descriptor. The substitutions
+apply only when `PublishAot` is enabled, including native-published tests.
+
+| Descriptor | Assumption to preserve |
+| --- | --- |
+| [Certificate.Substitutions.xml](Certificate.Substitutions.xml) | The [first-run certificate generator](../dotnet/AspNetCoreCertificateGenerator.cs) generates/stores a development certificate without requesting trust. Explicit `dev-certs` executes out of process. `TrustCertificate` is replaced with a throwing body, not successful no-op behavior. Keep certificate generation, storage, and platform state correction. Remove this substitution before introducing in-process trust. |
+| [XmlWriter.Substitutions.xml](XmlWriter.Substitutions.xml) | In-process consumers write XML, not XSLT HTML, text, or auto-detected output. `XmlWriterSettings.OutputMethod` is fixed to XML; async writing, encodings, indentation, XML reading, and validation remain supported. Audit solution/project, NuGet, and other dependency writers when extending the closure. Remove this substitution before enabling another output method. |
+
+For every dependency update, verify descriptor assembly/type/method signatures,
+the caller assumptions, compiler diagnostics, and the native dependency graph.
+Treat an unresolved descriptor as a regression. A clean native publish and native
+behavior tests are required; a managed test run cannot prove the replacement body.
+
+ILC's supported substitution bodies are narrower than ILLink's. The compiler used
+for this implementation supports Boolean, Int32, and Int32-backed enum constants,
+empty void bodies, and throwing bodies, but rejects a null reference-return stub.
+Consequently the proposed Azure Monitor `Credential` getter substitution is not
+enabled. Reconsider it only with compiler support or a dependency-owned supported
+feature gate; do not remove supported telemetry/authentication code as a workaround.
+
+### Platform provider registration and validation
+
+[InternalMicrosoftDetector](../Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetector.cs)
+guards provider construction with direct `OperatingSystem` intrinsics so ILC can
+discard off-platform implementations. Checking support only after constructing all
+providers does not remove their roots. The injected-context factory remains
+all-platform for tests. Do not eagerly initialize it through
+[InternalMicrosoftDetectorOptions](../Microsoft.DotNet.Cli.InternalMicrosoft/Internal/InternalMicrosoftDetectorOptions.cs).
+Linux retains WSL providers, including parsers for Windows account/workplace data.
+
+Measure the native library with the same RID, configuration, toolchain, and feature
+settings before and after a change. Record actual file bytes separately from
+`.mstat` accounted contributions. Inspect the generated dependency graph to verify
+the expected roots disappeared. Run clean product/test closure builds, native
+tests, and relevant `dn` managed/AOT parity checks on each affected OS. Test both
+ASP.NET-included and ASP.NET-excluded closures when changing certificate wiring.
+Use the [AOT command skill](../../../.github/skills/add-dotnet-aot-command/SKILL.md)
+for the validation ladder and retain build binlogs.
+
 ## Motivation
 
 The `dotnet` CLI today runs as a managed application hosted by CoreCLR. Every
