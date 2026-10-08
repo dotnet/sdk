@@ -201,6 +201,206 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task SpanParameter_UsedInRefForEachLoop_NoDiagnostic()
+        {
+            await VerifyAnalyzerAsync("""
+                using System;
+
+                struct Item
+                {
+                    public int Value;
+                }
+
+                class C
+                {
+                    private void M(Span<Item> data)
+                    {
+                        foreach (ref var item in data)
+                        {
+                            item.Value++;
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_UsedInRefForEachLoopWithoutWrite_NoDiagnostic()
+        {
+            await VerifyAnalyzerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> data)
+                    {
+                        foreach (ref var item in data)
+                        {
+                            Console.WriteLine(item);
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_UsedInRefForEachLoopOverExplicitConversion_NoDiagnostic()
+        {
+            await VerifyAnalyzerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> data)
+                    {
+                        foreach (ref var item in (Span<int>)data)
+                        {
+                            item++;
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_UsedInRefForEachLoopOverSlice_NoDiagnostic()
+        {
+            await VerifyAnalyzerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> data)
+                    {
+                        foreach (ref var item in data.Slice(1))
+                        {
+                            item++;
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_UsedInRefReadOnlyForEachLoop_ProducesDiagnostic()
+        {
+            await VerifyFixerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> [|data|])
+                    {
+                        foreach (ref readonly var item in data)
+                        {
+                            Console.WriteLine(item);
+                        }
+                    }
+                }
+                """, """
+                using System;
+
+                class C
+                {
+                    private void M(ReadOnlySpan<int> data)
+                    {
+                        foreach (ref readonly var item in data)
+                        {
+                            Console.WriteLine(item);
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_UsedInRefReadOnlyForEachLoopOverSlice_ProducesDiagnostic()
+        {
+            await VerifyFixerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> [|data|])
+                    {
+                        foreach (ref readonly var item in data.Slice(1))
+                        {
+                            Console.WriteLine(item);
+                        }
+                    }
+                }
+                """, """
+                using System;
+
+                class C
+                {
+                    private void M(ReadOnlySpan<int> data)
+                    {
+                        foreach (ref readonly var item in data.Slice(1))
+                        {
+                            Console.WriteLine(item);
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_ReadInsideUnrelatedRefForEachLoop_ProducesDiagnostic()
+        {
+            await VerifyFixerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> [|data|], Span<int> other)
+                    {
+                        foreach (ref var item in other)
+                        {
+                            data.Slice(0, 1);
+                            item++;
+                        }
+                    }
+                }
+                """, """
+                using System;
+
+                class C
+                {
+                    private void M(ReadOnlySpan<int> data, Span<int> other)
+                    {
+                        foreach (ref var item in other)
+                        {
+                            data.Slice(0, 1);
+                            item++;
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task SpanParameter_UsedByWritableEnumerator_NoDiagnostic()
+        {
+            await VerifyAnalyzerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<int> data)
+                    {
+                        var enumerator = data.GetEnumerator();
+                        while (enumerator.MoveNext())
+                        {
+                            ref var item = ref enumerator.Current;
+                            item++;
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
         public async Task SpanParameter_UsedInForLoop_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""

@@ -51,6 +51,7 @@ rest are supporting libraries:
 |---------|------|
 | `dotnet` | Primary managed executable — every command's handler lives here under `Commands/`. |
 | `Microsoft.DotNet.Cli.Definitions` | AOT-safe command tree (parsed by both hosts). |
+| `Microsoft.DotNet.Cli.InternalMicrosoft` | AOT-safe Microsoft-internal classification, probes, and cache. It does not emit telemetry. |
 | `dotnet-aot` + `dn` | NativeAOT shared library + native host exe. |
 | `Microsoft.DotNet.Cli.Utils` | MSBuild/NuGet/process/system abstractions used across the CLI. |
 | `Microsoft.DotNet.Cli.CoreUtils` | Low-level version/file/env-variable parsing. |
@@ -89,3 +90,14 @@ Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):
   matching `*.verified.txt`.
 - Volatile lines (paths, timings, versions) are scrubbed via
   `settings.ScrubLinesContaining(...)` — scrub rather than hard-code them.
+
+## MTP process completion
+
+[`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs) distinguishes
+TestHost completion from orchestrator-only completion. An exit-0 `RefreshMappingsOrchestrator`
+in collection mode or `RunAffectedTestsOrchestrator` in affected-run mode can finish without
+a TestHost; legacy collection can omit handshakes entirely. Missing/unknown capabilities,
+controller-only or mixed partial handshakes, and explicit handshake rejections must not
+gain that exemption. Rejection and partial-handshake state must survive later accepted
+handshakes. Keep these boundaries covered by
+[`TestApplicationHandlerTests`](../../test/dotnet.Tests/CommandTests/Test/TestApplicationHandlerTests.cs).

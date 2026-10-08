@@ -74,7 +74,7 @@
     <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="PublishWithOutput" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);BuildTestPackages=false;$(_TestPublishRidProperties);$(_CurrentAdditionalProperties)">
       <Output TaskParameter="TargetOutputs" PropertyName="_PublishOutputDir" />
     </MSBuild>
-    <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="GetTargetPath" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_CurrentAdditionalProperties)">
+    <MSBuild Projects="$(_CurrentSDKCustomTestProject)" Targets="GetTargetPath" Properties="CustomAfterMicrosoftCommonTargets=$(_SDKCustomTestPublishTargetsPath);TargetFramework=$(_CurrentPublishTargetFramework);$(_TestPublishRidProperties);$(_CurrentAdditionalProperties)">
       <Output TaskParameter="TargetOutputs" PropertyName="_TargetPath" />
     </MSBuild>
 

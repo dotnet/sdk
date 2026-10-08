@@ -74,7 +74,11 @@ permissions:
   pull-requests: read
   copilot-requests: write
 
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 concurrency:
+  job-discriminator: ${{ github.run_id }}
   # Only real `dotnet-sdk-public-ci` check_run events (and manual dispatch for
   # a PR) use a PR/head-scoped group, so a newer analysis supersedes an
   # in-progress one for the same PR. Every OTHER completed check_run on the PR

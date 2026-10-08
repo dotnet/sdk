@@ -183,6 +183,54 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void RunAppliesReporterOptionsFromResponseFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string responseFilePath = Path.Join(testInstance.Path, "reporter.rsp");
+            File.WriteAllText(
+                responseFilePath,
+                "--show-test-results=passed");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, $"@{responseFilePath}");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("passed Test0")
+                    .And.NotContain("skipped Test1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunAppliesReporterOptionsFromConfigurationFile()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string configurationFilePath = Path.Join(testInstance.Path, "reporter.testconfig.json");
+            File.WriteAllText(
+                configurationFilePath,
+                """{"commandLineOptions":{"show-test-results":["passed"]}}""");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--config-file", configurationFilePath);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("passed Test0")
+                    .And.NotContain("skipped Test1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
         public void RunAllSkippedTestsHonorsStrictPolicyFromDefaultConfigurationFile()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
@@ -1283,8 +1331,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         // is redirected, so the SDK picks NonAnsiTerminal (extends SimpleTerminal) and emits the
         // ASCII glyph form "[+P/xF/?S]" (full-ANSI terminals emit "[✓P/xF/↓S]").
         // Example shapes we match:
-        //   ".../Debug/net11.0/TestProject.dll (net11.0|x64) passed [+1/x0/?1] (1.2s)"
-        //   ".../Debug/net11.0/TestProject.dll (net11.0|x64) failed with 1 error(s) [+1/x1/?1] (1.5s)"
+        //   ".../Debug/net11.0/TestProject.dll (net12.0|x64) passed [+1/x0/?1] (1.2s)"
+        //   ".../Debug/net11.0/TestProject.dll (net12.0|x64) failed with 1 error(s) [+1/x1/?1] (1.5s)"
         private static string GeneratePerAssemblyCountsRegexPattern(
             string projectName,
             string status,
@@ -1295,13 +1343,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
             string version = ToolsetInfo.CurrentTargetFramework;
             string escapedVersion = Regex.Escape(version);
+            string runtimeVersion = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            string escapedRuntimeVersion = Regex.Escape(runtimeVersion);
             string escapedProject = Regex.Escape(projectName);
             // PathUtility.GetDirectorySeparatorChar() already returns a regex-escaped separator.
             string separator = PathUtility.GetDirectorySeparatorChar();
             // After the status name we may have an optional "with N error(s)" suffix (rendered when
             // tests failed AND exitCode != 0), so we allow any non-bracket, non-newline characters
             // between the status and the leading "[" that introduces the compact counts block.
-            return $@".+{configuration}{separator}{escapedVersion}{separator}{escapedProject}(\.dll|\.exe)?\s+\({escapedVersion}\|[A-Za-z0-9]+\)\s{status}[^\[\r\n]*\[\+{passed}/x{failed}/\?{skipped}\]\s+\(";
+            return $@".+{configuration}{separator}{escapedVersion}{separator}{escapedProject}(\.dll|\.exe)?\s+\({escapedRuntimeVersion}\|[A-Za-z0-9]+\)\s{status}[^\[\r\n]*\[\+{passed}/x{failed}/\?{skipped}\]\s+\(";
         }
     }
 }

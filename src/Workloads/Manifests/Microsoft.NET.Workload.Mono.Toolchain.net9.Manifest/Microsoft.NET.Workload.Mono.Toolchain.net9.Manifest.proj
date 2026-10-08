@@ -26,11 +26,13 @@
            Text="No value specified for template variable '%(_WorkloadManifestValues.Identity)'" />
 
     <GenerateFileFromTemplate
+      SkipUnchanged="true"
       TemplateFile="WorkloadManifest.json.in"
       Properties="@(_WorkloadManifestValues->'%(Identity)=%(Value)')"
       OutputPath="$(WorkloadManifestPath)" />
 
     <GenerateFileFromTemplate
+      SkipUnchanged="true"
       TemplateFile="WorkloadManifest.targets.in"
       Properties="@(_WorkloadManifestValues->'%(Identity)=%(Value)')"
       OutputPath="$(WorkloadManifestTargetsPath)" />

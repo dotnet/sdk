@@ -6,14 +6,14 @@
     {
       "id": "dotnet-test-wire-contract-fieldids",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/IPC/ObjectFieldIds.cs",
-      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props). RetryAttemptNumber and IsSuperseded are reserved in the SDK contract so newer peers can send them without conflicting ids; the SDK does not consume that metadata until its serializers and retry model support framework-level retry attempts.",
+      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props). RetryAttemptNumber and IsSuperseded are reserved in the SDK contract so newer peers can send them without conflicting ids; the SDK does not consume that metadata until its serializers and retry model support framework-level retry attempts. ProviderUid, MinimumArity, and MaximumArity are also reserved; the SDK's command-line option serializer skips that optional metadata.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
-          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
-          "baseline_blob_sha": "b895c69e438c5acbde2a44e11c92873c1f58ac2a",
+          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
+          "baseline_blob_sha": "7592b74c90a4c2e5b989b7f3314ebc1c0ec11804",
           "scope": "entire file; ids must match exactly"
         }
       ]
@@ -50,8 +50,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.ErroredAssemblies.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "9e805c0271f30b6ddf1c729dd286aab5956b52f4",
+          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
+          "baseline_blob_sha": "653dc2e36dd6d477f72b0f37f30494980b1f06ed",
           "scope": "reporter partial"
         },
         {
@@ -74,8 +74,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Handshake.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "af07e4b686833a1b6fd09135db9fb0820bf97318",
+          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
+          "baseline_blob_sha": "46f1477c38aa853e2da90d56ce501ff47db1d585",
           "scope": "reporter partial"
         },
         {
@@ -432,8 +432,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "1199c0ba8609a29f615e05d87c6ee91fc958fda0",
+          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
+          "baseline_blob_sha": "7b0ff5bdf2b06978b619e7ce9a6647606c31c39a",
           "scope": "entire file"
         }
       ]
@@ -501,14 +501,14 @@
     {
       "id": "dotnet-test-terminal-targetframeworkparser",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TargetFrameworkParser.cs",
-      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder.",
+      "notes": "Terminal reporter platform abstraction hard-forked from testfx (src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs). In the SDK it lives under the flat Terminal/ folder; upstream it lives outside the Terminal folder. Reconciled at 005e8f82: the SDK already guards short descriptions, missing major versions, and trailing dots using an early length check rather than upstream's clamped IndexOf start index.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "cf30ee8ed5cd18cb7fdb29fdc1d5bbc23a6b3094",
+          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
+          "baseline_blob_sha": "a88fd6d82133f6ad1516427105ca3146e9860dae",
           "scope": "entire file"
         }
       ]

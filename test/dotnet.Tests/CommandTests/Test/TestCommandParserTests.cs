@@ -3,9 +3,13 @@
 
 using System.Collections.Immutable;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
+using MtpExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
@@ -111,6 +115,22 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
             buildOptions.MSBuildArgs.Should().NotContain("--no-banner");
             buildOptions.MSBuildArgs.Should().NotContain(optionAlias);
+        }
+
+        [TestMethod]
+        public void MTPCommandUsesMicrosoftTestingPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner");
+        }
+
+        [TestMethod]
+        public void VSTestCommandUsesMicrosoftTestPlatformNoLogoDescription()
+        {
+            var command = new TestCommandDefinition.VSTest();
+
+            command.NoLogoOption.Description.Should().Be("Run test(s), without displaying the Microsoft Test Platform banner");
         }
 
         [TestMethod]
@@ -221,6 +241,51 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [DataRow("0")]
+        [DataRow("-1")]
+        public void MTPCommandRejectsNonPositiveMaximumParallelTestModules(string value)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--max-parallel-test-modules", value]);
+
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        public void MTPCommandCapsMaximumParallelTestModulesToTheModuleCount()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--max-parallel-test-modules", int.MaxValue.ToString()]);
+
+            parseResult.Errors.Should().BeEmpty();
+            MicrosoftTestingPlatformTestCommand.GetDegreeOfParallelism(
+                parseResult,
+                collectTestMap: false,
+                testModuleCount: 3).Should().Be(3);
+        }
+
+        [TestMethod]
+        public void MTPCommandRejectsRootDirectoryWithoutTestModules()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--root-directory", "artifacts"]);
+
+            parseResult.Errors.Should().ContainSingle()
+                .Which.Message.Should().Contain("--test-modules");
+        }
+
+        [TestMethod]
+        public void MTPCommandAcceptsRootDirectoryWithTestModules()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([
+                "--test-modules", "**/*.dll",
+                "--root-directory", "artifacts"]);
+
+            parseResult.Errors.Should().BeEmpty();
+        }
+
+        [TestMethod]
         [DataRow("500ms", 500.0)]
         [DataRow("2s", 2_000.0)]
         [DataRow("1.5m", 90_000.0)]
@@ -277,6 +342,45 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             parseResult.UnmatchedTokens.Should().Equal(
                 "--maximum-failed-tests", "2",
                 "--timeout", "10s");
+        }
+
+        [TestMethod]
+        [DataRow("--project", ".csproj", false)]
+        [DataRow("--project", ".csproj", true)]
+        [DataRow("--solution", ".sln", false)]
+        [DataRow("--solution", ".sln", true)]
+        [DataRow("--test-modules", ".dll", false)]
+        [DataRow("--test-modules", ".dll", true)]
+        public void MTPCommandDoesNotValidateForwardedPathsWhenBuildPathIsExplicit(
+            string buildPathOption,
+            string fileExtension,
+            bool useArgumentSeparator)
+        {
+            using var temp = new TempDirectory();
+            string selectedPath = Path.Combine(temp.Path, $"Selected{fileExtension}");
+            string forwardedPath = Path.Combine(temp.Path, $"Forwarded{fileExtension}");
+            File.WriteAllText(selectedPath, string.Empty);
+            File.WriteAllText(forwardedPath, string.Empty);
+
+            List<string> arguments =
+            [
+                buildPathOption, selectedPath,
+            ];
+
+            if (useArgumentSeparator)
+            {
+                arguments.Add("--");
+            }
+
+            arguments.AddRange(["--extension-option", forwardedPath]);
+
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([.. arguments]);
+
+            parseResult.Errors.Should().BeEmpty();
+            MSBuildUtility.GetBuildOptions(parseResult).TestApplicationArguments.Should().Equal(
+                "--extension-option",
+                forwardedPath);
         }
 
         [TestMethod]
@@ -690,6 +794,302 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void MTPCommandReadsReporterOptionsFromResponseFile()
+        {
+            using var temp = new TempDirectory();
+            string responseFile = Path.Combine(temp.Path, "reporter.rsp");
+            File.WriteAllText(
+                responseFile,
+                "--show-test-results passed --show-slowest-tests 7 --show-flaky-tests off --retry-failed-tests");
+            BuildOptions buildOptions = CreateBuildOptions(
+                ImmutableArray.Create($"@{responseFile}"));
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module: null,
+                    buildOptions,
+                    OutputOptions.Minimal);
+
+            settings.TestResultVisibility.Should().Be(TestResultVisibility.Passed);
+            settings.SlowestTestsCount.Should().Be(7);
+            settings.ShowFlakyTests.Should().BeFalse();
+            settings.LegacyRetryEnabled.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void MTPCommandReadsReporterOptionsFromConfigurationFile()
+        {
+            using var temp = new TempDirectory();
+            string configurationFile = Path.Combine(temp.Path, "reporter.testconfig.json");
+            File.WriteAllText(
+                configurationFile,
+                """
+                {
+                  "commandLineOptions": {
+                    "show-test-results": ["passed", "skipped"],
+                    "show-slowest-tests": 5,
+                    "show-flaky-tests": "off",
+                    "retry-failed-tests": true
+                  }
+                }
+                """);
+            BuildOptions buildOptions = CreateBuildOptions(
+                [],
+                configFilePath: configurationFile);
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module: null,
+                    buildOptions,
+                    OutputOptions.Minimal);
+
+            settings.TestResultVisibility.Should().Be(
+                TestResultVisibility.Passed | TestResultVisibility.Skipped);
+            settings.SlowestTestsCount.Should().Be(5);
+            settings.ShowFlakyTests.Should().BeFalse();
+            settings.LegacyRetryEnabled.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void MTPCommandEmptyConfigurationArrayDoesNotEnableRetry()
+        {
+            using var temp = new TempDirectory();
+            string configurationFile = Path.Combine(temp.Path, "reporter.testconfig.json");
+            File.WriteAllText(
+                configurationFile,
+                """
+                {
+                  "commandLineOptions": {
+                    "retry-failed-tests": []
+                  }
+                }
+                """);
+            BuildOptions buildOptions = CreateBuildOptions(
+                [],
+                configFilePath: configurationFile);
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module: null,
+                    buildOptions,
+                    OutputOptions.Normal);
+
+            settings.LegacyRetryEnabled.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void MTPCommandReadsShowTestResultsFromConfigurationDefaults()
+        {
+            using var temp = new TempDirectory();
+            string configurationFile = Path.Combine(temp.Path, "reporter-defaults.testconfig.json");
+            File.WriteAllText(
+                configurationFile,
+                """
+                {
+                  "commandLineOptionDefaults": {
+                    "show-test-results": ["failed"]
+                  }
+                }
+                """);
+            BuildOptions buildOptions = CreateBuildOptions(
+                [],
+                configFilePath: configurationFile);
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module: null,
+                    buildOptions,
+                    OutputOptions.Detailed);
+
+            settings.TestResultVisibility.Should().Be(TestResultVisibility.Failed);
+            settings.SlowestTestsCount.Should().Be(0);
+        }
+
+        [TestMethod]
+        public void MTPCommandReadsOutputPresetFromConfigurationFile()
+        {
+            using var temp = new TempDirectory();
+            string configurationFile = Path.Combine(temp.Path, "output.testconfig.json");
+            File.WriteAllText(
+                configurationFile,
+                """
+                {
+                  "commandLineOptions": {
+                    "output": "detailed"
+                  }
+                }
+                """);
+            BuildOptions buildOptions = CreateBuildOptions(
+                [],
+                configFilePath: configurationFile);
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module: null,
+                    buildOptions,
+                    OutputOptions.Minimal);
+
+            settings.TestResultVisibility.Should().Be(TestResultVisibility.All);
+        }
+
+        [TestMethod]
+        public void MTPCommandExplicitOutputPresetOverridesConfigurationFile()
+        {
+            using var temp = new TempDirectory();
+            string configurationFile = Path.Combine(temp.Path, "output.testconfig.json");
+            File.WriteAllText(
+                configurationFile,
+                """
+                {
+                  "commandLineOptions": {
+                    "output": "detailed"
+                  }
+                }
+                """);
+            BuildOptions buildOptions = CreateBuildOptions(
+                [],
+                configFilePath: configurationFile);
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module: null,
+                    buildOptions,
+                    OutputOptions.Minimal,
+                    outputOptionSpecified: true);
+
+            settings.TestResultVisibility.Should().Be(TestResultVisibility.Failed);
+        }
+
+        [TestMethod]
+        public void MTPCommandReporterArgumentsOverrideConfigurationFile()
+        {
+            using var temp = new TempDirectory();
+            string configurationFile = Path.Combine(temp.Path, "reporter.testconfig.json");
+            File.WriteAllText(
+                configurationFile,
+                """
+                {
+                  "commandLineOptions": {
+                    "show-test-results": ["passed"],
+                    "show-slowest-tests": 5,
+                    "show-flaky-tests": "off"
+                  }
+                }
+                """);
+            BuildOptions buildOptions = CreateBuildOptions(
+                ImmutableArray.Create(
+                    "--show-test-results", "failed",
+                    "--show-slowest-tests", "2",
+                    "--show-flaky-tests", "on"),
+                configFilePath: configurationFile);
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module: null,
+                    buildOptions,
+                    OutputOptions.Detailed);
+
+            settings.TestResultVisibility.Should().Be(TestResultVisibility.Failed);
+            settings.SlowestTestsCount.Should().Be(2);
+            settings.ShowFlakyTests.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void MTPCommandReadsReporterOptionsFromModuleAndLaunchProfileArguments()
+        {
+            BuildOptions buildOptions = CreateBuildOptions([]);
+            var launchProfile = new ProjectLaunchProfile
+            {
+                CommandLineArgs = "--show-slowest-tests 4 --show-flaky-tests off",
+                EnvironmentVariables = ImmutableDictionary<string, string>.Empty,
+            };
+            var module = new TestModule(
+                new RunProperties(
+                    "dotnet",
+                    "exec tests.dll --show-test-results passed",
+                    Directory.GetCurrentDirectory()),
+                ProjectFullPath: "tests.csproj",
+                TargetFramework: "net11.0",
+                IsTestingPlatformApplication: true,
+                LaunchSettings: launchProfile,
+                TargetPath: "tests.dll",
+                DotnetRootArchVariableName: null,
+                EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module,
+                    buildOptions,
+                    OutputOptions.Minimal);
+
+            settings.TestResultVisibility.Should().Be(TestResultVisibility.Passed);
+            settings.SlowestTestsCount.Should().Be(4);
+            settings.ShowFlakyTests.Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void MTPCommandReadsOutputPresetFromModuleArguments()
+        {
+            BuildOptions buildOptions = CreateBuildOptions([]);
+            var module = new TestModule(
+                new RunProperties(
+                    "dotnet",
+                    "exec tests.dll --output detailed",
+                    Directory.GetCurrentDirectory()),
+                ProjectFullPath: "tests.csproj",
+                TargetFramework: "net11.0",
+                IsTestingPlatformApplication: true,
+                LaunchSettings: null,
+                TargetPath: "tests.dll",
+                DotnetRootArchVariableName: null,
+                EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+
+            TestApplicationSettings settings =
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationSettings(
+                    module,
+                    buildOptions,
+                    OutputOptions.Minimal);
+
+            settings.TestResultVisibility.Should().Be(TestResultVisibility.All);
+        }
+
+        [TestMethod]
+        [DataRow(0, true, (int)TestRunCancellationReason.None, 3)]
+        [DataRow(8, true, (int)TestRunCancellationReason.None, 3)]
+        [DataRow(0, false, (int)TestRunCancellationReason.MaximumFailedTests, 13)]
+        [DataRow(0, false, (int)TestRunCancellationReason.Timeout, 3)]
+        [DataRow(2, false, (int)TestRunCancellationReason.None, 2)]
+        public void MTPCommandMapsCancellationToTheExpectedExitCode(
+            int originalExitCode,
+            bool ctrlCRequested,
+            int cancellationReason,
+            int expectedExitCode)
+        {
+            MicrosoftTestingPlatformTestCommand.GetCancellationExitCode(
+                originalExitCode,
+                ctrlCRequested,
+                (TestRunCancellationReason)cancellationReason).Should().Be(expectedExitCode);
+        }
+
+        [TestMethod]
+        public void MTPCommandReevaluatesCtrlCAfterPostProcessing()
+        {
+            int exitCodeBeforePostProcessing =
+                MicrosoftTestingPlatformTestCommand.GetCancellationExitCode(
+                    MtpExitCode.Success,
+                    ctrlCRequested: false,
+                    TestRunCancellationReason.None);
+
+            int exitCodeAfterPostProcessing =
+                MicrosoftTestingPlatformTestCommand.GetCancellationExitCode(
+                    exitCodeBeforePostProcessing,
+                    ctrlCRequested: true,
+                    TestRunCancellationReason.None);
+
+            exitCodeAfterPostProcessing.Should().Be(MtpExitCode.TestSessionAborted);
+        }
+
+        [TestMethod]
         [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void MTPCommandRejectsCollectTestMapWithMinimumExpectedTests()
         {
@@ -741,6 +1141,29 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             parseResult.Errors.Should().NotBeEmpty();
         }
+
+        private static BuildOptions CreateBuildOptions(
+            ImmutableArray<string> testApplicationArguments,
+            string? configFilePath = null)
+            => new(
+                new PathOptions(
+                    ProjectOrSolutionPath: null,
+                    SolutionPath: null,
+                    TestModules: null,
+                    ResultsDirectoryPath: null,
+                    ResultsDirectoryLayout.Flat,
+                    ConfigFilePath: configFilePath,
+                    DiagnosticOutputDirectoryPath: null),
+                HasNoRestore: false,
+                HasNoBuild: false,
+                Verbosity: null,
+                NoLaunchProfile: false,
+                NoLaunchProfileArguments: false,
+                testApplicationArguments,
+                MSBuildArgs: [],
+                Device: null,
+                ListDevices: false,
+                EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
 
         [TestMethod]
         public void DllDetectionShouldExcludeRunArgumentsAndGlobalProperties()

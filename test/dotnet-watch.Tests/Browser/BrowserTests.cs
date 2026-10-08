@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -62,7 +62,7 @@ public class BrowserTests : DotNetWatchTestBase
         App.Start(testAsset, ["--urls", kestrelUrl], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
 
         // Verify that the connection has been rejected:
-        await App.WaitUntilOutputContains($"🧪 Fetching '{kestrelUrl}/_framework/aspnetcore-browser-refresh.js'");
+        await App.WaitUntilOutputContains($"🧪 Request for '{kestrelUrl}/_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js' succeeded");
         await App.WaitUntilOutputContains($"🧪 Setting Origin header to '{browserUrl}'.");
 
         await App.WaitUntilOutputContains(MessageDescriptor.ConnectedToRefreshServer, "Browser #1");
@@ -87,7 +87,7 @@ public class BrowserTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // Verify the browser has been launched.
-        await App.WaitUntilOutputContains($"🧪 Fetching '{kestrelUrl}/_framework/aspnetcore-browser-refresh.js'");
+        await App.WaitUntilOutputContains($"🧪 Request for '{kestrelUrl}/_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js' succeeded");
         await App.WaitUntilOutputContains($"🧪 Setting Origin header to '{kestrelUrl}'.");
 
         // Verify the browser connected to the refresh server.
@@ -124,7 +124,7 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"Reload"}
             """);
 
-        // no other browser refresh messages sent:
+        // no other browser message sent:
         Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
@@ -148,6 +148,9 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"Reload"}
             """);
 
+        // no other browser message sent:
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
+
         App.Process.ClearOutput();
 
         // valid edit:
@@ -163,7 +166,7 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"RefreshBrowser"}
             """);
 
-        // no other browser refresh messages sent:
+        // no other browser message sent:
         Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
     }
 }

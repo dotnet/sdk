@@ -3,6 +3,7 @@
 
 using System.Collections.Frozen;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.InternalMicrosoft;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
@@ -27,6 +28,7 @@ public class TelemetryClient : ITelemetryClient
     private static readonly TracerProviderBuilder s_tracerProviderBuilder;
     private static TracerProvider? s_tracerProvider;
     private static readonly List<Activity> s_activities = [];
+    private static readonly InternalMicrosoftTelemetry s_internalMicrosoftTelemetry = new();
     private static int s_providerShutdownRegistered;
 
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
@@ -110,6 +112,7 @@ public class TelemetryClient : ITelemetryClient
         s_metricsProviderBuilder = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddMeter(Activities.Source.Name)
+            .AddMeter(Activities.PerformanceSource.Name)
             .AddRuntimeInstrumentation();
 
         if (s_enableOtlpExporter)
@@ -120,6 +123,8 @@ public class TelemetryClient : ITelemetryClient
         s_tracerProviderBuilder = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r => { r.AddService("dotnet-cli", serviceVersion: Product.Version); })
             .AddSource(Activities.Source.Name)
+            .AddSource(Activities.PerformanceSource.Name)
+            .AddProcessor(new InternalMicrosoftTelemetryProcessor(s_internalMicrosoftTelemetry))
             .SetSampler(new AlwaysOnSampler());
 
         if (s_enableOtlpExporter)
@@ -198,6 +203,12 @@ public class TelemetryClient : ITelemetryClient
             s_metricsProvider ??= s_metricsProviderBuilder.Build();
             s_tracerProvider ??= s_tracerProviderBuilder.Build();
         }
+
+        s_internalMicrosoftTelemetry.Start(InternalMicrosoftDetector.CreateDefault(
+            Path.Join(CliFolderPathCalculator.DotnetUserProfileFolderPath, "internal-microsoft", "detector.json"),
+            s_isCIEnvironment,
+            Product.Version),
+            CancellationToken.None);
 
         var initialSessionId = !string.IsNullOrEmpty(sessionId)
             ? sessionId
@@ -349,6 +360,9 @@ public class TelemetryClient : ITelemetryClient
     {
         _trackEventTask?.GetAwaiter().GetResult();
     }
+
+    internal static void WaitForInternalMicrosoftDetection() =>
+        s_internalMicrosoftTelemetry.WaitForCompletion();
 
     private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties)
     {
