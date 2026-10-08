@@ -188,6 +188,14 @@
     <value>Dotnetup is busy with another command. Try self-update again after that command completes.</value>
     <comment>{Locked="Dotnetup"}</comment>
   </data>
+  <data name="SelfUpdateWaitingForUpdate" xml:space="preserve">
+    <value>Waiting for another dotnetup self-update to finish...</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateWaitingForCommand" xml:space="preserve">
+    <value>Waiting for another dotnetup command to finish...</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
   <data name="SelfUpdateStagedIdentityMismatch" xml:space="preserve">
     <value>The downloaded dotnetup executable's version metadata does not match the release. The executable was not updated.</value>
     <comment>{Locked="dotnetup"}</comment>

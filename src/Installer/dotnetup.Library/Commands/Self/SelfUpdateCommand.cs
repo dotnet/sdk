@@ -32,6 +32,10 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
         var channel = _channel ?? SelfUpdateDefaultChannel.FromLoadedVersion(invocation.LoadedVersion);
         var downloader = _createDownloader();
         var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
+        var coordinator = new SelfUpdateCoordinator(onWaiting: lockKind => Console.Error.WriteLine(
+            lockKind == SelfUpdateLockKind.Update
+                ? Strings.SelfUpdateWaitingForUpdate
+                : Strings.SelfUpdateWaitingForCommand));
         var workflow = new SelfUpdateWorkflow(invocation.Paths, invocation.LoadedVersion,
             () => downloader.ResolveDotnetupDownload(channel, rid),
             (release, destination) =>
@@ -39,7 +43,8 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
                 AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
                 SelfUpdateDownloadProgress.Run(_noProgress,
                     progress => downloader.DownloadWithVerification(release, destination, progress));
-            })
+            },
+            coordinator)
         {
             Force = _force,
             OnForcedUpdate = (installed, available) => AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(

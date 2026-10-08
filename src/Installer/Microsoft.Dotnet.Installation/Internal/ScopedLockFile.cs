@@ -39,6 +39,15 @@ internal sealed class ScopedLockFile : IDisposable
 
     private static bool IsContention(IOException exception)
     {
+        // .NET reports Windows ERROR_SHARING_VIOLATION as HRESULT 0x80070020 and reports
+        // Unix EWOULDBLOCK using the native errno as IOException.HResult:
+        // https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/HResults.cs
+        // https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/Interop/Unix/Interop.IOErrors.cs
+        // Linux defines EAGAIN as 11:
+        // https://github.com/torvalds/linux/blob/master/include/uapi/asm-generic/errno-base.h
+        // Darwin and FreeBSD define EAGAIN as 35:
+        // https://github.com/apple-oss-distributions/xnu/blob/main/bsd/sys/errno.h
+        // https://github.com/freebsd/freebsd-src/blob/main/sys/sys/errno.h
         const int WindowsSharingViolation = unchecked((int)0x80070020);
         const int LinuxWouldBlock = 11;
         const int BsdWouldBlock = 35;

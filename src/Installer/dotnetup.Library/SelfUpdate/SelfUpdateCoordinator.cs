@@ -15,13 +15,16 @@ internal sealed class SelfUpdateCoordinator
     private static readonly TimeSpan s_defaultActivityTimeout = TimeSpan.FromSeconds(2);
     private readonly LockFileRetryPolicy _updateRetryPolicy;
     private readonly LockFileRetryPolicy _activityRetryPolicy;
+    private readonly Action<SelfUpdateLockKind>? _onWaiting;
 
     public SelfUpdateCoordinator(
         LockFileRetryPolicy? updateRetryPolicy = null,
-        LockFileRetryPolicy? activityRetryPolicy = null)
+        LockFileRetryPolicy? activityRetryPolicy = null,
+        Action<SelfUpdateLockKind>? onWaiting = null)
     {
         _updateRetryPolicy = updateRetryPolicy ?? new LockFileRetryPolicy(s_defaultUpdateTimeout);
         _activityRetryPolicy = activityRetryPolicy ?? new LockFileRetryPolicy(s_defaultActivityTimeout);
+        _onWaiting = onWaiting;
     }
 
     public SelfUpdateLockLease Acquire(string updateLockPath, string activityLockPath, CancellationToken cancellationToken = default)
@@ -79,7 +82,7 @@ internal sealed class SelfUpdateCoordinator
         }
     }
 
-    private static void WaitForRetry(
+    private void WaitForRetry(
         LockFileRetryPolicy policy,
         long attemptStart,
         ref TimeSpan contention,
@@ -90,6 +93,11 @@ internal sealed class SelfUpdateCoordinator
     {
         try
         {
+            if (attempt == 0)
+            {
+                _onWaiting?.Invoke(lockKind);
+            }
+
             policy.WaitAfterContention(attemptStart, ref contention, attempt, cancellationToken);
         }
         catch (TimeoutException)

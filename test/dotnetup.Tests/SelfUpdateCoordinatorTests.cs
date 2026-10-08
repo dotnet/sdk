@@ -103,16 +103,19 @@ public class SelfUpdateCoordinatorTests
     [TestMethod]
     public void ActivityTimeoutReleasesUpdateAndReportsActivity()
     {
+        var waiting = new List<SelfUpdateLockKind>();
         using var activeCommand = ScopedLockFile.TryAcquireShared(_activityPath);
         using var activityPolicy = new LockFileTestRetryPolicy(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1))
         {
             VerifyReleasedPath = _updatePath,
         };
         var exception = Assert.ThrowsExactly<SelfUpdateLockTimeoutException>(
-            () => new SelfUpdateCoordinator(activityRetryPolicy: activityPolicy).Acquire(_updatePath, _activityPath, TestContext.CancellationToken));
+            () => new SelfUpdateCoordinator(activityRetryPolicy: activityPolicy, onWaiting: waiting.Add)
+                .Acquire(_updatePath, _activityPath, TestContext.CancellationToken));
 
         Assert.AreEqual(SelfUpdateLockKind.Activity, exception.LockKind);
         Assert.AreEqual(_activityPath, exception.LockPath);
+        Assert.AreSequenceEqual(new[] { SelfUpdateLockKind.Activity }, waiting);
         Assert.AreSequenceEqual(new[] { TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1) }, activityPolicy.RemainingBudgets);
         using var update = ScopedLockFile.TryAcquireExclusive(_updatePath);
         Assert.IsNotNull(update);
@@ -121,14 +124,17 @@ public class SelfUpdateCoordinatorTests
     [TestMethod]
     public void UpdateContentionNeverAcquiresActivityAndUsesOnlyUpdateBudget()
     {
+        var waiting = new List<SelfUpdateLockKind>();
         using var peerUpdate = ScopedLockFile.TryAcquireExclusive(_updatePath);
         using var updatePolicy = new LockFileTestRetryPolicy(TimeSpan.FromSeconds(120), TimeSpan.FromSeconds(60));
         using var activityPolicy = new LockFileTestRetryPolicy(TimeSpan.FromSeconds(2), TimeSpan.FromSeconds(1));
         var exception = Assert.ThrowsExactly<SelfUpdateLockTimeoutException>(
-            () => new SelfUpdateCoordinator(updatePolicy, activityPolicy).Acquire(_updatePath, _activityPath, TestContext.CancellationToken));
+            () => new SelfUpdateCoordinator(updatePolicy, activityPolicy, waiting.Add)
+                .Acquire(_updatePath, _activityPath, TestContext.CancellationToken));
 
         Assert.AreEqual(SelfUpdateLockKind.Update, exception.LockKind);
         Assert.AreEqual(_updatePath, exception.LockPath);
+        Assert.AreSequenceEqual(new[] { SelfUpdateLockKind.Update }, waiting);
         Assert.IsFalse(File.Exists(_activityPath));
         Assert.IsEmpty(activityPolicy.RemainingBudgets);
         Assert.AreSequenceEqual(new[] { TimeSpan.FromSeconds(120), TimeSpan.FromSeconds(60) }, updatePolicy.RemainingBudgets);

@@ -586,6 +586,16 @@ Or open a new terminal.</target>
         <target state="new">The updated dotnetup executable failed verification.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
+      <trans-unit id="SelfUpdateWaitingForCommand">
+        <source>Waiting for another dotnetup command to finish...</source>
+        <target state="new">Waiting for another dotnetup command to finish...</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="SelfUpdateWaitingForUpdate">
+        <source>Waiting for another dotnetup self-update to finish...</source>
+        <target state="new">Waiting for another dotnetup self-update to finish...</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
       <trans-unit id="TelemetryNotice">
         <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>
         <target state="new">dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</target>
