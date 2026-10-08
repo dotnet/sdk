@@ -142,7 +142,7 @@ internal sealed class SelfUpdateTestFiles : IDisposable
         return output;
     }
 
-    private static string ResolveDotnetHostPath()
+    internal static string ResolveDotnetHostPath()
     {
         var processPath = Environment.ProcessPath!;
         var dotnetPath = string.Equals(Path.GetFileNameWithoutExtension(processPath), "dotnet", StringComparison.OrdinalIgnoreCase)
