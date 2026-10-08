@@ -157,9 +157,9 @@ resources/localization, build assets, static initialization, process-global stat
 and binary-size contribution.
 
 Review the [size and trimming contracts](../../../src/Cli/dotnet-aot/DESIGN.md#size-and-trimming-contracts)
-in the same change. Maintain the static `Resources/*.keys` lists for new AOT string
-references, including computed keys. Explicitly run `GenerateResources.ps1` after key,
-canonical string, or translation changes and commit the outputs. Never run it from the build.
+in the same change. Preserve full CLI string tables without build-time source scans.
+Resource substitution XML removes entire manifest resources, not keys within a string table.
+Do not substitute away a table containing required messages or its translated equivalents.
 Review `AotSubstitutions.targets` and every
 descriptor's signature and caller assumptions after command/dependency changes. Remove or
 narrow a substitution before making its excluded behavior reachable; throwing bodies are
