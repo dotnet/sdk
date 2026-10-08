@@ -9,6 +9,7 @@
   <!-- Exclude test asset apps from test compilation -->
   <ItemGroup>
     <Compile Remove="TestAssets\**\*.cs" />
+    <Compile Include="..\..\eng\dotnetup-build\PrepareCandidateManifests.cs" Link="BuildTasks\PrepareCandidateManifests.cs" />
   </ItemGroup>
 
   <!-- Embed the test assets path so tests can locate assets regardless of output directory -->
@@ -19,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <ProjectReference Include="..\..\src\Installer\dotnetup.Library\dotnetup.Library.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
