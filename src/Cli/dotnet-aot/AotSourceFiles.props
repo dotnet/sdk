@@ -129,8 +129,12 @@
 
   <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\CliStrings*.resx" Link="%(Filename)%(Extension)" Namespace="Microsoft.DotNet.Cli" XlfInput="false">
+      <GenerateSource Condition="'%(Filename)' == 'CliStrings'">true</GenerateSource>
+    </EmbeddedResource>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources\CliCommandStrings*.resx" Link="%(Filename)%(Extension)" Namespace="Microsoft.DotNet.Cli.Commands" XlfInput="false">
+      <GenerateSource Condition="'%(Filename)' == 'CliCommandStrings'">true</GenerateSource>
+    </EmbeddedResource>
   </ItemGroup>
 
   <!-- File-based run cache and launch contracts shared with the managed CLI. -->

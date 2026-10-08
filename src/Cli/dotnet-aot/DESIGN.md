@@ -45,10 +45,23 @@ adding an AOT command or updating a dependency, not only when working on size.
 
 ### Resources
 
-[AotSourceFiles.props](AotSourceFiles.props) embeds the full `CliStrings` and
-`CliCommandStrings` tables, including their supported cultures. Keep these tables
-and command-definition/help resources intact. Do not select resource keys through
-build-time source scans or rewrite compiled resource tables.
+[AotSourceFiles.props](AotSourceFiles.props) embeds checked-in resource subsets
+from [Resources](Resources). Normal builds compile these `.resx` files directly.
+There is no build-time source scan, key selection, or resource rewrite.
+
+Maintain [CliStrings.keys](Resources/CliStrings.keys) and
+[CliCommandStrings.keys](Resources/CliCommandStrings.keys) when adding AOT string
+references, including every possible computed key. Keep keys needed on any supported
+platform or configuration. Generated accessors contain only retained keys, so a
+missing static reference fails compilation rather than silently losing its message.
+
+After key, canonical string, or translation changes, explicitly run
+[GenerateResources.ps1](GenerateResources.ps1) and commit the generated `.resx` files.
+The script reads the key lists and the managed CLI's canonical `.resx`/`.xlf` inputs.
+It generates neutral and all supported translated tables without editing those inputs.
+Do not edit generated subsets manually or invoke this script from the build.
+Keep command-definition/help resources complete. Run resource tests to verify
+translated satellites and unused-key exclusion.
 
 Unused MSBuild-task diagnostics are not embedded by the native source list.
 Revisit that exclusion before introducing an in-process consumer of those diagnostics.

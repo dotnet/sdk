@@ -9,6 +9,7 @@
 #   collapse these files in PRs
 ###############################################################################
 *.xlf linguist-generated=true
+src/Cli/dotnet-aot/Resources/*.resx linguist-generated=true
 
 ###############################################################################
 # Set default behavior to:

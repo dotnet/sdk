@@ -48,8 +48,10 @@ When changing AOT-linked commands, resources, dependencies, or first-run behavio
 review the [size and trimming contracts](dotnet-aot/DESIGN.md#size-and-trimming-contracts)
 in the same change. In particular:
 
-- Keep the full CLI string tables, command-definition/help resources, and all
-  supported cultures intact. Do not add build-time source scans to select resource keys.
+- Maintain the static resource key lists under `dotnet-aot/Resources` when adding
+  AOT string references, including computed keys. Run `dotnet-aot/GenerateResources.ps1`
+  explicitly after key, source string, or translation changes and commit its outputs.
+  Never invoke it from the build. Keep command-definition/help resources and cultures intact.
 - Check every method in the [substitution files](dotnet-aot/AotSubstitutions.targets)
   against new call paths and dependency versions. Remove or narrow a substitution
   before enabling behavior it excludes. A throwing substitution must stay unreachable.
