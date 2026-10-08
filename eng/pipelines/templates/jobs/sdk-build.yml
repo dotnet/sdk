@@ -46,6 +46,7 @@ parameters:
     properties: ''
   downloadManifestMsiPackages: false
   ### ARCADE ###
+  enableMicrobuild: true
   preSteps: []
 
 jobs:
@@ -67,7 +68,7 @@ jobs:
       timeoutInMinutes: 90
     ${{ else }}:
       timeoutInMinutes: 60
-    enableMicrobuild: true
+    enableMicrobuild: ${{ parameters.enableMicrobuild }}
     enablePublishBuildAssets: ${{ eq(parameters.buildVariants[0].name, '') }}
     enableTelemetry: true
     enablePublishUsingPipelines: true

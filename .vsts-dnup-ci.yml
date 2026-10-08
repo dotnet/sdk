@@ -16,7 +16,7 @@ pr:
     - release/dotnetup
 
 parameters:
-# When true, runs the pipeline in the same way as the PR pipeline.
+# Prebuild and register both candidates using dry-run signing, without promoting them.
 - name: runTestBuild
   displayName: Run A Test Build
   type: boolean
@@ -36,8 +36,8 @@ variables:
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
 - group: AzureDevOps-Artifact-Feeds-Pats
-# Allows Arcade to run a signed build by disabling post-build signing for release-branch builds or manual builds that are not running tests.
-- ${{ if and(eq(parameters.runTestBuild, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
+# Test builds also collect signing inputs, but ForceDryRunSigning prevents real signing.
+- ${{ if or(eq(parameters.runTestBuild, true), startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
   - name: PostBuildSign
     value: false
 # Provides TSA variables for automatic bug reporting.
@@ -60,9 +60,15 @@ variables:
   # The OfficialBuilder property is set to Microsoft for the official build only.
   # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
   # This constant is used in CompileOptions.cs to set both TelemetryOptOutDefault and TelemetryOptOutDefaultString.
-  value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+  ${{ if eq(parameters.runTestBuild, true) }}:
+    value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber) /p:ForceDryRunSigning=true
+  ${{ else }}:
+    value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 - name: _SignType
-  value: real
+  ${{ if eq(parameters.runTestBuild, true) }}:
+    value: test
+  ${{ else }}:
+    value: real
 - name: _DotnetupDailyProperties
   value: /p:PublishingVersion=4 /p:EnableDefaultArtifacts=false /p:DotnetupPreReleaseVersionLabel=daily /p:ArtifactsDir=$(Build.SourcesDirectory)/artifacts/dotnetup-daily/ /p:ArtifactsPublishStagingDir=$(Build.ArtifactStagingDirectory)/dotnetup-daily/ /p:FutureArtifactName=$(System.PhaseName)_daily_Artifacts /p:AssetManifestFileName=$(System.PhaseName)-daily.xml
 - name: _DotnetupPreviewProperties
@@ -161,6 +167,7 @@ extends:
         ### Windows ###
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml@self
           parameters:
+            enableMicrobuild: ${{ not(parameters.runTestBuild) }}
             pool:
               name: $(DncEngInternalBuildPool)
               image: windows.vs2026.amd64
@@ -198,6 +205,7 @@ extends:
         ############### WINDOWS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            enableMicrobuild: ${{ not(parameters.runTestBuild) }}
             pool:
               name: $(DncEngInternalBuildPool)
               image: windows.vs2026.amd64
@@ -225,8 +233,6 @@ extends:
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               enableDefaultArtifacts: true
               runTests: false
-              variables:
-                _SignType: real
             - categoryName: Dotnetup
               targetArchitecture: arm64
               publishArgument: $(_publishArgument)
@@ -235,12 +241,11 @@ extends:
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               enableDefaultArtifacts: true
               runTests: false
-              variables:
-                _SignType: real
 
         ############### LINUX ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            enableMicrobuild: ${{ not(parameters.runTestBuild) }}
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
@@ -310,6 +315,7 @@ extends:
         ############### MACOS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            enableMicrobuild: ${{ not(parameters.runTestBuild) }}
             pool:
               name: Azure Pipelines
               image: macOS-latest
@@ -351,10 +357,11 @@ extends:
         displayName: 📤 Publish to BAR
         dependsOn:
         - build_dotnetup
-        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), ${{ eq(parameters.runTestBuild, false) }})
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
         jobs:
         - template: /eng/pipelines/templates/jobs/dotnetup-publish.yml@self
           parameters:
+            runTestBuild: ${{ parameters.runTestBuild }}
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022

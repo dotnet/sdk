@@ -4,6 +4,7 @@ parameters:
   locBranch: ''
   runTests: true
   timeoutInMinutes: ''
+  enableMicrobuild: true
   buildVariants:
   - name: ''
     properties: ''

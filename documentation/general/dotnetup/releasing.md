@@ -9,9 +9,10 @@ https://aka.ms/dotnet/dotnetup/preview/
 
 Publishing an older build through the same process rolls those links back without rebuilding.
 
-Each official run prebuilds and signs both `daily` and `preview` candidates from the same
-commit. They have distinct embedded versions and isolated artifacts. Only the daily candidate
-is published automatically; publishing to BAR does not promote the preview candidate.
+Each normal (non-test) official run prebuilds and signs both `daily` and `preview` candidates
+from the same commit. They have distinct embedded versions and isolated artifacts. Only the
+daily candidate is published automatically; publishing to BAR does not promote the preview
+candidate.
 
 ## Select a build
 
@@ -50,6 +51,28 @@ The publishing job delegates to separate step templates for
 The .NET 8 SDK installed during promotion is a Darc prerequisite inherited from the
 [Arcade publishing job](../../../eng/common/core-templates/job/publish-build-assets.yml),
 not the SDK used to compile dotnetup.
+
+## Validate a test build
+
+Queue the same pipeline on the candidate branch with `runTestBuild: true`. This mode:
+
+- Builds daily and preview candidates for all eight RIDs with isolated outputs.
+- Sets `_SignType=test`, uses Arcade's `ForceDryRunSigning=true`, and does not install the
+  MicroBuild signing plugin. It exercises signing-input preparation without requesting
+  production signatures; the candidates are not production-signed.
+- Registers both candidates in production BAR and uploads the complete manifest,
+  quality-specific manifests, and release configuration.
+- Runs release-configuration setup and prepares the daily manifest selector, then prints a
+  credential-free Darc command instead of executing promotion.
+
+The run is tagged `Dotnetup Test Build`, and the `PreviewDailyCandidatePromotion` step is
+the stopping point. No build is added to a channel and no daily or preview links are updated
+by this test run. Do not manually promote its BAR ID.
+
+The current Darc [`add-build-to-channel` options](https://github.com/dotnet/arcade-services/blob/main/src/Microsoft.DotNet.Darc/Darc/Options/AddBuildToChannelCommandLineOptions.cs)
+do not provide a promotion dry run. `--skip-assets-publishing` is not a substitute: it still
+adds the build to a channel. Printing the command does not validate downstream artifact
+downloads or publication; an authorized, production-signed run is still required for those.
 
 ## Promote the build
 

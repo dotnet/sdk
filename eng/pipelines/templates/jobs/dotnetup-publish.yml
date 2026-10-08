@@ -1,11 +1,15 @@
 parameters:
   pool: {}
+  runTestBuild: false
 
 jobs:
 - template: /eng/common/templates-official/job/job.yml
   parameters:
     name: Dotnetup_Asset_Registry_Publish
-    displayName: '📦 Register dotnetup candidates and publish daily'
+    ${{ if eq(parameters.runTestBuild, true) }}:
+      displayName: '🧪 Register dotnetup candidates and preview daily promotion'
+    ${{ else }}:
+      displayName: '📦 Register dotnetup candidates and publish daily'
     pool: ${{ parameters.pool }}
     timeoutInMinutes: 150
     enablePublishBuildAssets: false
@@ -17,9 +21,15 @@ jobs:
       name: CheckoutDotnetup
       displayName: '📥 Checkout dotnetup sources'
       fetchDepth: 3
+    - ${{ if eq(parameters.runTestBuild, true) }}:
+      - powershell: Write-Host '##vso[build.addbuildtag]Dotnetup Test Build'
+        name: MarkDotnetupTestBuild
+        displayName: '🧪 Mark candidates as a test build'
     - template: /eng/pipelines/templates/steps/dotnetup-register-candidates.yml
     - template: /eng/pipelines/templates/steps/dotnetup-upload-manifests.yml
     - template: /eng/pipelines/templates/steps/dotnetup-publish-daily.yml
+      parameters:
+        runTestBuild: ${{ parameters.runTestBuild }}
     - task: 1ES.PublishPipelineArtifact@1
       name: PublishCandidateRegistrationLogs
       displayName: '📜 Publish candidate registration logs'

@@ -1,3 +1,6 @@
+parameters:
+  runTestBuild: false
+
 steps:
 - template: /eng/common/core-templates/post-build/setup-maestro-vars.yml
   parameters:
@@ -16,19 +19,29 @@ steps:
     Write-Host "##vso[task.setvariable variable=DailyCandidatePublishingParameters]$parameters"
   name: ConfigureDailyCandidatePublishing
   displayName: '⚙️ Select daily candidate for promotion'
-- task: AzureCLI@2
-  name: PublishDailyCandidate
-  displayName: '🚀 Publish daily candidate using Darc'
-  inputs:
-    azureSubscription: 'Darc: Maestro Production'
-    scriptType: ps
-    scriptLocation: scriptPath
-    scriptPath: '$(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1'
-    arguments: >-
-      -BuildId $(BARBuildId)
-      -PublishingInfraVersion 3
-      -AzdoToken '$(System.AccessToken)'
-      -WaitPublishingFinish true
-      -ArtifactsPublishingAdditionalParameters '$(DailyCandidatePublishingParameters)'
-      -runtimeSourceFeed https://ci.dot.net/internal
-      -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
+- ${{ if eq(parameters.runTestBuild, true) }}:
+  - powershell: |
+      Write-Host 'Test candidates are not production-signed. This command is diagnostic only; do not execute it for this BAR build.'
+      $command = 'darc add-build-to-channel --id {0} --publishing-infra-version 3 ' +
+          '--default-channels --source-branch main --bar-uri https://maestro.dot.net --ci --verbose ' +
+          '--artifact-publishing-parameters ''{1}'''
+      Write-Host ($command -f '$(BARBuildId)', '$(DailyCandidatePublishingParameters)')
+    name: PreviewDailyCandidatePromotion
+    displayName: '🧪 Print daily promotion command without credentials (not executed)'
+- ${{ else }}:
+  - task: AzureCLI@2
+    name: PublishDailyCandidate
+    displayName: '🚀 Publish daily candidate using Darc'
+    inputs:
+      azureSubscription: 'Darc: Maestro Production'
+      scriptType: ps
+      scriptLocation: scriptPath
+      scriptPath: '$(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1'
+      arguments: >-
+        -BuildId $(BARBuildId)
+        -PublishingInfraVersion 3
+        -AzdoToken '$(System.AccessToken)'
+        -WaitPublishingFinish true
+        -ArtifactsPublishingAdditionalParameters '$(DailyCandidatePublishingParameters)'
+        -runtimeSourceFeed https://ci.dot.net/internal
+        -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
