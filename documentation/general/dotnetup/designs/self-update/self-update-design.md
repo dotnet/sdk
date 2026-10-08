@@ -2,6 +2,8 @@
 
 `dotnetup self update [--channel <daily|preview|stable>] [--force] [--no-progress]` updates the published NativeAOT `dotnetup` executable in place.
 
+Interactive install and update commands mention an available update, and `dotnetup self update --update-notifications false` turns that notice off without updating. See [update notifications](../../reference/dotnetup.md#update-notifications).
+
 The command resolves the latest release for the selected RID from the release channel.
 
 ![dotnetup self update demonstration](dotnetup-self-update.gif)

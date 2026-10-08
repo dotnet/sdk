@@ -16,6 +16,8 @@ internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = fal
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
 
+    protected override bool ShowsUpdateNotification => true;
+
     protected override void ExecuteCore()
     {
         var workflow = new UpdateWorkflow(new ChannelVersionResolver());

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Http.Headers;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -176,7 +177,7 @@ internal sealed class DailyChannelResolver : IDisposable
         string? contentType;
         try
         {
-            using var response = _httpClient.GetAsync(akaMsUrl, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
+            using var response = SendRedirectProbe(akaMsUrl);
             if (response.StatusCode == HttpStatusCode.NotFound)
             {
                 return null;
@@ -208,6 +209,31 @@ internal sealed class DailyChannelResolver : IDisposable
         }
 
         return finalUri;
+    }
+
+    /// <summary>
+    /// Follows the shortlink's redirects to the artifact URL without downloading the artifact. HEAD
+    /// transfers only headers; a GET that is abandoned after its headers can still transfer part of
+    /// the body, because the handler drains up to <c>MaxResponseDrainSize</c> (1 MB by default) to
+    /// reuse the connection. Falls back to GET for servers that reject HEAD.
+    /// </summary>
+    private HttpResponseMessage SendRedirectProbe(string url)
+    {
+        var response = Send(HttpMethod.Head, url);
+        if (response.StatusCode is not (HttpStatusCode.MethodNotAllowed or HttpStatusCode.NotImplemented))
+        {
+            return response;
+        }
+
+        response.Dispose();
+        return Send(HttpMethod.Get, url);
+    }
+
+    private HttpResponseMessage Send(HttpMethod method, string url)
+    {
+        using var request = new HttpRequestMessage(method, url);
+        request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
+        return _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead).GetAwaiter().GetResult();
     }
 
     private ReleaseVersion? TryResolvePartialVersion(string partialVersion, string archivePrefix, string rid, string extension)

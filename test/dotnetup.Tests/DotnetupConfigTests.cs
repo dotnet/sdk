@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -117,7 +118,7 @@ public class DotnetupConfigTests : IDisposable
     }
 
     [TestMethod]
-    public void Read_LegacyPathPreferenceProperty_IsIgnored_FallsBackToDefault()
+    public void Read_ConfigWithoutAccessMode_IsTreatedAsNotSetUp()
     {
         DotnetupPaths.EnsureDataDirectoryExists();
         var legacyJson = """
@@ -128,12 +129,83 @@ public class DotnetupConfigTests : IDisposable
             """;
         File.WriteAllText(DotnetupPaths.ConfigPath, legacyJson);
 
-        var config = DotnetupConfig.Read();
+        // The legacy "pathPreference" property name is no longer honored, and a config that does not
+        // record an access mode does not count as completed setup.
+        DotnetupConfig.Read().Should().BeNull();
+        DotnetupConfig.ReadAccessMode().Should().BeNull();
+        DotnetupConfig.Exists().Should().BeFalse();
+    }
 
-        // The legacy "pathPreference" property name is no longer honored: it is ignored (no crash)
-        // and AccessMode falls back to its default.
-        config.Should().NotBeNull();
-        config!.AccessMode.Should().Be(DotnetAccessMode.Shell);
+    [TestMethod]
+    public void ReadUpdateNotificationsEnabled_DefaultsToTrue()
+    {
+        DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeTrue();
+
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
+        DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeTrue();
+
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": "shell" }""");
+        DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeTrue();
+
+        File.WriteAllText(DotnetupPaths.ConfigPath, "not valid json{{{");
+        DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void SetUpdateNotifications_WithoutConfig_DoesNotRecordSetup()
+    {
+        DotnetupConfig.SetUpdateNotifications(false);
+
+        DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeFalse();
+        DotnetupConfig.Read().Should().BeNull();
+        DotnetupConfig.ReadAccessMode().Should().BeNull();
+        DotnetupConfig.Exists().Should().BeFalse();
+        File.ReadAllText(DotnetupPaths.ConfigPath).Should().NotContain("accessMode")
+            .And.Contain("\"updateNotifications\": false");
+    }
+
+    [TestMethod]
+    public void SetUpdateNotifications_PreservesSetupChoices()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = false });
+
+        DotnetupConfig.SetUpdateNotifications(false);
+
+        var loaded = DotnetupConfig.Read();
+        loaded.Should().NotBeNull();
+        loaded!.AccessMode.Should().Be(DotnetAccessMode.None);
+        loaded.DotnetupOnPath.Should().BeFalse();
+        loaded.UpdateNotifications.Should().BeFalse();
+
+        DotnetupConfig.SetUpdateNotifications(true);
+        DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void SetUpdateNotifications_CorruptConfig_ThrowsWithoutOverwriting()
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, "not valid json{{{");
+
+        Action act = () => DotnetupConfig.SetUpdateNotifications(false);
+
+        act.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.UserConfigurationCorrupted);
+        File.ReadAllText(DotnetupPaths.ConfigPath).Should().Be("not valid json{{{");
+    }
+
+    [TestMethod]
+    public void WriteAccessSettings_PreservesUpdateNotifications()
+    {
+        DotnetupConfig.SetUpdateNotifications(false);
+
+        var written = DotnetupConfig.WriteAccessSettings(DotnetAccessMode.Everywhere, dotnetupOnPath: true);
+
+        written.UpdateNotifications.Should().BeFalse();
+        var loaded = DotnetupConfig.Read();
+        loaded!.AccessMode.Should().Be(DotnetAccessMode.Everywhere);
+        loaded.UpdateNotifications.Should().BeFalse();
+        DotnetupConfig.Exists().Should().BeTrue();
     }
 
     [TestMethod]

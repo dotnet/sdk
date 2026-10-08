@@ -36,6 +36,39 @@ public class DailyChannelResolverTests
     }
 
     [TestMethod]
+    public void ResolveDotnetupVersion_UsesHeadSoTheExecutableIsNotDownloaded()
+    {
+        const string shortlink = "https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe";
+        using var handler = new RedirectHandler(new() { [shortlink] = "https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe" });
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        resolver.ResolveDotnetupVersion("win-x64").ToString().Should().Be("0.1.0-preview.1");
+
+        handler.Methods.Should().Equal(HttpMethod.Head);
+        handler.RequestsUseNoCache.Should().Equal(true);
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.MethodNotAllowed)]
+    [DataRow(HttpStatusCode.NotImplemented)]
+    public void ResolveDotnetupVersion_FallsBackToGetWhenHeadIsRejected(HttpStatusCode headStatus)
+    {
+        const string shortlink = "https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe";
+        using var handler = new RedirectHandler(new() { [shortlink] = "https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe" })
+        {
+            HeadStatus = headStatus,
+        };
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        resolver.ResolveDotnetupVersion("win-x64").ToString().Should().Be("0.1.0-preview.1");
+
+        handler.Methods.Should().Equal(HttpMethod.Head, HttpMethod.Get);
+        handler.RequestsUseNoCache.Should().Equal(true, true);
+    }
+
+    [TestMethod]
     public void ResolveDotnetupVersion_RejectsUnknownChannel()
     {
         using var resolver = new DailyChannelResolver();
@@ -361,9 +394,22 @@ public class DailyChannelResolverTests
             _contentTypes = contentTypes;
         }
 
+        /// <summary>When set, HEAD requests receive this status instead of the redirect result.</summary>
+        public HttpStatusCode? HeadStatus { get; init; }
+
+        public List<HttpMethod> Methods { get; } = [];
+
+        public List<bool> RequestsUseNoCache { get; } = [];
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string url = request.RequestUri!.ToString();
+            Methods.Add(request.Method);
+            RequestsUseNoCache.Add(request.Headers.CacheControl?.NoCache == true);
+            if (request.Method == HttpMethod.Head && HeadStatus is HttpStatusCode headStatus)
+            {
+                return Task.FromResult(new HttpResponseMessage(headStatus) { RequestMessage = request });
+            }
 
             foreach (var (prefix, target) in _redirectMap)
             {

@@ -164,6 +164,22 @@
     <value>Installing dotnetup {1} because --force was specified, even though it is not newer than the current version {0}.</value>
     <comment>{Locked="dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the version that will be installed.</comment>
   </data>
+  <data name="SelfUpdateAvailableNotice" xml:space="preserve">
+    <value>An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --update-notifications false'.</value>
+    <comment>{Locked="dotnetup"} {Locked="'dotnetup self update'"} {Locked="'dotnetup self update --update-notifications false'"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsOptionDescription" xml:space="preserve">
+    <value>Set whether install and update commands mention available dotnetup updates, without updating dotnetup.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsConflict" xml:space="preserve">
+    <value>'--update-notifications' only changes the update notification setting and cannot be combined with '--channel' or '--force'.</value>
+    <comment>{Locked="'--update-notifications'"} {Locked="'--channel'"} {Locked="'--force'"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsConfigUnreadable" xml:space="preserve">
+    <value>The update notification setting was not changed because the dotnetup config file at {0} could not be read. Fix or delete the file, and then try again.</value>
+    <comment>{Locked="dotnetup"} {0} is the path to the dotnetup config file.</comment>
+  </data>
   <data name="SelfUpdateSucceeded" xml:space="preserve">
     <value>Dotnetup updated to {0}. To install another version: https://aka.ms/dotnet/dotnetup</value>
     <comment>{Locked="Dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup version.</comment>

@@ -18,6 +18,7 @@ dotnetup [command] [options]
 dotnetup
 dotnetup --info [--format <text|json>] [--no-list]
 dotnetup self update [--channel <daily|preview|stable>] [--force] [--no-progress]
+dotnetup self update --update-notifications <true|false>
 ```
 
 ## Description
@@ -122,6 +123,17 @@ Self-update does not update managed SDK/runtime installations; use
 [`dotnetup update`](dotnetup-update.md) for those. For older dotnetup versions or
 reinstallation after unrecoverable interruption, use the existing
 [installation guidance](https://aka.ms/dotnet/dotnetup).
+
+### Update notifications
+
+During an interactive `dotnetup`, `install`, `sdk install`, `runtime install`, `update`,
+`sdk update`, or `runtime update`, dotnetup may write a notice to standard output when a
+newer build is available on the running build's channel.
+
+`dotnetup self update --update-notifications false` turns the notice off by setting
+`updateNotifications` to `false` in `dotnetup.config.json`. It does not update dotnetup
+and cannot be combined with `--channel` or `--force`.
+`dotnetup self update --update-notifications true` turns the notice back on.
 
 ## Examples
 
