@@ -10,10 +10,23 @@
         "Microsoft.NET.Runtime.WebAssembly.Sdk.${NetVersion}",
         "Microsoft.NET.Sdk.WebAssembly.Pack.${NetVersion}",
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.browser-wasm",
+        "Microsoft.NETCore.App.Runtime.${NetVersion}.browser-wasm",
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.browser-wasm"
       ],
-      "extends": [ "microsoft-net-runtime-mono-tooling-${NetVersion}", "microsoft-net-sdk-emscripten-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-musl-x64", "linux-musl-arm64", "osx-x64", "osx-arm64" ]
+      "extends": [
+        "microsoft-net-runtime-mono-tooling-${NetVersion}",
+        "microsoft-net-sdk-emscripten-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "linux-x64",
+        "linux-arm64",
+        "linux-musl-x64",
+        "linux-musl-arm64",
+        "osx-x64",
+        "osx-arm64"
+      ]
     },
     "wasm-experimental-${NetVersion}": {
       "description": ".NET WebAssembly experimental tooling for ${NetVersion}.0",
@@ -21,8 +34,19 @@
         "Microsoft.NET.Runtime.WebAssembly.Templates.${NetVersion}",
         "Microsoft.NETCore.App.Runtime.Mono.multithread.${NetVersion}.browser-wasm"
       ],
-      "extends": [ "wasm-tools-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-musl-x64", "linux-musl-arm64", "osx-x64", "osx-arm64" ]
+      "extends": [
+        "wasm-tools-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "linux-x64",
+        "linux-arm64",
+        "linux-musl-x64",
+        "linux-musl-arm64",
+        "osx-x64",
+        "osx-arm64"
+      ]
     },
     "wasi-experimental-${NetVersion}": {
       "description": ".NET WASI experimental tooling for ${NetVersion}.0",
@@ -32,16 +56,37 @@
         "Microsoft.NET.Runtime.WebAssembly.Templates.${NetVersion}",
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.wasi-wasm"
       ],
-      "extends": [ "microsoft-net-runtime-mono-tooling-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-musl-x64", "linux-musl-arm64", "osx-x64", "osx-arm64" ]
+      "extends": [
+        "microsoft-net-runtime-mono-tooling-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "linux-x64",
+        "linux-arm64",
+        "linux-musl-x64",
+        "linux-musl-arm64",
+        "osx-x64",
+        "osx-arm64"
+      ]
     },
     "mobile-librarybuilder-${NetVersion}": {
       "description": "Mobile SDK for building a self-contained .NET native library in ${NetVersion}.0",
       "packs": [
         "Microsoft.NET.Runtime.LibraryBuilder.Sdk.${NetVersion}"
       ],
-      "extends": [ "microsoft-net-runtime-android-aot-${NetVersion}", "microsoft-net-runtime-ios-${NetVersion}", "microsoft-net-runtime-maccatalyst-${NetVersion}", "microsoft-net-runtime-tvos-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "osx-x64", "osx-arm64" ]
+      "extends": [
+        "microsoft-net-runtime-android-aot-${NetVersion}",
+        "microsoft-net-runtime-ios-${NetVersion}",
+        "microsoft-net-runtime-maccatalyst-${NetVersion}",
+        "microsoft-net-runtime-tvos-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "osx-x64",
+        "osx-arm64"
+      ]
     },
     "microsoft-net-runtime-android-${NetVersion}": {
       "abstract": true,
@@ -52,8 +97,17 @@
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.android-x64",
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.android-x86"
       ],
-      "extends": [ "microsoft-net-runtime-mono-tooling-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64" ]
+      "extends": [
+        "microsoft-net-runtime-mono-tooling-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "linux-x64",
+        "linux-arm64",
+        "osx-x64",
+        "osx-arm64"
+      ]
     },
     "microsoft-net-runtime-android-aot-${NetVersion}": {
       "abstract": true,
@@ -64,8 +118,17 @@
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.android-arm",
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.android-arm64"
       ],
-      "extends": [ "microsoft-net-runtime-android-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "osx-x64", "osx-arm64" ]
+      "extends": [
+        "microsoft-net-runtime-android-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "linux-x64",
+        "linux-arm64",
+        "osx-x64",
+        "osx-arm64"
+      ]
     },
     "microsoft-net-runtime-ios-${NetVersion}": {
       "abstract": true,
@@ -75,8 +138,15 @@
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.iossimulator-arm64",
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.iossimulator-x64"
       ],
-      "extends": [ "runtimes-ios-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
+      "extends": [
+        "runtimes-ios-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "osx-arm64",
+        "osx-x64"
+      ]
     },
     "runtimes-ios-${NetVersion}": {
       "abstract": true,
@@ -86,8 +156,15 @@
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-arm64",
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-x64"
       ],
-      "extends": [ "microsoft-net-runtime-mono-tooling-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
+      "extends": [
+        "microsoft-net-runtime-mono-tooling-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "osx-arm64",
+        "osx-x64"
+      ]
     },
     "microsoft-net-runtime-maccatalyst-${NetVersion}": {
       "abstract": true,
@@ -96,8 +173,15 @@
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.maccatalyst-arm64",
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.maccatalyst-x64"
       ],
-      "extends": [ "runtimes-maccatalyst-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
+      "extends": [
+        "runtimes-maccatalyst-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "osx-arm64",
+        "osx-x64"
+      ]
     },
     "runtimes-maccatalyst-${NetVersion}": {
       "abstract": true,
@@ -106,8 +190,15 @@
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.maccatalyst-arm64",
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.maccatalyst-x64"
       ],
-      "extends": [ "microsoft-net-runtime-mono-tooling-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
+      "extends": [
+        "microsoft-net-runtime-mono-tooling-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "osx-arm64",
+        "osx-x64"
+      ]
     },
     "microsoft-net-runtime-macos-${NetVersion}": {
       "abstract": true,
@@ -118,8 +209,13 @@
         "Microsoft.NETCore.App.Runtime.${NetVersion}.osx-arm64",
         "Microsoft.NETCore.App.Runtime.${NetVersion}.osx-x64"
       ],
-      "extends": [ "microsoft-net-runtime-mono-tooling-${NetVersion}" ],
-      "platforms": [ "osx-arm64", "osx-x64" ]
+      "extends": [
+        "microsoft-net-runtime-mono-tooling-${NetVersion}"
+      ],
+      "platforms": [
+        "osx-arm64",
+        "osx-x64"
+      ]
     },
     "microsoft-net-runtime-tvos-${NetVersion}": {
       "abstract": true,
@@ -129,8 +225,15 @@
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.tvossimulator-arm64",
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.tvossimulator-x64"
       ],
-      "extends": [ "runtimes-tvos-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
+      "extends": [
+        "runtimes-tvos-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "osx-arm64",
+        "osx-x64"
+      ]
     },
     "runtimes-tvos-${NetVersion}": {
       "abstract": true,
@@ -140,8 +243,15 @@
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-arm64",
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-x64"
       ],
-      "extends": [ "microsoft-net-runtime-mono-tooling-${NetVersion}" ],
-      "platforms": [ "win-x64", "win-arm64", "osx-arm64", "osx-x64" ]
+      "extends": [
+        "microsoft-net-runtime-mono-tooling-${NetVersion}"
+      ],
+      "platforms": [
+        "win-x64",
+        "win-arm64",
+        "osx-arm64",
+        "osx-x64"
+      ]
     },
     "microsoft-net-runtime-mono-tooling-${NetVersion}": {
       "abstract": true,
@@ -314,28 +424,28 @@
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
-          "any": "Microsoft.NETCore.App.Runtime.osx-x64"
+        "any": "Microsoft.NETCore.App.Runtime.osx-x64"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.ios-arm64" : {
+    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.ios-arm64": {
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
         "any": "Microsoft.NETCore.App.Runtime.Mono.ios-arm64"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-arm64" : {
+    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-arm64": {
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
         "any": "Microsoft.NETCore.App.Runtime.Mono.iossimulator-arm64"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-x64" : {
+    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.iossimulator-x64": {
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
-          "any": "Microsoft.NETCore.App.Runtime.Mono.iossimulator-x64"
+        "any": "Microsoft.NETCore.App.Runtime.Mono.iossimulator-x64"
       }
     },
     "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.tvos-arm64": {
@@ -346,21 +456,21 @@
         "osx-x64": "Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.tvos-arm64"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvos-arm64" : {
+    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvos-arm64": {
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
         "any": "Microsoft.NETCore.App.Runtime.Mono.tvos-arm64"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-arm64" : {
+    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-arm64": {
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
         "any": "Microsoft.NETCore.App.Runtime.Mono.tvossimulator-arm64"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-x64" : {
+    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.tvossimulator-x64": {
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
@@ -451,21 +561,28 @@
         "osx-arm64": "Microsoft.NETCore.App.Runtime.AOT.osx-arm64.Cross.wasi-wasm"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.browser-wasm" : {
+    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.browser-wasm": {
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
         "any": "Microsoft.NETCore.App.Runtime.Mono.browser-wasm"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.multithread.${NetVersion}.browser-wasm" : {
+    "Microsoft.NETCore.App.Runtime.${NetVersion}.browser-wasm": {
+      "kind": "framework",
+      "version": "${RuntimeVersion}",
+      "alias-to": {
+        "any": "Microsoft.NETCore.App.Runtime.browser-wasm"
+      }
+    },
+    "Microsoft.NETCore.App.Runtime.Mono.multithread.${NetVersion}.browser-wasm": {
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
         "any": "Microsoft.NETCore.App.Runtime.Mono.multithread.browser-wasm"
       }
     },
-    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.wasi-wasm" : {
+    "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.wasi-wasm": {
       "kind": "framework",
       "version": "${RuntimeVersion}",
       "alias-to": {
