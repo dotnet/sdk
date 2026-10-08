@@ -352,6 +352,32 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
         [TestMethod]
         [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldTrigger_NestedTypeInFileLocalContainingType()
+        {
+            await TestCSAsync("""
+                                using System;
+
+                                file class Outer
+                                {
+                                    class Inner
+                                    {
+                                        IDisposable {|#0:Foo|}() => new Bar();
+                                    }
+                                }
+
+                                file class Bar : IDisposable
+                                {
+                                    public void Dispose() { }
+                                }
+
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(0)
+                    .WithArguments("Foo", "System.IDisposable", "Bar"));
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
         public async Task ShouldNotTrigger_FileLocalTypeInMemberSignatures()
         {
             await TestCSAsync("""

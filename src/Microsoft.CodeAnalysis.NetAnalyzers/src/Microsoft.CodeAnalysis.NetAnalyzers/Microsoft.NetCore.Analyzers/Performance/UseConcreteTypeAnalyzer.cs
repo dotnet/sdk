@@ -358,7 +358,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                 if (affectedSymbol is not ILocalSymbol &&
                     ContainsFileLocalType(toType) &&
-                    affectedSymbol.ContainingType is not { IsFileLocal: true })
+                    !IsWithinFileLocalType(affectedSymbol.ContainingType))
                 {
                     // file-local types cannot be used in member signatures of non-file-local types
                     return;
@@ -417,6 +417,21 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 IPointerTypeSymbol pointerType => ContainsFileLocalType(pointerType.PointedAtType),
                 _ => false,
             };
+
+            static bool IsWithinFileLocalType(INamedTypeSymbol? type)
+            {
+                while (type != null)
+                {
+                    if (type.IsFileLocal)
+                    {
+                        return true;
+                    }
+
+                    type = type.ContainingType;
+                }
+
+                return false;
+            }
 
             bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);
 
