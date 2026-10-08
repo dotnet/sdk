@@ -284,10 +284,10 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     [DataRow("win-arm64", ".exe")]
     [DataRow("linux-x64", "")]
     [DataRow("osx-arm64", "")]
-    public void ResolveDotnetupDownload_PinsArtifactChecksumVersionAndRid(string rid, string extension)
+    public void ResolveDotnetupDownload_CarriesRedirectArchiveAndPinsChecksumVersionAndRid(string rid, string extension)
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        string url = $"https://ci.dot.net/public/dotnetup/{DotnetupVersion}/dotnetup-{rid}{extension}";
+        string url = $"https://archives.example.test/dotnetup/{DotnetupVersion}/dotnetup-{rid}{extension}";
         string checksumUrl = $"https://ci.dot.net/public-checksums/dotnetup/{DotnetupVersion}/dotnetup-{rid}{extension}.sha512";
         string dailyUrl = $"https://aka.ms/dotnet/dotnetup/daily/dotnetup-{rid}{extension}";
         string hash = new string('a', 128);

@@ -75,7 +75,7 @@ internal class DotnetDownloader : IArchiveDownloader
         response.EnsureSuccessStatusCode();
         if (download.IsDotnetup)
         {
-            BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(response.RequestMessage?.RequestUri, download.DownloadUri);
+            BlobFeedUrlBuilder.ValidatePinnedDotnetupArchiveUri(response.RequestMessage?.RequestUri, download.DownloadUri);
         }
 
         long? totalBytes = response.Content.Headers.ContentLength;
@@ -158,11 +158,11 @@ internal class DotnetDownloader : IArchiveDownloader
     {
         ThrowIfUnsignedDownloadBlocked("dotnetup", channel);
         using var resolver = new DailyChannelResolver(_releaseManifest, _httpClient);
-        var version = resolver.ResolveDotnetupVersion(channel, rid);
-        var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(version, rid);
-        string hash = TryGetHashFromUrl(location.ChecksumUrl, version, "dotnetup", requirePinnedUri: true)
-            ?? throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, $"No checksum is published for dotnetup {version} ({rid}).");
-        return new ResolvedDownload(new Uri(location.ArchiveUrl), hash, rid, version, IsUnsigned: true, IsDotnetup: true);
+        ResolvedDotnetupArtifact resolved = resolver.ResolveDotnetupArtifact(channel, rid);
+        var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(resolved.Version, rid);
+        string hash = TryGetHashFromUrl(location.ChecksumUrl, resolved.Version, "dotnetup", requirePinnedUri: true)
+            ?? throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, $"No checksum is published for dotnetup {resolved.Version} ({rid}).");
+        return new ResolvedDownload(resolved.ArchiveUri, hash, rid, resolved.Version, IsUnsigned: true, IsDotnetup: true);
     }
 
     /// <summary>
@@ -208,8 +208,7 @@ internal class DotnetDownloader : IArchiveDownloader
 
         if (download.IsDotnetup)
         {
-            var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(download.Version, download.Rid);
-            BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(download.DownloadUri, new Uri(location.ArchiveUrl));
+            BlobFeedUrlBuilder.ValidateDotnetupArchiveUri(download.DownloadUri);
         }
 
         using var op = Metrics.Track("download/complete");
@@ -457,7 +456,7 @@ internal class DotnetDownloader : IArchiveDownloader
             response.EnsureSuccessStatusCode();
             if (requirePinnedUri)
             {
-                BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(response.RequestMessage?.RequestUri, new Uri(checksumUrl));
+                BlobFeedUrlBuilder.ValidatePinnedDotnetupChecksumUri(response.RequestMessage?.RequestUri, new Uri(checksumUrl));
             }
 
             string contents = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();

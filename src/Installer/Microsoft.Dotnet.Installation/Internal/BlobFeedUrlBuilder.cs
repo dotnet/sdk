@@ -66,20 +66,44 @@ internal static class BlobFeedUrlBuilder
         return $"dotnetup-{rid}{(rid.StartsWith("win-", StringComparison.Ordinal) ? ".exe" : string.Empty)}";
     }
 
-    public static void ValidatePinnedDotnetupUri(Uri? actualUri, Uri expectedUri)
+    public static void ValidateDotnetupArchiveUri(Uri? archiveUri)
+        => ValidateDotnetupHttpsUri(archiveUri, "archive");
+
+    public static void ValidatePinnedDotnetupChecksumUri(Uri? actualUri, Uri expectedUri)
     {
-        if (actualUri is null
-            || !actualUri.IsAbsoluteUri
-            || actualUri.Scheme != Uri.UriSchemeHttps
-            || !actualUri.IsDefaultPort
-            || actualUri.UserInfo.Length != 0
-            || actualUri.Query.Length != 0
-            || actualUri.Fragment.Length != 0
-            || !actualUri.AbsoluteUri.Equals(expectedUri.AbsoluteUri, StringComparison.Ordinal))
+        ValidateDotnetupHttpsUri(actualUri, "checksum");
+        if (!actualUri!.AbsoluteUri.Equals(expectedUri.AbsoluteUri, StringComparison.Ordinal))
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.ManifestParseFailed,
-                $"Dotnetup download did not resolve to the pinned HTTPS feed location '{expectedUri}'.");
+                $"Dotnetup checksum did not resolve to the pinned HTTPS feed location '{expectedUri}'.");
+        }
+    }
+
+    public static void ValidatePinnedDotnetupArchiveUri(Uri? actualUri, Uri expectedUri)
+    {
+        ValidateDotnetupHttpsUri(actualUri, "archive");
+        if (!actualUri!.AbsoluteUri.Equals(expectedUri.AbsoluteUri, StringComparison.Ordinal))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Dotnetup archive did not remain at the resolved HTTPS location '{expectedUri}'.");
+        }
+    }
+
+    private static void ValidateDotnetupHttpsUri(Uri? uri, string resource)
+    {
+        if (uri is null
+            || !uri.IsAbsoluteUri
+            || uri.Scheme != Uri.UriSchemeHttps
+            || !uri.IsDefaultPort
+            || uri.UserInfo.Length != 0
+            || uri.Query.Length != 0
+            || uri.Fragment.Length != 0)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Dotnetup {resource} did not resolve to a valid HTTPS URI.");
         }
     }
 

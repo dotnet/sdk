@@ -8,10 +8,9 @@ using Microsoft.Deployment.DotNet.Releases;
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
-/// Resolves daily .NET channels and dotnetup release channels to a concrete
-/// <see cref="ReleaseVersion"/> by querying an aka.ms redirect and extracting
-/// the version from its target URL. The resolved version is then handed to the
-/// existing blob-feed download path for the actual install.
+/// Resolves daily .NET channels and dotnetup release channels by querying an
+/// aka.ms redirect. Dotnetup resolution preserves the final archive URI and
+/// extracts the concrete version used to locate its independently published checksum.
 /// </summary>
 internal sealed class DailyChannelResolver : IDisposable
 {
@@ -152,6 +151,9 @@ internal sealed class DailyChannelResolver : IDisposable
         => ResolveDotnetupVersion("daily", rid);
 
     public ReleaseVersion ResolveDotnetupVersion(string channel, string rid)
+        => ResolveDotnetupArtifact(channel, rid).Version;
+
+    public ResolvedDotnetupArtifact ResolveDotnetupArtifact(string channel, string rid)
     {
         if (channel is not ("daily" or "preview" or "stable"))
         {
@@ -166,9 +168,8 @@ internal sealed class DailyChannelResolver : IDisposable
             ?? throw new DotnetInstallException(DotnetInstallErrorCode.VersionNotFound, $"No {channel} dotnetup build is available for {rid}.");
         var version = ExtractVersionFromUrl(finalUri)
             ?? throw new DotnetInstallException(DotnetInstallErrorCode.ManifestParseFailed, $"Dotnetup {channel} redirect has no concrete version.");
-        var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(version, rid);
-        BlobFeedUrlBuilder.ValidatePinnedDotnetupUri(finalUri, new Uri(location.ArchiveUrl));
-        return version;
+        BlobFeedUrlBuilder.ValidateDotnetupArchiveUri(finalUri);
+        return new ResolvedDotnetupArtifact(version, finalUri);
     }
 
     private Uri? TryResolveRedirect(string akaMsUrl, string channel = "daily")
@@ -348,3 +349,5 @@ internal sealed class DailyChannelResolver : IDisposable
         }
     }
 }
+
+internal readonly record struct ResolvedDotnetupArtifact(ReleaseVersion Version, Uri ArchiveUri);

@@ -80,17 +80,12 @@ public class DailyChannelResolverTests
     }
 
     [TestMethod]
-    [DataRow("https://example.test/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
     [DataRow("http://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
     [DataRow("https://ci.dot.net:444/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
     [DataRow("https://user@ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
-    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-arm64.exe")]
     [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe?other=1")]
     [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe#fragment")]
-    [DataRow("https://ci.dot.net/public/Sdk/0.1.0-preview.1/dotnetup-win-x64.exe")]
-    [DataRow("https://ci.dot.net/public/dotnetup/latest/dotnetup-win-x64.exe")]
-    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/extra/dotnetup-win-x64.exe")]
-    public void ResolveDotnetupVersion_RejectsUntrustedOrUnpinnedLayout(string target)
+    public void ResolveDotnetupVersion_RejectsInvalidHttpsArchiveUri(string target)
     {
         using var handler = new RedirectHandler(new() { ["https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe"] = target });
         using var http = new HttpClient(handler);
