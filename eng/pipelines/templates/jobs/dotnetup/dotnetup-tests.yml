@@ -61,14 +61,8 @@ jobs:
           & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -p:EnforceCodeStyleInBuild=false
         displayName: 🔨 Publish dotnetup AOT (Windows)
       - powershell: |
-          $rid = & .\.dotnet\dotnet msbuild src\Installer\dotnetup\dotnetup.csproj -getProperty:TargetRid
+          & .\.dotnet\dotnet msbuild eng\dotnetup-native-self-update-fixtures.proj
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          # Keep fixture versions and intermediates separate from each other and the shipping publish.
-          foreach ($fixture in @(@{ Name = 'original'; Version = '0.2.0-native-test.1' }, @{ Name = 'replacement'; Version = '0.2.0-native-test.2' })) {
-            $root = "$(Build.SourcesDirectory)\artifacts\native-self-update\$($fixture.Name)"
-            & .\.dotnet\dotnet publish src\Installer\dotnetup\dotnetup.csproj -c Release -r $rid "-p:Version=$($fixture.Version)" "-p:InformationalVersion=$($fixture.Version)" "-p:ArtifactsDir=$root\" "-p:PublishDir=$root\publish\" -p:EnforceCodeStyleInBuild=false
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          }
         displayName: 🔨 Publish native self-update fixtures (Windows)
         env:
           MSBUILDDISABLENODEREUSE: '1'
@@ -100,15 +94,7 @@ jobs:
         displayName: 🔨 Publish dotnetup AOT (Unix)
       - ${{ if eq(parameters.pool.os, 'linux') }}:
         - script: |
-            set -eu
-            rid="$(./.dotnet/dotnet msbuild src/Installer/dotnetup/dotnetup.csproj -getProperty:TargetRid)"
-            # Isolate both full versions from each other and from shipping publish artifacts.
-            for fixture in original replacement; do
-              version=0.2.0-native-test.1
-              if [ "$fixture" = replacement ]; then version=0.2.0-native-test.2; fi
-              root="$(Build.SourcesDirectory)/artifacts/native-self-update/$fixture"
-              ./.dotnet/dotnet publish src/Installer/dotnetup/dotnetup.csproj -c Release -r "$rid" "-p:Version=$version" "-p:InformationalVersion=$version" "-p:ArtifactsDir=$root/" "-p:PublishDir=$root/publish/" -p:EnforceCodeStyleInBuild=false
-            done
+            ./.dotnet/dotnet msbuild eng/dotnetup-native-self-update-fixtures.proj
           displayName: 🔨 Publish native self-update fixtures (Linux)
           env:
             MSBUILDDISABLENODEREUSE: '1'

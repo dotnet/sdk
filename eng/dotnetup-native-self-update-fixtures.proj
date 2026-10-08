@@ -1,0 +1,34 @@
+<Project DefaultTargets="PublishNativeSelfUpdateFixtures">
+
+  <Import Project="TargetRid.props" />
+
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
+    <DotnetupProject>$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj</DotnetupProject>
+    <NativeSelfUpdateArtifactsDir Condition="'$(NativeSelfUpdateArtifactsDir)' == ''">$(RepoRoot)artifacts\native-self-update</NativeSelfUpdateArtifactsDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NativeSelfUpdateFixture Include="original" Version="0.2.0-native-test.1" />
+    <NativeSelfUpdateFixture Include="replacement" Version="0.2.0-native-test.2" />
+    <NativeSelfUpdateFixture Update="@(NativeSelfUpdateFixture)">
+      <ArtifactsDir>$([MSBuild]::NormalizeDirectory('$(NativeSelfUpdateArtifactsDir)', '%(Identity)'))</ArtifactsDir>
+      <PublishDir>$([MSBuild]::NormalizeDirectory('$(NativeSelfUpdateArtifactsDir)', '%(Identity)', 'publish'))</PublishDir>
+      <AdditionalProperties>Configuration=$(Configuration);RuntimeIdentifier=$(TargetRid);Version=%(Version);InformationalVersion=%(Version);ArtifactsDir=%(ArtifactsDir);PublishDir=%(PublishDir);EnforceCodeStyleInBuild=false;_PublishWasInvokedDirectly=true</AdditionalProperties>
+    </NativeSelfUpdateFixture>
+  </ItemGroup>
+
+  <Target Name="PublishNativeSelfUpdateFixtures">
+    <MSBuild Projects="$(DotnetupProject)"
+             Targets="Restore"
+             BuildInParallel="false"
+             UnloadProjectsOnCompletion="true"
+             Properties="%(NativeSelfUpdateFixture.AdditionalProperties)" />
+    <MSBuild Projects="$(DotnetupProject)"
+             Targets="Publish"
+             BuildInParallel="false"
+             Properties="%(NativeSelfUpdateFixture.AdditionalProperties)" />
+  </Target>
+
+</Project>
