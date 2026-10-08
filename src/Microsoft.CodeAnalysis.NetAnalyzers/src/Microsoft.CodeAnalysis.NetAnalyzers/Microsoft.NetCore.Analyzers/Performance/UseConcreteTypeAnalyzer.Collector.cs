@@ -545,6 +545,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             break;
                         }
 
+                    case OperationKind.Throw:
+                        // A throw expression produces no value to assign or return.
+                        return;
+
                     default:
                         {
                             // Unhandled operations must disqualify the candidate instead of silently disappearing.

@@ -408,17 +408,20 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
             bool CanUpgrade(IMethodSymbol methodSym) => !coll.MethodsAssignedToDelegate.ContainsKey(methodSym);
 
-            static bool ContainsAnonymousType(ITypeSymbol type)
-                => type switch
-                {
-                    IArrayTypeSymbol arrayType => ContainsAnonymousType(arrayType.ElementType),
-                    INamedTypeSymbol namedType => namedType.IsAnonymousType
-                        || namedType.TypeArguments.Any(ContainsAnonymousType)
-                        || namedType.ContainingType is { } containingType && ContainsAnonymousType(containingType),
-                    _ => false,
-                };
-
             static string GetTypeName(ITypeSymbol type) => type.ToDisplayString(SymbolDisplayFormat.CSharpErrorMessageFormat);
         }
+
+        internal static bool ContainsAnonymousType(ITypeSymbol type)
+            => type switch
+            {
+                IArrayTypeSymbol arrayType => ContainsAnonymousType(arrayType.ElementType),
+                IPointerTypeSymbol pointerType => ContainsAnonymousType(pointerType.PointedAtType),
+                IFunctionPointerTypeSymbol functionPointerType => ContainsAnonymousType(functionPointerType.Signature.ReturnType)
+                    || functionPointerType.Signature.Parameters.Any(parameter => ContainsAnonymousType(parameter.Type)),
+                INamedTypeSymbol namedType => namedType.IsAnonymousType
+                    || namedType.TypeArguments.Any(ContainsAnonymousType)
+                    || namedType.ContainingType is { } containingType && ContainsAnonymousType(containingType),
+                _ => false,
+            };
     }
 }
