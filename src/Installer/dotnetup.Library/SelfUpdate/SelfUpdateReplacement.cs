@@ -26,7 +26,7 @@ internal sealed class SelfUpdateReplacement
     }
 
     public void Replace()
-        => Replace(static (source, destination, backup) => File.Replace(source, destination, backup, ignoreMetadataErrors: false));
+        => Replace(ReplaceFile);
 
     internal void Replace(Action<string, string, string> replaceFile)
     {
@@ -42,46 +42,55 @@ internal sealed class SelfUpdateReplacement
             _paths.ValidateBackupPath(_backupPath);
             SelfUpdatePaths.RequireAbsent(_backupPath);
             PrepareFilesForReplacement();
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
+        {
+            throw Failure("Replacement failed; no executable paths were changed.", exception);
+        }
 
-            _mutationStarted = true;
-            if (OperatingSystem.IsWindows())
-            {
-                replaceFile(_paths.StagedPath, _paths.InstalledPath, _backupPath);
-            }
-            else
-            {
-                File.CreateHardLink(_backupPath, _paths.InstalledPath);
-                File.Move(_paths.StagedPath, _paths.InstalledPath, overwrite: true);
-            }
-
+        _mutationStarted = true;
+        try
+        {
+            replaceFile(_paths.StagedPath, _paths.InstalledPath, _backupPath);
             _replacementCompleted = true;
         }
-        catch (Exception exception) when (IsFileFailure(exception))
+        // Once mutation begins, every ordinary exception must enter recovery; filtering by
+        // today's file APIs could leave the canonical path unavailable after future changes.
+        catch (Exception exception)
         {
-            if (_mutationStarted)
+            try
             {
-                try
+                if (SelfUpdatePaths.Exists(_backupPath))
                 {
-                    if (SelfUpdatePaths.Exists(_backupPath))
-                    {
-                        Rollback();
-                    }
+                    Rollback();
+                }
 
-                    using var original = SelfUpdatePaths.OpenFile(_paths.InstalledPath);
-                    if (!_restored && !SelfUpdatePaths.Exists(_paths.StagedPath))
-                    {
-                        throw new IOException("Replacement failed without a recoverable original executable.");
-                    }
-                }
-                catch (Exception recoveryException) when (IsFileFailure(recoveryException) || recoveryException is DotnetInstallException)
+                using var original = SelfUpdatePaths.OpenFile(_paths.InstalledPath);
+                if (!_restored && !SelfUpdatePaths.Exists(_paths.StagedPath))
                 {
-                    throw Failure("Replacement and recovery failed; reinstall dotnetup.",
-                        new AggregateException(exception, recoveryException));
+                    throw new IOException("Replacement failed without a recoverable original executable.");
                 }
+            }
+            catch (Exception recoveryException)
+            {
+                throw Failure("Replacement and recovery failed; reinstall dotnetup.",
+                    new AggregateException(exception, recoveryException));
             }
 
             throw Failure("Replacement failed; the original executable and any recovery artifacts were retained.", exception);
         }
+    }
+
+    private static void ReplaceFile(string source, string destination, string backup)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            File.Replace(source, destination, backup, ignoreMetadataErrors: false);
+            return;
+        }
+
+        File.CreateHardLink(backup, destination);
+        File.Move(source, destination, overwrite: true);
     }
 
     private void PrepareFilesForReplacement()
@@ -151,14 +160,13 @@ internal sealed class SelfUpdateReplacement
 
             _restored = true;
         }
-        catch (Exception exception) when (IsFileFailure(exception))
+        // Rollback is the final recovery boundary, so preserve every ordinary failure as
+        // transaction context rather than allowing an unclassified exception to escape.
+        catch (Exception exception)
         {
             throw Failure("Rollback failed; recovery artifacts were retained. Reinstall dotnetup if the canonical executable is unavailable.", exception);
         }
     }
-
-    private static bool IsFileFailure(Exception exception) =>
-        exception is IOException or InvalidDataException or UnauthorizedAccessException or ArgumentException or NotSupportedException;
 
     private DotnetInstallException Failure(string message, Exception exception) =>
         new(DotnetInstallErrorCode.InstallFailed,

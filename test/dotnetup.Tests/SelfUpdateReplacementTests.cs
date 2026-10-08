@@ -219,6 +219,38 @@ public class SelfUpdateReplacementTests
     }
 
     [TestMethod]
+    public void UnexpectedReplacementExceptionAfterSwitchRollsBack()
+    {
+        using var files = new SelfUpdateTestFiles(executable: false);
+        using var locks = AcquireLocks(files);
+        var failure = new InvalidOperationException("Injected unexpected failure after switching the canonical path.");
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => files.Replacement.Replace((source, destination, backup) =>
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                File.Replace(source, destination, backup, ignoreMetadataErrors: false);
+            }
+            else
+            {
+                File.CreateHardLink(backup, destination);
+                File.Move(source, destination, overwrite: true);
+            }
+
+            throw failure;
+        }));
+
+        Assert.AreSame(failure, exception.InnerException);
+        Assert.AreEqual("original", File.ReadAllText(files.Paths.InstalledPath));
+        Assert.IsFalse(File.Exists(files.BackupPath));
+        if (OperatingSystem.IsWindows())
+        {
+            Assert.AreEqual("replacement", File.ReadAllText(files.BackupPath + ".rejected"));
+        }
+        AssertReplacementLocksHeld(files.Paths);
+    }
+
+    [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     [DataRow(87)]
     [DataRow(1175)]
