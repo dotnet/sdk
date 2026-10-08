@@ -27,7 +27,7 @@ The command continues after an individual update failure. It returns a
 failure after it processes the remaining specifications.
 
 This command does not update the dotnetup executable itself. Use
-[`dotnetup self update`](dotnetup.md#self-update) for that, optionally with
+[`dotnetup self update`](dotnetup-self-update.md) for that, optionally with
 `--no-progress` to disable progress display.
 
 ## Options

@@ -2,7 +2,7 @@
 
 `dotnetup self update [--channel <daily|preview|stable>] [--force] [--no-progress]` updates the published NativeAOT `dotnetup` executable in place.
 
-Interactive install and update commands mention an available update, and `dotnetup self update --update-notifications false` turns that notice off without updating. See [update notifications](../../reference/dotnetup.md#update-notifications).
+Interactive install and update commands mention an available update, and `dotnetup self update --update-notifications false` turns that notice off without updating. See [update notifications](../../reference/dotnetup-self-update.md#update-notifications).
 
 The command resolves the latest release for the selected RID from the release channel.
 
@@ -17,7 +17,7 @@ selects `daily`.
 This requires daily and preview builds to carry distinct prerelease labels.
 `--channel` can select `daily`, `preview`, or `stable` explicitly; `stable` is accepted so the
 command is ready when that channel starts publishing. An explicit `--channel` is the only
-way to move between channels. See [command usage](../../reference/dotnetup.md#self-update).
+way to move between channels. See [command usage](../../reference/dotnetup-self-update.md).
 
 `dotnetup update` already updates all of the installs managed by dotnetup. Using `self update` as the key noun matches `dotnetup sdk update` nomenclature. `dotnetup update` will continue to update only the .NET SDK and .NET Runtime installs.
 
