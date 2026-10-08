@@ -2,7 +2,7 @@
 title: dotnetup command
 description: Command reference for the dotnetup toolchain manager.
 ms.topic: reference
-ms.date: 08/07/2026
+ms.date: 10/08/2026
 ---
 
 # dotnetup command
@@ -104,7 +104,7 @@ timeout. Build metadata must match exactly if the feed specifies it; otherwise a
 source revision suffix in the informational version is permitted. These unsigned checks
 do not authenticate release freshness.
 Signed version manifests and monotonic authorization are deferred to future stages. See the
-[verification limitations](../designs/self-update/self-update-verification.md#scope-and-limitations).
+[verification limitations](../designs/self-update/self-update-verification.md).
 
 The executable must be in a trusted, writable installation directory and must be named
 `dotnetup` (`dotnetup.exe` on Windows) for self-update. Renamed executables can run
@@ -112,10 +112,11 @@ other commands but cannot update themselves. Commands fail with a specific error
 the executable path contains a symbolic link, junction, or other reparse point, or when
 dotnetup cannot create its lock files in the installation directory. Running via the
 `dotnet` host rejects self-update; supported updates replace the published standalone
-executable, not a managed application's collection of files. Other update callers wait for the current
-update within a bounded timeout, but ordinary commands, including `--info`, fail
-if the activity gate is busy or their loaded build is stale. Retry those commands
-after the update completes. Automation should also retry transient file-not-found
+executable, not a managed application's collection of files. Other self-update callers wait for the
+current update within a bounded timeout. While waiting, the command reports whether another
+self-update or another dotnetup command is still running. Ordinary commands, including
+`--info`, fail if the activity gate is busy or their loaded build is stale. Retry those
+commands after the update completes. Automation should also retry transient file-not-found
 launch failures during Windows replacement before concluding that dotnetup is
 missing. See [coordination and recovery](../designs/self-update/self-update-algorithm-implementations.md#properties-of-algorithms-1-and-2).
 
