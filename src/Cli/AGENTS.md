@@ -54,11 +54,11 @@ in the same change. In particular:
   Do not remove a table containing required messages.
 - Revisit the excluded MSBuild-task diagnostic resources before adding an in-process
   consumer. Keep `AotSourceFiles.props` and the resource regression test synchronized.
-- Check every method in the [substitution files](dotnet-aot/AotSubstitutions.targets)
-  against new call paths and dependency versions. Remove or narrow a substitution
-  before enabling behavior it excludes. A throwing substitution must stay unreachable.
+- Keep production detection-provider construction behind direct `OperatingSystem`
+  checks. Do not root the all-platform test factory through static initialization.
+  Linux needs WSL providers and their Windows data parsers.
 - Validate a clean native publish, native behavior, and before/after library size.
-  Managed tests alone do not apply ILC substitutions. Check each affected platform
+  Managed tests alone do not prove native trimming. Check each affected platform
   and configuration; report those not executed.
 
 ## Where things live

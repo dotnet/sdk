@@ -160,12 +160,10 @@ Review the [size and trimming contracts](../../../src/Cli/dotnet-aot/DESIGN.md#s
 in the same change. Preserve full CLI string tables without build-time source scans.
 Resource substitution XML removes entire manifest resources, not keys within a string table.
 Do not substitute away a table containing required messages or its translated equivalents.
-Review `AotSubstitutions.targets` and every
-descriptor's signature and caller assumptions after command/dependency changes. Remove or
-narrow a substitution before making its excluded behavior reachable; throwing bodies are
-not successful fallbacks. Preserve cultures and the full definition/help resource surface.
-Validate substitutions in a clean native publish and native execution, not only
-managed tests. ILC does not support every ILLink substitution body.
+Preserve cultures and the full definition/help resource surface.
+Keep platform provider construction behind direct OS intrinsics and keep Linux's WSL
+parsers. Do not root the all-platform test factory through static initialization.
+Validate trimming in a clean native publish and native execution, not only managed tests.
 
 ### 5. Preserve both preprocessor views
 

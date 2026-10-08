@@ -1,8 +1,0 @@
-<linker>
-  <assembly fullname="Microsoft.AspNetCore.DeveloperCertificates.XPlat">
-    <type fullname="Microsoft.AspNetCore.Certificates.Generation.CertificateManager">
-      <!-- First-run generation never requests trust. Explicit dev-certs runs out of process. -->
-      <method signature="Microsoft.AspNetCore.Certificates.Generation.CertificateManager/TrustLevel TrustCertificate(System.Security.Cryptography.X509Certificates.X509Certificate2)" body="remove" />
-    </type>
-  </assembly>
-</linker>

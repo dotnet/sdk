@@ -63,26 +63,17 @@ Both CLI string tables contain required messages, so do not remove either table
 or its translated equivalents. Key-level removal through substitution XML requires
 compiler support that is not available in the current format.
 
-### ILC substitutions
+### Platform provider registration
 
-[AotDependencies.props](AotDependencies.props) imports
-[AotSubstitutions.targets](AotSubstitutions.targets), which passes each descriptor
-directly to ILC with `IlcArg` and `--substitution`. An ILLink substitution item
-alone does not establish that Native AOT used the descriptor. The substitutions
-apply only when `PublishAot` is enabled, including native-published tests.
-
-| Descriptor | Assumption to preserve |
-| --- | --- |
-| [Certificate.Substitutions.xml](Certificate.Substitutions.xml) | The [first-run certificate generator](../dotnet/AspNetCoreCertificateGenerator.cs) generates/stores a development certificate without requesting trust. Explicit `dev-certs` executes out of process. `TrustCertificate` is replaced with a throwing body, not successful no-op behavior. Keep certificate generation, storage, and platform state correction. Remove this substitution before introducing in-process trust. |
-
-For every dependency update, verify descriptor assembly/type/method signatures,
-the caller assumptions, compiler diagnostics, and the native dependency graph.
-Treat an unresolved descriptor as a regression. A clean native publish and native
-behavior tests are required; a managed test run cannot prove the replacement body.
-
-ILC's supported substitution bodies are narrower than ILLink's. The compiler used
-for this implementation supports Boolean, Int32, and Int32-backed enum constants,
-empty void bodies, and throwing bodies, but rejects a null reference-return stub.
+[InternalMicrosoftDetector](../Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetector.cs)
+guards production provider construction with direct `OperatingSystem` intrinsics.
+ILC can then discard off-platform implementations.
+Checking support only after constructing all providers does not remove their roots.
+The injected-context factory remains all-platform for tests.
+Do not eagerly initialize it through
+[InternalMicrosoftDetectorOptions](../Microsoft.DotNet.Cli.InternalMicrosoft/Internal/InternalMicrosoftDetectorOptions.cs).
+Linux retains WSL providers, including parsers for Windows account/workplace data.
+Keep provider registration, platform checks, and regression tests synchronized when adding providers.
 
 ### Validation
 
@@ -90,8 +81,7 @@ Measure the native library with the same RID, configuration, toolchain, and feat
 settings before and after a change. Record actual file bytes separately from
 `.mstat` accounted contributions. Inspect the generated dependency graph to verify
 the expected roots disappeared. Run clean product/test closure builds, native
-tests, and relevant `dn` managed/AOT parity checks on each affected OS. Test both
-ASP.NET-included and ASP.NET-excluded closures when changing certificate wiring.
+tests, and relevant `dn` managed/AOT parity checks on each affected OS.
 Use the [AOT command skill](../../../.github/skills/add-dotnet-aot-command/SKILL.md)
 for the validation ladder and retain build binlogs.
 
