@@ -99,7 +99,8 @@ public class NonSafeCommandGateTests
     [TestMethod]
     public void MissingInstallationDirectoryReportsDirectoryUnavailable()
     {
-        var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"), "missing");
+        using var files = new SelfUpdateTestFiles();
+        var directory = Path.Combine(files.Paths.DirectoryPath, Guid.NewGuid().ToString("N"), "missing");
         var paths = new SelfUpdatePaths(Path.Combine(directory, OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup"));
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
