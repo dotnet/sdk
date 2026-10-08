@@ -43,35 +43,15 @@ closure. These optimizations must not change the shared command tree, supported
 output, localization, telemetry transports, or managed fallback. Review them when
 adding an AOT command or updating a dependency, not only when working on size.
 
-### Resource filtering
+### Resources
 
-[AotSourceFiles.props](AotSourceFiles.props) imports
-[AotResources.targets](AotResources.targets). After `CoreResGen`, the filter writes
-separate copies of the compiled `CliStrings` and `CliCommandStrings` tables and
-updates `EmbeddedResource.OutputResource`. It leaves the source `.resx`, generated
-accessors, `.xlf`, and full compiled resource files unchanged. This permits a later
-incremental build to restore a newly referenced key. The filter applies the same
-key set to neutral and translated tables and preserves each retained value.
-Command-definition/help resources in the referenced definitions assembly are not
-filtered. Unused MSBuild-task diagnostics are not embedded by the native source list.
+[AotSourceFiles.props](AotSourceFiles.props) embeds the full `CliStrings` and
+`CliCommandStrings` tables, including their supported cultures. Keep these tables
+and command-definition/help resources intact. Do not select resource keys through
+build-time source scans or rewrite compiled resource tables.
 
-The retention scan collects identifiers from the evaluated `Compile` inputs,
-excluding generated resource accessors. It deliberately also retains matching
-tokens in comments, string literals, and inactive preprocessor branches. It is
-conservative, not a native getter-count allowlist: inlined getters do not provide
-a reliable list of required strings.
-
-**Maintain [AotResourceRoots.txt](AotResourceRoots.txt) for every computed resource
-name.** A literal full key is found by the scan; concatenated keys, runtime input,
-and external key tables need explicit roots. Add each possible key on its own
-line and remove obsolete roots when removing the lookup. Unknown explicit roots
-fail the build. If resource access moves out of the linked source closure, add
-its keys explicitly or stop filtering the affected table.
-
-When changing the filter or resource wiring, verify that adding a reference
-restores a pruned key, removing the reference prunes it again, and explicit
-dynamic roots work. Verify retained translations against the original compiled
-tables, not only the test assembly's neutral-language fallback.
+Unused MSBuild-task diagnostics are not embedded by the native source list.
+Revisit that exclusion before introducing an in-process consumer of those diagnostics.
 
 ### ILC substitutions
 

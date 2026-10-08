@@ -157,8 +157,8 @@ resources/localization, build assets, static initialization, process-global stat
 and binary-size contribution.
 
 Review the [size and trimming contracts](../../../src/Cli/dotnet-aot/DESIGN.md#size-and-trimming-contracts)
-in the same change. Maintain `AotResourceRoots.txt` for computed resource keys or keys whose
-consumers are outside the linked source list. Review `AotSubstitutions.targets` and every
+in the same change. Preserve full CLI string tables without build-time source scans.
+Review `AotSubstitutions.targets` and every
 descriptor's signature and caller assumptions after command/dependency changes. Remove or
 narrow a substitution before making its excluded behavior reachable; throwing bodies are
 not successful fallbacks. Preserve cultures and the full definition/help resource surface.

@@ -1,3 +1,0 @@
-# Additional CliStrings and CliCommandStrings keys accessed through dynamic lookup.
-# Static keys are retained automatically from the evaluated Compile source files.
-# Add each dynamic key on its own line before introducing a nonliteral lookup.

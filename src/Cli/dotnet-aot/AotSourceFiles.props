@@ -1,7 +1,5 @@
 <Project>
 
-  <Import Project="AotResources.targets" />
-
   <!--
     Shared item list for the AOT CLI bridge.
     Imported by both dotnet-aot.csproj and dotnet-aot.Tests.csproj so that the test
