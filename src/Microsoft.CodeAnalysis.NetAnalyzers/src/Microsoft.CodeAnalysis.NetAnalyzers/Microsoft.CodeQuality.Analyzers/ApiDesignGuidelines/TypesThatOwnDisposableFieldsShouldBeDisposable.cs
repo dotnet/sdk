@@ -62,17 +62,15 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            var disposableFields = namedType
-                .GetMembers()
+            var members = namedType.GetMembers();
+            var disposableFields = members
                 .OfType<IFieldSymbol>()
                 .Where(f => !f.IsStatic && disposeAnalysisHelper.IsDisposable(f.Type))
                 .ToSet();
-            var disposableProperties = namedType
-                .GetMembers()
-                .OfType<IPropertySymbol>()
-                .Where(p => !p.IsStatic
-                    && p.IsPropertyWithBackingField(out var backingField)
-                    && disposableFields.Contains(backingField))
+            var disposableProperties = disposableFields
+                .Where(f => f.IsImplicitlyDeclared
+                    && f.AssociatedSymbol is IPropertySymbol)
+                .Select(f => (IPropertySymbol)f.AssociatedSymbol!)
                 .ToSet();
             if (disposableFields.Count == 0 && disposableProperties.Count == 0)
             {
