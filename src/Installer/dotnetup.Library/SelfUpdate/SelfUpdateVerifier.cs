@@ -119,6 +119,17 @@ internal static class SelfUpdateVerifier
             failure = exception;
         }
 
+        await CompleteProcessAsync(process, cancellation, stdoutTask, stderrTask, failure).ConfigureAwait(false);
+        return version!;
+    }
+
+    private static async Task CompleteProcessAsync(
+        Process process,
+        CancellationTokenSource cancellation,
+        Task<byte[]> stdoutTask,
+        Task<byte[]> stderrTask,
+        Exception? failure)
+    {
         await cancellation.CancelAsync().ConfigureAwait(false);
         try
         {
@@ -135,8 +146,6 @@ internal static class SelfUpdateVerifier
         {
             ExceptionDispatchInfo.Capture(failure).Throw();
         }
-
-        return version!;
     }
 
     private static ProcessStartInfo CreateStartInfo(string installedPath)
