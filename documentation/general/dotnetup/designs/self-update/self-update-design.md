@@ -82,11 +82,11 @@ Dotnetup stages on the destination volume and uses `File.Replace`, avoiding a cr
 
 ## Linux:
 
-Linux permits the pathname of a running executable to be replaced while the process continues executing the old inode. Algorithm 1 applies unchanged. Algorithm 2 applies with the Windows replacement and failure handling of steps 2.4 and 2.5 replaced by the hard-link-and-move sequence below, and the rollback of step 2.8 replaced by a move of the backup back over the canonical path. Step 1.4 uses the same `--version` query that Windows falls back to, not device/inode identity; Windows normally reads the PE version resource instead, which ELF executables do not have.
+Linux permits the pathname of a running executable to be replaced while the process continues executing the old inode. The locking, staging, verification, and recovery flow is the same as on Windows, but the executable switch uses the hard-link-and-move sequence below instead of `File.Replace`. The ordinary-command identity gate uses the same `--version` query that Windows falls back to, not device/inode identity; Windows normally reads the PE version resource instead, which ELF executables do not have.
 
 Let `D/dotnetup` be the installed executable, `D/dotnetup.new` the staged replacement, and `D/dotnetup.old.<t>` the backup.
 
-`P` stages and validates `D/dotnetup.new` per step 2.3, preserves the installed executable's Unix mode, and flushes `D/dotnetup.new` to disk. `P` rejects unexpected symbolic links observed during pathname validation and operates on the canonical install path. `P` then creates `D/dotnetup.old.<t>` as a hard link to `D/dotnetup` and performs a same-filesystem move of `D/dotnetup.new` over `D/dotnetup`. `P` runs `D/dotnetup --version` per step 2.6; on smoke-check failure `P` moves `D/dotnetup.old.<t>` back over `D/dotnetup`. Step 2.9 governs cleanup of `D/dotnetup.old.*` during a later self update.
+The updating process stages and validates `D/dotnetup.new`, preserves the installed executable's Unix mode, and flushes `D/dotnetup.new` to disk. It rejects unexpected symbolic links observed during pathname validation and operates on the canonical install path. It then creates `D/dotnetup.old.<t>` as a hard link to `D/dotnetup` and performs a same-filesystem move of `D/dotnetup.new` over `D/dotnetup`. It runs `D/dotnetup --version` to smoke-test the replacement; on failure it moves `D/dotnetup.old.<t>` back over `D/dotnetup`. A later self update removes retained backups after the retention period.
 
 A same-directory hard link preserves the old inode before replacement. Both the backup and the staged path must be on the same mounted filesystem as the installed executable.
 The implemented operations are in [SelfUpdateReplacement](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateReplacement.cs). Rollback validates transaction state and paths before restoring the backup with `File.Move(backupPath, installedPath, overwrite: true)`. It does not execute the rejected candidate or compare embedded records.
@@ -95,11 +95,11 @@ On a supported local Linux filesystem, new openers observe either the complete o
 
 Cross-filesystem `File.Move` may degrade to copy/delete behavior. Keeping all transaction files as siblings in a stable directory avoids that scenario; this is a layout requirement, not a custom native rename guarantee.
 
-The rollback move restores the old executable. Step 1.4 permits an `N` with the matching full loaded version to proceed and rejects or forwards one loaded from a different rejected version, exactly as on Windows.
+The rollback move restores the old executable. The ordinary-command activity gate permits a process whose loaded version still matches the installed executable to proceed and rejects one loaded from a different version, exactly as on Windows.
 
 #### Unix locking caveats
 
-`A` and `U` do not carry the same weight on Unix as on Windows, and Algorithm 1 is correspondingly weaker there.
+The activity and update file locks do not carry the same weight on Unix as on Windows, so the locking guarantees are correspondingly weaker there.
 
 `FileShare` is mandatory on Windows and enforced by the kernel at `CreateFile`. On Unix, .NET implements `FileShare` with advisory `flock`, which binds only cooperating processes and can be disabled outright by the `System.IO.DisableFileLocking` AppContext switch or the `DOTNET_SYSTEM_IO_DISABLEFILELOCKING` environment variable. Dotnetup accepts the same locking compatibility as the .NET runtime: it uses `FileStream` sharing directly, does not take an additional native `flock`, and does not detect or compensate for disabled or ineffective runtime locking. The concurrency guarantees assume working runtime locking and cooperating processes.
 
@@ -122,19 +122,19 @@ A named mutex has one owning thread rather than shared ownership, so holding a s
 
 The real reason is a file lock can implement concurrent shared ownership that can survive an `await` without requiring release on the acquiring thread, where mutexes cannot.
 
-**Why `N` acquires only the activity lock at the gate.**
-`P` holds `A` exclusively for the entire transaction, so `A` alone is a continuous signal that a transaction is in flight. An `N` that has acquired `A` shared and retained it excludes `P` completely: if `P` is mid-transaction the acquire by `N` fails, and if `P` is between steps 1.1 and 1.2 the acquire by `N` succeeds, after which step 1.2 fails and `P` releases `U` and backs off. There is no interleaving in which both proceed. `N` never releases `A` after passing the gate and never acquires `U`.
+**Why an ordinary command acquires only the activity lock at the gate.**
+Self-update holds the activity lock exclusively for the entire transaction, so that lock alone is a continuous signal that a transaction is in flight. An ordinary command that acquires and retains the activity lock in shared mode excludes self-update completely: if self-update is mid-transaction, the ordinary command's acquisition fails; if the ordinary command acquires the lock first, self-update cannot acquire it exclusively and backs off. There is no interleaving in which both proceed. An ordinary command never releases the activity lock after passing the gate and never acquires the update lock.
 
-**Why `P` acquires the update lock before the activity lock.**
-`U` serializes `P` against peer `self update` processes, and `A` excludes `N`. Taking `U` first means `P` only begins excluding every `N` after acquiring ownership of the update artifacts; taking `A` first would hold every `non-safe` command out of the way for the whole of `X_U` while `P` waits on another owner of `U`.
+**Why self-update acquires the update lock before the activity lock.**
+The update lock serializes peer `self update` processes, and the activity lock excludes ordinary commands that cannot safely cross an update boundary. Taking the update lock first means self-update only begins excluding those ordinary commands after acquiring ownership of the update artifacts; taking the activity lock first would block them while waiting for another self-update process.
 
-`P` has no reason to open `A` shared first. A shared open succeeds while any number of `non-safe` processes hold `A` shared, so it would answer nothing. Only the exclusive open establishes that no `non-safe` process is running.
+Self-update has no reason to open the activity lock in shared mode first. A shared open succeeds while any number of ordinary commands hold it shared, so it would answer nothing. Only the exclusive open establishes that no incompatible command is running.
 
-**Why there is no circular wait.** An `N` waiting at the gate holds neither lock, and an `N` never acquires `U`. `P` releases `U` before retrying a failed acquisition of `A`. Neither participant waits for a lock held by the other while retaining its own.
+**Why there is no circular wait.** An ordinary command waiting at the gate holds neither lock and never acquires the update lock. Self-update releases the update lock before retrying a failed acquisition of the activity lock. Neither participant waits for a lock held by the other while retaining its own.
 
-**Why cleanup runs only during self update.** Backup cleanup runs inside the `P` transaction, which already owns `U` and `A`. Ordinary commands therefore never take `U`, never start a cleanup `--version` child, and cannot contend with `P` over update artifacts. Backups can accumulate between updates, but each successful update adds one backup and the next update after the retention period removes it.
+**Why cleanup runs only during self update.** Backup cleanup runs inside the self-update transaction, which already owns both locks. Ordinary commands therefore never take the update lock, never start a cleanup `--version` child, and cannot contend with self-update over update artifacts. Backups can accumulate between updates, but each successful update adds one backup and the next update after the retention period removes it.
 
-**Why the update lock is limited to updates.** `U` protects update artifacts, not ordinary command execution. Contention on `U` means a peer update, and `P` retries within `X_U` rather than failing immediately. Once `P` owns `U`, contention on `A` means a `non-safe` command is running and is handled separately by `X_A`. No command holds `U` shared or needs it to pass the gate.
+**Why the update lock is limited to updates.** It protects update artifacts, not ordinary command execution. Contention on it means a peer update, which self-update retries rather than failing immediately. Once self-update owns that lock, contention on the activity lock means an incompatible ordinary command is running and is handled separately. No ordinary command holds the update lock in shared mode or needs it to pass the gate.
 
 **Why forwarding instead of resuming.** A process that waited at the gate is still executing the old image. Resuming would run pre-update code against post-update state — for example a manifest written in a format the old code does not understand. Forwarding is only legal at the gate precisely because nothing has been mutated and nothing has been written to the console yet.
 
