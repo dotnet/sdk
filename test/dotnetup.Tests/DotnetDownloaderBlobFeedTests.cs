@@ -307,7 +307,20 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         download.Version.ToString().Should().Be(DotnetupVersion);
         download.Rid.Should().Be(rid);
         download.IsUnsigned.Should().BeTrue();
+        download.IsDotnetup.Should().BeTrue();
         history.Should().Equal(dailyUrl, checksumUrl);
+    }
+
+    [TestMethod]
+    public void ResolvedDownload_DoesNotInferDotnetupFromUri()
+    {
+        var download = new ResolvedDownload(
+            new Uri(DotnetupUrl),
+            new string('a', 128),
+            "win-x64",
+            new ReleaseVersion(DotnetupVersion));
+
+        download.IsDotnetup.Should().BeFalse();
     }
 
     [TestMethod]
@@ -383,7 +396,8 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         var (handler, history) = BuildHandler(new());
         using var http = new HttpClient(handler);
         var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
-        var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64", new ReleaseVersion(DotnetupVersion), IsUnsigned: true);
+        var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64",
+            new ReleaseVersion(DotnetupVersion), IsUnsigned: true, IsDotnetup: true);
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
         UnsignedSourcePolicy.OverrideForTesting = () => true;
 
@@ -407,7 +421,8 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         using var handler = new RecordingHandler(new() { [DotnetupUrl] = (HttpStatusCode.OK, content) }, history, new() { [DotnetupUrl] = redirectUrl });
         using var http = new HttpClient(handler);
         var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"));
-        var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64", new ReleaseVersion(DotnetupVersion), IsUnsigned: true);
+        var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64",
+            new ReleaseVersion(DotnetupVersion), IsUnsigned: true, IsDotnetup: true);
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.DownloadWithVerification(download, destination));

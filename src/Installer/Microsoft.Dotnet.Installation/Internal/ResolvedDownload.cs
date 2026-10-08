@@ -13,7 +13,5 @@ internal sealed record ResolvedDownload(
     string ExpectedHash,
     string Rid,
     ReleaseVersion Version,
-    bool IsUnsigned = false)
-{
-    public bool IsDotnetup => DownloadUri.AbsolutePath.StartsWith("/public/dotnetup/", StringComparison.Ordinal);
-}
+    bool IsUnsigned = false,
+    bool IsDotnetup = false);

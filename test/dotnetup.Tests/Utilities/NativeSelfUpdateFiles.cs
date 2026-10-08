@@ -41,7 +41,7 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
             Assert.AreNotEqual(OriginalVersion, ReplacementVersion, "Publish the two binaries with different full release versions.");
             var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
             Release = new ResolvedDownload(new Uri("https://example.invalid/native-dotnetup"), new string('0', 128),
-                rid, ReleaseVersion.Parse(ReplacementVersion));
+                rid, ReleaseVersion.Parse(ReplacementVersion), IsDotnetup: true);
         }
         catch
         {

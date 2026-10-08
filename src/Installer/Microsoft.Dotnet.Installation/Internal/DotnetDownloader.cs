@@ -162,7 +162,7 @@ internal class DotnetDownloader : IArchiveDownloader
         var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(version, rid);
         string hash = TryGetHashFromUrl(location.ChecksumUrl, version, "dotnetup", requirePinnedUri: true)
             ?? throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, $"No checksum is published for dotnetup {version} ({rid}).");
-        return new ResolvedDownload(new Uri(location.ArchiveUrl), hash, rid, version, IsUnsigned: true);
+        return new ResolvedDownload(new Uri(location.ArchiveUrl), hash, rid, version, IsUnsigned: true, IsDotnetup: true);
     }
 
     /// <summary>
