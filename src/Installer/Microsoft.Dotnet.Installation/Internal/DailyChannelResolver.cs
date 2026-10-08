@@ -147,9 +147,6 @@ internal sealed class DailyChannelResolver : IDisposable
         return _releaseManifest.GetReleasesIndex().FirstOrDefault()?.LatestReleaseVersion?.Major ?? 0;
     }
 
-    public ReleaseVersion ResolveDotnetupVersion(string rid)
-        => ResolveDotnetupVersion("daily", rid);
-
     public ReleaseVersion ResolveDotnetupVersion(string channel, string rid)
         => ResolveDotnetupArtifact(channel, rid).Version;
 

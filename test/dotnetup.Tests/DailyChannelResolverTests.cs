@@ -43,7 +43,7 @@ public class DailyChannelResolverTests
         using var http = new HttpClient(handler);
         using var resolver = new DailyChannelResolver(httpClient: http);
 
-        resolver.ResolveDotnetupVersion("win-x64").ToString().Should().Be("0.1.0-preview.1");
+        resolver.ResolveDotnetupVersion("daily", "win-x64").ToString().Should().Be("0.1.0-preview.1");
 
         handler.Methods.Should().Equal(HttpMethod.Head);
         handler.RequestsUseNoCache.Should().Equal(true);
@@ -62,7 +62,7 @@ public class DailyChannelResolverTests
         using var http = new HttpClient(handler);
         using var resolver = new DailyChannelResolver(httpClient: http);
 
-        resolver.ResolveDotnetupVersion("win-x64").ToString().Should().Be("0.1.0-preview.1");
+        resolver.ResolveDotnetupVersion("daily", "win-x64").ToString().Should().Be("0.1.0-preview.1");
 
         handler.Methods.Should().Equal(HttpMethod.Head, HttpMethod.Get);
         handler.RequestsUseNoCache.Should().Equal(true, true);
@@ -91,7 +91,7 @@ public class DailyChannelResolverTests
         using var http = new HttpClient(handler);
         using var resolver = new DailyChannelResolver(httpClient: http);
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("win-x64"));
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("daily", "win-x64"));
 
         exception.ErrorCode.Should().Be(DotnetInstallErrorCode.ManifestParseFailed);
     }
@@ -107,7 +107,7 @@ public class DailyChannelResolverTests
         using var http = new HttpClient(handler);
         using var resolver = new DailyChannelResolver(httpClient: http);
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("win-x64"));
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("daily", "win-x64"));
 
         exception.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
     }
@@ -123,7 +123,7 @@ public class DailyChannelResolverTests
         using var http = new HttpClient(handler);
         using var resolver = new DailyChannelResolver(httpClient: http);
 
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion(rid));
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("daily", rid));
 
         exception.ErrorCode.Should().Be(DotnetInstallErrorCode.InvalidArguments);
     }
