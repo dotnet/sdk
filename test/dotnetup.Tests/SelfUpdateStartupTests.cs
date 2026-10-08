@@ -59,7 +59,7 @@ public class SelfUpdateStartupTests
     [TestMethod]
     public void OnlyForwardingAndSelfUpdateCommandsOverrideDefaultSafety()
     {
-        var safeProperty = typeof(CommandBase).GetProperty("SafeDuringSelfUpdate", BindingFlags.Instance | BindingFlags.NonPublic)!;
+        var safeProperty = typeof(CommandBase).GetProperty("CanRunDuringSelfUpdate", BindingFlags.Instance | BindingFlags.NonPublic)!;
         var overrides = typeof(CommandBase).Assembly.GetTypes()
             .Where(type => !type.IsAbstract && typeof(CommandBase).IsAssignableFrom(type))
             .Where(type => type.GetProperty(safeProperty.Name, BindingFlags.Instance | BindingFlags.NonPublic)!.DeclaringType != typeof(CommandBase))

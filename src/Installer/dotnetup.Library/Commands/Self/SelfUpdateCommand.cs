@@ -28,7 +28,8 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
         _createDownloader = createDownloader;
     }
 
-    protected override bool SafeDuringSelfUpdate => true;
+    /// <inheritdoc/>
+    protected override bool CanRunDuringSelfUpdate => true;
 
     protected override void ExecuteCore()
     {
@@ -47,7 +48,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
             lockKind == SelfUpdateLockKind.Update
                 ? Strings.SelfUpdateWaitingForUpdate
                 : Strings.SelfUpdateWaitingForCommand));
-        var workflow = new SelfUpdateWorkflow(invocation.Paths, invocation.LoadedVersion,
+        var workflow = new SelfUpdateWorkflow(invocation.Paths,
             () => downloader.ResolveDotnetupDownload(channel, rid),
             (release, destination) =>
             {
@@ -60,6 +61,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
             Force = _force,
             OnForcedUpdate = (installed, available) => AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(
                 CultureInfo.CurrentCulture, Strings.SelfUpdateForcedWarning, installed, available).EscapeMarkup())),
+            OnCleanupFailure = _ => AnsiConsole.MarkupLine(DotnetupTheme.Warning(Strings.SelfUpdateCleanupWarning.EscapeMarkup())),
         };
         var result = workflow.ExecuteWithResult(invocation.Retain);
         if (result.WasUpdated)

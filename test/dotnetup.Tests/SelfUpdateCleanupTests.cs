@@ -76,49 +76,6 @@ public class SelfUpdateCleanupTests
     }
 
     [TestMethod]
-    [DataRow("empty")]
-    [DataRow("wrong")]
-    [DataRow("nonzero")]
-    public void InvalidVersionOutputPreservesBackups(string mode)
-    {
-        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
-        File.WriteAllText(_installedPath + ".mode", mode);
-
-        RunCleanup();
-
-        Assert.IsTrue(File.Exists(backup));
-        Assert.HasCount(1, File.ReadAllLines(_installedPath + ".invocations"));
-        AssertUpdateLockAvailable();
-    }
-
-    [TestMethod]
-    [DataRow(Version + "+different-build")]
-    [DataRow("")]
-    [DataRow("invalid")]
-    [DataRow(SelfUpdateTestFiles.ReplacementVersion)]
-    public void DifferentOrMalformedLoadedVersionPreservesBackups(string loadedVersion)
-    {
-        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
-
-        RunCleanup(loadedVersion: loadedVersion);
-
-        Assert.IsTrue(File.Exists(backup));
-        AssertUpdateLockAvailable();
-    }
-
-    [TestMethod]
-    public void UnreadableCanonicalPreservesBackups()
-    {
-        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
-        using var canonical = new FileStream(_installedPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
-
-        RunCleanup();
-
-        Assert.IsTrue(File.Exists(backup));
-        AssertUpdateLockAvailable();
-    }
-
-    [TestMethod]
     public void OnlyExactBackupNamesAreDeleted()
     {
         var originalBytes = File.ReadAllBytes(_installedPath);
@@ -245,25 +202,33 @@ public class SelfUpdateCleanupTests
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void SkipsLockedBackupsAndContinuesOnWindows()
+    public void ReportsOneFailureForLockedBackupsAndContinuesOnWindows()
     {
-        var locked = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        var firstLocked = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        var secondLocked = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
         var other = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
-        using var handle = new FileStream(locked, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var firstHandle = new FileStream(firstLocked, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var secondHandle = new FileStream(secondLocked, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var failures = new List<Exception>();
 
-        RunCleanup();
+        RunCleanup(onFailure: failures.Add);
 
-        Assert.IsTrue(File.Exists(locked));
+        Assert.IsTrue(File.Exists(firstLocked));
+        Assert.IsTrue(File.Exists(secondLocked));
         Assert.IsFalse(File.Exists(other));
+        Assert.HasCount(1, failures);
         AssertUpdateLockAvailable();
     }
 
     [TestMethod]
-    public void InvalidOrMissingPathsAreSwallowedWithoutCreatingDirectories()
+    public void InvalidPathReportsFailureWhileMissingPathDoesNotCreateDirectories()
     {
         var missing = Path.Combine(_directory.FullName, "missing", "dotnetup.exe");
-        SelfUpdateCleanup.RunWithUpdateLock(missing, Version);
-        SelfUpdateCleanup.RunWithUpdateLock("\0", Version);
+        var failures = new List<Exception>();
+        SelfUpdateCleanup.RunWithUpdateLock(missing, failures.Add);
+        SelfUpdateCleanup.RunWithUpdateLock("\0", failures.Add);
+
+        Assert.HasCount(1, failures);
         Assert.IsFalse(Directory.Exists(Path.GetDirectoryName(missing)));
     }
 
@@ -336,7 +301,7 @@ public class SelfUpdateCleanupTests
             }
 
             // The transaction's update lock is covered elsewhere; this exercises path resolution only.
-            SelfUpdateCleanup.RunWithUpdateLock(installedPath, Version);
+            SelfUpdateCleanup.RunWithUpdateLock(installedPath);
 
             if (!OperatingSystem.IsWindows() && kind is "directory" or "ancestor")
             {
@@ -374,7 +339,7 @@ public class SelfUpdateCleanupTests
             using var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
             Assert.IsNotNull(updateLock);
 
-            SelfUpdateCleanup.RunWithUpdateLock(Path.Combine(link, Path.GetFileName(_installedPath)), Version);
+            SelfUpdateCleanup.RunWithUpdateLock(Path.Combine(link, Path.GetFileName(_installedPath)));
 
             Assert.IsFalse(File.Exists(backup));
             using var competingLock = ScopedLockFile.TryAcquireExclusive(Path.Combine(link, "dotnetup.update.lock"));
@@ -386,34 +351,11 @@ public class SelfUpdateCleanupTests
         }
     }
 
-    [TestMethod]
-    public void NoEligibleBackupsDoesNotStartVersionProbe()
-    {
-        CreateBackup(TimeSpan.FromDays(RetainedBackupAgeDays));
-        File.WriteAllText(_installedPath + ".mode", "timeout");
-
-        RunCleanup();
-
-        Assert.IsFalse(File.Exists(_installedPath + ".invocations"));
-    }
-
-    [TestMethod]
-    public void ManyEligibleBackupsUseOnlyOneVersionProbeWithParentUpdateLock()
-    {
-        CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
-        CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays), ".rejected");
-
-        RunCleanup();
-
-        Assert.HasCount(1, File.ReadAllLines(_installedPath + ".invocations"));
-        Assert.IsEmpty(Directory.GetFiles(_directory.FullName, "dotnetup.exe.old.*"));
-    }
-
-    private void RunCleanup(string? installedPath = null, string loadedVersion = Version)
+    private void RunCleanup(string? installedPath = null, Action<Exception>? onFailure = null)
     {
         using var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
         Assert.IsNotNull(updateLock);
-        SelfUpdateCleanup.RunWithUpdateLock(installedPath ?? _installedPath, loadedVersion);
+        SelfUpdateCleanup.RunWithUpdateLock(installedPath ?? _installedPath, onFailure);
         using var competingLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
         Assert.IsNull(competingLock);
     }

@@ -30,7 +30,11 @@ public abstract class CommandBase
         _commandName = commandName;
     }
 
-    protected virtual bool SafeDuringSelfUpdate => false;
+    /// <summary>
+    /// Gets whether this command can skip <see cref="SelfUpdateInvocation.EnterCommand(bool)"/>'s
+    /// non-safe command gate and run while self-update owns the update lock.
+    /// </summary>
+    protected virtual bool CanRunDuringSelfUpdate => false;
 
     /// <summary>
     /// Whether an interactive run starts a best-effort check for a newer dotnetup.
@@ -43,7 +47,7 @@ public abstract class CommandBase
 
         try
         {
-            SelfUpdateInvocation.Current?.EnterCommand(SafeDuringSelfUpdate);
+            SelfUpdateInvocation.Current?.EnterCommand(CanRunDuringSelfUpdate);
             RecordOptionUsage();
             // Start before the command's work so a background refresh can finish while it runs.
             var updateNotifier = ShowsUpdateNotification

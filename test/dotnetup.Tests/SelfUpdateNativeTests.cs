@@ -83,7 +83,7 @@ public class SelfUpdateNativeTests
         var candidateBytes = File.ReadAllBytes(candidate.Paths.StagedPath);
         var release = new ResolvedDownload(new Uri("https://example.invalid/rejected-dotnetup.exe"), new string('0', 128), "win-x64",
             Microsoft.Deployment.DotNet.Releases.ReleaseVersion.Parse(SelfUpdateTestFiles.ReplacementVersion), IsDotnetup: true);
-        var workflow = new SelfUpdateWorkflow(candidate.Paths, native.OriginalVersion, () => release,
+        var workflow = new SelfUpdateWorkflow(candidate.Paths, () => release,
             (download, destination) => File.WriteAllBytes(destination, candidateBytes));
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow));

@@ -19,6 +19,8 @@ public class DotnetupProgram
 {
     public static int Main(string[] args)
     {
+        // Force these loaded-image values to be cached before startup can rename or replace the executable;
+        // self-update identity must continue to describe the image that launched this process.
         _ = DotnetupProcessInfo.ExecutablePath;
         _ = DotnetupProcessInfo.Version;
         // Detached telemetry-drainer fast path: deliver previously-persisted telemetry and exit,

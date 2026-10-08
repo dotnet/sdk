@@ -164,6 +164,10 @@
     <value>Installing dotnetup {1} because --force was specified, even though it is not newer than the current version {0}.</value>
     <comment>{Locked="dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the version that will be installed.</comment>
   </data>
+  <data name="SelfUpdateCleanupWarning" xml:space="preserve">
+    <value>Dotnetup could not remove one or more old self-update backup files. A future update may remove them.</value>
+    <comment>{Locked="Dotnetup"}</comment>
+  </data>
   <data name="SelfUpdateAvailableNotice" xml:space="preserve">
     <value>An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --update-notifications false'.</value>
     <comment>{Locked="dotnetup"} {Locked="'dotnetup self update'"} {Locked="'dotnetup self update --update-notifications false'"}</comment>

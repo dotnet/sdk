@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 internal sealed class SelfUpdateTestWorkflow : SelfUpdateWorkflow
 {
-    public SelfUpdateTestWorkflow(SelfUpdatePaths paths, string loadedVersion, Func<ResolvedDownload> resolve,
+    public SelfUpdateTestWorkflow(SelfUpdatePaths paths, Func<ResolvedDownload> resolve,
         Action<ResolvedDownload, string> download, SelfUpdateCoordinator? coordinator = null)
-        : base(paths, loadedVersion, resolve, download, coordinator)
+        : base(paths, resolve, download, coordinator)
     {
     }
 

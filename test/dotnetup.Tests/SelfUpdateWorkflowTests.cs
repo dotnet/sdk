@@ -20,7 +20,7 @@ public class SelfUpdateWorkflowTests
     public void MissingLeaseOwnerIsRejectedBeforeResolvingRelease()
     {
         using var files = new SelfUpdateTestFiles();
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => throw new InvalidOperationException("Release resolution must not run without a lease owner."),
             (release, destination) => Assert.Fail("Download must not run without a lease owner."));
 
@@ -36,7 +36,7 @@ public class SelfUpdateWorkflowTests
     {
         using var files = new SelfUpdateTestFiles();
         var failure = new InvalidOperationException("Injected lease handoff failure.");
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
             (release, destination) => Assert.Fail("Download must not run after a failed lease handoff."),
             CreateImmediateWorkflowCoordinator());
@@ -69,7 +69,7 @@ public class SelfUpdateWorkflowTests
         var stagedBytes = File.ReadAllBytes(files.Paths.StagedPath);
         var release = CreateWorkflowRelease(SelfUpdateTestFiles.OriginalVersion);
         var resolveCount = 0;
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => { resolveCount++; return release; },
             (download, path) => Assert.Fail("An already-current executable must not be downloaded."),
             CreateImmediateWorkflowCoordinator());
@@ -95,7 +95,7 @@ public class SelfUpdateWorkflowTests
         using var files = new SelfUpdateTestFiles();
         SelfUpdateTestFiles.WriteExecutable(files.Paths.InstalledPath, installedVersion);
         var release = CreateWorkflowRelease(availableVersion);
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, installedVersion, () => release,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, () => release,
             (download, path) => Assert.Fail("An older release from the same channel must not be downloaded."),
             CreateImmediateWorkflowCoordinator());
 
@@ -113,7 +113,7 @@ public class SelfUpdateWorkflowTests
         using var files = new SelfUpdateTestFiles();
         SelfUpdateTestFiles.WriteExecutable(files.Paths.InstalledPath, installedVersion);
         var release = CreateWorkflowRelease(availableVersion);
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, installedVersion, () => release,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, () => release,
             (download, path) => SelfUpdateTestFiles.WriteExecutable(path, ReleaseVersionString(download)),
             CreateImmediateWorkflowCoordinator());
 
@@ -133,7 +133,7 @@ public class SelfUpdateWorkflowTests
         SelfUpdateTestFiles.WriteExecutable(files.Paths.InstalledPath, installedVersion);
         var release = CreateWorkflowRelease(availableVersion);
         var forced = new List<(string Installed, string Available)>();
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, installedVersion, () => release,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, () => release,
             (download, path) =>
             {
                 Assert.HasCount(1, forced, "The forced-update warning must precede the download.");
@@ -162,7 +162,7 @@ public class SelfUpdateWorkflowTests
     {
         using var files = new SelfUpdateTestFiles();
         var release = CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion);
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion, () => release,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, () => release,
             (download, path) => SelfUpdateTestFiles.WriteExecutable(path, ReleaseVersionString(download)),
             CreateImmediateWorkflowCoordinator())
         {
@@ -183,7 +183,7 @@ public class SelfUpdateWorkflowTests
         var release = CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion);
         var failure = new DotnetInstallException(DotnetInstallErrorCode.DownloadFailed, "Injected download failure.");
         var downloadCount = 0;
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion, () => release,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, () => release,
             (download, path) =>
             {
                 downloadCount++;
@@ -212,7 +212,7 @@ public class SelfUpdateWorkflowTests
         var release = CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion);
         var resolveCount = 0;
         var downloadCount = 0;
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => { resolveCount++; return release; },
             (download, path) =>
             {
@@ -264,7 +264,7 @@ public class SelfUpdateWorkflowTests
         var originalMode = (UnixFileMode)mode;
         File.SetUnixFileMode(files.Paths.InstalledPath, originalMode);
         var directoryMode = File.GetUnixFileMode(files.Paths.DirectoryPath);
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
             (release, destination) => SelfUpdateTestFiles.WriteExecutable(destination, ReleaseVersionString(release)), CreateImmediateWorkflowCoordinator())
         {
@@ -305,7 +305,7 @@ public class SelfUpdateWorkflowTests
         var release = CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion);
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
         var downloadCount = 0;
-        var firstWorkflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion, () => release,
+        var firstWorkflow = new SelfUpdateTestWorkflow(files.Paths, () => release,
             (download, path) =>
             {
                 Interlocked.Increment(ref downloadCount);
@@ -322,7 +322,7 @@ public class SelfUpdateWorkflowTests
             secondWaiting.SetResult();
             Assert.IsTrue(retrySecondUpdate.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken), "Second updater was not released.");
         });
-        var secondWorkflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var secondWorkflow = new SelfUpdateTestWorkflow(files.Paths,
             () =>
             {
                 Assert.AreEqual(SelfUpdateTestFiles.OriginalVersion, SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath));
@@ -380,7 +380,7 @@ public class SelfUpdateWorkflowTests
             ? ScopedLockFile.TryAcquireExclusive(files.Paths.UpdateLockPath)
             : ScopedLockFile.TryAcquireShared(files.Paths.ActivityLockPath);
         Assert.IsNotNull(occupied);
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
             (download, path) => Assert.Fail("Contention must fail before downloading."), CreateImmediateWorkflowCoordinator());
 
@@ -408,7 +408,7 @@ public class SelfUpdateWorkflowTests
     {
         using var files = new SelfUpdateTestFiles();
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(expectedVersion),
             (download, path) => SelfUpdateTestFiles.WriteExecutable(path, unexpectedVersion), CreateImmediateWorkflowCoordinator());
 
@@ -434,7 +434,7 @@ public class SelfUpdateWorkflowTests
     {
         const string informationalVersion = SelfUpdateTestFiles.ReplacementVersion + "+0123456789abcdef0123456789abcdef01234567";
         using var files = new SelfUpdateTestFiles();
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(releaseVersion),
             (download, path) => SelfUpdateTestFiles.WriteExecutable(path, informationalVersion),
             CreateImmediateWorkflowCoordinator());
@@ -453,7 +453,7 @@ public class SelfUpdateWorkflowTests
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
         var replacementBytes = File.ReadAllBytes(files.Paths.StagedPath);
         var verificationFailure = new InvalidDataException("Injected startup smoke-test failure.");
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
             (download, path) => File.WriteAllBytes(path, replacementBytes), CreateImmediateWorkflowCoordinator())
         {
@@ -498,7 +498,7 @@ public class SelfUpdateWorkflowTests
         var failures = new AggregateException(verificationFailure, terminationFailure);
         var reportedFailure = new DotnetInstallException(DotnetInstallErrorCode.InstallFailed,
             "Injected verifier failure.", new IOException("The verification child could not be terminated within five seconds.", failures));
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
             (download, path) => File.WriteAllBytes(path, replacementBytes), CreateImmediateWorkflowCoordinator())
         {
@@ -544,7 +544,7 @@ public class SelfUpdateWorkflowTests
         IDisposable? retained = null;
         var callbackCount = 0;
         var failure = new InvalidDataException("Injected verification failure.");
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion, () => release,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths, () => release,
             (download, path) =>
             {
                 Assert.IsNotNull(retained);
@@ -603,7 +603,7 @@ public class SelfUpdateWorkflowTests
             "dotnetup-renamed" + (OperatingSystem.IsWindows() ? ".exe" : string.Empty));
         SelfUpdateTestFiles.WriteExecutable(renamedPath, SelfUpdateTestFiles.OriginalVersion);
         var renamedBytes = File.ReadAllBytes(renamedPath);
-        var workflow = new SelfUpdateTestWorkflow(new SelfUpdatePaths(renamedPath), SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(new SelfUpdatePaths(renamedPath),
             () => { Assert.Fail("A non-canonical executable must be rejected before resolving a release."); return null!; },
             (download, path) => Assert.Fail("A non-canonical executable must not download."), CreateImmediateWorkflowCoordinator());
 
@@ -625,7 +625,7 @@ public class SelfUpdateWorkflowTests
 
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
         var stagedBytes = File.ReadAllBytes(files.Paths.StagedPath);
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
             (download, path) => Assert.Fail("Invalid installed version output must fail before downloading."),
             CreateImmediateWorkflowCoordinator());
@@ -652,7 +652,7 @@ public class SelfUpdateWorkflowTests
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
         var blockedBytes = File.ReadAllBytes(blockedPath);
         using var blocked = new FileStream(blockedPath, FileMode.Open, FileAccess.Read, FileShare.Read);
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
             (download, path) => Assert.Fail("Locked staging must fail before downloading."), CreateImmediateWorkflowCoordinator());
 
@@ -668,9 +668,7 @@ public class SelfUpdateWorkflowTests
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void CleanupDeletesOldBackupsOnlyWhenLoadedVersionMatchesCanonical(bool staleLoadedVersion)
+    public void CleanupDeletesOldBackupsWhileTransactionLocksAreHeld()
     {
         using var files = new SelfUpdateTestFiles();
         var originalBytes = File.ReadAllBytes(files.Paths.InstalledPath);
@@ -678,24 +676,17 @@ public class SelfUpdateWorkflowTests
         File.WriteAllText(files.BackupPath + ".rejected", "aged rejected executable");
         File.SetLastWriteTimeUtc(files.BackupPath, DateTime.UtcNow.AddDays(-8));
         File.SetLastWriteTimeUtc(files.BackupPath + ".rejected", DateTime.UtcNow.AddDays(-8));
-        var loadedVersion = staleLoadedVersion ? SelfUpdateTestFiles.OriginalVersion + "+other" : SelfUpdateTestFiles.OriginalVersion;
-        var workflow = new SelfUpdateTestWorkflow(files.Paths, loadedVersion,
+        var workflow = new SelfUpdateTestWorkflow(files.Paths,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
             (download, path) =>
             {
                 AssertWorkflowLocksHeld(files.Paths);
-                Assert.AreEqual(staleLoadedVersion, File.Exists(files.BackupPath));
-                Assert.AreEqual(staleLoadedVersion, File.Exists(files.BackupPath + ".rejected"));
+                Assert.IsFalse(File.Exists(files.BackupPath));
+                Assert.IsFalse(File.Exists(files.BackupPath + ".rejected"));
                 SelfUpdateTestFiles.WriteExecutable(path, ReleaseVersionString(download));
             }, CreateImmediateWorkflowCoordinator());
 
         Assert.AreEqual(CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion).Version.ToString(), workflow.Execute());
-
-        if (staleLoadedVersion)
-        {
-            Assert.AreEqual("aged backup", File.ReadAllText(files.BackupPath));
-            Assert.AreEqual("aged rejected executable", File.ReadAllText(files.BackupPath + ".rejected"));
-        }
 
         var transactionBackups = Directory.GetFiles(files.Paths.DirectoryPath, "*.old.*")
             .Where(path => path != files.BackupPath && path != files.BackupPath + ".rejected").ToArray();
@@ -720,7 +711,7 @@ public class SelfUpdateWorkflowTests
         using var files = new SelfUpdateTestFiles();
         var original = File.ReadAllBytes(files.Paths.InstalledPath);
         var replacement = File.ReadAllBytes(files.Paths.StagedPath);
-        var workflow = new SelfUpdateWorkflow(files.Paths, SelfUpdateTestFiles.OriginalVersion,
+        var workflow = new SelfUpdateWorkflow(files.Paths,
             () => CreateWorkflowRelease(SelfUpdateTestFiles.ReplacementVersion),
             (release, destination) =>
             {

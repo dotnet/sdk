@@ -6,6 +6,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 /// <summary>Owns command coordination through synchronous process shutdown, including telemetry flush.</summary>
 internal sealed class SelfUpdateInvocation : IDisposable
 {
+    // Command dispatch is synchronous, so thread-local ambient state isolates concurrent hosts.
+    // Saving the previous value lets nested host and test invocations restore their outer context.
     private readonly SelfUpdateInvocation? _previous;
     private readonly List<IDisposable> _leases = [];
     private bool _passedGate;

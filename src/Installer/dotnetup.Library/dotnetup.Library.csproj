@@ -77,7 +77,8 @@
     <EmbeddedResource Update="Strings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Tools.Bootstrapper" />
   </ItemGroup>
 
-  <!-- Authenticode verification of self-update replacements reuses the workload MSI signature checks. -->
+  <!-- Authenticode verification of self-update replacements reuses the workload MSI signature checks.
+       NativeMethods.txt is CsWin32 input for the Authenticode APIs used by that shared implementation. -->
   <ItemGroup Condition="'$(TargetOS)' == 'windows'">
     <PackageReference Include="Microsoft.Windows.CsWin32" PrivateAssets="all" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" />
     <AdditionalFiles Include="NativeMethods.txt" />

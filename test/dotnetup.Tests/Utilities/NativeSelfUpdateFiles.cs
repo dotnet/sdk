@@ -75,7 +75,7 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
     }
 
     public SelfUpdateWorkflow CreateWorkflow(Action<ResolvedDownload, string>? download = null, SelfUpdateCoordinator? coordinator = null)
-        => new(Paths, OriginalVersion, () => Release, download ?? CopyReplacement, coordinator);
+        => new(Paths, () => Release, download ?? CopyReplacement, coordinator);
 
     public void CopyReplacement(ResolvedDownload release, string destination)
     {

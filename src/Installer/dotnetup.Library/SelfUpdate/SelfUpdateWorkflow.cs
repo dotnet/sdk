@@ -10,16 +10,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 internal class SelfUpdateWorkflow
 {
     private readonly SelfUpdatePaths _paths;
-    private readonly string _loadedVersion;
     private readonly Func<ResolvedDownload> _resolve;
     private readonly Action<ResolvedDownload, string> _download;
     private readonly SelfUpdateCoordinator _coordinator;
 
-    public SelfUpdateWorkflow(SelfUpdatePaths paths, string loadedVersion, Func<ResolvedDownload> resolve,
+    public SelfUpdateWorkflow(SelfUpdatePaths paths, Func<ResolvedDownload> resolve,
         Action<ResolvedDownload, string> download, SelfUpdateCoordinator? coordinator = null)
     {
         _paths = paths;
-        _loadedVersion = loadedVersion;
         _resolve = resolve;
         _download = download;
         _coordinator = coordinator ?? new SelfUpdateCoordinator();
@@ -33,6 +31,9 @@ internal class SelfUpdateWorkflow
     /// the installed version. Receives the installed and the channel's versions.
     /// </summary>
     public Action<ReleaseVersion, ReleaseVersion>? OnForcedUpdate { get; init; }
+
+    /// <summary>Invoked once with the first ignored failure encountered while cleaning old backups.</summary>
+    public Action<Exception>? OnCleanupFailure { get; init; }
 
     public string? Execute(Action<IDisposable> retainUntilExit)
     {
@@ -184,7 +185,7 @@ internal class SelfUpdateWorkflow
     {
         ClearStagingFile(_paths.StagedPath);
         ClearStagingFile(_paths.StagedPath + ".download");
-        SelfUpdateCleanup.RunWithUpdateLock(_paths.InstalledPath, _loadedVersion);
+        SelfUpdateCleanup.RunWithUpdateLock(_paths.InstalledPath, OnCleanupFailure);
         _download(release, _paths.StagedPath);
 
         try

@@ -12,6 +12,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 /// <summary>Reads the full version via executable startup with bounded output and execution time; it does not authenticate releases.</summary>
 internal static class SelfUpdateVerifier
 {
+    private const int StandardOutputCaptureLimit = 4096;
+    private const int StandardErrorCaptureLimit = 4096;
+    private const int CaptureBufferSize = 4096;
     internal const string Utf8EnvironmentVariable = "DOTNETUP_PRIVATE_VERSION_UTF8";
     private static readonly TimeSpan s_terminationTimeout = TimeSpan.FromSeconds(5);
 
@@ -90,8 +93,8 @@ internal static class SelfUpdateVerifier
         }
 
         using var cancellation = new CancellationTokenSource(timeout);
-        var stdoutTask = CaptureAsync(process.StandardOutput.BaseStream, 4096, cancellation.Token);
-        var stderrTask = CaptureAsync(process.StandardError.BaseStream, 4096, cancellation.Token);
+        var stdoutTask = CaptureAsync(process.StandardOutput.BaseStream, StandardOutputCaptureLimit, cancellation.Token);
+        var stderrTask = CaptureAsync(process.StandardError.BaseStream, StandardErrorCaptureLimit, cancellation.Token);
         Exception? failure = null;
         string? version = null;
         try
@@ -101,7 +104,7 @@ internal static class SelfUpdateVerifier
                 .WaitAsync(cancellation.Token).ConfigureAwait(false);
             var output = await stdoutTask.ConfigureAwait(false);
             var stdout = Encoding.UTF8.GetString(output).Trim();
-            if (process.ExitCode != 0 || output.Length >= 4096 || !Microsoft.Deployment.DotNet.Releases.ReleaseVersion.TryParse(stdout, out _))
+            if (process.ExitCode != 0 || output.Length >= StandardOutputCaptureLimit || !Microsoft.Deployment.DotNet.Releases.ReleaseVersion.TryParse(stdout, out _))
             {
                 var stderr = Encoding.UTF8.GetString(await stderrTask.ConfigureAwait(false));
                 var diagnostic = new string(stderr.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
@@ -196,8 +199,9 @@ internal static class SelfUpdateVerifier
     private static async Task<byte[]> CaptureAsync(Stream stream, int limit, CancellationToken cancellationToken)
     {
         var captured = new byte[limit];
-        var buffer = new byte[4096];
+        var buffer = new byte[CaptureBufferSize];
         var length = 0;
+        // Keep draining after the capture limit so the child cannot deadlock on a full redirected pipe.
         while (true)
         {
             var read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);

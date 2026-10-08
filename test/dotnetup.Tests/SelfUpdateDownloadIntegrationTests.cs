@@ -74,7 +74,7 @@ public class SelfUpdateDownloadIntegrationTests
         Assert.AreNotEqual(advertisedVersion, files.OriginalVersion);
         Assert.AreNotEqual(advertisedVersion, files.ReplacementVersion);
 
-        var workflow = new SelfUpdateWorkflow(files.Paths, files.OriginalVersion,
+        var workflow = new SelfUpdateWorkflow(files.Paths,
             () => downloader.ResolveDotnetupDownload(files.Release.Rid),
             (release, destination) => downloader.DownloadWithVerification(release, destination));
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => SelfUpdateTestWorkflow.ExecuteAndReleaseLocks(workflow));
@@ -141,7 +141,7 @@ public class SelfUpdateDownloadIntegrationTests
         => new(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
 
     private static SelfUpdateWorkflow CreateWorkflow(NativeSelfUpdateFiles files, DotnetDownloader downloader, Action? afterResolution = null)
-        => new(files.Paths, files.OriginalVersion, () =>
+        => new(files.Paths, () =>
         {
             var release = downloader.ResolveDotnetupDownload(files.Release.Rid);
             Assert.AreEqual(files.Release.Version, release.Version);

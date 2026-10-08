@@ -511,6 +511,11 @@ Or open a new terminal.</target>
         <target state="new">The dotnetup release channel to update from (daily, preview, or stable). The default is the channel of the running dotnetup build.</target>
         <note>{Locked="dotnetup"} {Locked="daily"} {Locked="preview"} {Locked="stable"}</note>
       </trans-unit>
+      <trans-unit id="SelfUpdateCleanupWarning">
+        <source>Dotnetup could not remove one or more old self-update backup files. A future update may remove them.</source>
+        <target state="new">Dotnetup could not remove one or more old self-update backup files. A future update may remove them.</target>
+        <note>{Locked="Dotnetup"}</note>
+      </trans-unit>
       <trans-unit id="SelfUpdateCommandDescription">
         <source>Update dotnetup to the latest release in a channel.</source>
         <target state="new">Update dotnetup to the latest release in a channel.</target>

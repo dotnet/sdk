@@ -14,8 +14,9 @@ internal static class SelfUpdateCleanup
     private const string RejectedSuffix = ".rejected";
 
     /// <summary>Runs cleanup with the caller's update lock, without acquiring or releasing it.</summary>
-    public static void RunWithUpdateLock(string installedPath, string loadedVersion)
+    public static void RunWithUpdateLock(string installedPath, Action<Exception>? onFailure = null)
     {
+        Exception? firstFailure = null;
         try
         {
             installedPath = SelfUpdatePaths.ResolvePath(installedPath);
@@ -25,14 +26,26 @@ internal static class SelfUpdateCleanup
                 return;
             }
 
-            DeleteExpiredBackups(installedPath, loadedVersion, directory);
+            DeleteExpiredBackups(installedPath, directory, ref firstFailure);
         }
-        catch (Exception)
+        catch (Exception exception)
         {
+            firstFailure = exception;
+        }
+
+        if (firstFailure is not null)
+        {
+            try
+            {
+                onFailure?.Invoke(firstFailure);
+            }
+            catch (Exception)
+            {
+            }
         }
     }
 
-    private static void DeleteExpiredBackups(string installedPath, string loadedVersion, DirectoryInfo directory)
+    private static void DeleteExpiredBackups(string installedPath, DirectoryInfo directory, ref Exception? firstFailure)
     {
         var cutoff = DateTime.UtcNow.AddDays(-BackupRetentionDays);
         var prefix = Path.GetFileName(installedPath) + ".old.";
@@ -43,7 +56,6 @@ internal static class SelfUpdateCleanup
             IgnoreInaccessible = true,
         }).GetEnumerator();
 
-        var versionChecked = false;
         for (var visited = 0; visited < EntryBudget && entries.MoveNext(); visited++)
         {
             try
@@ -54,33 +66,17 @@ internal static class SelfUpdateCleanup
                     continue;
                 }
 
-                entry.Refresh();
-                if (!entry.Exists || (entry.Attributes & (FileAttributes.Directory | FileAttributes.ReparsePoint)) != 0 ||
+                if ((entry.Attributes & (FileAttributes.Directory | FileAttributes.ReparsePoint)) != 0 ||
                     entry.LastWriteTimeUtc > cutoff)
                 {
                     continue;
                 }
 
-                if (!versionChecked)
-                {
-                    // --version bypasses cleanup and both locks. Keep the parent's update lock
-                    // through comparison and deletion; compare build metadata too.
-                    if (!string.Equals(SelfUpdateVerifier.ReadVersion(installedPath), loadedVersion, StringComparison.Ordinal))
-                    {
-                        return;
-                    }
-
-                    versionChecked = true;
-                }
-
                 File.Delete(entry.FullName);
             }
-            catch (DotnetInstallException)
+            catch (Exception exception)
             {
-                return;
-            }
-            catch (Exception)
-            {
+                firstFailure ??= exception;
             }
         }
     }
