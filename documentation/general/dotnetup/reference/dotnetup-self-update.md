@@ -28,10 +28,9 @@ When the installed version is already current, or when the available build is
 older on the same channel, the command reports that no update was applied and
 returns exit code `0`.
 
-The executable must be named `dotnetup` (`dotnetup.exe` on Windows) and be in a
-trusted, writable installation directory. Self-update isn't supported when
-dotnetup runs through the `dotnet` host or from a path that contains a symbolic
-link, junction, or other reparse point.
+The executable must be in a trusted, writable installation directory. Self-update
+isn't supported when dotnetup runs through the `dotnet` host or from a path that
+contains a symbolic link, junction, or other reparse point.
 
 Self-update does not update managed SDK/runtime installations; use
 [`dotnetup update`](dotnetup-update.md) for those. For older dotnetup versions or

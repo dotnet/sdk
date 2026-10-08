@@ -596,11 +596,6 @@ Or open a new terminal.</target>
         <target state="new">Set whether install and update commands mention available dotnetup updates, without updating dotnetup.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
-      <trans-unit id="SelfUpdateRequiresCanonicalName">
-        <source>Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</source>
-        <target state="new">Self-update requires the dotnetup executable to be named '{0}', but it is '{1}'. Rename the executable to '{0}' and run the command again.</target>
-        <note>{Locked="dotnetup"} {0} is the required executable file name. {1} is the full path of the running executable.</note>
-      </trans-unit>
       <trans-unit id="SelfUpdateRollbackFailed">
         <source>Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</source>
         <target state="new">Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</target>

@@ -52,7 +52,7 @@ internal sealed class SelfUpdatePaths
         return true;
     }
 
-    /// <summary>Validates a self-update target: the canonical name plus <see cref="ValidateExecutable"/>.</summary>
+    /// <summary>Validates the self-update executable and its location.</summary>
     public void Validate()
     {
         ValidateLocation();
@@ -60,9 +60,7 @@ internal sealed class SelfUpdatePaths
     }
 
     /// <summary>
-    /// Validates that the executable and its directories exist without links or reparse points,
-    /// regardless of the executable's file name. The non-safe command gate uses this so renamed
-    /// executables can run ordinary commands; only self-update requires the canonical name.
+    /// Validates that the executable and its directories exist without links or reparse points.
     /// </summary>
     public void ValidateExecutable()
     {
@@ -113,17 +111,7 @@ internal sealed class SelfUpdatePaths
     }
 
     internal void ValidateLocation()
-    {
-        var comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
-        var expectedName = OperatingSystem.IsWindows() ? "dotnetup.exe" : "dotnetup";
-        if (!string.Equals(Path.GetFileName(InstalledPath), expectedName, comparison))
-        {
-            throw new SelfUpdateLocationException(DotnetInstallErrorCode.DotnetupNonCanonicalExecutableName,
-                string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateRequiresCanonicalName, expectedName, InstalledPath));
-        }
-
-        ValidateDirectory(DirectoryPath);
-    }
+        => ValidateDirectory(DirectoryPath);
 
     internal void ValidateBackupPath(string backupPath)
     {

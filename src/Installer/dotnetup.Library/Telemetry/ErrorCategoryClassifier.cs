@@ -37,7 +37,6 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.DotnetupBusyWithUpdateOrCleanup => ErrorCategory.User,
             DotnetInstallErrorCode.DotnetupBusyWithAnotherCommand => ErrorCategory.User,
             DotnetInstallErrorCode.DotnetupUnsupportedInstallLocation => ErrorCategory.User,
-            DotnetInstallErrorCode.DotnetupNonCanonicalExecutableName => ErrorCategory.User,
             DotnetInstallErrorCode.DotnetupIdentityUnavailable => ErrorCategory.Product,
             DotnetInstallErrorCode.DotnetupVerificationFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.DotnetupRollbackFailed => ErrorCategory.Product,

@@ -164,9 +164,6 @@ public enum DotnetInstallErrorCode
     /// <summary>The dotnetup executable path contains a symbolic link, junction, or other reparse point.</summary>
     DotnetupUnsupportedInstallLocation,
 
-    /// <summary>Self-update was run from an executable that is not named dotnetup(.exe).</summary>
-    DotnetupNonCanonicalExecutableName,
-
     /// <summary>The user declined confirmation of an operation.</summary>
     OperationCancelled,
 }
