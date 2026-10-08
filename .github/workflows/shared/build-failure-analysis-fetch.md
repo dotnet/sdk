@@ -548,6 +548,8 @@ jobs:
           MAX_UNZIP_BYTES=2147483648    # 2 GB uncompressed per artifact
           MAX_TOTAL_BYTES=4294967296    # 4 GB uncompressed across all artifacts
           MAX_TOTAL_ZIP_BYTES=3221225472 # 3 GB compressed downloaded in total
+          MAX_ZIP_ENTRIES=65536
+          MAX_ZIP_METADATA_BYTES=16777216 # 16 MB central directory
           # `--max-time` is per attempt, so `--retry N` multiplies it: the whole
           # download phase, not one transfer, is what has to fit inside this job's
           # `timeout-minutes`. Give the loop a wall-clock deadline and derive every
@@ -674,12 +676,158 @@ jobs:
             if [ "${ZIP_BYTES}" -gt "${ZIP_CAP}" ]; then
               echo "::warning::Skipping ${safe_name}: download exceeded the ${ZIP_CAP}-byte cap."; legs_failed=$((legs_failed + 1)); continue
             fi
-            UNCOMP=$(unzip -l "${ZIP_TMP}" 2>/dev/null | tail -1 | awk '{print $1}')
-            # Fail safe: if the uncompressed size isn't a plain integer (corrupt
-            # zip / unexpected `unzip -l` output), we can't verify it — skip the
-            # artifact rather than let a non-numeric value bypass the `-gt` guard.
-            if ! printf '%s' "${UNCOMP}" | grep -qE '^[0-9]+$'; then
-              echo "::warning::Skipping ${safe_name}: could not determine uncompressed size (unparseable unzip output)."; legs_failed=$((legs_failed + 1)); continue
+            # --- Validate ZIP entry metadata before extraction ---
+            # Read only the bounded ZIP trailer first. ZipFile eagerly materializes
+            # the central directory, so its entry-count check would otherwise run
+            # only after an attacker-controlled allocation. The preflight also
+            # replaces the earlier unbounded `unzip -l` size probe.
+            UNCOMP=$(timeout 60 python3 - "${ZIP_TMP}" "${MAX_ZIP_ENTRIES}" "${MAX_ZIP_METADATA_BYTES}" 2>/dev/null <<'PY'
+          import os
+          import stat
+          import struct
+          import sys
+          import zipfile
+
+          archive_path = sys.argv[1]
+          max_entries = int(sys.argv[2])
+          max_metadata_bytes = int(sys.argv[3])
+          eocd_struct = struct.Struct("<4s4H2LH")
+          zip64_locator_struct = struct.Struct("<4sLQL")
+          zip64_eocd_struct = struct.Struct("<4sQ2H2L4Q")
+
+          def invalid_archive():
+              raise SystemExit(6)
+
+          try:
+              file_size = os.path.getsize(archive_path)
+              if file_size < eocd_struct.size:
+                  invalid_archive()
+              tail_size = min(file_size, eocd_struct.size + 65535)
+              with open(archive_path, "rb") as archive_file:
+                  archive_file.seek(file_size - tail_size)
+                  tail = archive_file.read(tail_size)
+                  search_end = len(tail)
+                  while True:
+                      eocd_index = tail.rfind(b"PK\x05\x06", 0, search_end)
+                      if eocd_index < 0:
+                          invalid_archive()
+                      if eocd_index + eocd_struct.size <= len(tail):
+                          eocd = eocd_struct.unpack_from(tail, eocd_index)
+                          if eocd_index + eocd_struct.size + eocd[-1] == len(tail):
+                              break
+                      search_end = eocd_index
+
+                  eocd_offset = file_size - tail_size + eocd_index
+                  (
+                      _,
+                      disk_number,
+                      central_directory_disk,
+                      entries_on_disk,
+                      entry_count,
+                      central_directory_size,
+                      central_directory_offset,
+                      _,
+                  ) = eocd
+                  trailer_offset = eocd_offset
+                  locator_offset = eocd_offset - zip64_locator_struct.size
+                  locator_data = b""
+                  if locator_offset >= 0:
+                      archive_file.seek(locator_offset)
+                      locator_data = archive_file.read(zip64_locator_struct.size)
+                  has_zip64_locator = (
+                      len(locator_data) == zip64_locator_struct.size
+                      and locator_data[:4] == b"PK\x06\x07"
+                  )
+
+                  if has_zip64_locator:
+                      locator_signature, zip64_disk, zip64_offset, total_disks = (
+                          zip64_locator_struct.unpack(locator_data)
+                      )
+                      if locator_signature != b"PK\x06\x07" or zip64_disk != 0 or total_disks != 1:
+                          invalid_archive()
+
+                      archive_file.seek(zip64_offset)
+                      zip64_data = archive_file.read(zip64_eocd_struct.size)
+                      if len(zip64_data) != zip64_eocd_struct.size:
+                          invalid_archive()
+                      (
+                          zip64_signature,
+                          zip64_record_size,
+                          _,
+                          _,
+                          disk_number,
+                          central_directory_disk,
+                          entries_on_disk,
+                          entry_count,
+                          central_directory_size,
+                          central_directory_offset,
+                      ) = zip64_eocd_struct.unpack(zip64_data)
+                      if (
+                          zip64_signature != b"PK\x06\x06"
+                          or zip64_record_size < 44
+                          or zip64_offset + 12 + zip64_record_size != locator_offset
+                          or disk_number != 0
+                          or central_directory_disk != 0
+                          or entries_on_disk != entry_count
+                      ):
+                          invalid_archive()
+                      trailer_offset = zip64_offset
+                  elif (
+                      disk_number != 0
+                      or central_directory_disk != 0
+                      or entries_on_disk != entry_count
+                  ):
+                      invalid_archive()
+
+                  if entry_count > max_entries:
+                      raise SystemExit(4)
+                  if central_directory_size > max_metadata_bytes:
+                      raise SystemExit(5)
+                  if (
+                      central_directory_offset > trailer_offset
+                      or central_directory_size > trailer_offset - central_directory_offset
+                      or (entry_count and central_directory_size < entry_count * 46)
+                  ):
+                      invalid_archive()
+
+              with zipfile.ZipFile(archive_path) as archive:
+                  entries = archive.infolist()
+                  if len(entries) != entry_count or archive.start_dir != central_directory_offset:
+                      invalid_archive()
+                  uncompressed_size = 0
+                  for entry in entries:
+                      name = entry.filename.replace("\\", "/")
+                      parts = name.split("/")
+                      if (
+                          not name
+                          or "\0" in name
+                          or name.startswith("/")
+                          or ".." in parts
+                          or (len(parts[0]) >= 2 and parts[0][0].isalpha() and parts[0][1] == ":")
+                      ):
+                          raise SystemExit(2)
+                      file_type = stat.S_IFMT((entry.external_attr >> 16) & 0xFFFF)
+                      if file_type not in (0, stat.S_IFREG, stat.S_IFDIR):
+                          raise SystemExit(3)
+                      uncompressed_size += entry.file_size
+          except (OSError, OverflowError, struct.error, ValueError, zipfile.BadZipFile):
+              invalid_archive()
+
+          print(uncompressed_size)
+          PY
+            )
+            zscan_rc=$?
+            if [ "${zscan_rc}" -ne 0 ]; then
+              case "${zscan_rc}" in
+                2) echo "::warning::Skipping ${safe_name}: archive has a suspicious entry path." ;;
+                3) echo "::warning::Skipping ${safe_name}: archive has a symlink, device, or other unsupported entry type." ;;
+                4) echo "::warning::Skipping ${safe_name}: archive exceeds the ${MAX_ZIP_ENTRIES}-entry limit." ;;
+                5) echo "::warning::Skipping ${safe_name}: archive central directory exceeds the ${MAX_ZIP_METADATA_BYTES}-byte limit." ;;
+                6) echo "::warning::Skipping ${safe_name}: archive structure is invalid or inconsistent." ;;
+                *) echo "::warning::Skipping ${safe_name}: archive validation failed or timed out." ;;
+              esac
+              legs_failed=$((legs_failed + 1))
+              continue
             fi
             # ZIP64 uncompressed sizes can reach ~20 digits — beyond Bash's
             # signed 64-bit range, where `-gt` (and the cumulative `$((...))`
@@ -687,6 +835,9 @@ jobs:
             # archive slip past the guard. Any value with more digits than the
             # limit is unambiguously larger, so reject on decimal length first;
             # after this, UNCOMP fits safely in the integer range used below.
+            if ! printf '%s' "${UNCOMP}" | grep -qE '^[0-9]+$'; then
+              echo "::warning::Skipping ${safe_name}: could not determine uncompressed size."; legs_failed=$((legs_failed + 1)); continue
+            fi
             if [ "${#UNCOMP}" -gt "${#MAX_UNZIP_BYTES}" ]; then
               echo "::warning::Skipping ${safe_name}: uncompressed size has ${#UNCOMP} digits, exceeding the ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
             fi
@@ -696,27 +847,24 @@ jobs:
             if [ $((TOTAL_BYTES + UNCOMP)) -gt "${MAX_TOTAL_BYTES}" ]; then
               echo "::warning::Cumulative uncompressed budget ${MAX_TOTAL_BYTES} reached at ${safe_name}; stopping extraction."; budget_hit=1; break
             fi
-            # Refuse the archive if any entry path is absolute or has a `..`
-            # component (defense-in-depth over unzip's own traversal guard),
-            # then extract `*.binlog` entries *preserving* their in-archive
-            # paths (no `-j`) under a fresh dir + timeout, so two binlogs that
-            # share a basename in different folders don't overwrite each other.
-            if unzip -Z1 "${ZIP_TMP}" 2>/dev/null | grep -qE '(^/|(^|/)\.\.(/|$))'; then
-              echo "::warning::Skipping ${safe_name}: archive has a suspicious (absolute or ..) entry path."; legs_failed=$((legs_failed + 1)); continue
-            fi
-            # `unzip` exit 11 means "no files matched" -- the artifact simply
-            # carries no binlog. In the `leg` layout the candidate set is every
-            # artifact on the build, so non-log artifacts (e.g.
-            # `BuildConfiguration`) legitimately hit this; it is not a read
-            # failure and must not fail the run closed. Any other non-zero exit
-            # (corrupt archive, timeout) still counts as an unreadable leg.
+            # --- Extract validated binlogs ---
+            # Preserve in-archive paths under a fresh directory so duplicate
+            # basenames in separate folders do not overwrite each other.
+            # Use the same ZipFile parser that was validated above. Info-ZIP also
+            # interprets mode-bearing extra fields, so handing the archive to
+            # `unzip` here would let the validator see a regular entry that the
+            # extractor materializes as a symlink or special file.
             #
-            # Both cases `continue`, so nothing was written to "${AX_DIR}" and the
+            # A zero count means the artifact simply carries no binlog. In the
+            # `leg` layout the candidate set is every artifact on the build, so
+            # non-log artifacts (e.g. `BuildConfiguration`) legitimately hit
+            # this and must not fail the run closed.
+            #
+            # Both skip cases `continue`, so nothing was written to "${AX_DIR}" and the
             # uncompressed budget below is left untouched. Charging it for an
             # archive that extracted nothing would let one large binlog-free
             # artifact push a genuinely useful later leg past MAX_TOTAL_BYTES
             # and trip the fail-closed check on a build that was fine.
-            uz=0
             # Extraction shares the deadline with the transfers. Otherwise a run that
             # spent most of its budget downloading could still queue one bounded
             # extraction per artifact and walk the job past `timeout-minutes` without
@@ -726,13 +874,40 @@ jobs:
               echo "::warning::Fetch budget exhausted before extracting ${safe_name}; stopping."; budget_hit=1; break
             fi
             [ "${TIME_LEFT}" -gt 120 ] && TIME_LEFT=120
-            timeout "${TIME_LEFT}" unzip -o "${ZIP_TMP}" '*.binlog' -d "${AX_DIR}" >/dev/null 2>&1 || uz=$?
-            if [ "${uz}" -eq 11 ]; then
+            EXTRACTED=$(timeout "${TIME_LEFT}" python3 - "${ZIP_TMP}" "${AX_DIR}" 2>/dev/null <<'PY'
+          import os
+          import shutil
+          import sys
+          import zipfile
+
+          archive_path = sys.argv[1]
+          destination_root = os.path.realpath(sys.argv[2])
+          extracted = 0
+          with zipfile.ZipFile(archive_path) as archive:
+              for entry in archive.infolist():
+                  name = entry.filename.replace("\\", "/")
+                  if entry.is_dir() or not name.endswith(".binlog"):
+                      continue
+                  destination = os.path.realpath(
+                      os.path.join(destination_root, *name.split("/"))
+                  )
+                  if os.path.commonpath((destination_root, destination)) != destination_root:
+                      raise RuntimeError("archive entry escaped extraction root")
+                  os.makedirs(os.path.dirname(destination), exist_ok=True)
+                  with archive.open(entry) as source, open(destination, "wb") as target:
+                      shutil.copyfileobj(source, target, length=1024 * 1024)
+                  extracted += 1
+          print(extracted)
+          PY
+            )
+            extract_rc=$?
+            if [ "${extract_rc}" -ne 0 ] || ! printf '%s' "${EXTRACTED}" | grep -qE '^[0-9]+$'; then
+              echo "::warning::Skipping ${safe_name}: extraction failed or timed out."; legs_failed=$((legs_failed + 1)); continue
+            fi
+            if [ "${EXTRACTED}" -eq 0 ]; then
               echo "${safe_name}: no binlog inside; nothing to stage from this artifact."; continue
             fi
-            if [ "${uz}" -ne 0 ]; then
-              echo "::warning::Skipping ${safe_name}: extraction failed or timed out (unzip exit ${uz})."; legs_failed=$((legs_failed + 1)); continue
-            fi
+            # --- Stage extracted binlogs ---
             # Consume the cumulative budget only once the archive actually
             # extracted — not on a suspicious-path or extraction-failure skip
             # above — so a skipped leg can't wrongly exhaust the budget and
