@@ -24,16 +24,7 @@ internal static class NonSafeCommandGate
                 ?? throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupUpdateInProgress,
                     Strings.SelfUpdateInProgress);
             paths.ValidateExecutable();
-            string installedVersion;
-            try
-            {
-                installedVersion = SelfUpdateVerifier.ReadInstalledVersion(paths.InstalledPath);
-            }
-            catch (DotnetInstallException exception)
-            {
-                throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupIdentityUnavailable,
-                    Strings.SelfUpdateIdentityUnavailable, exception);
-            }
+            string installedVersion = ReadInstalledVersion(paths.InstalledPath);
 
             if (!string.Equals(loadedVersion, installedVersion, StringComparison.Ordinal))
             {
@@ -62,6 +53,19 @@ internal static class NonSafeCommandGate
         finally
         {
             lease?.Dispose();
+        }
+    }
+
+    private static string ReadInstalledVersion(string installedPath)
+    {
+        try
+        {
+            return SelfUpdateVerifier.ReadInstalledVersion(installedPath);
+        }
+        catch (DotnetInstallException exception)
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.DotnetupIdentityUnavailable,
+                Strings.SelfUpdateIdentityUnavailable, exception);
         }
     }
 }
