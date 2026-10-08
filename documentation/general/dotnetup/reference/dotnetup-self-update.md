@@ -32,6 +32,10 @@ The executable must be in a trusted, writable installation directory. Self-updat
 isn't supported when dotnetup runs through the `dotnet` host or from a path that
 contains a symbolic link, junction, or other reparse point.
 
+While self-update holds its coordination locks, other dotnetup commands may fail
+with a message that an update is in progress. Retry the command after self-update
+finishes.
+
 Self-update does not update managed SDK/runtime installations; use
 [`dotnetup update`](dotnetup-update.md) for those. For older dotnetup versions or
 reinstallation after unrecoverable interruption, use the existing

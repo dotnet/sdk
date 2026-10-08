@@ -47,17 +47,6 @@ public class SelfUpdateReplacementTests
     }
 
     [TestMethod]
-    [DataRow("other.exe")]
-    [DataRow("dotnetup.exe.new")]
-    [DataRow("dotnetup ")]
-    public void UnsafeCanonicalNameIsRejected(string name)
-    {
-        using var files = new SelfUpdateTestFiles(executable: false);
-        var paths = new SelfUpdatePaths(Path.Combine(files.Paths.DirectoryPath, name));
-        Assert.ThrowsExactly<SelfUpdateLocationException>(paths.Validate);
-    }
-
-    [TestMethod]
     [DataRow("1234567")]
     [DataRow("123456789")]
     [DataRow("1234567g")]

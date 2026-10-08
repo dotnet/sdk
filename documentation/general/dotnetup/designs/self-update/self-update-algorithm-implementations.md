@@ -171,7 +171,7 @@ Cleanup resolves the containing directory using the same path logic as replaceme
 
 Consumers launching `dotnetup` programmatically should retry transient file-not-found errors with a bounded delay before treating the installation as missing. Retry ordinary commands rejected at the Stage A gate after the update completes. Windows rollback deliberately uses two non-overwriting renames and can also leave a gap. Unix same-filesystem moves use the runtime's rename behavior on supported local filesystems, not a power-loss-durable transaction; macOS behavior remains unverified in this implementation handoff.
 
-Abrupt termination can leave `D/dotnetup.exe.new` or `D/dotnetup.exe.old.*` behind indefinitely if dotnetup never updates again. Naming each backup with `t` prevents those stale files from corrupting or blocking a later transaction. Step 2.2 clears stale staging files during a later update; backup cleanup in steps 2.2 and 2.9 is opportunistic and runs only during a later update, when its canonical-build check permits it.
+Abrupt termination can leave `D/dotnetup.exe.new` or `D/dotnetup.exe.old.*` behind indefinitely if dotnetup never updates again. Naming each backup with `t` prevents those stale files from corrupting or blocking a later transaction. Step 2.2 clears stale staging files during a later update; backup cleanup in steps 2.2 and 2.9 is opportunistic and runs only during a later update, after the locked executable validation and authoritative version decision permit the transaction to continue.
 
 A dependent application — a long-running VS Code window, for example — may hold `D/dotnetup.exe.old.<t>` for weeks. Step 2.9 tolerates that rather than failing, and consumers decide how to surface it to the user.
 
