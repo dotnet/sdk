@@ -208,22 +208,22 @@
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
       <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.1-release-25428-01">
-      <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>51441adcd6c424ae7315d66ce7e96baf34d70369</Sha>
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.2-hotfix-26480-40">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/microsoft-vstest</Uri>
+      <Sha>4c9205451989c61ed3304a6fbac5b33bf7e6c35a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.14.1-release-25428-01">
-      <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>51441adcd6c424ae7315d66ce7e96baf34d70369</Sha>
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.14.2-hotfix-26480-40">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/microsoft-vstest</Uri>
+      <Sha>4c9205451989c61ed3304a6fbac5b33bf7e6c35a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.14.1-release-25428-01">
-      <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>51441adcd6c424ae7315d66ce7e96baf34d70369</Sha>
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.14.2-hotfix-26480-40">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/microsoft-vstest</Uri>
+      <Sha>4c9205451989c61ed3304a6fbac5b33bf7e6c35a</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.14.1-release-25428-01">
-      <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>51441adcd6c424ae7315d66ce7e96baf34d70369</Sha>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.14.2-hotfix-26480-40">
+      <Uri>https://dev.azure.com/dnceng/internal/_git/microsoft-vstest</Uri>
+      <Sha>4c9205451989c61ed3304a6fbac5b33bf7e6c35a</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.21">
