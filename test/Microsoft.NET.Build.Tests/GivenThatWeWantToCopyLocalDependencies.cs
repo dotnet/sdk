@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Xml.Linq;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
@@ -349,6 +351,300 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().NotHaveFiles(new[] {
                 $"apphost{Constants.ExeSuffix}",
             });
+        }
+
+        [TestMethod]
+        public void It_filters_runtime_assets_by_BundledRuntimeAssetRuntimeIdentifiers()
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            // sqlite package has RID-specific native assets for linux-x64, osx-x64, win7-x64, win7-x86.
+            // Setting BundledRuntimeAssetRuntimeIdentifiers to linux-x64 should filter output to only linux-x64 assets.
+            testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = "linux-x64";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager
+               .CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testProjectInstance);
+
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
+
+            var expectedFiles = new[]
+            {
+                $"{ProjectName}{Constants.ExeSuffix}",
+                $"{ProjectName}.deps.json",
+                $"{ProjectName}.dll",
+                $"{ProjectName}.pdb",
+                $"{ProjectName}.runtimeconfig.json",
+                $"{ProjectName}.runtimeconfig.dev.json",
+                "Newtonsoft.Json.dll",
+                "runtimes/linux-x64/native/libsqlite3.so",
+            };
+
+            outputDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
+
+        [TestMethod]
+        public void It_regenerates_the_build_deps_file_when_BundledRuntimeAssetRuntimeIdentifiers_changes()
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var buildCommand = new BuildCommand(testProjectInstance);
+
+            buildCommand.Execute("/p:BundledRuntimeAssetRuntimeIdentifiers=linux-x64")
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
+            var depsFilePath = Path.Combine(outputDirectory.FullName, $"{ProjectName}.deps.json");
+            var assetsFilePath = Path.Combine(testProjectInstance.Path, ProjectName, "obj", "project.assets.json");
+            var assetsWriteTime = File.GetLastWriteTimeUtc(assetsFilePath);
+            var depsWriteTime = File.GetLastWriteTimeUtc(depsFilePath);
+            using (var deps = JsonDocument.Parse(File.ReadAllText(depsFilePath)))
+            {
+                var runtimeTargets = deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                    .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets");
+                runtimeTargets.EnumerateObject().Select(asset => asset.Name)
+                    .Should().ContainSingle(asset => asset.Contains("linux-x64", StringComparison.Ordinal));
+            }
+
+            buildCommand.ShouldRestore = false;
+            buildCommand.Execute("/p:BundledRuntimeAssetRuntimeIdentifiers=linux-x64")
+                .Should()
+                .Pass();
+            File.GetLastWriteTimeUtc(depsFilePath).Should().Be(depsWriteTime);
+
+            buildCommand.Execute("/p:BundledRuntimeAssetRuntimeIdentifiers=osx-x64")
+                .Should()
+                .Pass();
+
+            using (var deps = JsonDocument.Parse(File.ReadAllText(depsFilePath)))
+            {
+                var runtimeTargets = deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                    .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets");
+                runtimeTargets.EnumerateObject().Select(asset => asset.Name)
+                    .Should().ContainSingle(asset => asset.Contains("osx-x64", StringComparison.Ordinal));
+            }
+
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            using (var deps = JsonDocument.Parse(File.ReadAllText(depsFilePath)))
+            {
+                var runtimeTargets = deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                    .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets");
+                runtimeTargets.EnumerateObject().Should().HaveCount(4);
+            }
+            File.GetLastWriteTimeUtc(assetsFilePath).Should().Be(assetsWriteTime);
+        }
+
+        [TestMethod]
+        public void It_filters_runtime_assets_to_multiple_BundledRuntimeAssetRuntimeIdentifiers()
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            // sqlite package has RID-specific native assets for linux-x64, osx-x64, win7-x64, win7-x86.
+            // Setting BundledRuntimeAssetRuntimeIdentifiers to linux-x64;win7-x64 should include linux-x64 and win7-x64 assets only.
+            testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = "linux-x64;win7-x64";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager
+               .CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testProjectInstance);
+
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = buildCommand.GetOutputDirectory(testProject.TargetFrameworks);
+
+            var expectedFiles = new[]
+            {
+                $"{ProjectName}{Constants.ExeSuffix}",
+                $"{ProjectName}.deps.json",
+                $"{ProjectName}.dll",
+                $"{ProjectName}.pdb",
+                $"{ProjectName}.runtimeconfig.json",
+                $"{ProjectName}.runtimeconfig.dev.json",
+                "Newtonsoft.Json.dll",
+                "runtimes/linux-x64/native/libsqlite3.so",
+                "runtimes/win7-x64/native/sqlite3.dll",
+            };
+
+            outputDirectory.Should().OnlyHaveFiles(expectedFiles);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void It_deduplicates_runtime_assets_selected_by_overlapping_runtime_identifiers(bool publish)
+        {
+            const string ProjectName = "OverlappingRuntimeAssets";
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = "linux-x64;linux-musl-x64";
+            testProject.AdditionalProperties["PreserveStoreLayout"] = "true";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+            testProject.ProjectChanges.Add(project =>
+            {
+                project.Root!.Add(XElement.Parse("""
+                    <Target Name="RecordFilteredRuntimeAssets" AfterTargets="FilterRuntimeAssetsByRuntimeIdentifier">
+                      <WriteLinesToFile File="$(IntermediateOutputPath)filtered-runtime-assets.txt"
+                                        Lines="@(RuntimeTargetsCopyLocalItems)"
+                                        Overwrite="true" />
+                    </Target>
+                    """));
+                project.Root.Add(XElement.Parse("""
+                    <Target Name="RecordResolvedPublishAssets" AfterTargets="_ResolveCopyLocalAssetsForPublish">
+                      <WriteLinesToFile File="$(IntermediateOutputPath)resolved-publish-assets.txt"
+                                        Lines="@(_ResolvedCopyLocalPublishAssets)"
+                                        Overwrite="true" />
+                    </Target>
+                    """));
+            });
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: publish.ToString());
+            MSBuildCommand command = publish ? new PublishCommand(testProjectInstance) : new BuildCommand(testProjectInstance);
+            command.Execute().Should().Pass();
+
+            var intermediateDirectory = command.GetIntermediateDirectory(testProject.TargetFrameworks).FullName;
+            File.ReadAllLines(Path.Combine(intermediateDirectory, "filtered-runtime-assets.txt"))
+                .Should().ContainSingle(asset => Path.GetFileName(asset) == "libsqlite3.so");
+            if (publish)
+            {
+                var publishAssets = File.ReadAllLines(Path.Combine(intermediateDirectory, "resolved-publish-assets.txt"));
+                publishAssets.Should().ContainSingle(asset => Path.GetFileName(asset) == "libsqlite3.so");
+                publishAssets.Should().ContainSingle(asset => Path.GetFileName(asset) == "Newtonsoft.Json.dll");
+            }
+
+            var outputDirectory = command.GetOutputDirectory(testProject.TargetFrameworks).FullName;
+            using var deps = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputDirectory, $"{ProjectName}.deps.json")));
+            deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets").EnumerateObject()
+                .Should().ContainSingle(asset => asset.Name == "runtimes/linux-x64/native/libsqlite3.so");
+        }
+
+        [TestMethod]
+        public void It_filters_runtime_assets_when_preserving_store_layout_during_publish()
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = "linux-x64";
+            testProject.AdditionalProperties["PreserveStoreLayout"] = "true";
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testProjectInstance);
+
+            publishCommand.Execute()
+                .Should()
+                .Pass();
+
+            var outputDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+            var sqliteAssets = Directory.GetFiles(outputDirectory.FullName, "*sqlite3*", SearchOption.AllDirectories)
+                .Select(path => Path.GetRelativePath(outputDirectory.FullName, path).Replace(Path.DirectorySeparatorChar, '/'));
+
+            sqliteAssets.Should().ContainSingle(asset =>
+                asset.EndsWith("runtimes/linux-x64/native/libsqlite3.so", StringComparison.Ordinal));
+        }
+
+        [TestMethod]
+        [DataRow("linux-x64", "osx-x64")]
+        [DataRow("", "linux-x64")]
+        [DataRow("linux-x64", "")]
+        [DataRow("linux-x64", "linux-x64")]
+        public void It_uses_the_publish_runtime_asset_filter_when_publishing_without_build(string buildFilter, string publishFilter)
+        {
+            const string ProjectName = "TestProjWithPackageDependencies";
+
+            TestProject testProject = new()
+            {
+                Name = ProjectName,
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.AdditionalProperties["BundledRuntimeAssetRuntimeIdentifiers"] = buildFilter;
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.PackageReferences.Add(new TestPackageReference("sqlite", "3.13.0"));
+
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: $"{buildFilter}-{publishFilter}");
+            var buildCommand = new BuildCommand(testProjectInstance);
+            buildCommand.Execute()
+                .Should()
+                .Pass();
+
+            var buildDepsPath = Path.Combine(buildCommand.GetOutputDirectory(testProject.TargetFrameworks).FullName, $"{ProjectName}.deps.json");
+            string buildDepsContents = File.ReadAllText(buildDepsPath);
+
+            var publishCommand = new PublishCommand(testProjectInstance) { ShouldRestore = false };
+            publishCommand.Execute("/p:NoBuild=true", $"/p:BundledRuntimeAssetRuntimeIdentifiers={publishFilter}")
+                .Should()
+                .Pass();
+
+            var outputDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+            using var deps = JsonDocument.Parse(File.ReadAllText(Path.Combine(outputDirectory.FullName, $"{ProjectName}.deps.json")));
+            var runtimeTargets = deps.RootElement.GetProperty("targets").EnumerateObject().Single().Value
+                .GetProperty("SQLite/3.13.0").GetProperty("runtimeTargets");
+            string[] expectedAssets = publishFilter == ""
+                ? ["runtimes/linux-x64/native/libsqlite3.so", "runtimes/osx-x64/native/libsqlite3.dylib",
+                   "runtimes/win7-x64/native/sqlite3.dll", "runtimes/win7-x86/native/sqlite3.dll"]
+                : publishFilter == "linux-x64"
+                    ? ["runtimes/linux-x64/native/libsqlite3.so"]
+                    : ["runtimes/osx-x64/native/libsqlite3.dylib"];
+            runtimeTargets.EnumerateObject().Select(asset => asset.Name).Should().BeEquivalentTo(expectedAssets);
+            Directory.GetFiles(outputDirectory.FullName, "*sqlite3*", SearchOption.AllDirectories)
+                .Select(path => Path.GetRelativePath(outputDirectory.FullName, path).Replace(Path.DirectorySeparatorChar, '/'))
+                .Should().BeEquivalentTo(expectedAssets);
+            File.ReadAllText(buildDepsPath).Should().Be(buildDepsContents);
         }
     }
 }

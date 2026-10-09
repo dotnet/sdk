@@ -44,6 +44,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_GenerateRuntimeConfigurationPropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateRuntimeConfigurationPropertyInputsCache)))</_GenerateRuntimeConfigurationPropertyInputsCache>
     <_GeneratePublishDependencyFilePropertyInputsCache Condition="'$(_GeneratePublishDependencyFilePropertyInputsCache)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).genpublishdeps.cache</_GeneratePublishDependencyFilePropertyInputsCache>
     <_GeneratePublishDependencyFilePropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GeneratePublishDependencyFilePropertyInputsCache)))</_GeneratePublishDependencyFilePropertyInputsCache>
+    <_GenerateBuildDependencyFilePropertyInputsCache Condition="'$(_GenerateBuildDependencyFilePropertyInputsCache)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).genbuilddeps.cache</_GenerateBuildDependencyFilePropertyInputsCache>
+    <_GenerateBuildDependencyFilePropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateBuildDependencyFilePropertyInputsCache)))</_GenerateBuildDependencyFilePropertyInputsCache>
     <_GenerateSingleFileBundlePropertyInputsCache Condition="'$(_GenerateSingleFileBundlePropertyInputsCache)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).genbundle.cache</_GenerateSingleFileBundlePropertyInputsCache>
     <_GenerateSingleFileBundlePropertyInputsCache>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateSingleFileBundlePropertyInputsCache)))</_GenerateSingleFileBundlePropertyInputsCache>
   </PropertyGroup>
@@ -277,7 +279,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <Target Name="GenerateBuildDependencyFile"
-          DependsOnTargets="_DefaultMicrosoftNETPlatformLibrary;
+          DependsOnTargets="_GenerateBuildDependencyFileInputCache;
+                            _DefaultMicrosoftNETPlatformLibrary;
                             _HandlePackageFileConflicts;
                             _ComputeReferenceAssemblies;
                             _ComputeUserRuntimeAssemblies;
@@ -285,7 +288,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                             _ComputePackageReferencePublish"
           BeforeTargets="CopyFilesToOutputDirectory"
           Condition="'$(GenerateDependencyFile)' == 'true'"
-          Inputs="$(ProjectAssetsFile);$(ProjectAssetsCacheFile);$(MSBuildAllProjects)"
+          Inputs="$(ProjectAssetsFile);$(ProjectAssetsCacheFile);$(MSBuildAllProjects);$(_GenerateBuildDependencyFilePropertyInputsCache)"
           Outputs="$(ProjectDepsFilePath)">
 
     <!-- Set a dummy Version if it hasn't been set by DefaultAssemblyInfo.targets -->
@@ -345,6 +348,53 @@ Copyright (c) .NET Foundation. All rights reserved.
            during incremental builds when the task is skipped -->
       <FileWrites Include="$(ProjectDepsFilePath)" Condition="Exists('$(ProjectDepsFilePath)')"/>
     </ItemGroup>
+  </Target>
+
+  <!-- GenerateBuildDependencyFile (above) uses this cache as a timestamp input for its GenerateDepsFile task.
+       FilterRuntimeAssetsByRuntimeIdentifier in Microsoft.PackageDependencyResolution.targets changes
+       RuntimeTargetsCopyLocalItems, passed to GenerateDepsFile as ResolvedRuntimeTargetsFiles, without changing ProjectAssetsFile.
+       Hash the filter, including an empty value, so changing or clearing it regenerates the build manifest.
+       WriteOnlyWhenDifferent preserves incremental builds when the filter is unchanged. -->
+  <Target Name="_GenerateBuildDependencyFileInputCache">
+    <ItemGroup>
+      <_GenerateBuildDependencyFilePropertyInputsCacheToHash Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_GenerateBuildDependencyFilePropertyInputsCacheToHash)">
+      <Output TaskParameter="HashResult" PropertyName="_GenerateBuildDependencyFilePropertyInputsCacheHash" />
+    </Hash>
+
+    <WriteLinesToFile
+      Lines="$(_GenerateBuildDependencyFilePropertyInputsCacheHash)"
+      File="$(_GenerateBuildDependencyFilePropertyInputsCache)"
+      Overwrite="True"
+      WriteOnlyWhenDifferent="True" />
+
+    <ItemGroup>
+      <FileWrites Include="$(_GenerateBuildDependencyFilePropertyInputsCache)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- _ComputeUseBuildDependencyFile in Microsoft.NET.Publish.targets uses this comparison to decide whether to reuse build deps.
+       Use the same hash inputs as _GenerateBuildDependencyFileInputCache, but do not update its saved build hash.
+       With NoBuild=true, a different filter requires GeneratePublishDependencyFile to run its GenerateDepsFile task.
+       A missing cache cannot prove that the build manifest used the current filter, so it also prevents reuse. -->
+  <Target Name="_ComputeBundledRuntimeAssetRuntimeIdentifiersMatchBuild">
+    <ItemGroup>
+      <_CurrentBundledRuntimeAssetRuntimeIdentifiers Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
+    </ItemGroup>
+
+    <Hash ItemsToHash="@(_CurrentBundledRuntimeAssetRuntimeIdentifiers)">
+      <Output TaskParameter="HashResult" PropertyName="_CurrentBundledRuntimeAssetRuntimeIdentifiersHash" />
+    </Hash>
+
+    <ReadLinesFromFile File="$(_GenerateBuildDependencyFilePropertyInputsCache)" Condition="Exists('$(_GenerateBuildDependencyFilePropertyInputsCache)')">
+      <Output TaskParameter="Lines" ItemName="_BuildBundledRuntimeAssetRuntimeIdentifiersHash" />
+    </ReadLinesFromFile>
+
+    <PropertyGroup>
+      <_BundledRuntimeAssetRuntimeIdentifiersMatchBuild Condition="Exists('$(_GenerateBuildDependencyFilePropertyInputsCache)') and '@(_BuildBundledRuntimeAssetRuntimeIdentifiersHash)' == '$(_CurrentBundledRuntimeAssetRuntimeIdentifiersHash)'">true</_BundledRuntimeAssetRuntimeIdentifiersMatchBuild>
+    </PropertyGroup>
   </Target>
 
   <!-- To achieve incremental build with property change. When any property changes, WriteOnlyWhenDifferent will be triggered to write cache file.
