@@ -13,19 +13,14 @@ steps:
   displayName: '🛠️ Install .NET 8 SDK for Darc'
   inputs:
     version: 8.0.x
-- powershell: |
-    # Preserve this macro for the promotion pipeline's agent, not this agent.
-    $parameters = '/p:BuildQuality=daily /p:BlobBasePath="' + '$' + '(Build.ArtifactStagingDirectory)/BlobArtifacts/daily/"'
-    Write-Host "##vso[task.setvariable variable=DailyCandidatePublishingParameters]$parameters"
-  name: ConfigureDailyCandidatePublishing
-  displayName: '⚙️ Select daily candidate for promotion'
 - ${{ if eq(parameters.runTestBuild, true) }}:
   - powershell: |
+      $parameters = & "$(Build.SourcesDirectory)/eng/dotnetup-build/get-candidate-publishing-parameters.ps1" -Quality daily
       Write-Host 'Test candidates are not production-signed. This command is diagnostic only; do not execute it for this BAR build.'
       $command = 'darc add-build-to-channel --id {0} --publishing-infra-version 3 ' +
           '--default-channels --source-branch main --bar-uri https://maestro.dot.net --ci --verbose ' +
           '--artifact-publishing-parameters ''{1}'''
-      Write-Host ($command -f '$(BARBuildId)', '$(DailyCandidatePublishingParameters)')
+      Write-Host ($command -f '$(BARBuildId)', $parameters)
     name: PreviewDailyCandidatePromotion
     displayName: '🧪 Print daily promotion command without credentials (not executed)'
 - ${{ else }}:
@@ -35,13 +30,14 @@ steps:
     inputs:
       azureSubscription: 'Darc: Maestro Production'
       scriptType: ps
-      scriptLocation: scriptPath
-      scriptPath: '$(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1'
-      arguments: >-
-        -BuildId $(BARBuildId)
-        -PublishingInfraVersion 3
-        -AzdoToken '$(System.AccessToken)'
-        -WaitPublishingFinish true
-        -ArtifactsPublishingAdditionalParameters '$(DailyCandidatePublishingParameters)'
-        -runtimeSourceFeed https://ci.dot.net/internal
+      scriptLocation: inlineScript
+      inlineScript: |
+        $parameters = & "$(Build.SourcesDirectory)/eng/dotnetup-build/get-candidate-publishing-parameters.ps1" -Quality daily
+        & "$(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1" `
+        -BuildId $(BARBuildId) `
+        -PublishingInfraVersion 3 `
+        -AzdoToken '$(System.AccessToken)' `
+        -WaitPublishingFinish true `
+        -ArtifactsPublishingAdditionalParameters $parameters `
+        -runtimeSourceFeed https://ci.dot.net/internal `
         -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
