@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.props" />
+
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -16,16 +18,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Cli\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
+    <ProjectReference Include="..\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Compile Update="Resources\Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
     <EmbeddedResource Update="Resources\Strings.resx">
-      <Generator>MSBuild:_GenerateResxSource</Generator>
+      <Generator>Microsoft.DotNet.Cli.Resources</Generator>
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
       <GenerateSource>true</GenerateSource>
     </EmbeddedResource>
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.targets" />
 
 </Project>
