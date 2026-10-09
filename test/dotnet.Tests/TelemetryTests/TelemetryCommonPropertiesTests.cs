@@ -3,7 +3,9 @@
 
 using System.Net.NetworkInformation;
 using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using Moq;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
@@ -219,76 +221,19 @@ public class TelemetryCommonPropertiesTests : SdkTest
         }
     }
 
-    // All environment variables checked by LLMEnvironmentDetectorForTelemetry.
-    // Tests must clear these before each run so that ambient env vars (e.g. when
-    // tests execute inside the Copilot CLI desktop app) don't pollute results.
-    private static readonly string[] _allLLMEnvVars = [
-        "CLAUDE_CODE_IS_COWORK", "CLAUDECODE", "CLAUDE_CODE", "CLAUDE_CODE_ENTRYPOINT",
-        "CURSOR_EDITOR", "CURSOR_AI", "CURSOR_TRACE_ID", "CURSOR_AGENT",
-        "GEMINI_CLI",
-        "GITHUB_COPILOT_CLI_MODE", "GH_COPILOT_WORKING_DIRECTORY", "COPILOT_CLI", "COPILOT_MODEL", "COPILOT_ALLOW_ALL", "COPILOT_GITHUB_TOKEN",
-        "AI_AGENT", "COPILOT_AGENT",
-        "CODEX_CLI", "CODEX_SANDBOX", "CODEX_CI", "CODEX_THREAD_ID",
-        "OR_APP_NAME",
-        "AMP_HOME",
-        "QWEN_CODE",
-        "DROID_CLI",
-        "OPENCODE_AI",
-        "ZED_ENVIRONMENT", "ZED_TERM",
-        "KIMI_CLI",
-        "GOOSE_TERMINAL", "GOOSE_PROVIDER",
-        "CLINE_TASK_ID",
-        "ROO_CODE_TASK_ID",
-        "WINDSURF_SESSION",
-        "REPL_ID",
-        "AUGMENT_AGENT",
-        "ANTIGRAVITY_AGENT",
-        "AGENT_CLI",
-    ];
-
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     [DynamicData(nameof(LLMTelemetryTestCases))]
     public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
     {
-        // Save and clear all LLM env vars so ambient values don't affect the test.
-        var savedEnvVars = _allLLMEnvVars
-            .Select(key => (key, value: Environment.GetEnvironmentVariable(key)))
-            .Where(pair => pair.value is not null)
-            .ToArray();
+        var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+        environmentProvider
+            .Setup(provider => provider.GetEnvironmentVariable(It.IsAny<string>()))
+            .Returns((string name) => envVars?.GetValueOrDefault(name));
 
-        foreach (var key in _allLLMEnvVars)
-        {
-            Environment.SetEnvironmentVariable(key, null);
-        }
-
-        try
-        {
-            if (envVars is not null)
-            {
-                foreach (var (key, value) in envVars)
-                {
-                    Environment.SetEnvironmentVariable(key, value);
-                }
-            }
-            new LLMEnvironmentDetectorForTelemetry().GetLLMEnvironment().Should().Be(expected);
-        }
-        finally
-        {
-            // Clean up test-set vars
-            if (envVars is not null)
-            {
-                foreach (var (key, value) in envVars)
-                {
-                    Environment.SetEnvironmentVariable(key, null);
-                }
-            }
-            // Restore original ambient vars
-            foreach (var (key, value) in savedEnvVars)
-            {
-                Environment.SetEnvironmentVariable(key, value);
-            }
-        }
+        new LLMEnvironmentDetectorForTelemetry(environmentProvider.Object)
+            .GetLLMEnvironment()
+            .Should()
+            .Be(expected);
     }
 
     [TestMethod]

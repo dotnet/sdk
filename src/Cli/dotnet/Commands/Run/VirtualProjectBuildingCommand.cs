@@ -93,7 +93,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
         MSBuildArgs msbuildArgs,
-        string? artifactsPath = null)
+        string? artifactsPath = null,
+        CommandServices? services = null) : base(services)
     {
         MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(
             CommonRunHelpers.CreateFileBasedRunGlobalProperties().AsReadOnly());
@@ -117,7 +118,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ? null
             : minimizeStdOut
             ? new SimpleErrorLogger()
-            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
+            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]), Services);
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         FileBasedAppCacheInfo? cache = null;

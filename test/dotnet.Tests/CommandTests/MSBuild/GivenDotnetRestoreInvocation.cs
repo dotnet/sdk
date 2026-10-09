@@ -54,11 +54,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var msbuildPath = "<msbuildpath>";
                 List<string> expectedArgs = [.. ExpectedPrefix, .. expectedAdditionalArgs, NuGetDisabledProperty];
                 expectedArgs.Should().BeSubsetOf(
-                ((MSBuildForwardingApp)RestoreCommand.FromArgs(args, msbuildPath))
+                ((MSBuildForwardingApp)RestoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM()))
                     .GetArgumentTokensToMSBuild()
                     );
             });
         }
     }
 }
-

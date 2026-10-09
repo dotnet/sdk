@@ -21,11 +21,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = MSBuildCommand.FromArgs(args, msbuildPath);
+                var command = MSBuildCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
 
                 command.GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, ..expectedAdditionalArgs]);
             });
         }
     }
 }
-
