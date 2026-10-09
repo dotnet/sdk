@@ -184,6 +184,53 @@ Each of the references below contributed to the design and implementation to ens
 
 ## Known Issues
 
+### Issue Monster assignment credentials
+
+The [Issue Monster assigner](../issue-monster-assigner.md) uses `ISSUE_MONSTER_ASSIGNMENT_TOKEN` in the
+`issue-monster` environment, independently of the inference-only PAT pool.
+The assigner's `assignment-auth` job checks that this token can read the target
+repository before starting inference. This detects missing, expired, and revoked
+credentials; it does not prove that the token can assign Copilot.
+
+If assignment fails with `Bad credentials` (HTTP 401), renew that secret with
+metadata: read plus actions, contents, issues, and pull requests: write for
+`dotnet/sdk`. Do not broaden or substitute an inference-pool PAT. A valid
+`assign_to_agent` record in the agent artifact proves only that the agent
+requested assignment, not that GitHub accepted it. The conclusion job requires
+the handler's `assign_to_agent_assigned` output before reporting success.
+
+### Detection compatibility
+
+With gh-aw v0.89.21, an agent that emits no safe outputs or patch must skip the
+build-failure detector job entirely. Otherwise the framework skips installing
+`threat-detect` but still concludes detection, producing a false `agent_failure`
+warning. An actual output or patch still runs the normal detector.
+
+The Issue Monster detector and build-failure analyzer default to
+`claude-sonnet-5` because the OpenAI Responses route rejects the Copilot CLI's
+`ctc_call` identifiers after built-in edit calls (`Expected an ID that begins
+with 'fc'`). The [shared build-failure configuration](build-failure-analysis-shared.md)
+keeps model variables available as explicit
+overrides. Restore an OpenAI default only after the CLI/API combination can
+create a result file and emit the terminal safe output end-to-end; a successful
+first inference call is not sufficient evidence.
+
+### Issue triage unlocks
+
+[Issue triage](../issue-triage.md) preserves `lock-for-agent` and adds a retrying unlock before
+gh-aw's non-retrying built-in unlock. Transient GitHub failures such as HTTP 500
+are retried three times; 400, 401, 403, 404, and 422 remain terminal errors.
+Only an issue locked by this activation is eligible. Manual dispatch, unlocked
+issues, and pull requests are not unlocked by the added step.
+
+Run the workflow-guard regressions after changing these paths:
+
+```powershell
+node --test .github\scripts\agentic-workflow-guards.test.js
+```
+
+### Missing pre-activation job
+
 The `pat_pool` import integration requires that the workflow's compilation results in a `pre_activation` job. If nothing in your workflow definition produces a `pre_activation` job, a compilation error will be received.
 
 ```text
