@@ -27,11 +27,13 @@ steps:
     azureSubscription: 'Darc: Maestro Production'
     scriptType: ps
     scriptLocation: scriptPath
-    scriptPath: '$(Build.SourcesDirectory)/eng/dotnetup-build/register-candidates.ps1'
+    scriptPath: '$(Build.SourcesDirectory)/eng/common/sdk-task.ps1'
     arguments: >-
-      -ManifestsPath '$(Build.StagingDirectory)/CandidateInputs'
-      -AssetManifestsPath '$(Build.StagingDirectory)/AssetManifests'
-      -OfficialBuildId '$(Build.BuildNumber)'
+      -task PublishBuildAssets -restore -msbuildEngine dotnet
+      /p:ManifestsPath='$(Build.StagingDirectory)/CandidateInputs'
+      /p:IsAssetlessBuild=false
+      /p:MaestroApiEndpoint=https://maestro.dot.net
+      /p:OfficialBuildId=$(Build.BuildNumber)
       -runtimeSourceFeed https://ci.dot.net/internal
       -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
 - powershell: |

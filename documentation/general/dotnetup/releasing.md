@@ -16,7 +16,7 @@ Daily candidate versions use `-daily.<BuildNumber>` (for example,
 `0.2.0-daily.26508.2`). Preview candidates retain the preview iteration, for example
 `0.2.0-preview.1.26508.2`. Both candidates share the release prefix and build number.
 
-The promotion pipeline must include the `BlobAssetIdManifests` support proposed in
+The promotion pipeline must include the `BlobAssetIdPattern` support proposed in
 [dotnet/arcade#17684](https://github.com/dotnet/arcade/pull/17684). Do not promote these
 candidates with an older publishing toolset.
 
@@ -37,8 +37,8 @@ Use that numeric Build Asset Registry (BAR) ID when promoting the build. Normal 
 of the official pipeline are PME-signed and have a `PME Signed` tag. Use the tag to confirm
 signing completed; do not promote a test build or a build without the tag.
 
-Verify that the selected run's `AssetManifests` artifact contains `MergedManifest.xml` and `preview.blobids`
-before promoting it.
+Verify that the selected run's `AssetManifests` artifact contains `MergedManifest.xml`
+with both daily and preview candidates before promoting it.
 
 ## Promote the build
 
@@ -50,17 +50,22 @@ pipeline with these parameters:
 | --- | --- |
 | `BARBuildId` | The BAR ID from the selected build |
 | `PromoteToChannelIds` | `10506` (`dotnetup Daily`) |
-| `ArtifactsPublishingAdditionalParameters` ( NOT `symbol` parameters ) | `/p:BuildQuality=preview /p:BlobAssetIdManifests=preview.blobids` |
+| `ArtifactsPublishingAdditionalParameters` ( NOT `symbol` parameters ) | `/p:BuildQuality=preview /p:BlobAssetIdPattern=^dotnetup/[^/]+-preview[.]%7C^assets/manifests/` |
 
 Leave the remaining parameters at their defaults. The Maestro channel retains its historical
 `dotnetup Daily` name; `BuildQuality=preview` controls the quality segment in the generated
 aka.ms links.
 
 Both properties are required: `BuildQuality` selects the links to update, while
-`BlobAssetIdManifests` selects the prebuilt candidate's blob IDs from the complete manifest.
-The allowlist path is relative to the promotion agent's blob staging directory.
+`BlobAssetIdPattern` filters blob IDs in the complete manifest before publication and
+link creation. The expression includes the selected quality's binaries, bootstrap scripts,
+and checksums, plus the shared archived manifest. `%7C` is MSBuild's escaped form of the
+regex alternation operator `|`; keep it escaped when passing these parameters through
+the promotion pipeline. This selection does not modify the BAR inventory or make channel
+membership candidate-specific.
 This operation does not compile, change versions, or sign again.
-For a manual daily promotion, use `/p:BuildQuality=daily /p:BlobAssetIdManifests=daily.blobids`.
+For a manual daily promotion, use
+`/p:BuildQuality=daily /p:BlobAssetIdPattern=^dotnetup/[^/]+-daily[.]%7C^assets/manifests/`.
 
 The overall pipeline can report `PartiallySucceeded` because optional artifacts are downloaded
 with `continueOnError`. The `Publish packages, blobs and symbols` step must succeed.

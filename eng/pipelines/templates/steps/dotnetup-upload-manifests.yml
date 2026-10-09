@@ -1,9 +1,9 @@
 steps:
 - task: 1ES.PublishPipelineArtifact@1
   name: PublishCandidateAssetManifests
-  displayName: '🗂️ Publish complete manifest and candidate ID allowlists'
+  displayName: '🗂️ Publish complete merged manifest'
   inputs:
-    targetPath: '$(Build.StagingDirectory)/AssetManifests'
+    targetPath: '$(Build.StagingDirectory)/MergedManifest.xml'
     artifactName: AssetManifests
     isProduction: false
 - task: 1ES.PublishPipelineArtifact@1
