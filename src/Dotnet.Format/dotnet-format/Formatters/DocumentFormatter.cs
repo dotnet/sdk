@@ -38,8 +38,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             List<FormattedFile> formattedFiles,
             CancellationToken cancellationToken)
         {
-            var formattedDocuments = FormatFiles(solution, formattableDocuments, formatOptions, logger, cancellationToken);
-            return await ApplyFileChangesAsync(solution, formattedDocuments, formatOptions, logger, formattedFiles, cancellationToken);
+            var (formattedDocuments, fileChanges) = await FormatFilesAsync(solution, formattableDocuments, formatOptions, logger, cancellationToken);
+            return await ApplyFileChangesAsync(solution, formattedDocuments, fileChanges, formatOptions, logger, formattedFiles, cancellationToken);
         }
 
         /// <summary>
@@ -55,64 +55,78 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             CancellationToken cancellationToken);
 
         /// <summary>
-        /// Applies formatting and returns the changed <see cref="SourceText"/> for each <see cref="Document"/>.
+        /// Formats each <see cref="Document"/> concurrently and returns the changed text in document order.
         /// </summary>
-        private ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> FormatFiles(
+        private async Task<(ImmutableArray<(Document, SourceText originalText, SourceText? formattedText)> Documents, ImmutableArray<ImmutableArray<FileChange>> FileChanges)> FormatFilesAsync(
             Solution solution,
             ImmutableArray<DocumentId> formattableDocuments,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            var formattedDocuments = ImmutableArray.CreateBuilder<(Document, Task<(SourceText originalText, SourceText? formattedText)>)>(formattableDocuments.Length);
+            var results = new (Document, SourceText, SourceText?)?[formattableDocuments.Length];
 
-            for (var index = 0; index < formattableDocuments.Length; index++)
-            {
-                var document = solution.GetDocument(formattableDocuments[index]);
-                if (document is null)
+            await Parallel.ForEachAsync(Enumerable.Range(0, formattableDocuments.Length),
+                new ParallelOptions
                 {
-                    continue;
-                }
+                    MaxDegreeOfParallelism = Environment.ProcessorCount,
+                    CancellationToken = cancellationToken,
+                },
+                async (index, cancellationToken) =>
+                {
+                    var document = solution.GetDocument(formattableDocuments[index]);
+                    if (document is null)
+                    {
+                        return;
+                    }
 
-                var formatTask = Task.Run(async () =>
-                {
                     var originalSourceText = await document.GetTextAsync(cancellationToken);
 
                     var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken);
                     if (syntaxTree is null)
                     {
-                        return (originalSourceText, null);
+                        results[index] = (document, originalSourceText, null);
+                        return;
                     }
 
                     var analyzerConfigOptions = document.Project.AnalyzerOptions.AnalyzerConfigOptionsProvider.GetOptions(syntaxTree);
                     var optionSet = await document.GetOptionsAsync(cancellationToken);
 
-                    return await GetFormattedSourceTextAsync(document, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
-                }, cancellationToken);
+                    var formattedSourceText = await FormatFileAsync(document, originalSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
 
-                formattedDocuments.Add((document, formatTask));
+                    results[index] = !formattedSourceText.ContentEquals(originalSourceText) || !formattedSourceText.Encoding?.Equals(originalSourceText.Encoding) == true
+                        ? (document, originalSourceText, formattedSourceText)
+                        : (document, originalSourceText, null);
+                });
+
+            var formattedDocuments = ImmutableArray.CreateBuilder<(Document, SourceText originalText, SourceText? formattedText)>(formattableDocuments.Length);
+            for (var index = 0; index < results.Length; index++)
+            {
+                if (results[index] is { } result)
+                {
+                    formattedDocuments.Add(result);
+                }
             }
 
-            return formattedDocuments.ToImmutable();
-        }
+            var formattedDocumentsArray = formattedDocuments.MoveToImmutable();
 
-        /// <summary>
-        /// Get formatted <see cref="SourceText"/> for a <see cref="Document"/>.
-        /// </summary>
-        private async Task<(SourceText originalText, SourceText? formattedText)> GetFormattedSourceTextAsync(
-            Document document,
-            OptionSet optionSet,
-            AnalyzerConfigOptions analyzerConfigOptions,
-            FormatOptions formatOptions,
-            ILogger logger,
-            CancellationToken cancellationToken)
-        {
-            var originalSourceText = await document.GetTextAsync(cancellationToken);
-            var formattedSourceText = await FormatFileAsync(document, originalSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+            var fileChanges = new ImmutableArray<FileChange>[formattedDocumentsArray.Length];
+            await Parallel.ForEachAsync(Enumerable.Range(0, formattedDocumentsArray.Length),
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = Environment.ProcessorCount,
+                    CancellationToken = cancellationToken,
+                },
+                (index, cancellationToken) =>
+                {
+                    var (document, originalText, formattedText) = formattedDocumentsArray[index];
+                    fileChanges[index] = document.FilePath is not null && formattedText is not null
+                        ? GetFileChanges(document, originalText, formattedText)
+                        : ImmutableArray<FileChange>.Empty;
+                    return ValueTask.CompletedTask;
+                });
 
-            return !formattedSourceText.ContentEquals(originalSourceText) || !formattedSourceText.Encoding?.Equals(originalSourceText.Encoding) == true
-                ? (originalSourceText, formattedSourceText)
-                : (originalSourceText, null);
+            return (formattedDocumentsArray, fileChanges.ToImmutableArray());
         }
 
         /// <summary>
@@ -120,7 +134,8 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         /// </summary>
         private async Task<Solution> ApplyFileChangesAsync(
             Solution solution,
-            ImmutableArray<(Document, Task<(SourceText originalText, SourceText? formattedText)>)> formattedDocuments,
+            ImmutableArray<(Document, SourceText originalText, SourceText? formattedText)> formattedDocuments,
+            ImmutableArray<ImmutableArray<FileChange>> fileChanges,
             FormatOptions formatOptions,
             ILogger logger,
             List<FormattedFile> formattedFiles,
@@ -130,7 +145,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
             for (var index = 0; index < formattedDocuments.Length; index++)
             {
-                var (document, formatTask) = formattedDocuments[index];
+                var (document, _, formattedText) = formattedDocuments[index];
                 if (cancellationToken.IsCancellationRequested)
                 {
                     return formattedSolution;
@@ -141,14 +156,15 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     continue;
                 }
 
-                var (originalText, formattedText) = await formatTask;
                 if (formattedText is null)
                 {
                     continue;
                 }
 
-                var fileChanges = GetFileChanges(formatOptions, document, originalText, formattedText, formatOptions.ChangesAreErrors, logger);
-                formattedFiles.Add(new FormattedFile(document, fileChanges));
+                var documentFileChanges = fileChanges[index];
+                formattedFiles.Add(new FormattedFile(document, documentFileChanges));
+
+                LogFileChanges(formatOptions, document, documentFileChanges, formatOptions.ChangesAreErrors, logger);
 
                 formattedSolution = formattedSolution.WithDocumentText(document.Id, formattedText, PreservationMode.PreserveIdentity);
             }
@@ -156,7 +172,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
             return formattedSolution;
         }
 
-        private ImmutableArray<FileChange> GetFileChanges(FormatOptions formatOptions, Document document, SourceText originalText, SourceText formattedText, bool changesAreErrors, ILogger logger)
+        private ImmutableArray<FileChange> GetFileChanges(Document document, SourceText originalText, SourceText formattedText)
         {
             var fileChanges = ImmutableArray.CreateBuilder<FileChange>();
             var changes = formattedText.GetTextChanges(originalText);
@@ -173,11 +189,6 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 
                 var fileChange = new FileChange(changePosition, Name, $"{FormatWarningDescription}{changeMessage}");
                 fileChanges.Add(fileChange);
-
-                if (!formatOptions.SaveFormattedFiles || formatOptions.LogLevel == LogLevel.Debug)
-                {
-                    logger.LogFormattingIssue(document, Name, fileChange, changesAreErrors);
-                }
             }
 
             return fileChanges.ToImmutable();
@@ -199,6 +210,19 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                         ? string.Format(Resources.Insert_0, textChange)
                         : string.Format(Resources.Replace_0_characters_with_1, change.Span.Length, textChange);
                 return $" {message}";
+            }
+        }
+
+        private void LogFileChanges(FormatOptions formatOptions, Document document, ImmutableArray<FileChange> fileChanges, bool changesAreErrors, ILogger logger)
+        {
+            if (formatOptions.SaveFormattedFiles && formatOptions.LogLevel != LogLevel.Debug)
+            {
+                return;
+            }
+
+            foreach (var fileChange in fileChanges)
+            {
+                logger.LogFormattingIssue(document, Name, fileChange, changesAreErrors);
             }
         }
 
