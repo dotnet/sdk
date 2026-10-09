@@ -14,12 +14,16 @@
     href: concepts/repositories.md
   - name: Environment configuration
     href: concepts/environment.md
+  - name: Download verification
+    href: concepts/download-verification.md
 - name: Release channels
   items:
   - name: Preview channel
     href: channels/preview.md
   - name: Daily channels
     href: channels/daily.md
+- name: Telemetry
+  href: telemetry.md
 - name: CLI reference
   items:
   - name: dotnetup

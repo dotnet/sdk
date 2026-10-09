@@ -76,3 +76,4 @@ An exact prerelease version is pinned and is not changed by update commands.
 - [Daily channels](../channels/daily.md)
 - [Preview channels](../channels/preview.md)
 - [Manage custom installation roots](manage-custom-installation-roots.md)
+- [How dotnetup verifies downloads](../concepts/download-verification.md)
