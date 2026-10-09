@@ -14,6 +14,103 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     public partial class UseConcreteTypeTests
     {
         [TestMethod]
+        [DataRow("condition ? new C() : throw new System.Exception()")]
+        [DataRow("condition ? throw new System.Exception() : new C()")]
+        [DataRow("new C() ?? throw new System.Exception()")]
+        [DataRow("condition ? new C() : (condition ? throw new System.Exception() : new C())")]
+        [DataRow("condition ? throw new System.Exception() : (new C() ?? throw new System.Exception())")]
+        public async Task ShouldTrigger_ThrowExpression_CSharp(string expression)
+        {
+            await TestCSAsync($$"""
+                class C
+                {
+                    private object {|#0:_field|};
+                    private object {|#1:Property|} { get; set; }
+
+                    public C() { }
+
+                    public C(bool condition)
+                    {
+                        _field = {{expression}};
+                        Property = {{expression}};
+                    }
+
+                    public void Use(bool condition)
+                    {
+                        _field.ToString();
+                        Property.ToString();
+                        object {|#2:local|} = {{expression}};
+                        local.ToString();
+                        Consume({{expression}});
+                    }
+
+                    private void Consume(object {|#3:value|}) => value.ToString();
+
+                    private object {|#4:Build|}(bool condition) => {{expression}};
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0).WithArguments("_field", "object", "C"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1).WithArguments("Property", "object", "C"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                    .WithLocation(2).WithArguments("local", "object", "C"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
+                    .WithLocation(3).WithArguments("value", "object", "C"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(4).WithArguments("Build", "object", "C"));
+        }
+
+        [TestMethod]
+        public async Task ShouldTrigger_ThrowExpressionPreservesNullability_CSharp()
+        {
+            await TestCSAsync("""
+                #nullable enable
+
+                class C
+                {
+                    private object? {|#0:BuildNullable|}(bool condition)
+                        => condition ? null : (condition ? new C() : throw new System.Exception());
+
+                    private object {|#1:BuildNonNullable|}(C? value)
+                        => value ?? throw new System.Exception();
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(0).WithArguments("BuildNullable", "object?", "C?"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(1).WithArguments("BuildNonNullable", "object", "C"));
+        }
+
+        [TestMethod]
+        [DataRow("Condition ? new D() : throw new System.Exception()")]
+        [DataRow("Condition ? throw new System.Exception() : new D()")]
+        [DataRow("new D() ?? throw new System.Exception()")]
+        public async Task ShouldTrigger_ThrowExpressionInInitializers_CSharp(string expression)
+        {
+            await TestCSAsync($$"""
+                class D { }
+
+                class C
+                {
+                    private static bool Condition => true;
+                    private object {|#0:_field|} = {{expression}};
+                    private object {|#1:Property|} { get; } = {{expression}};
+
+                    public void Use()
+                    {
+                        _field.ToString();
+                        Property.ToString();
+                    }
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0).WithArguments("_field", "object", "D"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1).WithArguments("Property", "object", "D"));
+        }
+
+        [TestMethod]
         [WorkItem(6904, "https://github.com/dotnet/roslyn-analyzers/issues/6904")]
         public async Task AwaitBug()
         {
