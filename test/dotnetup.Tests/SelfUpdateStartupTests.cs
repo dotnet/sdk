@@ -240,7 +240,6 @@ public class SelfUpdateStartupTests
     public void IdleCommandRetainsActivityLeaseUntilInvocationIsDisposed()
     {
         using var files = new SelfUpdateTestFiles();
-        var previous = SelfUpdateInvocation.Current;
         using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
         var command = new SelfUpdateStartupCommand(new RootCommand().Parse([]));
         using var rootOperation = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
@@ -260,7 +259,7 @@ public class SelfUpdateStartupTests
         }
 
         invocation.Dispose();
-        Assert.AreSame(previous, SelfUpdateInvocation.Current);
+        Assert.IsNull(SelfUpdateInvocation.Current);
         using var released = ScopedLockFile.TryAcquireExclusive(files.Paths.ActivityLockPath);
         Assert.IsNotNull(released);
     }
