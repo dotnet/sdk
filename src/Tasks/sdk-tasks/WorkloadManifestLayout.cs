@@ -229,7 +229,7 @@ public sealed partial class GetWorkloadManifestLayout : Task
             Path.TrimEndingDirectorySeparator(root) + Path.DirectorySeparatorChar,
             OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal);
 
-    private static bool IsFeatureBand(string value) =>
+    internal static bool IsFeatureBand(string value) =>
         FeatureBandRegex().IsMatch(value)
         && NuGetVersion.TryParse(value, out _)
         && string.Equals(new SdkFeatureBand(value).ToString(), value, StringComparison.Ordinal);
