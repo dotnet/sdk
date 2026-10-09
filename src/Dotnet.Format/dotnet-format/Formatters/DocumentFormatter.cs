@@ -70,7 +70,7 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 if (document is null)
                 {
                     document = solution.GetAdditionalDocument(formattableDocuments[index]);
-                    if (document is null)
+                    if (document is null || !FormatterUtilities.IsRazorDocument(document))
                     {
                         continue;
                     }

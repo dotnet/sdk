@@ -10,6 +10,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     internal static class FormatterUtilities
     {
+        internal static bool IsRazorDocument(TextDocument document)
+            => document.FilePath is string filePath &&
+               (filePath.EndsWith(".razor", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase));
+
         internal static AnalyzerConfigOptions? GetAnalyzerConfigOptionsForAdditionalDocument(TextDocument document)
         {
             if (document.FilePath is not string filePath)
