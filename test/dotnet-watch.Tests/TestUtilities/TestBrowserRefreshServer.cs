@@ -8,12 +8,12 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 internal class TestBrowserRefreshServer(
     string middlewareAssemblyPath,
     bool useGatewayProxy,
-    Func<SharedSecretProvider>? sessionKeyFactory = null)
+    Func<SharedSecretProvider?>? sessionKeyFactory = null)
     : AbstractBrowserRefreshServer(
-        sessionKeyFactory ?? new(static () => new SharedSecretProvider()),
         logger: new TestLogger(),
         connectionServerLoggerFactory: _ => new TestLogger(),
         connectionAgentLoggerFactory: _ => new TestLogger(),
+        sessionKeyFactory ?? new(static () => new SharedSecretProvider()),
         middlewareAssemblyPath,
         useGatewayProxy)
 {

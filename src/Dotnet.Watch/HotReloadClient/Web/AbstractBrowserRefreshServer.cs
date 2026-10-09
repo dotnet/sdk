@@ -26,10 +26,12 @@ namespace Microsoft.DotNet.HotReload;
 /// Associated with a project instance.
 /// </summary>
 internal abstract class AbstractBrowserRefreshServer(
-    Func<SharedSecretProvider> sessionKeyFactory,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory,
+#pragma warning disable CS9113 // Parameter 'sessionKeyFactory' is unread.
+    Func<SharedSecretProvider?> sessionKeyFactory,
+#pragma warning restore CS9113
     string middlewareAssemblyPath,
     bool useGatewayProxy)
     : IDisposable
@@ -37,8 +39,6 @@ internal abstract class AbstractBrowserRefreshServer(
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     private static int s_lastConnectionId;
-
-    private Func<SharedSecretProvider> _sessionKeyFactory = sessionKeyFactory;
 
     /// <summary>
     /// Guards the connection list, the retained updates and the baseline epoch together.
@@ -170,9 +170,6 @@ internal abstract class AbstractBrowserRefreshServer(
         }
     }
 
-    internal void SetSessionKeyFactory(Func<SharedSecretProvider> value)
-        => Volatile.Write(ref _sessionKeyFactory, value);
-
     /// <summary>
     /// Takes ownership of the <paramref name="clientSocket"/>.
     /// Publishes the connection and captures the updates it has to replay atomically.
@@ -263,20 +260,20 @@ internal abstract class AbstractBrowserRefreshServer(
         var subProtocol = context.WebSockets.WebSocketRequestedProtocols is [var requestedSubProtocol]
             ? requestedSubProtocol
             : null;
+
         if (subProtocol == null)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;
         }
 
-        SharedSecretProvider sessionKey;
-        try
+        var sessionKey = sessionKeyFactory();
+        if (sessionKey == null)
         {
-            sessionKey = Volatile.Read(ref _sessionKeyFactory)();
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Unable to load the browser tools session key.");
+            // The browser tools build outputs can't be used.
+            // The launch fails instead of silently continuing without browser tools, because a provider whose
+            // key the application does not pin can never be authenticated by the browser and every browser
+            // tools feature would appear to be broken for no visible reason.
             context.Response.StatusCode = StatusCodes.Status500InternalServerError;
             return;
         }

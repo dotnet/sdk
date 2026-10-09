@@ -18,12 +18,12 @@ internal sealed class TestBrowserRefreshServer : AbstractBrowserRefreshServer
     {
     }
 
-    public TestBrowserRefreshServer(Func<SharedSecretProvider> sessionKeyFactory)
+    public TestBrowserRefreshServer(Func<SharedSecretProvider?> sessionKeyFactory)
         : base(
-            sessionKeyFactory,
             logger: new TestLogger(),
             connectionServerLoggerFactory: _ => new TestLogger(),
             connectionAgentLoggerFactory: _ => new TestLogger(),
+            sessionKeyFactory,
             middlewareAssemblyPath: Path.GetTempPath(),
             useGatewayProxy: false)
     {
@@ -32,10 +32,10 @@ internal sealed class TestBrowserRefreshServer : AbstractBrowserRefreshServer
 
     private TestBrowserRefreshServer(RSAParameters keyParameters)
         : base(
-            sessionKeyFactory: () => new SharedSecretProvider(keyParameters),
             logger: new TestLogger(),
             connectionServerLoggerFactory: _ => new TestLogger(),
             connectionAgentLoggerFactory: _ => new TestLogger(),
+            sessionKeyFactory: () => new SharedSecretProvider(keyParameters),
             middlewareAssemblyPath: Path.GetTempPath(),
             useGatewayProxy: false)
     {

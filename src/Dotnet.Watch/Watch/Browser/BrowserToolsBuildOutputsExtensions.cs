@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -20,7 +21,6 @@ internal static class BrowserToolsBuildOutputsExtensions
         public static BrowserToolsBuildOutputs? FromProject(ProjectInstance projectInstance, ILogger logger)
             => BrowserToolsBuildOutputs.FromProjectSettings(
                 logger,
-                projectInstance.FullPath,
                 configuration: projectInstance.GetPropertyValue(PropertyNames.Configuration),
                 intermediateOutputDirectory: projectInstance.GetIntermediateOutputDirectory(),
                 enableHotReloadInRuntimeConfigDevFile: projectInstance.TryGetBooleanPropertyValue(PropertyNames.EnableHotReloadInRuntimeConfigDevFile),

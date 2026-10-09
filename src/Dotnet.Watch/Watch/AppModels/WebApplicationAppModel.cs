@@ -70,8 +70,9 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// produced. The key is loaded when the browser connects, after <c>dotnet run</c> has built and
     /// launched the application that serves the matching public half.
     /// </summary>
-    public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
+    public BrowserRefreshServer? TryCreateRefreshServer()
     {
+        var projectNode = BrowserToolsProject;
         var logger = context.LoggerFactory.CreateLogger(ServerLogComponentName, projectNode.GetDisplayName());
 
         if (!IsServerSupported(projectNode, logger))
@@ -83,6 +84,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         {
             // The application has no pinned key, so nothing in the browser would ever connect to a
             // provider. This is not an error: the project simply does not opt into browser tools.
+            // Reason has already been logged.
             return null;
         }
 
@@ -90,9 +92,9 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             logger,
             connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
             connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
+            sessionKeyFactory: browserToolsOutputs.TryCreateSessionKey,
             middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
             dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
-            sessionKeyFactory: browserToolsOutputs.CreateSessionKey,
             webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
             useGatewayProxy: HasGatewayProxy,
             suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
