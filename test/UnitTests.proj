@@ -92,6 +92,15 @@
     <BaseMethodLimit Condition="'$(BaseMethodLimit)' == ''">32</BaseMethodLimit>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Keep the resource-intensive template test classes in separate work items. Grouping
+         them causes their shared DotnetBuildCommand resource lock to serialize enough work
+         for a shard to exceed the Helix timeout. https://github.com/dotnet/sdk/issues/56281 -->
+    <SDKCustomTestProject Update="dotnet-new.IntegrationTests\dotnet-new.IntegrationTests.csproj">
+      <PartitionByClass>true</PartitionByClass>
+    </SDKCustomTestProject>
+  </ItemGroup>
+
   <!-- Consolidate Helix shards for assemblies with very short test durations.
        MethodLimitMultiplier increases the methods-per-shard threshold, producing
        fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
