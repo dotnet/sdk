@@ -365,6 +365,112 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     """);
         }
 
+        [TestMethod, WorkItem(54089, "https://github.com/dotnet/sdk/issues/54089")]
+        public async Task CA1001CSharpTestWithDisposableAutoPropertyAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+                using System.IO;
+
+                public class [|Class1|]
+                {
+                    public MemoryStream DataStream { get; } = new MemoryStream();
+                }
+                """, """
+    using System;
+    using System.IO;
+
+    public class Class1 : IDisposable
+    {
+        public MemoryStream DataStream { get; } = new MemoryStream();
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+    }
+    """);
+        }
+
+        [TestMethod, WorkItem(54089, "https://github.com/dotnet/sdk/issues/54089")]
+        public async Task CA1001CSharpTestWithDisposableAutoPropertyAssignmentAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+                using System.IO;
+
+                public class [|Class1|]
+                {
+                    public MemoryStream DataStream { get; }
+
+                    public Class1()
+                    {
+                        DataStream = new MemoryStream();
+                    }
+                }
+                """, """
+    using System;
+    using System.IO;
+
+    public class Class1 : IDisposable
+    {
+        public MemoryStream DataStream { get; }
+
+        public Class1()
+        {
+            DataStream = new MemoryStream();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+    }
+    """);
+        }
+
+        [TestMethod]
+        public async Task CA1001CSharpTestWithStaticDisposableAutoPropertyAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.IO;
+
+                public class Class1
+                {
+                    public static MemoryStream DataStream { get; } = new MemoryStream();
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task CA1001CSharpTestWithExcludedDisposableAutoPropertyAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.IO;
+
+                    public class Class1
+                    {
+                        public MemoryStream DataStream { get; } = new MemoryStream();
+                    }
+                    """,
+                TestState =
+                {
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.editorconfig", """
+                            root = true
+
+                            [*]
+                            dotnet_code_quality.CA1001.excluded_symbol_names = MemoryStream
+                            """),
+                    },
+                },
+                ExpectedDiagnostics = { },
+            }.RunAsync(CancellationToken.None);
+        }
+
         [TestMethod, WorkItem(1562, "https://github.com/dotnet/roslyn-analyzers/issues/1562")]
         public async Task CA1001CSharpTestWithIAsyncDisposableAsync()
         {
@@ -711,6 +817,106 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         End Class
     End Namespace
     """);
+        }
+
+        [TestMethod, WorkItem(54089, "https://github.com/dotnet/sdk/issues/54089")]
+        public async Task CA1001BasicTestWithDisposableAutoPropertyAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
+                Imports System.IO
+
+                Public Class [|Class1|]
+                    Public ReadOnly Property DataStream As MemoryStream = New MemoryStream()
+                End Class
+                """, """
+    Imports System
+    Imports System.IO
+
+    Public Class Class1
+        Implements IDisposable
+
+        Public ReadOnly Property DataStream As MemoryStream = New MemoryStream()
+
+        Public Sub Dispose() Implements IDisposable.Dispose
+            Throw New NotImplementedException()
+        End Sub
+    End Class
+    """);
+        }
+
+        [TestMethod, WorkItem(54089, "https://github.com/dotnet/sdk/issues/54089")]
+        public async Task CA1001BasicTestWithDisposableAutoPropertyAssignmentAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
+                Imports System.IO
+
+                Public Class [|Class1|]
+                    Public ReadOnly Property DataStream As MemoryStream
+
+                    Public Sub New()
+                        DataStream = New MemoryStream()
+                    End Sub
+                End Class
+                """, """
+    Imports System
+    Imports System.IO
+
+    Public Class Class1
+        Implements IDisposable
+
+        Public ReadOnly Property DataStream As MemoryStream
+
+        Public Sub New()
+            DataStream = New MemoryStream()
+        End Sub
+
+        Public Sub Dispose() Implements IDisposable.Dispose
+            Throw New NotImplementedException()
+        End Sub
+    End Class
+    """);
+        }
+
+        [TestMethod]
+        public async Task CA1001BasicTestWithStaticDisposableAutoPropertyAsync()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.IO
+
+                Public Class Class1
+                    Public Shared ReadOnly Property DataStream As MemoryStream = New MemoryStream()
+                End Class
+                """);
+        }
+
+        [TestMethod]
+        public async Task CA1001BasicTestWithExcludedDisposableAutoPropertyAsync()
+        {
+            await new VerifyVB.Test
+            {
+                TestCode = """
+                    Imports System.IO
+
+                    Public Class Class1
+                        Public ReadOnly Property DataStream As MemoryStream = New MemoryStream()
+                    End Class
+                    """,
+                TestState =
+                {
+                    AnalyzerConfigFiles =
+                    {
+                        ("/.editorconfig", """
+                            root = true
+
+                            [*]
+                            dotnet_code_quality.CA1001.excluded_symbol_names = MemoryStream
+                            """),
+                    },
+                },
+                ExpectedDiagnostics = { },
+            }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod, WorkItem(3905, "https://github.com/dotnet/roslyn-analyzers/issues/3905")]
