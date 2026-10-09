@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Tests
 
             NuGetConfigWriter.Write(testInstance.Path, TestContext.Current.TestPackages);
 
-            string packagesPath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "tool-fallback-packages");
+            string packagesPath = Path.Combine(TestContext.Current.TestExecutionDirectory, "tool-fallback-packages");
 
             testInstance = testInstance.WithProjectChanges((_, project) =>
             {
