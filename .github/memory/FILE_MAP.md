@@ -79,3 +79,10 @@ Important root files:
 
 See [TESTING_STRATEGY.md](TESTING_STRATEGY.md) for test-platform architecture and
 canonical testing guidance.
+
+## Maintenance Automation
+
+The [stale-reference checker](../stale-reference-check/README.md) combines
+deterministic source collection and GitHub state checks with cached, bounded agent
+interpretation. Its [driver](../workflows/stale-reference-check.yml) creates
+revalidation tasks for potentially stale ignored tests, TODOs, and workarounds.
