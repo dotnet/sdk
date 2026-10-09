@@ -6,7 +6,7 @@
     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <NoWarn>$(NoWarn);8002</NoWarn>
-    <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
+    <Description>Command line tool for formatting C#, Visual Basic, and Razor code files based on .editorconfig settings.</Description>
     <RollForward>LatestMajor</RollForward>
 
     <IsPackable>true</IsPackable>
@@ -34,10 +34,30 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" />
 
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor.DotNetFormat.Transport" ExcludeAssets="All" GeneratePathProperty="true" PrivateAssets="All" />
+
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
 
     <PackageReference Include="System.CommandLine" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Microsoft.CodeAnalysis.Razor.DotNetFormat">
+      <HintPath>$(PkgMicrosoft_CodeAnalysis_Razor_DotNetFormat_Transport)\dotnet-format\Microsoft.CodeAnalysis.Razor.DotNetFormat.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+
+    <None Include="$(PkgMicrosoft_CodeAnalysis_Razor_DotNetFormat_Transport)\dotnet-format\Microsoft.CodeAnalysis.Razor.Compiler.dll;
+                   $(PkgMicrosoft_CodeAnalysis_Razor_DotNetFormat_Transport)\dotnet-format\Microsoft.AspNetCore.Razor.Utilities.Shared.dll"
+          Link="%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
+
+    <None Include="$(PkgMicrosoft_CodeAnalysis_Razor_DotNetFormat_Transport)\dotnet-format\**\Microsoft.CodeAnalysis.Razor.DotNetFormat.resources.dll"
+          Link="%(RecursiveDir)%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest"
+          CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
