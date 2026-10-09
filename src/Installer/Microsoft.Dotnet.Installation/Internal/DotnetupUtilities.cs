@@ -49,11 +49,16 @@ internal static class DotnetupUtilities
         };
     }
 
-    public static string GetRuntimeIdentifier(InstallArchitecture architecture)
+    public static string GetRuntimeIdentifier(InstallArchitecture architecture) =>
+        GetRuntimeIdentifier(architecture, RuntimeInformation.RuntimeIdentifier);
+
+    internal static string GetRuntimeIdentifier(InstallArchitecture architecture, string currentRuntimeIdentifier)
     {
-        var os = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" :
-                 RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :
-                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" : "unknown";
+        ArgumentException.ThrowIfNullOrEmpty(currentRuntimeIdentifier);
+        int architectureSeparator = currentRuntimeIdentifier.LastIndexOf("-", StringComparison.Ordinal);
+        string os = architectureSeparator > 0
+            ? currentRuntimeIdentifier[..architectureSeparator]
+            : currentRuntimeIdentifier;
 
         var arch = architecture switch
         {
