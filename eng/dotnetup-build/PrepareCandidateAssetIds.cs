@@ -35,7 +35,7 @@ public sealed class PrepareDotnetupCandidateAssetIds : Microsoft.Build.Utilities
     private const string WindowsRidPrefix = "win-";
     private const string WindowsExecutableExtension = ".exe";
     private const string ChecksumExtension = ".sha512";
-    private const string CandidateAssetIdPattern = @"^dotnetup/([0-9]+\.[0-9]+\.[0-9]+-{0}\.[^/]+)/([^/]+)$";
+    private const string CandidateAssetIdPattern = @"^dotnetup/([0-9]+\.[0-9]+\.[0-9]+-{0}\.{1}[0-9]+\.[0-9]+)/([^/]+)$";
 
     private static readonly string[] s_qualities = { DailyQuality, PreviewQuality };
     private static readonly string[] s_runtimeIdentifiers =
@@ -101,7 +101,10 @@ public sealed class PrepareDotnetupCandidateAssetIds : Microsoft.Build.Utilities
         foreach (string quality in s_qualities)
         {
             XElement[] selected = artifacts.Where(a => IsCandidateArtifact(a, quality)).ToArray();
-            string version = ValidateCandidate(selected, quality).Replace("-" + quality + ".", CandidateVersionLabel);
+            string version = ValidateCandidate(selected, quality);
+            version = quality == PreviewQuality
+                ? Regex.Replace(version, @"-preview\.[0-9]+\.", CandidateVersionLabel)
+                : version.Replace("-" + quality + ".", CandidateVersionLabel);
             if (candidateVersion != null && candidateVersion != version)
             {
                 throw new InvalidDataException("Daily and preview candidates must have matching release and build versions.");
@@ -155,7 +158,8 @@ public sealed class PrepareDotnetupCandidateAssetIds : Microsoft.Build.Utilities
 
     private static string ValidateCandidate(XElement[] artifacts, string quality)
     {
-        string pattern = string.Format(System.Globalization.CultureInfo.InvariantCulture, CandidateAssetIdPattern, quality);
+        string pattern = string.Format(System.Globalization.CultureInfo.InvariantCulture, CandidateAssetIdPattern,
+            quality, quality == PreviewQuality ? @"[0-9]+\." : "");
         HashSet<string> files = new HashSet<string>(StringComparer.Ordinal);
         HashSet<string> versions = new HashSet<string>(StringComparer.Ordinal);
         foreach (XElement artifact in artifacts)

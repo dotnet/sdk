@@ -97,6 +97,24 @@ public class CandidateManifestTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow("0")]
+    [DataRow("2")]
+    [DataRow("10")]
+    public void MatchesCandidatesIndependentlyOfPreviewIteration(string iteration)
+    {
+        XDocument manifest = CreateManifest();
+        foreach (XElement preview in manifest.Root!.Elements("Blob").Where(b => ((string)b.Attribute("Id")!).Contains("-preview.", StringComparison.Ordinal)))
+        {
+            preview.SetAttributeValue("Id", ((string)preview.Attribute("Id")!).Replace("-preview.1.", "-preview." + iteration + ".", StringComparison.Ordinal));
+        }
+
+        Dictionary<string, string[]> candidates = PrepareDotnetupCandidateAssetIds.GetCandidateAssetIds(manifest);
+
+        Assert.Contains("dotnetup/0.2.0-daily.26501.1/dotnetup-win-x64.exe", candidates["daily"]);
+        Assert.Contains("dotnetup/0.2.0-preview." + iteration + ".26501.1/dotnetup-win-x64.exe", candidates["preview"]);
+    }
+
+    [TestMethod]
     [DataRow("missing-rid")]
     [DataRow("missing-checksum")]
     [DataRow("missing-script")]
@@ -109,6 +127,8 @@ public class CandidateManifestTests : IDisposable
     [DataRow("unknown-asset")]
     [DataRow("missing-archive")]
     [DataRow("v3")]
+    [DataRow("daily-iteration")]
+    [DataRow("preview-missing-iteration")]
     public void RejectsIncompleteOrMisroutedCandidates(string fault)
     {
         XDocument manifest = CreateManifest();
@@ -154,6 +174,18 @@ public class CandidateManifestTests : IDisposable
             case "v3":
                 manifest.Root.SetAttributeValue("PublishingVersion", "3");
                 break;
+            case "daily-iteration":
+                foreach (XElement daily in manifest.Root.Elements("Blob").Where(b => ((string)b.Attribute("Id")!).Contains("-daily.", StringComparison.Ordinal)))
+                {
+                    daily.SetAttributeValue("Id", ((string)daily.Attribute("Id")!).Replace("-daily.", "-daily.1.", StringComparison.Ordinal));
+                }
+                break;
+            case "preview-missing-iteration":
+                foreach (XElement preview in manifest.Root.Elements("Blob").Where(b => ((string)b.Attribute("Id")!).Contains("-preview.", StringComparison.Ordinal)))
+                {
+                    preview.SetAttributeValue("Id", ((string)preview.Attribute("Id")!).Replace("-preview.1.", "-preview.", StringComparison.Ordinal));
+                }
+                break;
         }
         Assert.ThrowsExactly<InvalidDataException>(() => PrepareDotnetupCandidateAssetIds.GetCandidateAssetIds(manifest));
     }
@@ -180,7 +212,7 @@ public class CandidateManifestTests : IDisposable
                 foreach (string name in new[] { file, file + ".sha512" })
                 {
                     build.Add(new XElement("Blob",
-                        new XAttribute("Id", "dotnetup/0.2.0-" + quality + ".1.26501.1/" + name),
+                        new XAttribute("Id", "dotnetup/0.2.0-" + quality + "." + (quality == "preview" ? "1." : "") + "26501.1/" + name),
                         new XAttribute("PipelineArtifactName", "Build_" + quality + "_Artifacts"),
                         new XAttribute("PipelineArtifactPath", "assets/" + name)));
                 }

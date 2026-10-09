@@ -27,6 +27,7 @@
     <VersionPrefix>$(DotnetupVersionPrefix)</VersionPrefix>
     <PreReleaseVersionLabel>$(DotnetupPreReleaseVersionLabel)</PreReleaseVersionLabel>
     <PreReleaseVersionIteration>$(DotnetupPreReleaseVersionIteration)</PreReleaseVersionIteration>
+    <PreReleaseVersionIteration Condition="'$(DotnetupPreReleaseVersionLabel)' == 'daily'"></PreReleaseVersionIteration>
 
     <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build.
          EnforceCodeStyleInBuild=false  prevents IDE* code-style analyzers from running during build.

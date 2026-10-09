@@ -12,6 +12,10 @@ Publishing an older build through the same process rolls those links back withou
 Daily builds are published automatically. Preview builds require the manual promotion
 described below.
 
+Daily candidate versions use `-daily.<BuildNumber>` (for example,
+`0.2.0-daily.26508.2`). Preview candidates retain the preview iteration, for example
+`0.2.0-preview.1.26508.2`. Both candidates share the release prefix and build number.
+
 The promotion pipeline must include the `BlobAssetIdManifests` support proposed in
 [dotnet/arcade#17684](https://github.com/dotnet/arcade/pull/17684). Do not promote these
 candidates with an older publishing toolset.
