@@ -2,13 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.CodeAnalysis.Razor.Formatting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
     internal static class MSBuildWorkspaceLoader
     {
+        private static readonly MefHostServices s_hostServices = MefHostServices.Create(
+            MefHostServices.DefaultAssemblies.Add(typeof(RazorFormatter).Assembly));
+
         // Used in tests for locking around MSBuild invocations
         internal static readonly SemaphoreSlim Guard = new SemaphoreSlim(1, 1);
 
@@ -34,7 +39,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 properties["TargetFramework"] = targetFramework;
             }
 
-            var workspace = MSBuildWorkspace.Create(properties);
+            var workspace = MSBuildWorkspace.Create(properties, s_hostServices);
             ProjectId? projectId = null;
 
             Build.Framework.ILogger? binlog = null;
