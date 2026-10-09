@@ -2279,8 +2279,8 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
-        <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="translated">Methode "Dictionary.TryAdd(TKey, TValue)" bevorzugen</target>
+        <source>Prefer the 'Dictionary.TryAdd(TKey, TValue)' method</source>
+        <target state="needs-review-translation">Methode "Dictionary.TryAdd(TKey, TValue)" bevorzugen</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">

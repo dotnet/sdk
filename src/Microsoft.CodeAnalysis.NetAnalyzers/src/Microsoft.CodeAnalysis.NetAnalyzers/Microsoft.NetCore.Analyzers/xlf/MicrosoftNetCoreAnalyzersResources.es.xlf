@@ -2279,8 +2279,8 @@ La ampliación y las conversiones definidas por el usuario no se admiten con tip
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
-        <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="translated">Dé preferencia al método "IDictionary.TryAdd(TKey, TValue)"</target>
+        <source>Prefer the 'Dictionary.TryAdd(TKey, TValue)' method</source>
+        <target state="needs-review-translation">Dé preferencia al método "IDictionary.TryAdd(TKey, TValue)"</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">
