@@ -9,6 +9,11 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
 {
     internal static class FormatterUtilities
     {
+        internal static bool IsRazorDocument(TextDocument document)
+            => document.FilePath is string filePath &&
+               (filePath.EndsWith(".razor", StringComparison.OrdinalIgnoreCase) ||
+                filePath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase));
+
         public static ImmutableArray<FileChange> GetFileChanges(
             TextDocument document,
             SourceText originalText,
