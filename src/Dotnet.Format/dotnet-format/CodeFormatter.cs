@@ -82,7 +82,8 @@ namespace Microsoft.CodeAnalysis.Tools
             var documentIdsWithErrors = formattedFiles.Select(file => file.DocumentId).Distinct().ToImmutableArray();
             foreach (var documentId in documentIdsWithErrors)
             {
-                var documentWithError = solution.GetDocument(documentId);
+                TextDocument? documentWithError = solution.GetDocument(documentId)
+                    ?? solution.GetAdditionalDocument(documentId);
                 if (documentWithError is null)
                 {
                     documentWithError = await solution.GetSourceGeneratedDocumentAsync(documentId, cancellationToken);
