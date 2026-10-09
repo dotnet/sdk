@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And
                 .NotHaveStdErr();
 
-            new DotnetNewCommand(log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates100Path)
+            new DotnetNewCommand(log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates110Path)
                 .WithCustomHive(s_mstestTemplateSelectionHome)
                 .Execute()
                 .Should()
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string workingDirectory = CreateTemporaryFolder();
 
-            new DotnetNewCommand(_log, "console")
+            new DotnetNewCommand(_log, "console", "--no-restore")
                 .WithCustomHive(_fixture.HomeDirectory)
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
@@ -129,9 +129,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
 
             // Cover the language-specific template groups at the framework where the
-            // Microsoft.DotNet.Common.ProjectTemplates.10.0 package can otherwise win.
-            yield return ["mstest", "net10.0", "F#", "fsproj"];
-            yield return ["mstest", "net10.0", "VB", "vbproj"];
+            // Microsoft.DotNet.Common.ProjectTemplates.11.0 package can otherwise win.
+            yield return ["mstest", "net11.0", "F#", "fsproj"];
+            yield return ["mstest", "net11.0", "VB", "vbproj"];
 
             string[] additionalPlaywrightTargetFrameworks =
             [

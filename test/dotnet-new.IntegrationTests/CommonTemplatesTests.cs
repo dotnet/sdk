@@ -186,8 +186,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow(new object[] { "console", "VB" })]
         public async Task AotVariants(string name, string language)
         {
-            string currentDefaultFramework = ToolsetInfo.CurrentTargetFramework;
-
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{language}");
             string outputDir = "MyProject";
             string projName = name;
@@ -230,7 +228,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomEnvironment(environmentUnderTest!)
             .WithCustomScrubbers(
                 ScrubbersDefinition.Empty
-                    .AddScrubber(sb => sb.Replace($"<TargetFramework>{currentDefaultFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
+                    .AddScrubber(sb => sb.Replace($"<TargetFramework>{CommonTemplateTargetFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
                     .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
             );
@@ -356,8 +354,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             bool supportsImplicitUsings,
             bool supportsFileScopedNs)
         {
-            string currentDefaultFramework = ToolsetInfo.CurrentTargetFramework;
-
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
             string outputDir = "MyProject";
             string projName = name;
@@ -430,7 +426,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             .WithCustomScrubbers(
                 ScrubbersDefinition.Empty
                     .AddScrubber(sb => sb.Replace($"<LangVersion>{langVersion}</LangVersion>", "<LangVersion>%LANG%</LangVersion>"))
-                    .AddScrubber(sb => sb.Replace($"<TargetFramework>{framework ?? currentDefaultFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
+                    .AddScrubber(sb => sb.Replace($"<TargetFramework>{framework ?? CommonTemplateTargetFramework}</TargetFramework>", "<TargetFramework>%FRAMEWORK%</TargetFramework>"))
                     .AddScrubber(sb => sb.Replace(finalProjectName, "%PROJECT_PATH%").UnixifyDirSeparators().ScrubByRegex("(^  Restored .* \\()(.*)(\\)\\.)", "$1%DURATION%$3", RegexOptions.Multiline), "txt")
                     .AddScrubber(sb => sb.ScrubMSBuildDebugLogMessage(), "txt")
             );
