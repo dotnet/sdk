@@ -1,0 +1,45 @@
+steps:
+- task: DownloadPipelineArtifact@2
+  name: DownloadCandidateManifests
+  displayName: '📥 Download candidate asset manifests'
+  inputs:
+    itemPattern: |
+      *_daily_Artifacts/manifests/**/*.xml
+      *_preview_Artifacts/manifests/**/*.xml
+    targetPath: '$(Build.StagingDirectory)/AllAssetManifests'
+- task: CopyFiles@2
+  name: CollectCandidateManifests
+  displayName: '📂 Collect candidate asset manifests'
+  inputs:
+    SourceFolder: '$(Build.StagingDirectory)/AllAssetManifests'
+    Contents: '**/*.xml'
+    TargetFolder: '$(Build.StagingDirectory)/CandidateInputs'
+    flattenFolders: true
+- task: NuGetAuthenticate@1
+  name: AuthenticateCandidateFeeds
+  displayName: '🔑 Authenticate candidate package feeds'
+- template: /eng/common/templates-official/steps/enable-internal-sources.yml
+- template: /eng/common/templates-official/steps/enable-internal-runtimes.yml
+- task: AzureCLI@2
+  name: RegisterCandidates
+  displayName: '📝 Register both candidates in BAR'
+  inputs:
+    azureSubscription: 'Darc: Maestro Production'
+    scriptType: ps
+    scriptLocation: scriptPath
+    scriptPath: '$(Build.SourcesDirectory)/eng/common/sdk-task.ps1'
+    arguments: >-
+      -task PublishBuildAssets -restore -msbuildEngine dotnet
+      /p:ManifestsPath='$(Build.StagingDirectory)/CandidateInputs'
+      /p:IsAssetlessBuild=false
+      /p:MaestroApiEndpoint=https://maestro.dot.net
+      /p:OfficialBuildId=$(Build.BuildNumber)
+      -runtimeSourceFeed https://ci.dot.net/internal
+      -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'
+- powershell: |
+    $directory = "$(Build.StagingDirectory)/ReleaseConfigs"
+    New-Item $directory -ItemType Directory -Force | Out-Null
+    @("$(BARBuildId)", "$(DefaultChannels)", "$(IsStableBuild)") | Set-Content "$directory/ReleaseConfigs.txt"
+    Write-Host "Daily and preview candidates: BAR ID $(BARBuildId)"
+  name: RecordCandidateBarId
+  displayName: '📋 Record candidate BAR ID'
