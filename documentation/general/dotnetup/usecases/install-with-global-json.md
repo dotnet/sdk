@@ -8,8 +8,10 @@ ms.date: 08/07/2026
 # Install an SDK for a repository with dotnetup
 
 When you do not supply an SDK channel, `dotnetup sdk install` searches from
-the current directory toward the file system root. It uses the first usable
-`global.json` file that it finds.
+the current directory toward the file system root. It uses the nearest
+existing `global.json` file. If that file is malformed, the command fails
+instead of searching a parent directory. If the file parses but doesn't
+contain a usable SDK requirement, or if no file exists, it uses `latest`.
 
 ## Install the repository requirement
 
@@ -50,6 +52,9 @@ For an SDK version such as `10.0.103`, dotnetup maps `rollForward` as follows:
 | `disable`, `patch`, `feature`, `minor`, or `major` | Exact version `10.0.103` |
 
 An exact requirement is pinned and is not changed by `dotnetup update`.
+The `allowPrerelease` property doesn't affect the channel that `dotnetup`
+derives. If the repository must prohibit prerelease SDKs, install an acceptable
+released version explicitly.
 
 ## Use `sdk.paths`
 
@@ -63,19 +68,20 @@ The install-path precedence is:
 2. The first `sdk.paths` entry
 3. The default dotnetup-managed .NET installation root
 
-### The `$host$` sentinel
+### Preview limitations
 
-`$host$` is **not** a literal directory. It is a sentinel the .NET host resolver understands to mean "use the default host location." dotnetup treats it the same way, and skips empty, null, or whitespace entries while looking for the first meaningful entry:
-
-| First meaningful `sdk.paths` entry | Where dotnetup installs |
-|------------------------------------|-------------------------|
-| A relative or absolute path (e.g. `.dotnet`) | That path, resolved relative to the directory containing `global.json` |
-| `$host$` | The default dotnetup-managed .NET installation root |
-| *(no usable entry — empty, or only null/whitespace)* | The default dotnetup-managed .NET installation root |
-
-Because `sdk.paths` is ordered, the first meaningful entry wins. `["$host$", ".dotnet"]` installs to the default installation root and ignores `.dotnet`, while `[".dotnet", "$host$"]` installs to `.dotnet`. A literal path does *not* take precedence over `$host$` unless it appears first.
+The current public-preview build treats the first `sdk.paths` entry as a path.
+It doesn't interpret `$host$` as a sentinel or skip empty entries. To use the
+default dotnetup-managed installation root, omit `sdk.paths` or set
+`--install-path` explicitly.
 
 ## Update `global.json`
+
+After you change `sdk.version` or `rollForward`, run `dotnetup sdk install`
+from the repository directory to apply the new requirement. Before garbage
+collection refreshes changed `global.json` sources, `dotnetup sdk update`
+processes stored requirements, so its first pass might still use the previous
+requirement.
 
 To install the newest version in the derived channel and write that version
 back to `global.json`, run:
@@ -93,13 +99,20 @@ dotnetup sdk update --update-global-json
 The update changes only `sdk.version`. It preserves the existing formatting,
 other properties, and detected text encoding.
 
-## Remove a repository requirement
+## Remove matching repository requirements
 
-Run the uninstall command from any directory and select `globaljson` as the
-source:
+The uninstall command removes every matching `globaljson` specification in
+the selected installation root. It doesn't target one repository. To remove
+matching requirements from the default root, run:
 
 ```dotnetcli
 dotnetup sdk uninstall 10.0.1xx --source globaljson
+```
+
+To select a custom installation root, add `--install-path`:
+
+```dotnetcli
+dotnetup sdk uninstall 10.0.1xx --source globaljson --install-path <INSTALL_PATH>
 ```
 
 `dotnetup` removes files only when no remaining requirement needs them.

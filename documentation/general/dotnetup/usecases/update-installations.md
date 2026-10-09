@@ -52,6 +52,12 @@ dotnetup sdk update --update-global-json
 Without this option, dotnetup installs the update but does not edit the
 repository file.
 
+An update processes stored requirements before garbage collection refreshes
+changed `global.json` sources. After you change a repository's `global.json`,
+run `dotnetup sdk install` from that repository before you update its stored
+requirements. Otherwise, the first update might still process the previous
+requirement.
+
 ## Understand update behavior
 
 - Exact SDK and runtime versions are skipped - they were explicitly requested, so can never be updated.
@@ -80,3 +86,4 @@ dotnetup list --format json
 - [dotnetup update](../reference/dotnetup-update.md)
 - [dotnetup sdk update](../reference/dotnetup-sdk-update.md)
 - [dotnetup runtime update](../reference/dotnetup-runtime-update.md)
+- [Update or remove dotnetup](manage-dotnetup.md)

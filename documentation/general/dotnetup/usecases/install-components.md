@@ -9,8 +9,9 @@ ms.date: 08/07/2026
 
 ## Install SDKs
 
-With no channel, dotnetup uses the nearest usable `global.json` requirement.
-If none exists, it uses `latest`.
+With no channel, `dotnetup` reads the nearest existing `global.json`. If that
+file is malformed, the command fails. If the file has no usable SDK
+requirement, or if no file exists, it uses `latest`.
 
 ```dotnetcli
 dotnetup sdk install

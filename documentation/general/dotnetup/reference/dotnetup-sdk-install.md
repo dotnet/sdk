@@ -24,8 +24,10 @@ dotnetup sdk install [<CHANNEL>...] [options]
 One or more SDK channels or exact versions. Multiple values are resolved
 before installation and can be installed concurrently.
 
-When no value is present, `dotnetup` derives the channel from the nearest
-`global.json`. If no usable file exists, it selects `latest`.
+When no value is present, `dotnetup` reads the nearest existing `global.json`
+and derives a channel from it. A malformed file causes the command to fail. If
+the file has no usable SDK requirement, or if no file exists, it selects
+`latest`.
 
 ## Options
 

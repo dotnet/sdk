@@ -24,8 +24,9 @@ dotnetup install [<CHANNEL>...] [options]
 `CHANNEL`
 
 One or more SDK channels or exact versions. If you omit this argument,
-`dotnetup` derives a channel from the nearest `global.json`. If it cannot
-derive one, it uses `latest`.
+`dotnetup` reads the nearest existing `global.json` and derives a channel from
+it. A malformed file causes the command to fail. If no file exists, it uses
+`latest`. A valid file without a usable SDK requirement also uses `latest`.
 
 ## Options
 
