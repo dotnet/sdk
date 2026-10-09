@@ -265,6 +265,33 @@ public class SelfUpdateStartupTests
     }
 
     [TestMethod]
+    public void InvocationIsVisibleFromAnotherThread()
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
+        SelfUpdateInvocation? observed = null;
+        var thread = new Thread(() => observed = SelfUpdateInvocation.Current);
+
+        thread.Start();
+
+        Assert.IsTrue(thread.Join(TimeSpan.FromSeconds(10)));
+        Assert.AreSame(invocation, observed);
+    }
+
+    [TestMethod]
+    public void DisposingNestedInvocationDoesNotRestorePreviousInvocation()
+    {
+        using var files = new SelfUpdateTestFiles();
+        using var outer = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion);
+        using (var inner = new SelfUpdateInvocation(files.Paths.InstalledPath, SelfUpdateTestFiles.OriginalVersion))
+        {
+            Assert.AreSame(inner, SelfUpdateInvocation.Current);
+        }
+
+        Assert.IsNull(SelfUpdateInvocation.Current);
+    }
+
+    [TestMethod]
     public void NonSafeCommandDoesNotCleanUpExpiredBackups()
     {
         using var files = new SelfUpdateTestFiles();
