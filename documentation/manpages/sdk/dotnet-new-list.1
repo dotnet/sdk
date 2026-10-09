@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-list" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-new-list" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet new list
 .PP
@@ -111,13 +111,10 @@ Available since .NET SDK 5.0.300.
 Enables diagnostic output.
 Available since .NET SDK 7.0.100.
 .RE
-.IP \[bu] 2
-\f[B]\f[VB]-h|--help\f[B]\f[R]
-.RS 2
 .PP
-Prints out help for the list command.
-Available since .NET SDK 7.0.100.
-.RE
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.PP
+Prints out a description of how to use the command.
 .IP \[bu] 2
 \f[B]\f[VB]--ignore-constraints\f[B]\f[R]
 .RS 2
@@ -171,14 +168,12 @@ Available since .NET SDK 5.0.300.
 Filters templates based on template type.
 Predefined values are \f[V]project\f[R], \f[V]item\f[R], and \f[V]solution\f[R].
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
-Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], and \f[V]diag[nostic]\f[R].
-Available since .NET SDK 7.0.100.
-.RE
+Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
+For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 .SH EXAMPLES
 .IP \[bu] 2
 List all templates
@@ -246,4 +241,4 @@ dotnet new command
 .IP \[bu] 2
 dotnet new search command
 .IP \[bu] 2
-Custom templates for dotnet new
+\&.NET templates for authors

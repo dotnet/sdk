@@ -376,7 +376,7 @@ Ayrıntılar: {1}.</target>
         <source>Failed to create template.
 Details: {0}</source>
         <target state="translated">Şablon oluşturulamadı.
-Ayrıntılar: {0}.</target>
+Ayrıntılar: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
@@ -407,7 +407,7 @@ Ayrıntılar: {0}.</target>
       <trans-unit id="TemplatePackageManager_Error_FailedToGetTemplatePackages">
         <source>Failed to retrieve template packages from provider '{0}'.
 Details: {1}</source>
-        <target state="translated">Şablon paketleri '{0}' sağlayıcısından alınamadı.
+        <target state="translated">'{0}' sağlayıcısından şablon paketleri alınamadı.
 Ayrıntılar: {1}</target>
         <note>{0} - provider name (not localized). Last line should not end with a period - period is already included in {1}.</note>
       </trans-unit>
@@ -431,9 +431,9 @@ The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
         <target state="translated">
-Aşağıdaki şablonlar aynı '{0}' kimliğini kullanıyor:
+Aşağıdaki şablonlar aynı kimlik '{0}' kullanıyor:
 {1}
-'{2}' paketindeki şablon kullanılacak. Bu çakışmayı çözmek için çakışan şablon paketlerini kaldırın.</target>
+'{2}' şablon kullanılacak. Bu çakışmayı çözmek için çakışan şablon paketlerini kaldırın.</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'

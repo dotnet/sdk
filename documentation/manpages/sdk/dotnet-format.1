@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-format" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-format" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet format
 .PP
@@ -47,6 +47,11 @@ For more information, see the EditorConfig documentation.
 .PP
 The MSBuild project or solution to run code formatting on.
 If a project or solution file is not specified, MSBuild searches the current working directory for a file that has a file extension that ends in \f[I]proj\f[R] or \f[I]sln\f[R], and uses that file.
+.RS
+.PP
+[!CAUTION] dotnet format may restore, compile, and run analyzers from the specified project or solution.
+Only invoke the tool against trusted code.
+.RE
 .SH OPTIONS
 .PP
 None of the options below are required for the \f[V]dotnet format\f[R] command to succeed, but you can use them to further customize what is formatted and by which rules.
@@ -126,20 +131,16 @@ Terminates with a non zero exit code if any files would have been formatted.
 .PP
 Displays version information.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .SS Subcommands
 .SS Whitespace
 .PP

@@ -3,8 +3,8 @@
 
 using NuGet.Packaging;
 using System.Diagnostics;
-using System.Net.Http.Json;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
@@ -191,19 +191,22 @@ internal sealed class Registry
     public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, IManifestPicker manifestPicker, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
+        ManifestResponse initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
+        ReadOnlyMemory<byte> manifestBytes = initialManifestResponse.Content;
+        string? verifiedDigest = initialManifestResponse.VerifiedDigest;
 
-        return initialManifestResponse.Content.Headers.ContentType?.MediaType switch
+        string? mediaType = initialManifestResponse.MediaType;
+        return mediaType switch
         {
             SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await ReadSingleImageAsync(
                 repositoryName,
-                await ReadManifest().ConfigureAwait(false),
-                initialManifestResponse.Content.Headers.ContentType.MediaType,
+                ToManifestV2(manifestBytes, verifiedDigest, mediaType),
+                mediaType,
                 cancellationToken).ConfigureAwait(false),
             SchemaTypes.DockerManifestListV2 => await PickBestImageFromManifestListAsync(
                 repositoryName,
                 reference,
-                await initialManifestResponse.Content.ReadFromJsonAsync<ManifestListV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                JsonSerializer.Deserialize<ManifestListV2>(manifestBytes.Span),
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
@@ -211,7 +214,7 @@ internal sealed class Registry
                 await PickBestImageFromImageIndexAsync(
                 repositoryName,
                 reference,
-                await initialManifestResponse.Content.ReadFromJsonAsync<ImageIndexV1>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                JsonSerializer.Deserialize<ImageIndexV1>(manifestBytes.Span),
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
@@ -223,29 +226,14 @@ internal sealed class Registry
                 unknownMediaType))
         };
 
-        async Task<ManifestV2> ReadManifest()
+        ManifestV2 ToManifestV2(ReadOnlyMemory<byte> manifestBytes, string? verifiedDigest, string mediaType)
         {
-            initialManifestResponse.Headers.TryGetValues("Docker-Content-Digest", out var knownDigest);
-            var manifest = (await initialManifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
-            if (knownDigest?.FirstOrDefault() is string knownDigestValue)
-            {
-                DigestUtils.ValidateDigest(knownDigestValue);
-                manifest.KnownDigest = knownDigestValue;
-            }
+            var manifest = JsonSerializer.Deserialize<ManifestV2>(manifestBytes.Span)
+                ?? throw new InvalidManifestException(
+                    $"Could not deserialize manifest for '{repositoryName}:{reference}' from registry '{BaseUri}' as '{mediaType}'.");
+            manifest.KnownDigest = verifiedDigest;
             return manifest;
         }
-    }
-
-    internal async Task<ManifestListV2?> GetManifestListAsync(string repositoryName, string reference, CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        using HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
-
-        return initialManifestResponse.Content.Headers.ContentType?.MediaType switch
-        {
-            SchemaTypes.DockerManifestListV2 => await initialManifestResponse.Content.ReadFromJsonAsync<ManifestListV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
-            _ => null
-        };
     }
 
     private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, string manifestMediaType, CancellationToken cancellationToken)
@@ -387,18 +375,21 @@ internal sealed class Registry
         IEnumerable<string> rids,
         CancellationToken cancellationToken)
     {
-        using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, manifestDigest, cancellationToken).ConfigureAwait(false);
+        ManifestResponse manifestResponse =
+            await _registryAPI.Manifest
+                .GetAsync(repositoryName, manifestDigest, cancellationToken)
+                .ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
-        var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
-        if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, rids);
-        DigestUtils.ValidateDigest(manifestDigest);
+        ReadOnlyMemory<byte> content = manifestResponse.Content;
+        var manifest = JsonSerializer.Deserialize<ManifestV2>(content.Span);
+
+        if (manifest is null)
+            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, rids);
+
         manifest.KnownDigest = manifestDigest;
-        return await ReadSingleImageAsync(
-            repositoryName,
-            manifest,
-            mediaType,
-            cancellationToken).ConfigureAwait(false);
+        return await ReadSingleImageAsync(repositoryName, manifest, mediaType, cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <summary>
@@ -446,7 +437,10 @@ internal sealed class Registry
             try
             {
                 // No local copy, so download one
-                using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
+                using Stream responseStream = await _registryAPI.Blob
+                    // SAFETY: Content is checked against digest by CopyToAndVerifyAsync immediately below.
+                    .GetUnvalidatedStreamAsync(repository, descriptor.Digest, cancellationToken)
+                    .ConfigureAwait(false);
 
                 using (FileStream fs = File.Create(tempTarballPath))
                 {

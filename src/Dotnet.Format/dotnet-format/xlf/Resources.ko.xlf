@@ -64,7 +64,7 @@
       </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_with_framework">
         <source>Cannot specify the '--folder' option with '--framework'.</source>
-        <target state="new">Cannot specify the '--folder' option with '--framework'.</target>
+        <target state="translated">'--framework'와 함께 '--folder' 옵션을 지정할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_with_no_restore">
@@ -294,12 +294,12 @@
       </trans-unit>
       <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
         <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
-        <target state="new">The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</target>
+        <target state="translated">작업할 프로젝트 또는 솔루션 또는 C#(파일 기반 프로그램) 파일입니다. 파일을 지정하지 않으면 명령이 현재 디렉터리에서 프로젝트 또는 솔루션을 검색합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectOrFileArgumentName">
         <source>PROJECT | SOLUTION | FILE</source>
-        <target state="new">PROJECT | SOLUTION | FILE</target>
+        <target state="translated">PROJECT | SOLUTION | FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution_0_has_ no_projects">
@@ -334,7 +334,7 @@
       </trans-unit>
       <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_solution_file_or_file_based_app">
         <source>The file '{0}' does not appear to be a valid project, solution file, or file-based app.</source>
-        <target state="new">The file '{0}' does not appear to be a valid project, solution file, or file-based app.</target>
+        <target state="translated">파일 '{0}'은(는) 유효한 프로젝트, 솔루션 파일 또는 파일 기반 앱이 아닌 것 같습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">
@@ -359,7 +359,7 @@
       </trans-unit>
       <trans-unit id="The_target_framework_to_use_when_loading_the_workspace">
         <source>The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</source>
-        <target state="new">The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</target>
+        <target state="translated">작업 영역을 로드할 때 사용할 TFM(대상 프레임워크)입니다. 복원과 분석을 지정한 프레임워크로만 제한합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action">
