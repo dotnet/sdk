@@ -33,7 +33,7 @@ it. A malformed file causes the command to fail. If no file exists, it uses
 | Option | Description |
 | --- | --- |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
-| `--set-default-install [<true\|false>]` | The current parser accepts this option. The current install handler does not apply its environment changes. Use `dotnetup env set` after installation. |
+| `--set-default-install [<true\|false>]` | Accepted for compatibility. This option does not configure environment access. Use `dotnetup env set` after installation. |
 | `--migrate-from-system [<true\|false>]` | Install matching native-architecture SDKs from a system-managed installation into the selected installation root. |
 | `--update-global-json [<true\|false>]` | Replace `sdk.version` in the applicable `global.json` with the installed version. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
@@ -41,7 +41,7 @@ it. A malformed file causes the command to fail. If no file exists, it uses
 | `--no-progress [<true\|false>]` | Disable progress display. |
 | `-v`, `--verbosity <normal\|detailed>` | Set output verbosity. The default is `normal`. |
 | `--require-muxer-update [<true\|false>]` | Fail if the command cannot update the `dotnet` executable. By default, installation continues with a warning. |
-| `--untracked [<true\|false>]` | Install without adding a manifest record. |
+| `--untracked [<true\|false>]` | Install without tracking the requirement. Use a separate root that no tracked installation uses. |
 | `-?`, `-h`, `--help` | Show command help. |
 
 ## Examples

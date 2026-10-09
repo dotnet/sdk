@@ -98,7 +98,7 @@ The dotnetup data directory contains these user-level state files:
 
 | File | Purpose |
 | --- | --- |
-| `dotnetup_manifest.json` | Tracks installation roots, install specifications, installations, and shared subcomponents. |
+| `dotnetup_manifest.json` | Tracks managed roots, requested channels or versions, and installed SDK and runtime state. |
 | `dotnetup_manifest.json.sha256` | Detects changes to manifest content that dotnetup did not write. |
 | `dotnetup.config.json` | Stores the .NET access mode and whether the `dotnetup` directory is on `PATH`. |
 
