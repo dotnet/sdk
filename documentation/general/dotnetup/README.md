@@ -180,11 +180,13 @@ Run `dotnetup init` again to change the setup.
 ## Public documentation
 
 - [dotnetup overview](index.md)
+- [When to use dotnetup](choose-dotnetup.md)
 - [Table of contents](toc.yml)
 - [Core concepts](concepts/how-dotnetup-works.md)
 - [Release channels](channels/preview.md)
 - [CLI reference](reference/dotnetup.md)
 - [Scenarios](usecases/install-with-global-json.md)
+- [Update or remove dotnetup](usecases/manage-dotnetup.md)
 
 ## Maintainer documentation
 

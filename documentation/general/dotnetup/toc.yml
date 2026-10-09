@@ -1,5 +1,9 @@
 - name: dotnetup
   href: index.md
+- name: Get started
+  href: README.md
+- name: When to use dotnetup
+  href: choose-dotnetup.md
 - name: Concepts
   items:
   - name: How dotnetup works
@@ -66,6 +70,8 @@
     href: usecases/install-components.md
   - name: Update installations
     href: usecases/update-installations.md
+  - name: Update or remove dotnetup
+    href: usecases/manage-dotnetup.md
   - name: Manage the environment
     href: usecases/manage-environment.md
   - name: Manage custom installation roots
