@@ -185,6 +185,7 @@ Run `dotnetup init` again to change the setup.
 - [Core concepts](concepts/how-dotnetup-works.md)
 - [Download verification](concepts/download-verification.md)
 - [Release channels](channels/preview.md)
+- [Troubleshooting](troubleshooting.md)
 - [Telemetry](telemetry.md)
 - [CLI reference](reference/dotnetup.md)
 - [Scenarios](usecases/install-with-global-json.md)

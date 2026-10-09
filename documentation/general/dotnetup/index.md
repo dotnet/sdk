@@ -122,6 +122,7 @@ For more information, see [How dotnetup works](concepts/how-dotnetup-works.md).
 | Configure `PATH` and `DOTNET_ROOT` | [Manage the dotnetup environment](usecases/manage-environment.md) |
 | Try preview or daily builds | [Use preview and daily builds](usecases/try-daily-builds.md) |
 | Learn how downloads are verified | [How dotnetup verifies downloads](concepts/download-verification.md) |
+| Fix common problems | [Troubleshoot dotnetup](troubleshooting.md) |
 | Learn what data dotnetup collects | [dotnetup telemetry](telemetry.md) |
 | Look up command syntax | [dotnetup command reference](reference/dotnetup.md) |
 

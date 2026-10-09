@@ -24,6 +24,8 @@
     href: channels/daily.md
 - name: Telemetry
   href: telemetry.md
+- name: Troubleshooting
+  href: troubleshooting.md
 - name: CLI reference
   items:
   - name: dotnetup

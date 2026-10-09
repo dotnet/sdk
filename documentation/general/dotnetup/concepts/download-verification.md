@@ -39,7 +39,9 @@ manifest hasn't expired, even if its signature and archive hashes are valid.
 It also checks that the manifest was signed before its expiration time.
 
 An incorrect system clock or an expired manifest can cause verification to
-fail. Don't edit the manifest or change the clock to bypass this check.
+fail. Don't edit the manifest or change the clock to bypass this check. For
+recovery guidance, see
+[A release manifest has expired](../troubleshooting.md#a-release-manifest-has-expired).
 
 ### Trusted certificates
 
