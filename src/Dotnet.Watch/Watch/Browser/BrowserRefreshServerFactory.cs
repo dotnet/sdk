@@ -57,7 +57,7 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
             if (server != null)
             {
-                if (BrowserToolsBuildOutputs.TryGetFor(browserToolsProject, server.Logger) is not { } outputs)
+                if (BrowserToolsBuildOutputs.FromProject(browserToolsProject.ProjectInstance, server.Logger) is not { } outputs)
                 {
                     server.Dispose();
                     _servers.Remove(key);

@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
 using System.Security.Cryptography;
 using System.Text.Json;
-using Microsoft.Build.Execution;
-using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
@@ -62,41 +63,42 @@ internal sealed class BrowserToolsBuildOutputs
     }
 
     /// <summary>
-    /// Returns the build outputs of <paramref name="projectNode"/>, or null when the project does
-    /// not produce browser tools assets at all. Whether it does is decided by evaluated properties
-    /// that mirror the condition on the target that produces them, so a project that opted out - or
-    /// an SDK that has no browser tools initializer - is recognized without touching the file
+    /// Returns the build outputs of the given project, or null when the project does
+    /// not produce browser tools assets at all.
+    ///
+    /// Whether it does is decided by evaluated properties that mirror the condition on the target that produces them,
+    /// so a project that opted out - or an SDK that has no browser tools initializer - is recognized without touching the file
     /// system.
     /// </summary>
-    public static BrowserToolsBuildOutputs? TryGetFor(ProjectGraphNode projectNode, ILogger logger)
-        => TryGetFor(projectNode.ProjectInstance, logger);
-
-    public static BrowserToolsBuildOutputs? TryGetFor(ProjectInstance projectInstance, ILogger logger)
+    public static BrowserToolsBuildOutputs? FromProjectSettings(
+        ILogger logger,
+        string projectPath,
+        string configuration,
+        string? intermediateOutputDirectory,
+        bool? enableHotReloadInRuntimeConfigDevFile,
+        string dotNetWatchBrowserToolsAssetPrefix,
+        bool staticWebAssetsEnabled,
+        bool jsModulesEnabled)
     {
-        var enableHotReload = projectInstance.GetBooleanPropertyValue(
-            PropertyNames.EnableHotReloadInRuntimeConfigDevFile,
-            defaultValue: string.Equals(
-                projectInstance.GetPropertyValue(PropertyNames.Configuration),
-                "Debug",
-                StringComparison.OrdinalIgnoreCase));
+        var enableHotReload = enableHotReloadInRuntimeConfigDevFile ?? string.Equals(configuration, "Debug", StringComparison.OrdinalIgnoreCase);
 
         if (!enableHotReload ||
-            projectInstance.GetPropertyValue(PropertyNames.DotNetWatchBrowserToolsAssetPrefix) is not { Length: > 0 } ||
-            !projectInstance.GetBooleanPropertyValue(PropertyNames.StaticWebAssetsEnabled) ||
-            !projectInstance.GetBooleanPropertyValue(PropertyNames.JSModulesEnabled))
+            dotNetWatchBrowserToolsAssetPrefix is not { Length: > 0 } ||
+            !staticWebAssetsEnabled ||
+            !jsModulesEnabled)
         {
-            logger.Log(MessageDescriptor.BrowserToolsAssetsNotProducedByProject);
+            logger.Log(LogEvents.BrowserToolsAssetsNotProducedByProject);
             return null;
         }
 
-        if (projectInstance.GetIntermediateOutputDirectory() is not { } intermediateOutputDirectory)
+        if (intermediateOutputDirectory == null)
         {
-            logger.Log(MessageDescriptor.BrowserToolsAssetsNotProducedByProject);
+            logger.Log(LogEvents.BrowserToolsAssetsNotProducedByProject);
             return null;
         }
 
         return new BrowserToolsBuildOutputs(
-            projectInstance.FullPath,
+            projectPath,
             Path.Combine(intermediateOutputDirectory, DirectoryName),
             logger);
     }
@@ -144,7 +146,7 @@ internal sealed class BrowserToolsBuildOutputs
             throw Fail("the private key does not match the public key the application pinned");
         }
 
-        _logger.Log(MessageDescriptor.BrowserToolsUsingKeyFromBuild);
+        _logger.Log(LogEvents.BrowserToolsUsingKeyFromBuild);
         return sessionKey;
     }
 
