@@ -67,5 +67,5 @@ where neither file is included on Windows/macOS because the sharedhost installer
 the launcher. Platform selection follows the build host, not the target RID.
 [`WorkloadMetadataLayout.cs`](../Tasks/sdk-tasks/WorkloadMetadataLayout.cs) and
 [`GetDnxShimLayout.cs`](../Tasks/sdk-tasks/GetDnxShimLayout.cs) constrain
-discovery and rejects symbolic links or junctions at owned paths before mutation.
+discovery to owned paths.
 State files are not deletion authority.

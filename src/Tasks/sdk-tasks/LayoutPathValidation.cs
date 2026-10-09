@@ -5,14 +5,6 @@ namespace Microsoft.DotNet.Build.Tasks;
 
 internal static class LayoutPathValidation
 {
-    public static void RejectLink(string path)
-    {
-        if (Path.Exists(path) && (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
-        {
-            throw new IOException($"Owned layout path '{path}' must not be a symbolic link or junction.");
-        }
-    }
-
     public static void RejectDirectory(string path)
     {
         if (Directory.Exists(path))

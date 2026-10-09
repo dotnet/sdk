@@ -42,11 +42,7 @@ public sealed class GetWorkloadUserLocalLayout : Task
                 return false;
             }
 
-            string metadata = Path.Combine(root, "metadata");
-            string workloads = Path.Combine(metadata, "workloads");
-            LayoutPathValidation.RejectLink(root);
-            LayoutPathValidation.RejectLink(metadata);
-            LayoutPathValidation.RejectLink(workloads);
+            string workloads = Path.Combine(root, "metadata", "workloads");
 
             string? expected = Enabled ? Path.Combine(workloads, FeatureBand, "userlocal") : null;
             var stale = new List<ITaskItem>();
@@ -60,9 +56,7 @@ public sealed class GetWorkloadUserLocalLayout : Task
                         continue;
                     }
 
-                    LayoutPathValidation.RejectLink(directory);
                     string marker = Path.Combine(directory, "userlocal");
-                    LayoutPathValidation.RejectLink(marker);
                     LayoutPathValidation.RejectDirectory(marker);
                     directories.Add(new TaskItem(directory));
                     NeedsRepair |= !Directory.EnumerateFileSystemEntries(directory).Any();

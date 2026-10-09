@@ -34,7 +34,6 @@ public sealed class GetDnxShimLayout : Task
                 return false;
             }
 
-            LayoutPathValidation.RejectLink(root);
             var destinations = new List<ITaskItem>();
             foreach (ITaskItem source in SourceFiles)
             {
@@ -61,7 +60,6 @@ public sealed class GetDnxShimLayout : Task
             };
             foreach (string name in new[] { "dnx", "dnx.cmd" })
             {
-                LayoutPathValidation.RejectLink(Path.Combine(root, name));
                 LayoutPathValidation.RejectDirectory(Path.Combine(root, name));
             }
 
