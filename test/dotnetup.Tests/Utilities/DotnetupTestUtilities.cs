@@ -229,6 +229,17 @@ internal static class DotnetupTestUtilities
     /// <returns>Full path to dotnetup executable</returns>
     public static string GetDotnetupExecutablePath()
     {
+        string? explicitPath = Environment.GetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE");
+        if (!string.IsNullOrEmpty(explicitPath))
+        {
+            if (!File.Exists(explicitPath))
+            {
+                throw new FileNotFoundException("DOTNETUP_TEST_EXECUTABLE must point to an existing executable.", explicitPath);
+            }
+
+            return Path.GetFullPath(explicitPath);
+        }
+
 #if DEBUG
         string configuration = "Debug";
         string fallbackConfiguration = "Release";
@@ -319,6 +330,31 @@ internal static class DotnetupTestUtilities
             $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
     }
 
+    internal static string GetLatestNativeAotExecutablePath(string artifactsDirectory, string rid, string executableName)
+    {
+        string? latestExecutable = Directory.Exists(artifactsDirectory)
+            ? Directory.EnumerateFiles(artifactsDirectory, executableName, SearchOption.AllDirectories)
+                .Where(path =>
+                {
+                    DirectoryInfo? publishDirectory = Directory.GetParent(path);
+                    return string.Equals(publishDirectory?.Name, "publish", StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(publishDirectory?.Parent?.Name, rid, StringComparison.OrdinalIgnoreCase);
+                })
+                .OrderByDescending(File.GetLastWriteTimeUtc)
+                .ThenBy(path => path, StringComparer.OrdinalIgnoreCase)
+                .FirstOrDefault()
+            : null;
+
+        if (latestExecutable is null)
+        {
+            throw new FileNotFoundException(
+                $"No Native AOT dotnetup executable for RID '{rid}' was found under '{artifactsDirectory}'. " +
+                "Publish src/Installer/dotnetup/dotnetup.csproj with Native AOT enabled before running these tests.");
+        }
+
+        return Path.GetFullPath(latestExecutable);
+    }
+
     private static string GetArtifactsDirectory()
     {
         string? artifactsDir = Environment.GetEnvironmentVariable("ArtifactsDir") ??
@@ -341,6 +377,8 @@ internal static class DotnetupTestUtilities
     /// <param name="environmentVariables">Additional environment variables to set on the process</param>
     /// <param name="standardInput">Input to write before closing the child's input stream.</param>
     /// <param name="timeoutMilliseconds">Maximum process duration, or infinite for existing long-running scenarios.</param>
+    /// <param name="executablePath">Optional dotnetup executable path override.</param>
+    /// <param name="timeout">Optional process timeout override.</param>
     /// <returns>A tuple with exit code and captured output (if requested)</returns>
     public static (int exitCode, string output) RunDotnetupProcess(
         string[] args,
@@ -348,9 +386,11 @@ internal static class DotnetupTestUtilities
         string? workingDirectory = null,
         Dictionary<string, string>? environmentVariables = null,
         string? standardInput = null,
-        int timeoutMilliseconds = System.Threading.Timeout.Infinite)
+        int timeoutMilliseconds = System.Threading.Timeout.Infinite,
+        string? executablePath = null,
+        TimeSpan? timeout = null)
     {
-        string dotnetupPath = GetDotnetupExecutablePath();
+        string dotnetupPath = executablePath ?? GetDotnetupExecutablePath();
 
         using var process = new Process();
         process.StartInfo.FileName = dotnetupPath;
@@ -383,11 +423,20 @@ internal static class DotnetupTestUtilities
             process.StandardInput.Close();
         }
 
-        if (!process.WaitForExit(timeoutMilliseconds))
+        int effectiveTimeoutMilliseconds = timeout is { } limit
+            ? checked((int)limit.TotalMilliseconds)
+            : timeoutMilliseconds;
+
+        if (!process.WaitForExit(effectiveTimeoutMilliseconds))
         {
             process.Kill(entireProcessTree: true);
-            process.WaitForExit();
-            throw new TimeoutException($"dotnetup did not exit within {timeoutMilliseconds} ms. Output:\n{outputBuilder}");
+            if (process.WaitForExit(10_000))
+            {
+                process.WaitForExit();
+            }
+
+            string timeoutDescription = timeout is null ? $"{timeoutMilliseconds} ms" : timeout.ToString()!;
+            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {timeoutDescription}. Output:\n{outputBuilder}");
         }
 
         process.WaitForExit();

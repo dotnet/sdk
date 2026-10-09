@@ -2,7 +2,7 @@
 title: dotnetup command
 description: Command reference for the dotnetup toolchain manager.
 ms.topic: reference
-ms.date: 08/07/2026
+ms.date: 10/08/2026
 ---
 
 # dotnetup command
@@ -39,6 +39,7 @@ exists, it can start first-use onboarding.
 | [`init`](dotnetup-init.md) | Run interactive setup. |
 | [`env`](dotnetup-env.md) | Manage environment configuration. |
 | [`dotnet`](dotnetup-dotnet.md) | Run the dotnetup-managed `dotnet`. |
+| [`self update`](dotnetup-self-update.md) | Update the dotnetup executable itself from a release channel. |
 
 ## Options
 
@@ -55,6 +56,12 @@ exists, it can start first-use onboarding.
 | --- | --- |
 | `--format <text\|json>` | Select text or JSON output. The default is `text`. |
 | `--no-list [<true\|false>]` | Omit tracked specifications and installations. Without this option, `--info` verifies installations. |
+
+## Self update
+
+See [`dotnetup self update`](dotnetup-self-update.md) to update the published
+dotnetup executable. This does not update managed SDK/runtime installations; use
+[`dotnetup update`](dotnetup-update.md) for those.
 
 ## Examples
 

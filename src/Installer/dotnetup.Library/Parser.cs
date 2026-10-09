@@ -17,6 +17,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Uninstall;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -65,6 +66,7 @@ internal class Parser
         rootCommand.Subcommands.Add(ListCommandParser.GetCommand());
         rootCommand.Subcommands.Add(DotnetCommandParser.GetCommand());
         rootCommand.Subcommands.Add(InitCommandParser.GetCommand());
+        rootCommand.Subcommands.Add(SelfCommandParser.GetCommand());
 
         // Bare `dotnetup` routes to SdkInstallCommand. Register --interactive on the root
         // so that ParseResult.GetValue(InteractiveOption) finds the option bound to the
@@ -114,7 +116,7 @@ internal class Parser
             (Strings.HelpInstallCommandsTitle, ["sdk", "runtime", "install", "update", "uninstall"]),
             (Strings.HelpQueryCommandsTitle, ["list"]),
             (Strings.HelpConfigCommandsTitle, ["env", "init"]),
-            (Strings.HelpUtilityCommandsTitle, ["dotnet"]),
+            (Strings.HelpUtilityCommandsTitle, ["dotnet", "self"]),
         ];
 
         public override int Invoke(ParseResult parseResult)

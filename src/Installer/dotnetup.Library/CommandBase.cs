@@ -6,6 +6,7 @@ using System.CommandLine.Help;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 
@@ -19,29 +20,50 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 public abstract class CommandBase
 {
     protected ParseResult ParseResult { get; }
-    private readonly TrackedOperation _operation;
+    private readonly string _commandName;
+    private TrackedOperation _operation => field ??= DotnetupTelemetry.Instance.StartTrackedCommand(_commandName);
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult, string commandName)
     {
         ParseResult = parseResult;
-        _operation = DotnetupTelemetry.Instance.StartTrackedCommand(commandName);
+        _commandName = commandName;
     }
+
+    /// <summary>
+    /// Gets whether this command can skip <see cref="SelfUpdateInvocation.EnterCommand(bool)"/>'s
+    /// non-safe command gate and run while self-update owns the update lock.
+    /// </summary>
+    protected virtual bool CanRunDuringSelfUpdate => false;
+
+    /// <summary>
+    /// Whether an interactive run starts a best-effort check for a newer dotnetup.
+    /// </summary>
+    protected virtual bool ShowsUpdateNotification => false;
 
     public int Execute()
     {
         _exitCode = 1;
 
-        RecordOptionUsage();
-
         try
         {
+            SelfUpdateInvocation.Current?.EnterCommand(CanRunDuringSelfUpdate);
+            RecordOptionUsage();
+            // Start before the command's work so a background refresh can finish while it runs.
+            var updateNotifier = ShowsUpdateNotification
+                ? SelfUpdateNotifier.Start(CommonOptions.IsInteractive(ParseResult))
+                : null;
             // Default success exit code; ExecuteCore can overwrite via
             // SetExitCode() (e.g. DotnetCommand forwarding a child process
             // exit code) or throw to signal failure (which leaves _exitCode
             // at its outer initialization of 1).
             _exitCode = 0;
             ExecuteCore();
+            if (_exitCode == 0)
+            {
+                updateNotifier?.ShowIfUpdateAvailable();
+            }
+
             return _exitCode;
         }
         catch (Exception ex)
