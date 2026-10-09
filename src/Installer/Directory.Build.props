@@ -7,10 +7,8 @@
        Loading the repo-level D.B.props causes the Arcade SDK to be loaded, which computes load-bearing properties from this value -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
   <PropertyGroup>
-    <!-- Shared version for dotnetup CLI and Microsoft.Dotnet.Installation library.
-         Bumped 0.1.4 -> 0.2.0 for the breaking change that moves the default
-         dotnet install root under the dotnetup data directory. -->
-    <DotnetupVersionPrefix>0.2.0</DotnetupVersionPrefix>
+    <!-- Shared version for dotnetup CLI and Microsoft.Dotnet.Installation library. -->
+    <DotnetupVersionPrefix>0.3.0</DotnetupVersionPrefix>
     <DotnetupPreReleaseVersionLabel>preview</DotnetupPreReleaseVersionLabel>
     <DotnetupPreReleaseVersionIteration>1</DotnetupPreReleaseVersionIteration>
   </PropertyGroup>
