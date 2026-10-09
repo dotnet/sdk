@@ -156,6 +156,15 @@ Inspect each dependency for trim/AOT warnings, reflection/dynamic code, serializ
 resources/localization, build assets, static initialization, process-global state, native libraries,
 and binary-size contribution.
 
+Review the [size and trimming contracts](../../../src/Cli/dotnet-aot/DESIGN.md#size-and-trimming-contracts)
+in the same change. Preserve full CLI string tables without build-time source scans.
+Resource substitution XML removes entire manifest resources, not keys within a string table.
+Do not substitute away a table containing required messages or its translated equivalents.
+Preserve cultures and the full definition/help resource surface.
+Keep platform provider construction behind direct OS intrinsics and keep Linux's WSL
+parsers. Do not root the all-platform test factory through static initialization.
+Validate trimming in a clean native publish and native execution, not only managed tests.
+
 ### 5. Preserve both preprocessor views
 
 Condition the smallest incompatible block. Compare the managed and AOT views for lost comments,
