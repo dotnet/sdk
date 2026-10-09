@@ -26,11 +26,13 @@ namespace Microsoft.DotNet.HotReload;
 /// Associated with a project instance.
 /// </summary>
 internal abstract class AbstractBrowserRefreshServer(
-    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
     Func<SharedSecretProvider> sessionKeyFactory,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
-    Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
+    Func<int, ILogger> connectionAgentLoggerFactory,
+    string middlewareAssemblyPath,
+    bool useGatewayProxy)
+    : IDisposable
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
@@ -136,7 +138,37 @@ internal abstract class AbstractBrowserRefreshServer(
     /// How that is done depends on the host, so the app model supplies the implementation.
     /// </summary>
     public void ConfigureLaunchEnvironment(IDictionary<string, string> builder)
-        => configureLaunchEnvironment(builder, this);
+    {
+        var providerUrl = ProviderAddress.AbsoluteUri;
+
+        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadProviderAddress] = providerUrl;
+
+        // Loading the assembly as a startup hook makes the out-of-application BrowserRefresh
+        // assembly resolvable when ASP.NET Core activates its hosting startup by simple name.
+        builder.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
+        builder.InsertListItem(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies, Path.GetFileNameWithoutExtension(middlewareAssemblyPath), MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
+
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            // enable debug logging from the hosting startup:
+            builder[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
+        }
+
+        // A standalone WebAssembly app is served by the Blazor Gateway, a YARP based
+        // host that does not activate ASP.NET Core hosting startups. Reserve a proxy route on it that
+        // forwards RoutePrefix to the provider. The hosting startup
+        // configuration above is still applied because older target frameworks
+        // are served by blazor-devserver, which is a regular ASP.NET Core host.
+        if (useGatewayProxy)
+        {
+            const string routeAndClusterName = "dotnet-browser-tools";
+
+            builder[$"ReverseProxy__Routes__{routeAndClusterName}__ClusterId"] = routeAndClusterName;
+            builder[$"ReverseProxy__Routes__{routeAndClusterName}__Order"] = "-1000";
+            builder[$"ReverseProxy__Routes__{routeAndClusterName}__Match__Path"] = BrowserToolsProtocol.RoutePrefix + "/{**catch-all}";
+            builder[$"ReverseProxy__Clusters__{routeAndClusterName}__Destinations__provider__Address"] = providerUrl;
+        }
+    }
 
     internal void SetSessionKeyFactory(Func<SharedSecretProvider> value)
         => Volatile.Write(ref _sessionKeyFactory, value);

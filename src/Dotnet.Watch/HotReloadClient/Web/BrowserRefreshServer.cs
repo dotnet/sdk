@@ -24,12 +24,13 @@ internal sealed class BrowserRefreshServer(
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory,
-    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
+    string middlewareAssemblyPath,
     string dotnetPath,
     Func<SharedSecretProvider> sessionKeyFactory,
     WebSocketConfig webSocketConfig,
+    bool useGatewayProxy,
     bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(configureLaunchEnvironment, sessionKeyFactory, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
+    : AbstractBrowserRefreshServer(sessionKeyFactory, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory, middlewareAssemblyPath, useGatewayProxy)
 {
     protected override bool SuppressTimeouts
         => suppressTimeouts;

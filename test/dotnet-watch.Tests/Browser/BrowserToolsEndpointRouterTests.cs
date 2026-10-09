@@ -34,11 +34,14 @@ public class BrowserToolsEndpointRouterTests : IDisposable
         using var rsa = RSA.Create(2048);
         _sessionKeyParameters = rsa.ExportParameters(includePrivateParameters: true);
         _sharedSecretProvider = new SharedSecretProvider(_sessionKeyParameters);
-        _browserServer = new TestBrowserRefreshServer((_, _) => { }, () =>
-        {
-            _sessionKeyLoads++;
-            return new SharedSecretProvider(_sessionKeyParameters);
-        });
+        _browserServer = new TestBrowserRefreshServer(
+            middlewareAssemblyPath: Path.GetTempPath(),
+            useGatewayProxy: true,
+            sessionKeyFactory: () =>
+            {
+                _sessionKeyLoads++;
+                return new SharedSecretProvider(_sessionKeyParameters);
+            });
     }
 
     public void Dispose()
