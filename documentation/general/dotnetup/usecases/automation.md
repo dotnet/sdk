@@ -31,12 +31,51 @@ Exact requirements are not changed by update commands.
 ## Use a repository-local root
 
 ```dotnetcli
-dotnetup sdk install 10.0.1xx --install-path .\.dotnet --no-progress
+dotnetup sdk install 10.0.1xx --install-path .dotnet --no-progress --interactive false
 ```
 
 Run the local executable directly or activate it with `dotnetup env script`.
 The forwarding command uses the default dotnetup-managed .NET installation
 root.
+
+## Use dotnetup in GitHub Actions
+
+The following workflow installs `dotnetup`, installs the SDK required by the
+repository's `global.json`, and runs tests with the same repository-local
+installation:
+
+```yaml
+name: build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      DOTNET_ROOT: ${{ github.workspace }}/.dotnet
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dotnetup
+        run: |
+          curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash
+          echo "$HOME/.dotnetup" >> "$GITHUB_PATH"
+
+      - name: Install the .NET SDK
+        run: dotnetup sdk install --install-path "$DOTNET_ROOT" --no-progress --interactive false
+
+      - name: Test
+        run: "$DOTNET_ROOT/dotnet" test
+```
+
+The download script doesn't change `PATH`. The workflow adds the `dotnetup`
+directory to `GITHUB_PATH` so later steps can run `dotnetup`.
+
+The explicit installation root ensures that the install and test steps use the
+same `dotnet`, even when `global.json` contains `sdk.paths`. When you omit an
+SDK channel, `dotnetup sdk install` uses the nearest `global.json`. If no file
+exists, it installs the `latest` channel.
 
 ## Read state as JSON
 
@@ -57,8 +96,10 @@ present and valid.
 
 ## Coordinate writers
 
-Do not run concurrent install, update, or uninstall commands against the same
-manifest. Use an isolated `--manifest-path` for independent jobs.
+Separate installation roots and manifests isolate tracking state, but
+installation-changing workflows still use a shared process lock. Serialize
+concurrent install, update, or uninstall jobs when lock contention is
+unacceptable.
 
 ## See also
 

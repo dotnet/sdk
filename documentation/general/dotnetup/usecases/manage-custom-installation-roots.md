@@ -60,9 +60,10 @@ dotnetup env script --shell pwsh --dotnet `
 
 ## Avoid concurrent manifest writes
 
-`dotnetup` coordinates manifest access with a lock. Do not run concurrent write
-commands against the same manifest. Use separate manifests for independent
-automation.
+Separate manifests isolate tracking state, but installation-changing workflows
+still use a shared process lock. Independent jobs can therefore wait on one
+another even when they use different roots and manifests. Serialize jobs when
+lock contention is unacceptable.
 
 ## See also
 
