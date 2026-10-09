@@ -5,6 +5,7 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
+using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -257,11 +258,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
         }
 
         internal sealed class RequiredSymbols(
+            INamedTypeSymbol iLoggerType,
             IMethodSymbol logMethod,
             IMethodSymbol isEnabledMethod,
             Dictionary<IMethodSymbol, int> logExtensionsMethodsAndLevel,
             INamedTypeSymbol? loggerMessageAttributeType)
         {
+            private readonly INamedTypeSymbol _iLoggerType = iLoggerType;
             private readonly IMethodSymbol _logMethod = logMethod;
             private readonly IMethodSymbol _isEnabledMethod = isEnabledMethod;
             private readonly Dictionary<IMethodSymbol, int> _logExtensionsMethodsAndLevel = logExtensionsMethodsAndLevel;
@@ -295,6 +298,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 }
 
                 return new RequiredSymbols(
+                    iLoggerType,
                     logMethod,
                     isEnabledMethod,
                     logExtensionsMethods,
@@ -375,6 +379,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 //   1. If the 'ILogger.IsEnabled' invocation is negated, the 'WhenTrue' branch must contain a return.
                 //   2. If the 'ILogger.IsEnabled' invocation is not negated, the 'WhenTrue' branch must contain the log invocation.
                 // This is also not perfect, but should be good enough to prevent false positives.
+                var logTargetMethod = logInvocation.TargetMethod.ReducedFrom ?? logInvocation.TargetMethod;
+                var isLoggerMessageInvocation = logTargetMethod.HasAnyAttribute(_loggerMessageAttributeType);
+
                 var currentBlockAncestor = logInvocation.GetAncestor<IBlockOperation>(OperationKind.Block);
                 while (currentBlockAncestor is not null)
                 {
@@ -410,7 +417,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     bool IsValidIsEnabledGuardInvocation(IInvocationOperation invocation)
                     {
                         if (!IsIsEnabledInvocation(invocation) ||
-                            !AreInvocationsOnSameInstance(logInvocation, invocation) ||
+                            !IsSameLoggerInstance(invocation) ||
                             !IsSameLogLevel(invocation.Arguments[0]))
                         {
                             return false;
@@ -429,16 +436,275 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         invocation.TargetMethod.IsOverrideOrImplementationOfInterfaceMember(_isEnabledMethod);
                 }
 
-                static bool AreInvocationsOnSameInstance(IInvocationOperation invocation1, IInvocationOperation invocation2)
+                bool IsSameLoggerInstance(IInvocationOperation isEnabledInvocation)
                 {
-                    return SymbolEqualityComparer.Default.Equals(
-                        GetInstanceResolvingConditionalAccess(invocation1).GetReferencedMemberOrLocalOrParameter(),
-                        GetInstanceResolvingConditionalAccess(invocation2).GetReferencedMemberOrLocalOrParameter());
+                    var isEnabledInstance = GetInstanceResolvingConditionalAccess(isEnabledInvocation);
+
+                    if (!isLoggerMessageInvocation)
+                    {
+                        return AreSameInstance(GetInstanceResolvingConditionalAccess(logInvocation), isEnabledInstance);
+                    }
+
+                    // For [LoggerMessage] methods, require a resolvable logger so that an unrelated guard such as
+                    // 'GetLogger().IsEnabled(...)' is not matched against a log invocation on the implicit 'this' instance.
+                    if (isEnabledInstance is null)
+                    {
+                        return false;
+                    }
+
+                    // A [LoggerMessage] method with an ILogger parameter gets its logger from the first such parameter in
+                    // declaration order, which may be an extension method's 'this' parameter. For example:
+                    // 'Log.SomeMessage(logger, argument)' or 'logger.SomeMessage(argument)'. Like the source generator,
+                    // this uses the declared (not substituted) parameter types, so a 'T where T : ILogger' parameter
+                    // without a 'class' constraint is never the logger, even when 'T' is inferred as a reference type.
+                    var loggerParameter = logTargetMethod.OriginalDefinition.Parameters.FirstOrDefault(p => IsLoggerType(p.Type));
+                    if (loggerParameter is not null)
+                    {
+                        return AreSameInstance(GetOperationForLoggerParameter(loggerParameter), isEnabledInstance);
+                    }
+
+                    // An instance [LoggerMessage] method without an ILogger parameter gets its logger from the single
+                    // ILogger field accessible from the containing type's hierarchy or, if none exists, an ILogger
+                    // primary constructor parameter of its containing type. For example: 'this.SomeMessage(argument)'.
+                    return !logTargetMethod.IsStatic && IsGeneratorSelectedLoggerMember(isEnabledInstance);
+                }
+
+                // Returns the operation that supplies the value of the given parameter of 'logTargetMethod'. Arguments are in
+                // call-site order (which differs from declaration order when named arguments are used), so they are matched
+                // by ordinal. VB represents an extension method invoked on a receiver as a reduced method whose receiver is
+                // the invocation's 'Instance' and whose parameters exclude the 'this' parameter.
+                IOperation? GetOperationForLoggerParameter(IParameterSymbol loggerParameter)
+                {
+                    var ordinalOffset = logInvocation.TargetMethod.ReducedFrom is not null ? 1 : 0;
+                    if (ordinalOffset == 1 && loggerParameter.Ordinal == 0)
+                    {
+                        return ResolveConditionalAccessInstance(logInvocation.Instance);
+                    }
+
+                    var loggerArgument = logInvocation.Arguments.FirstOrDefault(a => a.Parameter?.Ordinal + ordinalOffset == loggerParameter.Ordinal);
+                    return ResolveConditionalAccessInstance(loggerArgument?.Value);
+                }
+
+                // Unlike 'WalkDownConversion()' alone, this also strips parentheses (e.g. '(logger)'), which can wrap
+                // either a conversion or another parenthesized operation in any order.
+                static IOperation? WalkDownParenthesesAndConversions(IOperation? operation)
+                {
+                    while (true)
+                    {
+                        switch (operation)
+                        {
+                            case IParenthesizedOperation parenthesized:
+                                operation = parenthesized.Operand;
+                                continue;
+
+                            case IConversionOperation conversion:
+                                operation = conversion.Operand;
+                                continue;
+
+                            default:
+                                return operation;
+                        }
+                    }
+                }
+
+                // Two operations refer to the same logger instance only when they resolve to the same
+                // field/property/parameter/local *and* are accessed through the same receiver. This matters because
+                // 'GetReferencedMemberOrLocalOrParameter()' returns the same '_logger' field symbol for both
+                // 'this._logger' and 'other._logger', even though they are different logger instances.
+                static bool AreSameInstance(IOperation? a, IOperation? b)
+                {
+                    a = WalkDownParenthesesAndConversions(a);
+                    b = WalkDownParenthesesAndConversions(b);
+
+                    if (a is null || b is null)
+                    {
+                        return a is null && b is null;
+                    }
+
+                    if (a is IInstanceReferenceOperation && b is IInstanceReferenceOperation)
+                    {
+                        return true;
+                    }
+
+                    if (a is IMemberReferenceOperation memberA && b is IMemberReferenceOperation memberB)
+                    {
+                        return SymbolEqualityComparer.Default.Equals(memberA.Member, memberB.Member) &&
+                            AreSameInstance(memberA.Instance, memberB.Instance);
+                    }
+
+                    if (a is IParameterReferenceOperation parameterA && b is IParameterReferenceOperation parameterB)
+                    {
+                        return SymbolEqualityComparer.Default.Equals(parameterA.Parameter, parameterB.Parameter);
+                    }
+
+                    if (a is ILocalReferenceOperation localA && b is ILocalReferenceOperation localB)
+                    {
+                        return SymbolEqualityComparer.Default.Equals(localA.Local, localB.Local);
+                    }
+
+                    return false;
+                }
+
+                bool IsGeneratorSelectedLoggerMember(IOperation isEnabledInstance)
+                {
+                    var containingType = logTargetMethod.ContainingType;
+
+                    if (GetGeneratorSelectedLoggerMember(containingType) is not { } loggerMember)
+                    {
+                        return false;
+                    }
+
+                    var logInstance = WalkDownParenthesesAndConversions(logInvocation.Instance);
+
+                    switch (isEnabledInstance)
+                    {
+                        case IMemberReferenceOperation memberReference:
+                            if (!SymbolEqualityComparer.Default.Equals(memberReference.Member.OriginalDefinition, loggerMember.OriginalDefinition))
+                            {
+                                return false;
+                            }
+
+                            var memberInstance = WalkDownParenthesesAndConversions(memberReference.Instance);
+                            if (memberInstance is null)
+                            {
+                                // Static member of the containing type.
+                                return true;
+                            }
+
+                            if (memberInstance is IInstanceReferenceOperation)
+                            {
+                                return logInstance is IInstanceReferenceOperation;
+                            }
+
+                            return AreSameInstance(memberInstance, logInstance);
+
+                        case IParameterReferenceOperation parameterReference:
+                            // Primary constructor parameter, which can only be the logger of the current instance.
+                            return SymbolEqualityComparer.Default.Equals(parameterReference.Parameter.OriginalDefinition, loggerMember.OriginalDefinition) &&
+                                logInstance is IInstanceReferenceOperation;
+
+                        default:
+                            return false;
+                    }
+                }
+
+                // Mirrors the logging source generator's own field/parameter resolution ('FindLoggerField'): search
+                // the containing type and its base types (skipping private fields inherited from a base type) for a
+                // single ILogger-typed field, falling back to an ILogger-typed parameter of a (non-record) primary
+                // constructor that is not shadowed by a non-logger field, only when no field is found. Returns 'null'
+                // when no logger member is found or when more than one candidate exists, since the generator itself
+                // reports an error and does not emit the method in that case.
+                ISymbol? GetGeneratorSelectedLoggerMember(INamedTypeSymbol containingType)
+                {
+                    IFieldSymbol? loggerField = null;
+                    var currentType = containingType;
+                    var onMostDerivedType = true;
+
+                    // Like the source generator, track the names of accessible non-logger fields: such a field shadows a
+                    // primary constructor parameter with the same name, so that parameter cannot be used as the logger.
+                    using var shadowedNames = PooledHashSet<string>.GetInstance(StringComparer.Ordinal);
+
+                    while (currentType is { SpecialType: not SpecialType.System_Object })
+                    {
+                        foreach (var field in currentType.GetMembers().OfType<IFieldSymbol>())
+                        {
+                            if (!onMostDerivedType && field.DeclaredAccessibility == Accessibility.Private)
+                            {
+                                continue;
+                            }
+
+                            if (!field.CanBeReferencedByName)
+                            {
+                                continue;
+                            }
+
+                            if (!IsLoggerType(field.Type))
+                            {
+                                shadowedNames.Add(field.Name);
+                                continue;
+                            }
+
+                            if (loggerField is not null)
+                            {
+                                // Ambiguous: more than one candidate field.
+                                return null;
+                            }
+
+                            loggerField = field;
+                        }
+
+                        onMostDerivedType = false;
+                        currentType = currentType.BaseType;
+                    }
+
+                    // The source generator prioritizes a field over a primary constructor parameter.
+                    if (loggerField is not null)
+                    {
+                        return loggerField;
+                    }
+
+                    if (containingType.TypeKind != TypeKind.Class || containingType.IsRecord)
+                    {
+                        return null;
+                    }
+
+                    IParameterSymbol? loggerParameter = null;
+                    foreach (var constructor in containingType.InstanceConstructors)
+                    {
+                        if (!IsPrimaryConstructor(constructor, containingType))
+                        {
+                            continue;
+                        }
+
+                        foreach (var parameter in constructor.Parameters)
+                        {
+                            if (!IsLoggerType(parameter.Type) || shadowedNames.Contains(parameter.Name))
+                            {
+                                continue;
+                            }
+
+                            if (loggerParameter is not null)
+                            {
+                                // Ambiguous: more than one candidate parameter.
+                                return null;
+                            }
+
+                            loggerParameter = parameter;
+                        }
+                    }
+
+                    return loggerParameter;
+
+                    // A primary constructor's declaring syntax node is the type declaration itself (there is no
+                    // separate constructor declaration), unlike an explicit constructor's syntax node, which is its
+                    // own, smaller node nested within the type declaration.
+                    static bool IsPrimaryConstructor(IMethodSymbol constructor, INamedTypeSymbol containingType) =>
+                        constructor.DeclaringSyntaxReferences.Any(constructorReference =>
+                            containingType.DeclaringSyntaxReferences.Any(typeReference =>
+                                typeReference.SyntaxTree == constructorReference.SyntaxTree && typeReference.Span == constructorReference.Span));
+                }
+
+                bool IsLoggerType(ITypeSymbol? type)
+                {
+                    if (type is null)
+                    {
+                        return false;
+                    }
+
+                    // Mirrors the logging source generator's own check ('IsBaseOrIdentity'): only an identity match or
+                    // an implicit reference conversion counts. A conversion that only exists because of a type
+                    // parameter constraint without a 'class' constraint (e.g. 'T where T : ILogger') is a boxing
+                    // conversion and is not accepted by the generator.
+                    var conversion = logInvocation.SemanticModel!.Compilation.ClassifyCommonConversion(type, _iLoggerType);
+                    return conversion.IsIdentity || (conversion.IsReference && conversion.IsImplicit);
                 }
 
                 static IOperation? GetInstanceResolvingConditionalAccess(IInvocationOperation invocation)
+                    => ResolveConditionalAccessInstance(invocation.GetInstance());
+
+                static IOperation? ResolveConditionalAccessInstance(IOperation? operation)
                 {
-                    var instance = invocation.GetInstance()?.WalkDownConversion();
+                    var instance = WalkDownParenthesesAndConversions(operation);
 
                     if (instance is IConditionalAccessInstanceOperation conditionalAccessInstance)
                     {
