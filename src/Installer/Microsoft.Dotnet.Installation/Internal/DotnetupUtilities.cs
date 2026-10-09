@@ -55,10 +55,10 @@ internal static class DotnetupUtilities
     internal static string GetRuntimeIdentifier(InstallArchitecture architecture, string currentRuntimeIdentifier)
     {
         ArgumentException.ThrowIfNullOrEmpty(currentRuntimeIdentifier);
-        int architectureSeparator = currentRuntimeIdentifier.LastIndexOf("-", StringComparison.Ordinal);
-        string os = architectureSeparator > 0
-            ? currentRuntimeIdentifier[..architectureSeparator]
-            : currentRuntimeIdentifier;
+        var os = currentRuntimeIdentifier.StartsWith("linux-musl-", StringComparison.Ordinal) ? "linux-musl" :
+                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" :
+                 RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :
+                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" : "unknown";
 
         var arch = architecture switch
         {
