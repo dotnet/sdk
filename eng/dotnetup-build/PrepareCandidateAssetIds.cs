@@ -14,7 +14,7 @@ using System.Xml.Linq;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.BuildTasks;
 
-public sealed class PrepareDotnetupCandidateManifests : Microsoft.Build.Utilities.Task
+public sealed class PrepareDotnetupCandidateAssetIds : Microsoft.Build.Utilities.Task
 {
     private const string BuildElementName = "Build";
     private const string BlobElementName = "Blob";
@@ -23,9 +23,10 @@ public sealed class PrepareDotnetupCandidateManifests : Microsoft.Build.Utilitie
     private const string IdAttributeName = "Id";
     private const string PipelineArtifactNameAttributeName = "PipelineArtifactName";
     private const string PipelineArtifactPathAttributeName = "PipelineArtifactPath";
-    private const string ArchiveArtifactName = "DotnetupCandidateManifest";
+    private const string ArchiveArtifactName = "AssetManifests";
     private const string ArchiveBlobPrefix = "assets/manifests/";
     private const string MergedManifestFileName = "MergedManifest.xml";
+    private const string BlobAssetIdManifestExtension = ".blobids";
     private const string DailyQuality = "daily";
     private const string PreviewQuality = "preview";
     private const string CandidateArtifactSuffix = "_Artifacts";
@@ -60,14 +61,14 @@ public sealed class PrepareDotnetupCandidateManifests : Microsoft.Build.Utilitie
         }
         if (string.IsNullOrEmpty(ManifestPath) || string.IsNullOrEmpty(OutputDirectory))
         {
-            Log.LogError("ManifestPath and OutputDirectory are required when preparing candidate manifests.");
+            Log.LogError("ManifestPath and OutputDirectory are required when preparing candidate asset ID manifests.");
             return false;
         }
-        foreach (KeyValuePair<string, XDocument> candidate in Split(XDocument.Load(ManifestPath)))
+        Dictionary<string, string[]> candidates = GetCandidateAssetIds(XDocument.Load(ManifestPath));
+        Directory.CreateDirectory(OutputDirectory);
+        foreach (KeyValuePair<string, string[]> candidate in candidates)
         {
-            string directory = Path.Combine(OutputDirectory, candidate.Key);
-            Directory.CreateDirectory(directory);
-            candidate.Value.Save(Path.Combine(directory, MergedManifestFileName));
+            File.WriteAllLines(Path.Combine(OutputDirectory, candidate.Key + BlobAssetIdManifestExtension), candidate.Value);
         }
         return true;
     }
@@ -87,14 +88,14 @@ public sealed class PrepareDotnetupCandidateManifests : Microsoft.Build.Utilitie
             }
             build.Add(input.Elements().Select(e => new XElement(e)));
         }
-        Split(new XDocument(build));
+        GetCandidateAssetIds(new XDocument(build));
     }
 
-    public static Dictionary<string, XDocument> Split(XDocument manifest)
+    public static Dictionary<string, string[]> GetCandidateAssetIds(XDocument manifest)
     {
         XElement[] artifacts = GetBlobArtifacts(manifest);
         XElement archive = GetArchiveArtifact(artifacts);
-        Dictionary<string, XDocument> candidates = new Dictionary<string, XDocument>(StringComparer.Ordinal);
+        Dictionary<string, string[]> candidates = new Dictionary<string, string[]>(StringComparer.Ordinal);
         HashSet<XElement> classified = new HashSet<XElement> { archive };
         string? candidateVersion = null;
         foreach (string quality in s_qualities)
@@ -107,7 +108,9 @@ public sealed class PrepareDotnetupCandidateManifests : Microsoft.Build.Utilitie
             }
             candidateVersion = version;
             classified.UnionWith(selected);
-            candidates.Add(quality, CreateProjection(manifest, quality));
+            candidates.Add(quality, selected.Append(archive)
+                .Select(a => (string)a.Attribute(IdAttributeName)!)
+                .OrderBy(id => id, StringComparer.Ordinal).ToArray());
         }
         if (classified.Count != artifacts.Length)
         {
@@ -191,19 +194,5 @@ public sealed class PrepareDotnetupCandidateManifests : Microsoft.Build.Utilitie
             expected.Add(script + ChecksumExtension);
         }
         return expected;
-    }
-
-    private static XDocument CreateProjection(XDocument manifest, string quality)
-    {
-        XDocument projection = new XDocument(manifest);
-        foreach (XElement artifact in projection.Root!.Elements().ToArray())
-        {
-            if ((string?)artifact.Attribute(PipelineArtifactNameAttributeName) != ArchiveArtifactName &&
-                !IsCandidateArtifact(artifact, quality))
-            {
-                artifact.Remove();
-            }
-        }
-        return projection;
     }
 }

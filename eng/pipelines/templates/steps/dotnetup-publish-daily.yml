@@ -15,7 +15,7 @@ steps:
     version: 8.0.x
 - ${{ if eq(parameters.runTestBuild, true) }}:
   - powershell: |
-      $parameters = & "$(Build.SourcesDirectory)/eng/dotnetup-build/get-candidate-publishing-parameters.ps1" -Quality daily
+      $parameters = '/p:BuildQuality=daily /p:BlobAssetIdManifests=daily.blobids'
       Write-Host 'Test candidates are not production-signed. This command is diagnostic only; do not execute it for this BAR build.'
       $command = 'darc add-build-to-channel --id {0} --publishing-infra-version 3 ' +
           '--default-channels --source-branch main --bar-uri https://maestro.dot.net --ci --verbose ' +
@@ -32,12 +32,11 @@ steps:
       scriptType: ps
       scriptLocation: inlineScript
       inlineScript: |
-        $parameters = & "$(Build.SourcesDirectory)/eng/dotnetup-build/get-candidate-publishing-parameters.ps1" -Quality daily
         & "$(Build.SourcesDirectory)/eng/common/post-build/publish-using-darc.ps1" `
         -BuildId $(BARBuildId) `
         -PublishingInfraVersion 3 `
         -AzdoToken '$(System.AccessToken)' `
         -WaitPublishingFinish true `
-        -ArtifactsPublishingAdditionalParameters $parameters `
+        -ArtifactsPublishingAdditionalParameters '/p:BuildQuality=daily /p:BlobAssetIdManifests=daily.blobids' `
         -runtimeSourceFeed https://ci.dot.net/internal `
         -runtimeSourceFeedKey '$(dotnetbuilds-internal-container-read-token-base64)'

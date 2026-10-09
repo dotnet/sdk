@@ -4,7 +4,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory = $true)][string] $ManifestsPath,
-    [Parameter(Mandatory = $true)][string] $CandidateManifestsPath,
+    [Parameter(Mandatory = $true)][string] $AssetManifestsPath,
     [Parameter(Mandatory = $true)][string] $OfficialBuildId,
     [string] $runtimeSourceFeed,
     [string] $runtimeSourceFeedKey
@@ -28,7 +28,7 @@ $properties = @(
     "/p:BaseIntermediateOutputPath=$ToolsetDir\DotnetupCandidates\",
     "/p:RepoRoot=$RepoRoot",
     "/p:ManifestsPath=$ManifestsPath",
-    "/p:CandidateManifestsPath=$CandidateManifestsPath",
+    "/p:AssetManifestsPath=$AssetManifestsPath",
     "/p:OfficialBuildId=$OfficialBuildId",
     '/p:MaestroApiEndpoint=https://maestro.dot.net'
 )

@@ -25,7 +25,7 @@ public class CandidateManifestTests : IDisposable
         string file = Path.Combine(_directory, "Candidates.xml");
         manifest.Save(file);
 
-        PrepareDotnetupCandidateManifests.ValidateInputs(_directory);
+        PrepareDotnetupCandidateAssetIds.ValidateInputs(_directory);
 
         Assert.IsTrue(XNode.DeepEquals(manifest, XDocument.Load(file)));
     }
@@ -33,15 +33,15 @@ public class CandidateManifestTests : IDisposable
     [TestMethod]
     public void RejectsEmptyCandidateInputs()
     {
-        Assert.ThrowsExactly<InvalidDataException>(() => PrepareDotnetupCandidateManifests.ValidateInputs(_directory));
+        Assert.ThrowsExactly<InvalidDataException>(() => PrepareDotnetupCandidateAssetIds.ValidateInputs(_directory));
     }
 
     [TestMethod]
-    public void WritesBothCandidateManifests()
+    public void WritesBothCandidateAssetIdManifests()
     {
         string file = Path.Combine(_directory, "MergedManifest.xml");
         CreateManifest().Save(file);
-        PrepareDotnetupCandidateManifests task = new()
+        PrepareDotnetupCandidateAssetIds task = new()
         {
             ManifestPath = file,
             OutputDirectory = Path.Combine(_directory, "output")
@@ -51,30 +51,48 @@ public class CandidateManifestTests : IDisposable
 
         foreach (string quality in new[] { "daily", "preview" })
         {
-            XDocument output = XDocument.Load(Path.Combine(task.OutputDirectory, quality, "MergedManifest.xml"));
-            Assert.HasCount(21, output.Root!.Elements());
+            string[] output = File.ReadAllLines(Path.Combine(task.OutputDirectory, quality + ".blobids"));
+            Assert.AreSequenceEqual(PrepareDotnetupCandidateAssetIds.GetCandidateAssetIds(XDocument.Load(file))[quality], output);
         }
+        Assert.HasCount(2, Directory.GetFiles(task.OutputDirectory));
+        Assert.HasCount(41, XDocument.Load(file).Root!.Elements());
     }
 
     [TestMethod]
-    public void SplitsCandidatesWithoutChangingArchiveOrSourceManifest()
+    public void InvalidCandidatesDoNotWriteAllowlists()
+    {
+        string file = Path.Combine(_directory, "MergedManifest.xml");
+        XDocument manifest = CreateManifest();
+        manifest.Root!.Elements("Blob").Last().Remove();
+        manifest.Save(file);
+        PrepareDotnetupCandidateAssetIds task = new()
+        {
+            ManifestPath = file,
+            OutputDirectory = Path.Combine(_directory, "output")
+        };
+
+        Assert.ThrowsExactly<InvalidDataException>(() => task.Execute());
+        Assert.IsFalse(Directory.Exists(task.OutputDirectory));
+    }
+
+    [TestMethod]
+    public void SelectsCandidateIdsWithoutChangingSourceManifest()
     {
         XDocument manifest = CreateManifest();
         string original = manifest.ToString();
-        Dictionary<string, XDocument> candidates = PrepareDotnetupCandidateManifests.Split(manifest);
+        Dictionary<string, string[]> candidates = PrepareDotnetupCandidateAssetIds.GetCandidateAssetIds(manifest);
 
         Assert.AreEqual(original, manifest.ToString());
         Assert.HasCount(2, candidates);
         foreach (string quality in new[] { "daily", "preview" })
         {
-            XElement[] blobs = candidates[quality].Root!.Elements("Blob").ToArray();
-            Assert.HasCount(21, blobs);
-            Assert.HasCount(20, blobs.Where(b => ((string)b.Attribute("Id")!).StartsWith("dotnetup/", StringComparison.Ordinal)).ToArray());
-            Assert.IsTrue(blobs.Where(b => ((string)b.Attribute("Id")!).StartsWith("dotnetup/", StringComparison.Ordinal))
-                .All(b => ((string)b.Attribute("Id")!).Contains("-" + quality + ".", StringComparison.Ordinal)));
-            Assert.AreEqual(manifest.Root!.Element("Blob")!.ToString(), blobs.Single(b =>
-                (string?)b.Attribute("PipelineArtifactName") == "DotnetupCandidateManifest").ToString());
-            Assert.AreEqual((string?)manifest.Root.Attribute("AzureDevOpsBuildId"), (string?)candidates[quality].Root!.Attribute("AzureDevOpsBuildId"));
+            string[] ids = candidates[quality];
+            Assert.HasCount(21, ids);
+            Assert.HasCount(20, ids.Where(id => id.StartsWith("dotnetup/", StringComparison.Ordinal)).ToArray());
+            Assert.IsTrue(ids.Where(id => id.StartsWith("dotnetup/", StringComparison.Ordinal))
+                .All(id => id.Contains("-" + quality + ".", StringComparison.Ordinal)));
+            Assert.Contains((string)manifest.Root!.Element("Blob")!.Attribute("Id")!, ids);
+            Assert.AreSequenceEqual(ids.OrderBy(id => id, StringComparer.Ordinal), ids);
         }
     }
 
@@ -137,7 +155,7 @@ public class CandidateManifestTests : IDisposable
                 manifest.Root.SetAttributeValue("PublishingVersion", "3");
                 break;
         }
-        Assert.ThrowsExactly<InvalidDataException>(() => PrepareDotnetupCandidateManifests.Split(manifest));
+        Assert.ThrowsExactly<InvalidDataException>(() => PrepareDotnetupCandidateAssetIds.GetCandidateAssetIds(manifest));
     }
 
     private static XDocument CreateManifest()
@@ -147,7 +165,7 @@ public class CandidateManifestTests : IDisposable
             new XAttribute("AzureDevOpsBuildId", "12345"),
             new XElement("Blob",
                 new XAttribute("Id", "assets/manifests/sdk/20261001.1/MergedManifest.xml"),
-                new XAttribute("PipelineArtifactName", "DotnetupCandidateManifest"),
+                new XAttribute("PipelineArtifactName", "AssetManifests"),
                 new XAttribute("PipelineArtifactPath", "MergedManifest.xml")));
         foreach (string quality in new[] { "daily", "preview" })
         {

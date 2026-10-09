@@ -12,6 +12,10 @@ Publishing an older build through the same process rolls those links back withou
 Daily builds are published automatically. Preview builds require the manual promotion
 described below.
 
+The promotion pipeline must include the `BlobAssetIdManifests` support proposed in
+[dotnet/arcade#17684](https://github.com/dotnet/arcade/pull/17684). Do not promote these
+candidates with an older publishing toolset.
+
 ## Select a build
 
 Use a successful
@@ -29,7 +33,7 @@ Use that numeric Build Asset Registry (BAR) ID when promoting the build. Normal 
 of the official pipeline are PME-signed and have a `PME Signed` tag. Use the tag to confirm
 signing completed; do not promote a test build or a build without the tag.
 
-Verify that the selected run's `AssetManifests` artifact contains `preview/MergedManifest.xml`
+Verify that the selected run's `AssetManifests` artifact contains `MergedManifest.xml` and `preview.blobids`
 before promoting it.
 
 ## Promote the build
@@ -42,17 +46,17 @@ pipeline with these parameters:
 | --- | --- |
 | `BARBuildId` | The BAR ID from the selected build |
 | `PromoteToChannelIds` | `10506` (`dotnetup Daily`) |
-| `ArtifactsPublishingAdditionalParameters` ( NOT `symbol` parameters ) | `/p:BuildQuality=preview /p:BlobBasePath="$(Build.ArtifactStagingDirectory)/BlobArtifacts/preview/"` |
+| `ArtifactsPublishingAdditionalParameters` ( NOT `symbol` parameters ) | `/p:BuildQuality=preview /p:BlobAssetIdManifests=preview.blobids` |
 
 Leave the remaining parameters at their defaults. The Maestro channel retains its historical
 `dotnetup Daily` name; `BuildQuality=preview` controls the quality segment in the generated
 aka.ms links.
 
 Both properties are required: `BuildQuality` selects the links to update, while
-`BlobBasePath` selects the prebuilt candidate's manifest. Leave the
-`$(Build.ArtifactStagingDirectory)` macro as written: the promotion pipeline resolves it
-on its own agent. This operation does not compile, change versions, or sign again.
-For a manual daily promotion, use `BuildQuality=daily` and the `BlobArtifacts/daily/` path.
+`BlobAssetIdManifests` selects the prebuilt candidate's blob IDs from the complete manifest.
+The allowlist path is relative to the promotion agent's blob staging directory.
+This operation does not compile, change versions, or sign again.
+For a manual daily promotion, use `/p:BuildQuality=daily /p:BlobAssetIdManifests=daily.blobids`.
 
 The overall pipeline can report `PartiallySucceeded` because optional artifacts are downloaded
 with `continueOnError`. The `Publish packages, blobs and symbols` step must succeed.
