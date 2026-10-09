@@ -49,30 +49,14 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         bool hasExistingServer;
 
         var key = projectNode.ProjectInstance.GetId();
-        var browserToolsProject = appModel.BrowserToolsProject;
 
         lock (_serversGuard)
         {
             hasExistingServer = _servers.TryGetValue(key, out server);
 
-            if (server != null)
-            {
-                if (BrowserToolsBuildOutputs.FromProject(browserToolsProject.ProjectInstance, server.Logger) is not { } outputs)
-                {
-                    server.Dispose();
-                    _servers.Remove(key);
-                    server = null;
-                    hasExistingServer = false;
-                }
-                else
-                {
-                    server.UpdateSessionKeyFactory(outputs.CreateSessionKey);
-                }
-            }
-
             if (!hasExistingServer)
             {
-                server = appModel.TryCreateRefreshServer(browserToolsProject);
+                server = appModel.TryCreateRefreshServer();
                 _servers.Add(key, server);
             }
         }

@@ -4,20 +4,13 @@
 #nullable enable
 
 using System;
+using System.IO;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.DotNet.Watch;
-
-/// <summary>
-/// Thrown when a project produced browser tools build outputs that <c>dotnet watch</c> cannot use.
-/// The launch fails instead of silently continuing without browser tools, because a provider whose
-/// key the application does not pin can never be authenticated by the browser and every browser
-/// tools feature would appear to be broken for no visible reason.
-/// </summary>
-internal sealed class BrowserToolsBuildOutputsException(string message) : Exception(message);
+namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
 /// The build outputs the Static Web Assets SDK produces for the <c>dotnet watch</c> browser tools,
@@ -49,17 +42,14 @@ internal sealed class BrowserToolsBuildOutputs
     private const string PrivateKeyFormat = "RSAParameters";
 
     private readonly ILogger _logger;
+    private readonly string _publicKeyPath;
+    private readonly string _privateKeyPath;
 
-    public string ProjectPath { get; }
-    public string PublicKeyPath { get; }
-    public string PrivateKeyPath { get; }
-
-    private BrowserToolsBuildOutputs(string projectPath, string directory, ILogger logger)
+    private BrowserToolsBuildOutputs(string directory, ILogger logger)
     {
         _logger = logger;
-        ProjectPath = projectPath;
-        PublicKeyPath = Path.Combine(directory, PublicKeyFileName);
-        PrivateKeyPath = Path.Combine(directory, PrivateKeyFileName);
+        _publicKeyPath = Path.Combine(directory, PublicKeyFileName);
+        _privateKeyPath = Path.Combine(directory, PrivateKeyFileName);
     }
 
     /// <summary>
@@ -72,7 +62,6 @@ internal sealed class BrowserToolsBuildOutputs
     /// </summary>
     public static BrowserToolsBuildOutputs? FromProjectSettings(
         ILogger logger,
-        string projectPath,
         string configuration,
         string? intermediateOutputDirectory,
         bool? enableHotReloadInRuntimeConfigDevFile,
@@ -98,7 +87,6 @@ internal sealed class BrowserToolsBuildOutputs
         }
 
         return new BrowserToolsBuildOutputs(
-            projectPath,
             Path.Combine(intermediateOutputDirectory, DirectoryName),
             logger);
     }
@@ -108,77 +96,82 @@ internal sealed class BrowserToolsBuildOutputs
     /// tests: production code always derives the directory from the project instance so that the
     /// paths cannot drift from what the build wrote.
     /// </summary>
-    internal static BrowserToolsBuildOutputs CreateForTesting(string projectPath, string directory, ILogger logger)
-        => new(projectPath, directory, logger);
+    internal static BrowserToolsBuildOutputs CreateForTesting(string directory, ILogger logger)
+        => new(directory, logger);
 
     /// <summary>
     /// Creates the provider's session key from the private half the build produced, after checking
     /// that it is the key the application pinned. Never logs key material.
     /// </summary>
-    /// <exception cref="BrowserToolsBuildOutputsException">
-    /// The key documents are missing, malformed, or describe different keys.
-    /// </exception>
-    public SharedSecretProvider CreateSessionKey()
+    public SharedSecretProvider? TryCreateSessionKey()
     {
-        var pinnedPublicKey = ReadPinnedPublicKey();
-        var parameters = ReadPrivateKey(out var recordedPublicKey);
-
-        if (!string.Equals(pinnedPublicKey, recordedPublicKey, StringComparison.Ordinal))
-        {
-            throw Fail("the public and private key documents describe different keys");
-        }
-
-        SharedSecretProvider sessionKey;
         try
         {
-            sessionKey = new SharedSecretProvider(parameters);
-        }
-        catch (CryptographicException)
-        {
-            throw Fail("the private key could not be imported");
-        }
+            var pinnedPublicKey = ReadPinnedPublicKey();
+            var parameters = ReadPrivateKey(out var recordedPublicKey);
 
-        // The recorded value is not trusted on its own: the key that the provider will actually use
-        // has to be the key the application pinned, otherwise the browser rejects the provider.
-        if (!string.Equals(sessionKey.GetPublicKey(), pinnedPublicKey, StringComparison.Ordinal))
-        {
-            sessionKey.Dispose();
-            throw Fail("the private key does not match the public key the application pinned");
-        }
+            if (!string.Equals(pinnedPublicKey, recordedPublicKey, StringComparison.Ordinal))
+            {
+                throw Fail("the public and private key documents describe different keys");
+            }
 
-        _logger.Log(LogEvents.BrowserToolsUsingKeyFromBuild);
-        return sessionKey;
+            SharedSecretProvider sessionKey;
+            try
+            {
+                sessionKey = new SharedSecretProvider(parameters);
+            }
+            catch (CryptographicException)
+            {
+                throw Fail("the private key could not be imported");
+            }
+
+            // The recorded value is not trusted on its own: the key that the provider will actually use
+            // has to be the key the application pinned, otherwise the browser rejects the provider.
+            if (!string.Equals(sessionKey.GetPublicKey(), pinnedPublicKey, StringComparison.Ordinal))
+            {
+                sessionKey.Dispose();
+                throw Fail("the private key does not match the public key the application pinned");
+            }
+
+            _logger.Log(LogEvents.BrowserToolsUsingKeyFromBuild);
+            return sessionKey;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError("Unable to load the browser tools session key. {Message}", e.Message);
+            return null;
+        }
     }
 
     private string ReadPinnedPublicKey()
     {
-        using var document = ReadDocument(PublicKeyPath);
-        ValidateHeader(document.RootElement, PublicKeyFormat, PublicKeyPath);
-        return ReadRequiredBase64(document.RootElement, "publicKey", PublicKeyPath);
+        using var document = ReadDocument(_publicKeyPath);
+        ValidateHeader(document.RootElement, PublicKeyFormat, _publicKeyPath);
+        return ReadRequiredBase64(document.RootElement, "publicKey", _publicKeyPath);
     }
 
     private RSAParameters ReadPrivateKey(out string recordedPublicKey)
     {
-        using var document = ReadDocument(PrivateKeyPath);
+        using var document = ReadDocument(_privateKeyPath);
         var root = document.RootElement;
-        ValidateHeader(root, PrivateKeyFormat, PrivateKeyPath);
-        recordedPublicKey = ReadRequiredBase64(root, "publicKey", PrivateKeyPath);
+        ValidateHeader(root, PrivateKeyFormat, _privateKeyPath);
+        recordedPublicKey = ReadRequiredBase64(root, "publicKey", _privateKeyPath);
 
         if (!root.TryGetProperty("parameters", out var parameters) || parameters.ValueKind != JsonValueKind.Object)
         {
-            throw Fail($"'{Path.GetFileName(PrivateKeyPath)}' does not contain the private key components");
+            throw Fail($"'{Path.GetFileName(_privateKeyPath)}' does not contain the private key components");
         }
 
         return new RSAParameters
         {
-            Modulus = ReadRequiredBase64Bytes(parameters, "modulus", PrivateKeyPath),
-            Exponent = ReadRequiredBase64Bytes(parameters, "exponent", PrivateKeyPath),
-            D = ReadRequiredBase64Bytes(parameters, "d", PrivateKeyPath),
-            P = ReadRequiredBase64Bytes(parameters, "p", PrivateKeyPath),
-            Q = ReadRequiredBase64Bytes(parameters, "q", PrivateKeyPath),
-            DP = ReadRequiredBase64Bytes(parameters, "dp", PrivateKeyPath),
-            DQ = ReadRequiredBase64Bytes(parameters, "dq", PrivateKeyPath),
-            InverseQ = ReadRequiredBase64Bytes(parameters, "inverseQ", PrivateKeyPath),
+            Modulus = ReadRequiredBase64Bytes(parameters, "modulus", _privateKeyPath),
+            Exponent = ReadRequiredBase64Bytes(parameters, "exponent", _privateKeyPath),
+            D = ReadRequiredBase64Bytes(parameters, "d", _privateKeyPath),
+            P = ReadRequiredBase64Bytes(parameters, "p", _privateKeyPath),
+            Q = ReadRequiredBase64Bytes(parameters, "q", _privateKeyPath),
+            DP = ReadRequiredBase64Bytes(parameters, "dp", _privateKeyPath),
+            DQ = ReadRequiredBase64Bytes(parameters, "dq", _privateKeyPath),
+            InverseQ = ReadRequiredBase64Bytes(parameters, "inverseQ", _privateKeyPath),
         };
     }
 
@@ -268,6 +261,6 @@ internal sealed class BrowserToolsBuildOutputs
     private byte[] ReadRequiredBase64Bytes(JsonElement element, string propertyName, string path)
         => Convert.FromBase64String(ReadRequiredBase64(element, propertyName, path));
 
-    private BrowserToolsBuildOutputsException Fail(string reason)
-        => new($"Unable to start the dotnet-watch browser tools for '{ProjectPath}' because {reason}. Rebuild the project to regenerate the browser tools build outputs.");
+    private Exception Fail(string reason)
+        => new($"Unable to start the dotnet-watch browser tools because {reason}. Rebuild the project to regenerate the browser tools build outputs.");
 }
