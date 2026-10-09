@@ -22,22 +22,33 @@ internal static class GarbageCollectionRunner
     /// <returns>The list of deleted subcomponent paths.</returns>
     public static List<string> RunAndDisplay(string? manifestPath, DotnetInstallRoot installRoot, bool showEmptyMessage = false)
     {
-        Debug.Assert(ScopedMutex.CurrentThreadHoldsMutex, "GarbageCollectionRunner.RunAndDisplay must be called while holding the mutex.");
-        AnsiConsole.WriteLine("Removing unused installations...");
-
         var gc = new GarbageCollector(new DotnetupSharedManifest(manifestPath));
-        var deleted = gc.Collect(installRoot);
+        return DisplayResults(() => gc.Collect(installRoot), showEmptyMessage);
+    }
+
+    internal static List<string> ApplyAndDisplay(
+        GarbageCollector collector, GarbageCollectionPlan plan)
+    {
+        return DisplayResults(() => collector.Apply(plan), showEmptyMessage: true);
+    }
+
+    private static List<string> DisplayResults(Func<List<string>> collect, bool showEmptyMessage)
+    {
+        Debug.Assert(ScopedMutex.CurrentThreadHoldsMutex, "GarbageCollectionRunner.RunAndDisplay must be called while holding the mutex.");
+        AnsiConsole.WriteLine(Strings.GarbageCollectionRemovingInstallations);
+
+        var deleted = collect();
 
         if (deleted.Count > 0)
         {
             foreach (var d in deleted)
             {
-                AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, "  Removed {0}", DotnetupTheme.Dim(d.EscapeMarkup())));
+                AnsiConsole.MarkupLine(string.Format(CultureInfo.InvariantCulture, Strings.GarbageCollectionRemovedPath, DotnetupTheme.Dim(d.EscapeMarkup())));
             }
         }
         else if (showEmptyMessage)
         {
-            AnsiConsole.MarkupLine(DotnetupTheme.Dim("No files were removed."));
+            AnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.GarbageCollectionNoFilesRemoved.EscapeMarkup()));
         }
 
         return deleted;

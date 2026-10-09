@@ -35,6 +35,12 @@ internal class CommonOptions
         Arity = ArgumentArity.ZeroOrOne
     };
 
+    public static readonly Option<bool> NonInteractiveOption = new("--non-interactive")
+    {
+        Description = Strings.CommandNonInteractiveOptionDescription,
+        Arity = ArgumentArity.Zero
+    };
+
     /// <summary>
     /// Hidden test hook: preview the <c>dotnetup init</c> form and the settings it would apply
     /// without installing anything or changing the environment.
@@ -124,6 +130,15 @@ internal class CommonOptions
         Description = "Automatically install matching system-managed SDKs or runtimes into the selected dotnetup-managed directory as part of the current install.",
         Arity = ArgumentArity.ZeroOrOne
     };
+
+    public static void AddUninstallOptions(Command command)
+    {
+        command.Options.Add(SourceOption);
+        command.Options.Add(ManifestPathOption);
+        command.Options.Add(InstallPathOption);
+        command.Options.Add(InteractiveOption);
+        command.Options.Add(NonInteractiveOption);
+    }
 
     /// <summary>
     /// Creates a channel argument for SDK commands.
