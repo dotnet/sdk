@@ -13,8 +13,8 @@ internal sealed class WebServerAppModel(DotNetWatchContext context, ProjectGraph
 {
     public override ProjectGraphNode LaunchingProject => serverProject;
 
-    public override bool ManagedHotReloadRequiresBrowserRefresh
-        => false;
+    public override bool ManagedHotReloadRequiresBrowserRefresh => false;
+    public override bool HasGatewayProxy => false;
 
     protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
         => [new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), handlesStaticAssetUpdates: true, new NamedPipeClientTransport(clientLogger))];

@@ -18,10 +18,10 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
     : WebApplicationAppModel(context)
 {
     public override ProjectGraphNode LaunchingProject => serverProject;
-
     public override ProjectGraphNode BrowserToolsProject => clientProject;
 
     public override bool ManagedHotReloadRequiresBrowserRefresh => true;
+    public override bool HasGatewayProxy => false;
 
     protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {

@@ -20,22 +20,24 @@ internal sealed class TestBrowserRefreshServer : AbstractBrowserRefreshServer
 
     public TestBrowserRefreshServer(Func<SharedSecretProvider> sessionKeyFactory)
         : base(
-            configureLaunchEnvironment: static (_, _) => { },
             sessionKeyFactory,
-            new TestLogger(),
-            _ => new TestLogger(),
-            _ => new TestLogger())
+            logger: new TestLogger(),
+            connectionServerLoggerFactory: _ => new TestLogger(),
+            connectionAgentLoggerFactory: _ => new TestLogger(),
+            middlewareAssemblyPath: Path.GetTempPath(),
+            useGatewayProxy: false)
     {
         _key = new SharedSecretProvider();
     }
 
     private TestBrowserRefreshServer(RSAParameters keyParameters)
         : base(
-            configureLaunchEnvironment: static (_, _) => { },
             sessionKeyFactory: () => new SharedSecretProvider(keyParameters),
-            new TestLogger(),
-            _ => new TestLogger(),
-            _ => new TestLogger())
+            logger: new TestLogger(),
+            connectionServerLoggerFactory: _ => new TestLogger(),
+            connectionAgentLoggerFactory: _ => new TestLogger(),
+            middlewareAssemblyPath: Path.GetTempPath(),
+            useGatewayProxy: false)
     {
         _key = new SharedSecretProvider(keyParameters);
     }
