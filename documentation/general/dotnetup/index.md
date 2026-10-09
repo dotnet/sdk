@@ -7,6 +7,10 @@ ms.date: 08/07/2026
 
 # dotnetup overview
 
+> [!IMPORTANT]
+> `dotnetup` is in public preview. Its features and behavior might change
+> before general availability.
+
 `dotnetup` is a cross-platform toolchain manager for user-level .NET
 installations. It installs .NET SDKs and runtimes without writing to a
 system-managed .NET directory. It also tracks the installation requirements
@@ -48,7 +52,7 @@ For a concise, noninteractive setup, install an SDK and configure the current
 shell:
 
 ```dotnetcli
-> dotnetup install latest
+> dotnetup install latest --interactive false
 Downloading SDK <resolved-version>
 Installing SDK <resolved-version>
 Installed SDK <resolved-version>
@@ -76,10 +80,11 @@ Total: 1
 <resolved-version>
 ```
 
-If you do not want to change your shell profile, use the forwarding command:
+If you do not want to add the managed `dotnet` command to `PATH`, use the
+forwarding command:
 
 ```dotnetcli
-> dotnetup install latest
+> dotnetup install latest --interactive false
 Downloading SDK <resolved-version>
 Installing SDK <resolved-version>
 Installed SDK <resolved-version>
@@ -107,6 +112,7 @@ For more information, see [How dotnetup works](concepts/how-dotnetup-works.md).
 
 | Goal | Article |
 | --- | --- |
+| Install dotnetup and run the first setup | [Get started with dotnetup](README.md) |
 | Understand channels, installation roots, and tracking | [How dotnetup works](concepts/how-dotnetup-works.md) |
 | Use a repository's `global.json` | [Manage repository SDK requirements](usecases/install-with-global-json.md) |
 | Install SDKs and runtimes | [Install .NET components](usecases/install-components.md) |
@@ -117,7 +123,10 @@ For more information, see [How dotnetup works](concepts/how-dotnetup-works.md).
 
 ## Availability
 
-This documentation describes the current in-repository implementation of
-`dotnetup`. Distribution instructions can differ for each internal release.
-After the `dotnetup` executable is available, run `dotnetup --version` to
-confirm the version and `dotnetup --help` to see its command surface.
+`dotnetup` is available as a public preview. Commands, options, and behavior
+might change between preview releases, and the support lifecycle for the
+generally available release isn't final.
+
+To install `dotnetup`, see [Get started with dotnetup](README.md). After you
+install it, run `dotnetup --version` to confirm the version and
+`dotnetup --help` to see the available commands.

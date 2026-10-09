@@ -1,19 +1,50 @@
 # Get started with dotnetup
 
+> [!IMPORTANT]
+> `dotnetup` is in public preview. Its features and behavior might change
+> before general availability.
+
 `dotnetup` is a cross-platform toolchain manager for user-level .NET
 installations. It installs, updates, and removes .NET SDKs and runtimes without
 using a system package manager.
 
 ## Prerequisites
 
-- Windows, macOS, or Linux.
+- One of the following operating systems and architectures:
+
+  | Operating system | Architectures |
+  | --- | --- |
+  | Windows | x64, Arm64 |
+  | macOS | x64, Arm64 |
+  | Linux (glibc) | x64, Arm64 |
+  | Linux (musl), such as Alpine Linux | x64, Arm64 |
+
 - A terminal.
 - Bash on macOS or Linux, or PowerShell on Windows, to run the download script.
+- On macOS or Linux, `curl` or `wget` to download files, and `sha512sum` or
+  `shasum` to verify them.
 
-On Windows, the default setup uses the `everywhere` access mode and requires
-elevation to update the system `PATH`. Choose `none` or `shell` to avoid this
-requirement. For details, see
-[dotnetup environment configuration](concepts/environment.md).
+`dotnetup` has the same operating-system requirements as the .NET Runtime.
+For OS-specific requirements, see
+[Install .NET on Windows](https://learn.microsoft.com/dotnet/core/install/windows),
+[Install .NET on macOS](https://learn.microsoft.com/dotnet/core/install/macos),
+or [Install .NET on Linux](https://learn.microsoft.com/dotnet/core/install/linux).
+
+> [!IMPORTANT]
+> On Windows, the default setup uses the `everywhere` access mode. This mode:
+>
+> - Requires elevation to update the system `PATH`.
+> - Makes the dotnetup-managed installation take precedence over machine-wide
+>   .NET installations, such as the ones that Visual Studio installs. Projects
+>   and apps that need a machine-wide SDK or runtime that isn't also installed
+>   by `dotnetup` fail to build or run.
+> - Changes the system `PATH`, which applies to all users. Elevated processes
+>   that other users start might resolve .NET from your user profile.
+>
+> To avoid these effects, choose the `none` or `shell` access mode during setup.
+> If you choose `everywhere`, migrate your existing installations when setup
+> offers to. For details, see
+> [Everywhere mode considerations](concepts/environment.md#everywhere-mode-considerations).
 
 ## Download dotnetup
 
