@@ -15,6 +15,7 @@ namespace Microsoft.CodeAnalysis.Tools
     {
         private static readonly ImmutableArray<ICodeFormatter> s_codeFormatters = ImmutableArray.Create<ICodeFormatter>(
             new WhitespaceFormatter(),
+            new RazorDocumentFormatter(),
             new FinalNewlineFormatter(),
             new EndOfLineFormatter(),
             new CharsetFormatter(),
@@ -174,7 +175,7 @@ namespace Microsoft.CodeAnalysis.Tools
         {
             Debug.Assert((formatOptions.WorkspaceType is WorkspaceType.Project) == (projectId is not null));
 
-            var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count);
+            var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count + project.AdditionalDocumentIds.Count);
             var projectFileCount = 0;
 
             var documentsCoveredByEditorConfig = ImmutableArray.CreateBuilder<DocumentId>(totalFileCount);
@@ -255,6 +256,39 @@ namespace Microsoft.CodeAnalysis.Tools
                     else
                     {
                         documentsNotCoveredByEditorConfig.Add(document.Id);
+                    }
+                }
+
+                if (formatOptions.FixCategory.HasFlag(FixCategory.Whitespace))
+                {
+                    foreach (var document in project.AdditionalDocuments)
+                    {
+                        if (document.FilePath is null ||
+                            !FormatterUtilities.IsRazorDocument(document) ||
+                            !addedFilePaths.Add(document.FilePath))
+                        {
+                            continue;
+                        }
+
+                        projectFileCount++;
+
+                        var isFileIncluded = formatOptions.WorkspaceType == WorkspaceType.Folder ||
+                            (formatOptions.FileMatcher.HasMatches(document.FilePath) && File.Exists(document.FilePath));
+                        if (!isFileIncluded)
+                        {
+                            continue;
+                        }
+
+                        var analyzerConfigOptions = FormatterUtilities.GetAnalyzerConfigOptionsForAdditionalDocument(document);
+
+                        if (analyzerConfigOptions is not null)
+                        {
+                            documentsCoveredByEditorConfig.Add(document.Id);
+                        }
+                        else
+                        {
+                            documentsNotCoveredByEditorConfig.Add(document.Id);
+                        }
                     }
                 }
 
