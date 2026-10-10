@@ -14,6 +14,221 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     [TestClass]
     public partial class PlatformCompatabilityAnalyzerTests
     {
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedCustomGuardSuppressedByCallsite()
+        {
+            var source = """
+
+                using System;
+                using System.Runtime.Versioning;
+                using Mock;
+
+                [assembly: SupportedOSPlatform("macos15.0")]
+
+                partial class TestType
+                {
+                    void DoSomething()
+                    {
+                        if (IsAtLeastXcode11)
+                        {
+                            Console.WriteLine(NewApi);
+                        }
+                        else
+                        {
+                            Console.WriteLine(OldApi);
+                        }
+                    }
+
+                    [SupportedOSPlatform("macos12.0")]
+                    public ulong? NewApi { get; private set; }
+
+                    [SupportedOSPlatform("macos11.0")]
+                    [ObsoletedOSPlatform("macos12.0")]
+                    public ulong? OldApi { get; private set; }
+
+                    [SupportedOSPlatformGuard("macos15.0")]
+                    internal static bool IsAtLeastXcode11 => true;
+                }
+                """ + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        // A deny-list call site ('[UnsupportedOSPlatform("macos12.0"), SupportedOSPlatform("macos15.0")]') is reachable
+        // on macOS 15.0+ *and on every other platform*, so a '!IsMacOS15' branch is still reachable on, say, Linux.
+        // macOS therefore must not be excluded, and the macOS-only API must still be reported.
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedCustomGuardNotSuppressedByDenyListCallsite()
+        {
+            var source = """
+
+                using System;
+                using System.Runtime.Versioning;
+                using Mock;
+
+                partial class TestType
+                {
+                    [System.Runtime.Versioning.UnsupportedOSPlatform("macos12.0")]
+                    [SupportedOSPlatform("macos15.0")]
+                    void DoSomething()
+                    {
+                        if (!IsMacOS15)
+                        {
+                            Console.WriteLine({|CA1416:OldApi|});
+                        }
+                    }
+
+                    [SupportedOSPlatform("macos11.0")]
+                    [ObsoletedOSPlatform("macos12.0")]
+                    public ulong? OldApi { get; private set; }
+
+                    [SupportedOSPlatformGuard("macos15.0")]
+                    internal static bool IsMacOS15 => true;
+                }
+                """ + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        // The same call site restricted to macOS only (an allow list) *is* provably unreachable below macOS 15.0.
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedCustomGuardSuppressedByAllowListCallsite()
+        {
+            var source = """
+
+                using System;
+                using System.Runtime.Versioning;
+                using Mock;
+
+                partial class TestType
+                {
+                    [SupportedOSPlatform("macos15.0")]
+                    void DoSomething()
+                    {
+                        if (!IsMacOS15)
+                        {
+                            Console.WriteLine(OldApi);
+                        }
+                    }
+
+                    [SupportedOSPlatform("macos11.0")]
+                    [ObsoletedOSPlatform("macos12.0")]
+                    public ulong? OldApi { get; private set; }
+
+                    [SupportedOSPlatformGuard("macos15.0")]
+                    internal static bool IsMacOS15 => true;
+                }
+                """ + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedCustomGuardNotSuppressedByUnsupportedOnlyCallsite()
+        {
+            var source = """
+
+                using System;
+                using System.Runtime.Versioning;
+                using Mock;
+
+                partial class TestType
+                {
+                    [System.Runtime.Versioning.UnsupportedOSPlatform("macos12.0")]
+                    void DoSomething()
+                    {
+                        if (!IsMacOS15)
+                        {
+                            Console.WriteLine({|CA1416:OldApi|});
+                        }
+                    }
+
+                    [SupportedOSPlatform("macos11.0")]
+                    public ulong? OldApi { get; private set; }
+
+                    [SupportedOSPlatformGuard("macos15.0")]
+                    internal static bool IsMacOS15 => true;
+                }
+                """ + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        // Documents how the three attributes combine on a single API. 'Supported' sets the minimum version,
+        // 'Obsoleted' and 'Unsupported' each open their own range above it, and both are reported independently:
+        // reachable on macOS 11.0+, the API is obsoleted from 12.0 (CA1422) and unsupported from 14.0 (CA1416).
+        [TestMethod]
+        public async Task SupportedObsoletedAndUnsupportedMixedReportBothDiagnostics()
+        {
+            var source = """
+
+                using System;
+                using System.Runtime.Versioning;
+                using Mock;
+
+                partial class TestType
+                {
+                    [SupportedOSPlatform("macos11.0")]
+                    void DoSomething()
+                    {
+                        Console.WriteLine({|#0:{|#1:MixedApi|}|});
+                    }
+
+                    [SupportedOSPlatform("macos10.0")]
+                    [ObsoletedOSPlatform("macos12.0")]
+                    [System.Runtime.Versioning.UnsupportedOSPlatform("macos14.0")]
+                    public ulong? MixedApi { get; private set; }
+                }
+                """ + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0)
+                    .WithArguments("TestType.MixedApi", "'macOS/OSX' 14.0 and later", "'macOS/OSX' 11.0 and later"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.ObsoletedCsReachable).WithLocation(1)
+                    .WithArguments("TestType.MixedApi", "'macOS/OSX' 12.0 and later", "'macOS/OSX' 11.0 and later"));
+        }
+
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedCustomGuardsPartiallySuppressedByCallsite()
+        {
+            var source = """
+
+                using System;
+                using System.Runtime.Versioning;
+                using Mock;
+
+                [assembly: SupportedOSPlatform("ios13.0")]
+                [assembly: SupportedOSPlatform("maccatalyst13.0")]
+                [assembly: SupportedOSPlatform("macos14.0")]
+                [assembly: SupportedOSPlatform("tvos13.0")]
+
+                partial class TestType
+                {
+                    void DoSomething()
+                    {
+                        if (!IsAtLeastXcode13)
+                        {
+                            Console.WriteLine(OldApi);
+                        }
+                    }
+
+                    [ObsoletedOSPlatform("ios15.0")]
+                    [ObsoletedOSPlatform("maccatalyst15.0")]
+                    [ObsoletedOSPlatform("macos12.0")]
+                    [ObsoletedOSPlatform("tvos15.0")]
+                    public ulong? OldApi { get; private set; }
+
+                    [SupportedOSPlatformGuard("ios15.0")]
+                    [SupportedOSPlatformGuard("maccatalyst13.0")]
+                    [SupportedOSPlatformGuard("macos14.0")]
+                    [SupportedOSPlatformGuard("tvos15.0")]
+                    internal static bool IsAtLeastXcode13 => true;
+                }
+                """ + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
         [TestMethod]
         public async Task ObsoletedMethodsCalledWarns()
         {
