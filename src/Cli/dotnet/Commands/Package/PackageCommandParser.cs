@@ -41,6 +41,9 @@ internal sealed class PackageCommandParser
 
     internal static void ConfigureAddCommand(PackageAddCommandDefinitionBase def)
     {
+        // Keep network-backed shell completions out of help usage labels.
+        def.PackageIdArgument.HelpName ??= def.PackageIdArgument.Name;
+
         def.PackageIdArgument.CompletionSources.Add(context =>
         {
             // we should take --prerelease flags into account for version completion
