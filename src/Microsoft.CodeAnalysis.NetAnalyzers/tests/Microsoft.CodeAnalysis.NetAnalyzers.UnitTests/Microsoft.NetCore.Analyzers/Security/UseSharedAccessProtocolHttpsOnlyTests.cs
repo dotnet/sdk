@@ -2,10 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Security.UseSharedAccessProtocolHttpsOnly,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseSharedAccessProtocolHttpsOnly,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
@@ -14,6 +18,40 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     [TestClass]
     public class UseSharedAccessProtocolHttpsOnlyTests
     {
+        [TestMethod]
+        [DataRow("HttpsOrHttp", true)]
+        [DataRow("HttpsOnly", false)]
+        public async Task DirectProtocol_VB_Async(string protocol, bool expectDiagnostic)
+        {
+            var test = new VerifyVB.Test
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAzureStorage,
+                TestState =
+                {
+                    Sources =
+                    {
+                        $$"""
+                        Imports Microsoft.WindowsAzure.Storage
+                        Imports Microsoft.WindowsAzure.Storage.File
+
+                        Public Class TestClass
+                            Public Sub Method(file As CloudFile)
+                                file.GetSharedAccessSignature(Nothing, Nothing, Nothing, SharedAccessProtocol.{{protocol}}, Nothing)
+                            End Sub
+                        End Class
+                        """
+                    },
+                },
+            };
+
+            if (expectDiagnostic)
+            {
+                test.ExpectedDiagnostics.Add(GetBasicResultAt(6, 9));
+            }
+
+            await test.RunAsync(CancellationToken.None);
+        }
+
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
         {
             var csharpTest = new VerifyCS.Test
@@ -28,6 +66,20 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
             await csharpTest.RunAsync(CancellationToken.None);
+        }
+
+        private static async Task<int> GetCSharpValueContentCountAsync(string source, params DiagnosticResult[] expected)
+        {
+            int count = 0;
+            var test = new CountingCSharpSecurityAnalyzerTest<UseSharedAccessProtocolHttpsOnly>(() =>
+                new UseSharedAccessProtocolHttpsOnly { ValueContentAnalysisStarted = () => Interlocked.Increment(ref count) })
+            {
+                ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithAzureStorage,
+                TestCode = source,
+            };
+            test.ExpectedDiagnostics.AddRange(expected);
+            await test.RunAsync(CancellationToken.None);
+            return Volatile.Read(ref count);
         }
 
         protected async Task VerifyCSharpWithDependenciesAsync(string source, string editorConfigText, params DiagnosticResult[] expected)
@@ -54,36 +106,42 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.File;
+            int count = await GetCSharpValueContentCountAsync("""
 
-class TestClass
-{
-    public void TestMethod(SharedAccessFilePolicy policy, SharedAccessFileHeaders headers, string groupPolicyIdentifier, IPAddressOrRange ipAddressOrRange)
-    {
-        var cloudFile = new CloudFile(null);
-        var protocols = SharedAccessProtocol.HttpsOrHttp;
-        cloudFile.GetSharedAccessSignature(policy, headers, groupPolicyIdentifier, protocols, ipAddressOrRange); 
-    }
-}",
+                using System;
+                using Microsoft.WindowsAzure.Storage;
+                using Microsoft.WindowsAzure.Storage.File;
+
+                class TestClass
+                {
+                    public void TestMethod(SharedAccessFilePolicy policy, SharedAccessFileHeaders headers, string groupPolicyIdentifier, IPAddressOrRange ipAddressOrRange)
+                    {
+                        var cloudFile = new CloudFile(null);
+                        var protocols = SharedAccessProtocol.HttpsOrHttp;
+                        cloudFile.GetSharedAccessSignature(policy, headers, groupPolicyIdentifier, protocols, ipAddressOrRange);
+                    }
+                }
+                """,
             GetCSharpResultAt(12, 9));
+            Assert.IsGreaterThan(0, count);
         }
 
         [TestMethod]
         public async Task TestPropertyInitializerGetSharedAccessSignatureNotFromCloudStorageAccountWithProtocolsParameterDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using Microsoft.WindowsAzure.Storage;
-using Microsoft.WindowsAzure.Storage.File;
+            int count = await GetCSharpValueContentCountAsync("""
 
-class TestClass
-{
-    public string SAS { get; } = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOrHttp, null);
-}",
+                using System;
+                using Microsoft.WindowsAzure.Storage;
+                using Microsoft.WindowsAzure.Storage.File;
+
+                class TestClass
+                {
+                    public string SAS { get; } = new CloudFile(null).GetSharedAccessSignature(null, null, null, SharedAccessProtocol.HttpsOrHttp, null);
+                }
+                """,
             GetCSharpResultAt(8, 34));
+            Assert.AreEqual(0, count);
         }
 
         [TestMethod]
@@ -277,6 +335,12 @@ class TestClass
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
 #pragma warning disable RS0030 // Do not use banned APIs
            => VerifyCS.Diagnostic()
+               .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not use banned APIs
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column)
+#pragma warning disable RS0030 // Do not use banned APIs
+           => VerifyVB.Diagnostic()
                .WithLocation(line, column);
 #pragma warning restore RS0030 // Do not use banned APIs
     }

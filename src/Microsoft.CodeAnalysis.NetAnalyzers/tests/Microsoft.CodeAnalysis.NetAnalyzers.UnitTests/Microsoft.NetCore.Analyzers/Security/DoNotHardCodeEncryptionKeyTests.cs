@@ -14,43 +14,169 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     {
         protected override DiagnosticDescriptor Rule => DoNotHardCodeEncryptionKey.Rule;
 
+        [TestMethod]
+        public async Task LiteralSourceOnInfeasibleBranch_CSharp_NoDiagnosticAsync()
+        {
+            var counts = await GetCSharpFlowCountsAsync("""
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    void Method(byte[] key, SymmetricAlgorithm algorithm)
+                    {
+                        int mode = 0;
+                        if (mode == 1)
+                        {
+                            key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        }
+
+                        algorithm.Key = key;
+                    }
+                }
+                """);
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.IsGreaterThan(0, counts.ValueContentCount);
+        }
+
+        [TestMethod]
+        public async Task LiteralSourceOnInfeasibleBranch_VB_NoDiagnosticAsync()
+        {
+            await VerifyVisualBasicWithDependenciesAsync("""
+                Imports System.Security.Cryptography
+
+                Public Class TestClass
+                    Public Sub Method(key As Byte(), algorithm As SymmetricAlgorithm)
+                        Dim mode = 0
+                        If mode = 1 Then
+                            key = New Byte() {1, 2, 3, 4, 5, 6, 7, 8}
+                        End If
+
+                        algorithm.Key = key
+                    End Sub
+                End Class
+                """);
+        }
+
         protected override IEnumerable<string> AdditionalCSharpSources => new string[] { readOnlySpanAndAesGcmAndAesCcmCSharpSourceCode };
 
-        public const string readOnlySpanAndAesGcmAndAesCcmCSharpSourceCode = @"
-namespace System
-{
-    public struct ReadOnlySpan<T>
-    {
-        public ReadOnlySpan (T[] array)
+        [TestMethod]
+        public async Task RepeatedByteArraySourcesWithoutReachableSinkAsync()
         {
-        }
-    }
-}
-
-namespace System.Security.Cryptography
-{
-    public sealed class AesGcm
-    {
-        public AesGcm (byte[] key)
-        {
+            Assert.AreEqual(0, await GetCSharpDataflowCountAsync(RepeatedByteArraySourcesWithoutReachableSink()));
         }
 
-        public AesGcm (ReadOnlySpan<byte> key)
+        [TestMethod]
+        public async Task AttributeAndMethodBodySourcesWithReachableSinkAnalyzeOnceAsync()
         {
-        }
-    }
+            int count = await GetCSharpDataflowCountAsync("""
+                using System;
+                using System.Security.Cryptography;
 
-    public sealed class AesCcm
-    {
-        public AesCcm (byte[] key)
-        {
+                sealed class BytesAttribute : Attribute
+                {
+                    public BytesAttribute(byte[] values) { }
+                }
+
+                class TestClass
+                {
+                    [Bytes(new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 })]
+                    public void Emit(SymmetricAlgorithm algorithm, byte[] supplied)
+                    {
+                        byte[] other = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        algorithm.Key = supplied;
+                    }
+                }
+                """);
+            // The attribute and method body are distinct source roots in the same analysis block.
+            Assert.AreEqual(1, count);
         }
 
-        public AesCcm (ReadOnlySpan<byte> key)
+        [TestMethod]
+        public async Task SinkReachedThroughTwoMethodsAsync()
         {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    public void Emit()
+                    {
+                        byte[] key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        UseKey(key);
+                    }
+
+                    private void UseKey(byte[] key) => SetKey(key);
+
+                    private void SetKey(byte[] key)
+                    {
+                        using (var aes = Aes.Create())
+                        {
+                            aes.Key = key;
+                        }
+                    }
+                }
+                """,
+                GetCSharpResultAt(17, 13, 7, 22, "byte[] SymmetricAlgorithm.Key", "void TestClass.SetKey(byte[] key)", "byte[]", "void TestClass.Emit()"));
         }
-    }
-}";
+
+        [TestMethod]
+        public async Task VisualBasicSinkReachedThroughMethodAsync()
+        {
+            await VerifyVisualBasicWithDependenciesAsync("""
+                Imports System.Security.Cryptography
+
+                Public Class TestClass
+                    Public Sub Emit()
+                        Dim key As Byte() = New Byte() {1, 2, 3, 4, 5, 6, 7, 8}
+                        SetKey(key)
+                    End Sub
+
+                    Private Sub SetKey(key As Byte())
+                        Dim algorithm = Aes.Create()
+                        algorithm.Key = key
+                    End Sub
+                End Class
+                """,
+                GetBasicResultAt(11, 9, 5, 29, "Property SymmetricAlgorithm.Key As Byte()", "Sub TestClass.SetKey(key As Byte())", "Byte()", "Sub TestClass.Emit()"));
+        }
+
+        public const string readOnlySpanAndAesGcmAndAesCcmCSharpSourceCode = """
+
+            namespace System
+            {
+                public struct ReadOnlySpan<T>
+                {
+                    public ReadOnlySpan (T[] array)
+                    {
+                    }
+                }
+            }
+
+            namespace System.Security.Cryptography
+            {
+                public sealed class AesGcm
+                {
+                    public AesGcm (byte[] key)
+                    {
+                    }
+
+                    public AesGcm (ReadOnlySpan<byte> key)
+                    {
+                    }
+                }
+
+                public sealed class AesCcm
+                {
+                    public AesCcm (byte[] key)
+                    {
+                    }
+
+                    public AesCcm (ReadOnlySpan<byte> key)
+                    {
+                    }
+                }
+            }
+            """;
 
         [TestMethod]
         public async Task Test_HardcodedStaticReadonlyField__DiagnosticAsync()
@@ -215,19 +341,24 @@ class TestClass
         [TestMethod]
         public async Task Test_AesGcmWithByteArrayParameter_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using System.Security.Cryptography;
+            var counts = await GetCSharpFlowCountsAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        byte[] key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
-        AesGcm aesGcm = new AesGcm(key);
-    }
-}",
+                using System;
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        byte[] key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        AesGcm aesGcm = new AesGcm(key);
+                    }
+                }
+                """,
+            true,
             GetCSharpResultAt(10, 25, 9, 22, "AesGcm.AesGcm(byte[] key)", "void TestClass.TestMethod()", "byte[]", "void TestClass.TestMethod()"));
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.AreEqual(0, counts.ValueContentCount);
         }
 
         [TestMethod]

@@ -14,6 +14,55 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         protected override DiagnosticDescriptor Rule => DoNotHardCodeCertificate.Rule;
 
         [TestMethod]
+        public async Task SinkReachedThroughConstructorInitializerAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Security.Cryptography.X509Certificates;
+
+                class Certificate : X509Certificate2
+                {
+                    public Certificate(byte[] bytes) : base(bytes) { }
+                }
+
+                class TestClass
+                {
+                    void Method()
+                    {
+                        byte[] bytes = new byte[] { 1, 2, 3 };
+                        new Certificate(bytes);
+                    }
+                }
+                """,
+                GetCSharpResultAt(5, 38, 12, 24, "X509Certificate2.X509Certificate2(byte[] rawData)", "Certificate.Certificate(byte[] bytes)", "byte[]", "void TestClass.Method()"));
+        }
+
+        [TestMethod]
+        public async Task RepeatedByteArraySourcesWithoutReachableSinkAsync()
+        {
+            Assert.AreEqual(0, await GetCSharpDataflowCountAsync(RepeatedByteArraySourcesWithoutReachableSink()));
+        }
+
+        [TestMethod]
+        public async Task VisualBasicSinkReachedThroughMethodAsync()
+        {
+            await VerifyVisualBasicWithDependenciesAsync("""
+                Imports Cert = System.Security.Cryptography.X509Certificates.X509Certificate2
+
+                Public Class TestClass
+                    Public Sub Emit()
+                        Dim bytes As Byte() = New Byte() {1, 2, 3}
+                        Load(bytes)
+                    End Sub
+
+                    Private Sub Load(bytes As Byte())
+                        Dim cert = New Cert(bytes)
+                    End Sub
+                End Class
+                """,
+                GetBasicResultAt(10, 20, 5, 31, "Sub X509Certificate2.New(rawData As Byte())", "Sub TestClass.Load(bytes As Byte())", "Byte()", "Sub TestClass.Emit()"));
+        }
+
+        [TestMethod]
         public async Task Test_Source_ContantByteArray_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
