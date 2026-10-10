@@ -50,8 +50,12 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(51);
+        endpoints.Should().HaveCount(52);
         endpoints.Where(endpoint => endpoint.Route.Contains("DotNetWatch")).Should().HaveCount(9);
+        endpoints.Should().ContainSingle(endpoint =>
+            endpoint.Route == "_framework/dotnet-browser-tools/hot-reload-settings.json" &&
+            endpoint.Order == "-1001" &&
+            endpoint.ResponseHeaders.Any(header => header.Name == "Cache-Control" && header.Value == "no-store"));
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(2);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));

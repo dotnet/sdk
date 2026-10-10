@@ -7,7 +7,7 @@
 // only this public half is ever served, and the private half is read exclusively by dotnet-watch.
 //
 // This module is produced when Hot Reload build outputs are enabled and never reaches publish
-// output. The initializer imports it only after the provider reports that Hot Reload is available.
+// output. The initializer imports it only after the application-hosted settings enable Hot Reload.
 // </auto-generated>
 
 import { startBrowserTools } from './__CLIENT_MODULE__';

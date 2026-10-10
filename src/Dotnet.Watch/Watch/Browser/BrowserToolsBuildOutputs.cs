@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
@@ -41,6 +42,9 @@ internal sealed class BrowserToolsBuildOutputs
 
     public const string PublicKeyFileName = "browser-tools-key.public.json";
     public const string PrivateKeyFileName = "browser-tools-key.private.json";
+    public const string SettingsFileName = "hot-reload-settings.json";
+    private static readonly byte[] s_enabledSettings = Encoding.UTF8.GetBytes("{ \"hotReload\": true }" + Environment.NewLine);
+    private static readonly byte[] s_disabledSettings = Encoding.UTF8.GetBytes("{ \"hotReload\": false }" + Environment.NewLine);
 
     private const int SupportedKeyDocumentVersion = 1;
     private const string SupportedKeyAlgorithm = "RSA-OAEP-SHA256";
@@ -52,6 +56,7 @@ internal sealed class BrowserToolsBuildOutputs
     public string ProjectPath { get; }
     public string PublicKeyPath { get; }
     public string PrivateKeyPath { get; }
+    public string SettingsPath { get; }
 
     private BrowserToolsBuildOutputs(string projectPath, string directory, ILogger logger)
     {
@@ -59,6 +64,38 @@ internal sealed class BrowserToolsBuildOutputs
         ProjectPath = projectPath;
         PublicKeyPath = Path.Combine(directory, PublicKeyFileName);
         PrivateKeyPath = Path.Combine(directory, PrivateKeyFileName);
+        SettingsPath = Path.Combine(directory, SettingsFileName);
+    }
+
+    public void EnableHotReload()
+        => WriteSettings(s_enabledSettings);
+
+    public void DisableHotReload()
+        => WriteSettings(s_disabledSettings);
+
+    private void WriteSettings(byte[] settings)
+    {
+        byte[] current;
+        try
+        {
+            current = File.ReadAllBytes(SettingsPath);
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            throw Fail($"'{SettingsFileName}' could not be read ({e.GetType().Name})");
+        }
+
+        if (!current.AsSpan().SequenceEqual(settings))
+        {
+            try
+            {
+                File.WriteAllBytes(SettingsPath, settings);
+            }
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+            {
+                throw Fail($"'{SettingsFileName}' could not be updated ({e.GetType().Name})");
+            }
+        }
     }
 
     /// <summary>
