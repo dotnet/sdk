@@ -2533,6 +2533,14 @@ To display a value, specify the corresponding command-line option without provid
   <data name="WorkloadNotRecognized" xml:space="preserve">
     <value>Workload ID {0} is not recognized.</value>
   </data>
+  <data name="WorkloadPackageSourceIsNotANuGetFeed" xml:space="preserve">
+    <value>The package source '{0}' is not a NuGet feed. Make sure the value passed to --source is the URL of a NuGet feed, for example 'https://api.nuget.org/v3/index.json'.</value>
+    <comment>{Locked="--source"}</comment>
+  </data>
+  <data name="WorkloadPackageSourceCouldNotBeLoaded" xml:space="preserve">
+    <value>Unable to load the package source '{0}'. Make sure the value passed to --source is the URL of a NuGet feed and that it can be reached. {1}</value>
+    <comment>{Locked="--source"}</comment>
+  </data>
   <data name="AspireWorkloadDeprecated" xml:space="preserve">
     <value>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</value>
   </data>
