@@ -8,10 +8,13 @@ using System.Collections.Immutable;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class WebServerHost(IDisposable listener, ImmutableArray<string> endPoints, ImmutableArray<string> httpEndPoints) : IDisposable
+internal sealed class WebServerHost(IDisposable listener, ImmutableArray<string> webSocketEndPoints, ImmutableArray<string> httpEndPoints) : IDisposable
 {
-    public ImmutableArray<string> EndPoints
-        => endPoints;
+    /// <summary>
+    /// Web socket endpoints.
+    /// </summary>
+    public ImmutableArray<string> WebSocketEndPoints
+        => webSocketEndPoints;
 
     /// <summary>
     /// Loopback HTTP addresses the browser tools provider listens on.

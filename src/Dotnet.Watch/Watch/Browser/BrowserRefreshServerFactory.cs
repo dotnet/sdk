@@ -20,14 +20,14 @@ namespace Microsoft.DotNet.Watch;
 /// build wrote to its intermediate output. Loading on connect allows the server to start before
 /// <c>dotnet run</c> builds the application and naturally observes key rotation after a clean.
 /// </summary>
-internal sealed class BrowserRefreshServerFactory : IDisposable
+internal sealed class BrowserRefreshServerFactory : IAsyncDisposable
 {
     private readonly Lock _serversGuard = new();
 
     // Null value is cached for project instances that are not web projects or do not support browser refresh for other reason.
     private readonly Dictionary<ProjectInstanceId, BrowserRefreshServer?> _servers = [];
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         BrowserRefreshServer?[] serversToDispose;
 
@@ -39,7 +39,10 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
         foreach (var server in serversToDispose)
         {
-            server?.Dispose();
+            if (server != null)
+            {
+                await server.DisposeAsync();
+            }
         };
     }
 

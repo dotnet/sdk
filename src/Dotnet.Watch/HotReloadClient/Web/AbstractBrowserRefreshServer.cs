@@ -32,7 +32,7 @@ internal abstract class AbstractBrowserRefreshServer(
     string middlewareAssemblyPath,
     bool useGatewayProxy,
     bool suppressTimeouts)
-    : IDisposable
+    : IAsyncDisposable
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
@@ -55,7 +55,7 @@ internal abstract class AbstractBrowserRefreshServer(
     // initialized by StartAsync
     private WebServerHost? _lazyHost;
 
-    public virtual void Dispose()
+    public virtual async ValueTask DisposeAsync()
     {
         BrowserConnection[] connectionsToDispose;
         lock (_stateGuard)
@@ -70,10 +70,9 @@ internal abstract class AbstractBrowserRefreshServer(
         }
 
         _lazyHost?.Dispose();
-
     }
 
-    protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig webSocketConfig, CancellationToken cancellationToken);
+    protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig config, CancellationToken cancellationToken);
 
     public ILogger Logger
         => logger;
@@ -127,7 +126,7 @@ internal abstract class AbstractBrowserRefreshServer(
         }
 
         _lazyHost = await CreateAndStartHostAsync(webSocketConfig, cancellationToken);
-        logger.Log(LogEvents.RefreshServerRunningAt, string.Join(",", _lazyHost.EndPoints));
+        logger.Log(LogEvents.RefreshServerRunningAt, string.Join(",", _lazyHost.WebSocketEndPoints));
     }
 
     /// <summary>
@@ -293,7 +292,7 @@ internal abstract class AbstractBrowserRefreshServer(
         }
         finally
         {
-            progressCancellationSource.Cancel();
+            await progressCancellationSource.CancelAsync();
         }
 
         if (connectionAttemptReported)
@@ -477,7 +476,7 @@ internal abstract class AbstractBrowserRefreshServer(
         {
             // Live messages must not overtake the session initialization message, which carries the
             // updates produced before the connection was established.
-            if (!await connection.WaitForInitializationAsync(cancellationToken))
+            if (!await connection.Initialized.Task.WaitAsync(cancellationToken))
             {
                 return (received: false, result: null, responded: false);
             }

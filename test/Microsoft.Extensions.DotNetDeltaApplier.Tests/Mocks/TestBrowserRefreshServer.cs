@@ -84,9 +84,9 @@ internal sealed class TestBrowserRefreshServer : BrowserRefreshServer
     protected override ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig config, CancellationToken cancellationToken)
         => throw new NotImplementedException();
 
-    public override void Dispose()
+    public override async ValueTask DisposeAsync()
     {
-        base.Dispose();
+        await base.DisposeAsync();
         _key.Dispose();
     }
 

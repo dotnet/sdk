@@ -14,7 +14,7 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task ClearCache_Get_ReturnsNoContentAndClearSiteData()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
 
         var (context, body) = await InvokeAsync(
             server,
@@ -32,7 +32,7 @@ public class BrowserToolsEndpointRouterTests
     [DataRow("HEAD")]
     public async Task KnownEndpoint_NonGetMethod_ReturnsMethodNotAllowed(string method)
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
 
         var (context, body) = await InvokeAsync(
             server,
@@ -55,7 +55,7 @@ public class BrowserToolsEndpointRouterTests
     [DataRow("/unknown")]
     public async Task RemovedOrUnknownGet_ReturnsNotFound(string route)
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
 
         var (context, body) = await InvokeAsync(
             server,
@@ -68,7 +68,7 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_NonWebSocketRequest_ReturnsBadRequest()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
 
         var (context, body) = await InvokeAsync(
             server, 
@@ -81,7 +81,7 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_WebSocketWithoutSharedSecret_IsRejectedBeforeAcceptance()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         var context = await ConnectAsync(server, subProtocol: null);
 
         AssertResponse(context, StatusCodes.Status400BadRequest);
@@ -92,7 +92,7 @@ public class BrowserToolsEndpointRouterTests
     [DataRow("AAAA")]
     public async Task Connect_WebSocketWithMalformedSharedSecret_IsRejectedBeforeAcceptance(string subProtocol)
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         var context = await ConnectAsync(server, subProtocol);
 
         AssertResponse(context, StatusCodes.Status400BadRequest);
@@ -101,7 +101,7 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_KeyLoadingFailure_IsReportedBeforeAcceptance()
     {
-        using var server = new TestBrowserRefreshServer(
+        await using var server = new TestBrowserRefreshServer(
             static () => null);
 
         var context = await ConnectAsync(server, "ciphertext");
@@ -117,7 +117,7 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_WebSocketWithForeignKey_IsRejectedBeforeAcceptance()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         using var foreignKey = new SharedSecretProvider();
 
         var context = await ConnectAsync(server, EncryptSecret(foreignKey));
@@ -132,7 +132,7 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_WebSocketWithMatchingKey_ReachesAcceptance()
     {
-        using var server = new TestBrowserRefreshServer();
+        await using var server = new TestBrowserRefreshServer();
         var feature = new TestWebSocketFeature();
 
         // The test feature refuses to complete the upgrade, so reaching it is the observable signal

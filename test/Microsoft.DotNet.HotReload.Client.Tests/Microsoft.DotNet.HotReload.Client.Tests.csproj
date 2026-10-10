@@ -16,6 +16,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Contracts" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" VersionOverride="$(MicrosoftVisualStudioThreadingToolsetPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +26,6 @@
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Moq" />
   </ItemGroup>

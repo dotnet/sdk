@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 /// before the connection is upgraded so it never gets one at all.
 /// </summary>
 [TestClass]
-public class BrowserToolsEndpointRouterTests : IDisposable
+public class BrowserToolsEndpointRouterTests : IAsyncDisposable
 {
     private const string ConnectPath = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath;
     private const string ClearCachePath = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClearCachePath;
@@ -44,10 +44,10 @@ public class BrowserToolsEndpointRouterTests : IDisposable
             });
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         _server?.Dispose();
-        _browserServer.Dispose();
+        await _browserServer.DisposeAsync();
         _sharedSecretProvider.Dispose();
     }
 
