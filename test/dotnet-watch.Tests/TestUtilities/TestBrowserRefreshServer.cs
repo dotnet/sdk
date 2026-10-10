@@ -20,6 +20,6 @@ internal class TestBrowserRefreshServer(
 {
     public Func<WebSocketConfig, WebServerHost>? CreateAndStartHostImpl;
 
-    protected override ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig webSocketConfig, CancellationToken cancellationToken)
+    private protected override ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig webSocketConfig, CancellationToken cancellationToken)
         => ValueTask.FromResult((CreateAndStartHostImpl ?? throw new NotImplementedException())(webSocketConfig));
 }

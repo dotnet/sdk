@@ -9,11 +9,10 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 [TestClass]
 public class BrowserRefreshServerTests
 {
-    class TestListener : IDisposable
+    private class TestListener : IAsyncDisposable
     {
-        public void Dispose()
-        {
-        }
+        public ValueTask DisposeAsync()
+            => ValueTask.CompletedTask;
     }
 
     private static async ValueTask<TestBrowserRefreshServer> CreateStartedServerAsync(
@@ -51,7 +50,7 @@ public class BrowserRefreshServerTests
             {"success":false,"log":[{"message":"Unable to apply managed code updates because this build of the app does not support runtime metadata updates.","severity":2}]}
             """u8;
 
-        var success = AbstractBrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
+        var success = BrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
 
         Assert.IsFalse(success);
         Assert.IsTrue(logger.HasError);
@@ -66,7 +65,7 @@ public class BrowserRefreshServerTests
             {"success":true,"log":[]}
             """u8;
 
-        var success = AbstractBrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
+        var success = BrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
 
         Assert.IsTrue(success);
         Assert.IsFalse(logger.HasError);

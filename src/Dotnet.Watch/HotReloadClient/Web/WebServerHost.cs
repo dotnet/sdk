@@ -9,19 +9,19 @@ using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class WebServerHost(IAsyncDisposable listener, ImmutableArray<string> webSocketEndPoints, ImmutableArray<string> httpEndPoints) : IAsyncDisposable
+internal sealed class WebServerHost(IAsyncDisposable listener, ImmutableArray<string> webSocketEndpoints, ImmutableArray<string> httpEndpoints) : IAsyncDisposable
 {
     /// <summary>
     /// Web socket endpoints.
     /// </summary>
-    public ImmutableArray<string> WebSocketEndPoints
-        => webSocketEndPoints;
+    public ImmutableArray<string> WebSocketEndpoints
+        => webSocketEndpoints;
 
     /// <summary>
     /// Loopback HTTP addresses the browser tools provider listens on.
     /// </summary>
-    public ImmutableArray<string> HttpEndPoints
-        => httpEndPoints;
+    public ImmutableArray<string> HttpEndpoints
+        => httpEndpoints;
 
     public ValueTask DisposeAsync()
         => listener.DisposeAsync();
