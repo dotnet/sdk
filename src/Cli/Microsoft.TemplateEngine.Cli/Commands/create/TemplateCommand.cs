@@ -187,7 +187,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             cancellationToken.ThrowIfCancellationRequested();
 
             Task<NewCommandStatus> instantiateTask = invoker.InvokeTemplateAsync(args, cancellationToken);
-            Task<(string Id, string Version, string Provider)> builtInPackageCheck = packageCoordinator.ValidateBuiltInPackageAvailabilityAsync(args.Template, cancellationToken);
+            Task<(string Id, string Version, string Provider)> builtInPackageCheck = args.NoUpdateCheck
+                ? Task.FromResult<(string, string, string)>(default)
+                : packageCoordinator.ValidateBuiltInPackageAvailabilityAsync(args.Template, cancellationToken);
             Task<CheckUpdateResult?> checkForUpdateTask = packageCoordinator.CheckUpdateForTemplate(args, cancellationToken);
 
             Task[] tasksToWait = [instantiateTask, builtInPackageCheck, checkForUpdateTask];
