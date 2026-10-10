@@ -34,7 +34,9 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 internal class WindowsMsiManifestInstaller(
     INuGetPackageDownloader nugetPackageDownloader,
     ISetupLogger? log = null,
-    Action<uint, string>? logError = null) : IWorkloadManifestInstaller
+    Action<uint, string>? logError = null,
+    Action<string>? verifyPackageSignature = null,
+    Func<string, string, uint>? installProduct = null) : IWorkloadManifestInstaller
 {
     private static readonly object s_msiAdminInstallLock = new();
 
@@ -112,6 +114,8 @@ internal class WindowsMsiManifestInstaller(
                 string resolvedMsiPath = msiPath!;
                 string msiExtractionPath = Path.Combine(extractionPath, "msi");
 
+                verifyPackageSignature?.Invoke(resolvedMsiPath);
+
                 lock (s_msiAdminInstallLock)
                 {
                     string adminInstallLog = GetMsiLogNameForAdminInstall(resolvedMsiPath);
@@ -120,7 +124,9 @@ internal class WindowsMsiManifestInstaller(
 
                     ConfigureInstall(adminInstallLog);
 
-                    var result = WindowsInstaller.InstallProduct(resolvedMsiPath, $"TARGETDIR={msiExtractionPath} ACTION=ADMIN");
+                    var installProperties = $"TARGETDIR={msiExtractionPath} ACTION=ADMIN";
+                    var result = installProduct?.Invoke(resolvedMsiPath, installProperties)
+                        ?? WindowsInstaller.InstallProduct(resolvedMsiPath, installProperties);
 
                     if (result != Error.SUCCESS)
                     {
