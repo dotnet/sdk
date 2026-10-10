@@ -5,10 +5,11 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class WebServerHost(IDisposable listener, ImmutableArray<string> webSocketEndPoints, ImmutableArray<string> httpEndPoints) : IDisposable
+internal sealed class WebServerHost(IAsyncDisposable listener, ImmutableArray<string> webSocketEndPoints, ImmutableArray<string> httpEndPoints) : IAsyncDisposable
 {
     /// <summary>
     /// Web socket endpoints.
@@ -22,6 +23,6 @@ internal sealed class WebServerHost(IDisposable listener, ImmutableArray<string>
     public ImmutableArray<string> HttpEndPoints
         => httpEndPoints;
 
-    public void Dispose()
-        => listener.Dispose();
+    public ValueTask DisposeAsync()
+        => listener.DisposeAsync();
 }

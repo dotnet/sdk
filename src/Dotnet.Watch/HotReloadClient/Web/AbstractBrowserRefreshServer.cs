@@ -55,7 +55,7 @@ internal abstract class AbstractBrowserRefreshServer(
     // initialized by StartAsync
     private WebServerHost? _lazyHost;
 
-    public virtual async ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         BrowserConnection[] connectionsToDispose;
         lock (_stateGuard)
@@ -69,7 +69,10 @@ internal abstract class AbstractBrowserRefreshServer(
             connection.Dispose();
         }
 
-        _lazyHost?.Dispose();
+        if (_lazyHost is { } host)
+        {
+            await host.DisposeAsync();
+        }
     }
 
     protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig config, CancellationToken cancellationToken);

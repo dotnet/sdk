@@ -3,8 +3,6 @@
 
 #nullable enable
 
-#if NET
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -13,7 +11,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
@@ -36,10 +33,19 @@ internal class BrowserRefreshServer(
     {
         // The browser reaches the provider through the application's own origin, so the provider only
         // listens on loopback. DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME no longer applies to this hop.
+        webSocketConfig = webSocketConfig.WithHostName(null);
+
+#if NET
         var server = await KestrelWebSocketServer.StartServerAsync(
-            webSocketConfig.WithHostName(null),
+            webSocketConfig,
             context => HandleRequestAsync(webSocketConfig, context),
             cancellationToken);
+#else
+        var server = NetFrameworkWebSocketServer.StartServer(
+            webSocketConfig,
+            HandleRequestAsync,
+            Logger);
+#endif
 
         // URLs are only available after the server has started.
         return new WebServerHost(server, server.ServerUrls, server.HttpServerUrls);
@@ -144,5 +150,3 @@ internal class BrowserRefreshServer(
         await connection.Disconnected.Task;
     }
 }
-
-#endif

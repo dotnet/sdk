@@ -26,12 +26,18 @@ namespace Microsoft.DotNet.HotReload;
 /// Sealed WebSocket server using Kestrel.
 /// Uses a request handler delegate for all WebSocket handling.
 /// </summary>
-internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> serverUrls, ImmutableArray<string> httpServerUrls) : IDisposable
+internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> serverUrls, ImmutableArray<string> httpServerUrls) : IDisposable, IAsyncDisposable
 {
     private static bool? s_lazyTlsSupported;
 
     public void Dispose()
         => host.Dispose();
+
+    public ValueTask DisposeAsync()
+    {
+        Dispose();
+        return default;
+    }
 
     public ImmutableArray<string> ServerUrls
         => serverUrls;
