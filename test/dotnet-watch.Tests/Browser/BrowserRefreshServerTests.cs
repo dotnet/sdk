@@ -17,17 +17,20 @@ public class BrowserRefreshServerTests
     }
 
     private static async ValueTask<TestBrowserRefreshServer> CreateStartedServerAsync(
-        Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
+        string middlewareAssemblyPath,
+        bool useGatewayProxy,
         LogLevel enabledLogLevel = LogLevel.Information)
     {
-        var server = new TestBrowserRefreshServer(configureLaunchEnvironment)
+        var config = new WebSocketConfig(port: 0, securePort: null, hostName: null, additionalAllowedOrigins: []);
+
+        var server = new TestBrowserRefreshServer(middlewareAssemblyPath, useGatewayProxy)
         {
-            CreateAndStartHostImpl = () => new WebServerHost(new TestListener(), ["ws://test.endpoint"], ["http://test.endpoint"])
+            CreateAndStartHostImpl = _ => new WebServerHost(new TestListener(), ["ws://test.endpoint"], ["http://test.endpoint"])
         };
 
         ((TestLogger)server.Logger).IsEnabledImpl = level => level == enabledLogLevel;
 
-        await server.StartAsync(CancellationToken.None);
+        await server.StartAsync(config, CancellationToken.None);
         return server;
     }
 
@@ -70,32 +73,15 @@ public class BrowserRefreshServerTests
     }
 
     [TestMethod]
-    public async Task ConfigureLaunchEnvironment_DelegatesToAppModel()
-    {
-        AbstractBrowserRefreshServer? observedServer = null;
-
-        var server = await CreateStartedServerAsync((environment, s) =>
-        {
-            observedServer = s;
-            environment["CUSTOM"] = s.ProviderAddress.AbsoluteUri;
-        });
-
-        var envBuilder = new Dictionary<string, string>();
-        server.ConfigureLaunchEnvironment(envBuilder);
-
-        Assert.AreSame(server, observedServer);
-        AssertEx.SequenceEqual(["CUSTOM=http://test.endpoint/"], envBuilder.Select(e => $"{e.Key}={e.Value}"));
-    }
-
-    [TestMethod]
     [CombinatorialData]
-    public async Task HostingStartupEnvironment(LogLevel logLevel)
+    public async Task HostingStartupEnvironment(LogLevel logLevel, bool useGatewayProxy)
     {
         var middlewarePath = Path.GetTempPath();
         var middlewareFileName = Path.GetFileNameWithoutExtension(middlewarePath);
 
         var server = await CreateStartedServerAsync(
-            (environment, s) => WebApplicationAppModel.AddHostingStartupEnvironment(environment, s, middlewarePath),
+            middlewarePath,
+            useGatewayProxy,
             enabledLogLevel: logLevel);
 
         var envBuilder = new Dictionary<string, string>();
@@ -113,28 +99,17 @@ public class BrowserRefreshServerTests
             expected.Add("Logging__LogLevel__Microsoft.AspNetCore.Watch=Debug");
         }
 
-        AssertEx.SequenceEqual(expected.Order(), envBuilder.OrderBy(e => e.Key).Select(e => $"{e.Key}={e.Value}"));
-    }
-
-    /// <summary>
-    /// A standalone WebAssembly app is served by blazor-gateway, which does not activate hosting
-    /// startups. Without the proxy route the provider routes fall through to the SPA fallback.
-    /// </summary>
-    [TestMethod]
-    public async Task GatewayProxyEnvironment()
-    {
-        var server = await CreateStartedServerAsync(BlazorWebAssemblyAppModel.AddGatewayProxyEnvironment);
-
-        var envBuilder = new Dictionary<string, string>();
-        server.ConfigureLaunchEnvironment(envBuilder);
-
-        AssertEx.SequenceEqual(
+        if (useGatewayProxy)
+        {
+            expected.AddRange(
             [
                 "ReverseProxy__Clusters__dotnet-browser-tools__Destinations__provider__Address=http://test.endpoint/",
                 "ReverseProxy__Routes__dotnet-browser-tools__ClusterId=dotnet-browser-tools",
                 "ReverseProxy__Routes__dotnet-browser-tools__Match__Path=/_framework/dotnet-browser-tools/{**catch-all}",
                 "ReverseProxy__Routes__dotnet-browser-tools__Order=-1000",
-            ],
-            envBuilder.OrderBy(e => e.Key, StringComparer.Ordinal).Select(e => $"{e.Key}={e.Value}"));
+            ]);
+        }
+
+        AssertEx.SequenceEqual(expected.Order(), envBuilder.OrderBy(e => e.Key).Select(e => $"{e.Key}={e.Value}"));
     }
 }

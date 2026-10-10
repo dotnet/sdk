@@ -3,6 +3,7 @@
 
 using System.Security.Cryptography;
 using System.Text.Json;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -38,7 +39,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     }
 
     private BrowserToolsBuildOutputs CreateOutputs()
-        => BrowserToolsBuildOutputs.CreateForTesting("test.csproj", _directory, NullLogger.Instance);
+        => BrowserToolsBuildOutputs.CreateForTesting(_directory, NullLogger.Instance);
 
     private RSA WriteValidKeyPair()
     {
@@ -87,8 +88,9 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         using var rsa = WriteValidKeyPair();
         var expectedPublicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
 
-        using var sessionKey = CreateOutputs().CreateSessionKey();
+        using var sessionKey = CreateOutputs().TryCreateSessionKey();
 
+        Assert.IsNotNull(sessionKey);
         Assert.AreEqual(expectedPublicKey, sessionKey.GetPublicKey());
 
         // The provider decrypts the secret the browser encrypts with the pinned public key.
@@ -116,7 +118,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         }
 
         var outputs = CreateOutputs();
-        Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(() => outputs.CreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey());
     }
 
     [TestMethod]
@@ -131,7 +133,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         File.WriteAllText(_privateKeyPath, content);
 
         var outputs = CreateOutputs();
-        Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(() => outputs.CreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey());
     }
 
     /// <summary>
@@ -149,7 +151,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         File.WriteAllText(_privateKeyPath, mismatchedPrivate);
 
         var outputs = CreateOutputs();
-        Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(() => outputs.CreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey());
     }
 
     /// <summary>
@@ -185,7 +187,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
             """);
 
         var outputs = CreateOutputs();
-        Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(() => outputs.CreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey());
     }
 
 }

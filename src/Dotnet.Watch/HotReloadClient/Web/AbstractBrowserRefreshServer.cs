@@ -26,17 +26,17 @@ namespace Microsoft.DotNet.HotReload;
 /// Associated with a project instance.
 /// </summary>
 internal abstract class AbstractBrowserRefreshServer(
-    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
-    Func<SharedSecretProvider> sessionKeyFactory,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
-    Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
+    Func<int, ILogger> connectionAgentLoggerFactory,
+    string middlewareAssemblyPath,
+    bool useGatewayProxy,
+    bool suppressTimeouts)
+    : IDisposable
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     private static int s_lastConnectionId;
-
-    private Func<SharedSecretProvider> _sessionKeyFactory = sessionKeyFactory;
 
     /// <summary>
     /// Guards the connection list, the retained updates and the baseline epoch together.
@@ -73,8 +73,7 @@ internal abstract class AbstractBrowserRefreshServer(
 
     }
 
-    protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken);
-    protected abstract bool SuppressTimeouts { get; }
+    protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig webSocketConfig, CancellationToken cancellationToken);
 
     public ILogger Logger
         => logger;
@@ -120,14 +119,14 @@ internal abstract class AbstractBrowserRefreshServer(
         }
     }
 
-    public async ValueTask StartAsync(CancellationToken cancellationToken)
+    public async ValueTask StartAsync(WebSocketConfig webSocketConfig, CancellationToken cancellationToken)
     {
         if (_lazyHost != null)
         {
             throw new InvalidOperationException("Server already started");
         }
 
-        _lazyHost = await CreateAndStartHostAsync(cancellationToken);
+        _lazyHost = await CreateAndStartHostAsync(webSocketConfig, cancellationToken);
         logger.Log(LogEvents.RefreshServerRunningAt, string.Join(",", _lazyHost.EndPoints));
     }
 
@@ -136,10 +135,37 @@ internal abstract class AbstractBrowserRefreshServer(
     /// How that is done depends on the host, so the app model supplies the implementation.
     /// </summary>
     public void ConfigureLaunchEnvironment(IDictionary<string, string> builder)
-        => configureLaunchEnvironment(builder, this);
+    {
+        var providerUrl = ProviderAddress.AbsoluteUri;
 
-    internal void SetSessionKeyFactory(Func<SharedSecretProvider> value)
-        => Volatile.Write(ref _sessionKeyFactory, value);
+        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadProviderAddress] = providerUrl;
+
+        // Loading the assembly as a startup hook makes the out-of-application BrowserRefresh
+        // assembly resolvable when ASP.NET Core activates its hosting startup by simple name.
+        builder.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
+        builder.InsertListItem(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies, Path.GetFileNameWithoutExtension(middlewareAssemblyPath), MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
+
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            // enable debug logging from the hosting startup:
+            builder[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
+        }
+
+        // A standalone WebAssembly app is served by the Blazor Gateway, a YARP based
+        // host that does not activate ASP.NET Core hosting startups. Reserve a proxy route on it that
+        // forwards RoutePrefix to the provider. The hosting startup
+        // configuration above is still applied because older target frameworks
+        // are served by blazor-devserver, which is a regular ASP.NET Core host.
+        if (useGatewayProxy)
+        {
+            const string routeAndClusterName = "dotnet-browser-tools";
+
+            builder[$"ReverseProxy__Routes__{routeAndClusterName}__ClusterId"] = routeAndClusterName;
+            builder[$"ReverseProxy__Routes__{routeAndClusterName}__Order"] = "-1000";
+            builder[$"ReverseProxy__Routes__{routeAndClusterName}__Match__Path"] = BrowserToolsProtocol.RoutePrefix + "/{**catch-all}";
+            builder[$"ReverseProxy__Clusters__{routeAndClusterName}__Destinations__provider__Address"] = providerUrl;
+        }
+    }
 
     /// <summary>
     /// Takes ownership of the <paramref name="clientSocket"/>.
@@ -219,62 +245,6 @@ internal abstract class AbstractBrowserRefreshServer(
         return data.Success;
     }
 
-#if NET
-    internal async Task AcceptBrowserConnectionAsync(HttpContext context)
-    {
-        if (!context.WebSockets.IsWebSocketRequest)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return;
-        }
-
-        var subProtocol = context.WebSockets.WebSocketRequestedProtocols is [var requestedSubProtocol]
-            ? requestedSubProtocol
-            : null;
-        if (subProtocol == null)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return;
-        }
-
-        SharedSecretProvider sessionKey;
-        try
-        {
-            sessionKey = Volatile.Read(ref _sessionKeyFactory)();
-        }
-        catch (Exception e)
-        {
-            logger.LogError(e, "Unable to load the browser tools session key.");
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            return;
-        }
-
-        string sharedSecret;
-        using (sessionKey)
-        {
-            // The browser generated secret, encrypted with the build-pinned public key, is the only
-            // credential. Reject before upgrading the connection so an unauthenticated peer never gets
-            // a socket.
-            try
-            {
-                sharedSecret = sessionKey.DecryptSecret(WebUtility.UrlDecode(subProtocol));
-            }
-            catch (Exception e)
-            {
-                logger.LogDebug("Rejecting a browser connection with an invalid encrypted secret: {Message}", e.Message);
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-        }
-
-        var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
-
-        var connection = OnBrowserConnected(clientSocket, sharedSecret);
-        await InitializeBrowserConnectionAsync(connection, context.RequestAborted);
-        await connection.Disconnected.Task;
-    }
-#endif
-
     /// <summary>
     /// For testing.
     /// </summary>
@@ -301,7 +271,7 @@ internal abstract class AbstractBrowserRefreshServer(
             {
                 while (!progressCancellationSource.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(SuppressTimeouts ? TimeSpan.MaxValue : reportDelayInSeconds, progressCancellationSource.Token);
+                    await Task.Delay(suppressTimeouts ? TimeSpan.MaxValue : reportDelayInSeconds, progressCancellationSource.Token);
 
                     connectionAttemptReported = true;
                     reportDelayInSeconds = nextReportSeconds;

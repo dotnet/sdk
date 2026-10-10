@@ -5,24 +5,21 @@ using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-internal class TestBrowserRefreshServer : AbstractBrowserRefreshServer
+internal class TestBrowserRefreshServer(
+    string middlewareAssemblyPath,
+    bool useGatewayProxy,
+    Func<SharedSecretProvider?>? sessionKeyFactory = null)
+    : BrowserRefreshServer(
+        logger: new TestLogger(),
+        connectionServerLoggerFactory: _ => new TestLogger(),
+        connectionAgentLoggerFactory: _ => new TestLogger(),
+        sessionKeyFactory ?? new(static () => new SharedSecretProvider()),
+        middlewareAssemblyPath,
+        useGatewayProxy,
+        suppressTimeouts: true)
 {
-    public Func<WebServerHost>? CreateAndStartHostImpl;
+    public Func<WebSocketConfig, WebServerHost>? CreateAndStartHostImpl;
 
-    public TestBrowserRefreshServer(
-        Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
-        Func<SharedSecretProvider> sessionKeyFactory)
-        : base(configureLaunchEnvironment, sessionKeyFactory, new TestLogger(), _ => new TestLogger(), _ => new TestLogger())
-    {
-    }
-
-    public TestBrowserRefreshServer(Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment)
-        : this(configureLaunchEnvironment, static () => new SharedSecretProvider())
-    {
-    }
-
-    protected override ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
-        => ValueTask.FromResult((CreateAndStartHostImpl ?? throw new NotImplementedException())());
-
-    protected override bool SuppressTimeouts => true;
+    protected override ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig webSocketConfig, CancellationToken cancellationToken)
+        => ValueTask.FromResult((CreateAndStartHostImpl ?? throw new NotImplementedException())(webSocketConfig));
 }

@@ -15,10 +15,9 @@ public class BrowserToolsEndpointRouterTests
     public async Task ClearCache_Get_ReturnsNoContentAndClearSiteData()
     {
         using var server = new TestBrowserRefreshServer();
-        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
-            router,
+            server,
             HttpMethods.Get,
             BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClearCachePath);
 
@@ -34,10 +33,9 @@ public class BrowserToolsEndpointRouterTests
     public async Task KnownEndpoint_NonGetMethod_ReturnsMethodNotAllowed(string method)
     {
         using var server = new TestBrowserRefreshServer();
-        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
-            router,
+            server,
             method,
             BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClearCachePath);
 
@@ -58,10 +56,9 @@ public class BrowserToolsEndpointRouterTests
     public async Task RemovedOrUnknownGet_ReturnsNotFound(string route)
     {
         using var server = new TestBrowserRefreshServer();
-        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
-            router,
+            server,
             HttpMethods.Get,
             BrowserToolsProtocol.RoutePrefix + route);
 
@@ -72,10 +69,9 @@ public class BrowserToolsEndpointRouterTests
     public async Task Connect_NonWebSocketRequest_ReturnsBadRequest()
     {
         using var server = new TestBrowserRefreshServer();
-        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
-            router,
+            server, 
             HttpMethods.Get,
             BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath);
 
@@ -106,7 +102,7 @@ public class BrowserToolsEndpointRouterTests
     public async Task Connect_KeyLoadingFailure_IsReportedBeforeAcceptance()
     {
         using var server = new TestBrowserRefreshServer(
-            static () => throw new InvalidOperationException("Unable to read key."));
+            static () => null);
 
         var context = await ConnectAsync(server, "ciphertext");
 
@@ -159,9 +155,9 @@ public class BrowserToolsEndpointRouterTests
         string? subProtocol,
         TestWebSocketFeature? feature = null)
     {
-        var router = new BrowserToolsEndpointRouter(server);
         var context = new DefaultHttpContext();
         context.Features.Set<IHttpWebSocketFeature>(feature ?? new TestWebSocketFeature());
+        context.Request.Headers.Origin = "http://localhost";
         context.Request.Method = HttpMethods.Get;
         context.Request.Path = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath;
         context.Response.Body = new MemoryStream();
@@ -171,21 +167,26 @@ public class BrowserToolsEndpointRouterTests
             context.Request.Headers.SecWebSocketProtocol = subProtocol;
         }
 
-        await router.HandleAsync(context);
+        var config = new WebSocketConfig(port: 0, securePort: 0, hostName: null, additionalAllowedOrigins: []);
+            
+        await server.HandleRequestAsync(config, context);
         return context;
     }
 
     private static async Task<(DefaultHttpContext Context, byte[] Body)> InvokeAsync(
-        BrowserToolsEndpointRouter router,
+        TestBrowserRefreshServer server,
         string method,
         string path)
     {
         var context = new DefaultHttpContext();
+        context.Request.Headers.Origin = "http://localhost";
         context.Request.Method = method;
         context.Request.Path = path;
         context.Response.Body = new MemoryStream();
 
-        await router.HandleAsync(context);
+        var config = new WebSocketConfig(port: 0, securePort: 0, hostName: null, additionalAllowedOrigins: []);
+
+        await server.HandleRequestAsync(config, context);
 
         context.Response.Body.Position = 0;
         return (context, ((MemoryStream)context.Response.Body).ToArray());

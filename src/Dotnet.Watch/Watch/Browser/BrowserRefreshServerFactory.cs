@@ -49,30 +49,14 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         bool hasExistingServer;
 
         var key = projectNode.ProjectInstance.GetId();
-        var browserToolsProject = appModel.BrowserToolsProject;
 
         lock (_serversGuard)
         {
             hasExistingServer = _servers.TryGetValue(key, out server);
 
-            if (server != null)
-            {
-                if (BrowserToolsBuildOutputs.TryGetFor(browserToolsProject, server.Logger) is not { } outputs)
-                {
-                    server.Dispose();
-                    _servers.Remove(key);
-                    server = null;
-                    hasExistingServer = false;
-                }
-                else
-                {
-                    server.UpdateSessionKeyFactory(outputs.CreateSessionKey);
-                }
-            }
-
             if (!hasExistingServer)
             {
-                server = appModel.TryCreateRefreshServer(browserToolsProject);
+                server = appModel.TryCreateRefreshServer();
                 _servers.Add(key, server);
             }
         }
@@ -85,8 +69,10 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
         if (!hasExistingServer)
         {
+            var webSocketConfig = await appModel.GetRefreshServerWebSocketConfigAsync(cancellationToken);
+    
             // Start the server we just created:
-            await server.StartAsync(cancellationToken);
+            await server.StartAsync(webSocketConfig, cancellationToken);
         }
 
         return server;

@@ -34,11 +34,14 @@ public class BrowserToolsEndpointRouterTests : IDisposable
         using var rsa = RSA.Create(2048);
         _sessionKeyParameters = rsa.ExportParameters(includePrivateParameters: true);
         _sharedSecretProvider = new SharedSecretProvider(_sessionKeyParameters);
-        _browserServer = new TestBrowserRefreshServer((_, _) => { }, () =>
-        {
-            _sessionKeyLoads++;
-            return new SharedSecretProvider(_sessionKeyParameters);
-        });
+        _browserServer = new TestBrowserRefreshServer(
+            middlewareAssemblyPath: Path.GetTempPath(),
+            useGatewayProxy: true,
+            sessionKeyFactory: () =>
+            {
+                _sessionKeyLoads++;
+                return new SharedSecretProvider(_sessionKeyParameters);
+            });
     }
 
     public void Dispose()
@@ -50,10 +53,11 @@ public class BrowserToolsEndpointRouterTests : IDisposable
 
     private async ValueTask<Uri> StartRouterAsync()
     {
-        var router = new BrowserToolsEndpointRouter(_browserServer);
+        var config = new WebSocketConfig(port: 0, securePort: null, hostName: null, additionalAllowedOrigins: []);
+
         _server = await KestrelWebSocketServer.StartServerAsync(
-            new WebSocketConfig(port: 0, securePort: null, hostName: null, additionalAllowedOrigins: []),
-            router.HandleAsync,
+            config,
+            async context => await _browserServer.HandleRequestAsync(config, context),
             TestContext.CancellationToken);
 
         return new Uri(_server.HttpServerUrls.Single());
@@ -86,6 +90,8 @@ public class BrowserToolsEndpointRouterTests : IDisposable
         {
             socket.Options.AddSubProtocol(subProtocol);
         }
+
+        socket.Options.SetRequestHeader("Origin", "http://localhost");
 
         var address = new UriBuilder(baseAddress) { Scheme = "ws", Path = ConnectPath }.Uri;
 
