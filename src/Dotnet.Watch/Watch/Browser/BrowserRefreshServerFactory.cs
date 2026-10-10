@@ -69,8 +69,10 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
         if (!hasExistingServer)
         {
+            var webSocketConfig = await appModel.GetRefreshServerWebSocketConfigAsync(cancellationToken);
+    
             // Start the server we just created:
-            await server.StartAsync(cancellationToken);
+            await server.StartAsync(webSocketConfig, cancellationToken);
         }
 
         return server;

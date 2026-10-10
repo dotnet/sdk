@@ -29,11 +29,9 @@ internal abstract class AbstractBrowserRefreshServer(
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory,
-#pragma warning disable CS9113 // Parameter 'sessionKeyFactory' is unread.
-    Func<SharedSecretProvider?> sessionKeyFactory,
-#pragma warning restore CS9113
     string middlewareAssemblyPath,
-    bool useGatewayProxy)
+    bool useGatewayProxy,
+    bool suppressTimeouts)
     : IDisposable
 {
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
@@ -75,8 +73,7 @@ internal abstract class AbstractBrowserRefreshServer(
 
     }
 
-    protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken);
-    protected abstract bool SuppressTimeouts { get; }
+    protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig webSocketConfig, CancellationToken cancellationToken);
 
     public ILogger Logger
         => logger;
@@ -122,14 +119,14 @@ internal abstract class AbstractBrowserRefreshServer(
         }
     }
 
-    public async ValueTask StartAsync(CancellationToken cancellationToken)
+    public async ValueTask StartAsync(WebSocketConfig webSocketConfig, CancellationToken cancellationToken)
     {
         if (_lazyHost != null)
         {
             throw new InvalidOperationException("Server already started");
         }
 
-        _lazyHost = await CreateAndStartHostAsync(cancellationToken);
+        _lazyHost = await CreateAndStartHostAsync(webSocketConfig, cancellationToken);
         logger.Log(LogEvents.RefreshServerRunningAt, string.Join(",", _lazyHost.EndPoints));
     }
 
@@ -248,62 +245,6 @@ internal abstract class AbstractBrowserRefreshServer(
         return data.Success;
     }
 
-#if NET
-    internal async Task AcceptBrowserConnectionAsync(HttpContext context)
-    {
-        if (!context.WebSockets.IsWebSocketRequest)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return;
-        }
-
-        var subProtocol = context.WebSockets.WebSocketRequestedProtocols is [var requestedSubProtocol]
-            ? requestedSubProtocol
-            : null;
-
-        if (subProtocol == null)
-        {
-            context.Response.StatusCode = StatusCodes.Status400BadRequest;
-            return;
-        }
-
-        var sessionKey = sessionKeyFactory();
-        if (sessionKey == null)
-        {
-            // The browser tools build outputs can't be used.
-            // The launch fails instead of silently continuing without browser tools, because a provider whose
-            // key the application does not pin can never be authenticated by the browser and every browser
-            // tools feature would appear to be broken for no visible reason.
-            context.Response.StatusCode = StatusCodes.Status500InternalServerError;
-            return;
-        }
-
-        string sharedSecret;
-        using (sessionKey)
-        {
-            // The browser generated secret, encrypted with the build-pinned public key, is the only
-            // credential. Reject before upgrading the connection so an unauthenticated peer never gets
-            // a socket.
-            try
-            {
-                sharedSecret = sessionKey.DecryptSecret(WebUtility.UrlDecode(subProtocol));
-            }
-            catch (Exception e)
-            {
-                logger.LogDebug("Rejecting a browser connection with an invalid encrypted secret: {Message}", e.Message);
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
-                return;
-            }
-        }
-
-        var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
-
-        var connection = OnBrowserConnected(clientSocket, sharedSecret);
-        await InitializeBrowserConnectionAsync(connection, context.RequestAborted);
-        await connection.Disconnected.Task;
-    }
-#endif
-
     /// <summary>
     /// For testing.
     /// </summary>
@@ -330,7 +271,7 @@ internal abstract class AbstractBrowserRefreshServer(
             {
                 while (!progressCancellationSource.Token.IsCancellationRequested)
                 {
-                    await Task.Delay(SuppressTimeouts ? TimeSpan.MaxValue : reportDelayInSeconds, progressCancellationSource.Token);
+                    await Task.Delay(suppressTimeouts ? TimeSpan.MaxValue : reportDelayInSeconds, progressCancellationSource.Token);
 
                     connectionAttemptReported = true;
                     reportDelayInSeconds = nextReportSeconds;

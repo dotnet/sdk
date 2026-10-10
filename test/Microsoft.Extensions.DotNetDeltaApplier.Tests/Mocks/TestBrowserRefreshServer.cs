@@ -3,13 +3,11 @@
 
 using System.Net.WebSockets;
 using System.Security.Cryptography;
-using System.Text;
-using Microsoft.DotNet.HotReload;
 using Microsoft.DotNet.Test.MSTest.Utilities;
 
 namespace Microsoft.DotNet.HotReload.UnitTests;
 
-internal sealed class TestBrowserRefreshServer : AbstractBrowserRefreshServer
+internal sealed class TestBrowserRefreshServer : BrowserRefreshServer
 {
     private readonly SharedSecretProvider _key;
 
@@ -25,7 +23,8 @@ internal sealed class TestBrowserRefreshServer : AbstractBrowserRefreshServer
             connectionAgentLoggerFactory: _ => new TestLogger(),
             sessionKeyFactory,
             middlewareAssemblyPath: Path.GetTempPath(),
-            useGatewayProxy: false)
+            useGatewayProxy: false,
+            suppressTimeouts: true)
     {
         _key = new SharedSecretProvider();
     }
@@ -37,7 +36,8 @@ internal sealed class TestBrowserRefreshServer : AbstractBrowserRefreshServer
             connectionAgentLoggerFactory: _ => new TestLogger(),
             sessionKeyFactory: () => new SharedSecretProvider(keyParameters),
             middlewareAssemblyPath: Path.GetTempPath(),
-            useGatewayProxy: false)
+            useGatewayProxy: false,
+            suppressTimeouts: true)
     {
         _key = new SharedSecretProvider(keyParameters);
     }
@@ -81,10 +81,8 @@ internal sealed class TestBrowserRefreshServer : AbstractBrowserRefreshServer
         return ValueTask.FromResult<TResult?>(null);
     }
 
-    protected override ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
+    protected override ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig config, CancellationToken cancellationToken)
         => throw new NotImplementedException();
-
-    protected override bool SuppressTimeouts => true;
 
     public override void Dispose()
     {
