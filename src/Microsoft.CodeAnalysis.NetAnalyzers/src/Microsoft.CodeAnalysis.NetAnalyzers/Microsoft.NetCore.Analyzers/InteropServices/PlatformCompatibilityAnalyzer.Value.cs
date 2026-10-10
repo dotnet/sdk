@@ -47,6 +47,15 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 // Accelerators like OperatingSystem.IsPlatformName()
                 if (arguments.IsEmpty)
                 {
+                    if (invokedPlatformCheckMethod.Name == IsApplePlatform)
+                    {
+                        infosBuilder.Add(new PlatformMethodValue("macos", EmptyVersion, negated: false));
+                        infosBuilder.Add(new PlatformMethodValue("maccatalyst", EmptyVersion, negated: false));
+                        infosBuilder.Add(new PlatformMethodValue("ios", EmptyVersion, negated: false));
+                        infosBuilder.Add(new PlatformMethodValue("tvos", EmptyVersion, negated: false));
+                        return true;
+                    }
+
                     if (TryExtractPlatformName(invokedPlatformCheckMethod.Name, out var platformName))
                     {
                         var info = new PlatformMethodValue(platformName, EmptyVersion, negated: false);
