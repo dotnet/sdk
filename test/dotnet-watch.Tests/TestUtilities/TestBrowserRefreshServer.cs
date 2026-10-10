@@ -9,18 +9,17 @@ internal class TestBrowserRefreshServer(
     string middlewareAssemblyPath,
     bool useGatewayProxy,
     Func<SharedSecretProvider?>? sessionKeyFactory = null)
-    : AbstractBrowserRefreshServer(
+    : BrowserRefreshServer(
         logger: new TestLogger(),
         connectionServerLoggerFactory: _ => new TestLogger(),
         connectionAgentLoggerFactory: _ => new TestLogger(),
         sessionKeyFactory ?? new(static () => new SharedSecretProvider()),
         middlewareAssemblyPath,
-        useGatewayProxy)
+        useGatewayProxy,
+        suppressTimeouts: true)
 {
-    public Func<WebServerHost>? CreateAndStartHostImpl;
+    public Func<WebSocketConfig, WebServerHost>? CreateAndStartHostImpl;
 
-    protected override ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
-        => ValueTask.FromResult((CreateAndStartHostImpl ?? throw new NotImplementedException())());
-
-    protected override bool SuppressTimeouts => true;
+    protected override ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig webSocketConfig, CancellationToken cancellationToken)
+        => ValueTask.FromResult((CreateAndStartHostImpl ?? throw new NotImplementedException())(webSocketConfig));
 }

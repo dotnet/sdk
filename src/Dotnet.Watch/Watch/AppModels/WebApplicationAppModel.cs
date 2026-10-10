@@ -59,6 +59,9 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         return new WebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, browserRefreshServer.ResetUpdates(), capabilities, targetFramework, context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser));
     }
 
+    private bool SuppressTimeouts
+        => context.EnvironmentOptions.TestFlags != TestFlags.None;
+
     private static string GetMiddlewareAssemblyPath()
         => GetInjectedAssemblyPath(MiddlewareTargetFramework, "Microsoft.AspNetCore.Watch.BrowserRefresh");
 
@@ -94,10 +97,22 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
             sessionKeyFactory: browserToolsOutputs.TryCreateSessionKey,
             middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
-            dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
-            webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
             useGatewayProxy: HasGatewayProxy,
-            suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
+            suppressTimeouts: SuppressTimeouts);
+    }
+
+    public async ValueTask<WebSocketConfig> GetRefreshServerWebSocketConfigAsync(CancellationToken cancellationToken)
+    {
+        var config = context.EnvironmentOptions.BrowserWebSocketConfig;
+        var dotnetPath = context.EnvironmentOptions.GetMuxerPath();
+
+        var supportsTls = await KestrelWebSocketServer.IsTlsSupportedAsync(dotnetPath, SuppressTimeouts, cancellationToken);
+        if (!supportsTls)
+        {
+            config = config.WithSecurePort(null);
+        }
+
+        return config; 
     }
 
     private static string GetBrowserLoggerName(int connectionId)

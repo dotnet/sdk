@@ -21,14 +21,16 @@ public class BrowserRefreshServerTests
         bool useGatewayProxy,
         LogLevel enabledLogLevel = LogLevel.Information)
     {
+        var config = new WebSocketConfig(port: 0, securePort: null, hostName: null, additionalAllowedOrigins: []);
+
         var server = new TestBrowserRefreshServer(middlewareAssemblyPath, useGatewayProxy)
         {
-            CreateAndStartHostImpl = () => new WebServerHost(new TestListener(), ["ws://test.endpoint"], ["http://test.endpoint"])
+            CreateAndStartHostImpl = _ => new WebServerHost(new TestListener(), ["ws://test.endpoint"], ["http://test.endpoint"])
         };
 
         ((TestLogger)server.Logger).IsEnabledImpl = level => level == enabledLogLevel;
 
-        await server.StartAsync(CancellationToken.None);
+        await server.StartAsync(config, CancellationToken.None);
         return server;
     }
 
@@ -99,14 +101,13 @@ public class BrowserRefreshServerTests
 
         if (useGatewayProxy)
         {
-            AssertEx.SequenceEqual(
+            expected.AddRange(
             [
                 "ReverseProxy__Clusters__dotnet-browser-tools__Destinations__provider__Address=http://test.endpoint/",
                 "ReverseProxy__Routes__dotnet-browser-tools__ClusterId=dotnet-browser-tools",
                 "ReverseProxy__Routes__dotnet-browser-tools__Match__Path=/_framework/dotnet-browser-tools/{**catch-all}",
                 "ReverseProxy__Routes__dotnet-browser-tools__Order=-1000",
-            ],
-            envBuilder.OrderBy(e => e.Key, StringComparer.Ordinal).Select(e => $"{e.Key}={e.Value}"));
+            ]);
         }
 
         AssertEx.SequenceEqual(expected.Order(), envBuilder.OrderBy(e => e.Key).Select(e => $"{e.Key}={e.Value}"));
