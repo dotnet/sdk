@@ -78,6 +78,12 @@ the driver already implies them and the combination fails. To regenerate `.xlf` 
   state, and filesystem paths safe for concurrent test methods.
 - Embedded C# test sources default to `LanguageVersion.CSharp7_3`; set `LanguageVersion`
   explicitly when the source uses newer syntax.
+- For new `OperatingSystem` guards missing from test reference assemblies, use an
+  unattributed `System.OperatingSystem` source stub to exercise builtin decoding, as in the
+  [IsApplePlatform tests](tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/Microsoft.NetCore.Analyzers/InteropServices/PlatformCompatibilityAnalyzerTests.GuardedCallsTests.cs).
+  CA1416 deny-list tests must populate `build_property._SupportedPlatformList`: the
+  [analyzer](src/Microsoft.CodeAnalysis.NetAnalyzers/Microsoft.NetCore.Analyzers/InteropServices/PlatformCompatibilityAnalyzer.cs)
+  suppresses unsupported-only attributes for platforms absent from that list before flow analysis.
 - `test/ConditionalTests.props` registers a `NetAnalyzers` scope, so PR validation can skip
   these tests when nothing under this directory changed. Shared-infrastructure paths listed
   as global triggers force every scope active, and non-PR CI always runs them.
