@@ -1771,6 +1771,418 @@ public sealed class DotnetProjectConvertTests : SdkTest
             .And.HaveStdOut(expectedOutput);
     }
 
+    [TestMethod, CombinatorialData]
+    public void Directives_IncludeMetadata(bool defaultItems, bool externalFiles)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var appDirectory = Path.Join(testInstance.Path, "app");
+        var dataDirectory = externalFiles ? Path.Join(testInstance.Path, "data") : appDirectory;
+        Directory.CreateDirectory(appDirectory);
+        Directory.CreateDirectory(dataDirectory);
+        File.WriteAllText(Path.Join(dataDirectory, "data file.json"), "first");
+        File.WriteAllText(Path.Join(dataDirectory, "second.json"), "second");
+        File.WriteAllText(Path.Join(dataDirectory, "excluded.json"), "excluded");
+        File.WriteAllText(Path.Join(appDirectory, "Program.cs"), $$"""
+            #!/usr/bin/env dotnet
+            {{(defaultItems ? "" : "#:property EnableDefaultNoneItems=false\n#:property EnableDefaultCompileItems=false")}}
+            #:property CopyBehavior=PreserveNewest
+            #:include Program.cs Note=entry
+            #:include {{(externalFiles ? "../data/" : "")}}*.json CopyToOutputDirectory=$(CopyBehavior) Note="a & b \"quoted\" %24%28Literal%29" Empty=""
+            #:exclude {{(externalFiles ? "../data/" : "")}}excluded.json
+            Console.WriteLine(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "data file.json")));
+            Console.WriteLine(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "second.json")));
+            Console.WriteLine(File.Exists(Path.Join(AppContext.BaseDirectory, "excluded.json")));
+            """);
+
+        var expectedOutput = $"first{Environment.NewLine}second{Environment.NewLine}False";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(appDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(appDirectory)
+            .Execute()
+            .Should().Pass();
+
+        var outputDirectory = Path.Join(appDirectory, "Program");
+        var operation = defaultItems ? "Update" : "Include";
+        File.ReadAllText(Path.Join(outputDirectory, "Program.csproj"))
+            .Should().Contain($"""
+                  <ItemGroup>
+                    <Compile {operation}="Program.cs">
+                      <Note>entry</Note>
+                    </Compile>
+                    <None {operation}="data file.json">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <Note>a &amp; b &quot;quoted&quot; %24%28Literal%29</Note>
+                      <Empty></Empty>
+                    </None>
+                    <None {operation}="second.json">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <Note>a &amp; b &quot;quoted&quot; %24%28Literal%29</Note>
+                      <Empty></Empty>
+                    </None>
+                  </ItemGroup>
+                """)
+            .And.NotContain(VirtualProjectBuilder.FromIncludeDirectiveMetadataName)
+            .And.NotContain(VirtualProjectBuilder.IncludeDirectiveMetadataNames);
+
+        File.Exists(Path.Join(outputDirectory, "excluded.json")).Should().BeFalse();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [TestMethod, CombinatorialData]
+    public void Directives_IncludeMetadata_DuplicateItems(bool defaultItems, bool externalFiles)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var appDirectory = Path.Join(testInstance.Path, "app");
+        var dataDirectory = externalFiles ? testInstance.Path : appDirectory;
+        Directory.CreateDirectory(appDirectory);
+        File.WriteAllText(Path.Join(dataDirectory, "data.json"), "data");
+        File.WriteAllText(Path.Join(appDirectory, "Program.cs"), $$"""
+            #!/usr/bin/env dotnet
+            {{(defaultItems ? "" : "#:property EnableDefaultNoneItems=false")}}
+            #:include {{(externalFiles ? "../" : "")}}data.json CopyToOutputDirectory=PreserveNewest TargetPath=first.json
+            #:include {{(externalFiles ? "../" : "")}}data.json CopyToOutputDirectory=PreserveNewest TargetPath=second.json
+            Console.WriteLine(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "first.json")) +
+                File.ReadAllText(Path.Join(AppContext.BaseDirectory, "second.json")));
+            """);
+
+        var expectedOutput = "datadata";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(appDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(appDirectory)
+            .Execute()
+            .Should().Pass();
+
+        var outputDirectory = Path.Join(appDirectory, "Program");
+        File.ReadAllText(Path.Join(outputDirectory, "Program.csproj"))
+            .Should().Contain($"""
+                  <ItemGroup>
+                    <None {(defaultItems ? "Update" : "Include")}="data.json">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <TargetPath>first.json</TargetPath>
+                    </None>
+                    <None {(defaultItems && externalFiles ? "Update" : "Include")}="{(externalFiles ? "data_2.json" : "data.json")}">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <TargetPath>second.json</TargetPath>
+                    </None>
+                  </ItemGroup>
+                """);
+
+        new DirectoryInfo(outputDirectory)
+            .EnumerateFiles("*.json").Select(file => file.Name)
+            .Should().BeEquivalentTo(externalFiles ? ["data.json", "data_2.json"] : ["data.json"]);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [TestMethod, CombinatorialData]
+    public void Directives_IncludeMetadata_DuplicateCompileItems(bool defaultItems, bool entryPoint)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var includedFile = entryPoint ? "Program.cs" : "Util.cs";
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $$"""
+            #!/usr/bin/env dotnet
+            {{(defaultItems ? "" : "#:property EnableDefaultCompileItems=false")}}
+            #:include {{includedFile}} Note=first
+            #:include {{includedFile}} Note=second
+            {{(entryPoint ? "#:include Util.cs" : "")}}
+            Console.WriteLine(Util.GetMessage());
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            static class Util
+            {
+                public static string GetMessage() => "Hello from Util";
+            }
+            """);
+
+        var expectedOutput = "Hello from Util";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining(expectedOutput)
+            // warning CS2002: Source file '...' specified multiple times
+            .And.HaveStdOutContaining("warning CS2002")
+            .And.HaveStdOutContaining(Path.Join(testInstance.Path, includedFile));
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        var outputDirectory = Path.Join(testInstance.Path, "Program");
+        File.ReadAllText(Path.Join(outputDirectory, "Program.csproj"))
+            .Should().Contain($"""
+                    <Compile {(defaultItems ? "Update" : "Include")}="{includedFile}">
+                      <Note>first</Note>
+                    </Compile>
+                    <Compile Include="{includedFile}">
+                      <Note>second</Note>
+                    </Compile>
+                """);
+
+        var convertedRun = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirectory)
+            .Execute();
+
+        if (defaultItems)
+        {
+            convertedRun.Should().Fail()
+                // error NETSDK1022: Duplicate 'Compile' items were included.
+                .And.HaveStdOutContaining("NETSDK1022")
+                .And.HaveStdOutContaining($"'{includedFile}'");
+        }
+        else
+        {
+            convertedRun.Should().Pass()
+                .And.HaveStdOutContaining(expectedOutput)
+                // warning CS2002: Source file '...' specified multiple times
+                .And.HaveStdOutContaining("warning CS2002")
+                .And.HaveStdOutContaining(includedFile);
+        }
+    }
+
+    [TestMethod]
+    public void Directives_IncludeMetadata_DuplicateCompileItems_ImportedItems()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <ItemGroup Condition="'$(FileBasedProgram)' == 'true'">
+                <Compile Include="Helper.cs" />
+              </ItemGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
+            #:include Util.cs Note=first
+            #:include Util.cs Note=second
+            Console.WriteLine(Util.GetMessage() + " " + Helper.GetMessage());
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            static class Util
+            {
+                public static string GetMessage() => "Hello from Util";
+            }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Helper.cs"), """
+            static class Helper
+            {
+                public static string GetMessage() => "Hello from Helper";
+            }
+            """);
+
+        var expectedOutput = "Hello from Util Hello from Helper";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining(expectedOutput)
+            // warning CS2002: Source file 'Util.cs' specified multiple times
+            .And.HaveStdOutContaining("warning CS2002")
+            .And.HaveStdOutContaining(Path.Join(testInstance.Path, "Util.cs"));
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        var outputDirectory = Path.Join(testInstance.Path, "Program");
+        File.ReadAllText(Path.Join(outputDirectory, "Program.csproj"))
+            .Should().Contain("""
+                  <ItemGroup>
+                    <Compile Update="Util.cs">
+                      <Note>first</Note>
+                    </Compile>
+                    <Compile Include="Util.cs">
+                      <Note>second</Note>
+                    </Compile>
+                  </ItemGroup>
+                """)
+            .And.NotContain("<EnableDefaultCompileItems>");
+
+        File.Exists(Path.Join(outputDirectory, "Helper.cs")).Should().BeTrue();
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirectory)
+            .Execute()
+            .Should().Fail()
+            // error NETSDK1022: Duplicate 'Compile' items were included.
+            .And.HaveStdOutContaining("NETSDK1022")
+            .And.HaveStdOutContaining("'Util.cs'");
+    }
+
+    [TestMethod, CombinatorialData]
+    public void Directives_IncludeMetadata_IdenticalDuplicateItems(
+        bool defaultItems,
+        [CombinatorialValues("Program.cs", "Util.cs", "data.json")] string includedFile)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var isCompile = includedFile.EndsWith(".cs", StringComparison.Ordinal);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $$"""
+            #!/usr/bin/env dotnet
+            {{(defaultItems ? "" : "#:property EnableDefaultCompileItems=false\n#:property EnableDefaultNoneItems=false")}}
+            {{(includedFile != "Util.cs" ? "#:include Util.cs" : "")}}
+            #:include {{includedFile}} Note=first
+            #:include {{includedFile}} Note=first
+            Console.WriteLine(Util.GetMessage());
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            static class Util
+            {
+                public static string GetMessage() => "Hello from Util";
+            }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "data.json"), "data");
+
+        var expectedOutput = "Hello from Util";
+
+        var virtualRun = new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute();
+
+        virtualRun.Should().Pass()
+            .And.HaveStdOutContaining(expectedOutput);
+
+        if (isCompile)
+        {
+            virtualRun.Should()
+                // warning CS2002: Source file '...' specified multiple times
+                .HaveStdOutContaining("warning CS2002")
+                .And.HaveStdOutContaining(Path.Join(testInstance.Path, includedFile));
+        }
+        else
+        {
+            virtualRun.Should().NotHaveStdOutContaining("CS2002");
+        }
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        var outputDirectory = Path.Join(testInstance.Path, "Program");
+        var project = File.ReadAllText(Path.Join(outputDirectory, "Program.csproj"));
+        var itemType = isCompile ? "Compile" : "None";
+        project.Should().Contain($"""
+                    <{itemType} {(defaultItems ? "Update" : "Include")}="{includedFile}">
+                      <Note>first</Note>
+                    </{itemType}>
+                """);
+        Regex.Matches(project, $"<{itemType} (?:Include|Update)=\"{Regex.Escape(includedFile)}\"")
+            .Count.Should().Be(1);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining(expectedOutput)
+            .And.NotHaveStdOutContaining("CS2002");
+    }
+
+    [TestMethod]
+    [DataRow("Content")]
+    [DataRow("EmbeddedResource")]
+    public void Directives_IncludeMetadata_DuplicateItems_DefaultItemChecks(string itemType)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var isResource = itemType == "EmbeddedResource";
+        var extension = isResource ? ".resx" : ".txt";
+        var metadataName = isResource ? "ManifestResourceName" : "TargetPath";
+        var firstValue = isResource ? "first" : "first.txt";
+        var secondValue = isResource ? "second" : "second.txt";
+        var programBody = isResource
+            ? """Console.WriteLine(string.Join(" ", typeof(Program).Assembly.GetManifestResourceNames().Order()));"""
+            : """
+                Console.WriteLine(File.ReadAllText(Path.Join(AppContext.BaseDirectory, "first.txt")) +
+                    File.ReadAllText(Path.Join(AppContext.BaseDirectory, "second.txt")));
+                """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup Condition="'$(FileBasedProgram)' != 'true'">
+                <EnableDefault{itemType}Items>true</EnableDefault{itemType}Items>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, $"data{extension}"), isResource
+            ? """
+                <root>
+                  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+                  <resheader name="version"><value>2.0</value></resheader>
+                  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+                  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+                  <data name="Message" xml:space="preserve"><value>included content</value></data>
+                </root>
+                """
+            : "data");
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $$"""
+            #!/usr/bin/env dotnet
+            #:property FileBasedProgramsItemMapping={{extension}}={{itemType}}
+            #:include data{{extension}} CopyToOutputDirectory=PreserveNewest {{metadataName}}={{firstValue}}
+            #:include data{{extension}} CopyToOutputDirectory=PreserveNewest {{metadataName}}={{secondValue}}
+            {{programBody}}
+            """);
+
+        var expectedOutput = isResource ? "first.resources second.resources" : "datadata";
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        var outputDirectory = Path.Join(testInstance.Path, "Program");
+        File.ReadAllText(Path.Join(outputDirectory, "Program.csproj"))
+            .Should().Contain($"""
+                  <ItemGroup>
+                    <{itemType} {(isResource ? "Update" : "Include")}="data{extension}">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <{metadataName}>{firstValue}</{metadataName}>
+                    </{itemType}>
+                    <{itemType} Include="data{extension}">
+                      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+                      <{metadataName}>{secondValue}</{metadataName}>
+                    </{itemType}>
+                  </ItemGroup>
+                """)
+            .And.NotContain($"<EnableDefault{itemType}Items>");
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(outputDirectory)
+            .Execute()
+            .Should().Fail()
+            // error NETSDK1022: Duplicate 'Content' items were included.
+            // error NETSDK1022: Duplicate 'EmbeddedResource' items were included.
+            .And.HaveStdOutContaining("NETSDK1022")
+            .And.HaveStdOutContaining($"'data{extension}'");
+    }
+
     [TestMethod]
     public void Directives_IncludeDll()
     {
@@ -2690,14 +3102,16 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
-    public void Directives_InvalidMetadataName()
+    [DataRow("#:package P1@1.0.0")]
+    [DataRow("#:include file.json")]
+    public void Directives_InvalidMetadataName(string directive)
     {
         // A quote forces the strict (new) form, so the metadata name is validated.
         var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
-            inputCSharp: """
-                #:package P1@1.0.0 1Invalid="value"
+            inputCSharp: $"""
+                {directive} 1Invalid="value"
                 """,
             expectedErrors:
             [
@@ -2706,13 +3120,15 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
-    public void Directives_EmptyMetadataName()
+    [DataRow("#:package P1@1.0.0")]
+    [DataRow("#:include file.json")]
+    public void Directives_EmptyMetadataName(string directive)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
-            inputCSharp: """
-                #:package P1@1.0.0 ="value"
+            inputCSharp: $"""
+                {directive} ="value"
                 """,
             expectedErrors:
             [
@@ -2739,6 +3155,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
     [DataRow("#:package P1@1.0.0 Note=a note=b", "note")]
     [DataRow("#:project Lib.csproj Private=false private=true", "private")]
     [DataRow("#:ref Lib.cs Alias=a Alias=b", "Alias")]
+    [DataRow("#:include data.json Note=a note=b", "note")]
     public void Directives_DuplicateMetadata(string directive, string duplicateName)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2756,7 +3173,6 @@ public sealed class DotnetProjectConvertTests : SdkTest
     // strict (new) form; otherwise the extra tokens would be accepted verbatim as a legacy single value.
     [DataRow("#:sdk MySdk Extra=\"a b\"", "sdk")]
     [DataRow("#:property Name=\"v\" Extra=\"a b\"", "property")]
-    [DataRow("#:include \"a.cs\" Extra=\"a b\"", "include")]
     [DataRow("#:exclude \"a.cs\" Extra=\"a b\"", "exclude")]
     public void Directives_MetadataOnUnsupportedKind(string directive, string kind)
     {
@@ -2767,6 +3183,21 @@ public sealed class DotnetProjectConvertTests : SdkTest
             expectedErrors:
             [
                 (1, string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, kind)),
+            ]);
+    }
+
+    [TestMethod]
+    [DataRow("filebasedprogramsfromincludedirective")]
+    [DataRow("filebasedprogramsincludedirectivemetadatanames")]
+    public void Directives_IncludeMetadata_ReservedName(string name)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: $"#:include data.json {name}=false",
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.ConflictingDirectiveMetadata, name)),
             ]);
     }
 
