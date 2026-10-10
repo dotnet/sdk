@@ -10,6 +10,7 @@ using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
 using System.Text.RegularExpressions;
+using System.Xml.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
@@ -308,6 +309,184 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().Exist();
         }
+
+        [TestMethod]
+        public void Publish_DoesNotPublishScopedCssAssets_WhenExcluded()
+        {
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            CreateNonScopedCssAsset(projectDirectory.TestRoot);
+
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:ExcludeScopedCssAssets=true").Should().Pass();
+
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var intermediateOutputPath = Path.Combine(publish.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
+
+            new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "bundle", "ComponentApp.styles.css")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.gz")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.br")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
+
+            AssertPublishManifestDoesNotContainScopedCssAssets(intermediateOutputPath);
+        }
+
+        [TestMethod]
+        public void Publish_DoesNotPublishIndividualScopedCssFiles_WhenNoBundlingIsEnabledAndExcluded()
+        {
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset);
+            CreateNonScopedCssAsset(projectDirectory.TestRoot);
+
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:DisableScopedCssBundling=true", "/p:ExcludeScopedCssAssets=true").Should().Pass();
+
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var intermediateOutputPath = Path.Combine(publish.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
+
+            new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "ComponentApp.styles.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css.gz")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Index.razor.rz.scp.css.br")).Should().NotExist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
+
+            AssertPublishManifestDoesNotContainScopedCssAssets(intermediateOutputPath);
+        }
+
+        [TestMethod]
+        public void Publish_ServiceWorkerAssetsManifest_DoesNotListScopedCssAssets_WhenExcluded()
+        {
+            var testAsset = "RazorComponentApp";
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges(document =>
+                {
+                    var propertyGroup = new XElement("PropertyGroup");
+                    propertyGroup.Add(new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js"));
+                    document.Root.Add(propertyGroup);
+
+                    var itemGroup = new XElement("ItemGroup");
+                    var serviceWorker = new XElement("ServiceWorker");
+                    serviceWorker.SetAttributeValue("Include", @"wwwroot\service-worker.js");
+                    serviceWorker.SetAttributeValue("PublishedContent", @"wwwroot\service-worker.published.js");
+                    itemGroup.Add(serviceWorker);
+                    document.Root.Add(itemGroup);
+                });
+
+            var wwwroot = Path.Combine(projectDirectory.TestRoot, "wwwroot");
+            Directory.CreateDirectory(wwwroot);
+            File.WriteAllText(Path.Combine(wwwroot, "service-worker.js"), "// development service worker");
+            File.WriteAllText(Path.Combine(wwwroot, "service-worker.published.js"), "// published service worker");
+            CreateNonScopedCssAsset(projectDirectory.TestRoot);
+
+            // Without the exclusion (property unset) the scoped CSS bundle, its compressed variants and their endpoints
+            // are published and the service worker manifest lists the bundle, which proves the assertions below are
+            // looking at the right files.
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish).Should().Pass();
+
+            var publishOutputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var intermediateOutputPath = Path.Combine(publish.GetBaseIntermediateDirectory().ToString(), "Debug", DefaultTfm);
+            var serviceWorkerAssetsManifest = Path.Combine(publishOutputPath, "wwwroot", "service-worker-assets.js");
+
+            var listedAssets = ReadServiceWorkerAssetUrls(serviceWorkerAssetsManifest);
+            listedAssets.Should().Contain(url => url.EndsWith(".styles.css"));
+
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.gz")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "ComponentApp.styles.css.br")).Should().Exist();
+            AssertPublishManifestContainsScopedCssBundleWithCompressedVariants(intermediateOutputPath);
+
+            // With the exclusion the manifest is regenerated without the scoped CSS bundle.
+            publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish, "/p:ExcludeScopedCssAssets=true").Should().Pass();
+
+            listedAssets = ReadServiceWorkerAssetUrls(serviceWorkerAssetsManifest);
+            listedAssets.Should().NotBeEmpty();
+            listedAssets.Should().NotContain(url => IsScopedCssPath(url));
+
+            AssertPublishManifestDoesNotContainScopedCssAssets(intermediateOutputPath);
+        }
+
+        private static string[] ReadServiceWorkerAssetUrls(string serviceWorkerAssetsManifest)
+        {
+            new FileInfo(serviceWorkerAssetsManifest).Should().Exist();
+
+            // Trim prefix 'self.assetsManifest = ' and suffix ';'
+            var manifestContents = File.ReadAllText(serviceWorkerAssetsManifest).TrimEnd()[22..^1];
+            var manifestContentsJson = JsonDocument.Parse(manifestContents);
+            manifestContentsJson.RootElement.TryGetProperty("assets", out var assets).Should().BeTrue();
+            assets.ValueKind.Should().Be(JsonValueKind.Array);
+
+            return assets.EnumerateArray().Select(e => e.GetProperty("url").GetString()).OrderBy(e => e).ToArray();
+        }
+
+        // A plain wwwroot asset that gets compressed like the scoped CSS assets do. It is the positive control for the
+        // exclusion: its compressed variants and endpoints must survive, which proves the RelatedAsset join does not
+        // over-match.
+        private static void CreateNonScopedCssAsset(string testRoot)
+        {
+            var wwwroot = Path.Combine(testRoot, "wwwroot");
+            Directory.CreateDirectory(wwwroot);
+            File.WriteAllText(Path.Combine(wwwroot, "app.css"), "body { margin: 0; }");
+        }
+
+        private static StaticWebAssetsManifest ReadPublishManifest(string intermediateOutputPath)
+        {
+            var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.publish.json")));
+
+            publishManifest.Assets.Should().NotBeEmpty();
+            publishManifest.Endpoints.Should().NotBeEmpty();
+
+            // Every compressed variant points at its source asset by Identity. This is the key the SDK joins on
+            // (ApplyCompressionNegotiation) and the key the exclusion joins on.
+            var identities = publishManifest.Assets.Select(a => a.Identity).ToHashSet(StringComparer.Ordinal);
+            publishManifest.Assets.Where(a => a.AssetTraitName == "Content-Encoding").Should().NotBeEmpty()
+                .And.OnlyContain(a => identities.Contains(a.RelatedAsset));
+
+            return publishManifest;
+        }
+
+        private static void AssertPublishManifestContainsScopedCssBundleWithCompressedVariants(string intermediateOutputPath)
+        {
+            var publishManifest = ReadPublishManifest(intermediateOutputPath);
+
+            var bundle = publishManifest.Assets.Where(a => a.AssetTraitName == "ScopedCss" && a.AssetTraitValue == "ApplicationBundle").Should().ContainSingle().Which;
+            var compressedVariants = publishManifest.Assets.Where(a => a.AssetTraitName == "Content-Encoding" && a.RelatedAsset == bundle.Identity).ToArray();
+            compressedVariants.Select(a => a.AssetTraitValue).Should().Contain("gzip").And.Contain("br");
+
+            publishManifest.Endpoints.Where(e => e.AssetFile == bundle.Identity).Should().NotBeEmpty();
+            foreach (var compressedVariant in compressedVariants)
+            {
+                publishManifest.Endpoints.Where(e => e.AssetFile == compressedVariant.Identity).Should().NotBeEmpty();
+            }
+        }
+
+        private static void AssertPublishManifestDoesNotContainScopedCssAssets(string intermediateOutputPath)
+        {
+            var publishManifest = ReadPublishManifest(intermediateOutputPath);
+
+            publishManifest.Assets.Where(a => a.AssetTraitName == "ScopedCss").Should().BeEmpty();
+            publishManifest.Assets.Where(a => a.AssetTraitName == "Content-Encoding" && IsScopedCssPath(a.RelatedAsset)).Should().BeEmpty();
+            publishManifest.Assets.Where(a => IsScopedCssPath(a.RelativePath)).Should().BeEmpty();
+            publishManifest.Endpoints.Where(e => IsScopedCssPath(e.Route) || IsScopedCssPath(e.AssetFile)).Should().BeEmpty();
+
+            // Positive control: the non-scoped app.css keeps its compressed variants and its endpoints.
+            publishManifest.Assets.Where(a => a.AssetTraitName == "Content-Encoding" && Path.GetFileName(a.RelatedAsset) == "app.css").Should().NotBeEmpty();
+            publishManifest.Endpoints.Where(e => e.Route == "app.css").Should().NotBeEmpty();
+        }
+
+        // Scoped CSS assets end with one of these suffixes, and their compressed variants with the suffix plus .gz or .br.
+        // There are no .map companions: the scoped CSS pipeline does not emit source maps.
+        private static readonly string[] s_scopedCssSuffixes = [".styles.css", ".rz.scp.css", ".bundle.scp.css"];
+
+        private static bool IsScopedCssPath(string path)
+            => path != null && s_scopedCssSuffixes.Any(suffix =>
+                path.EndsWith(suffix, StringComparison.Ordinal) ||
+                path.EndsWith(suffix + ".gz", StringComparison.Ordinal) ||
+                path.EndsWith(suffix + ".br", StringComparison.Ordinal));
 
         [TestMethod]
         [CoreMSBuildOnly]
