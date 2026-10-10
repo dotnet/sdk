@@ -294,7 +294,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         private int ExecuteWithSourceGenerator(SourceItem[] sourceItems)
         {
-            var parseOptions = RazorSourceGeneratorHost.CreateParseOptions(GetCSharpLanguageVersion());
+            var parseOptions = RazorSourceGeneratorHost.CreateParseOptions(
+                RazorSourceGeneratorHost.GetCSharpLanguageVersion(CSharpLanguageVersion.Value()));
             var compilation = RazorSourceGeneratorHost.CreateCompilation(Assemblies.Values, Parent.AssemblyReferenceProvider);
 
             var inputFiles = new List<RazorInputFile>(sourceItems.Length);
@@ -358,17 +359,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
 
             return ExitCodeSuccess;
-        }
-
-        private LanguageVersion GetCSharpLanguageVersion()
-        {
-            if (CSharpLanguageVersion.HasValue() &&
-                LanguageVersionFacts.TryParse(CSharpLanguageVersion.Value(), out var languageVersion))
-            {
-                return languageVersion;
-            }
-
-            return LanguageVersion.Default;
         }
 
         private VirtualRazorProjectFileSystem GetVirtualRazorProjectSystem(SourceItem[] inputItems)
