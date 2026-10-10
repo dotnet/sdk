@@ -124,7 +124,7 @@ internal readonly struct BrowserConnection(
                 // Do not log error if the socket has been closed:
                 if (ClientSocket.State == WebSocketState.Open)
                 {
-                    ServerLogger.LogDebug("Failed to send message: {Message}", e.InnerException?.Message ?? e.Message);
+                    ServerLogger.LogDebug("Failed to receive response: {Message}", e.InnerException?.Message ?? e.Message);
                 }
 
                 return null;
