@@ -3,246 +3,292 @@
 ## Status and scope
 
 Proposed design for [dotnet/sdk#54091](https://github.com/dotnet/sdk/issues/54091),
-with published experiments in
+implemented for review in
 [dotnet/sdk#56305](https://github.com/dotnet/sdk/pull/56305) and
 [microsoft/testfx#11305](https://github.com/microsoft/testfx/pull/11305).
-These are reviewable implementations, not released packages, a supported
-preview, or commitments to the experimental properties below.
+These implementations do not establish released packages, supported APIs or
+release approval. Source links pin the implementation described here.
 
 The scope is managed unit tests running **inside a browser**, using
 `Microsoft.NET.Sdk.WebAssembly` and Microsoft.Testing.Platform (MTP).
-The SDK experiment adds only a sample and reproduction guidance; it adds
-no production SDK code.
+The SDK supplies test-specific launcher selection, HTTP control and artifact
+reception. The optional browser package owns browser-specific dependencies;
+core MTP owns managed protocol behavior.
 
 ## Architecture
 
-Keep browser-specific dependencies and behavior in the optional TestFX
-package `Microsoft.Testing.Platform.Browser`. Reuse the existing WebAssembly
-application host and MTP HTTP transport.
-
 | Owner | Responsibility and primary source |
 | --- | --- |
-| Test application | C# tests, framework references and an [MTP-generated managed entry point][entrypoint]. The [sample project][sample-project] and [test][sample-test] need no authored Main, HTML, JavaScript, or interop for launch and results. |
-| Browser package | [Build integration][package-targets], host assets, [Playwright launch][browser], diagnostics and cleanup. It wraps the evaluated host command, not a new web server. |
-| WebAssembly host | Serve the application and its Static Web Assets. The SDK's [props](../../src/WasmSdk/Sdk/Sdk.props) and [targets](../../src/WasmSdk/Sdk/Sdk.targets) compose that build pipeline; the experiment launches the existing WasmAppHost. |
-| Managed MTP and SDK | MTP's [connection][mtp-connection] and [C# HTTP client][http-client] exchange the existing framed protocol with the SDK's [HTTP gateway](../../src/Cli/dotnet/Commands/Test/MTP/IPC/HttpTestHostGateway.cs). Neither Playwright nor package JavaScript relays test results. |
+| Test application | C# tests and an [MTP-generated managed entry point][entrypoint]. The [sample][sample-project] uses aligned Framework + Adapter + Browser references, with no authored Main, HTML, JavaScript or integration targets. |
+| SDK | [Select the test command][selection] after ordinary run providers; own the [authenticated gateway][gateway], cancellation policy, destination paths and [artifact limits][limits]. |
+| Managed MTP | [Handshake, discovery, results, HTTP control and artifact export][connection]. It uses C# `HttpClient`, not a JavaScript results relay. |
+| Browser package | [Build-only host assets][package-targets], runtime startup, private Playwright control and an [owned supervisor/worker lifecycle][supervisor]. |
+| WebAssembly host | Existing WasmAppHost serves the application and Static Web Assets. The SDK's [props](../../src/WasmSdk/Sdk/Sdk.props) and [targets](../../src/WasmSdk/Sdk/Sdk.targets) compose that build pipeline; no additional asset server is introduced. |
 
 ```text
-SDK -> package launcher -> evaluated WasmAppHost -> browser application
-          |                                         |
-          +-- private arguments / terminal result --+
+SDK -> package supervisor -> contained worker -> WasmAppHost + Playwright/browser
+                                |
+                                +-- private arguments / terminal result <--> boot JS
 
-Managed browser MTP <---- authenticated HTTP ----> SDK test gateway
+Managed browser MTP <---- authenticated HTTP ----> SDK gateway
+                     results, control, artifacts
 ```
 
 Pure-managed describes the application, not all browser infrastructure.
 The package's [boot module][boot] imports `dotnet.js`, creates the runtime,
-passes application arguments, awaits managed Main and reports its terminal
-outcome. External supervision is needed when the page cannot make progress.
-There is no custom TCP DevTools client, JavaScript results protocol, or
-additional test-aware asset server.
+passes arguments, awaits managed Main and reports its terminal outcome.
+Those private bindings ship with the launcher; they are not a public page
+API or a second test protocol. Playwright retains its private transport;
+there is no custom TCP DevTools client.
 
 ## Consumer and reproduction
 
 The [canonical project][sample-project] is a WebAssembly executable with
-[`EnableMSTestRunner=true`][mstest-targets]. The experiment disables native relinking and
-trimming with `WasmBuildNative=false` and `PublishTrimmed=false`; it does not
-establish support for those modes.
+`EnableMSTestRunner=true`. It references `MSTest.TestFramework` and
+`MSTest.TestAdapter` directly, plus `Microsoft.Testing.Platform.Browser`,
+rather than installing the additional coverage, full TRX and VSTest SDK
+dependencies from the [`MSTest` metapackage][mstest-package].
+The [sample test][sample-test] also writes a browser-VFS file and registers
+it through `TestContext.AddResultFile`.
 
-The sample uses aligned `MSTest.TestFramework` and `MSTest.TestAdapter`
-references plus the browser package rather than the [`MSTest` metapackage][mstest-package].
-The browser path does not need its additional reporting, coverage and VSTest
-SDK dependencies. Keep package versions separate from references and align
-the MTP/framework packages with the browser package under review.
+Use the [SDK README][sample-readme] as the single reproduction recipe. It
+identifies the built SDK and immutable, aligned framework/MTP/browser package
+feed, verifies restored package hashes, selects an installed Chromium-family
+executable and isolates restore/build state. Build-server reuse, MSBuild
+worker-node reuse and shared compilation are disabled for disposable runs;
+the previous environment is restored afterward. Retained host results are
+outside that disposable state.
 
-Use the [SDK sample README][sample-readme] as the single reproduction recipe,
-not a second copy of its commands here. Reproduction must identify the built
-SDK, compatible runtime/workload assets, exact locally packed packages and
-installed Chromium executable. Pin SDK selection, isolate package and build
-state, disable build-server and MSBuild worker-node reuse, stop on restore
-failure, and verify the restored package identity.
-The explicit restore is needed before `dotnet test` evaluates the package's
-`ComputeRunArguments` integration. A machine-specific local package path or
-a successful restore alone is not proof of that identity.
+No caller invocation marker is needed. The explicit restore makes package
+imports available before test-command evaluation. The sample deliberately
+uses `WasmBuildNative=false` and `PublishTrimmed=false`; this does not establish
+native-relink, Native AOT or trimming support.
 
-## Launch and result contract
+## SDK launcher selection
 
-### Experimental activation
+The [SDK selection code][selection] first runs `ComputeRunArguments`,
+including its canonical before/after hooks. It then seeds these separate
+properties from the resulting ordinary run properties **only when absent**:
 
-The [package target][package-targets] wraps `RunCommand`, `RunArguments` and
-`RunWorkingDirectory` after
-[`ComputeRunArguments`](../../src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.targets)
-only when browser support is enabled, the RID starts with `browser-`, and
-the caller supplies `DotnetTestInvocation=true`. This is an explicit PoC
-marker, **not a reserved SDK property or automatic product behavior**.
-Unmarked queries and desktop execution are not wrapped.
+- `TestingPlatformRunCommand`
+- `TestingPlatformRunArguments`
+- `TestingPlatformRunWorkingDirectory`
 
-The wrapper preserves the evaluated host command through private URI-encoded
-launcher options and starts it without a shell. Encoding is for argument
-preservation, not secrecy. A custom target that overwrites the run properties
-later can bypass this wrapper; arbitrary host/target composition is not
-supported by the experiment. A supported activation mechanism requires a
-separate SDK/TestFX decision, not more package target-ordering machinery.
+Explicit empty values are retained rather than treated as missing.
+The SDK then invokes the optional `ComputeTestingPlatformRunArguments`
+target in a separate build request and consumes those dedicated outputs.
+With no target or providers, ordinary run values remain the fallback.
+Configured providers without a callable target fail instead of being ignored.
 
-### Host and browser startup
+The [browser package][package-targets] defines that optional target and
+registers its provider through `ComputeTestingPlatformRunArgumentsDependsOn`.
+For enabled `browser-*` projects it wraps the final host command without
+modifying `RunCommand`, `RunArguments` or `RunWorkingDirectory`.
+Ordinary `dotnet run` and desktop launch behavior remain unchanged.
 
-The [package assets][package-targets] participate in the existing Static Web
-Assets graph under `/_mtp/`. The launcher navigates to
-`/_mtp/browser-host.html`, leaving the consumer's root page alone.
-`AssetKind="Build"` keeps these test host assets out of publication.
-This is not published-layout test execution or a framework-page adapter.
+The [SDK capability][sdk-targets] is `TestingPlatformRunArgumentsVersion=1`;
+the package provider requires it. There is no legacy `AfterTargets` ordering
+or `DotnetTestInvocation` fallback. This is an implemented cross-repository
+contract awaiting SDK merge and dependency flow, not support in older SDKs.
 
-The [host process][host] recognizes WasmAppHost's stdout `App url:` line
-with an HTTP loopback URL. It does not infer readiness from generic server
-logs, HTTPS URLs or stderr, and it fails on early exit or timeout.
-No readiness-file protocol or fallback server is introduced.
+The package preserves the evaluated command through private URI-encoded
+options and starts it without a shell. Encoding preserves arguments; it is
+not secrecy. Its [worker][worker] also URL-decodes WasmAppHost's repeated
+`arg=` query values in order, prepending them to SDK-supplied application
+arguments while leaving the expanded SDK bootstrap last. This preserves
+project-configured `TestingPlatformCommandLineArguments`, including filters.
 
-The [launcher][browser] requires an explicitly selected installed
-Chromium-family executable and creates a headless browser with a fresh
-context and page. It does not acquire browsers, search for alternatives,
-or expose arbitrary browser arguments.
+## Host startup and managed protocol
 
-### Managed execution and completion
+The [package targets][package-targets] register reserved Static Web Assets
+under `/_mtp/` with `AssetKind="Build"`. The worker navigates to
+`/_mtp/browser-host.html`, preserving the consumer's root page and excluding
+the test host assets from publication. This is not published-layout testing
+or a framework-page adapter.
 
-The SDK's
-[`TestApplication`](../../src/Cli/dotnet/Commands/Test/MTP/TestApplication.cs)
-selects HTTP transport for browser modules and appends a protected bootstrap
-response-file reference. The [package parser][options] expands the final SDK
-bootstrap before launching the host; earlier user-authored response files
-are unsupported.
+The [host process][host] recognizes WasmAppHost's stdout `App url:` with an
+HTTP loopback URL. Generic server logs, HTTPS URLs and stderr do not establish
+readiness. Early exit or timeout fails launch; no fallback server or new
+readiness-file protocol is used.
 
-WasmAppHost's readiness URL can also carry application arguments as repeated
-`arg=` query values, including `TestingPlatformCommandLineArguments`.
-The [parser][options] URL-decodes those values in order, and the
-[launcher][launcher] prepends them to the SDK-supplied application arguments,
-leaving the expanded bootstrap last. This preserves project-configured
-filters as well as command-line arguments; the [acceptance test][acceptance]
-checks that an unmatched project-configured filter produces zero tests.
+The [SDK application][application] appends a protected HTTP bootstrap
+response-file reference. The [package parser][options] expands that final
+file; user-authored response files remain unsupported. The worker supplies
+arguments through private top-level-page bindings and returns the managed
+exit code or launcher failure. A terminal binding is neither an MTP handshake
+nor proof that any tests were reported; the SDK retains result aggregation.
 
-The [private page bindings][browser] provide application arguments and accept
-one terminal result from the [boot module][boot]. They ship together inside
-the package; they are not a public framework API. MTP owns its handshake,
-discovery, filtering and result messages through [managed HTTP][http-client].
-The launcher returns the [managed exit code][terminal-result], while a
-reported bootstrap error fails the launch. A terminal binding is not an
-MTP handshake or evidence that any tests were reported; the SDK retains
-command-level result handling.
+The [wire contract][protocol] supports protocol versions through `1.5.0`.
+The newer version alone does not enable optional behavior: the corresponding
+SDK handshake capabilities are required.
 
-## Security boundary
+| SDK handshake capability | Behavior |
+| --- | --- |
+| `ServerControlTransport=http` (property 20) | A second authenticated MTP HTTP client polls for existing control messages, independently of the results client. |
+| `FileArtifactTransfer=chunked-v1` (property 21) | Managed MTP may upload local artifact bytes before reporting host artifact metadata. |
+| Transfer limits (properties 22-25) | Advertise maximum chunk, file and module bytes, and file count. The receiver remains authoritative. |
 
-This runs **trusted test projects and their dependencies**. The package
-executes their evaluated host command. An invocation marker, loopback URL or
-isolated browser context is not a sandbox for hostile tests.
+[Serializer IDs][wire-fields] 13/14 retain the control request/message
+format; 15/16 add artifact transfer request/reply. Without the HTTP control
+capability, MTP does not start that channel. Without usable artifact-transfer
+capability/limits, it warns that export is unavailable and does not report
+browser-local paths as host files. An incompatible handshake is not replaced
+by a launcher-success shortcut.
 
-The SDK creates its bootstrap response file with create-new semantics and
-current-user access on Windows or user-only permissions on Unix. The package
-[reader][options] is specific to that bootstrap, not a general untrusted
-response-file parser. It rejects a detected symbolic link or reparse point
-and checks Unix access permissions, but these checks are not a complete
-ownership or replacement-race defense.
+## Cancellation and owned process lifecycle
 
-Bearer credentials are passed through private bindings rather than URLs or
-static assets. Bindings validate the expected page, top-level frame and host
-origin. These checks do not authenticate individual scripts executing in
-that page: the runtime, tests and same-page code remain trusted with the
-bootstrap. The package [redacts known bootstrap values][diagnostics] from
-its diagnostic buffer and disables Playwright `DEBUG` logging; this is not
-a promise to sanitize arbitrary output from untrusted code.
+The [SDK][application] completes each HTTP control poll with a pending
+control message or, after 30 seconds, a `VoidResponse` meaning no command.
+MTP repolls after that response. The [gateway][gateway] dispatches requests
+concurrently so parked polls cannot block results or artifacts, and drains
+active requests during shutdown.
 
-The existing SDK
-[gateway](../../src/Cli/dotnet/Commands/Test/MTP/IPC/HttpTestHostGateway.cs)
-authenticates protocol POSTs and handles CORS/Private Network Access
-preflights. Preflights are unauthenticated, and the first accepted origin is
-pinned when none was supplied; the launcher does not preregister its origin.
-Origin checks and bearer authentication are distinct. This experiment adds
-no CSP rewriting or new gateway security protocol.
+MTP connects the negotiated channel to its existing
+[graceful-stop capability][common-host]. SDK cancellation policy can request
+managed shutdown while result/artifact communication remains live, then
+force termination after its grace period. The existing
+[two-stage Ctrl+C handling][ctrl-c] remains: first request cooperative
+cancellation and stop scheduling; a second press forces exit.
+A blocked browser thread may not process managed cancellation, so graceful
+completion and artifact flushing cannot be guaranteed after force termination.
 
-## Dependencies and distribution
+The [supervisor][supervisor] starts a package-private worker behind a startup
+barrier. Before the worker can launch WasmAppHost, Playwright or Chromium,
+the package establishes [process containment][containment]:
 
-The [browser package project][package-project] privately references
-`Microsoft.Playwright` and bundles the host-side launcher, its managed
-dependencies and Playwright's Node driver payload. Browser binaries are
-separate prerequisites. Unused Playwright Vite UI and TypeScript assets are
-excluded. A pure-managed test application therefore does not mean the
-overall launch stack has no JavaScript or Node dependency.
+- Windows: attach the worker to an owned kill-on-close job.
+- POSIX: create and verify a worker-owned process group.
 
-Keep that payload out of the SDK layout, core MTP and ordinary test
-applications that do not opt in. Private NuGet dependencies still require
-payload, licensing, signing, source-build, offline-use and servicing
-decisions. Bundling platform payloads is not evidence that those platforms
-work. The launcher's target framework and roll-forward policy likewise do
-not define a supported test-application framework matrix.
+The worker monitors the parent's private input pipe. Parent loss triggers
+cancellation and, on POSIX, eventual process-group termination through a
+[separate monitor thread][parent-monitor]. The supervisor bounds startup
+and shutdown, attempts orderly cleanup, then terminates owned resources.
+This provides ownership of a wedged private driver without replacing
+Playwright or depending solely on its asynchronous disposal.
 
-## Failure handling and limits
+Containment is not a sandbox for hostile tests or a guarantee against
+external tooling simultaneously applying uncatchable termination to every
+supervisor and worker. Forceful shutdown may leave caller-owned temporary
+files; process cleanup and the reproduction recipe's file cleanup are separate.
 
-The [launcher][launcher] monitors completion, host exit, browser disconnect,
-unhandled page errors and page crash, with separate startup and completion timeouts. Its
-[browser][browser] and [host][host] cleanup paths bound individual waits and
-attempt to release owned resources. Bounded waiting alone does not terminate
-a wedged driver or prove that every child process was reaped; successful
-cleanup must be demonstrated on the real process tree, including failure
-and cancellation paths.
+## Artifact export and host file ownership
 
-Graceful SDK-to-browser-managed-MTP cancellation is not implemented by this
-package. Forceful browser/host cleanup cannot guarantee managed `finally`
-execution or artifact flushing. Console cancellation, parent termination
-and arbitrary process signals are not interchangeable guarantees.
+Managed [MTP][connection] reads reported VFS artifacts through managed file
+APIs and sends ordered chunks using the existing authenticated transport.
+Requests identify the execution, instance and transfer, with a basename,
+declared length, offset, bytes and final flag. Replies acknowledge the next
+offset and return a host path only after commit. MTP substitutes acknowledged
+host paths into the existing artifact metadata, including input-artifact paths.
 
-Browser VFS files are not host files. There is no host-input transfer or
-artifact export, and the launcher does not implement a general report,
-configuration or coverage-option denylist. Do not infer host report
-persistence from live results. A preview must explicitly define which
-file-dependent options are supported and how unsupported use fails.
+The [SDK receiver][transfers] requires a valid test-host handshake and stages
+data beneath SDK-selected module and transfer directories in the results
+directory. Caller filenames cannot select directories. It rejects invalid
+names, traversal, inconsistent lengths/offsets, repeated completed transfers,
+overwrite and quota violations. Only complete ordered data is moved from
+`.partial` to its final path. Pending files are cleaned on abort/disposal,
+and failures remain errors rather than successful artifact reports.
+The [application][application] accepts artifact paths only from its committed
+transfer set; arbitrary reported browser paths are not trusted host paths.
 
-Other non-goals are Blazor/UI/component testing, framework-owned startup,
-WASI, VSTest, `--test-modules` without project evaluation, browser reuse,
-hot reload, managed browser debugging and dynamic assembly loading.
-Non-Windows browser execution, published-layout execution and alternate
-runtime modes require their own composed validation before being advertised.
+[Default receiver limits][limits] are 1 MiB per chunk, 1 GiB per file,
+4 GiB and 10,000 files per module. Positive integer environment overrides are:
 
-## Evidence and preview gate
+- `DOTNET_CLI_TEST_ARTIFACT_MAX_FILE_BYTES`
+- `DOTNET_CLI_TEST_ARTIFACT_MAX_MODULE_BYTES`
+- `DOTNET_CLI_TEST_ARTIFACT_MAX_FILE_COUNT`
 
-Source links below pin inspected implementations; they are not evidence
-that a later package or branch passed. Exact commands, SDK/package/browser
-identities, package hashes, exit codes and result artifacts belong with the
-two implementation PRs, rather than test-count tables in this design.
+Invalid overrides fail explicitly. MTP honors advertised limits and retains
+local safety caps; increasing a receiver limit does not promise unlimited
+producer output. Quota failures cannot silently drop a file and report success.
 
-The implementation PRs track local validation and CI separately. Neither a
-successful build on another platform nor a signing-policy dry run establishes
-real-browser support or officially signed binaries. Evidence must use the
-corresponding built SDK and packaged TestFX implementation together; earlier
-local runs do not validate fixes made afterward.
+Host configuration-file transfer and browser-side artifact merging are not
+provided. Browser hosts do not advertise
+[artifact postprocessors][common-host], and the
+[SDK excludes WebAssembly merge jobs][postprocessing].
+Exported originals remain available to host tooling; export is not a claim
+that every reporting, coverage or file-dependent extension runs in a browser.
 
-A supported preview needs an agreed activation mechanism, an explicit
-SDK/runtime/MTP/browser compatibility matrix, verified package distribution,
-and real end-to-end evidence for success, discovery/filtering, failure,
-zero results, incompatible or missing handshakes, cancellation and cleanup.
-Keep an owner responsible for dependency flow, release-branch validation
-and servicing before downstream enablement.
+## Trust, dependencies and release gates
 
-None of those requirements calls for a new results relay, public page
-protocol, browser acquisition manager or asset server. Host unification is
-a separate discussion in
+The model assumes trusted test projects and dependencies: their evaluated
+host command executes on the machine. The SDK uses a current-user-protected
+bootstrap file; the [reader][options] rejects detected reparse points and
+checks Unix permissions, but is not a general hostile-file parser or complete
+replacement-race defense.
+
+Bootstrap credentials stay out of URLs and static assets. Private bindings
+check the expected page, top-level frame and exact origin, not the identity
+of scripts already executing there. Those scripts remain trusted.
+Known bootstrap values are redacted from diagnostics and Playwright `DEBUG`
+logging is disabled. The [gateway][gateway] authenticates protocol POSTs;
+CORS/Private Network Access preflights are unauthenticated and can establish
+the first accepted origin. There is no launcher-origin preregistration or
+CSP rewriting.
+
+The [optional package][package-project] privately references Playwright and
+bundles its required managed/JavaScript dependencies and platform Node
+payloads, excluding unused UI/type/font assets. Browser executables remain
+external prerequisites. None of this browser payload is added to the SDK
+layout or core MTP.
+
+Distribution builds can set `TestingPlatformBrowserBundlePlaywrightNode=false`
+when packing; consumers can supply an approved host Node executable through
+[`TestingPlatformBrowserNodeExecutable`][node]. This is a packaging seam,
+not completed source-build, offline-use or third-party intake approval.
+
+The [validated runtime scope][package-doc] is Windows x64 and Debian Linux x64
+with installed Chromium-family browsers. Other OS/architecture combinations
+have compile or package-layout evidence only. SDK/runtime/MTP/browser versions
+must be aligned; bundled RID payloads and the launcher's TFM do not establish
+a broader supported matrix.
+
+Official signing, macOS notarization, publication, SDK merge/dependency flow,
+license/SBOM and source-build approval, and servicing ownership remain external
+release gates. Arcade signing dry runs validate policy/container handling,
+not officially signed artifacts. Keep one owner responsible through release
+branch validation and downstream enablement.
+
+Exact commands, package identities/hashes, exit codes and result artifacts
+belong with the implementation PRs, not test-count tables in this design.
+Evidence must exercise the composed SDK and packages, including failure,
+legacy capabilities, cancellation, quotas, mixed modules and cleanup.
+
+## Outside this design
+
+Blazor/UI/component testing, framework-owned startup, WASI hosting, VSTest,
+`--test-modules` without project evaluation, browser reuse, hot reload,
+managed browser debugging and dynamic assembly loading remain outside scope.
+Published-layout execution and alternate runtime modes need separate validation.
+Host unification is discussed separately in
 [dotnet/runtime#122144](https://github.com/dotnet/runtime/issues/122144) and
-[dotnet/aspnetcore#67814](https://github.com/dotnet/aspnetcore/issues/67814).
-The narrow experiment reuses WasmAppHost rather than claiming to solve that
-broader hosting design.
+[dotnet/aspnetcore#67814](https://github.com/dotnet/aspnetcore/issues/67814);
+this design reuses WasmAppHost rather than adding another server.
 
-[sample-project]: https://github.com/dotnet/sdk/blob/d89eaef953deb9cce526d54f410e3b8a6650d784/poc/browser-wasm-unit-tests/BrowserWasmTestApp.csproj
-[sample-test]: https://github.com/dotnet/sdk/blob/d89eaef953deb9cce526d54f410e3b8a6650d784/poc/browser-wasm-unit-tests/BrowserWasmTests.cs
-[sample-readme]: https://github.com/dotnet/sdk/blob/d89eaef953deb9cce526d54f410e3b8a6650d784/poc/browser-wasm-unit-tests/README.md
-[mstest-package]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Package/MSTest/MSTest.csproj
-[mstest-targets]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Adapter/MSTest.TestAdapter/buildTransitive/common/MSTest.TestAdapter.targets
-[entrypoint]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets
-[package-project]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/Microsoft.Testing.Platform.Browser.csproj
-[package-targets]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets
-[browser]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/ChromiumBrowser.cs
-[boot]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/buildMultiTargeting/assets/Microsoft.Testing.Platform.Browser.main.js
-[host]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/HostProcess.cs
-[options]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/BrowserLauncherOptions.cs
-[terminal-result]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/BrowserTerminalResult.cs
-[launcher]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/Program.cs
-[diagnostics]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/DiagnosticBuffer.cs
-[mtp-connection]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/DotnetTestConnection.cs
-[http-client]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/Transport/DotnetTestHttpClient.cs
-[acceptance]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/BrowserPackageExecutionTests.cs
+[sample-project]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/poc/browser-wasm-unit-tests/BrowserWasmTestApp.csproj
+[sample-test]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/poc/browser-wasm-unit-tests/BrowserWasmTests.cs
+[sample-readme]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/poc/browser-wasm-unit-tests/README.md
+[mstest-package]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Package/MSTest/MSTest.csproj
+[entrypoint]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets
+[selection]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Cli/dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs
+[sdk-targets]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets
+[application]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Cli/dotnet/Commands/Test/MTP/TestApplication.cs
+[gateway]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Cli/dotnet/Commands/Test/MTP/IPC/HttpTestHostGateway.cs
+[ctrl-c]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Cli/dotnet/Commands/Test/MTP/CtrlCCancellationManager.cs
+[transfers]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Cli/dotnet/Commands/Test/MTP/FileArtifactTransferManager.cs
+[limits]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Cli/dotnet/Commands/Test/MTP/FileArtifactTransferLimits.cs
+[postprocessing]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Cli/dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs
+[connection]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/DotnetTestConnection.cs
+[common-host]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs
+[protocol]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs
+[wire-fields]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs
+[package-targets]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets
+[package-project]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/Microsoft.Testing.Platform.Browser.csproj
+[package-doc]: https://github.com/microsoft/testfx/blob/b41d763f0072c6f1cd07b6d8173b1d0097ad6c0d/src/Platform/Microsoft.Testing.Platform.Browser/PACKAGE.md
+[boot]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/buildMultiTargeting/assets/Microsoft.Testing.Platform.Browser.main.js
+[host]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/HostProcess.cs
+[options]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/BrowserLauncherOptions.cs
+[worker]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/BrowserWorker.cs
+[supervisor]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/BrowserSupervisor.cs
+[containment]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/WorkerProcessContainment.cs
+[parent-monitor]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/WorkerParentMonitor.cs
+[node]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/PlaywrightNodeExecutable.cs
