@@ -23,7 +23,8 @@ Build this SDK checkout with `build.cmd` and pack the aligned testfx packages.
 An installed Chromium-family browser is required; this recipe does not download
 one. Run in PowerShell 7 from the SDK repository root. The package feed must contain
 the browser package and matching MSTest, MTP, MTP.MSBuild, telemetry, and TRX
-abstractions packages from one testfx source revision, with its `manifest.json`.
+abstractions packages, with each package's source revision and hash recorded in
+the feed's `manifest.json`.
 Replace the inputs below with that **immutable aligned snapshot**. Do not repack
 it while a run is in progress.
 

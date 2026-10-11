@@ -6,14 +6,14 @@
     {
       "id": "dotnet-test-wire-contract-fieldids",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/IPC/ObjectFieldIds.cs",
-      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props). RetryAttemptNumber and IsSuperseded are reserved in the SDK contract so newer peers can send them without conflicting ids; the SDK does not consume that metadata until its serializers and retry model support framework-level retry attempts. ProviderUid, MinimumArity, and MaximumArity are also reserved; the SDK's command-line option serializer skips that optional metadata.",
+      "notes": "Shared named-pipe/HTTP wire contract for dotnet test and Microsoft.Testing.Platform. Serializer and field IDs must stay byte-aligned; TestFX is the source of truth. Reconciled through 93513d729: serializers 15/16 add bounded artifact-transfer request/reply framing while preserving all existing IDs. Optional command metadata remains forward-compatible.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
-          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
-          "baseline_blob_sha": "7592b74c90a4c2e5b989b7f3314ebc1c0ec11804",
+          "baseline_ref_sha": "93513d72944a3b5a05efb40b6daea61a92ebe702",
+          "baseline_blob_sha": "b69970e6cccb6fca092495dfe8e32dc4f1c8d0f5",
           "scope": "entire file; ids must match exactly"
         }
       ]
@@ -21,14 +21,14 @@
     {
       "id": "dotnet-test-wire-contract-constants",
       "local_path": "src/Cli/dotnet/Commands/Test/CliConstants.cs",
-      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, HandshakeMessageHostTypes, ProtocolConstants). Watch the upstream file for added/changed wire constants. Reconciled at 868da4b6: the SDK mirrors the ArtifactPostProcessor and TestHostOrchestrator host types, the OrchestratorFeature property, and the 'tool' execution mode. The SDK consumes the retry orchestrator feature to enable retry UX before the first TestHost handshake. Intentional divergences: the SDK does not mirror TestStates.InProgress, and ProtocolConstants.SupportedVersions deliberately stops at 1.3.0 because the SDK does not implement the 1.4.0 reverse server-control channel.",
+      "notes": "Handshake/session/state constants for the dotnet test protocol, inlined from TestFX IPC/Constants.cs. Reconciled through 93513d729: SDK versions include 1.4.0 server control and 1.5.0 artifact transfer; handshake IDs 20-25 advertise HTTP control, chunked-v1 transfer, and resource bounds. Features require their capabilities, not just a version match. IDs 18/19 retain upstream post-processing assignments. The SDK does not mirror TestStates.InProgress.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs",
-          "baseline_ref_sha": "868da4b6752d5818d8f1c2c54ae27ee5b5f61852",
-          "baseline_blob_sha": "54dff700b3f69da76605d4707b60ba7c67d21d20",
+          "baseline_ref_sha": "93513d72944a3b5a05efb40b6daea61a92ebe702",
+          "baseline_blob_sha": "104e0f711d889b3f90056356fe33e3e41073668c",
           "scope": "wire constants (TestStates, SessionEventTypes, HandshakeMessage*, ProtocolConstants)"
         }
       ]

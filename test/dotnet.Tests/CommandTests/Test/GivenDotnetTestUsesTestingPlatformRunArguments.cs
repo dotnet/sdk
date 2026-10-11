@@ -65,6 +65,27 @@ public class GivenDotnetTestUsesTestingPlatformRunArguments : SdkTest
     }
 
     [TestMethod]
+    public void ItRejectsProvidersWithoutTheirSelectionTarget()
+    {
+        TestAsset asset = CreateProject(
+            """
+            <PropertyGroup>
+              <ComputeTestingPlatformRunArgumentsDependsOn>_SelectTestLauncher</ComputeTestingPlatformRunArgumentsDependsOn>
+            </PropertyGroup>
+            <Target Name="_SelectTestLauncher" />
+            """);
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(asset.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandEvaluationExceptionBuildFailed,
+                "ComputeTestingPlatformRunArguments"));
+    }
+
+    [TestMethod]
     public void ItRejectsAnExplicitlyEmptyTestRunCommand()
     {
         TestAsset asset = CreateProject(

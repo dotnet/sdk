@@ -821,7 +821,9 @@ internal static class SolutionAndProjectUtility
             SetFallbackProperty(ProjectProperties.TestingPlatformRunWorkingDirectory, runProperties.WorkingDirectory);
 
             // A separate request runs after every ComputeRunArguments AfterTargets provider.
-            if (project.Targets.ContainsKey(CliConstants.ComputeTestingPlatformRunArgumentsTarget) &&
+            bool hasTestRunProviders = project.GetPropertyValue("ComputeTestingPlatformRunArgumentsDependsOn")
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length != 0;
+            if ((project.Targets.ContainsKey(CliConstants.ComputeTestingPlatformRunArgumentsTarget) || hasTestRunProviders) &&
                 !buildSession.Build(project, s_computeTestingPlatformRunArgumentsTarget))
             {
                 throw new GracefulException(

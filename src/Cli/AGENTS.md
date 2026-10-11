@@ -109,6 +109,8 @@ before invoking the optional `ComputeTestingPlatformRunArguments` target.
 `TestingPlatformRunCommand`, `TestingPlatformRunArguments`, and
 `TestingPlatformRunWorkingDirectory` are separate test-only outputs; absent properties
 inherit their canonical `Run*` values, while explicitly empty outputs remain empty.
+Configuring test-run dependencies without defining the selection target is an error,
+not a reason to silently launch the canonical host.
 Do not overwrite the canonical properties or make `dotnet run` invoke the test-only target.
 The SDK advertises this contract as `TestingPlatformRunArgumentsVersion=1`; see
 [`SolutionAndProjectUtility`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) and
