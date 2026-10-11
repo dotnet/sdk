@@ -59,7 +59,8 @@ Use the [SDK sample README][sample-readme] as the single reproduction recipe,
 not a second copy of its commands here. Reproduction must identify the built
 SDK, compatible runtime/workload assets, exact locally packed packages and
 installed Chromium executable. Pin SDK selection, isolate package and build
-state, stop on restore failure, and verify the restored package identity.
+state, disable build-server and MSBuild worker-node reuse, stop on restore
+failure, and verify the restored package identity.
 The explicit restore is needed before `dotnet test` evaluates the package's
 `ComputeRunArguments` integration. A machine-specific local package path or
 a successful restore alone is not proof of that identity.
@@ -196,9 +197,8 @@ file-dependent options are supported and how unsupported use fails.
 Other non-goals are Blazor/UI/component testing, framework-owned startup,
 WASI, VSTest, `--test-modules` without project evaluation, browser reuse,
 hot reload, managed browser debugging and dynamic assembly loading.
-Non-Windows browser execution, multi-module/concurrent runs,
-published-layout execution and alternate runtime modes require their own
-composed validation before being advertised.
+Non-Windows browser execution, published-layout execution and alternate
+runtime modes require their own composed validation before being advertised.
 
 ## Evidence and preview gate
 
@@ -228,9 +228,9 @@ a separate discussion in
 The narrow experiment reuses WasmAppHost rather than claiming to solve that
 broader hosting design.
 
-[sample-project]: https://github.com/dotnet/sdk/blob/e1c56ffe9f1c2c2930d7ddc27b554f25c1c3aa5d/poc/browser-wasm-unit-tests/BrowserWasmTestApp.csproj
-[sample-test]: https://github.com/dotnet/sdk/blob/e1c56ffe9f1c2c2930d7ddc27b554f25c1c3aa5d/poc/browser-wasm-unit-tests/BrowserWasmTests.cs
-[sample-readme]: https://github.com/dotnet/sdk/blob/e1c56ffe9f1c2c2930d7ddc27b554f25c1c3aa5d/poc/browser-wasm-unit-tests/README.md
+[sample-project]: https://github.com/dotnet/sdk/blob/d89eaef953deb9cce526d54f410e3b8a6650d784/poc/browser-wasm-unit-tests/BrowserWasmTestApp.csproj
+[sample-test]: https://github.com/dotnet/sdk/blob/d89eaef953deb9cce526d54f410e3b8a6650d784/poc/browser-wasm-unit-tests/BrowserWasmTests.cs
+[sample-readme]: https://github.com/dotnet/sdk/blob/d89eaef953deb9cce526d54f410e3b8a6650d784/poc/browser-wasm-unit-tests/README.md
 [mstest-package]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Package/MSTest/MSTest.csproj
 [mstest-targets]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Adapter/MSTest.TestAdapter/buildTransitive/common/MSTest.TestAdapter.targets
 [entrypoint]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets
