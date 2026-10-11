@@ -46,11 +46,12 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
         var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
 
         var endpoints = manifest.Endpoints;
-        // blazor.server.js and blazor.web.js assets and endpoints are included automatically
+        // blazor.server.js, blazor.web.js, and dotnet-watch browser tools assets and endpoints are included automatically
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(39);
+        endpoints.Should().HaveCount(51);
+        endpoints.Where(endpoint => endpoint.Route.Contains("DotNetWatch")).Should().HaveCount(9);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(2);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));

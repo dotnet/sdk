@@ -27,10 +27,13 @@
   <UsingTask TaskName="GetDependencyInfo" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetLinuxNativeInstallerDependencyVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="GetWorkloadManifestLayout" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetWorkloadSetFeatureBand" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="OverrideAndCreateBundledNETCoreAppPackageVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ProcessRuntimeAnalyzerVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="PrepareIncrementalLayout" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="PruneEmptyLayoutDirectories" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="ResolveBundledManifestPackages" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="RemoveAssetFromDepsPackages" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ReplaceFileContents" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ReplaceFilesWithSymbolicLinks" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />

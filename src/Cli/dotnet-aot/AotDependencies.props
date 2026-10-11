@@ -32,6 +32,7 @@
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="NuGet.Frameworks" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\Microsoft.Win32.Msi\Microsoft.Win32.Msi.csproj" Condition="'$(TargetOS)' == 'windows'" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.Cli.InternalMicrosoft\Microsoft.DotNet.Cli.InternalMicrosoft.csproj" GlobalPropertiesToRemove="PublishDir" />
   </ItemGroup>
 
   <!-- Use NuGet's source-generated System.Text.Json deserialization path and let ILC remove

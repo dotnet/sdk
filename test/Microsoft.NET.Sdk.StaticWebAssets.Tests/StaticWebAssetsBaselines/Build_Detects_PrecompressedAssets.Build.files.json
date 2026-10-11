@@ -1,4 +1,12 @@
 [
   "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithP2PReference#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\compressed\\AppWithP2PReference.modules.json.gz",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js.gz",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js.gz",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js.gz",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
+  "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json",
   "${ProjectPath}\\AppWithP2PReference\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\AppWithP2PReference.styles.css"
 ]

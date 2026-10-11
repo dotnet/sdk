@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Security;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
@@ -783,6 +784,134 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             // error CS1002: ; expected
             .And.HaveStdOutContaining("error CS1002")
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
+    }
+
+    /// <summary>
+    /// <see href="https://github.com/dotnet/sdk/issues/56496"/>
+    /// </summary>
+    [TestMethod]
+    [DataRow("en-US", null, null, "Unreachable code detected")]
+    [DataRow("de-DE", null, null, "Unerreichbarer Code wurde entdeckt.")]
+    [DataRow("de-DE", null, "en-US", "Unreachable code detected")]
+    [DataRow("en-US", null, "de-DE", "Unerreichbarer Code wurde entdeckt.")]
+    [DataRow(null, "1031", null, "Unerreichbarer Code wurde entdeckt.")]
+    [DataRow("en-US", "1031", null, "Unreachable code detected")]
+    public void CscOnly_CompilerDiagnosticsLanguage(
+        string? cliLanguage,
+        string? vsLanguage,
+        string? preferredUILang,
+        string expectedMessage)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(
+            identifier: $"{cliLanguage}_{vsLanguage}_{preferredUILang}",
+            baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine("Hello");
+            if (false)
+            {
+                Console.WriteLine("Unreachable");
+            }
+            """);
+
+        var cliCulture = cliLanguage is null
+            ? CultureInfo.GetCultureInfo(int.Parse(vsLanguage!, CultureInfo.InvariantCulture))
+            : CultureInfo.GetCultureInfo(cliLanguage);
+        var cscMessage = CliCommandStrings.ResourceManager.GetString(
+            nameof(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc), cliCulture);
+        cscMessage.Should().NotBeNullOrEmpty();
+
+        BuildWithLanguage(BuildLevel.Csc);
+
+        File.AppendAllText(programPath, Environment.NewLine);
+        BuildWithLanguage(BuildLevel.Csc);
+
+        File.AppendAllText(programPath, Environment.NewLine);
+        BuildWithLanguage(BuildLevel.All, "--no-cache");
+
+        File.AppendAllText(programPath, Environment.NewLine);
+        BuildWithLanguage(BuildLevel.Csc);
+
+        void BuildWithLanguage(BuildLevel expectedLevel, params string[] args)
+        {
+            string cscNotice = expectedLevel == BuildLevel.Csc
+                ? cscMessage + Environment.NewLine
+                : string.Empty;
+            string expectedPrefix = $"{programPath}(4,5): warning CS0162: {expectedMessage}{Environment.NewLine}{cscNotice}";
+
+            Build(testInstance, expectedLevel, args,
+                expectedOutput: "Hello",
+                customizeCommand: CustomizeCommand,
+                expectedOutputPrefix: expectedPrefix);
+        }
+
+        TestCommand CustomizeCommand(TestCommand command)
+        {
+            foreach ((string name, string? value) in new[]
+            {
+                ("DOTNET_CLI_UI_LANGUAGE", cliLanguage),
+                ("VSLANG", vsLanguage),
+                ("PreferredUILang", preferredUILang),
+            })
+            {
+                if (value is null)
+                {
+                    command.EnvironmentToRemove.Add(name);
+                }
+                else
+                {
+                    command.WithEnvironmentVariable(name, value);
+                }
+            }
+
+            return command;
+        }
+    }
+
+    /// <summary>
+    /// <see href="https://github.com/dotnet/sdk/issues/56496"/>
+    /// </summary>
+    [TestMethod]
+    public void CscOnly_CompilerDiagnosticsLanguage_PropertyDirective()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        const string program = """
+            Console.WriteLine("Hello");
+            if (false)
+            {
+                Console.WriteLine("Unreachable");
+            }
+            """;
+        File.WriteAllText(programPath, $"""
+            #:property PreferredUILang=de-DE
+            {program}
+            """);
+
+        BuildWithLanguage(BuildLevel.All, 5, "Unerreichbarer Code wurde entdeckt.");
+
+        File.AppendAllText(programPath, Environment.NewLine);
+        BuildWithLanguage(BuildLevel.Csc, 5, "Unerreichbarer Code wurde entdeckt.");
+
+        File.WriteAllText(programPath, program);
+        BuildWithLanguage(BuildLevel.Csc, 4, "Unreachable code detected");
+
+        void BuildWithLanguage(BuildLevel expectedLevel, int lineNumber, string expectedMessage)
+        {
+            string cscNotice = expectedLevel == BuildLevel.Csc
+                ? CliCommandStrings.NoBinaryLogBecauseRunningJustCsc + Environment.NewLine
+                : string.Empty;
+            string expectedPrefix = $"{programPath}({lineNumber},5): warning CS0162: {expectedMessage}{Environment.NewLine}{cscNotice}";
+
+            Build(testInstance, expectedLevel,
+                expectedOutput: "Hello",
+                customizeCommand: command =>
+                {
+                    command.EnvironmentToRemove.AddRange(["VSLANG", "PreferredUILang"]);
+                    return command.WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US");
+                },
+                expectedOutputPrefix: expectedPrefix);
+        }
     }
 
     /// <summary>

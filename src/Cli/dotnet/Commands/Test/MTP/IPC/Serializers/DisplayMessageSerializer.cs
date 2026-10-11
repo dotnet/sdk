@@ -37,46 +37,30 @@ internal sealed class DisplayMessageSerializer : BaseSerializer, INamedPipeSeria
         byte level = DisplayMessageLevels.Information;
         string? text = null;
 
-        ushort fieldCount = ReadUShort(stream);
-
-        for (int i = 0; i < fieldCount; i++)
+        ReadFields(stream, (fieldId, fieldSize) =>
         {
-            ushort fieldId = ReadUShort(stream);
-            int fieldSize = ReadInt(stream);
-
             switch (fieldId)
             {
                 case DisplayMessageFieldsId.ExecutionId:
                     executionId = ReadStringValue(stream, fieldSize);
-                    break;
+                    return true;
 
                 case DisplayMessageFieldsId.InstanceId:
                     instanceId = ReadStringValue(stream, fieldSize);
-                    break;
+                    return true;
 
                 case DisplayMessageFieldsId.Level:
                     level = ReadByte(stream);
-
-                    // Level is a single byte today, but honor the declared field size so that a future
-                    // protocol revision that widens it (or a frame that reports a different size) does not
-                    // leave extra bytes unread and misalign the remaining fields.
-                    if (fieldSize > 1)
-                    {
-                        SetPosition(stream, stream.Position + (fieldSize - 1));
-                    }
-
-                    break;
+                    return true;
 
                 case DisplayMessageFieldsId.Text:
                     text = ReadStringValue(stream, fieldSize);
-                    break;
+                    return true;
 
                 default:
-                    // If we don't recognize the field id, skip the payload corresponding to that field
-                    SetPosition(stream, stream.Position + fieldSize);
-                    break;
+                    return false;
             }
-        }
+        });
 
         return new DisplayMessage(executionId, instanceId, level, text);
     }

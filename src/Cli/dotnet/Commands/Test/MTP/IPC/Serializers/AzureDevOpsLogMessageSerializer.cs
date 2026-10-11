@@ -32,33 +32,26 @@ internal sealed class AzureDevOpsLogMessageSerializer : BaseSerializer, INamedPi
         string? instanceId = null;
         string? logText = null;
 
-        ushort fieldCount = ReadUShort(stream);
-
-        for (int i = 0; i < fieldCount; i++)
+        ReadFields(stream, (fieldId, fieldSize) =>
         {
-            ushort fieldId = ReadUShort(stream);
-            int fieldSize = ReadInt(stream);
-
             switch (fieldId)
             {
                 case AzureDevOpsLogMessageFieldsId.ExecutionId:
                     executionId = ReadStringValue(stream, fieldSize);
-                    break;
+                    return true;
 
                 case AzureDevOpsLogMessageFieldsId.InstanceId:
                     instanceId = ReadStringValue(stream, fieldSize);
-                    break;
+                    return true;
 
                 case AzureDevOpsLogMessageFieldsId.LogText:
                     logText = ReadStringValue(stream, fieldSize);
-                    break;
+                    return true;
 
                 default:
-                    // If we don't recognize the field id, skip the payload corresponding to that field
-                    SetPosition(stream, stream.Position + fieldSize);
-                    break;
+                    return false;
             }
-        }
+        });
 
         return new AzureDevOpsLogMessage(executionId, instanceId, logText);
     }

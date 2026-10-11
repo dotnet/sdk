@@ -30,10 +30,10 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Usage
 
             Dim invocationSyntax = CType(invocationContext.Syntax, InvocationExpressionSyntax)
             Dim typeArgumentSyntax = invocationContext.TypeArguments.Select(Function(t) SyntaxFactory.ParseTypeName(t.ToDisplayString()))
-            Dim otherArgumentsSyntax = invocationContext.OtherArguments _
-                .Where(Function(a) a.ArgumentKind <> Operations.ArgumentKind.DefaultValue) _
-                .Select(Function(a) a.Syntax) _
-                .OfType(Of ArgumentSyntax)
+            ' Remove selectors from the source list so expanded arguments and separator trivia survive.
+            Dim argumentList = invocationSyntax.ArgumentList.RemoveNodes(
+                invocationSyntax.ArgumentList.Arguments.Where(AddressOf invocationContext.IsTypeOfArgumentSyntax),
+                SyntaxRemoveOptions.KeepExteriorTrivia Or SyntaxRemoveOptions.AddElasticMarker)
             Dim methodNameSyntax =
                 SyntaxFactory.GenericName(SyntaxFactory.Identifier(invocationContext.Method.Name),
                                           SyntaxFactory.TypeArgumentList(typeArgumentSyntax.ToArray()))
@@ -51,7 +51,7 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Usage
 
             Return invocationSyntax _
                 .WithExpression(modifiedInvocationExpression) _
-                .WithArgumentList(SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(otherArgumentsSyntax))) _
+                .WithArgumentList(argumentList) _
                 .WithTriviaFrom(invocationSyntax)
         End Function
     End Class

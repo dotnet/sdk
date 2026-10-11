@@ -53,27 +53,99 @@
 
   </ItemGroup>
 
-  <Target Name="LayoutManifests">
+  <PropertyGroup>
+    <_ManifestLayoutRoot>$([MSBuild]::NormalizeDirectory('$(RedistInstallerLayoutPath)', 'sdk-manifests'))</_ManifestLayoutRoot>
+    <_ManifestLayoutStatePrefix>$(IntermediateOutputPath)incremental-layout\manifests-$(ProductMonikerRid)</_ManifestLayoutStatePrefix>
+    <_ManifestLayoutInputManifest>$(_ManifestLayoutStatePrefix).inputs</_ManifestLayoutInputManifest>
+    <_ManifestLayoutCompletionStamp>$(_ManifestLayoutStatePrefix).complete</_ManifestLayoutCompletionStamp>
+  </PropertyGroup>
+
+  <Target Name="_ResolveBundledManifestPackages" Condition="'@(BundledManifests)' != ''">
+    <ResolveBundledManifestPackages PackageRoot="$(NuGetPackageRoot)" Manifests="@(BundledManifests)">
+      <Output TaskParameter="ResolvedManifests" ItemName="_ResolvedBundledManifests" />
+    </ResolveBundledManifestPackages>
+  </Target>
+
+  <Target Name="_PrepareLayoutManifests" DependsOnTargets="_ResolveBundledManifestPackages;_PrepareBaselineWorkloadSet">
+    <Error Text="Workload manifest '%(_ResolvedBundledManifests.Identity)' is missing WorkloadManifest.json in '%(_ResolvedBundledManifests.RestoredNupkgContentPath)\data'."
+           Condition="'@(_ResolvedBundledManifests)' != '' and !Exists('%(_ResolvedBundledManifests.RestoredNupkgContentPath)\data\WorkloadManifest.json')" />
+
     <ItemGroup>
-      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\*"
+      <ManifestContent Include="%(_ResolvedBundledManifests.RestoredNupkgContentPath)\data\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data')"
                        DestinationPath="%(FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(Version)"
                        RestoredNupkgContentPath="%(RestoredNupkgContentPath)"
                        WorkloadManifestId="%(Identity)" />
 
-      <ManifestContent Include="%(BundledManifests.RestoredNupkgContentPath)\data\localize\*"
+      <ManifestContent Include="%(_ResolvedBundledManifests.RestoredNupkgContentPath)\data\localize\*"
                        Condition="Exists('%(RestoredNupkgContentPath)\data\localize')"
-                       DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)/localize" />
+                       DestinationPath="%(_ResolvedBundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(_ResolvedBundledManifests.Version)/localize" />
     </ItemGroup>
 
     <Error Text="No workload manifest content found." Condition="'@(BundledManifests)' != '' and '@(ManifestContent)' == ''" />
 
-    <Copy SourceFiles="@(ManifestContent)"
-          DestinationFolder="$(RedistInstallerLayoutPath)sdk-manifests/%(DestinationPath)" />
-
     <MSBuild Projects="$(RepoRoot)src\Workloads\Manifests\manifest-packages.csproj"
-             Targets="LayoutBuiltinManifests"
-             Properties="ManifestDirectory=$(RedistInstallerLayoutPath)sdk-manifests\" />
+             Targets="GetBuiltinManifestLayoutInputs"
+             Properties="ManifestDirectory=$(_ManifestLayoutRoot)">
+      <Output TaskParameter="TargetOutputs" ItemName="_BuiltinManifestLayoutInput" />
+    </MSBuild>
+
+    <ItemGroup>
+      <_ManifestLayoutInput Include="@(ManifestContent->'%(FullPath)')">
+        <DestinationPath>$([MSBuild]::NormalizePath('$(_ManifestLayoutRoot)', '%(ManifestContent.DestinationPath)', '%(ManifestContent.Filename)%(ManifestContent.Extension)'))</DestinationPath>
+      </_ManifestLayoutInput>
+      <_ManifestLayoutInput Include="@(_BuiltinManifestLayoutInput);@(_BaselineManifestLayoutInput)" />
+      <_ExpectedManifestLayoutOutput Include="@(_ManifestLayoutInput->'%(DestinationPath)')" />
+      <_MissingManifestLayoutOutput Include="@(_ExpectedManifestLayoutOutput)" Condition="!Exists('%(Identity)')" />
+    </ItemGroup>
+
+    <GetWorkloadManifestLayout LayoutRoot="$(_ManifestLayoutRoot)" SourceFiles="@(_ManifestLayoutInput)">
+      <Output TaskParameter="StaleOutputs" ItemName="_StaleManifestLayoutOutput" />
+      <Output TaskParameter="OwnedDirectories" ItemName="_OwnedManifestLayoutDirectory" />
+      <Output TaskParameter="EmptyDirectories" ItemName="_EmptyManifestLayoutDirectory" />
+    </GetWorkloadManifestLayout>
+
+    <!-- The inventory detects added, removed, and remapped inputs that timestamps cannot. The root
+         line records a destination change even when no manifests are mapped. -->
+    <WriteLinesToFile File="$(_ManifestLayoutInputManifest)"
+                      Lines="Root=$(_ManifestLayoutRoot);@(_ManifestLayoutInput->'%(FullPath)|%(DestinationPath)')"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+
+    <ReadLinesFromFile File="$(_ManifestLayoutCompletionStamp)"
+                       Condition="Exists('$(_ManifestLayoutCompletionStamp)')">
+      <Output TaskParameter="Lines" PropertyName="_ManifestLayoutCompletionValue" />
+    </ReadLinesFromFile>
+
+    <!-- Missing or stale outputs, empty owned directories, or a corrupt stamp force LayoutManifests to run. -->
+    <Delete Files="$(_ManifestLayoutCompletionStamp)"
+            Condition="'@(_MissingManifestLayoutOutput)' != '' or '@(_StaleManifestLayoutOutput)' != '' or '@(_EmptyManifestLayoutDirectory)' != '' or (Exists('$(_ManifestLayoutCompletionStamp)') and '$(_ManifestLayoutCompletionValue)' != 'complete')" />
+  </Target>
+
+  <Target Name="LayoutManifests"
+          DependsOnTargets="_PrepareLayoutManifests"
+          Inputs="@(_ManifestLayoutInput);$(_ManifestLayoutInputManifest)"
+          Outputs="$(_ManifestLayoutCompletionStamp)">
+    <Delete Files="$(_ManifestLayoutCompletionStamp)" />
+
+    <PrepareIncrementalLayout
+        SourceFiles="@(_ManifestLayoutInput)"
+        DestinationFiles="@(_ExpectedManifestLayoutOutput)">
+      <Output TaskParameter="ExpectedOutputs" ItemName="_PreparedManifestLayoutOutput" />
+    </PrepareIncrementalLayout>
+
+    <Delete Files="@(_StaleManifestLayoutOutput)" />
+
+    <!-- Prune before copying so a directory whose name changed only in case is recreated with the
+         new name, and so the result has no empty directories, matching a clean build. -->
+    <PruneEmptyLayoutDirectories Directories="@(_OwnedManifestLayoutDirectory)" />
+
+    <Copy SourceFiles="@(_ManifestLayoutInput)"
+          DestinationFiles="@(_PreparedManifestLayoutOutput)"
+          SkipUnchangedFiles="true" />
+
+    <CompleteIncrementalLayout ExpectedOutputs="@(_PreparedManifestLayoutOutput)"
+                               CompletionStampFile="$(_ManifestLayoutCompletionStamp)" />
   </Target>
 
   <PropertyGroup>
@@ -81,7 +153,10 @@
     <GenerateBaselineWorkloadSet>false</GenerateBaselineWorkloadSet>
   </PropertyGroup>
 
-  <Target Name="LayoutBaselineWorkloadSet" DependsOnTargets="LayoutManifests" Condition="'$(GenerateBaselineWorkloadSet)' == 'true'">
+  <!-- Kept as the entry point GenerateInstallerLayout.targets calls. The baseline is now written by LayoutManifests. -->
+  <Target Name="LayoutBaselineWorkloadSet" DependsOnTargets="LayoutManifests" />
+
+  <Target Name="_PrepareBaselineWorkloadSet" Condition="'$(GenerateBaselineWorkloadSet)' == 'true'">
 
     <PropertyGroup>
       <WorkloadSetVersion Condition="'$(DotNetFinalVersionKind)' == 'release'">$(VersionPrefix)-baseline$(_BuildNumberLabels)</WorkloadSetVersion>
@@ -93,7 +168,8 @@
     </GetWorkloadSetFeatureBand>
 
     <PropertyGroup>
-      <RealFormattedManifestPaths>$(RedistInstallerLayoutPath)sdk-manifests\$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>      
+      <RealFormattedManifestPaths>$(_ManifestLayoutRoot)$(WorkloadSetFeatureBand)\workloadsets\$(WorkloadSetVersion)</RealFormattedManifestPaths>
+      <_BaselineManifestInput>$(_ManifestLayoutStatePrefix).baseline.json</_BaselineManifestInput>
     </PropertyGroup>
 
     <ItemGroup>
@@ -102,7 +178,11 @@
       <FormattedBaselineManifest Include="}" />
     </ItemGroup>
 
-    <WriteLinestoFile File="$(RealFormattedManifestPaths)\baseline.workloadset.json" Lines="@(FormattedBaselineManifest)" />
+    <WriteLinesToFile File="$(_BaselineManifestInput)" Lines="@(FormattedBaselineManifest)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <_BaselineManifestLayoutInput Include="$([MSBuild]::NormalizePath('$(_BaselineManifestInput)'))"
+                                    DestinationPath="$([MSBuild]::NormalizePath('$(RealFormattedManifestPaths)', 'baseline.workloadset.json'))" />
+    </ItemGroup>
   </Target>
 
 </Project>

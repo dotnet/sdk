@@ -1,1 +1,10 @@
-[]
+[
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\RazorComponentAppMultitarget.modules.json.gz",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js.gz",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js.gz",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js.gz",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
+  "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.build.manifest.json"
+]

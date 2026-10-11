@@ -12,11 +12,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 #if NET
     [SupportedOSPlatform("windows")]
 #endif
+    [OSCondition(OperatingSystems.Windows)]
     [TestClass]
     public class ProcessExtensionsTests
     {
         [TestMethod]
-        [OSCondition(OperatingSystems.Windows)]
         public void ItReturnsTheParentProcessId()
         {
             int expectedParentProcessId = Process.GetCurrentProcess().Id;

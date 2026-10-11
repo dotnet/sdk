@@ -110,7 +110,9 @@ internal static class ValidationUtility
         solutionFile = solutionFileOrDirectory;
 
         // If it's not a directory, validate as a file path
-        if (!CliConstants.SolutionExtensions.Contains(Path.GetExtension(solutionFileOrDirectory)))
+        if (!CliConstants.SolutionExtensions.Contains(
+            Path.GetExtension(solutionFileOrDirectory),
+            StringComparer.OrdinalIgnoreCase))
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, solutionFileOrDirectory));
             return false;
@@ -128,7 +130,7 @@ internal static class ValidationUtility
         }
 
         var extension = Path.GetExtension(projectOrSolutionFileOrDirectory);
-        isSolution = CliConstants.SolutionExtensions.Contains(extension);
+        isSolution = CliConstants.SolutionExtensions.Contains(extension, StringComparer.OrdinalIgnoreCase);
         projectOrSolutionFile = projectOrSolutionFileOrDirectory;
         // If it's not a directory, validate as a file path
         if (!isSolution &&

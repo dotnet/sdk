@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using System.Text;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
@@ -48,5 +49,29 @@ public class FileArtifactMessagesSerializerTests
         roundTripped.FileArtifacts[0].InputArtifactPaths.Should().Equal(
             "/repo/TestResults/first.trx",
             "/repo/TestResults/second.trx");
+    }
+
+    [TestMethod]
+    public void Deserialize_RejectsInputArtifactPathCountLargerThanItsField()
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write((ushort)1);
+            writer.Write((ushort)FileArtifactMessagesFieldsId.FileArtifactMessageList);
+            writer.Write(16);
+            writer.Write(1);
+            writer.Write((ushort)1);
+            writer.Write((ushort)FileArtifactMessageFieldsId.InputArtifactPaths);
+            writer.Write(sizeof(int));
+            writer.Write(int.MaxValue);
+        }
+
+        stream.Position = 0;
+        var serializer = new FileArtifactMessagesSerializer();
+
+        Action deserialize = () => serializer.Deserialize(stream);
+
+        deserialize.Should().Throw<InvalidDataException>();
     }
 }
