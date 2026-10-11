@@ -19,18 +19,26 @@ Related work: [design RFC](https://github.com/dotnet/sdk/pull/55906) and
 
 ## Reproduce using the built SDK and package
 
-Build this SDK checkout with `build.cmd` and pack the testfx browser package.
+Build this SDK checkout with `build.cmd` and pack the aligned testfx packages.
 An installed Chromium-family browser is required; this recipe does not download
-one. Run in PowerShell 7 from the SDK repository root. Replace the three inputs
-below with the **same package snapshot and version** you intend to test. Do not
-repack that snapshot while the run is in progress.
+one. Run in PowerShell 7 from the SDK repository root. The package feed must contain
+the browser package and matching MSTest, MTP, MTP.MSBuild, telemetry, and TRX
+abstractions packages from one testfx source revision, with its `manifest.json`.
+Replace the inputs below with that **immutable aligned snapshot**. Do not repack
+it while a run is in progress.
 
 ```powershell
 $packageSource = (Resolve-Path "C:\path\to\testfx\artifacts\packages\Debug\Shipping" -ErrorAction Stop).Path
 $packageVersion = "0.1.0-dev"
+$mstestVersion = "4.6.0-dev"
 $browser = (Resolve-Path "C:\path\to\chromium\chrome.exe" -ErrorAction Stop).Path
-$package = Join-Path $packageSource "Microsoft.Testing.Platform.Browser.$packageVersion.nupkg"
-$expectedPackageHash = (Get-FileHash $package -Algorithm SHA512 -ErrorAction Stop).Hash
+$manifest = Get-Content (Join-Path $packageSource "manifest.json") -Raw -ErrorAction Stop | ConvertFrom-Json
+foreach ($entry in $manifest) {
+    if ((Get-FileHash (Join-Path $packageSource $entry.Name) -Algorithm SHA256 -ErrorAction Stop).Hash -ne $entry.SHA256) {
+        throw "The package snapshot does not match its manifest: $($entry.Name)"
+    }
+}
+$results = Join-Path (Get-Location) "TestResults\browser-wasm"
 $run = Join-Path ([IO.Path]::GetTempPath()) "browser-wasm-test-$([guid]::NewGuid().ToString('N'))"
 $pushed = $false
 $useMsbuildServer = $env:DOTNET_CLI_USE_MSBUILD_SERVER
@@ -49,8 +57,8 @@ if ($sdks.Count -ne 1) {
 }
 $sdkVersion = $sdks[0].Name
 $properties = @(
-    "-p:DotnetTestInvocation=true"
     "-p:BrowserWasmMtpPackageVersion=$packageVersion"
+    "-p:BrowserWasmMSTestVersion=$mstestVersion"
     "-p:TestingPlatformBrowserExecutable=$browser"
     "-p:RestoreAdditionalProjectSources=$packageSource"
     "-p:UseSharedCompilation=false"
@@ -83,14 +91,20 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Restore failed with exit code $LASTEXITCODE."
     }
-    $version = $packageVersion.ToLowerInvariant()
-    $hashFile = "$env:NUGET_PACKAGES\microsoft.testing.platform.browser\$version\microsoft.testing.platform.browser.$version.nupkg.sha512"
-    $actualPackageHash = [Convert]::ToHexString(
-        [Convert]::FromBase64String((Get-Content $hashFile -Raw).Trim()))
-    if ($actualPackageHash -ne $expectedPackageHash) {
-        throw "Restore selected a different browser package than the supplied snapshot."
+    $assets = Get-Content "$run\obj\project.assets.json" -Raw -ErrorAction Stop | ConvertFrom-Json
+    foreach ($entry in $manifest) {
+        $library = @($assets.libraries.PSObject.Properties | Where-Object {
+            ($_.Name.Replace("/", ".") + ".nupkg") -eq $entry.Name
+        })
+        if ($library.Count -ne 1) {
+            throw "The aligned package was not restored: $($entry.Name)"
+        }
+        $actualHash = [Convert]::ToHexString([Convert]::FromBase64String($library[0].Value.sha512))
+        if ($actualHash -ne (Get-FileHash (Join-Path $packageSource $entry.Name) -Algorithm SHA512 -ErrorAction Stop).Hash) {
+            throw "Restore selected a different package than the supplied snapshot: $($entry.Name)"
+        }
     }
-    & $dotnet test --project $project --no-restore @properties
+    & $dotnet test --project $project --no-restore --results-directory $results @properties
     if ($LASTEXITCODE -ne 0) {
         throw "Browser tests failed with exit code $LASTEXITCODE."
     }
@@ -112,9 +126,16 @@ Add `--list-tests` to the second command to discover tests without running
 them. The explicit restore ensures NuGet has generated the experimental
 package imports before `dotnet test` evaluates `ComputeRunArguments`.
 
-The single `DotnetTestInvocation=true` property is an experiment marker
-consumed by the browser package. It is supplied explicitly here rather than
-added to the shipping SDK.
+No invocation marker is required. The SDK completes `ComputeRunArguments` and
+its providers, then invokes `ComputeTestingPlatformRunArguments` and consumes the
+separate `TestingPlatformRunCommand`, `TestingPlatformRunArguments`, and
+`TestingPlatformRunWorkingDirectory` outputs. The package rejects SDKs lacking
+`TestingPlatformRunArgumentsVersion=1`; ordinary `dotnet run` is unchanged.
+
+The sample also exports `browser-runtime.txt` through `TestContext.AddResultFile`.
+The SDK commits it beneath `TestResults\browser-wasm`, isolated from other modules.
+These result files are retained; only the disposable restore/build directory is
+deleted by the recipe.
 
 The SDK's `.toolsetversion` identifies the source revision; older SDK directories
 can remain in an incremental layout without being selected by timestamp.
@@ -131,18 +152,27 @@ and call managed `Main(args)`.
 
 ## Scope and limitations
 
-- The package wraps the canonical WebAssembly SDK/WasmAppHost command only when
-  the caller supplies the experiment marker. It is not a supported SDK extension
-  contract and does not support later custom `ComputeRunArguments` providers.
+- The package wraps the canonical WebAssembly SDK/WasmAppHost command through
+  the SDK's test-only selection target, after ordinary run-argument providers.
 - Test results travel directly from managed MTP to the SDK over authenticated
   loopback HTTP. The package's private browser bindings only carry startup
   arguments and the terminal process-style result.
 - `WasmBuildNative=false` and `PublishTrimmed=false` deliberately use the
   prebuilt runtime and untrimmed tests. Successful execution does not establish
   AOT/native-relink or trimming support.
-- Browser virtual-file-system reports and attachments are not host files.
-  Artifact export, host configuration-file transfer, and graceful managed
-  cancellation are not implemented by this sample.
+- Remote artifacts are streamed in chunks of at most 1 MiB. Defaults are 1 GiB
+  per file, 4 GiB and 10,000 files per module. Positive integer overrides are
+  `DOTNET_CLI_TEST_ARTIFACT_MAX_FILE_BYTES`,
+  `DOTNET_CLI_TEST_ARTIFACT_MAX_MODULE_BYTES`, and
+  `DOTNET_CLI_TEST_ARTIFACT_MAX_FILE_COUNT`. Incomplete or rejected transfers
+  cannot turn into successful host artifact reports.
+- Cancellation uses the negotiated MTP HTTP control channel; results and final
+  artifacts can finish before shutdown. A second Ctrl+C still forces exit.
+  Host configuration-file transfer and browser-side artifact merging are not
+  provided; exported originals remain available to host tooling.
+- Official signing, SDK dependency flow, and the supported release/RID matrix
+  still require release validation. A local signing dry run is not official
+  signing or proof of cross-platform execution.
 - This local reproduction is not cross-platform CI or a security certification.
   A forcibly terminated shell may leave temporary state; it does not run the
   `finally` block. Do not infer process containment from the recipe's file cleanup.

@@ -8,9 +8,14 @@ namespace BrowserWasmTestApp;
 [TestClass]
 public sealed class BrowserWasmTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public void RunsInsideBrowserWasm()
     {
         Assert.IsTrue(OperatingSystem.IsBrowser());
+        string artifact = Path.Combine(Path.GetTempPath(), "browser-runtime.txt");
+        File.WriteAllText(artifact, "Created inside browser WebAssembly.");
+        TestContext.AddResultFile(artifact);
     }
 }

@@ -92,6 +92,51 @@
         <target state="new">Merging compatible artifacts produced by different test applications...</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArtifactTransferCleanupFailed">
+        <source>Unable to remove an incomplete artifact transfer: {0}</source>
+        <target state="new">Unable to remove an incomplete artifact transfer: {0}</target>
+        <note>{0} is the file system error.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactTransferIOError">
+        <source>Unable to export the remote artifact: {0}</source>
+        <target state="new">Unable to export the remote artifact: {0}</target>
+        <note>{0} is the file system error.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactTransferIncomplete">
+        <source>The test application exited with incomplete or failed artifact transfers.</source>
+        <target state="new">The test application exited with incomplete or failed artifact transfers.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactTransferInvalidFileName">
+        <source>The artifact file name must be a valid file name without directory components.</source>
+        <target state="new">The artifact file name must be a valid file name without directory components.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactTransferInvalidLimit">
+        <source>Environment variable '{0}' must contain an integer between 1 and {1}.</source>
+        <target state="new">Environment variable '{0}' must contain an integer between 1 and {1}.</target>
+        <note>{0} is the environment variable name. {1} is the maximum supported value.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactTransferInvalidMetadata">
+        <source>The artifact transfer metadata is missing or invalid.</source>
+        <target state="new">The artifact transfer metadata is missing or invalid.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactTransferInvalidSequence">
+        <source>The artifact transfer was duplicated, changed its metadata, or supplied an invalid chunk offset or final length.</source>
+        <target state="new">The artifact transfer was duplicated, changed its metadata, or supplied an invalid chunk offset or final length.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactTransferLimitExceeded">
+        <source>The artifact transfer exceeds the permitted file size, test-module size, or file count.</source>
+        <target state="new">The artifact transfer exceeds the permitted file size, test-module size, or file count.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ArtifactTransferUnpublishedPath">
+        <source>A remote artifact or input path was not exported by this SDK and will not be reported as a host file.</source>
+        <target state="new">A remote artifact or input path was not exported by this SDK and will not be reported as a host file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
         <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
         <target state="translated">Obciążenie Aspire jest przestarzałe i nie jest już konieczne. Usługa Aspire jest teraz dostępna jako pakiety NuGet, które można dodawać bezpośrednio do projektów. Więcej informacji znajdziesz na stronie https://aka.ms/aspire/support-policy</target>
