@@ -34,6 +34,7 @@ $expectedPackageHash = (Get-FileHash $package -Algorithm SHA512 -ErrorAction Sto
 $run = Join-Path ([IO.Path]::GetTempPath()) "browser-wasm-test-$([guid]::NewGuid().ToString('N'))"
 $pushed = $false
 $useMsbuildServer = $env:DOTNET_CLI_USE_MSBUILD_SERVER
+$disableNodeReuse = $env:MSBUILDDISABLENODEREUSE
 $nugetPackages = $env:NUGET_PACKAGES
 $project = (Resolve-Path ".\poc\browser-wasm-unit-tests\BrowserWasmTestApp.csproj" -ErrorAction Stop).Path
 $dotnet = (Resolve-Path ".\artifacts\bin\redist\Debug\dotnet\dotnet.exe" -ErrorAction Stop).Path
@@ -60,6 +61,7 @@ $properties = @(
 
 try {
     $env:DOTNET_CLI_USE_MSBUILD_SERVER = "0"
+    $env:MSBUILDDISABLENODEREUSE = "1"
     $env:NUGET_PACKAGES = "$run\packages"
     New-Item -ItemType Directory -Path $run -ErrorAction Stop | Out-Null
     @{
@@ -95,6 +97,7 @@ try {
 }
 finally {
     $env:DOTNET_CLI_USE_MSBUILD_SERVER = $useMsbuildServer
+    $env:MSBUILDDISABLENODEREUSE = $disableNodeReuse
     $env:NUGET_PACKAGES = $nugetPackages
     if ($pushed) {
         Pop-Location
@@ -118,9 +121,9 @@ can remain in an incremental layout without being selected by timestamp.
 The temporary `global.json` prevents the repository's bootstrap SDK from
 silently replacing the selected SDK. `NUGET_PACKAGES` keeps restore and
 subsequent package imports on the same cache. The hash check detects same-version
-local package mismatches. Build-server reuse and shared compilation are disabled
-for this invocation to avoid leaving servers holding files in the disposable
-directory.
+local package mismatches. Build-server reuse, MSBuild worker-node reuse, and
+shared compilation are disabled for this invocation to avoid leaving servers
+holding files in the disposable directory.
 
 No application-authored JavaScript or `[JSImport]` is needed. The browser still
 requires the package-owned boot module to instantiate the WebAssembly runtime
