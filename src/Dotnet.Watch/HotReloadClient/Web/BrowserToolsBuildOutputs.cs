@@ -22,8 +22,7 @@ namespace Microsoft.DotNet.HotReload;
 /// itself, and a global property could not be scoped to a project anyway. The build therefore owns
 /// the key pair, and the watcher reads it back per project instance.
 ///
-/// The paths are derived from evaluated MSBuild properties, the same way the static web assets
-/// manifest is located in <see cref="EvaluationResult"/>, rather than by searching the file system.
+/// The paths are derived from evaluated MSBuild properties, rather than by searching the file system.
 /// They must stay in sync with Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets.
 /// </summary>
 internal sealed class BrowserToolsBuildOutputs
