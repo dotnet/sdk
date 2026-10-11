@@ -110,6 +110,14 @@ response-file reference. The [package parser][options] expands the final SDK
 bootstrap before launching the host; earlier user-authored response files
 are unsupported.
 
+WasmAppHost's readiness URL can also carry application arguments as repeated
+`arg=` query values, including `TestingPlatformCommandLineArguments`.
+The [parser][options] URL-decodes those values in order, and the
+[launcher][launcher] prepends them to the SDK-supplied application arguments,
+leaving the expanded bootstrap last. This preserves project-configured
+filters as well as command-line arguments; the [acceptance test][acceptance]
+checks that an unmatched project-configured filter produces zero tests.
+
 The [private page bindings][browser] provide application arguments and accept
 one terminal result from the [boot module][boot]. They ship together inside
 the package; they are not a public framework API. MTP owns its handshake,
@@ -128,8 +136,9 @@ isolated browser context is not a sandbox for hostile tests.
 The SDK creates its bootstrap response file with create-new semantics and
 current-user access on Windows or user-only permissions on Unix. The package
 [reader][options] is specific to that bootstrap, not a general untrusted
-response-file parser. Its file checks must not be described as a complete
-ownership, symlink or replacement-race defense.
+response-file parser. It rejects a detected symbolic link or reparse point
+and checks Unix access permissions, but these checks are not a complete
+ownership or replacement-race defense.
 
 Bearer credentials are passed through private bindings rather than URLs or
 static assets. Bindings validate the expected page, top-level frame and host
@@ -152,8 +161,9 @@ no CSP rewriting or new gateway security protocol.
 The [browser package project][package-project] privately references
 `Microsoft.Playwright` and bundles the host-side launcher, its managed
 dependencies and Playwright's Node driver payload. Browser binaries are
-separate prerequisites. A pure-managed test application therefore does not
-mean the overall launch stack has no JavaScript or Node dependency.
+separate prerequisites. Unused Playwright Vite UI and TypeScript assets are
+excluded. A pure-managed test application therefore does not mean the
+overall launch stack has no JavaScript or Node dependency.
 
 Keep that payload out of the SDK layout, core MTP and ordinary test
 applications that do not opt in. Private NuGet dependencies still require
@@ -164,8 +174,8 @@ not define a supported test-application framework matrix.
 
 ## Failure handling and limits
 
-The [launcher][launcher] monitors completion, host exit, browser disconnect
-and page crash, with separate startup and completion timeouts. Its
+The [launcher][launcher] monitors completion, host exit, browser disconnect,
+unhandled page errors and page crash, with separate startup and completion timeouts. Its
 [browser][browser] and [host][host] cleanup paths bound individual waits and
 attempt to release owned resources. Bounded waiting alone does not terminate
 a wedged driver or prove that every child process was reaped; successful
@@ -186,7 +196,7 @@ file-dependent options are supported and how unsupported use fails.
 Other non-goals are Blazor/UI/component testing, framework-owned startup,
 WASI, VSTest, `--test-modules` without project evaluation, browser reuse,
 hot reload, managed browser debugging and dynamic assembly loading.
-Non-Windows execution, multi-module/concurrent runs, `--no-build`,
+Non-Windows browser execution, multi-module/concurrent runs,
 published-layout execution and alternate runtime modes require their own
 composed validation before being advertised.
 
@@ -197,12 +207,11 @@ that a later package or branch passed. Exact commands, SDK/package/browser
 identities, package hashes, exit codes and result artifacts belong with the
 two implementation PRs, rather than test-count tables in this design.
 
-The linked TestFX
-[CI build 1600624](https://dev.azure.com/dnceng-public/cbb18261-c48f-4abb-8651-8cdcb5474649/_build/results?buildId=1600624)
-has failed Windows and Linux jobs. It does not establish cross-platform
-support, and earlier local runs do not validate fixes made afterward.
-Replacement evidence must use the corresponding built SDK and packaged
-TestFX implementation together.
+The implementation PRs track local validation and CI separately. Neither a
+successful build on another platform nor a signing-policy dry run establishes
+real-browser support or officially signed binaries. Evidence must use the
+corresponding built SDK and packaged TestFX implementation together; earlier
+local runs do not validate fixes made afterward.
 
 A supported preview needs an agreed activation mechanism, an explicit
 SDK/runtime/MTP/browser compatibility matrix, verified package distribution,
@@ -222,17 +231,18 @@ broader hosting design.
 [sample-project]: https://github.com/dotnet/sdk/blob/e1c56ffe9f1c2c2930d7ddc27b554f25c1c3aa5d/poc/browser-wasm-unit-tests/BrowserWasmTestApp.csproj
 [sample-test]: https://github.com/dotnet/sdk/blob/e1c56ffe9f1c2c2930d7ddc27b554f25c1c3aa5d/poc/browser-wasm-unit-tests/BrowserWasmTests.cs
 [sample-readme]: https://github.com/dotnet/sdk/blob/e1c56ffe9f1c2c2930d7ddc27b554f25c1c3aa5d/poc/browser-wasm-unit-tests/README.md
-[mstest-package]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Package/MSTest/MSTest.csproj
-[mstest-targets]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Adapter/MSTest.TestAdapter/buildTransitive/common/MSTest.TestAdapter.targets
-[entrypoint]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets
-[package-project]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.Browser/Microsoft.Testing.Platform.Browser.csproj
-[package-targets]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.Browser/buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets
-[browser]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.Browser/ChromiumBrowser.cs
-[boot]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.Browser/buildMultiTargeting/assets/Microsoft.Testing.Platform.Browser.main.js
-[host]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.Browser/HostProcess.cs
-[options]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.Browser/BrowserLauncherOptions.cs
-[terminal-result]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.Browser/BrowserTerminalResult.cs
-[launcher]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.Browser/Program.cs
-[diagnostics]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform.Browser/DiagnosticBuffer.cs
-[mtp-connection]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/DotnetTestConnection.cs
-[http-client]: https://github.com/microsoft/testfx/blob/d3d54c37113fa9fee96c692c753249c2f8c2ba62/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/Transport/DotnetTestHttpClient.cs
+[mstest-package]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Package/MSTest/MSTest.csproj
+[mstest-targets]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Adapter/MSTest.TestAdapter/buildTransitive/common/MSTest.TestAdapter.targets
+[entrypoint]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets
+[package-project]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/Microsoft.Testing.Platform.Browser.csproj
+[package-targets]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/buildMultiTargeting/Microsoft.Testing.Platform.Browser.targets
+[browser]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/ChromiumBrowser.cs
+[boot]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/buildMultiTargeting/assets/Microsoft.Testing.Platform.Browser.main.js
+[host]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/HostProcess.cs
+[options]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/BrowserLauncherOptions.cs
+[terminal-result]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/BrowserTerminalResult.cs
+[launcher]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/Program.cs
+[diagnostics]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform.Browser/DiagnosticBuffer.cs
+[mtp-connection]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/DotnetTestConnection.cs
+[http-client]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/Transport/DotnetTestHttpClient.cs
+[acceptance]: https://github.com/microsoft/testfx/blob/cf6005560b9a43c40bd756e14792f4533ca00dae/test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/BrowserPackageExecutionTests.cs
