@@ -191,6 +191,86 @@ public sealed class HttpTestHostGatewayTests
         Assert.AreEqual(1, dispatchedRequests);
     }
 
+    [TestMethod]
+    public async Task Post_PendingControlRequest_DoesNotBlockOtherRequests()
+    {
+        var controlReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var controlResponse = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var gateway = new HttpTestHostGateway(
+            request =>
+            {
+                if (request is WaitForServerControlRequest)
+                {
+                    controlReceived.SetResult();
+                    return controlResponse.Task;
+                }
+
+                return Task.FromResult<IResponse>(VoidResponse.CachedInstance);
+            },
+            TestContext.CancellationToken,
+            BrowserOrigin);
+
+        Task<HttpResponseMessage> pendingControl = SendAsync(
+            gateway, WaitForServerControlRequest.CachedInstance, gateway.Token);
+        try
+        {
+            await controlReceived.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+            using HttpResponseMessage response = await SendAsync(gateway, new HandshakeMessage([]), gateway.Token)
+                .WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            Assert.IsInstanceOfType<VoidResponse>(
+                Deserialize(await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken)));
+            Assert.IsFalse(pendingControl.IsCompleted);
+        }
+        finally
+        {
+            controlResponse.TrySetResult(new ServerControlMessage(ServerControlKinds.CancelSession));
+            using HttpResponseMessage response = await pendingControl
+                .WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+        }
+    }
+
+    [TestMethod]
+    public async Task Dispose_PendingControlRequest_DoesNotWaitForCallback()
+    {
+        var controlReceived = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var controlResponse = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+        using var gateway = new HttpTestHostGateway(
+            _ =>
+            {
+                controlReceived.SetResult();
+                return controlResponse.Task;
+            },
+            TestContext.CancellationToken,
+            BrowserOrigin);
+
+        Task<HttpResponseMessage> pendingControl = SendAsync(
+            gateway, WaitForServerControlRequest.CachedInstance, gateway.Token);
+        try
+        {
+            await controlReceived.Task.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            await Task.Run(gateway.Dispose, TestContext.CancellationToken)
+                .WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+
+            Assert.IsFalse(controlResponse.Task.IsCompleted);
+        }
+        finally
+        {
+            controlResponse.TrySetResult(VoidResponse.CachedInstance);
+            try
+            {
+                using HttpResponseMessage response = await pendingControl
+                    .WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            }
+            catch (HttpRequestException)
+            {
+                // Closing the listener can abort the client's pending request.
+            }
+        }
+    }
+
     private async Task<HttpResponseMessage> SendAsync(
         HttpTestHostGateway gateway,
         object message,
