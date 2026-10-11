@@ -11,7 +11,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSTest" />
+    <PackageReference Include="MSTest.TestFramework" />
+    <PackageReference Include="MSTest.TestAdapter" />
     <PackageReference Include="Microsoft.Testing.Platform.Browser" />
   </ItemGroup>
 </Project>
