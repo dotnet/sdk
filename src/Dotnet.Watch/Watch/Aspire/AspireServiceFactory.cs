@@ -230,7 +230,7 @@ internal class AspireServiceFactory(ProjectOptions hostProjectOptions) : IRuntim
         {
             _logger.LogDebug("[#{SessionId}] Stop session", session.Id);
 
-            await session.RunningProject.Process.TerminateAsync();
+            await session.RunningProject.TerminateAsync();
 
             // process termination should cancel output reader task:
             await session.OutputReader;

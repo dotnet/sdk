@@ -11,9 +11,10 @@ public class BrowserRefreshServerTests
 {
     class TestListener : IDisposable
     {
+        public int DisposeCount { get; private set; }
+
         public void Dispose()
-        {
-        }
+            => DisposeCount++;
     }
 
     private static async ValueTask<TestBrowserRefreshServer> CreateStartedServerAsync(
@@ -136,5 +137,23 @@ public class BrowserRefreshServerTests
                 "ReverseProxy__Routes__dotnet-browser-tools__Order=-1000",
             ],
             envBuilder.OrderBy(e => e.Key, StringComparer.Ordinal).Select(e => $"{e.Key}={e.Value}"));
+    }
+
+    [TestMethod]
+    public async Task Dispose_DisposesHostAndIsIdempotent()
+    {
+        var listener = new TestListener();
+        var server = new TestBrowserRefreshServer((_, _) => { })
+        {
+            CreateAndStartHostImpl = () => new WebServerHost(listener, ["ws://test.endpoint"], ["http://test.endpoint"])
+        };
+
+        await server.StartAsync(CancellationToken.None);
+
+        server.Dispose();
+        Assert.AreEqual(1, listener.DisposeCount);
+
+        server.Dispose();
+        Assert.AreEqual(1, listener.DisposeCount);
     }
 }

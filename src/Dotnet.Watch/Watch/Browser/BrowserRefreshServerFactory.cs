@@ -11,10 +11,10 @@ namespace Microsoft.DotNet.Watch;
 /// Creates <see cref="BrowserRefreshServer"/> instances.
 ///
 /// An instance is created for each project that supports browser launching.
-/// When the project is rebuilt and restarted we reuse the same refresh server and browser instance.
-/// Reload message is sent to the browser in that case.
-///
-/// The instances are also reused if the project file is updated or the project graph is reloaded.
+/// The instance is reused while the associated process is still running (for example
+/// when the project graph is reloaded). When process termination is requested the
+/// server is disposed first so that forwarded browser connections do not block
+/// application shutdown; a new server is created on the next launch.
 ///
 /// Each connection loads the current browser tools session key from the key pair the project's
 /// build wrote to its intermediate output. Loading on connect allows the server to start before
@@ -41,6 +41,29 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         {
             server?.Dispose();
         };
+    }
+
+    /// <summary>
+    /// Disposes the refresh server associated with <paramref name="projectNode"/>, if any.
+    /// Call this when process termination is requested so that forwarded browser connections
+    /// do not block application shutdown. A subsequent launch creates a new server.
+    /// </summary>
+    public void DisposeRefreshServer(ProjectGraphNode projectNode)
+    {
+        BrowserRefreshServer? server;
+        var key = projectNode.ProjectInstance.GetId();
+
+        lock (_serversGuard)
+        {
+            if (!_servers.TryGetValue(key, out server) || server == null)
+            {
+                return;
+            }
+
+            _servers.Remove(key);
+        }
+
+        server.Dispose();
     }
 
     public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, WebApplicationAppModel appModel, CancellationToken cancellationToken)

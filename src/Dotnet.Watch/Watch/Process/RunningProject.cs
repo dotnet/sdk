@@ -24,7 +24,8 @@ internal sealed class RunningProject(
     ILogger clientLogger,
     RunningProcess process,
     RestartOperation restartOperation,
-    ImmutableArray<string> managedCodeUpdateCapabilities) : IAsyncDisposable
+    ImmutableArray<string> managedCodeUpdateCapabilities,
+    BrowserRefreshServerFactory browserRefreshServerFactory) : IAsyncDisposable
 {
     private volatile int _isRestarting;
 
@@ -68,12 +69,23 @@ internal sealed class RunningProject(
         => Interlocked.Exchange(ref _isRestarting, 1) == 0;
 
     /// <summary>
+    /// Terminates the process. 
+    /// </summary>
+    public Task TerminateAsync()
+    {
+		// Dispose the project's browser refresh server first so that
+	    // forwarded browser connections do not keep the application from exiting.
+        browserRefreshServerFactory.DisposeRefreshServer(projectNode);
+        return process.TerminateAsync();
+    }
+
+    /// <summary>
     /// Terminates the process in preparation for a restart.
     /// </summary>
     public Task TerminateForRestartAsync()
     {
         InitiateRestart();
-        return process.TerminateAsync();
+        return TerminateAsync();
     }
 
     public async Task<bool> CompleteApplyOperationAsync(Task<bool> applyTask)

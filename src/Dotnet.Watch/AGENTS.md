@@ -68,6 +68,17 @@ Reload).
   Never move executable browser-tools code back into the provider, never let the private
   key or the browser's shared secret reach a build property, an application asset or a log,
   and keep the generated assets build only.
+- **Dispose the browser-tools provider before waiting for the application to exit.**
+  Browser tools WebSockets are forwarded through the application
+  ([`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs)). If the provider
+  stays up, those in-flight Kestrel requests keep `Host.StopAsync` from completing and
+  `dotnet watch` kills the process after the cleanup timeout. Requested termination
+  must call
+  [`BrowserRefreshServerFactory.DisposeRefreshServer`](Watch/Browser/BrowserRefreshServerFactory.cs)
+  for the launching project before waiting for the process to exit
+  ([`RunningProject.TerminateAsync()`](Watch/Process/RunningProject.cs) does this). Do not
+  dispose the server on unexpected process exit: crash relaunch reuses the same provider
+  and port.
 - **Replay lives in the WebSocket handshake.** The provider sends the current snapshot as
   the first message on an accepted connection and releases live messages for that
   connection only after the browser acknowledges it, so there is no wire-level generation

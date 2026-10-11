@@ -126,6 +126,13 @@ internal static class DotNetWatcher
                 break;
             }
 
+            // Dispose the refresh server before cancelling the process so that forwarded
+            // browser connections do not keep the application from exiting.
+            if (projectRootNode != null)
+            {
+                context.BrowserRefreshServerFactory.DisposeRefreshServer(projectRootNode);
+            }
+
             // Regardless of the which task finished first, make sure everything is cancelled
             // and wait for dotnet to exit. We don't want orphan processes
             currentRunCancellationSource.Cancel();

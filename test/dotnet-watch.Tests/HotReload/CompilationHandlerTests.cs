@@ -27,7 +27,7 @@ public class CompilationHandlerTests : DotNetWatchTestBase
         var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false, virtualProjectTargetFramework: null, CancellationToken.None);
         Assert.IsNotNull(projectGraph);
 
-        var handler = new RunningProjectsManager(new ProcessRunner(processCleanupTimeout: TimeSpan.Zero), NullLogger.Instance);
+        var handler = new RunningProjectsManager(new ProcessRunner(processCleanupTimeout: TimeSpan.Zero), NullLogger.Instance, new BrowserRefreshServerFactory());
         var workspace = new ManagedCodeWorkspace(NullLogger.Instance, handler);
 
         var solution = await workspace.UpdateProjectGraphAsync(projectGraph.Graph, CancellationToken.None);

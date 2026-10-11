@@ -396,7 +396,7 @@ public class RuntimeProcessLauncherTests : DotNetWatchTestBase
 
         // Terminate the process:
         Log($"Terminating process {runningProject.ProjectNode.GetDisplayName()} ...");
-        await runningProject.Process.TerminateAsync();
+        await runningProject.TerminateAsync();
 
         // rude edit in A (changing assembly level attribute):
         UpdateSourceFile(serviceSourceA2, """

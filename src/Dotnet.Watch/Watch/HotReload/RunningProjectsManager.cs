@@ -13,7 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogger logger)
+internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogger logger, BrowserRefreshServerFactory browserRefreshServerFactory)
 {
     /// <summary>
     /// Lock to synchronize:
@@ -139,7 +139,8 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
                 clientLogger,
                 runningProcess,
                 restartOperation,
-                managedCodeUpdateCapabilities);
+                managedCodeUpdateCapabilities,
+                browserRefreshServerFactory);
 
             // transfer ownership to the running project:
             disposables.Items.Remove(clients);
@@ -227,7 +228,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
             await runningProject.Clients.ReportCompilationErrorsInApplicationAsync([rudeEditMessage, MessageDescriptor.RestartingApplication.GetMessage()], cancellationToken);
 
             // Terminate the process.
-            await runningProject.Process.TerminateAsync();
+            await runningProject.TerminateAsync();
 
             // Creates a new running project and launches it:
             await runningProject.RestartAsync(cancellationToken);

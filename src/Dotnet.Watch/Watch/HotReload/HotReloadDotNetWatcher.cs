@@ -86,7 +86,7 @@ internal sealed class HotReloadDotNetWatcher
             using var iterationCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, forceRestartCancellationSource.Token);
             var iterationCancellationToken = iterationCancellationSource.Token;
 
-            var runningProjectsManager = new RunningProjectsManager(_context.ProcessRunner, _context.Logger);
+            var runningProjectsManager = new RunningProjectsManager(_context.ProcessRunner, _context.Logger, _context.BrowserRefreshServerFactory);
 
             var suppressWaitForFileChange = false;
             EvaluationResult? evaluationResult = null;
@@ -494,7 +494,7 @@ internal sealed class HotReloadDotNetWatcher
 
                 if (mainRunningProject != null)
                 {
-                    await mainRunningProject.Process.TerminateAsync();
+                    await mainRunningProject.TerminateAsync();
                 }
 
                 // Wait for file change

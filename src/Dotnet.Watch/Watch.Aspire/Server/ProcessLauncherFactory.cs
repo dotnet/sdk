@@ -192,7 +192,7 @@ internal sealed class ProcessLauncherFactory(
                 if (currentProject.Value is { } project)
                 {
                     Logger.LogDebug("Pipe disconnected for '{Path}', terminating project process.", request.EntryPoint);
-                    await project.Process.TerminateAsync();
+                    await project.TerminateAsync();
                 }
 
                 await pipe.DisposeAsync();
