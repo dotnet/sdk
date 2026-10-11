@@ -51,6 +51,11 @@ internal sealed class NetFrameworkWebSocketServer : IAsyncDisposable
         Func<WebSocketConfig, HttpContext, Task> requestHandler,
         ILogger logger)
     {
+        if (config.Port == 0 || config.SecurePort == 0)
+        {
+            throw new NotSupportedException($"{nameof(NetFrameworkWebSocketServer)} does not support auto-assigned ports.");
+        }
+
         var httpServerUrls = config.GetHttpUrls().ToImmutableArray();
         var serverUrls = ImmutableArray.CreateRange(httpServerUrls, WebSocketConfig.GetWebSocketUrl);
 
@@ -58,7 +63,8 @@ internal sealed class NetFrameworkWebSocketServer : IAsyncDisposable
 
         foreach (var endpoint in httpServerUrls)
         {
-            httpListener.Prefixes.Add(endpoint);
+            // HttpListener requires prefixes to end with '/'.
+            httpListener.Prefixes.Add(endpoint.EndsWith("/") ? endpoint : endpoint + "/");
         }
 
         var disposalCancellationSource = new DisposalCancellationSource();

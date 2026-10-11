@@ -41,11 +41,12 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     private BrowserToolsBuildOutputs CreateOutputs()
         => BrowserToolsBuildOutputs.CreateForTesting(_directory, NullLogger.Instance);
 
-    private RSA WriteValidKeyPair()
+    private SharedSecretProvider WriteValidKeyPair()
     {
-        var rsa = RSA.Create(2048);
-        var publicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
-        var p = rsa.ExportParameters(includePrivateParameters: true);
+        var provider = new SharedSecretProvider();
+
+        var publicKey = provider.GetPublicKey();
+        var p = provider.RSA.ExportParameters(includePrivateParameters: true);
 
         File.WriteAllText(_publicKeyPath, $$"""
             {
@@ -75,7 +76,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
             }
             """);
 
-        return rsa;
+        return provider;
     }
 
     /// <summary>
@@ -85,8 +86,8 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     [TestMethod]
     public void CreateSessionKey_UsesTheKeyPairTheBuildProduced()
     {
-        using var rsa = WriteValidKeyPair();
-        var expectedPublicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
+        using var provider = WriteValidKeyPair();
+        var expectedPublicKey = provider.GetPublicKey();
 
         using var sessionKey = CreateOutputs().TryCreateSessionKey();
 
@@ -94,8 +95,8 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         Assert.AreEqual(expectedPublicKey, sessionKey.GetPublicKey());
 
         // The provider decrypts the secret the browser encrypts with the pinned public key.
-        var secret = Convert.ToBase64String(new byte[] { 1, 2, 3, 4 });
-        var encrypted = Convert.ToBase64String(rsa.Encrypt(Convert.FromBase64String(secret), RSAEncryptionPadding.OaepSHA256));
+        var secret = Convert.ToBase64String([1, 2, 3, 4]);
+        var encrypted = Convert.ToBase64String(provider.RSA.Encrypt(Convert.FromBase64String(secret), RSAEncryptionPadding.OaepSHA256));
         Assert.AreEqual(secret, sessionKey.DecryptSecret(encrypted));
     }
 
@@ -162,7 +163,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     public void CreateSessionKey_FailsWhenThePrivateComponentsDescribeADifferentKey()
     {
         using var pinned = WriteValidKeyPair();
-        var pinnedPublicKey = Convert.ToBase64String(pinned.ExportSubjectPublicKeyInfo());
+        var pinnedPublicKey = pinned.GetPublicKey();
 
         using var other = RSA.Create(2048);
         var p = other.ExportParameters(includePrivateParameters: true);

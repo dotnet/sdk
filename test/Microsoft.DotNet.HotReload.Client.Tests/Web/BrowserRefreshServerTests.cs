@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -109,6 +110,6 @@ public class BrowserRefreshServerTests
             ]);
         }
 
-        AssertEx.SequenceEqual(expected.Order(), envBuilder.OrderBy(e => e.Key).Select(e => $"{e.Key}={e.Value}"));
+        AssertEx.SequenceEqual(expected.OrderBy(e => e), envBuilder.OrderBy(e => e.Key).Select(e => $"{e.Key}={e.Value}"));
     }
 }

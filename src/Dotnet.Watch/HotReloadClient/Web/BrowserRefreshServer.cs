@@ -23,6 +23,9 @@ namespace Microsoft.DotNet.HotReload;
 /// Hosts the browser tools provider and communicates with browser tools clients.
 /// Associated with a project instance.
 /// </summary>
+/// <remarks>
+/// Not sealed to allow test overrides.
+/// </remarks>
 internal class BrowserRefreshServer(
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,

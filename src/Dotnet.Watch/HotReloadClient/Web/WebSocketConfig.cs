@@ -12,12 +12,13 @@ namespace Microsoft.DotNet.HotReload;
 internal readonly struct WebSocketConfig(int port, int? securePort, string? hostName, ImmutableArray<string> additionalAllowedOrigins)
 {
     /// <summary>
-    /// 0 to auto-assign.
+    /// 0 to auto-assign. Only applicable to Kestrel server, .NET Framework server does not support auto-assigned ports.
     /// </summary>
     public int Port => port;
 
     /// <summary>
-    /// 0 to auto-assign, null to disable HTTPS/WSS.
+    /// 0 to auto-assign (only applicable to Kestrel server, .NET Framework server does not support auto-assigned ports),
+    /// null to disable HTTPS/WSS.
     /// </summary>
     public int? SecurePort => securePort;
 

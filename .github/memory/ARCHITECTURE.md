@@ -144,7 +144,7 @@ ASP.NET Core host.
 The provider serves no JavaScript. Its HTTP surface is the `/connect` WebSocket,
 `/clear-cache`, and the non-executable `/hot-reload-settings.json` availability response;
 see
-[`BrowserToolsEndpointRouter`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserToolsEndpointRouter.cs).
+[`BrowserRefreshServer.HandleRequestAsync`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserRefreshServer.cs).
 There is no session descriptor, protocol version negotiation, HTTP replay endpoint, or wire
 level generation id: replay is serialized on the authenticated WebSocket, which sends the
 current snapshot first and releases live messages only after the browser acknowledges it.

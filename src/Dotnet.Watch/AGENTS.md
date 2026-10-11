@@ -71,7 +71,7 @@ Reload).
   the first message on an accepted connection and releases live messages for that
   connection only after the browser acknowledges it, so there is no wire-level generation
   id. The internal epoch in
-  [`AbstractBrowserRefreshServer`](HotReloadClient/Web/AbstractBrowserRefreshServer.cs)
+  [`BrowserRefreshServer`](HotReloadClient/Web/BrowserRefreshServer.cs)
   exists only to drop work produced by a superseded client; do not surface it on the wire.
 - **Activation is app-model-specific, but the browser client is shared.** MVC and Razor
   Pages use
