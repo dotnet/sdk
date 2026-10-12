@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watch
@@ -42,6 +43,7 @@ namespace Microsoft.DotNet.Watch
         bool RestartOnRudeEdit = false,
         string? AutoReloadWebSocketHostName = null,
         int? AutoReloadWebSocketPort = null,
+        ImmutableArray<string> AutoReloadWebSocketOrigins = default,
         string? BrowserPath = null,
         TestFlags TestFlags = TestFlags.None,
         string TestOutput = "")
@@ -60,6 +62,7 @@ namespace Microsoft.DotNet.Watch
             RestartOnRudeEdit: EnvironmentVariables.RestartOnRudeEdit,
             AutoReloadWebSocketHostName: EnvironmentVariables.AutoReloadWSHostName,
             AutoReloadWebSocketPort: EnvironmentVariables.AutoReloadWSPort,
+            AutoReloadWebSocketOrigins : EnvironmentVariables.AutoReloadWSOrigins,
             BrowserPath: EnvironmentVariables.BrowserPath,
             TestFlags: EnvironmentVariables.TestFlags,
             TestOutput: EnvironmentVariables.TestOutputDir

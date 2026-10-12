@@ -16,7 +16,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             _templateDiscoveryTool = templateDiscoveryTool;
         }
 
-        [Fact]
+        // https://github.com/dotnet/sdk/issues/53569
+        [PlatformSpecificFact(TestPlatforms.Any, TestArchitectures.X64)]
         public async Task CanRunDiscoveryTool()
         {
             string testDir = CreateTemporaryFolder();
