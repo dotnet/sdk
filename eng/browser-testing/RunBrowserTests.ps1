@@ -177,7 +177,7 @@ try {
             throw 'The TestFX source must include its browser package build filter.'
         }
         if ($IsWindows) {
-            Invoke-Logged 'testfx-build-pack' (Join-Path $TestFxRoot 'build.cmd') @('-c', $Configuration, '-pack', '-bl', '-projects', $packageProjects, '-msbuildEngine', 'dotnet')
+            Invoke-Logged 'testfx-build-pack' (Join-Path $TestFxRoot 'build.cmd') @('-c', $Configuration, '-pack', '-bl', '-projects', $packageProjects, '-mt', '0')
         }
         else {
             Invoke-Logged 'testfx-build-pack' 'bash' @((Join-Path $TestFxRoot 'build.sh'), '--configuration', $Configuration, '--pack', '--binaryLog', '--projects', $packageProjects)

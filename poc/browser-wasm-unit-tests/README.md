@@ -36,8 +36,9 @@ it does not enable source-build mode. It preserves the real SDK-under-test while
 reducing the disk space needed to compose both repositories.
 TestFX owns the eight-package selection in `BrowserTestingPackages.slnf`; the
 shared runner invokes its normal pack build, then builds only the acceptance
-runner's evaluated current target framework. On Windows, the package build uses
-the pinned bootstrap SDK's MSBuild rather than an independently installed Visual Studio.
+runner's evaluated current target framework. On Windows, the package build retains
+desktop MSBuild for the UWP assets in the MSTest packages and disables its optional
+`-mt` mode for compatibility with the hosted Visual Studio version.
 
 The SDK counterpart is pinned in
 [`eng/browser-testing/testfx.json`](../../eng/browser-testing/testfx.json).
