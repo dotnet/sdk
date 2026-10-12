@@ -1,0 +1,94 @@
+<Project>
+
+  <PropertyGroup>
+    <_DotnetAotResourceMode Condition="'$(_DotnetAotResourceMode)' == ''">ExternalLocalized</_DotnetAotResourceMode>
+    <_DotnetAotExternalAllSubstitutions>$(MSBuildThisFileDirectory)ExternalAllSubstitutions.xml</_DotnetAotExternalAllSubstitutions>
+    <DefineConstants Condition="'$(_DotnetAotResourceMode)' == 'ExternalLocalized'">$(DefineConstants);DOTNET_AOT_EXTERNAL_LOCALIZED</DefineConstants>
+    <DefineConstants Condition="'$(_DotnetAotResourceMode)' == 'ExternalAll'">$(DefineConstants);DOTNET_AOT_EXTERNAL_ALL</DefineConstants>
+    <DefineConstants Condition="'$(MSBuildProjectName)' == 'dotnet-aot'
+                                Or '$(PublishAotTests)' == 'true'">$(DefineConstants);DOTNET_AOT_NATIVE_RUNTIME</DefineConstants>
+  </PropertyGroup>
+
+  <Target Name="_ValidateDotnetAotResourceMode"
+          BeforeTargets="PrepareForBuild;ComputeIlcCompileInputs">
+    <Error Condition="'$(_DotnetAotResourceMode)' != 'Embedded'
+                      And '$(_DotnetAotResourceMode)' != 'ExternalLocalized'
+                      And '$(_DotnetAotResourceMode)' != 'ExternalAll'"
+           Text="Invalid _DotnetAotResourceMode '$(_DotnetAotResourceMode)'. Expected Embedded, ExternalLocalized, or ExternalAll." />
+    <Error Condition="'$(_DotnetAotResourceMode)' == 'ExternalAll'
+                      And !Exists('$(_DotnetAotExternalAllSubstitutions)')"
+           Text="ExternalAll substitutions file '$(_DotnetAotExternalAllSubstitutions)' was not found." />
+  </Target>
+
+  <Target Name="_ConfigureDotnetAotExternalResources"
+          AfterTargets="ComputeIlcCompileInputs"
+          BeforeTargets="WriteIlcRspFileForCompilation"
+          Condition="'$(_DotnetAotResourceMode)' == 'ExternalLocalized'
+                     Or '$(_DotnetAotResourceMode)' == 'ExternalAll'">
+    <PropertyGroup>
+      <_DotnetAotResourceInventory>$(IntermediateOutputPath)dotnet-aot-resource-mode.txt</_DotnetAotResourceInventory>
+    </PropertyGroup>
+    <ItemGroup>
+      <_DotnetAotSuppressedSatellite Remove="@(_DotnetAotSuppressedSatellite)" />
+      <_DotnetAotResourceInventoryLine Remove="@(_DotnetAotResourceInventoryLine)" />
+      <_DotnetAotExternalAllSubstitutionWithHash Remove="@(_DotnetAotExternalAllSubstitutionWithHash)" />
+      <_DotnetAotSuppressedSatellite Include="@(IlcSatelliteAssembly)" />
+      <IlcSatelliteAssembly Remove="@(IlcSatelliteAssembly)" />
+      <ResolvedFileToPublish Remove="@(_DotnetAotSuppressedSatellite)" />
+      <_DotnetAotResourceInventoryLine Include="Mode=$(_DotnetAotResourceMode)" />
+      <_DotnetAotResourceInventoryLine Include="@(_DotnetAotSuppressedSatellite->'SuppressedSatellite=%(FullPath)')" />
+    </ItemGroup>
+
+    <GetFileHash Condition="'$(_DotnetAotResourceMode)' == 'ExternalAll'"
+                 Files="$(_DotnetAotExternalAllSubstitutions)">
+      <Output TaskParameter="Items" ItemName="_DotnetAotExternalAllSubstitutionWithHash" />
+    </GetFileHash>
+
+    <Copy Condition="'$(_DotnetAotResourceMode)' == 'ExternalAll'"
+          SourceFiles="@(_DotnetAotExternalAllSubstitutionWithHash)"
+          DestinationFiles="@(_DotnetAotExternalAllSubstitutionWithHash->'$(IntermediateOutputPath)ExternalAllSubstitutions.%(FileHash).xml')"
+          SkipUnchangedFiles="true" />
+
+    <ItemGroup Condition="'$(_DotnetAotResourceMode)' == 'ExternalAll'">
+      <IlcArg Include="@(_DotnetAotExternalAllSubstitutionWithHash->'--substitution:$(IntermediateOutputPath)ExternalAllSubstitutions.%(FileHash).xml')" />
+      <_DotnetAotResourceInventoryLine Include="@(_DotnetAotExternalAllSubstitutionWithHash->'Substitution=%(FileHash)')" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(_DotnetAotResourceInventory)"
+                      Lines="@(_DotnetAotResourceInventoryLine)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+
+    <Message Importance="high"
+             Text="dotnet-aot resource mode '$(_DotnetAotResourceMode)' suppressed @(_DotnetAotSuppressedSatellite->Count()) NativeAOT satellite inputs." />
+  </Target>
+
+  <Target Name="_RemoveSuppressedDotnetAotSatellitesFromPublish"
+          AfterTargets="NativeCompile"
+          BeforeTargets="CopyFilesToPublishDirectory"
+          Condition="'$(_DotnetAotResourceMode)' == 'ExternalLocalized'
+                     Or '$(_DotnetAotResourceMode)' == 'ExternalAll'">
+    <ItemGroup>
+      <ResolvedFileToPublish Remove="@(_DotnetAotSuppressedSatellite)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_RecordEmbeddedDotnetAotResources"
+          AfterTargets="ComputeIlcCompileInputs"
+          BeforeTargets="WriteIlcRspFileForCompilation"
+          Condition="'$(_DotnetAotResourceMode)' == 'Embedded'">
+    <PropertyGroup>
+      <_DotnetAotResourceInventory>$(IntermediateOutputPath)dotnet-aot-resource-mode.txt</_DotnetAotResourceInventory>
+    </PropertyGroup>
+    <ItemGroup>
+      <_DotnetAotResourceInventoryLine Remove="@(_DotnetAotResourceInventoryLine)" />
+      <_DotnetAotResourceInventoryLine Include="Mode=Embedded" />
+      <_DotnetAotResourceInventoryLine Include="@(IlcSatelliteAssembly->'Satellite=%(FullPath)')" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_DotnetAotResourceInventory)"
+                      Lines="@(_DotnetAotResourceInventoryLine)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+  </Target>
+
+</Project>

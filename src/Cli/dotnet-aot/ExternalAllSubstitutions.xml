@@ -1,0 +1,26 @@
+<linker>
+  <assembly fullname="dotnet-aot">
+    <resource name="Microsoft.DotNet.Cli.CliStrings.resources" action="remove" />
+    <resource name="Microsoft.DotNet.Cli.Commands.CliCommandStrings.resources" action="remove" />
+    <resource name="Microsoft.NET.Build.Tasks.Strings.resources" action="remove" />
+  </assembly>
+  <assembly fullname="Microsoft.DotNet.Cli.Definitions">
+    <resource name="Microsoft.DotNet.Cli.CommandDefinitionStrings.resources" action="remove" />
+  </assembly>
+  <assembly fullname="Microsoft.DotNet.Cli.Utils">
+    <resource name="Microsoft.DotNet.Cli.Utils.LocalizableStrings.resources" action="remove" />
+  </assembly>
+  <assembly fullname="Microsoft.DotNet.Configurer">
+    <resource name="Microsoft.DotNet.Configurer.LocalizableStrings.resources" action="remove" />
+  </assembly>
+  <assembly fullname="Microsoft.DotNet.ProjectTools">
+    <resource name="Microsoft.DotNet.ProjectTools.Resources.resources" action="remove" />
+    <resource name="Microsoft.DotNet.FileBasedPrograms.FileBasedProgramsResources.resources" action="remove" />
+  </assembly>
+  <assembly fullname="Microsoft.NET.Sdk.WorkloadManifestReader">
+    <resource name="Microsoft.NET.Sdk.Localization.Strings.resources" action="remove" />
+  </assembly>
+  <assembly fullname="System.CommandLine.StaticCompletions">
+    <resource name="System.CommandLine.StaticCompletions.Resources.Strings.resources" action="remove" />
+  </assembly>
+</linker>

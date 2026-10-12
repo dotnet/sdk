@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
@@ -34,6 +35,10 @@ public partial class NativeEntryPointTests
         string? originalTraceParent = Environment.GetEnvironmentVariable(Activities.TRACEPARENT);
         string? originalTraceState = Environment.GetEnvironmentVariable(Activities.TRACESTATE);
         string? originalTelemetryOptout = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT");
+        string? originalUiLanguage = Environment.GetEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE");
+        string? originalVsLang = Environment.GetEnvironmentVariable("VSLANG");
+        string? originalPreferredUiLang = Environment.GetEnvironmentVariable("PreferredUILang");
+        CultureInfo? originalDefaultThreadCurrentUiCulture = CultureInfo.DefaultThreadCurrentUICulture;
         object? originalSdkRoot = AppContext.GetData(SdkPaths.DataName);
         string? originalDotnetRoot = NativeEntryPoint.DotnetRoot;
         string? originalSdkDirectory = NativeEntryPoint.SdkDirectory;
@@ -48,6 +53,10 @@ public partial class NativeEntryPointTests
             Environment.SetEnvironmentVariable(Activities.TRACEPARENT, originalTraceParent);
             Environment.SetEnvironmentVariable(Activities.TRACESTATE, originalTraceState);
             Environment.SetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", originalTelemetryOptout);
+            Environment.SetEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", originalUiLanguage);
+            Environment.SetEnvironmentVariable("VSLANG", originalVsLang);
+            Environment.SetEnvironmentVariable("PreferredUILang", originalPreferredUiLang);
+            CultureInfo.DefaultThreadCurrentUICulture = originalDefaultThreadCurrentUiCulture;
             AppContext.SetData(SdkPaths.DataName, originalSdkRoot);
             NativeEntryPoint.DotnetRoot = originalDotnetRoot;
             NativeEntryPoint.SdkDirectory = originalSdkDirectory;
@@ -100,6 +109,26 @@ public partial class NativeEntryPointTests
                 args: ["--version"]);
 
             Assert.AreEqual(0, exitCode);
+        });
+    }
+
+    [TestMethod]
+    public void ExecuteCore_AppliesUiLanguageOverrideBeforeParsing()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+            Environment.SetEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "fr");
+
+            int exitCode = NativeEntryPoint.ExecuteCore(
+                hostPath: "test-host",
+                dotnetRoot: "test-root",
+                sdkDir: "nonexistent-sdk-dir",
+                hostfxrPath: "",
+                args: ["--version"]);
+
+            Assert.AreEqual(0, exitCode);
+            Assert.AreEqual("fr", CultureInfo.CurrentUICulture.Name);
         });
     }
 

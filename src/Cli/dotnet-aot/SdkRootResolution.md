@@ -66,6 +66,13 @@ the module self-locates.
   `Microsoft.DotNet.Sdk.Root` AppContext value first, else its existing BCL logic. The
   workload MSBuild SDK resolver follows this contract so it can be constructed and
   registered directly in the AOT host without relying on `Assembly.Location`.
+- **External resources.** NativeAOT resource modes resolve managed owner
+  assemblies as `<sdk_dir>\<owner>.dll` and localized satellites as
+  `<sdk_dir>\<culture>\<owner>.resources.dll`. Culture and owner names are
+  validated as single path segments, and the resource directory factories capture a
+  fully qualified root. `ExternalAll` validates every neutral owner before the
+  AOT path commits; `ExternalLocalized` probes localized files lazily and falls
+  back through parent cultures to its embedded neutral table.
 
 The same forwarding code is shared by both CLIs and therefore consistently uses
 `SdkPaths.SdkDirectory`; this remains equivalent to `AppContext.BaseDirectory` in
@@ -86,3 +93,10 @@ stock `Microsoft.NET.Sdk` project against the bootstrap SDK, proving that the wo
 resolver handles the SDK's workload-locator imports through `SdkResolver.Register`
 without reflective plugin loading. Command handlers do not activate this evaluator in
 the shipping Native AOT entry point yet.
+
+Resource-mode integration tests must use a layout containing the managed owner
+assemblies and culture directories, not only `dotnet-aot.dll`. They cover flat,
+separated, and self-located layouts. Real redist tests must run from outside the
+repository tree; otherwise this repository's `global.json` can redirect SDK
+selection to `.dotnet` and make resource probes observe the bootstrap SDK
+instead of the redist under test.

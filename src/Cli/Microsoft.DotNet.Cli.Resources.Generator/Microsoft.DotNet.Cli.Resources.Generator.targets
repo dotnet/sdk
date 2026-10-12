@@ -1,0 +1,39 @@
+<Project>
+  <!-- Keep localized resources nested under their neutral resource in Solution Explorer. -->
+  <ItemGroup>
+    <EmbeddedResource Update="**\*.??.resx;**\*.??-??.resx;**\*.??-????.resx"
+                      DependentUpon="$([System.IO.Path]::ChangeExtension($([System.IO.Path]::GetFileNameWithoutExtension(%(Identity))), '.resx'))" />
+  </ItemGroup>
+
+  <Target Name="MicrosoftDotNetCliResourcesAddResxFilesAsAdditionalFiles"
+          DependsOnTargets="PrepareResourceNames"
+          AfterTargets="AddAllResxFilesAsAdditionalFiles;AddGenerateSourceResxFilesAsAdditionalFiles"
+          BeforeTargets="GenerateMSBuildEditorConfigFileCore;CoreCompile"
+          Condition="'@(EmbeddedResource)' != ''">
+    <ItemGroup>
+      <EmbeddedResource Update="@(EmbeddedResource)"
+                        Condition="'%(EmbeddedResource.Extension)' == '.resx'">
+        <CliResourceFamily>%(EmbeddedResource.ManifestResourceName)</CliResourceFamily>
+        <CliResourceFamily Condition="'%(EmbeddedResource.Culture)' != ''
+                                      And $([System.String]::Copy('%(EmbeddedResource.ManifestResourceName)').EndsWith('.%(EmbeddedResource.Culture)'))">$([System.String]::Copy('%(EmbeddedResource.ManifestResourceName)').Substring(0, $([System.String]::Copy('%(EmbeddedResource.ManifestResourceName)').LastIndexOf('.%(EmbeddedResource.Culture)'))))</CliResourceFamily>
+      </EmbeddedResource>
+
+      <EmbeddedResource Update="@(EmbeddedResource)"
+                        Condition="'%(EmbeddedResource.Extension)' == '.resx'
+                                   And '%(EmbeddedResource.Generator)' == 'Microsoft.DotNet.Cli.Resources'">
+        <CliResourceGenerateSource Condition="'%(EmbeddedResource.GenerateSource)' != 'false'
+                                              And '%(EmbeddedResource.WithCulture)' != 'true'
+                                              And '%(EmbeddedResource.Culture)' == ''">true</CliResourceGenerateSource>
+        <CliResourceGenerateSource Condition="'%(EmbeddedResource.GenerateSource)' == 'false'
+                                              Or '%(EmbeddedResource.WithCulture)' == 'true'
+                                              Or '%(EmbeddedResource.Culture)' != ''">false</CliResourceGenerateSource>
+        <GenerateSource>false</GenerateSource>
+      </EmbeddedResource>
+
+      <_MicrosoftDotNetCliEmbeddedResx Include="@(EmbeddedResource)"
+                                        Condition="'%(EmbeddedResource.Extension)' == '.resx'" />
+      <AdditionalFiles Remove="@(_MicrosoftDotNetCliEmbeddedResx)" />
+      <AdditionalFiles Include="@(_MicrosoftDotNetCliEmbeddedResx)" />
+    </ItemGroup>
+  </Target>
+</Project>

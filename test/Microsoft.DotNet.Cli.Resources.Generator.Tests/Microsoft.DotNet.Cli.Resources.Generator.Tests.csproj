@@ -1,0 +1,37 @@
+<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <RootNamespace>Microsoft.DotNet.Cli.Resources.Generator.Tests</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.ResxSourceGenerator"
+                      GeneratePathProperty="true"
+                      PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="[1.0.3]" />
+
+    <None Include="$(PkgMicrosoft_CodeAnalysis_ResxSourceGenerator)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.ResxSourceGenerator.dll;
+                   $(PkgMicrosoft_CodeAnalysis_ResxSourceGenerator)\analyzers\dotnet\cs\Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp.dll"
+          Link="TestAssets\ResxSourceGenerator\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(NuGetPackageRoot)microsoft.netframework.referenceassemblies.net472\1.0.3\build\.NETFramework\v4.7.2\mscorlib.dll;
+                   $(NuGetPackageRoot)microsoft.netframework.referenceassemblies.net472\1.0.3\build\.NETFramework\v4.7.2\System.dll;
+                   $(NuGetPackageRoot)microsoft.netframework.referenceassemblies.net472\1.0.3\build\.NETFramework\v4.7.2\System.Core.dll"
+          Link="TestAssets\net472\%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
+  </ItemGroup>
+
+</Project>

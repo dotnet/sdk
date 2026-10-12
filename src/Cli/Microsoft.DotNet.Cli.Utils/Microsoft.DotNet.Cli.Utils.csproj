@@ -1,4 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.props" />
+
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
@@ -42,7 +44,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
+    <EmbeddedResource Update="**\*.resx" GenerateSource="true">
+      <Generator Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">Microsoft.DotNet.Cli.Resources</Generator>
+    </EmbeddedResource>
   </ItemGroup>
 
   <!-- Versions that have to be pinned because they are locked to VS/MSBuild compatibility -->
@@ -70,6 +74,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.csproj"
+                      Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false"
+                      PrivateAssets="all" />
   </ItemGroup>
 
   <!--
@@ -91,5 +100,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
   </ItemGroup>
+
+  <Import Project="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Resources.Generator\Microsoft.DotNet.Cli.Resources.Generator.targets" />
 
 </Project>

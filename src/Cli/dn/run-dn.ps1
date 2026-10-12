@@ -28,6 +28,9 @@
 .PARAMETER Configuration
     Debug (default) or Release.
 
+.PARAMETER ResourceMode
+    NativeAOT resource mode: Embedded, ExternalLocalized, or ExternalAll.
+
 .PARAMETER Rid
     Runtime identifier. Auto-detected from the host when omitted.
 
@@ -62,6 +65,8 @@ param(
     [string]$Layout = "Flat",
     [switch]$SelfLocate,
     [string]$Configuration = "Debug",
+    [ValidateSet("Embedded", "ExternalLocalized", "ExternalAll")]
+    [string]$ResourceMode = "Embedded",
     [string]$Rid,
     [switch]$NoBuild
 )
@@ -81,22 +86,31 @@ if (-not $Rid) {
     $Rid = "$os-$arch"
 }
 
+$targetFramework = & $dotnet msbuild (Join-Path $repoRoot "src/Cli/dotnet-aot/dotnet-aot.csproj") `
+    -getProperty:TargetFramework -p:Configuration=$Configuration -p:RuntimeIdentifier=$Rid -nologo
+if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($targetFramework)) {
+    throw "Could not determine the dotnet-aot target framework."
+}
+
 Write-Host "Repo root:     $repoRoot"
 Write-Host "Configuration: $Configuration"
 Write-Host "RID:           $Rid"
 Write-Host "Command:       dn $Command"
 Write-Host "Mode:          $Mode"
+Write-Host "Resources:     $ResourceMode"
 Write-Host ""
 
-function Resolve-PublishPath([string]$relativeGlob) {
-    # Globs the TFM folder so paths are not pinned to a specific net version.
-    return (Resolve-Path (Join-Path $repoRoot $relativeGlob) -ErrorAction SilentlyContinue |
+function Resolve-PublishPath([string]$relativePath) {
+    return (Resolve-Path (Join-Path $repoRoot $relativePath) -ErrorAction SilentlyContinue |
         Select-Object -First 1).Path
 }
 
 if (-not $NoBuild) {
     Write-Host "Publishing dotnet-aot (NativeAOT)..." -ForegroundColor Cyan
-    & $dotnet publish (Join-Path $repoRoot "src/Cli/dotnet-aot/dotnet-aot.csproj") -r $Rid -c $Configuration
+    & $dotnet publish (Join-Path $repoRoot "src/Cli/dotnet-aot/dotnet-aot.csproj") `
+        -r $Rid `
+        -c $Configuration `
+        -p:_DotnetAotResourceMode=$ResourceMode
     if ($LASTEXITCODE -ne 0) { throw "dotnet-aot publish failed." }
 
     Write-Host "Publishing dn host..." -ForegroundColor Cyan
@@ -107,10 +121,9 @@ if (-not $NoBuild) {
     & $dotnet build (Join-Path $repoRoot "src/Cli/dotnet/dotnet.csproj") -c $Configuration
     if ($LASTEXITCODE -ne 0) { throw "managed dotnet build failed." }
 
-    $dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/*/$Rid/publish"
-    $aotDll = Resolve-PublishPath "artifacts/bin/dotnet-aot/$Configuration/*/$Rid/publish/$aotLibName"
-    $managedDir = (Get-ChildItem -Directory (Join-Path $repoRoot "artifacts/bin/dotnet/$Configuration") |
-        Sort-Object LastWriteTime -Descending | Select-Object -First 1).FullName
+    $dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/$targetFramework/$Rid/publish"
+    $aotDll = Resolve-PublishPath "artifacts/bin/dotnet-aot/$Configuration/$targetFramework/$Rid/publish/$aotLibName"
+    $managedDir = Resolve-PublishPath "artifacts/bin/dotnet/$Configuration/$targetFramework"
 
     if (-not $dnPublishDir) { throw "Could not locate the dn publish directory after build." }
     if (-not $aotDll) { throw "Could not locate $aotLibName after publish." }
@@ -126,9 +139,25 @@ if (-not $NoBuild) {
     Write-Host "Assembling layout into $sdkTargetDir ..." -ForegroundColor Cyan
     Copy-Item $aotDll $sdkTargetDir -Force
     Copy-Item (Join-Path $managedDir "*") $sdkTargetDir -Recurse -Force
+
+    $resourceOwnerProjects = @(
+        "Microsoft.DotNet.Cli.Definitions",
+        "Microsoft.DotNet.Cli.Utils",
+        "Microsoft.DotNet.Configurer",
+        "Microsoft.DotNet.ProjectTools",
+        "Microsoft.NET.Sdk.WorkloadManifestReader",
+        "System.CommandLine.StaticCompletions"
+    )
+    foreach ($projectName in $resourceOwnerProjects) {
+        $projectOutput = Resolve-PublishPath "artifacts/bin/$projectName/$Configuration/$targetFramework"
+        if (-not $projectOutput) {
+            throw "Could not locate the $projectName output required by $ResourceMode."
+        }
+        Copy-Item (Join-Path $projectOutput "*") $sdkTargetDir -Recurse -Force
+    }
 }
 
-$dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/*/$Rid/publish"
+$dnPublishDir = Resolve-PublishPath "artifacts/bin/dn/$Configuration/$targetFramework/$Rid/publish"
 if (-not $dnPublishDir) { throw "dn publish directory not found. Run without -NoBuild first." }
 
 $dnExe = Join-Path $dnPublishDir $dnExeName
@@ -144,6 +173,7 @@ $environmentVariableNames = @(
     "DOTNET_CLI_ENABLEAOT"
 )
 $previousEnvironment = @{}
+$commandExitCode = 0
 foreach ($variableName in $environmentVariableNames) {
     $environmentVariable = Get-Item "Env:\$variableName" -ErrorAction SilentlyContinue
     $previousEnvironment[$variableName] = [pscustomobject]@{
@@ -181,24 +211,34 @@ try {
         else {
             $env:DOTNET_CLI_ENABLEAOT = "false"
         }
-        & $dnExe @argList 2>&1
+        $output = @(& $dnExe @argList 2>&1)
+        [pscustomobject]@{
+            ExitCode = $LASTEXITCODE
+            Output = $output
+        }
     }
 
     switch ($Mode) {
         "Aot" {
             Write-Host "===== AOT (DOTNET_CLI_ENABLEAOT=true) =====" -ForegroundColor Green
-            Invoke-Dn $true
+            $result = Invoke-Dn $true
+            $result.Output | Write-Output
+            $commandExitCode = $result.ExitCode
         }
         "Managed" {
             Write-Host "===== Managed (DOTNET_CLI_ENABLEAOT=false) =====" -ForegroundColor Green
-            Invoke-Dn $false
+            $result = Invoke-Dn $false
+            $result.Output | Write-Output
+            $commandExitCode = $result.ExitCode
         }
         "Compare" {
             $logDir = Join-Path $repoRoot "artifacts/log"
             New-Item -ItemType Directory -Force -Path $logDir | Out-Null
 
-            $aotOut = Invoke-Dn $true
-            $managedOut = Invoke-Dn $false
+            $aotResult = Invoke-Dn $true
+            $managedResult = Invoke-Dn $false
+            $aotOut = $aotResult.Output
+            $managedOut = $managedResult.Output
             $aotOut | Set-Content (Join-Path $logDir "dn-aot.txt")
             $managedOut | Set-Content (Join-Path $logDir "dn-managed.txt")
 
@@ -216,6 +256,17 @@ try {
             else {
                 Write-Host "IDENTICAL: AOT and managed output match line-for-line." -ForegroundColor Green
             }
+
+            if ($aotResult.ExitCode -ne $managedResult.ExitCode) {
+                Write-Host "EXIT CODE DIFFERENCE: AOT=$($aotResult.ExitCode), managed=$($managedResult.ExitCode)." -ForegroundColor Yellow
+            }
+            $commandExitCode = if ($aotResult.ExitCode -ne 0) {
+                $aotResult.ExitCode
+            } elseif ($managedResult.ExitCode -ne 0) {
+                $managedResult.ExitCode
+            } else {
+                0
+            }
         }
     }
 }
@@ -230,3 +281,5 @@ finally {
         }
     }
 }
+
+exit $commandExitCode
