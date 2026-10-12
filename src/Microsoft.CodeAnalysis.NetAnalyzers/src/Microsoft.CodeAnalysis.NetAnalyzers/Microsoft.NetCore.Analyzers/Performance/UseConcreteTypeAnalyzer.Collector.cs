@@ -447,8 +447,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         }
 
                     case OperationKind.Literal:
+                    case OperationKind.DefaultValue:
                         {
-                            if (op.HasNullConstantValue())
+                            if (op.HasNullConstantValue() && !op.Type.IsNullableValueType())
                             {
                                 // use 'void' as a marker for a null assignment
                                 values.Add(Void!);
@@ -490,10 +491,17 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             var oldCount = values.Count;
                             GetValueTypes(values, colOp.Value);
 
-                            if (values.Count > oldCount)
+                            for (var i = values.Count - 1; i >= oldCount; i--)
                             {
-                                // erase any potential nullable annotations of the left-hand value since when the value is null, it doesn't get used
-                                values[^1] = values[^1].WithNullableAnnotation(CodeAnalysis.NullableAnnotation.NotAnnotated);
+                                // Null values on the left select the right-hand value instead.
+                                if (SymbolEqualityComparer.Default.Equals(values[i], Void))
+                                {
+                                    values.RemoveAt(i);
+                                }
+                                else
+                                {
+                                    values[i] = values[i].WithNullableAnnotation(CodeAnalysis.NullableAnnotation.NotAnnotated);
+                                }
                             }
 
                             GetValueTypes(values, colOp.WhenNull);

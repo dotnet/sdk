@@ -21,6 +21,59 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         public TestContext TestContext { get; set; }
 
         [TestMethod]
+        [DataRow("default(object)")]
+        [DataRow("default(object) ?? new { Value = 1 }")]
+        [DataRow("condition ? default(object) : new { Value = 1 }")]
+        [DataRow("condition ? new { Value = 1 } : default(object)")]
+        public async Task ShouldNotTrigger_DefaultValueWithoutNameableConcreteType_CSharp(string expression)
+        {
+            await TestCSAsync($$"""
+                class C
+                {
+                    private object Build(bool condition) => {{expression}};
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task ShouldNotTrigger_DefaultValueOfNullableStruct_CSharp()
+        {
+            await TestCSAsync("""
+                struct D { }
+
+                class C
+                {
+                    private object Build(bool condition)
+                    {
+                        if (condition)
+                        {
+                            return default(D?);
+                        }
+
+                        return new D();
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        [DataRow("CType(Nothing, Object)")]
+        [DataRow("If(condition, CType(Nothing, Object), New With {.Value = 1})")]
+        [DataRow("If(condition, New With {.Value = 1}, CType(Nothing, Object))")]
+        public async Task ShouldNotTrigger_DefaultValueWithoutNameableConcreteType_VisualBasic(string expression)
+        {
+            await VerifyVB.VerifyAnalyzerAsync($$"""
+                Class C
+                    Public Sub Use(condition As Boolean)
+                        Dim local As Object
+                        local = {{expression}}
+                        local.ToString()
+                    End Sub
+                End Class
+                """);
+        }
+
+        [TestMethod]
         [DynamicData(nameof(AnonymousTypeShapes))]
         public void ContainsAnonymousType_TraversesTypeShapes(string shape, bool containsAnonymousType)
         {

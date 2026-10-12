@@ -7,11 +7,136 @@ using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseConcreteTypeAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Performance.UseConcreteTypeAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     public partial class UseConcreteTypeTests
     {
+        [TestMethod]
+        [DataRow("class", "condition ? default(D) : new D()", "D?")]
+        [DataRow("class", "condition ? new D() : default(D)", "D?")]
+        [DataRow("class", "condition ? default : new D()", "D?")]
+        [DataRow("class", "default(D) ?? new D()", "D")]
+        [DataRow("class", "(condition ? default(D) : new D()) ?? new D()", "D")]
+        [DataRow("class", "condition ? default(object) : new D()", "D?")]
+        [DataRow("struct", "condition ? default(D) : new D()", "D")]
+        [DataRow("struct", "condition ? new D() : default(D)", "D")]
+        [DataRow("struct", "default(D)", "D")]
+        public async Task ShouldTrigger_DefaultValue_CSharp(string typeKind, string expression, string concreteType)
+        {
+            await TestCSAsync($$"""
+                {{typeKind}} D { }
+
+                class C
+                {
+                    private object {|#0:_field|};
+                    private object {|#1:Property|} { get; set; }
+
+                    public C(bool condition)
+                    {
+                        _field = {{expression}};
+                        Property = {{expression}};
+                    }
+
+                    public void Use(bool condition)
+                    {
+                        _field.ToString();
+                        Property.ToString();
+                        object {|#2:local|} = {{expression}};
+                        local.ToString();
+                        Consume({{expression}});
+                    }
+
+                    private void Consume(object {|#3:value|}) => value.ToString();
+
+                    private object {|#4:Build|}(bool condition) => {{expression}};
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0).WithArguments("_field", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1).WithArguments("Property", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                    .WithLocation(2).WithArguments("local", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
+                    .WithLocation(3).WithArguments("value", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(4).WithArguments("Build", "object", concreteType));
+        }
+
+        [TestMethod]
+        public async Task ShouldTrigger_DefaultValuePreservesNullability_CSharp()
+        {
+            await TestCSAsync("""
+                #nullable enable
+
+                class C
+                {
+                    private object? {|#0:BuildNullable|}(bool condition)
+                        => condition ? default(C) : new C();
+
+                    private object {|#1:BuildNonNullable|}()
+                        => default(C) ?? new C();
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(0).WithArguments("BuildNullable", "object?", "C?"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(1).WithArguments("BuildNonNullable", "object", "C"));
+        }
+
+        [TestMethod]
+        [DataRow("Condition ? default(D) : new D()", "D?")]
+        [DataRow("Condition ? new D() : default(D)", "D?")]
+        [DataRow("default(D) ?? new D()", "D")]
+        public async Task ShouldTrigger_DefaultValueInInitializers_CSharp(string expression, string concreteType)
+        {
+            await TestCSAsync($$"""
+                class D { }
+
+                class C
+                {
+                    private static bool Condition => true;
+                    private object {|#0:_field|} = {{expression}};
+                    private object {|#1:Property|} { get; } = {{expression}};
+
+                    public void Use()
+                    {
+                        _field.ToString();
+                        Property.ToString();
+                    }
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0).WithArguments("_field", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1).WithArguments("Property", "object", concreteType));
+        }
+
+        [TestMethod]
+        [DataRow("Class", "End Class")]
+        [DataRow("Structure", "End Structure")]
+        public async Task ShouldTrigger_DefaultValue_VisualBasic(string declaration, string endDeclaration)
+        {
+            await VerifyVB.VerifyAnalyzerAsync($$"""
+                {{declaration}} D
+                {{endDeclaration}}
+
+                Class C
+                    Public Sub Use(condition As Boolean)
+                        Dim {|#0:local|} As Object
+                        local = If(condition, CType(Nothing, D), New D())
+                        local.ToString()
+                    End Sub
+                End Class
+                """,
+                VerifyVB.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                    .WithLocation(0).WithArguments("local", "Object", "D"));
+        }
+
         [TestMethod]
         [DataRow("condition ? new C() : throw new System.Exception()")]
         [DataRow("condition ? throw new System.Exception() : new C()")]
