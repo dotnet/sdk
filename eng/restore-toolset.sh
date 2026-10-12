@@ -38,10 +38,15 @@ function InitializeCustomSDKToolset {
     runtime_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
     local aspnetcore_version
     aspnetcore_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
-    if [[ -n "$runtime_version" ]]; then
+    local current_major_version
+    current_major_version=$(ReadRepoVersionProperty "VersionMajor")
+    local current_minor_version
+    current_minor_version=$(ReadRepoVersionProperty "VersionMinor")
+    local current_runtime_prefix="$current_major_version.$current_minor_version."
+    if [[ -n "$runtime_version" && "$runtime_version" != "$current_runtime_prefix"* ]]; then
       runtime_specs+=("$runtime_version")
     fi
-    if [[ -n "$aspnetcore_version" ]]; then
+    if [[ -n "$aspnetcore_version" && "$aspnetcore_version" != "$current_runtime_prefix"* ]]; then
       runtime_specs+=("aspnetcore@$aspnetcore_version")
     fi
 
@@ -72,6 +77,11 @@ function InitializeCustomSDKToolset {
 function ReadVersionDetailsProperty {
   local property_name=$1
   sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/Version.Details.props" | head -n 1
+}
+
+function ReadRepoVersionProperty {
+  local property_name=$1
+  sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/Versions.props" | head -n 1
 }
 
 # Maps a dotnetup component (aspnetcore/windowsdesktop/dotnet) to the name of

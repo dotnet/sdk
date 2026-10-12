@@ -166,15 +166,30 @@ function Get-VersionDetailsProperty([string]$propertyName) {
     return $property.InnerText
 }
 
+function Get-RepoVersionProperty([string]$propertyName) {
+    $versions = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot 'eng\Versions.props'))
+    $property = $versions.SelectSingleNode("//$propertyName")
+    if ($null -eq $property) {
+        return ""
+    }
+
+    return $property.InnerText
+}
+
 function Get-CurrentRuntimeToolsetSpecs() {
     $runtimeVersion = Get-VersionDetailsProperty 'MicrosoftNETCoreAppRefPackageVersion'
     $aspNetCoreVersion = Get-VersionDetailsProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+    $currentMajorVersion = Get-RepoVersionProperty 'VersionMajor'
+    $currentMinorVersion = Get-RepoVersionProperty 'VersionMinor'
+    $currentRuntimePrefix = "$currentMajorVersion.$currentMinorVersion."
 
     $specs = @()
-    if (-not [string]::IsNullOrEmpty($runtimeVersion)) {
+    if (-not [string]::IsNullOrEmpty($runtimeVersion) -and
+        -not $runtimeVersion.StartsWith($currentRuntimePrefix, [StringComparison]::Ordinal)) {
         $specs += $runtimeVersion
     }
-    if (-not [string]::IsNullOrEmpty($aspNetCoreVersion)) {
+    if (-not [string]::IsNullOrEmpty($aspNetCoreVersion) -and
+        -not $aspNetCoreVersion.StartsWith($currentRuntimePrefix, [StringComparison]::Ordinal)) {
         $specs += "aspnetcore@$aspNetCoreVersion"
     }
 
