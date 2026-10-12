@@ -4,6 +4,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections;
+using System.IO;
 
 namespace TestNamespace
 {
@@ -21,6 +22,9 @@ namespace TestNamespace
                     Console.WriteLine($"{env.Key.ToString()}={env.Value.ToString()}");
                 }
             }
+
+            Console.WriteLine($"TESTHOST_VSTEST_ARTIFACTS_DIRECTORY={Environment.GetEnvironmentVariable("VSTEST_ARTIFACTS_DIRECTORY")}");
+            Console.WriteLine($"TESTHOST_TEMPPATH={Path.GetTempPath()}");
         }
     }
 }

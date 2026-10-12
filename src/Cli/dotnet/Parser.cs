@@ -290,7 +290,7 @@ namespace Microsoft.DotNet.Cli
                 }
                 else if (command.Name.Equals(VSTestCommandParser.GetCommand().Name))
                 {
-                    new VSTestForwardingApp(helpArgs).Execute();
+                    new VSTestForwardingApp(helpArgs, useArtifactsDirectory: false).Execute();
                 }
                 else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
                 {

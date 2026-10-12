@@ -12,6 +12,14 @@ export PATH=$DOTNET_ROOT:$PATH
 export TestExecutionDirectory=$(pwd)/testExecutionDirectory
 mkdir $TestExecutionDirectory
 
+# Helix Linux work items have no systemd-logind session, so /run/user/<uid> does not exist and the dotnet CLI
+# cannot create the vstest artifacts directory there. Use a directory inside the work item instead.
+if [ "$(uname -s)" = "Linux" ] && [ ! -d "/run/user/$(id -u)" ]; then
+    export VSTEST_ARTIFACTS_BASE_DIRECTORY="$TestExecutionDirectory/vstest-artifacts"
+    mkdir -p "$VSTEST_ARTIFACTS_BASE_DIRECTORY"
+    chmod 0700 "$VSTEST_ARTIFACTS_BASE_DIRECTORY"
+fi
+
 # Azure Linux 3 is missing zlib-devel, so the linker can't find -lz for NativeAOT.
 # Create a symlink in a local directory and add it to LIBRARY_PATH so clang/ld finds it.
 if [ -f /etc/azurelinux-release ]; then
