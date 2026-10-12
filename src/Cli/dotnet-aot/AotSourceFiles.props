@@ -255,6 +255,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Fsi\FsiForwardingApp.cs" Link="Commands\Fsi\FsiForwardingApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Format\FormatForwardingApp.cs" Link="Commands\Format\FormatForwardingApp.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestForwardingApp.cs" Link="Commands\Test\VSTest\VSTestForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestArtifactsDirectory.cs" Link="Commands\Test\VSTest\VSTestArtifactsDirectory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestFeatureFlag.cs" Link="Commands\Test\VSTest\VSTestFeatureFlag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestTrace.cs" Link="Commands\Test\VSTest\VSTestTrace.cs" />
   </ItemGroup>
 
