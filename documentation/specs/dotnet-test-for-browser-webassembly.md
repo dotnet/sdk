@@ -51,7 +51,9 @@ dependencies from the [`MSTest` metapackage][mstest-package].
 The [sample test][sample-test] also writes a browser-VFS file and registers
 it through `TestContext.AddResultFile`.
 
-Use the [SDK README][sample-readme] as the single reproduction recipe. It
+Use the [SDK README][sample-readme] for sample reproduction and the
+[shared PowerShell 7 entry point][compatibility-runner] for composed validation,
+rather than duplicating either recipe here. The sample recipe
 identifies the built SDK and immutable, aligned framework/MTP/browser package
 feed, verifies restored package hashes, selects an installed Chromium-family
 executable and isolates restore/build state. Build-server reuse, MSBuild
@@ -109,7 +111,9 @@ or a framework-page adapter.
 The [host process][host] recognizes WasmAppHost's stdout `App url:` with an
 HTTP loopback URL. Generic server logs, HTTPS URLs and stderr do not establish
 readiness. Early exit or timeout fails launch; no fallback server or new
-readiness-file protocol is used.
+readiness-file protocol is used. The compatibility gate exercises this exact
+stdout dependency against the runtime pack selected by the SDK build; it is
+not a structured runtime-owned readiness API.
 
 The [SDK application][application] appends a protected HTTP bootstrap
 response-file reference. The [package parser][options] expands that final
@@ -253,6 +257,51 @@ belong with the implementation PRs, not test-count tables in this design.
 Evidence must exercise the composed SDK and packages, including failure,
 legacy capabilities, cancellation, quotas, mixed modules and cleanup.
 
+## Continuous compatibility gate
+
+Windows/Linux composition jobs participate in each repository's ordinary
+public-CI aggregate: [SDK wiring][sdk-ci] and [jobs][sdk-browser-jobs],
+and [TestFX wiring][testfx-ci] and [steps][testfx-browser-steps].
+SDK CI builds its current source with the full-SHA
+[TestFX counterpart pin][testfx-pin]; TestFX CI builds its current source
+with its full-SHA [SDK counterpart pin][sdk-pin], invoking the same SDK-owned
+runner. Cross-repository changes must deliberately update these pins and
+validate both compositions before merge, not substitute floating branches
+or repository-local test results. Build-only or filtered CI success is not
+evidence that browser acceptance ran.
+
+The [runner][compatibility-runner] builds the real shipping SDK using
+[`source-build.slnf`][sdk-product-filter] for project selection only, **not
+source-build mode**. It invokes TestFX's root pack build with
+[`BrowserTestingPackages.slnf`][testfx-package-filter], including the late
+analyzer generator dependency, then evaluates the acceptance project's
+`NetCurrent` and `TargetPath`. Windows packaging retains desktop MSBuild
+for UWP assets; the configured Windows jobs use the VS 2026 preview pool
+and Edge, while Linux jobs use Ubuntu 24.04 and Chrome.
+
+Strict mode (`TESTINGPLATFORM_BROWSER_REQUIRED=1`) makes missing browser,
+SDK or aligned package prerequisites failures rather than inconclusive
+results. The [fixture][browser-acceptance] selects the exact SDK version and
+commit supplied by the runner, uses an isolated package cache, and
+[compares all eight restored package SHA-512 hashes][restore-identity] with
+the staged package bytes. The runner rejects dirty or drifting source,
+stale/mixed package commits, reused results directories and changed package
+snapshots. Commands, exit codes, source/browser identities, package hashes,
+TRX, logs and binlogs are retained as evidence.
+
+The [TRX validator][result-validator] requires a nonempty, completed passing
+run with consistent counters. Every case in TestFX's maintained
+[`required-tests.json`][required-tests] must occur exactly once; a missing
+or duplicated required case, any failed/skipped/inconclusive result, or
+missing/malformed/empty TRX fails the gate. Intentional test-application
+failures and skips are scenarios asserted by passing outer acceptance cases,
+not permission to skip the compatibility gate itself.
+
+The change author owns the paired-source fix and evidence through dependency
+flow. These gates continuously check the composed contract and readiness
+dependency; they do not replace the external release and servicing approvals
+above or expand the validated runtime matrix.
+
 ## Outside this design
 
 Blazor/UI/component testing, framework-owned startup, WASI hosting, VSTest,
@@ -266,7 +315,7 @@ this design reuses WasmAppHost rather than adding another server.
 
 [sample-project]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/poc/browser-wasm-unit-tests/BrowserWasmTestApp.csproj
 [sample-test]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/poc/browser-wasm-unit-tests/BrowserWasmTests.cs
-[sample-readme]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/poc/browser-wasm-unit-tests/README.md
+[sample-readme]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/poc/browser-wasm-unit-tests/README.md
 [mstest-package]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Package/MSTest/MSTest.csproj
 [entrypoint]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets
 [selection]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Cli/dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs
@@ -292,3 +341,16 @@ this design reuses WasmAppHost rather than adding another server.
 [containment]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/WorkerProcessContainment.cs
 [parent-monitor]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/WorkerParentMonitor.cs
 [node]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/PlaywrightNodeExecutable.cs
+[compatibility-runner]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/eng/browser-testing/RunBrowserTests.ps1
+[sdk-ci]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/.vsts-pr.yml
+[sdk-browser-jobs]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/eng/pipelines/templates/jobs/browser-testing.yml
+[testfx-pin]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/eng/browser-testing/testfx.json
+[sdk-product-filter]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/source-build.slnf
+[result-validator]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/eng/browser-testing/AssertBrowserTestResults.ps1
+[testfx-ci]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/azure-pipelines.yml
+[testfx-browser-steps]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/eng/pipelines/steps/browser-testing.yml
+[sdk-pin]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/eng/browser-testing/sdk.json
+[testfx-package-filter]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/BrowserTestingPackages.slnf
+[browser-acceptance]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/BrowserPackageExecutionTests.cs
+[restore-identity]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/BrowserPackageRestoreIdentity.cs
+[required-tests]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/eng/browser-testing/required-tests.json
