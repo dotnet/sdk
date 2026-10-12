@@ -2941,6 +2941,135 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task WrongIndexerElementGuardedWorkInLog_ReportsDiagnostic_CS()
+        {
+            // 'loggers[0]' and 'loggers[1]' resolve to the same indexer on the same receiver, but they select
+            // different elements, so a guard on one is not a guard on the other.
+            string source = """
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.Extensions.Logging;
+
+                class C
+                {
+                    private const int Index = 0;
+
+                    void M(List<ILogger> loggers, int i, int j)
+                    {
+                        if (loggers[0].IsEnabled(LogLevel.Information))
+                        {
+                            loggers[1].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[i].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[0].LogInformation(ExpensiveMethodCall());
+                            loggers[Index].LogInformation(ExpensiveMethodCall());
+                        }
+
+                        if (loggers[i].IsEnabled(LogLevel.Information))
+                        {
+                            loggers[j].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[0].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[i].LogInformation(ExpensiveMethodCall());
+                        }
+
+                        if (loggers[GetIndex()].IsEnabled(LogLevel.Information))
+                        {
+                            loggers[GetIndex()].LogInformation([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    int GetIndex() => 0;
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongArrayElementGuardedWorkInLog_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                class C
+                {
+                    private ILogger[] _loggers;
+
+                    void M(ILogger[] loggers, int i, int j)
+                    {
+                        if (loggers[0].IsEnabled(LogLevel.Information))
+                        {
+                            loggers[1].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[i].LogInformation([|ExpensiveMethodCall()|]);
+                            _loggers[0].LogInformation([|ExpensiveMethodCall()|]);
+                            loggers[0].LogInformation(ExpensiveMethodCall());
+                        }
+
+                        if (_loggers[i].IsEnabled(LogLevel.Information))
+                        {
+                            _loggers[j].LogInformation([|ExpensiveMethodCall()|]);
+                            _loggers[i].LogInformation(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongIndexerElementGuardedWorkInLoggerMessage_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using System.Collections.Generic;
+                using Microsoft.Extensions.Logging;
+
+                static partial class Log
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    public static partial void StaticLogLevel(ILogger logger, string argument);
+                    public static partial void StaticLogLevel(ILogger logger, string argument) { } // Normally provided by the logging source generator.
+                }
+
+                class C
+                {
+                    void M(List<ILogger> loggers, ILogger[] array)
+                    {
+                        if (loggers[0].IsEnabled(LogLevel.Information))
+                        {
+                            Log.StaticLogLevel(loggers[1], [|ExpensiveMethodCall()|]);
+                            Log.StaticLogLevel(loggers[0], ExpensiveMethodCall());
+                        }
+
+                        if (array[0].IsEnabled(LogLevel.Information))
+                        {
+                            Log.StaticLogLevel(array[1], [|ExpensiveMethodCall()|]);
+                            Log.StaticLogLevel(array[0], ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
         public async Task GuardAfterLogInvocation_ReportsDiagnostic_CS()
         {
             string source = """
@@ -3546,6 +3675,103 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 
                     void M()
                     {
+                        if (s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongTypeArgumentGuardedWorkInInstanceLoggerMessageWithStaticLoggerField_ReportsDiagnostic_CS()
+        {
+            // Each construction of a generic type has its own static field, so 'Log<int>.s_logger' is a different
+            // logger instance from the 's_logger' used by a [LoggerMessage] method invoked on 'Log<T>'.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                partial class Log<T>
+                {
+                    private static ILogger s_logger;
+
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M(Log<string> other)
+                    {
+                        if (Log<int>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                            other.StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (Log<string>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                            other.StaticLogLevel(ExpensiveMethodCall());
+                        }
+
+                        if (s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                            other.StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (Log<T>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+                    }
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongTypeArgumentGuardedWorkInInstanceLoggerMessageWithBaseClassLoggerField_ReportsDiagnostic_CS()
+        {
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                class B<T>
+                {
+                    public static ILogger s_logger;
+                }
+
+                partial class C : B<int>
+                {
+                    [LoggerMessage(EventId = 0, Level = LogLevel.Information, Message = "Static log level `{argument}`")]
+                    partial void StaticLogLevel(string argument);
+
+                    void M()
+                    {
+                        if (B<string>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (B<int>.s_logger.IsEnabled(LogLevel.Information))
+                        {
+                            StaticLogLevel(ExpensiveMethodCall());
+                        }
+
                         if (s_logger.IsEnabled(LogLevel.Information))
                         {
                             StaticLogLevel(ExpensiveMethodCall());
@@ -6616,6 +6842,39 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         If _otherLogger.IsEnabled(LogLevel.Critical) Then logger.Log(LogLevel.[Error], eventId, exception, ExpensiveMethodCall())
                     End Sub
                 
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongIndexerElementGuardedWorkInLog_ReportsDiagnostic_VB()
+        {
+            string source = """
+                Imports System
+                Imports System.Collections.Generic
+                Imports Microsoft.Extensions.Logging
+
+                Class C
+                    Private _loggers As ILogger()
+
+                    Sub M(loggers As List(Of ILogger), i As Integer, j As Integer)
+                        If loggers(0).IsEnabled(LogLevel.Information) Then loggers(1).LogInformation([|ExpensiveMethodCall()|])
+                        If loggers(0).IsEnabled(LogLevel.Information) Then loggers(i).LogInformation([|ExpensiveMethodCall()|])
+                        If loggers(0).IsEnabled(LogLevel.Information) Then loggers(0).LogInformation(ExpensiveMethodCall())
+                        If loggers(i).IsEnabled(LogLevel.Information) Then loggers(j).LogInformation([|ExpensiveMethodCall()|])
+                        If loggers(i).IsEnabled(LogLevel.Information) Then loggers(i).LogInformation(ExpensiveMethodCall())
+
+                        If _loggers(0).IsEnabled(LogLevel.Information) Then _loggers(1).LogInformation([|ExpensiveMethodCall()|])
+                        If _loggers(0).IsEnabled(LogLevel.Information) Then _loggers(0).LogInformation(ExpensiveMethodCall())
+                        If _loggers(i).IsEnabled(LogLevel.Information) Then _loggers(j).LogInformation([|ExpensiveMethodCall()|])
+                        If _loggers(i).IsEnabled(LogLevel.Information) Then _loggers(i).LogInformation(ExpensiveMethodCall())
+                    End Sub
+
                     Function ExpensiveMethodCall() As String
                         Return "very expensive call"
                     End Function

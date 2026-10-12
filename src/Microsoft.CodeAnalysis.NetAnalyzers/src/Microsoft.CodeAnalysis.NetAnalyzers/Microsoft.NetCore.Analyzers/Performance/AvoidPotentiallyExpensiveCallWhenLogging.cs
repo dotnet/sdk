@@ -528,8 +528,26 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     if (a is IMemberReferenceOperation memberA && b is IMemberReferenceOperation memberB)
                     {
-                        return SymbolEqualityComparer.Default.Equals(memberA.Member, memberB.Member) &&
-                            AreSameInstance(memberA.Instance, memberB.Instance);
+                        if (!SymbolEqualityComparer.Default.Equals(memberA.Member, memberB.Member) ||
+                            !AreSameInstance(memberA.Instance, memberB.Instance))
+                        {
+                            return false;
+                        }
+
+                        // An indexer is a property reference with arguments, so 'providers[0]' and 'providers[1]'
+                        // resolve to the same member on the same receiver but are different logger instances.
+                        if (memberA is IPropertyReferenceOperation propertyA && memberB is IPropertyReferenceOperation propertyB)
+                        {
+                            return AreSameIndexerArguments(propertyA.Arguments, propertyB.Arguments);
+                        }
+
+                        return true;
+                    }
+
+                    if (a is IArrayElementReferenceOperation arrayElementA && b is IArrayElementReferenceOperation arrayElementB)
+                    {
+                        return AreSameInstance(arrayElementA.ArrayReference, arrayElementB.ArrayReference) &&
+                            AreSameArrayIndices(arrayElementA.Indices, arrayElementB.Indices);
                     }
 
                     if (a is IParameterReferenceOperation parameterA && b is IParameterReferenceOperation parameterB)
@@ -543,6 +561,57 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
 
                     return false;
+                }
+
+                static bool AreSameIndexerArguments(ImmutableArray<IArgumentOperation> argumentsA, ImmutableArray<IArgumentOperation> argumentsB)
+                {
+                    if (argumentsA.Length != argumentsB.Length)
+                    {
+                        return false;
+                    }
+
+                    for (var i = 0; i < argumentsA.Length; i++)
+                    {
+                        if (!IsSameArgument(argumentsA[i].Value, argumentsB[i].Value))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                static bool AreSameArrayIndices(ImmutableArray<IOperation> indicesA, ImmutableArray<IOperation> indicesB)
+                {
+                    if (indicesA.Length != indicesB.Length)
+                    {
+                        return false;
+                    }
+
+                    for (var i = 0; i < indicesA.Length; i++)
+                    {
+                        if (!IsSameArgument(indicesA[i], indicesB[i]))
+                        {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                }
+
+                // Two indexer or array element arguments select the same element only when they are either the same
+                // constant value or a reference to the same field/property/parameter/local. Anything else (e.g. a
+                // method call) is conservatively treated as a different element.
+                static bool IsSameArgument(IOperation argumentA, IOperation argumentB)
+                {
+                    if (argumentA.ConstantValue.HasValue || argumentB.ConstantValue.HasValue)
+                    {
+                        return argumentA.ConstantValue.HasValue &&
+                            argumentB.ConstantValue.HasValue &&
+                            Equals(argumentA.ConstantValue.Value, argumentB.ConstantValue.Value);
+                    }
+
+                    return AreSameInstance(argumentA, argumentB);
                 }
 
                 bool IsGeneratorSelectedLoggerMember(IOperation isEnabledInstance)
@@ -559,7 +628,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     switch (isEnabledInstance)
                     {
                         case IMemberReferenceOperation memberReference:
-                            if (!SymbolEqualityComparer.Default.Equals(memberReference.Member.OriginalDefinition, loggerMember.OriginalDefinition))
+                            // Compare the constructed members so that a guard on 'Log<int>.s_logger' does not apply to a log
+                            // invocation on 'Log<string>', whose 's_logger' is a different instance despite sharing a definition.
+                            if (!SymbolEqualityComparer.Default.Equals(memberReference.Member, loggerMember))
                             {
                                 return false;
                             }
@@ -580,7 +651,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                         case IParameterReferenceOperation parameterReference:
                             // Primary constructor parameter, which can only be the logger of the current instance.
-                            return SymbolEqualityComparer.Default.Equals(parameterReference.Parameter.OriginalDefinition, loggerMember.OriginalDefinition) &&
+                            return SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, loggerMember) &&
                                 logInstance is IInstanceReferenceOperation;
 
                         default:
