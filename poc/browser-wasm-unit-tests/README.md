@@ -26,6 +26,9 @@ The same entry point can be run locally in PowerShell 7 with
 checks the shipping SDK source stamp and eight package source commits, and requires
 every TestFX browser acceptance case to execute successfully. Missing prerequisites,
 zero results, skipped cases and malformed result files are failures, not green skips.
+The runner passes the exact source-matched SDK version to acceptance, so older SDKs
+can coexist in an incremental layout. Each fixture uses an isolated NuGet cache and
+checks all eight restored package hashes against the staged package bytes.
 
 The SDK counterpart is pinned in
 [`eng/browser-testing/testfx.json`](../../eng/browser-testing/testfx.json).
