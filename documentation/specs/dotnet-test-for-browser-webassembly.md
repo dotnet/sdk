@@ -276,8 +276,17 @@ source-build mode**. It invokes TestFX's root pack build with
 [`BrowserTestingPackages.slnf`][testfx-package-filter], including the late
 analyzer generator dependency, then evaluates the acceptance project's
 `NetCurrent` and `TargetPath`. Windows packaging retains desktop MSBuild
-for UWP assets; the configured Windows jobs use the VS 2026 preview pool
-and Edge, while Linux jobs use Ubuntu 24.04 and Chrome.
+for UWP assets. Both repositories use .NET build-pool images:
+`windows.vs2026preview.scout.amd64.open` with Edge and
+`build.ubuntu.2204.amd64.open` with Chrome. They do not delete SDK outputs
+or preinstalled system tools to work around worker disk limits.
+
+On Linux CI workers, the shared [`InstallBrowser.sh`][browser-install]
+provisions Chrome only when it is absent, checking the pinned Google
+primary-key fingerprint and using its signed APT repository. This helper
+is restricted to disposable Azure Pipelines workers. The local
+`RunBrowserTests.ps1` entry point still requires an explicitly supplied,
+installed browser and does not provision one.
 
 Strict mode (`TESTINGPLATFORM_BROWSER_REQUIRED=1`) makes missing browser,
 SDK or aligned package prerequisites failures rather than inconclusive
@@ -315,7 +324,7 @@ this design reuses WasmAppHost rather than adding another server.
 
 [sample-project]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/poc/browser-wasm-unit-tests/BrowserWasmTestApp.csproj
 [sample-test]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/poc/browser-wasm-unit-tests/BrowserWasmTests.cs
-[sample-readme]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/poc/browser-wasm-unit-tests/README.md
+[sample-readme]: https://github.com/dotnet/sdk/blob/66309ab55fce95ee42e5e2236c02f7371332dbf8/poc/browser-wasm-unit-tests/README.md
 [mstest-package]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Package/MSTest/MSTest.csproj
 [entrypoint]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.MSBuild/buildMultiTargeting/Microsoft.Testing.Platform.MSBuild.targets
 [selection]: https://github.com/dotnet/sdk/blob/5b0e5fbe3af389fc93edc920c9982ea0ac2c20c2/src/Cli/dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs
@@ -341,16 +350,17 @@ this design reuses WasmAppHost rather than adding another server.
 [containment]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/WorkerProcessContainment.cs
 [parent-monitor]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/WorkerParentMonitor.cs
 [node]: https://github.com/microsoft/testfx/blob/b6c7cac92f7eeb788ae026471239ff110207bc24/src/Platform/Microsoft.Testing.Platform.Browser/PlaywrightNodeExecutable.cs
-[compatibility-runner]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/eng/browser-testing/RunBrowserTests.ps1
-[sdk-ci]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/.vsts-pr.yml
-[sdk-browser-jobs]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/eng/pipelines/templates/jobs/browser-testing.yml
-[testfx-pin]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/eng/browser-testing/testfx.json
-[sdk-product-filter]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/source-build.slnf
-[result-validator]: https://github.com/dotnet/sdk/blob/ac28e615ea92f4a96e4a3e35b0df082bf4ede7dd/eng/browser-testing/AssertBrowserTestResults.ps1
-[testfx-ci]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/azure-pipelines.yml
-[testfx-browser-steps]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/eng/pipelines/steps/browser-testing.yml
-[sdk-pin]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/eng/browser-testing/sdk.json
-[testfx-package-filter]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/BrowserTestingPackages.slnf
-[browser-acceptance]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/BrowserPackageExecutionTests.cs
-[restore-identity]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/BrowserPackageRestoreIdentity.cs
-[required-tests]: https://github.com/microsoft/testfx/blob/bbbbfd23d4de8ed70a261b52a326804492b4b037/eng/browser-testing/required-tests.json
+[compatibility-runner]: https://github.com/dotnet/sdk/blob/66309ab55fce95ee42e5e2236c02f7371332dbf8/eng/browser-testing/RunBrowserTests.ps1
+[sdk-ci]: https://github.com/dotnet/sdk/blob/66309ab55fce95ee42e5e2236c02f7371332dbf8/.vsts-pr.yml
+[sdk-browser-jobs]: https://github.com/dotnet/sdk/blob/66309ab55fce95ee42e5e2236c02f7371332dbf8/eng/pipelines/templates/jobs/browser-testing.yml
+[testfx-pin]: https://github.com/dotnet/sdk/blob/66309ab55fce95ee42e5e2236c02f7371332dbf8/eng/browser-testing/testfx.json
+[sdk-product-filter]: https://github.com/dotnet/sdk/blob/66309ab55fce95ee42e5e2236c02f7371332dbf8/source-build.slnf
+[result-validator]: https://github.com/dotnet/sdk/blob/66309ab55fce95ee42e5e2236c02f7371332dbf8/eng/browser-testing/AssertBrowserTestResults.ps1
+[browser-install]: https://github.com/dotnet/sdk/blob/66309ab55fce95ee42e5e2236c02f7371332dbf8/eng/browser-testing/InstallBrowser.sh
+[testfx-ci]: https://github.com/microsoft/testfx/blob/c81b63af69e367a826f614f5728e9f0c50d576fa/azure-pipelines.yml
+[testfx-browser-steps]: https://github.com/microsoft/testfx/blob/c81b63af69e367a826f614f5728e9f0c50d576fa/eng/pipelines/steps/browser-testing.yml
+[sdk-pin]: https://github.com/microsoft/testfx/blob/c81b63af69e367a826f614f5728e9f0c50d576fa/eng/browser-testing/sdk.json
+[testfx-package-filter]: https://github.com/microsoft/testfx/blob/303a5d8c22e9ef955c8a7c676c9818ea6fc27e99/BrowserTestingPackages.slnf
+[browser-acceptance]: https://github.com/microsoft/testfx/blob/303a5d8c22e9ef955c8a7c676c9818ea6fc27e99/test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/BrowserPackageExecutionTests.cs
+[restore-identity]: https://github.com/microsoft/testfx/blob/303a5d8c22e9ef955c8a7c676c9818ea6fc27e99/test/IntegrationTests/Microsoft.Testing.Platform.Acceptance.IntegrationTests/BrowserPackageRestoreIdentity.cs
+[required-tests]: https://github.com/microsoft/testfx/blob/303a5d8c22e9ef955c8a7c676c9818ea6fc27e99/eng/browser-testing/required-tests.json
