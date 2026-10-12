@@ -509,7 +509,7 @@ internal abstract class AbstractBrowserRefreshServer(
             // updates produced before the connection was established.
             if (!await connection.WaitForInitializationAsync(cancellationToken))
             {
-                return (false, null, false);
+                return (received: false, result: null, responded: false);
             }
 
             if (request != null)
@@ -519,17 +519,17 @@ internal abstract class AbstractBrowserRefreshServer(
 
                 if (!await connection.TrySendMessageAsync(requestBytes, cancellationToken))
                 {
-                    return (false, null, false);
+                    return (received: false, result: null, responded: false);
                 }
             }
 
             if (response == null)
             {
-                return (false, null, true);
+                return (received: false, result: null, responded: true);
             }
 
             var connectionResult = await connection.TryReceiveMessageAsync(response, cancellationToken);
-            return (true, connectionResult, connectionResult != null);
+            return (received: true, connectionResult, responded: connectionResult != null);
         }
     }
 
