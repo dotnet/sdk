@@ -36,7 +36,8 @@ Reload).
   it is served by the Blazor Gateway, a separate YARP host that does not activate ASP.NET
   Core hosting startups, so
   [`BlazorWebAssemblyAppModel`](Watch/AppModels/BlazorWebAssemblyAppModel.cs) configures a
-  gateway reverse-proxy route through `ReverseProxy__*` environment variables instead. Keep
+  gateway reverse-proxy routes for only `/connect` and `/clear-cache` through `ReverseProxy__*`
+  environment variables instead. Never proxy settings to the provider. Keep
   destinations fixed to the trusted loopback provider address, the route root-relative, and
   the encrypted shared-secret WebSocket subprotocol intact. Do not add YARP to arbitrary
   applications.
@@ -54,12 +55,22 @@ Reload).
   that connection's credential, so a provider can never supply the key that authenticates
   it. The existing `EnableHotReloadInRuntimeConfigDevFile` SDK property controls whether
   the build generates the browser-tools assets and defaults to `true` for Debug builds.
-  When present, the initializer fetches the provider-owned
-  `/_framework/dotnet-browser-tools/hot-reload-settings.json` route and starts the client
-  only for `{ "hotReload": true }`; the response is non-executable, contains no key
-  material, and is served with `Cache-Control: no-store`. The ASP.NET Core disabled
-  fallback for non-watch launches is supplied by the runtime/host, not by the SDK or
-  `dotnet watch`. Watch never activates the client by mutating an application file. Hosted
+  When present, the initializer fetches the build-owned
+  `/_framework/dotnet-browser-tools/hot-reload-settings.json` static web asset and starts
+  the client only for `{ "hotReload": true }`. A normal build writes `false` under
+  `obj/<configuration>/<tfm>/dotnet-watch/`; after the build and before launching the app,
+  watch changes it to `true` only if the bytes differ. Watch also restores `true` after a
+  successful in-process rebuild that leaves the application running, and resets it to
+  `false` on graceful shutdown so a subsequent run without building does not activate
+  a missing provider. The response is non-executable,
+  contains no key material, is uncompressed, and requests `Cache-Control: no-store`.
+  A build-owned marker written after the disabled settings is paired with the
+  settings file in the fast up-to-date check: a watch write makes the settings
+  newer than the marker so an ordinary Visual Studio build runs and resets it.
+  The initializer's `fetch` uses both `cache: 'no-store'` and a fresh random
+  `If-None-Match` validator on every request.
+  It takes precedence over ASP.NET Core's older disabled fallback; removing that fallback
+  belongs to dotnet/aspnetcore, not this repository. Hosted
   WebAssembly uses the client as the browser-tools project even though the server remains
   the launching project.
   See

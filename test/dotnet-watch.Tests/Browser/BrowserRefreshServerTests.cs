@@ -118,7 +118,7 @@ public class BrowserRefreshServerTests
 
     /// <summary>
     /// A standalone WebAssembly app is served by blazor-gateway, which does not activate hosting
-    /// startups. Without the proxy route the provider routes fall through to the SPA fallback.
+    /// startups. Only provider routes are proxied; the settings file remains a static web asset.
     /// </summary>
     [TestMethod]
     public async Task GatewayProxyEnvironment()
@@ -131,9 +131,12 @@ public class BrowserRefreshServerTests
         AssertEx.SequenceEqual(
             [
                 "ReverseProxy__Clusters__dotnet-browser-tools__Destinations__provider__Address=http://test.endpoint/",
-                "ReverseProxy__Routes__dotnet-browser-tools__ClusterId=dotnet-browser-tools",
-                "ReverseProxy__Routes__dotnet-browser-tools__Match__Path=/_framework/dotnet-browser-tools/{**catch-all}",
-                "ReverseProxy__Routes__dotnet-browser-tools__Order=-1000",
+                "ReverseProxy__Routes__dotnet-browser-tools-clear-cache__ClusterId=dotnet-browser-tools",
+                "ReverseProxy__Routes__dotnet-browser-tools-clear-cache__Match__Path=/_framework/dotnet-browser-tools/clear-cache",
+                "ReverseProxy__Routes__dotnet-browser-tools-clear-cache__Order=-1000",
+                "ReverseProxy__Routes__dotnet-browser-tools-connect__ClusterId=dotnet-browser-tools",
+                "ReverseProxy__Routes__dotnet-browser-tools-connect__Match__Path=/_framework/dotnet-browser-tools/connect",
+                "ReverseProxy__Routes__dotnet-browser-tools-connect__Order=-1000",
             ],
             envBuilder.OrderBy(e => e.Key, StringComparer.Ordinal).Select(e => $"{e.Key}={e.Value}"));
     }

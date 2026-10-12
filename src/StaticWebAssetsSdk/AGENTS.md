@@ -30,9 +30,20 @@ code, nor of the key. This target therefore also generates the keypair (via
 the public half in the generated configuration module. The existing
 `EnableHotReloadInRuntimeConfigDevFile` property controls generation and defaults to
 `true` for Debug builds; there is no browser-tools-specific watch-to-MSBuild property.
-The generated initializer checks the provider-owned
-`/_framework/dotnet-browser-tools/hot-reload-settings.json` response before importing the
-configuration; this response is not a generated file or Static Web Asset.
+The generated initializer checks the build-owned
+`/_framework/dotnet-browser-tools/hot-reload-settings.json` static web asset before importing
+the configuration. A normal build writes `{ "hotReload": false }` under `obj/<config>/<tfm>/dotnet-watch/`;
+`dotnet watch` changes that file to `true` after compilation and before launch, only if the
+bytes differ. This settings asset is nonfingerprinted, uncompressed, build-only, emits
+`no-store` endpoint metadata, and has endpoint order `-1001` to precede host fallback
+routes. The Web and WebAssembly initializers each request settings with
+`cache: 'no-store'` and a new random `If-None-Match` validator.
+Each normal build also updates `hot-reload-settings.build.marker` after restoring
+`false`; this file is not an asset. Design-time builds expose it as an
+`UpToDateCheckBuilt` output whose `Original` is the settings file, so a later watch
+write schedules an ordinary build through Visual Studio's fast up-to-date check
+without making unchanged settings force repeated builds. The pair remains visible
+when either file is missing so an ordinary build can restore it.
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must
 never reach publish output. Its generated watch initializer also initializes the SDK Hot

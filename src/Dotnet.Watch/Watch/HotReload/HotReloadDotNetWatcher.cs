@@ -304,6 +304,12 @@ internal sealed class HotReloadDotNetWatcher
 
                             if (result.Success)
                             {
+                                if (mainRunningProject?.Clients.BrowserRefreshServer != null &&
+                                    HotReloadAppModel.InferFromProject(_context, mainRunningProject.ProjectNode) is WebApplicationAppModel webAppModel)
+                                {
+                                    webAppModel.EnableBrowserToolsSettings(mainRunningProject.ClientLogger);
+                                }
+
                                 break;
                             }
 
@@ -495,6 +501,12 @@ internal sealed class HotReloadDotNetWatcher
                 if (mainRunningProject != null)
                 {
                     await mainRunningProject.Process.TerminateAsync();
+                    if (shutdownCancellationToken.IsCancellationRequested &&
+                        mainRunningProject.Clients.BrowserRefreshServer != null &&
+                        HotReloadAppModel.InferFromProject(_context, mainRunningProject.ProjectNode) is WebApplicationAppModel webAppModel)
+                    {
+                        webAppModel.DisableBrowserToolsSettings(mainRunningProject.ClientLogger);
+                    }
                 }
 
                 // Wait for file change

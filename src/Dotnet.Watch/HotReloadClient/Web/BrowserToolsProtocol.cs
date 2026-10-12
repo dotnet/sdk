@@ -21,7 +21,6 @@ internal static class BrowserToolsProtocol
     public const string RoutePrefix = "/_framework/dotnet-browser-tools";
     public const string ClearCachePath = "/clear-cache";
     public const string ConnectPath = "/connect";
-    public const string HotReloadSettingsPath = "/hot-reload-settings.json";
 }
 
 internal sealed record BrowserToolsManagedCodeUpdate(

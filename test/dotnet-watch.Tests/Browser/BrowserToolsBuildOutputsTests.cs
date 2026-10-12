@@ -40,6 +40,36 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     private BrowserToolsBuildOutputs CreateOutputs()
         => BrowserToolsBuildOutputs.CreateForTesting("test.csproj", _directory, NullLogger.Instance);
 
+    [TestMethod]
+    public void EnableHotReload_ChangesOnlyDisabledSettings()
+    {
+        var outputs = CreateOutputs();
+        File.WriteAllText(outputs.SettingsPath, "{ \"hotReload\": false }" + Environment.NewLine);
+        File.SetLastWriteTimeUtc(outputs.SettingsPath, DateTime.UtcNow.AddMinutes(-2));
+        var before = File.GetLastWriteTimeUtc(outputs.SettingsPath);
+
+        outputs.EnableHotReload();
+        Assert.AreEqual("{ \"hotReload\": true }" + Environment.NewLine, File.ReadAllText(outputs.SettingsPath));
+
+        var enabled = File.GetLastWriteTimeUtc(outputs.SettingsPath);
+        outputs.EnableHotReload();
+        Assert.AreEqual(enabled, File.GetLastWriteTimeUtc(outputs.SettingsPath));
+        Assert.AreNotEqual(before, File.GetLastWriteTimeUtc(outputs.SettingsPath));
+
+        outputs.DisableHotReload();
+        Assert.AreEqual("{ \"hotReload\": false }" + Environment.NewLine, File.ReadAllText(outputs.SettingsPath));
+        var disabled = File.GetLastWriteTimeUtc(outputs.SettingsPath);
+        outputs.DisableHotReload();
+        Assert.AreEqual(disabled, File.GetLastWriteTimeUtc(outputs.SettingsPath));
+    }
+
+    [TestMethod]
+    public void EnableHotReload_RequiresTheBuildSettingsFile()
+    {
+        var outputs = CreateOutputs();
+        Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(outputs.EnableHotReload);
+    }
+
     private RSA WriteValidKeyPair()
     {
         var rsa = RSA.Create(2048);
