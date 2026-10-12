@@ -33,6 +33,9 @@ internal sealed class ThemeColors
 
     /// <summary>Color for success emphasis (installed versions/paths in success messages).</summary>
     public string SuccessAccent { get; set; } = "green";
+
+    /// <summary>Color for low-priority notices, such as an available dotnetup update.</summary>
+    public string Notice { get; set; } = "gold1";
 }
 
 /// <summary>
@@ -72,4 +75,7 @@ internal static class DotnetupTheme
 
     /// <summary>Wraps text in the theme's success-accent color markup (versions/paths in success messages).</summary>
     public static string SuccessAccent(string text) => $"[{Current.SuccessAccent}]{text}[/]";
+
+    /// <summary>Wraps text in the theme's notice color markup.</summary>
+    public static string Notice(string text) => $"[{Current.Notice}]{text}[/]";
 }

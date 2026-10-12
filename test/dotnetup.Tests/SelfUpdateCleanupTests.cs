@@ -1,0 +1,396 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+
+namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
+
+/// <summary>Exercises deferred cleanup against isolated installation directories and real file locks.</summary>
+[TestClass]
+public class SelfUpdateCleanupTests
+{
+    private const int ExpiredBackupAgeDays = 8;
+    private const string Version = SelfUpdateTestFiles.OriginalVersion;
+    private const int RetainedBackupAgeDays = 6;
+    private DirectoryInfo _directory = null!;
+    private string _installedPath = null!;
+    private string _lockPath = null!;
+    private SelfUpdateTestFiles _files = null!;
+
+    [TestInitialize]
+    public void Initialize()
+    {
+        _files = new SelfUpdateTestFiles();
+        _directory = new DirectoryInfo(_files.Paths.DirectoryPath);
+        _installedPath = Path.Combine(_directory.FullName, "dotnetup.exe");
+        _lockPath = Path.Combine(_directory.FullName, "dotnetup.update.lock");
+        if (_installedPath != _files.Paths.InstalledPath)
+        {
+            File.Move(_files.Paths.InstalledPath, _installedPath);
+        }
+    }
+
+    [TestCleanup]
+    public void Cleanup() => _files.Dispose();
+
+    [TestMethod]
+    public void DeletesOldBackupsButKeepsFreshAndFutureBackups()
+    {
+        var old = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        var fresh = CreateBackup(TimeSpan.FromDays(RetainedBackupAgeDays));
+        var future = CreateBackup(TimeSpan.FromDays(-2));
+
+        RunCleanup();
+
+        Assert.IsFalse(File.Exists(old));
+        Assert.IsTrue(File.Exists(fresh));
+        Assert.IsTrue(File.Exists(future));
+        AssertUpdateLockAvailable();
+    }
+
+    [TestMethod]
+    public void DeletesOldRejectedBackupsButKeepsFreshRejectedBackups()
+    {
+        var old = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays), ".rejected");
+        var fresh = CreateBackup(TimeSpan.FromDays(RetainedBackupAgeDays), ".rejected");
+
+        RunCleanup();
+
+        Assert.IsFalse(File.Exists(old));
+        Assert.IsTrue(File.Exists(fresh));
+    }
+
+    [TestMethod]
+    public void MissingCanonicalPreservesBackups()
+    {
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        File.Delete(_installedPath);
+
+        RunCleanup();
+
+        Assert.IsTrue(File.Exists(backup));
+        Assert.IsFalse(File.Exists(_installedPath));
+        AssertUpdateLockAvailable();
+    }
+
+    [TestMethod]
+    public void OnlyExactBackupNamesAreDeleted()
+    {
+        var originalBytes = File.ReadAllBytes(_installedPath);
+        var transaction = Guid.NewGuid().ToString("N")[..8];
+        string[] names =
+        [
+            "dotnetup.activity.lock",
+            "dotnetup.exe.new",
+            "dotnetup.exe.old.",
+            "dotnetup.exe.old.invalid",
+            "dotnetup.exe.old." + Guid.NewGuid().ToString("D"),
+            "dotnetup.exe.old." + Guid.NewGuid().ToString("N"),
+            "dotnetup.exe.old." + new string('g', 32),
+            "dotnetup.exe.old." + new string('g', 8),
+            "dotnetup.exe.old." + transaction[..^1],
+            "dotnetup.exe.old." + transaction + "x",
+            "dotnetup.exe.old." + transaction + ".rejected.extra",
+            "dotnetup.exe.old." + transaction + ".REJECTED",
+            "other.exe.old." + transaction,
+            "prefix-dotnetup.exe.old." + transaction,
+            "dotnetup.old." + transaction,
+        ];
+        foreach (var name in names)
+        {
+            var path = Path.Combine(_directory.FullName, name);
+            File.WriteAllText(path, "preserve");
+            File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
+        }
+
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        RunCleanup();
+
+        Assert.IsFalse(File.Exists(backup));
+        foreach (var name in names)
+        {
+            Assert.AreEqual("preserve", File.ReadAllText(Path.Combine(_directory.FullName, name)));
+        }
+
+        Assert.AreSequenceEqual(originalBytes, File.ReadAllBytes(_installedPath));
+        Assert.AreEqual(0L, new FileInfo(_lockPath).Length);
+    }
+
+    [TestMethod]
+    public void UsesTheExactInstalledFileNameIncludingUnixNames()
+    {
+        var installedPath = Path.Combine(_directory.FullName, "dotnetup");
+        SelfUpdateTestFiles.WriteExecutable(installedPath, Version);
+        var backup = installedPath + ".old." + Guid.NewGuid().ToString("N")[..8];
+        File.WriteAllText(backup, "old");
+        File.SetLastWriteTimeUtc(backup, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
+        var otherBackup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+
+        RunCleanup(installedPath);
+
+        Assert.IsFalse(File.Exists(backup));
+        Assert.IsTrue(File.Exists(otherBackup));
+        Assert.IsTrue(File.Exists(installedPath));
+    }
+
+    [TestMethod]
+    public void BoundsDeletionsPerLaunch()
+    {
+        for (var count = 0; count < 80; count++)
+        {
+            CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        }
+
+        RunCleanup();
+
+        var remaining = Directory.GetFiles(_directory.FullName, "dotnetup.exe.old.*").Length;
+        Assert.IsTrue(remaining >= 48 && remaining < 80, $"Unexpected remaining backups: {remaining}");
+        AssertUpdateLockAvailable();
+    }
+
+    [TestMethod]
+    public void FreshMatchingEntriesAlsoConsumeEnumerationBudget()
+    {
+        for (var count = 0; count < 80; count++)
+        {
+            CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        }
+
+        File.WriteAllBytes(_lockPath, []);
+        var firstEntries = _directory.EnumerateFileSystemInfos("dotnetup.exe.old.*").Take(32).ToArray();
+        foreach (var entry in firstEntries)
+        {
+            File.SetLastWriteTimeUtc(entry.FullName, DateTime.UtcNow);
+        }
+
+        RunCleanup();
+
+        Assert.HasCount(80, Directory.GetFiles(_directory.FullName, "dotnetup.exe.old.*"));
+    }
+
+    [TestMethod]
+    public void UnrelatedEntriesDoNotConsumeEnumerationBudget()
+    {
+        for (var count = 0; count < 80; count++)
+        {
+            File.WriteAllText(Path.Combine(_directory.FullName, $"unrelated-{count}"), "preserve");
+        }
+
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+
+        RunCleanup();
+
+        Assert.IsFalse(File.Exists(backup));
+    }
+
+    [TestMethod]
+    public void SkipsDirectoriesAndDoesNotRecurse()
+    {
+        var backupDirectory = Directory.CreateDirectory(_installedPath + ".old." + Guid.NewGuid().ToString("N")[..8]);
+        var nestedBackup = Path.Combine(backupDirectory.FullName, "dotnetup.exe.old." + Guid.NewGuid().ToString("N")[..8]);
+        File.WriteAllText(nestedBackup, "preserve");
+        File.SetLastWriteTimeUtc(nestedBackup, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
+        backupDirectory.LastWriteTimeUtc = DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays);
+        var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+
+        RunCleanup();
+
+        Assert.AreEqual("preserve", File.ReadAllText(nestedBackup));
+        Assert.IsFalse(File.Exists(backup));
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void ReportsOneFailureForLockedBackupsAndContinuesOnWindows()
+    {
+        var firstLocked = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        var secondLocked = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        var other = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+        using var firstHandle = new FileStream(firstLocked, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var secondHandle = new FileStream(secondLocked, FileMode.Open, FileAccess.Read, FileShare.Read);
+        var failures = new List<Exception>();
+
+        RunCleanup(onFailure: failures.Add);
+
+        Assert.IsTrue(File.Exists(firstLocked));
+        Assert.IsTrue(File.Exists(secondLocked));
+        Assert.IsFalse(File.Exists(other));
+        Assert.HasCount(1, failures);
+        AssertUpdateLockAvailable();
+    }
+
+    [TestMethod]
+    public void InvalidPathReportsFailureWhileMissingPathDoesNotCreateDirectories()
+    {
+        var missing = Path.Combine(_directory.FullName, "missing", "dotnetup.exe");
+        var failures = new List<Exception>();
+        SelfUpdateCleanup.RunWithUpdateLock(missing, failures.Add);
+        SelfUpdateCleanup.RunWithUpdateLock("\0", failures.Add);
+
+        Assert.HasCount(1, failures);
+        Assert.IsFalse(Directory.Exists(Path.GetDirectoryName(missing)));
+    }
+
+    [TestMethod]
+    public void SkipsBackupFileAndDirectorySymlinks()
+    {
+        var outside = Directory.CreateDirectory(_directory.FullName + "-target");
+        var fileLink = _installedPath + ".old." + Guid.NewGuid().ToString("N")[..8];
+        var directoryLink = _installedPath + ".old." + Guid.NewGuid().ToString("N")[..8] + ".rejected";
+        try
+        {
+            var target = Path.Combine(outside.FullName, "target");
+            File.WriteAllText(target, "preserve");
+            File.SetLastWriteTimeUtc(target, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
+            CreateSymbolicLink(fileLink, target, isDirectory: false);
+            CreateSymbolicLink(directoryLink, outside.FullName, isDirectory: true);
+            var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+
+            RunCleanup();
+
+            Assert.IsFalse(File.Exists(backup));
+            Assert.AreEqual("preserve", File.ReadAllText(target));
+            Assert.IsNotNull(new FileInfo(fileLink).LinkTarget);
+            Assert.IsNotNull(new DirectoryInfo(directoryLink).LinkTarget);
+        }
+        finally
+        {
+            File.Delete(fileLink);
+            if (Directory.Exists(directoryLink))
+            {
+                Directory.Delete(directoryLink);
+            }
+
+            outside.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("canonical")]
+    [DataRow("directory")]
+    [DataRow("ancestor")]
+    public void ResolvesDirectoryLinksButRejectsFileLinks(string kind)
+    {
+        var outside = Directory.CreateDirectory(_directory.FullName + "-target");
+        var link = Path.Combine(_directory.FullName, "link");
+        try
+        {
+            var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+            var installedPath = _installedPath;
+            if (kind == "canonical")
+            {
+                var target = Path.Combine(outside.FullName, "target");
+                SelfUpdateTestFiles.WriteExecutable(target, Version);
+                link = _installedPath;
+                File.Delete(link);
+                CreateSymbolicLink(link, target, isDirectory: false);
+            }
+            else
+            {
+                var targetDirectory = kind == "ancestor"
+                    ? Directory.CreateDirectory(Path.Combine(outside.FullName, "nested")).FullName
+                    : outside.FullName;
+                var target = Path.Combine(targetDirectory, "dotnetup.exe");
+                SelfUpdateTestFiles.WriteExecutable(target, Version);
+                backup = target + ".old." + Guid.NewGuid().ToString("N")[..8];
+                File.WriteAllText(backup, "preserve");
+                File.SetLastWriteTimeUtc(backup, DateTime.UtcNow.AddDays(-ExpiredBackupAgeDays));
+                CreateSymbolicLink(link, outside.FullName, isDirectory: true);
+                installedPath = kind == "ancestor" ? Path.Combine(link, "nested", "dotnetup.exe") : Path.Combine(link, "dotnetup.exe");
+            }
+
+            // The transaction's update lock is covered elsewhere; this exercises path resolution only.
+            SelfUpdateCleanup.RunWithUpdateLock(installedPath);
+
+            if (!OperatingSystem.IsWindows() && kind is "directory" or "ancestor")
+            {
+                Assert.IsFalse(File.Exists(backup));
+            }
+            else
+            {
+                Assert.IsTrue(File.Exists(backup));
+            }
+        }
+        finally
+        {
+            if (kind == "canonical")
+            {
+                File.Delete(link);
+            }
+            else if (Directory.Exists(link))
+            {
+                Directory.Delete(link);
+            }
+
+            outside.Delete(recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+    public void CleanupWithOwnedLockResolvesDirectoryLinks()
+    {
+        var link = _directory.FullName + "-link";
+        try
+        {
+            Directory.CreateSymbolicLink(link, _directory.FullName);
+            var backup = CreateBackup(TimeSpan.FromDays(ExpiredBackupAgeDays));
+            using var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
+            Assert.IsNotNull(updateLock);
+
+            SelfUpdateCleanup.RunWithUpdateLock(Path.Combine(link, Path.GetFileName(_installedPath)));
+
+            Assert.IsFalse(File.Exists(backup));
+            using var competingLock = ScopedLockFile.TryAcquireExclusive(Path.Combine(link, "dotnetup.update.lock"));
+            Assert.IsNull(competingLock);
+        }
+        finally
+        {
+            Directory.Delete(link);
+        }
+    }
+
+    private void RunCleanup(string? installedPath = null, Action<Exception>? onFailure = null)
+    {
+        using var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
+        Assert.IsNotNull(updateLock);
+        SelfUpdateCleanup.RunWithUpdateLock(installedPath ?? _installedPath, onFailure);
+        using var competingLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
+        Assert.IsNull(competingLock);
+    }
+
+    private string CreateBackup(TimeSpan age, string suffix = "")
+    {
+        var path = _installedPath + ".old." + Guid.NewGuid().ToString("N")[..8] + suffix;
+        File.WriteAllText(path, "backup");
+        File.SetLastWriteTimeUtc(path, DateTime.UtcNow - age);
+        return path;
+    }
+
+    private void AssertUpdateLockAvailable()
+    {
+        using var updateLock = ScopedLockFile.TryAcquireExclusive(_lockPath);
+        Assert.IsNotNull(updateLock);
+    }
+
+    private static void CreateSymbolicLink(string path, string target, bool isDirectory)
+    {
+        try
+        {
+            if (isDirectory)
+            {
+                Directory.CreateSymbolicLink(path, target);
+            }
+            else
+            {
+                File.CreateSymbolicLink(path, target);
+            }
+        }
+        catch (Exception exception) when (exception is UnauthorizedAccessException or PlatformNotSupportedException ||
+            exception is IOException && (exception.HResult & 0xffff) == 1314)
+        {
+            Assert.Inconclusive($"Symbolic links are not supported or permitted: {exception.Message}");
+        }
+    }
+}

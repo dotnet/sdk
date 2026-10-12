@@ -27,6 +27,22 @@ public class DotnetupPathsTests
     }
 
     [TestMethod]
+    public void UpdateCheckDirectory_IsSubdirectoryOfDataDirectory()
+    {
+        string dataDirectory = Path.Combine(Path.GetTempPath(), "dotnetup-paths-tests", Guid.NewGuid().ToString("N"));
+        DotnetupPaths.SetTestDataDirectoryOverride(dataDirectory);
+
+        try
+        {
+            DotnetupPaths.UpdateCheckDirectory.Should().Be(Path.Combine(dataDirectory, "update-checks"));
+        }
+        finally
+        {
+            DotnetupPaths.ClearTestDataDirectoryOverride();
+        }
+    }
+
+    [TestMethod]
     public void ConfiguredTestEnvironment_OverridesDefaultDotnetInstallPath()
     {
         using TestEnvironment testEnvironment = DotnetupTestUtilities.CreateTestEnvironment();

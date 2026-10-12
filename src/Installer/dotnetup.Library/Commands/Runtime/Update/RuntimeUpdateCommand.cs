@@ -16,6 +16,8 @@ internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result, "r
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
 
+    protected override bool ShowsUpdateNotification => true;
+
     protected override void ExecuteCore()
     {
         // Update all runtime-type components

@@ -48,6 +48,65 @@ internal static class BlobFeedUrlBuilder
             ChecksumUrl: $"{ChecksumBaseUrl}/{componentDir}/{versionString}/{fileName}.sha512");
     }
 
+    public static BlobFeedLocation GetDotnetupFeedLocation(ReleaseVersion version, string rid)
+    {
+        string fileName = GetDotnetupFileName(rid);
+        return new BlobFeedLocation(
+            ArchiveUrl: $"{ArchiveBaseUrl}/dotnetup/{version}/{fileName}",
+            ChecksumUrl: $"{ChecksumBaseUrl}/dotnetup/{version}/{fileName}.sha512");
+    }
+
+    public static string GetDotnetupFileName(string rid)
+    {
+        if (string.IsNullOrEmpty(rid) || rid.Any(character => character is not (>= 'a' and <= 'z') and not (>= '0' and <= '9') and not '-'))
+        {
+            throw new DotnetInstallException(DotnetInstallErrorCode.InvalidArguments, "Invalid dotnetup runtime identifier.");
+        }
+
+        return $"dotnetup-{rid}{(rid.StartsWith("win-", StringComparison.Ordinal) ? ".exe" : string.Empty)}";
+    }
+
+    public static void ValidateDotnetupArchiveUri(Uri? archiveUri)
+        => ValidateDotnetupHttpsUri(archiveUri, "archive");
+
+    public static void ValidatePinnedDotnetupChecksumUri(Uri? actualUri, Uri expectedUri)
+    {
+        ValidateDotnetupHttpsUri(actualUri, "checksum");
+        if (!actualUri!.AbsoluteUri.Equals(expectedUri.AbsoluteUri, StringComparison.Ordinal))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Dotnetup checksum did not resolve to the pinned HTTPS feed location '{expectedUri}'.");
+        }
+    }
+
+    public static void ValidatePinnedDotnetupArchiveUri(Uri? actualUri, Uri expectedUri)
+    {
+        ValidateDotnetupHttpsUri(actualUri, "archive");
+        if (!actualUri!.AbsoluteUri.Equals(expectedUri.AbsoluteUri, StringComparison.Ordinal))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Dotnetup archive did not remain at the resolved HTTPS location '{expectedUri}'.");
+        }
+    }
+
+    private static void ValidateDotnetupHttpsUri(Uri? uri, string resource)
+    {
+        if (uri is null
+            || !uri.IsAbsoluteUri
+            || uri.Scheme != Uri.UriSchemeHttps
+            || !uri.IsDefaultPort
+            || uri.UserInfo.Length != 0
+            || uri.Query.Length != 0
+            || uri.Fragment.Length != 0)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.ManifestParseFailed,
+                $"Dotnetup {resource} did not resolve to a valid HTTPS URI.");
+        }
+    }
+
     /// <summary>
     /// Component → directory segment used in blob feed URLs.
     /// </summary>

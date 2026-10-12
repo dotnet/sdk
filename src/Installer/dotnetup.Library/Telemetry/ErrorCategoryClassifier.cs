@@ -32,6 +32,14 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.DiskFull => ErrorCategory.User,
             DotnetInstallErrorCode.NetworkError => ErrorCategory.User,
             DotnetInstallErrorCode.InvalidArguments => ErrorCategory.User,
+            DotnetInstallErrorCode.DotnetupUpdateInProgress => ErrorCategory.User,
+            DotnetInstallErrorCode.DotnetupExecutableChanged => ErrorCategory.User,
+            DotnetInstallErrorCode.DotnetupBusyWithUpdateOrCleanup => ErrorCategory.User,
+            DotnetInstallErrorCode.DotnetupBusyWithAnotherCommand => ErrorCategory.User,
+            DotnetInstallErrorCode.DotnetupUnsupportedInstallLocation => ErrorCategory.User,
+            DotnetInstallErrorCode.DotnetupIdentityUnavailable => ErrorCategory.Product,
+            DotnetInstallErrorCode.DotnetupVerificationFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.DotnetupRollbackFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.OperationCancelled => ErrorCategory.User,
 
             // Product errors - issues we can take action on

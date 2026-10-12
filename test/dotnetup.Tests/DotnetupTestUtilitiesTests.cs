@@ -17,10 +17,12 @@ public class DotnetupTestUtilitiesTests
     [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void GetDotnetupExecutablePath_WithoutEnvironmentOverride_UsesTestAssemblyMetadata()
     {
-        var original = Environment.GetEnvironmentVariable("ArtifactsDir");
+        var originalArtifactsDir = Environment.GetEnvironmentVariable("ArtifactsDir");
+        var originalExecutable = Environment.GetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE");
         try
         {
             Environment.SetEnvironmentVariable("ArtifactsDir", null);
+            Environment.SetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE", null);
             var artifactsDir = typeof(DotnetupTestUtilitiesTests).Assembly
                 .GetCustomAttributes<AssemblyMetadataAttribute>()
                 .Single(attribute => attribute.Key == "ArtifactsDir").Value;
@@ -36,7 +38,8 @@ public class DotnetupTestUtilitiesTests
         }
         finally
         {
-            Environment.SetEnvironmentVariable("ArtifactsDir", original);
+            Environment.SetEnvironmentVariable("ArtifactsDir", originalArtifactsDir);
+            Environment.SetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE", originalExecutable);
         }
     }
 
@@ -45,10 +48,12 @@ public class DotnetupTestUtilitiesTests
     public void GetDotnetupExecutablePath_MissingExplicitArtifactsDirectory_DoesNotUseOtherBuilds()
     {
         using var environment = new TestEnvironment();
-        var original = Environment.GetEnvironmentVariable("ArtifactsDir");
+        var originalArtifactsDir = Environment.GetEnvironmentVariable("ArtifactsDir");
+        var originalExecutable = Environment.GetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE");
         try
         {
             Environment.SetEnvironmentVariable("ArtifactsDir", environment.TempRoot);
+            Environment.SetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE", null);
 
             Action locate = () => DotnetupTestUtilities.GetDotnetupExecutablePath();
 
@@ -56,7 +61,8 @@ public class DotnetupTestUtilitiesTests
         }
         finally
         {
-            Environment.SetEnvironmentVariable("ArtifactsDir", original);
+            Environment.SetEnvironmentVariable("ArtifactsDir", originalArtifactsDir);
+            Environment.SetEnvironmentVariable("DOTNETUP_TEST_EXECUTABLE", originalExecutable);
         }
     }
 

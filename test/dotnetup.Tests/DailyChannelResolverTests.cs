@@ -21,6 +21,114 @@ public class DailyChannelResolverTests
         "https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip";
 
     [TestMethod]
+    [DataRow("daily")]
+    [DataRow("preview")]
+    [DataRow("stable")]
+    public void ResolveDotnetupVersion_UsesRequestedChannel(string channel)
+    {
+        string shortlink = $"https://aka.ms/dotnet/dotnetup/{channel}/dotnetup-win-x64.exe";
+        const string target = "https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe";
+        using var handler = new RedirectHandler(new() { [shortlink] = target });
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        resolver.ResolveDotnetupVersion(channel, "win-x64").ToString().Should().Be("0.1.0-preview.1");
+    }
+
+    [TestMethod]
+    public void ResolveDotnetupVersion_UsesHeadSoTheExecutableIsNotDownloaded()
+    {
+        const string shortlink = "https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe";
+        using var handler = new RedirectHandler(new() { [shortlink] = "https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe" });
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        resolver.ResolveDotnetupVersion("daily", "win-x64").ToString().Should().Be("0.1.0-preview.1");
+
+        handler.Methods.Should().Equal(HttpMethod.Head);
+        handler.RequestsUseNoCache.Should().Equal(true);
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.MethodNotAllowed)]
+    [DataRow(HttpStatusCode.NotImplemented)]
+    public void ResolveDotnetupVersion_FallsBackToGetWhenHeadIsRejected(HttpStatusCode headStatus)
+    {
+        const string shortlink = "https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe";
+        using var handler = new RedirectHandler(new() { [shortlink] = "https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe" })
+        {
+            HeadStatus = headStatus,
+        };
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        resolver.ResolveDotnetupVersion("daily", "win-x64").ToString().Should().Be("0.1.0-preview.1");
+
+        handler.Methods.Should().Equal(HttpMethod.Head, HttpMethod.Get);
+        handler.RequestsUseNoCache.Should().Equal(true, true);
+    }
+
+    [TestMethod]
+    public void ResolveDotnetupVersion_RejectsUnknownChannel()
+    {
+        using var resolver = new DailyChannelResolver();
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(
+            () => resolver.ResolveDotnetupVersion("../daily", "win-x64"));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.InvalidChannel);
+    }
+
+    [TestMethod]
+    [DataRow("http://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
+    [DataRow("https://ci.dot.net:444/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
+    [DataRow("https://user@ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe")]
+    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe?other=1")]
+    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe#fragment")]
+    public void ResolveDotnetupVersion_RejectsInvalidHttpsArchiveUri(string target)
+    {
+        using var handler = new RedirectHandler(new() { ["https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe"] = target });
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("daily", "win-x64"));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.ManifestParseFailed);
+    }
+
+    [TestMethod]
+    [DataRow("", "application/octet-stream")]
+    [DataRow("https://www.bing.com/?ref=aka&shorturl=dotnetup", "application/octet-stream")]
+    [DataRow("https://ci.dot.net/public/dotnetup/0.1.0-preview.1/dotnetup-win-x64.exe", "text/html")]
+    public void ResolveDotnetupVersion_MissingDailyBuildFailsCleanly(string target, string contentType)
+    {
+        const string url = "https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe";
+        using var handler = new RedirectHandler(target.Length == 0 ? new() : new() { [url] = target }, new() { [url] = contentType });
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("daily", "win-x64"));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
+    }
+
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("../win-x64")]
+    [DataRow("win-x64?redirect=evil")]
+    [DataRow("win-x64/extra")]
+    public void ResolveDotnetupVersion_RejectsRidPathInjection(string rid)
+    {
+        using var handler = new RedirectHandler(new());
+        using var http = new HttpClient(handler);
+        using var resolver = new DailyChannelResolver(httpClient: http);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() => resolver.ResolveDotnetupVersion("daily", rid));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.InvalidArguments);
+    }
+
+    [TestMethod]
     public void Resolve_RuntimeComponent_ReturnsRuntimeVersionNotSdkVersion()
     {
         // Test that we correctly handle differences between SDK and Runtime versions
@@ -281,9 +389,22 @@ public class DailyChannelResolverTests
             _contentTypes = contentTypes;
         }
 
+        /// <summary>When set, HEAD requests receive this status instead of the redirect result.</summary>
+        public HttpStatusCode? HeadStatus { get; init; }
+
+        public List<HttpMethod> Methods { get; } = [];
+
+        public List<bool> RequestsUseNoCache { get; } = [];
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string url = request.RequestUri!.ToString();
+            Methods.Add(request.Method);
+            RequestsUseNoCache.Add(request.Headers.CacheControl?.NoCache == true);
+            if (request.Method == HttpMethod.Head && HeadStatus is HttpStatusCode headStatus)
+            {
+                return Task.FromResult(new HttpResponseMessage(headStatus) { RequestMessage = request });
+            }
 
             foreach (var (prefix, target) in _redirectMap)
             {

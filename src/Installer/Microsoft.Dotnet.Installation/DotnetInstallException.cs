@@ -140,6 +140,30 @@ public enum DotnetInstallErrorCode
     /// </summary>
     InvalidModeSelection,
 
+    /// <summary>A self update holds the activity lock.</summary>
+    DotnetupUpdateInProgress,
+
+    /// <summary>The loaded executable no longer matches the installed release.</summary>
+    DotnetupExecutableChanged,
+
+    /// <summary>The installed executable's identity cannot be established.</summary>
+    DotnetupIdentityUnavailable,
+
+    /// <summary>Another self-update held the update lock beyond its timeout.</summary>
+    DotnetupBusyWithUpdateOrCleanup,
+
+    /// <summary>A non-safe command held the activity lock beyond its timeout.</summary>
+    DotnetupBusyWithAnotherCommand,
+
+    /// <summary>The replacement executable could not be verified.</summary>
+    DotnetupVerificationFailed,
+
+    /// <summary>Self-update could not restore its original executable.</summary>
+    DotnetupRollbackFailed,
+
+    /// <summary>The dotnetup executable path contains a symbolic link, junction, or other reparse point.</summary>
+    DotnetupUnsupportedInstallLocation,
+
     /// <summary>The user declined confirmation of an operation.</summary>
     OperationCancelled,
 }

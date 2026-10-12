@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Dotnet.Installation.Internal;
@@ -36,19 +37,40 @@ internal class DotnetupConfigData
     public string SchemaVersion { get; set; } = "1";
 
     /// <summary>
-    /// How the managed dotnet is exposed. Serialized as <c>accessMode</c> via the
+    /// The persisted dotnet-access choice, serialized as <c>accessMode</c> via the
     /// <see cref="DotnetAccessModeJsonConverter"/> (lowercase <c>none</c> / <c>shell</c> /
-    /// <c>everywhere</c>).
+    /// <c>everywhere</c>). <c>null</c> when the user has not completed setup; a config that only
+    /// stores other settings (such as <see cref="UpdateNotifications"/>) must not look onboarded.
     /// </summary>
     [JsonPropertyName("accessMode")]
     [JsonConverter(typeof(DotnetAccessModeJsonConverter))]
-    public DotnetAccessMode AccessMode { get; set; } = DotnetAccessMode.Shell;
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DotnetAccessMode? ConfiguredAccessMode { get; set; }
+
+    /// <summary>
+    /// How the managed dotnet is exposed. <see cref="DotnetupConfig.Read"/> only returns configs
+    /// where this was recorded; the <see cref="DotnetAccessMode.Shell"/> fallback applies only to
+    /// configs constructed in code without an access mode.
+    /// </summary>
+    [JsonIgnore]
+    public DotnetAccessMode AccessMode
+    {
+        get => ConfiguredAccessMode ?? DotnetAccessMode.Shell;
+        set => ConfiguredAccessMode = value;
+    }
 
     /// <summary>
     /// Whether the dotnetup directory is on PATH so <c>dotnetup</c> can be invoked. Orthogonal
     /// to <see cref="AccessMode"/>. Defaults to <c>true</c> (and when absent from an older config).
     /// </summary>
     public bool DotnetupOnPath { get; set; } = true;
+
+    /// <summary>
+    /// Whether install and update commands may mention that a newer dotnetup is available.
+    /// Defaults to <c>true</c> (and when absent from an older config). Set by
+    /// <c>dotnetup self update --update-notifications true|false</c>.
+    /// </summary>
+    public bool UpdateNotifications { get; set; } = true;
 }
 
 [JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
@@ -61,40 +83,26 @@ internal partial class DotnetupConfigJsonContext : JsonSerializerContext { }
 internal static class DotnetupConfig
 {
     /// <summary>
-    /// Reads the config file if it exists, otherwise returns null.
+    /// Reads the setup config if the file records an access mode, otherwise returns null.
     /// Uses GlobalJsonFileHelper for encoding-aware reading (handles BOM variants).
     /// A config written by an earlier internal build (legacy <c>pathPreference</c> property or
-    /// pre-rename enum spellings) no longer maps: the unknown property is ignored and an
-    /// unrecognized <c>accessMode</c> value is treated as corrupt, so the config re-defaults on the
-    /// next write.
+    /// pre-rename enum spellings) no longer maps: without an <c>accessMode</c> the config is treated
+    /// as not yet set up, and an unrecognized <c>accessMode</c> value is treated as corrupt, so the
+    /// config re-defaults on the next write.
     /// </summary>
     public static DotnetupConfigData? Read()
     {
-        var path = DotnetupPaths.ConfigPath;
-        if (!File.Exists(path))
-        {
-            return null;
-        }
-
-        try
-        {
-            string text;
-            using (var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path))
-            using (var streamReader = new StreamReader(stream))
-            {
-                text = streamReader.ReadToEnd();
-            }
-
-            return JsonSerializer.Deserialize(text, DotnetupConfigJsonContext.Default.DotnetupConfigData);
-        }
-        catch (Exception ex)
+        var state = TryLoad(out var config, out var error);
+        if (state == ConfigFileState.Corrupt)
         {
             Metrics.Tag(TelemetryTagNames.ConfigCorrupted, "true");
-            Metrics.Tag(TelemetryTagNames.ConfigCorruptedError, ex.GetType().Name);
+            Metrics.Tag(TelemetryTagNames.ConfigCorruptedError, error!.GetType().Name);
             SpectreAnsiConsole.MarkupLine(
-                $"[{DotnetupTheme.Current.Warning}]Warning:[/] The dotnetup config file at {path.EscapeMarkup()} appears to be corrupted and could not be read: {ex.Message.EscapeMarkup()}");
+                $"[{DotnetupTheme.Current.Warning}]Warning:[/] The dotnetup config file at {DotnetupPaths.ConfigPath.EscapeMarkup()} appears to be corrupted and could not be read: {error.Message.EscapeMarkup()}");
             return null;
         }
+
+        return config?.ConfiguredAccessMode is null ? null : config;
     }
 
     /// <summary>
@@ -108,8 +116,49 @@ internal static class DotnetupConfig
     }
 
     /// <summary>
+    /// Persists the environment setup choices while preserving unrelated settings.
+    /// </summary>
+    public static DotnetupConfigData WriteAccessSettings(DotnetAccessMode accessMode, bool dotnetupOnPath)
+    {
+        var config = new DotnetupConfigData
+        {
+            AccessMode = accessMode,
+            DotnetupOnPath = dotnetupOnPath,
+            UpdateNotifications = ReadUpdateNotificationsEnabled(),
+        };
+        Write(config);
+        return config;
+    }
+
+    /// <summary>
+    /// Returns whether update notifications are enabled. Silent: a missing or unreadable config
+    /// keeps the default rather than warning, because this runs alongside commands that already
+    /// report config problems.
+    /// </summary>
+    public static bool ReadUpdateNotificationsEnabled()
+        => TryLoad(out var config, out _) != ConfigFileState.Loaded || config!.UpdateNotifications;
+
+    /// <summary>
+    /// Enables or disables update notifications without recording or changing the setup choices.
+    /// </summary>
+    public static void SetUpdateNotifications(bool enabled)
+    {
+        var state = TryLoad(out var config, out _);
+        if (state == ConfigFileState.Corrupt)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.UserConfigurationCorrupted,
+                string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateNotificationsConfigUnreadable, DotnetupPaths.ConfigPath));
+        }
+
+        config ??= new DotnetupConfigData();
+        config.UpdateNotifications = enabled;
+        Write(config);
+    }
+
+    /// <summary>
     /// Returns the user's dotnet-access <see cref="DotnetAccessMode"/> from the config file if
-    /// it exists, otherwise returns <c>null</c>.
+    /// setup recorded one, otherwise returns <c>null</c>.
     /// </summary>
     public static DotnetAccessMode? ReadAccessMode()
     {
@@ -118,7 +167,51 @@ internal static class DotnetupConfig
     }
 
     /// <summary>
-    /// Returns true if a config file exists, indicating the init flow has been completed.
+    /// Returns true if a config file records the init choices, or exists but cannot be read.
+    /// A config holding only other settings does not indicate that init has been completed.
     /// </summary>
-    public static bool Exists() => File.Exists(DotnetupPaths.ConfigPath);
+    public static bool Exists() => TryLoad(out var config, out _) switch
+    {
+        ConfigFileState.Corrupt => true,
+        ConfigFileState.Loaded => config!.ConfiguredAccessMode is not null,
+        _ => false,
+    };
+
+    private enum ConfigFileState
+    {
+        Missing,
+        Corrupt,
+        Loaded,
+    }
+
+    private static ConfigFileState TryLoad(out DotnetupConfigData? config, out Exception? error)
+    {
+        config = null;
+        error = null;
+        var path = DotnetupPaths.ConfigPath;
+        if (!File.Exists(path))
+        {
+            return ConfigFileState.Missing;
+        }
+
+        try
+        {
+            string text;
+            using (var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path))
+            using (var streamReader = new StreamReader(stream))
+            {
+                text = streamReader.ReadToEnd();
+            }
+
+            config = JsonSerializer.Deserialize(text, DotnetupConfigJsonContext.Default.DotnetupConfigData)
+                ?? throw new JsonException("The config file is empty.");
+            return ConfigFileState.Loaded;
+        }
+        catch (Exception ex)
+        {
+            config = null;
+            error = ex;
+            return ConfigFileState.Corrupt;
+        }
+    }
 }

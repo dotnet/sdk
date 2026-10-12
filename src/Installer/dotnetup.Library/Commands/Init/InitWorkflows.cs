@@ -489,7 +489,7 @@ internal class InitWorkflows
     /// failure path so the choice persists even when an install did not complete.
     /// </summary>
     private static void SaveConfig(DotnetAccessMode accessMode, bool dotnetupOnPath)
-        => DotnetupConfig.Write(new DotnetupConfigData { AccessMode = accessMode, DotnetupOnPath = dotnetupOnPath });
+        => DotnetupConfig.WriteAccessSettings(accessMode, dotnetupOnPath);
 
     private static void DisplaySetupResult(DotnetAccessMode accessMode, DotnetAccessMode? previousAccessMode)
     {

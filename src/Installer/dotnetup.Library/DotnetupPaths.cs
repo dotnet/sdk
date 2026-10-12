@@ -14,6 +14,7 @@ internal static class DotnetupPaths
     private const string DotnetupFolderName = "dotnetup";
     private const string ManifestFileName = "dotnetup_manifest.json";
     private const string ConfigFileName = "dotnetup.config.json";
+    private const string UpdateCheckFolderName = "update-checks";
     private const string TelemetrySentinelFileName = ".dotnetup-telemetry-notice";
     private const string TelemetryStorageServiceFolderName = "TelemetryStorageService";
     private const string TelemetryDiskLogFileSuffix = "-dotnetup";
@@ -115,6 +116,11 @@ internal static class DotnetupPaths
     /// Gets the path to the download cache directory.
     /// </summary>
     public static string DownloadCacheDirectory => Path.Combine(DataDirectory, "downloadcache");
+
+    /// <summary>
+    /// Gets the directory containing dotnetup update-check markers.
+    /// </summary>
+    public static string UpdateCheckDirectory => Path.Combine(DataDirectory, UpdateCheckFolderName);
 
     /// <summary>
     /// Gets the path to the telemetry first-run sentinel file.

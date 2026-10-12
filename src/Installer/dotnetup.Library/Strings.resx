@@ -120,6 +120,150 @@
   <data name="CommandInteractiveOptionDescription" xml:space="preserve">
     <value>Allows the command to stop and wait for user input or action.</value>
   </data>
+  <data name="SelfCommandDescription" xml:space="preserve">
+    <value>Manage the dotnetup executable.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateCommandDescription" xml:space="preserve">
+    <value>Update dotnetup to the latest release in a channel.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateChannelOptionDescription" xml:space="preserve">
+    <value>The dotnetup release channel to update from (daily, preview, or stable). The default is the channel of the running dotnetup build.</value>
+    <comment>{Locked="dotnetup"} {Locked="daily"} {Locked="preview"} {Locked="stable"}</comment>
+  </data>
+  <data name="SelfUpdateDownloading" xml:space="preserve">
+    <value>Downloading dotnetup</value>
+    <comment>{Locked="dotnetup"} Download progress task description.</comment>
+  </data>
+  <data name="SelfUpdateAlreadyUpToDate" xml:space="preserve">
+    <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. No newer update is available.</value>
+    <comment>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
+  </data>
+  <data name="SelfUpdateCurrentVersionNewer" xml:space="preserve">
+    <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer. Use --force to install the available version anyway.</value>
+    <comment>{Locked="Dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
+  </data>
+  <data name="SelfUpdateMaybeDailyBuild" xml:space="preserve">
+    <value>Official daily dotnetup builds also use the 'preview' label, so this build might be from the daily channel. To update from daily builds, run 'dotnetup self update --channel daily'.</value>
+    <comment>{Locked="dotnetup"} {Locked="'preview'"} {Locked="dotnetup self update --channel daily"}</comment>
+  </data>
+  <data name="SelfUpdateSignatureInvalid" xml:space="preserve">
+    <value>The downloaded dotnetup executable does not have a valid Microsoft Authenticode signature, so dotnetup was not updated. {0}</value>
+    <comment>{Locked="dotnetup"} {Locked="Authenticode"} {0} is the operating system's signature verification error.</comment>
+  </data>
+  <data name="SelfUpdateCertificateChainPolicyUnavailable" xml:space="preserve">
+    <value>The requested certificate chain policy could not be checked: {0}</value>
+    <comment>{0} is the name of the certificate chain policy.</comment>
+  </data>
+  <data name="SelfUpdateForceOptionDescription" xml:space="preserve">
+    <value>Install the channel's latest dotnetup build even when it is not newer than the current version. This can downgrade dotnetup.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateForcedWarning" xml:space="preserve">
+    <value>Installing dotnetup {1} because --force was specified, even though it is not newer than the current version {0}.</value>
+    <comment>{Locked="dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the version that will be installed.</comment>
+  </data>
+  <data name="SelfUpdateCleanupWarning" xml:space="preserve">
+    <value>Dotnetup could not remove one or more old self-update backup files. A future update may remove them.</value>
+    <comment>{Locked="Dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateAvailableNotice" xml:space="preserve">
+    <value>An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --update-notifications false'.</value>
+    <comment>{Locked="dotnetup"} {Locked="'dotnetup self update'"} {Locked="'dotnetup self update --update-notifications false'"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsOptionDescription" xml:space="preserve">
+    <value>Set whether install and update commands mention available dotnetup updates, without updating dotnetup.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsConflict" xml:space="preserve">
+    <value>'--update-notifications' only changes the update notification setting and cannot be combined with '--channel' or '--force'.</value>
+    <comment>{Locked="'--update-notifications'"} {Locked="'--channel'"} {Locked="'--force'"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsConfigUnreadable" xml:space="preserve">
+    <value>The update notification setting was not changed because the dotnetup config file at {0} could not be read. Fix or delete the file, and then try again.</value>
+    <comment>{Locked="dotnetup"} {0} is the path to the dotnetup config file.</comment>
+  </data>
+  <data name="SelfUpdateSucceeded" xml:space="preserve">
+    <value>Dotnetup updated to {0}. To install another version: https://aka.ms/dotnet/dotnetup</value>
+    <comment>{Locked="Dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup version.</comment>
+  </data>
+  <data name="SelfUpdateInProgress" xml:space="preserve">
+    <value>A dotnetup self-update is in progress. Run the command again after the update completes.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateExecutableChanged" xml:space="preserve">
+    <value>The dotnetup executable has changed. Run the command again to use the updated executable.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateIdentityUnavailable" xml:space="preserve">
+    <value>The dotnetup executable's version metadata could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateBusyUpdate" xml:space="preserve">
+    <value>Dotnetup is busy with another self-update. Try again after it completes.</value>
+    <comment>{Locked="Dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateBusyCommand" xml:space="preserve">
+    <value>Dotnetup is busy with another command. Try self-update again after that command completes.</value>
+    <comment>{Locked="Dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateWaitingForUpdate" xml:space="preserve">
+    <value>Waiting for another dotnetup self-update to finish...</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateWaitingForCommand" xml:space="preserve">
+    <value>Waiting for another dotnetup command to finish...</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateStagedIdentityMismatch" xml:space="preserve">
+    <value>The downloaded dotnetup executable's version metadata does not match the release. The executable was not updated.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateRollbackFailed" xml:space="preserve">
+    <value>Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateVerificationFailed" xml:space="preserve">
+    <value>The updated dotnetup executable failed verification.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateAccessFailed" xml:space="preserve">
+    <value>Dotnetup could not safely access the self-update files. Check the installation directory's permissions and try again.</value>
+    <comment>{Locked="Dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateUnsupportedHost" xml:space="preserve">
+    <value>Self-update requires the native dotnetup executable. Run the installed dotnetup executable directly.</value>
+    <comment>{Locked="dotnetup"} Managed development hosts cannot update themselves.</comment>
+  </data>
+  <data name="SelfUpdateUnsupportedLocation" xml:space="preserve">
+    <value>The dotnetup path '{0}' contains a symbolic link, junction, or other reparse point, so dotnetup cannot safely coordinate self-updates. Run dotnetup from a path without links, or reinstall it to such a directory from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the file or directory path that is a link or reparse point.</comment>
+  </data>
+  <data name="SelfUpdateDirectoryAccessDenied" xml:space="preserve">
+    <value>Dotnetup could not access its installation directory '{0}'. Make sure you can read the dotnetup executable and create files in that directory, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</comment>
+  </data>
+  <data name="SelfUpdateDirectoryUnavailable" xml:space="preserve">
+    <value>Dotnetup could not inspect its installation directory '{0}'. Make sure the directory exists and is accessible, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</comment>
+  </data>
+  <data name="SelfUpdateActivityLockAccessDenied" xml:space="preserve">
+    <value>Dotnetup could not open or create its self-update coordination file '{0}'. Make sure the installation directory is writable, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the dotnetup activity lock file.</comment>
+  </data>
+  <data name="SelfUpdateActivityLockUnavailable" xml:space="preserve">
+    <value>Dotnetup could not use its self-update coordination file '{0}'. Make sure the installation directory exists and is accessible, and then try again.</value>
+    <comment>{Locked="Dotnetup"} {0} is the dotnetup activity lock file.</comment>
+  </data>
+  <data name="SelfUpdateExecutableAccessDenied" xml:space="preserve">
+    <value>Dotnetup could not read the installed executable '{0}'. Make sure the executable is readable, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup executable.</comment>
+  </data>
+  <data name="SelfUpdateExecutableUnavailable" xml:space="preserve">
+    <value>The installed dotnetup executable '{0}' could not be inspected. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup executable.</comment>
+  </data>
   <data name="CommandNonInteractiveOptionDescription" xml:space="preserve">
     <value>Proceed without prompting for confirmation.</value>
   </data>

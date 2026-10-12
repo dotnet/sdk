@@ -1,0 +1,28 @@
+<Project DefaultTargets="PublishNativeSelfUpdateFixtures">
+
+  <Import Project="TargetRid.props" />
+
+  <PropertyGroup>
+    <Configuration Condition="'$(Configuration)' == ''">Release</Configuration>
+    <RepoRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..'))</RepoRoot>
+    <DotnetupProject>$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj</DotnetupProject>
+    <NativeSelfUpdateArtifactsDir Condition="'$(NativeSelfUpdateArtifactsDir)' == ''">$(RepoRoot)artifacts\native-self-update</NativeSelfUpdateArtifactsDir>
+    <DotNetHostName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</DotNetHostName>
+    <DotNetHostName Condition="'$(DotNetHostName)' == ''">dotnet</DotNetHostName>
+    <DotNetHostPath>$([MSBuild]::NormalizePath('$(MSBuildToolsPath)', '..', '..', '$(DotNetHostName)'))</DotNetHostPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <NativeSelfUpdateFixture Include="original" Version="0.2.0-native-test.1" />
+    <NativeSelfUpdateFixture Include="replacement" Version="0.2.0-native-test.2" />
+    <NativeSelfUpdateFixture Update="@(NativeSelfUpdateFixture)">
+      <ArtifactsDir>$([MSBuild]::NormalizePath('$(NativeSelfUpdateArtifactsDir)', '%(Identity)'))</ArtifactsDir>
+      <PublishDir>$([MSBuild]::NormalizePath('$(NativeSelfUpdateArtifactsDir)', '%(Identity)', 'publish'))</PublishDir>
+    </NativeSelfUpdateFixture>
+  </ItemGroup>
+
+  <Target Name="PublishNativeSelfUpdateFixtures">
+    <Exec Command="&quot;$(DotNetHostPath)&quot; publish &quot;$(DotnetupProject)&quot; --configuration &quot;$(Configuration)&quot; --runtime &quot;$(TargetRid)&quot; &quot;-p:Version=%(NativeSelfUpdateFixture.Version)&quot; &quot;-p:InformationalVersion=%(NativeSelfUpdateFixture.Version)&quot; &quot;-p:ArtifactsDir=%(NativeSelfUpdateFixture.ArtifactsDir)&quot; &quot;-p:PublishDir=%(NativeSelfUpdateFixture.PublishDir)&quot; -p:EnforceCodeStyleInBuild=false" />
+  </Target>
+
+</Project>

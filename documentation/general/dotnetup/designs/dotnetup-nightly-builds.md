@@ -291,7 +291,7 @@ appropriate warnings.
 ### Hash verification
 
 Daily build archives have SHA-512 hash files available at `{download-url}.sha512`. The existing
-hash verification in `DotnetArchiveDownloader` can be extended to fetch the hash from this
+hash verification in `DotnetDownloader` can be extended to fetch the hash from this
 companion file instead of from the release manifest.
 
 ### Archive signatures
@@ -324,7 +324,7 @@ or otherwise unsigned daily builds.
 
 This is the simplest starting point — the user provides the exact version, so no version discovery
 is needed. We just need the blob-feed download path:
-- Extend `IArchiveDownloader` / `DotnetArchiveDownloader` to handle versions that aren't in the
+- Extend `IArchiveDownloader` / `DotnetDownloader` to handle versions that aren't in the
   release manifest — construct the download URL from the blob feed and fetch the hash from the
   `{url}.sha512` companion file (`InstallWorkflow` already calls `DownloadArchiveWithVerification`
   — it doesn't need to know where the archive comes from)

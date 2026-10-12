@@ -78,7 +78,7 @@ internal class DotnetArchiveExtractor : IDisposable
         }
         else
         {
-            _archiveDownloader = new DotnetArchiveDownloader(releaseManifest, cacheDirectory: cacheDirectory);
+            _archiveDownloader = new DotnetDownloader(releaseManifest, cacheDirectory: cacheDirectory);
         }
     }
 
