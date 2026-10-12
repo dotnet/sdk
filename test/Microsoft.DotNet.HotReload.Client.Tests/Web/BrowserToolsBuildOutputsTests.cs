@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 /// <summary>
-/// The build owns the browser tools key pair; dotnet-watch only reads it back from deterministic
+/// The build owns the browser tools key pair; Hot Reload host only reads it back from deterministic
 /// paths under the project's intermediate output. These tests pin the two halves of that contract:
 /// the provider is keyed with the key the application pinned, and
 /// anything that would make the provider unusable fails loudly instead of silently disabling the
@@ -24,7 +24,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
 
     public BrowserToolsBuildOutputsTests()
     {
-        _directory = Path.Combine(Path.GetTempPath(), "dotnet-watch-browser-tools", Guid.NewGuid().ToString("N"));
+        _directory = Path.Combine(Path.GetTempPath(), "hot-reload-browser-tools", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_directory);
         _publicKeyPath = Path.Combine(_directory, BrowserToolsBuildOutputs.PublicKeyFileName);
         _privateKeyPath = Path.Combine(_directory, BrowserToolsBuildOutputs.PrivateKeyFileName);

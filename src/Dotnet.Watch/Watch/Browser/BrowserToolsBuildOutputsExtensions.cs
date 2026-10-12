@@ -24,7 +24,7 @@ internal static class BrowserToolsBuildOutputsExtensions
                 configuration: projectInstance.GetPropertyValue(PropertyNames.Configuration),
                 intermediateOutputDirectory: projectInstance.GetIntermediateOutputDirectory(),
                 enableHotReloadInRuntimeConfigDevFile: projectInstance.TryGetBooleanPropertyValue(PropertyNames.EnableHotReloadInRuntimeConfigDevFile),
-                dotNetWatchBrowserToolsAssetPrefix: projectInstance.GetPropertyValue(PropertyNames.DotNetWatchBrowserToolsAssetPrefix),
+                browserToolsAssetPrefix: projectInstance.GetPropertyValue(PropertyNames.HotReloadBrowserToolsAssetPrefix),
                 staticWebAssetsEnabled: projectInstance.GetBooleanPropertyValue(PropertyNames.StaticWebAssetsEnabled),
                 jsModulesEnabled: projectInstance.GetBooleanPropertyValue(PropertyNames.JSModulesEnabled));
     }

@@ -23,14 +23,14 @@ namespace Microsoft.DotNet.HotReload;
 /// the key pair, and the watcher reads it back per project instance.
 ///
 /// The paths are derived from evaluated MSBuild properties, rather than by searching the file system.
-/// They must stay in sync with Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets.
+/// They must stay in sync with Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets.
 /// </summary>
 internal sealed class BrowserToolsBuildOutputs
 {
     /// <summary>
     /// Subdirectory of the project's intermediate output that holds the browser tools build outputs.
     /// </summary>
-    public const string DirectoryName = "dotnet-watch";
+    public const string DirectoryName = "HotReload";
 
     public const string PublicKeyFileName = "browser-tools-key.public.json";
     public const string PrivateKeyFileName = "browser-tools-key.private.json";
@@ -64,14 +64,14 @@ internal sealed class BrowserToolsBuildOutputs
         string configuration,
         string? intermediateOutputDirectory,
         bool? enableHotReloadInRuntimeConfigDevFile,
-        string dotNetWatchBrowserToolsAssetPrefix,
+        string browserToolsAssetPrefix,
         bool staticWebAssetsEnabled,
         bool jsModulesEnabled)
     {
         var enableHotReload = enableHotReloadInRuntimeConfigDevFile ?? string.Equals(configuration, "Debug", StringComparison.OrdinalIgnoreCase);
 
         if (!enableHotReload ||
-            dotNetWatchBrowserToolsAssetPrefix is not { Length: > 0 } ||
+            browserToolsAssetPrefix is not { Length: > 0 } ||
             !staticWebAssetsEnabled ||
             !jsModulesEnabled)
         {
@@ -261,5 +261,5 @@ internal sealed class BrowserToolsBuildOutputs
         => Convert.FromBase64String(ReadRequiredBase64(element, propertyName, path));
 
     private Exception Fail(string reason)
-        => new($"Unable to start the dotnet-watch browser tools because {reason}. Rebuild the project to regenerate the browser tools build outputs.");
+        => new($"Unable to start the HotReload browser tools because {reason}. Rebuild the project to regenerate the browser tools build outputs.");
 }
