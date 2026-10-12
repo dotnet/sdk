@@ -97,7 +97,7 @@ extends:
         - template: /eng/common/core-templates/job/helix-job-monitor.yml@self
           parameters:
             helixAccessToken: $(HelixApiAccessToken)
-            timeoutInMinutes: 90
+            timeoutInMinutes: 150
 
       ############### WINDOWS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
