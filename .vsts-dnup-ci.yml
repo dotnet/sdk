@@ -16,7 +16,7 @@ pr:
     - release/dotnetup
 
 parameters:
-# When true, runs the pipeline in the same way as the PR pipeline.
+# Prebuild and register both candidates using dry-run signing, without promoting them.
 - name: runTestBuild
   displayName: Run A Test Build
   type: boolean
@@ -27,6 +27,8 @@ parameters:
   default: false
 
 variables:
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
@@ -34,8 +36,8 @@ variables:
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
 - group: AzureDevOps-Artifact-Feeds-Pats
-# Allows Arcade to run a signed build by disabling post-build signing for release-branch builds or manual builds that are not running tests.
-- ${{ if and(eq(parameters.runTestBuild, false), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual'))) }}:
+# Test builds also collect signing inputs, but ForceDryRunSigning prevents real signing.
+- ${{ if or(eq(parameters.runTestBuild, true), startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), startswith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), eq(variables['Build.Reason'], 'Manual')) }}:
   - name: PostBuildSign
     value: false
 # Provides TSA variables for automatic bug reporting.
@@ -58,9 +60,19 @@ variables:
   # The OfficialBuilder property is set to Microsoft for the official build only.
   # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
   # This constant is used in CompileOptions.cs to set both TelemetryOptOutDefault and TelemetryOptOutDefaultString.
-  value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+  ${{ if eq(parameters.runTestBuild, true) }}:
+    value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber) /p:ForceDryRunSigning=true
+  ${{ else }}:
+    value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 - name: _SignType
-  value: real
+  ${{ if eq(parameters.runTestBuild, true) }}:
+    value: test
+  ${{ else }}:
+    value: real
+- name: _DotnetupDailyProperties
+  value: /p:PublishingVersion=4 /p:EnableDefaultArtifacts=false /p:DotnetupPreReleaseVersionLabel=daily /p:ArtifactsDir=$(Build.SourcesDirectory)/artifacts/dotnetup-daily/ /p:ArtifactsPublishStagingDir=$(Build.ArtifactStagingDirectory)/dotnetup-daily/ /p:FutureArtifactName=$(System.PhaseName)_daily_Artifacts /p:AssetManifestFileName=$(System.PhaseName)-daily.xml
+- name: _DotnetupPreviewProperties
+  value: /p:PublishingVersion=4 /p:EnableDefaultArtifacts=false /p:DotnetupPreReleaseVersionLabel=preview /p:ArtifactsDir=$(Build.SourcesDirectory)/artifacts/dotnetup-preview/ /p:ArtifactsPublishStagingDir=$(Build.ArtifactStagingDirectory)/dotnetup-preview/ /p:FutureArtifactName=$(System.PhaseName)_preview_Artifacts /p:AssetManifestFileName=$(System.PhaseName)-preview.xml
 
 resources:
   repositories:
@@ -155,6 +167,7 @@ extends:
         ### Windows ###
         - template: /eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml@self
           parameters:
+            enableMicrobuild: ${{ not(parameters.runTestBuild) }}
             pool:
               name: $(DncEngInternalBuildPool)
               image: windows.vs2026.amd64
@@ -192,6 +205,7 @@ extends:
         ############### WINDOWS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            enableMicrobuild: ${{ not(parameters.runTestBuild) }}
             pool:
               name: $(DncEngInternalBuildPool)
               image: windows.vs2026.amd64
@@ -201,6 +215,11 @@ extends:
               publishTaskPrefix: 1ES.
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             populateInternalRuntimeVariables: true
+            buildVariants:
+            - name: daily
+              properties: $(_DotnetupDailyProperties)
+            - name: preview
+              properties: $(_DotnetupPreviewProperties)
             preSteps:
             - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
               displayName: Create artifacts/bin directory
@@ -214,8 +233,6 @@ extends:
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               enableDefaultArtifacts: true
               runTests: false
-              variables:
-                _SignType: real
             - categoryName: Dotnetup
               targetArchitecture: arm64
               publishArgument: $(_publishArgument)
@@ -224,12 +241,11 @@ extends:
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
               enableDefaultArtifacts: true
               runTests: false
-              variables:
-                _SignType: real
 
         ############### LINUX ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            enableMicrobuild: ${{ not(parameters.runTestBuild) }}
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
@@ -240,6 +256,11 @@ extends:
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             populateInternalRuntimeVariables: true
             enableMicrobuildForMacAndLinux: true
+            buildVariants:
+            - name: daily
+              properties: $(_DotnetupDailyProperties)
+            - name: preview
+              properties: $(_DotnetupPreviewProperties)
             timeoutInMinutes: 90
             linuxJobParameterSets:
             # Cross-build containers set ROOTFS_DIR; pass /p:SysRoot and /p:LinkerFlavor=lld
@@ -294,6 +315,7 @@ extends:
         ############### MACOS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            enableMicrobuild: ${{ not(parameters.runTestBuild) }}
             pool:
               name: Azure Pipelines
               image: macOS-latest
@@ -304,6 +326,11 @@ extends:
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
             populateInternalRuntimeVariables: true
             enableMicrobuildForMacAndLinux: true
+            buildVariants:
+            - name: daily
+              properties: $(_DotnetupDailyProperties)
+            - name: preview
+              properties: $(_DotnetupPreviewProperties)
             timeoutInMinutes: 90
             macOSJobParameterSets:
             - categoryName: Dotnetup
@@ -330,13 +357,11 @@ extends:
         displayName: 📤 Publish to BAR
         dependsOn:
         - build_dotnetup
+        condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
         jobs:
-        - template: /eng/common/templates-official/job/publish-build-assets.yml@self
+        - template: /eng/pipelines/templates/jobs/dotnetup-publish.yml@self
           parameters:
-            publishUsingPipelines: true
-            publishAssetsImmediately: true
-            isAssetlessBuild: false
-            repositoryAlias: self
+            runTestBuild: ${{ parameters.runTestBuild }}
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
