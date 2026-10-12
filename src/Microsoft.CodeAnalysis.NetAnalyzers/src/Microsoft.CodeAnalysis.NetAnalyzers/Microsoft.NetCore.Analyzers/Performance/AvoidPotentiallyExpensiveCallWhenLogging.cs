@@ -382,6 +382,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 var logTargetMethod = logInvocation.TargetMethod.ReducedFrom ?? logInvocation.TargetMethod;
                 var isLoggerMessageInvocation = logTargetMethod.HasAnyAttribute(_loggerMessageAttributeType);
 
+                // The logger used by a [LoggerMessage] method depends only on 'logTargetMethod', so it is resolved at
+                // most once per log invocation rather than for every candidate 'IsEnabled' invocation.
+                (IParameterSymbol? parameter, ISymbol? member)? loggerMessageLogger = null;
+
                 var currentBlockAncestor = logInvocation.GetAncestor<IBlockOperation>(OperationKind.Block);
                 while (currentBlockAncestor is not null)
                 {
@@ -417,8 +421,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     bool IsValidIsEnabledGuardInvocation(IInvocationOperation invocation)
                     {
                         if (!IsIsEnabledInvocation(invocation) ||
-                            !IsSameLoggerInstance(invocation) ||
-                            !IsSameLogLevel(invocation.Arguments[0]))
+                            !IsSameLogLevel(invocation.Arguments[0]) ||
+                            !IsSameLoggerInstance(invocation))
                         {
                             return false;
                         }
@@ -452,21 +456,38 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return false;
                     }
 
-                    // A [LoggerMessage] method with an ILogger parameter gets its logger from the first such parameter in
-                    // declaration order, which may be an extension method's 'this' parameter. For example:
-                    // 'Log.SomeMessage(logger, argument)' or 'logger.SomeMessage(argument)'. Like the source generator,
-                    // this uses the declared (not substituted) parameter types, so a 'T where T : ILogger' parameter
-                    // without a 'class' constraint is never the logger, even when 'T' is inferred as a reference type.
-                    var loggerParameter = logTargetMethod.OriginalDefinition.Parameters.FirstOrDefault(p => IsLoggerType(p.Type));
+                    var (loggerParameter, loggerMember) = ResolveLoggerMessageLogger();
+
                     if (loggerParameter is not null)
                     {
                         return AreSameInstance(GetOperationForLoggerParameter(loggerParameter), isEnabledInstance);
                     }
 
-                    // An instance [LoggerMessage] method without an ILogger parameter gets its logger from the single
-                    // ILogger field accessible from the containing type's hierarchy or, if none exists, an ILogger
-                    // primary constructor parameter of its containing type. For example: 'this.SomeMessage(argument)'.
-                    return !logTargetMethod.IsStatic && IsGeneratorSelectedLoggerMember(isEnabledInstance);
+                    return loggerMember is not null && IsGeneratorSelectedLoggerMember(loggerMember, isEnabledInstance);
+                }
+
+                (IParameterSymbol? parameter, ISymbol? member) ResolveLoggerMessageLogger()
+                {
+                    if (loggerMessageLogger is null)
+                    {
+                        // A [LoggerMessage] method with an ILogger parameter gets its logger from the first such parameter in
+                        // declaration order, which may be an extension method's 'this' parameter. For example:
+                        // 'Log.SomeMessage(logger, argument)' or 'logger.SomeMessage(argument)'. Like the source generator,
+                        // this uses the declared (not substituted) parameter types, so a 'T where T : ILogger' parameter
+                        // without a 'class' constraint is never the logger, even when 'T' is inferred as a reference type.
+                        var parameter = logTargetMethod.OriginalDefinition.Parameters.FirstOrDefault(p => IsLoggerType(p.Type));
+
+                        // An instance [LoggerMessage] method without an ILogger parameter gets its logger from the single
+                        // ILogger field accessible from the containing type's hierarchy or, if none exists, an ILogger
+                        // primary constructor parameter of its containing type. For example: 'this.SomeMessage(argument)'.
+                        var member = parameter is null && !logTargetMethod.IsStatic
+                            ? GetGeneratorSelectedLoggerMember(logTargetMethod.ContainingType)
+                            : null;
+
+                        loggerMessageLogger = (parameter, member);
+                    }
+
+                    return loggerMessageLogger.Value;
                 }
 
                 // Returns the operation that supplies the value of the given parameter of 'logTargetMethod'. Arguments are in
@@ -507,6 +528,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }
 
+                // Only an explicit or implicit reference to the containing type's own instance ('this' in C#, 'Me' in
+                // VB) is a known receiver. The implicit receiver of a VB 'With' block is also an instance reference,
+                // but it refers to the 'With' expression's object rather than the containing instance, so it is
+                // conservatively never matched.
+                static bool IsContainingTypeInstance(IOperation? operation)
+                    => operation is IInstanceReferenceOperation { ReferenceKind: InstanceReferenceKind.ContainingTypeInstance };
+
                 // Two operations refer to the same logger instance only when they resolve to the same
                 // field/property/parameter/local *and* are accessed through the same receiver. This matters because
                 // 'GetReferencedMemberOrLocalOrParameter()' returns the same '_logger' field symbol for both
@@ -521,9 +549,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         return a is null && b is null;
                     }
 
-                    if (a is IInstanceReferenceOperation && b is IInstanceReferenceOperation)
+                    if (a is IInstanceReferenceOperation || b is IInstanceReferenceOperation)
                     {
-                        return true;
+                        return IsContainingTypeInstance(a) && IsContainingTypeInstance(b);
                     }
 
                     if (a is IMemberReferenceOperation memberA && b is IMemberReferenceOperation memberB)
@@ -614,15 +642,8 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return AreSameInstance(argumentA, argumentB);
                 }
 
-                bool IsGeneratorSelectedLoggerMember(IOperation isEnabledInstance)
+                bool IsGeneratorSelectedLoggerMember(ISymbol loggerMember, IOperation isEnabledInstance)
                 {
-                    var containingType = logTargetMethod.ContainingType;
-
-                    if (GetGeneratorSelectedLoggerMember(containingType) is not { } loggerMember)
-                    {
-                        return false;
-                    }
-
                     var logInstance = WalkDownParenthesesAndConversions(logInvocation.Instance);
 
                     switch (isEnabledInstance)
@@ -642,17 +663,12 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                 return true;
                             }
 
-                            if (memberInstance is IInstanceReferenceOperation)
-                            {
-                                return logInstance is IInstanceReferenceOperation;
-                            }
-
                             return AreSameInstance(memberInstance, logInstance);
 
                         case IParameterReferenceOperation parameterReference:
                             // Primary constructor parameter, which can only be the logger of the current instance.
                             return SymbolEqualityComparer.Default.Equals(parameterReference.Parameter, loggerMember) &&
-                                logInstance is IInstanceReferenceOperation;
+                                IsContainingTypeInstance(logInstance);
 
                         default:
                             return false;
@@ -684,6 +700,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                 continue;
                             }
 
+                            // Like the source generator, skip compiler-generated fields such as auto-property backing fields.
                             if (!field.CanBeReferencedByName)
                             {
                                 continue;

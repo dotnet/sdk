@@ -2906,6 +2906,47 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task WrongInstanceGuardedWorkInLogWithMethodCallReceiver_ReportsDiagnostic_CS()
+        {
+            // A method call receiver may return a different logger on each call, so a guard on 'GetLogger()' is
+            // never matched against a log invocation, even one on the same 'GetLogger()' expression.
+            string source = """
+                using System;
+                using Microsoft.Extensions.Logging;
+
+                class C
+                {
+                    private ILogger _logger;
+
+                    void M(ILogger logger, EventId eventId)
+                    {
+                        if (GetLogger().IsEnabled(LogLevel.Information))
+                        {
+                            GetLogger().LogInformation([|ExpensiveMethodCall()|]);
+                            GetLogger().Log(LogLevel.Information, eventId, [|ExpensiveMethodCall()|]);
+                            logger.LogInformation([|ExpensiveMethodCall()|]);
+                            _logger.LogInformation([|ExpensiveMethodCall()|]);
+                        }
+
+                        if (logger.IsEnabled(LogLevel.Information))
+                        {
+                            GetLogger().LogInformation([|ExpensiveMethodCall()|]);
+                        }
+                    }
+
+                    ILogger GetLogger() => _logger;
+
+                    string ExpensiveMethodCall()
+                    {
+                        return "very expensive call";
+                    }
+                }
+                """;
+
+            await VerifyCSharpDiagnosticAsync(source);
+        }
+
+        [TestMethod]
         public async Task WrongInstanceGuardedWorkInLoggerMessage_ReportsDiagnostic_CS()
         {
             string source = """
@@ -6873,6 +6914,45 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         If _loggers(0).IsEnabled(LogLevel.Information) Then _loggers(0).LogInformation(ExpensiveMethodCall())
                         If _loggers(i).IsEnabled(LogLevel.Information) Then _loggers(j).LogInformation([|ExpensiveMethodCall()|])
                         If _loggers(i).IsEnabled(LogLevel.Information) Then _loggers(i).LogInformation(ExpensiveMethodCall())
+                    End Sub
+
+                    Function ExpensiveMethodCall() As String
+                        Return "very expensive call"
+                    End Function
+                End Class
+                """;
+
+            await VerifyBasicDiagnosticAsync(source);
+        }
+
+        [TestMethod]
+        public async Task WrongInstanceGuardedWorkInLogWithImplicitReceiver_ReportsDiagnostic_VB()
+        {
+            // Inside a 'With' block, '.Logger' is accessed through the block's implicit receiver, which is a
+            // different object from 'Me' even though both are represented as instance references.
+            string source = """
+                Imports System
+                Imports Microsoft.Extensions.Logging
+
+                Class C
+                    Public Property Logger As ILogger
+
+                    Sub M(other As C)
+                        With other
+                            If .Logger.IsEnabled(LogLevel.Information) Then
+                                Me.Logger.LogInformation([|ExpensiveMethodCall()|])
+                                Logger.LogInformation([|ExpensiveMethodCall()|])
+                            End If
+
+                            If Me.Logger.IsEnabled(LogLevel.Information) Then
+                                .Logger.LogInformation([|ExpensiveMethodCall()|])
+                                Me.Logger.LogInformation(ExpensiveMethodCall())
+                            End If
+
+                            If other.Logger.IsEnabled(LogLevel.Information) Then
+                                other.Logger.LogInformation(ExpensiveMethodCall())
+                            End If
+                        End With
                     End Sub
 
                     Function ExpensiveMethodCall() As String
