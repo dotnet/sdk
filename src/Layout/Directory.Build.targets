@@ -22,6 +22,7 @@
     <!-- When building the sdk bundle only, the sdk msi is acquired via DownloadBundledComponents. -->
     <SdkMSIInstallerFile Condition="'$(GenerateSdkBundleOnly)' == 'true'">$(DownloadsFolder)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
 
+    <SdkTemplatesMSIInstallerFileName>dotnet-$([System.String]::Copy('$(TemplateFrameworkVersion)').Replace('.', ''))templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName>
     <SdkPlaceholderMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
   </PropertyGroup>
 
