@@ -11,6 +11,11 @@ namespace Microsoft.DotNet.Cli
         private const string VstestAppName = "vstest.console.dll";
 
         public VSTestForwardingApp(IEnumerable<string> argsToForward)
+            : this(argsToForward, useArtifactsDirectory: true)
+        {
+        }
+
+        internal VSTestForwardingApp(IEnumerable<string> argsToForward, bool useArtifactsDirectory)
             : base(GetVSTestExePath(), argsToForward)
         {
             (bool hasRootVariable, string rootVariableName, string rootValue) = GetRootVariable();
@@ -20,7 +25,15 @@ namespace Microsoft.DotNet.Cli
                 VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
             }
 
-            VSTestTrace.SafeWriteTrace(() => $"Forwarding to '{GetVSTestExePath()}' with args \"{argsToForward?.Aggregate((a, b) => $"{a} | {b}")}\"");
+            if (useArtifactsDirectory && VSTestArtifactsDirectory.GetOrCreate() is string artifactsDirectory)
+            {
+                WithEnvironmentVariable(VSTestArtifactsDirectory.EnvironmentVariableName, artifactsDirectory);
+                VSTestTrace.SafeWriteTrace(
+                    () => $"Artifacts directory variable set {VSTestArtifactsDirectory.EnvironmentVariableName}:{artifactsDirectory}");
+            }
+
+            VSTestTrace.SafeWriteTrace(
+                () => $"Forwarding to '{GetVSTestExePath()}' with args \"{string.Join(" | ", argsToForward ?? Array.Empty<string>())}\"");
         }
 
         private static string GetVSTestExePath()
