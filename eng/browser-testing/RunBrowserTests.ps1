@@ -172,11 +172,15 @@ try {
 
     Set-Location $TestFxRoot
     if (-not $SkipTestFxBuild) {
+        $packageProjects = Join-Path $TestFxRoot 'BrowserTestingPackages.slnf'
+        if (-not (Test-Path -LiteralPath $packageProjects -PathType Leaf)) {
+            throw 'The TestFX source must include its browser package build filter.'
+        }
         if ($IsWindows) {
-            Invoke-Logged 'testfx-build-pack' (Join-Path $TestFxRoot 'build.cmd') @('-c', $Configuration, '-pack', '-bl')
+            Invoke-Logged 'testfx-build-pack' (Join-Path $TestFxRoot 'build.cmd') @('-c', $Configuration, '-pack', '-bl', '-projects', $packageProjects, '-msbuildEngine', 'dotnet')
         }
         else {
-            Invoke-Logged 'testfx-build-pack' 'bash' @((Join-Path $TestFxRoot 'build.sh'), '--configuration', $Configuration, '--pack', '--binaryLog')
+            Invoke-Logged 'testfx-build-pack' 'bash' @((Join-Path $TestFxRoot 'build.sh'), '--configuration', $Configuration, '--pack', '--binaryLog', '--projects', $packageProjects)
         }
     }
     $shipping = Join-Path $TestFxRoot "artifacts\packages\$Configuration\Shipping"
