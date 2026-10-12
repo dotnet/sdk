@@ -27,11 +27,13 @@ internal sealed class ExtractorProgressTracker
     /// Creates a download progress task and returns a reporter that the downloader can use
     /// to report incremental progress.
     /// </summary>
-    public (IProgress<DownloadProgress> Reporter, IProgressTask Task) BeginDownload()
+    public (IProgress<DownloadProgress>? Reporter, IProgressTask Task) BeginDownload()
     {
         string description = ProgressFormatting.FormatProgressDescription(ProgressFormatting.ActionDownloading, _component, _version, _versionDisplayWidth);
         var task = _reporter.AddTask(description, 100);
-        var reporter = new DownloadProgressReporter(task, description);
+        IProgress<DownloadProgress>? reporter = task.RequiresKnownMaximum
+            ? new DownloadProgressReporter(task, description)
+            : null;
         return (reporter, task);
     }
 

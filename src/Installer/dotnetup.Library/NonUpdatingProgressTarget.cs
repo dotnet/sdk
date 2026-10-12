@@ -60,5 +60,6 @@ public class NonUpdatingProgressTarget : IProgressTarget
 
         public string Description { get; set; }
         public double MaxValue { get; set; }
+        public bool RequiresKnownMaximum => false;
     }
 }

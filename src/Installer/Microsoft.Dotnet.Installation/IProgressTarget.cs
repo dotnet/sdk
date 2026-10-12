@@ -18,6 +18,7 @@ public interface IProgressTask
     string Description { get; set; }
     double Value { get; set; }
     double MaxValue { get; set; }
+    bool RequiresKnownMaximum => true;
 }
 
 public class NullProgressTarget : IProgressTarget
@@ -42,5 +43,6 @@ public class NullProgressTarget : IProgressTarget
         public double Value { get; set; }
         public string Description { get; set; }
         public double MaxValue { get; set; }
+        public bool RequiresKnownMaximum => false;
     }
 }

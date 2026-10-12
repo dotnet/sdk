@@ -84,36 +84,60 @@ internal class DotnetDownloader : IArchiveDownloader
         const int fileStreamBufferSize = 8192;
         using var fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None, fileStreamBufferSize, useAsync: true);
 
-        await CopyStreamWithProgressAsync(contentStream, fileStream, totalBytes, progress).ConfigureAwait(false);
+        string actualHash = progress is null
+            ? await CopyStreamAndHashAsync(contentStream, fileStream).ConfigureAwait(false)
+            : await CopyStreamWithProgressAndHashAsync(contentStream, fileStream, totalBytes, progress).ConfigureAwait(false);
 
         await fileStream.FlushAsync().ConfigureAwait(false);
         fileStream.Close();
 
-        VerifyFileHash(tempPath, download.ExpectedHash, allowAlternateHashes: !download.IsDotnetup);
+        VerifyHash(actualHash, download.ExpectedHash, allowAlternateHashes: !download.IsDotnetup);
         CommitDownload(tempPath, destinationPath);
     }
 
-    private static async Task CopyStreamWithProgressAsync(Stream source, Stream destination, long? totalBytes, IProgress<DownloadProgress>? progress)
+    private static async Task<string> CopyStreamWithProgressAndHashAsync(
+        Stream source,
+        Stream destination,
+        long? totalBytes,
+        IProgress<DownloadProgress> progress)
     {
         var buffer = new byte[81920]; // 80KB buffer
         long bytesRead = 0;
         int read;
         var lastProgressReport = DateTime.MinValue;
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA512);
 
         while ((read = await source.ReadAsync(buffer).ConfigureAwait(false)) > 0)
         {
             await destination.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
+            hash.AppendData(buffer, 0, read);
             bytesRead += read;
 
             var now = DateTime.UtcNow;
             if ((now - lastProgressReport).TotalMilliseconds > 100)
             {
                 lastProgressReport = now;
-                progress?.Report(new DownloadProgress(bytesRead, totalBytes));
+                progress.Report(new DownloadProgress(bytesRead, totalBytes));
             }
         }
 
-        progress?.Report(new DownloadProgress(bytesRead, totalBytes));
+        progress.Report(new DownloadProgress(bytesRead, totalBytes));
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+    }
+
+    private static async Task<string> CopyStreamAndHashAsync(Stream source, Stream destination)
+    {
+        var buffer = new byte[81920];
+        int read;
+        using var hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA512);
+
+        while ((read = await source.ReadAsync(buffer).ConfigureAwait(false)) > 0)
+        {
+            await destination.WriteAsync(buffer.AsMemory(0, read)).ConfigureAwait(false);
+            hash.AppendData(buffer, 0, read);
+        }
+
+        return Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
     }
 
     private static void CommitDownload(string tempPath, string destinationPath)
@@ -228,7 +252,7 @@ internal class DotnetDownloader : IArchiveDownloader
         op.Tag("download.bytes", fileInfo.Length);
         op.Tag("download.from_cache", false);
 
-        try { _downloadCache.AddToCache(downloadUrl, destinationPath); }
+        try { _downloadCache.AddToCache(downloadUrl, destinationPath, preferHardLink: true); }
         catch { /* Ignore errors adding to cache - it's not critical */ }
 
         return destinationPath;
@@ -493,7 +517,7 @@ internal class DotnetDownloader : IArchiveDownloader
         string tempPath = $"{destinationPath}.download";
         try
         {
-            File.Copy(cachedFilePath, tempPath, overwrite: true);
+            _downloadCache.MaterializeFile(cachedFilePath, tempPath, preferHardLink: true);
             VerifyFileHash(tempPath, download.ExpectedHash, allowAlternateHashes: !download.IsDotnetup);
             CommitDownload(tempPath, destinationPath);
 
@@ -631,13 +655,15 @@ internal class DotnetDownloader : IArchiveDownloader
     }
 
     private static void VerifyFileHash(string filePath, string expectedHash, bool allowAlternateHashes)
+        => VerifyHash(ComputeFileHash(filePath), expectedHash, allowAlternateHashes);
+
+    private static void VerifyHash(string actualHash, string expectedHash, bool allowAlternateHashes)
     {
         if (string.IsNullOrEmpty(expectedHash))
         {
             throw new ArgumentException("Expected hash cannot be null or empty", nameof(expectedHash));
         }
 
-        string actualHash = ComputeFileHash(filePath);
         if (string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
         {
             return;
