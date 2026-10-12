@@ -79,8 +79,26 @@ try {
     }
     $evidence = Get-Content (Join-Path $failedEvidence 'evidence.json') -Raw | ConvertFrom-Json
     if ($evidence.succeeded -ne $false) { throw 'Failed preflight emitted success evidence.' }
+
+    & {
+        function Set-Content { throw [IO.IOException]::new('Simulated evidence write failure.') }
+        $caught = $false
+        try {
+            & (Join-Path $PSScriptRoot 'RunBrowserTests.ps1') -SdkRoot $directory `
+                -BrowserExecutable (Get-Process -Id $PID).Path `
+                -ResultsDirectory (Join-Path $directory 'unwritable-evidence')
+        }
+        catch {
+            if ($_.Exception.Message -ne 'Simulated evidence write failure.') { throw }
+            $caught = $true
+        }
+        if (-not $caught -or (Get-Location).Path -ne $previousLocation -or
+            $env:DOTNET_CLI_USE_MSBUILD_SERVER -ne $previousServer -or $env:DOTNET_ROOT -ne $previousRoot) {
+            throw 'Evidence-writing failure leaked source location or environment state.'
+        }
+    }
     Write-Host 'Browser TRX contract checks passed (one positive and eleven negative cases).'
-    Write-Host 'Failed runner preflight retains diagnostics and restores process state.'
+    Write-Host 'Preflight and evidence-writing failures restore process state.'
     $global:LASTEXITCODE = 0
 }
 finally {

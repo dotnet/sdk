@@ -218,6 +218,8 @@ try {
 
     Set-RunEnvironment 'TESTINGPLATFORM_BROWSER_REQUIRED' '1'
     Set-RunEnvironment 'TESTINGPLATFORM_BROWSER_SDK_DOTNET' $sdkDotnet
+    Set-RunEnvironment 'TESTINGPLATFORM_BROWSER_SDK_VERSION' $matchingSdks[0].Name
+    Set-RunEnvironment 'TESTINGPLATFORM_BROWSER_SDK_COMMIT' $sdkRevision
     Set-RunEnvironment 'TESTINGPLATFORM_BROWSER_PACKAGE_FEED' $feed
     Set-RunEnvironment 'TESTINGPLATFORM_BROWSER_EXECUTABLE' $BrowserExecutable
     $testResults = Join-Path $ResultsDirectory 'test-results'
@@ -232,16 +234,23 @@ try {
             throw "Acceptance changed the immutable package snapshot: $($package.Name)"
         }
     }
+    if ((Get-Revision $SdkRoot) -ne $sdkRevision -or (Get-Revision $TestFxRoot) -ne $testfxRevision) {
+        throw 'A source checkout changed while the composed validation was running.'
+    }
     $runSucceeded = $true
 }
 finally {
-    @{
-        succeeded = $runSucceeded; sdkCommit = $sdkRevision; testfxCommit = $testfxRevision
-        sdkVersion = if ($matchingSdks.Count -eq 1) { $matchingSdks[0].Name } else { $null }
-        browser = $BrowserExecutable; browserVersion = "$browserVersion"
-        configuration = $Configuration; commands = $commands.ToArray()
-    } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $ResultsDirectory 'evidence.json')
-    foreach ($name in $environment.Keys) { Set-ProcessEnvironment $name $environment[$name] }
-    Pop-Location
+    try {
+        @{
+            succeeded = $runSucceeded; sdkCommit = $sdkRevision; testfxCommit = $testfxRevision
+            sdkVersion = if ($matchingSdks.Count -eq 1) { $matchingSdks[0].Name } else { $null }
+            browser = $BrowserExecutable; browserVersion = "$browserVersion"
+            configuration = $Configuration; commands = $commands.ToArray()
+        } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $ResultsDirectory 'evidence.json')
+    }
+    finally {
+        foreach ($name in $environment.Keys) { Set-ProcessEnvironment $name $environment[$name] }
+        Pop-Location
+    }
     Write-Host "Browser integration evidence: $ResultsDirectory"
 }
