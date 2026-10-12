@@ -39,6 +39,11 @@ shared runner invokes its normal pack build, then builds only the acceptance
 runner's evaluated current target framework. On Windows, the package build retains
 desktop MSBuild for the UWP assets in the MSTest packages and disables its optional
 `-mt` mode for compatibility with the hosted Visual Studio version.
+CI also passes `-DiscardSdkIntermediates` to remove generated SDK `artifacts/obj`
+and the evaluated redist staging directory after the shipping layout is built.
+The shipping `dotnet` layout, sources, logs, package feeds and TestFX outputs remain
+intact. Local runs preserve intermediates by default; this opt-in cannot be combined
+with `-SkipSdkBuild`.
 
 The SDK counterpart is pinned in
 [`eng/browser-testing/testfx.json`](../../eng/browser-testing/testfx.json).

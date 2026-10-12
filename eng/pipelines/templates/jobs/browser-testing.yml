@@ -40,6 +40,7 @@ jobs:
             -SdkRoot "$(Build.SourcesDirectory)" `
             -BrowserExecutable $browser `
             -Configuration Release `
+            -DiscardSdkIntermediates `
             -ResultsDirectory "$(Build.SourcesDirectory)/artifacts/log/browser-ci"
 
     - task: PublishTestResults@2

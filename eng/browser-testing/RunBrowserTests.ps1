@@ -10,11 +10,15 @@ param(
     [ValidateSet('Debug', 'Release')][string] $Configuration = 'Release',
     [string] $ResultsDirectory,
     [switch] $SkipSdkBuild,
-    [switch] $SkipTestFxBuild
+    [switch] $SkipTestFxBuild,
+    [switch] $DiscardSdkIntermediates
 )
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+if ($DiscardSdkIntermediates -and $SkipSdkBuild) {
+    throw 'DiscardSdkIntermediates requires building the SDK in this run.'
+}
 $SdkRoot = (Resolve-Path -LiteralPath $SdkRoot).Path
 $BrowserExecutable = (Resolve-Path -LiteralPath $BrowserExecutable).Path
 if (-not (Test-Path -LiteralPath $BrowserExecutable -PathType Leaf)) {
@@ -41,6 +45,7 @@ New-Item -ItemType Directory -Path $ResultsDirectory | Out-Null
 $commands = [Collections.Generic.List[object]]::new()
 $environment = @{}
 $runSucceeded = $false
+$discardedSdkIntermediates = $false
 
 function Invoke-Logged {
     param([string] $Name, [string] $Executable, [string[]] $Arguments, [switch] $PassThru)
@@ -169,6 +174,14 @@ try {
     if ($matchingSdks.Count -ne 1 -or -not (Test-Path -LiteralPath $sdkDotnet)) {
         throw 'Build the selected SDK source first; exactly one matching shipping layout is required.'
     }
+    if ($DiscardSdkIntermediates) {
+        $sdkBootstrap = Join-Path $SdkRoot ".dotnet\$dotnetName"
+        $redistProject = Join-Path $SdkRoot 'src\Layout\redist\redist.csproj'
+        $output = @(Invoke-Logged 'sdk-staging-path' $sdkBootstrap @('msbuild', $redistProject, '-nologo', "-p:Configuration=$Configuration", '-getProperty:OutputPath') -PassThru)
+        $staging = ($output | Where-Object { -not [string]::IsNullOrWhiteSpace("$_") } | Select-Object -Last 1).ToString().Trim()
+        & (Join-Path $PSScriptRoot 'RemoveSdkIntermediates.ps1') -SdkRoot $SdkRoot -Configuration $Configuration -BuildOutputPath $staging
+        $discardedSdkIntermediates = $true
+    }
 
     Set-Location $TestFxRoot
     if (-not $SkipTestFxBuild) {
@@ -250,7 +263,8 @@ finally {
             succeeded = $runSucceeded; sdkCommit = $sdkRevision; testfxCommit = $testfxRevision
             sdkVersion = if ($matchingSdks.Count -eq 1) { $matchingSdks[0].Name } else { $null }
             browser = $BrowserExecutable; browserVersion = "$browserVersion"
-            configuration = $Configuration; commands = $commands.ToArray()
+            configuration = $Configuration; discardedSdkIntermediates = $discardedSdkIntermediates
+            commands = $commands.ToArray()
         } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $ResultsDirectory 'evidence.json')
     }
     finally {
