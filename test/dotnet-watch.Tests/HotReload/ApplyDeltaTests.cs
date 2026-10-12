@@ -1265,7 +1265,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 serviceSourcePath,
                 serviceSource.Replace("record WeatherForecast", "record WeatherForecast2"));
 
+            // the prompt is printed into stdout while the error is printed into stderr, so they might arrive in any order:
             await App.WaitForOutputLineContaining("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
+            await App.WaitUntilOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
 
             App.AssertOutputContains(MessageDescriptor.RestartNeededToApplyChanges);
             App.AssertOutputContains($"dotnet watch ❌ {serviceSourcePath}(40,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
