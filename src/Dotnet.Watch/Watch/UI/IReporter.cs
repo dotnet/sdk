@@ -224,7 +224,6 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<string> ApplyUpdate_ChangingEntryPoint = Create<string>("{0} Press \"Ctrl + R\" to restart.", Emoji.Warning, LogLevel.Warning);
     public static readonly MessageDescriptor<None> ConfiguredToLaunchBrowser = Create("Configured to launch a browser on ASP.NET Core application startup.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<None> UsingBrowserRefreshMiddleware = Create("Using browser-refresh middleware", Emoji.Default, LogLevel.Debug);
-    public static readonly MessageDescriptor<None> BrowserToolsAssetsNotProducedByProject = Create(LogEvents.BrowserToolsAssetsNotProducedByProject, Emoji.Watch);
     public static readonly MessageDescriptor<None> BrowserToolsUsingKeyFromBuild = Create(LogEvents.BrowserToolsUsingKeyFromBuild, Emoji.Watch);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ManualRefreshRequired = Create<string>("Browser refresh is suppressed via environment variable '{0}'. To reload static assets after an update refresh browser manually.", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<string> BrowserRefreshSuppressedViaEnvironmentVariable_ApplicationWillBeRestarted = Create<string>("Browser refresh is suppressed via environment variable '{0}'. Application will be restarted when updated.", Emoji.Watch, LogLevel.Warning);

@@ -39,7 +39,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     }
 
     private BrowserToolsBuildOutputs CreateOutputs()
-        => BrowserToolsBuildOutputs.CreateForTesting(_directory, NullLogger.Instance);
+        => BrowserToolsBuildOutputs.CreateForTesting(_directory);
 
     private SharedSecretProvider WriteValidKeyPair()
     {
@@ -89,7 +89,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         using var provider = WriteValidKeyPair();
         var expectedPublicKey = provider.GetPublicKey();
 
-        using var sessionKey = CreateOutputs().TryCreateSessionKey();
+        using var sessionKey = CreateOutputs().TryCreateSessionKey(NullLogger.Instance);
 
         Assert.IsNotNull(sessionKey);
         Assert.AreEqual(expectedPublicKey, sessionKey.GetPublicKey());
@@ -119,7 +119,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         }
 
         var outputs = CreateOutputs();
-        Assert.IsNull(outputs.TryCreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey(NullLogger.Instance));
     }
 
     [TestMethod]
@@ -134,7 +134,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         File.WriteAllText(_privateKeyPath, content);
 
         var outputs = CreateOutputs();
-        Assert.IsNull(outputs.TryCreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey(NullLogger.Instance));
     }
 
     /// <summary>
@@ -152,7 +152,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         File.WriteAllText(_privateKeyPath, mismatchedPrivate);
 
         var outputs = CreateOutputs();
-        Assert.IsNull(outputs.TryCreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey(NullLogger.Instance));
     }
 
     /// <summary>
@@ -188,7 +188,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
             """);
 
         var outputs = CreateOutputs();
-        Assert.IsNull(outputs.TryCreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey(NullLogger.Instance));
     }
 
 }

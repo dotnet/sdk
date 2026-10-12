@@ -40,13 +40,11 @@ internal sealed class BrowserToolsBuildOutputs
     private const string PublicKeyFormat = "SubjectPublicKeyInfo";
     private const string PrivateKeyFormat = "RSAParameters";
 
-    private readonly ILogger _logger;
     private readonly string _publicKeyPath;
     private readonly string _privateKeyPath;
 
-    private BrowserToolsBuildOutputs(string directory, ILogger logger)
+    private BrowserToolsBuildOutputs(string directory)
     {
-        _logger = logger;
         _publicKeyPath = Path.Combine(directory, PublicKeyFileName);
         _privateKeyPath = Path.Combine(directory, PrivateKeyFileName);
     }
@@ -60,7 +58,6 @@ internal sealed class BrowserToolsBuildOutputs
     /// system.
     /// </summary>
     public static BrowserToolsBuildOutputs? FromProjectSettings(
-        ILogger logger,
         string configuration,
         string? intermediateOutputDirectory,
         bool? enableHotReloadInRuntimeConfigDevFile,
@@ -73,21 +70,13 @@ internal sealed class BrowserToolsBuildOutputs
         if (!enableHotReload ||
             browserToolsAssetPrefix is not { Length: > 0 } ||
             !staticWebAssetsEnabled ||
-            !jsModulesEnabled)
+            !jsModulesEnabled ||
+            intermediateOutputDirectory is null)
         {
-            logger.Log(LogEvents.BrowserToolsAssetsNotProducedByProject);
             return null;
         }
 
-        if (intermediateOutputDirectory == null)
-        {
-            logger.Log(LogEvents.BrowserToolsAssetsNotProducedByProject);
-            return null;
-        }
-
-        return new BrowserToolsBuildOutputs(
-            Path.Combine(intermediateOutputDirectory, DirectoryName),
-            logger);
+        return new BrowserToolsBuildOutputs(Path.Combine(intermediateOutputDirectory, DirectoryName));
     }
 
     /// <summary>
@@ -95,14 +84,14 @@ internal sealed class BrowserToolsBuildOutputs
     /// tests: production code always derives the directory from the project instance so that the
     /// paths cannot drift from what the build wrote.
     /// </summary>
-    internal static BrowserToolsBuildOutputs CreateForTesting(string directory, ILogger logger)
-        => new(directory, logger);
+    internal static BrowserToolsBuildOutputs CreateForTesting(string directory)
+        => new(directory);
 
     /// <summary>
     /// Creates the provider's session key from the private half the build produced, after checking
     /// that it is the key the application pinned. Never logs key material.
     /// </summary>
-    public SharedSecretProvider? TryCreateSessionKey()
+    public SharedSecretProvider? TryCreateSessionKey(ILogger logger)
     {
         try
         {
@@ -132,12 +121,12 @@ internal sealed class BrowserToolsBuildOutputs
                 throw Fail("the private key does not match the public key the application pinned");
             }
 
-            _logger.Log(LogEvents.BrowserToolsUsingKeyFromBuild);
+            logger.Log(LogEvents.BrowserToolsUsingKeyFromBuild);
             return sessionKey;
         }
         catch (Exception e)
         {
-            _logger.LogError("Unable to load the browser tools session key. {Message}", e.Message);
+            logger.LogError("Unable to load the browser tools session key. {Message}", e.Message);
             return null;
         }
     }

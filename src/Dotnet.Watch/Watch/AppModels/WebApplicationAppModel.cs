@@ -95,7 +95,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             logger,
             connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
             connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
-            sessionKeyFactory: browserToolsOutputs.TryCreateSessionKey,
+            sessionKeyFactory: () => browserToolsOutputs.TryCreateSessionKey(logger),
             middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
             useGatewayProxy: HasGatewayProxy,
             suppressTimeouts: SuppressTimeouts);

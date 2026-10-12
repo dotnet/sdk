@@ -19,13 +19,24 @@ internal static class BrowserToolsBuildOutputsExtensions
         /// not produce browser tools assets at all. 
         /// </summary>
         public static BrowserToolsBuildOutputs? FromProject(ProjectInstance projectInstance, ILogger logger)
-            => BrowserToolsBuildOutputs.FromProjectSettings(
-                logger,
+        {
+            var result = BrowserToolsBuildOutputs.FromProjectSettings(
                 configuration: projectInstance.GetPropertyValue(PropertyNames.Configuration),
                 intermediateOutputDirectory: projectInstance.GetIntermediateOutputDirectory(),
                 enableHotReloadInRuntimeConfigDevFile: projectInstance.TryGetBooleanPropertyValue(PropertyNames.EnableHotReloadInRuntimeConfigDevFile),
                 browserToolsAssetPrefix: projectInstance.GetPropertyValue(PropertyNames.HotReloadBrowserToolsAssetPrefix),
                 staticWebAssetsEnabled: projectInstance.GetBooleanPropertyValue(PropertyNames.StaticWebAssetsEnabled),
                 jsModulesEnabled: projectInstance.GetBooleanPropertyValue(PropertyNames.JSModulesEnabled));
+
+            if (result == null)
+            {
+                logger.Log(LogEvents.BrowserToolsNotSupportedByProjectSettings,
+                    $"{PropertyNames.HotReloadBrowserToolsAssetPrefix}='{projectInstance.GetPropertyValue(PropertyNames.HotReloadBrowserToolsAssetPrefix)}', " +
+                    $"{PropertyNames.StaticWebAssetsEnabled}='{projectInstance.GetBooleanPropertyValue(PropertyNames.StaticWebAssetsEnabled)}', " +
+                    $"{PropertyNames.JSModulesEnabled}='{projectInstance.GetBooleanPropertyValue(PropertyNames.JSModulesEnabled)}'");
+            }
+
+            return result;
+        }
     }
 }
