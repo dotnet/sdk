@@ -17,6 +17,30 @@ coverage, and VSTest SDK packages that this experiment does not use.
 Related work: [design RFC](https://github.com/dotnet/sdk/pull/55906) and
 [browser package experiment](https://github.com/microsoft/testfx/pull/11305).
 
+## Continuous compatibility gate
+
+The public SDK pipeline includes Windows/Linux browser integration jobs that run
+[`eng/browser-testing/RunBrowserTests.ps1`](../../eng/browser-testing/RunBrowserTests.ps1).
+The same entry point can be run locally in PowerShell 7 with
+`-BrowserExecutable <installed Chromium-family browser>`. It builds both repositories,
+checks the shipping SDK source stamp and eight package source commits, and requires
+every TestFX browser acceptance case to execute successfully. Missing prerequisites,
+zero results, skipped cases and malformed result files are failures, not green skips.
+
+The SDK counterpart is pinned in
+[`eng/browser-testing/testfx.json`](../../eng/browser-testing/testfx.json).
+Cross-repository changes must update the counterpart pins deliberately and run both
+compositions before merging; do not replace them with floating branches or approve a
+dependency update based only on repository-local tests. The change author owns the
+two-repository compatibility fix and evidence through dependency flow. Public release
+still requires maintainers to assign the ongoing Playwright/Node/browser servicing owner.
+
+The WasmAppHost `App url:` readiness line is currently an explicit compatibility
+dependency. Real browser startup in the required gate exercises that dependency
+against the runtime pack selected by the SDK build. Changing the readiness format
+requires a coordinated launcher change; a structured runtime-owned readiness API
+must not be claimed until it exists upstream.
+
 ## Reproduce using the built SDK and package
 
 Build this SDK checkout with `build.cmd` and pack the aligned testfx packages.

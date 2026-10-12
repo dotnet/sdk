@@ -59,6 +59,9 @@ stages:
 - stage: build
   displayName: Build
   jobs:
+  ############### COMPOSED BROWSER TESTING ###############
+  - template: /eng/pipelines/templates/jobs/browser-testing.yml
+
   ############### HELIX JOB MONITOR ###############
   - template: /eng/common/core-templates/job/helix-job-monitor.yml
     parameters:
@@ -101,4 +104,3 @@ stages:
         helixTargetQueue: osx.15.amd64.open
         macOSJobParameterSets:
         - runtimeIdentifier: osx-x64
-

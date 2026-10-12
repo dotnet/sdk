@@ -1,0 +1,65 @@
+# This job participates in the normal public-CI aggregate. It deliberately does
+# not make missing browsers, aligned inputs, or skipped acceptance cases green.
+jobs:
+- job: Browser_WebAssembly
+  displayName: Browser WebAssembly integration
+  timeoutInMinutes: 120
+  strategy:
+    matrix:
+      Windows_x64:
+        image: windows-2025
+      Linux_x64:
+        image: ubuntu-24.04
+  pool:
+    vmImage: $(image)
+  steps:
+  - checkout: self
+    fetchDepth: 1
+    persistCredentials: false
+
+  - task: PowerShell@2
+    displayName: Build and verify the composed browser product
+    inputs:
+      pwsh: true
+      targetType: inline
+      script: |
+        $browser = if ($IsWindows) {
+          Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application\msedge.exe'
+        } else {
+          '/usr/bin/google-chrome'
+        }
+        & "$(Build.SourcesDirectory)/eng/browser-testing/TestResultValidation.ps1"
+        & "$(Build.SourcesDirectory)/eng/browser-testing/RunBrowserTests.ps1" `
+          -SdkRoot "$(Build.SourcesDirectory)" `
+          -BrowserExecutable $browser `
+          -Configuration Release `
+          -ResultsDirectory "$(Build.SourcesDirectory)/artifacts/log/browser-ci"
+
+  - task: PublishTestResults@2
+    displayName: Publish mandatory browser acceptance results
+    condition: always()
+    inputs:
+      testResultsFormat: VSTest
+      testResultsFiles: artifacts/log/browser-ci/test-results/browser.trx
+      testRunTitle: Browser WebAssembly ($(image))
+      failTaskOnFailedTests: true
+      failTaskOnMissingResultsFile: true
+
+  - task: CopyFiles@2
+    displayName: Collect composed validation diagnostics
+    condition: always()
+    inputs:
+      SourceFolder: $(Build.SourcesDirectory)/artifacts/log/browser-ci
+      Contents: |
+        **/*.log
+        **/*.json
+        **/*.trx
+        **/*.binlog
+      TargetFolder: $(Build.ArtifactStagingDirectory)/browser-ci
+
+  - task: PublishPipelineArtifact@1
+    displayName: Publish composed validation diagnostics
+    condition: always()
+    inputs:
+      targetPath: $(Build.ArtifactStagingDirectory)/browser-ci
+      artifact: Browser_$(image)_Attempt$(System.JobAttempt)
