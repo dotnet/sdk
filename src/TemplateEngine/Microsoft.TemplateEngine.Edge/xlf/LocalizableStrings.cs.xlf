@@ -375,8 +375,8 @@ Podrobnosti: {1}.</target>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_CreationFailed">
         <source>Failed to create template.
 Details: {0}</source>
-        <target state="translated">Nepovedlo se vytvořit šablonu. 
-Podrobnosti: {0}.</target>
+        <target state="translated">Nepovedlo se vytvořit šablonu.
+Podrobnosti: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
@@ -407,7 +407,7 @@ Podrobnosti: {0}.</target>
       <trans-unit id="TemplatePackageManager_Error_FailedToGetTemplatePackages">
         <source>Failed to retrieve template packages from provider '{0}'.
 Details: {1}</source>
-        <target state="translated">Nepovedlo se načíst balíčky šablon z poskytovatele {0}.
+        <target state="translated">Nepovedlo se načíst balíčky šablon z '{0}' poskytovatele.
 Podrobnosti: {1}</target>
         <note>{0} - provider name (not localized). Last line should not end with a period - period is already included in {1}.</note>
       </trans-unit>
@@ -422,7 +422,7 @@ Podrobnosti: {1}</target>
         <source>Failed to store template cache, details: {0}
 Template cache will be recreated on the next run.</source>
         <target state="translated">Nepovedlo se uložit mezipaměť šablony. Podrobnosti: {0}
-Mezipaměť šablony bude při příštím spuštění znovu vytvořena.</target>
+Mezipaměť šablony se znovu vytvoří při příštím spuštění.</target>
         <note>{0} should not end with period - period is a part of the format entry.</note>
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict">
@@ -433,7 +433,7 @@ The template from '{2}' will be used. To resolve this conflict, uninstall the co
         <target state="translated">
 Následující šablony používají stejnou identitu '{0}':
 {1}
-Bude použita šablona z{2}. Chcete-li tento konflikt vyřešit, odinstalujte konfliktní balíčky šablon.</target>
+Použije se šablona z '{2}'. Chcete-li tento konflikt vyřešit, odinstalujte konfliktní balíčky šablon.</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'

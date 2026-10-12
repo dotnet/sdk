@@ -376,7 +376,7 @@ Détails : {1}.</target>
         <source>Failed to create template.
 Details: {0}</source>
         <target state="translated">Échec de la création du modèle.
-Détails : {0}.</target>
+Détails : {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
@@ -421,8 +421,8 @@ Détails : {1}</target>
       <trans-unit id="TemplatePackageManager_Error_FailedToStoreCache">
         <source>Failed to store template cache, details: {0}
 Template cache will be recreated on the next run.</source>
-        <target state="translated">Échec du stockage du cache de modèles. Détails : {0}
-Le cache de modèles sera recréé lors de la prochaine exécution.</target>
+        <target state="translated">Échec du stockage du cache de modèles, détails : {0}
+Le cache de modèle sera recréé lors de la prochaine exécution.</target>
         <note>{0} should not end with period - period is a part of the format entry.</note>
       </trans-unit>
       <trans-unit id="TemplatePackageManager_Warning_DetectedTemplatesIdentityConflict">
@@ -431,7 +431,7 @@ The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
         <target state="translated">
-Les modèles suivants utilisent la même identité '{0}':
+Les modèles suivants utilisent le même '{0}' d’identité :
 {1}
 Le modèle de '{2}' sera utilisé. Pour résoudre ce conflit, désinstallez les packages de modèles en conflit.</target>
         <note>
