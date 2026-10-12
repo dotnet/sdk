@@ -97,87 +97,8 @@ try {
             throw 'Evidence-writing failure leaked source location or environment state.'
         }
     }
-    $cleanup = Join-Path $PSScriptRoot 'RemoveSdkIntermediates.ps1'
-    $sdk = Join-Path $directory 'sdk'
-    $obj = Join-Path $sdk 'artifacts\obj'
-    $staging = Join-Path $sdk 'artifacts\bin\redist\Debug\net99.0'
-    $layout = Join-Path $sdk 'artifacts\bin\redist\Debug\dotnet'
-    $dotnetName = if ($IsWindows) { 'dotnet.exe' } else { 'dotnet' }
-    $preserved = @(
-        (Join-Path $sdk 'source.txt'), (Join-Path $sdk 'artifacts\log\build.log')
-        (Join-Path $sdk 'artifacts\package-feed\package.nupkg'), (Join-Path $layout $dotnetName)
-        (Join-Path $layout 'sdk\test\marker'), (Join-Path $sdk 'artifacts\btf\bin\testfx.dll')
-    )
-    foreach ($file in $preserved + @((Join-Path $obj 'marker'), (Join-Path $staging 'marker'))) {
-        New-Item -ItemType Directory -Path (Split-Path $file) -Force | Out-Null
-        'preserve' | Set-Content -LiteralPath $file
-    }
-    $caught = $false
-    try {
-        & (Join-Path $PSScriptRoot 'RunBrowserTests.ps1') -SdkRoot $sdk `
-            -BrowserExecutable (Get-Process -Id $PID).Path -SkipSdkBuild -DiscardSdkIntermediates
-    }
-    catch {
-        if ($_.Exception.Message -ne 'DiscardSdkIntermediates requires building the SDK in this run.') { throw }
-        $caught = $true
-    }
-    if (-not $caught) { throw 'Discarding intermediates must not reuse a previous SDK build.' }
-    foreach ($unsafe in @($layout, $sdk, $directory, '.')) {
-        $caught = $false
-        try { & $cleanup -SdkRoot $sdk -Configuration Debug -BuildOutputPath $unsafe }
-        catch {
-            if ($_.Exception.Message -notlike 'SDK staging output must be a sibling*') { throw }
-            $caught = $true
-        }
-        if (-not $caught -or -not (Test-Path $obj) -or -not (Test-Path $staging)) {
-            throw 'Unsafe staging paths must fail before deleting any intermediate output.'
-        }
-    }
-    $linkType = if ($IsWindows) { 'Junction' } else { 'SymbolicLink' }
-    foreach ($link in @((Join-Path $layout 'linked-obj'), (Join-Path $obj 'linked-staging'))) {
-        $destination = if ($link.StartsWith($layout)) { $obj } else { $staging }
-        New-Item -ItemType $linkType -Path $link -Value $destination | Out-Null
-        try {
-            $caught = $false
-            try { & $cleanup -SdkRoot $sdk -Configuration Debug -BuildOutputPath $staging }
-            catch {
-                if ($_.Exception.Message -notlike '*links*') { throw }
-                $caught = $true
-            }
-            if (-not $caught -or -not (Test-Path $obj) -or -not (Test-Path $staging)) {
-                throw 'Linked intermediates must fail before deleting either directory.'
-            }
-        }
-        finally { [IO.Directory]::Delete($link) }
-    }
-    $savedLayout = Join-Path $sdk 'saved-layout'
-    Move-Item -LiteralPath $layout -Destination $savedLayout
-    New-Item -ItemType $linkType -Path $layout -Value $savedLayout | Out-Null
-    try {
-        $caught = $false
-        try { & $cleanup -SdkRoot $sdk -Configuration Debug -BuildOutputPath $staging }
-        catch {
-            if ($_.Exception.Message -notlike '*linked or non-directory path*') { throw }
-            $caught = $true
-        }
-        if (-not $caught -or -not (Test-Path $obj) -or -not (Test-Path $staging)) {
-            throw 'A linked shipping layout must fail before deleting either directory.'
-        }
-    }
-    finally {
-        [IO.Directory]::Delete($layout)
-        Move-Item -LiteralPath $savedLayout -Destination $layout
-    }
-    & $cleanup -SdkRoot $sdk -Configuration Debug -BuildOutputPath $staging
-    if ((Test-Path $obj) -or (Test-Path $staging)) { throw 'SDK intermediates were not discarded.' }
-    foreach ($file in $preserved) {
-        if ((Get-Content -LiteralPath $file -Raw).Trim() -ne 'preserve') {
-            throw "Discarding intermediates changed retained content: $file"
-        }
-    }
     Write-Host 'Browser TRX contract checks passed (one positive and eleven negative cases).'
     Write-Host 'Preflight and evidence-writing failures restore process state.'
-    Write-Host 'SDK cleanup preserves shipping/source/evidence files and rejects unsafe paths and links.'
     $global:LASTEXITCODE = 0
 }
 finally {

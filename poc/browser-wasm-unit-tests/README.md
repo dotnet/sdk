@@ -39,11 +39,13 @@ shared runner invokes its normal pack build, then builds only the acceptance
 runner's evaluated current target framework. On Windows, the package build retains
 desktop MSBuild for the UWP assets in the MSTest packages and disables its optional
 `-mt` mode for compatibility with the hosted Visual Studio version.
-CI also passes `-DiscardSdkIntermediates` to remove generated SDK `artifacts/obj`
-and the evaluated redist staging directory after the shipping layout is built.
-The shipping `dotnet` layout, sources, logs, package feeds and TestFX outputs remain
-intact. Local runs preserve intermediates by default; this opt-in cannot be combined
-with `-SkipSdkBuild`.
+The jobs use .NET build-pool images for the two-product build. They do not delete
+SDK outputs or preinstalled system tools to work around hosted-agent disk limits.
+On Linux, the CI-only
+[`InstallBrowser.sh`](../../eng/browser-testing/InstallBrowser.sh) uses Google's
+fingerprint-verified signing key and signed APT repository if Chrome is absent.
+The local runner still requires an explicitly supplied installed browser and does
+not provision one.
 
 The SDK counterpart is pinned in
 [`eng/browser-testing/testfx.json`](../../eng/browser-testing/testfx.json).

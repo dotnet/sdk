@@ -10,7 +10,8 @@ parameters:
       demands: ImageOverride -equals windows.vs2026preview.scout.amd64.open
   - name: Linux_x64
     pool:
-      vmImage: ubuntu-24.04
+      name: $(DncEngPublicBuildPool)
+      demands: ImageOverride -equals build.ubuntu.2204.amd64.open
 
 jobs:
 - ${{ each platform in parameters.platforms }}:
@@ -30,6 +31,10 @@ jobs:
         pwsh: true
         targetType: inline
         script: |
+          if ($IsLinux) {
+            & bash "$(Build.SourcesDirectory)/eng/browser-testing/InstallBrowser.sh"
+            if ($LASTEXITCODE -ne 0) { throw "Browser prerequisite setup failed with exit $LASTEXITCODE." }
+          }
           $browser = if ($IsWindows) {
             Join-Path ${env:ProgramFiles(x86)} 'Microsoft\Edge\Application\msedge.exe'
           } else {
@@ -40,7 +45,6 @@ jobs:
             -SdkRoot "$(Build.SourcesDirectory)" `
             -BrowserExecutable $browser `
             -Configuration Release `
-            -DiscardSdkIntermediates `
             -ResultsDirectory "$(Build.SourcesDirectory)/artifacts/log/browser-ci"
 
     - task: PublishTestResults@2
