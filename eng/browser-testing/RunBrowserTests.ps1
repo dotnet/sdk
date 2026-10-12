@@ -151,11 +151,12 @@ try {
     }
 
     if (-not $SkipSdkBuild) {
+        $redistProject = Join-Path 'src' 'Layout' 'redist' 'redist.csproj'
         if ($IsWindows) {
-            Invoke-Logged 'sdk-build' (Join-Path $SdkRoot 'build.cmd') @('-c', $Configuration)
+            Invoke-Logged 'sdk-build' (Join-Path $SdkRoot 'build.cmd') @('-c', $Configuration, '-projects', $redistProject)
         }
         else {
-            Invoke-Logged 'sdk-build' 'bash' @((Join-Path $SdkRoot 'build.sh'), '--configuration', $Configuration)
+            Invoke-Logged 'sdk-build' 'bash' @((Join-Path $SdkRoot 'build.sh'), '--configuration', $Configuration, '--projects', $redistProject)
         }
     }
     $dotnetName = if ($IsWindows) { 'dotnet.exe' } else { 'dotnet' }

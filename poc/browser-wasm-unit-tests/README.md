@@ -29,6 +29,10 @@ zero results, skipped cases and malformed result files are failures, not green s
 The runner passes the exact source-matched SDK version to acceptance, so older SDKs
 can coexist in an incremental layout. Each fixture uses an isolated NuGet cache and
 checks all eight restored package hashes against the staged package bytes.
+SDK compilation starts from
+[`redist.csproj`](../../src/Layout/redist/redist.csproj), building its complete shipping
+dependency graph without unrelated SDK test projects. This preserves the real
+SDK-under-test while reducing the disk space needed to compose both repositories.
 
 The SDK counterpart is pinned in
 [`eng/browser-testing/testfx.json`](../../eng/browser-testing/testfx.json).
