@@ -129,7 +129,8 @@ try {
         if ($pin.repository -ne 'microsoft/testfx' -or $pin.commit -notmatch '^[0-9a-f]{40}$') {
             throw 'The TestFX counterpart must be a full SHA in microsoft/testfx.'
         }
-        $TestFxRoot = Join-Path $SdkRoot "artifacts\browser-integration\testfx-$($pin.commit)"
+        # Keep legacy Windows MSBuild task paths below MAX_PATH; identity is checked by full SHA.
+        $TestFxRoot = Join-Path $SdkRoot "artifacts\btf-$($pin.commit.Substring(0, 8))"
         if (-not (Test-Path -LiteralPath $TestFxRoot)) {
             New-Item -ItemType Directory -Path $TestFxRoot | Out-Null
             Invoke-Logged 'peer-init' 'git' @('init', '--quiet', $TestFxRoot)
