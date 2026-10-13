@@ -326,4 +326,66 @@ public class StaticWebAssetUpdateBuilderTests
         Assert.IsFalse(logger.HasWarning);
         Assert.IsFalse(logger.HasError);
     }
+
+    [TestMethod]
+    [DataRow("Client.styles.css")]
+    [DataRow("client/Client.styles.css")]
+    public void HostedWebAssemblyScopedCss(string bundleUrl)
+    {
+        var logger = new TestLogger(TestContext);
+        var builder = new TestUpdateBuilder(logger);
+        var bundlePath = Asset("Client", "obj", "scopedcss", "bundle", "Client.styles.css");
+
+        builder.AddProject("Server", running: true, hasScopedCssTargets: true, manifest: Manifest((bundleUrl, bundlePath)));
+        builder.AddProject("Client", running: false, hasScopedCssTargets: true);
+        builder.AddReference("Server", "Client");
+
+        builder.AddAssets(Asset("Client", "Pages", "Index.razor.css"), [ProjPath("Client")], staticWebAssetRelativeUrl: null);
+        builder.AddAssets(Asset("Client", "Pages", "Counter.razor.css"), [ProjPath("Client")], staticWebAssetRelativeUrl: null);
+
+        VerifyAssets(builder,
+            ("Server", [$"{bundlePath} | wwwroot/Client.styles.css | Client | app=False"]));
+        AssertRegenerate(builder, "Client", "Server");
+        Assert.IsFalse(logger.HasWarning);
+        Assert.IsFalse(logger.HasError);
+    }
+
+    [TestMethod]
+    public void ReferencedProjectPrefersProjectBundle()
+    {
+        var logger = new TestLogger(TestContext);
+        var builder = new TestUpdateBuilder(logger);
+        var bundlePath = Bundle("Server", "Client");
+
+        builder.AddProject("Server", running: true, hasScopedCssTargets: true, manifest: Manifest(
+            ("Client.bundle.scp.css", bundlePath),
+            ("Client.styles.css", Asset("Client", "obj", "Client.styles.css"))));
+        builder.AddProject("Client", running: false, hasScopedCssTargets: true);
+        builder.AddReference("Server", "Client");
+
+        builder.AddAssets(Asset("Client", "Pages", "Index.razor.css"), [ProjPath("Client")], staticWebAssetRelativeUrl: null);
+
+        VerifyAssets(builder,
+            ("Server", [$"{bundlePath} | wwwroot/Client.bundle.scp.css | Client | app=False"]));
+        AssertRegenerate(builder, "Client", "Server");
+        Assert.IsFalse(logger.HasWarning);
+        Assert.IsFalse(logger.HasError);
+    }
+
+    [TestMethod]
+    public void MissingScopedCssBundle()
+    {
+        var logger = new TestLogger(TestContext);
+        var builder = new TestUpdateBuilder(logger);
+
+        builder.AddProject("Server", running: true, hasScopedCssTargets: true, manifest: Manifest());
+        builder.AddProject("Client", running: false, hasScopedCssTargets: true);
+        builder.AddReference("Server", "Client");
+
+        builder.AddAssets(Asset("Client", "Pages", "Index.razor.css"), [ProjPath("Client")], staticWebAssetRelativeUrl: null);
+
+        VerifyAssets(builder);
+        AssertRegenerate(builder, "Client", "Server");
+        SequenceEqual(["[Warning] Scoped CSS bundle file 'Client.bundle.scp.css' not found."], logger.GetAndClearMessages());
+    }
 }
