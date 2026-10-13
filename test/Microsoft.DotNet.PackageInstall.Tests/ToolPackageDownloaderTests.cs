@@ -793,14 +793,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             DirectoryPath root = new(TestAssetsManager.CreateTestDirectory().Path);
             NuGetVersion version = NuGetVersion.Parse(TestPackageVersion);
-            string lockFilePath = ToolPackageDownloaderBase.GetToolInstallLockFilePath(root, TestPackageId, version);
-            Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
-
-            using var heldLock = new FileStream(
-                lockFilePath,
-                FileMode.OpenOrCreate,
-                FileAccess.ReadWrite,
-                FileShare.None);
+            using FileStream heldLock = ToolPackageDownloaderBase.AcquireToolInstallLock(
+                root,
+                TestPackageId,
+                version);
+            var reporter = new BufferedReporter();
             Action acquire = () =>
             {
                 using FileStream _ = ToolPackageDownloaderBase.AcquireToolInstallLock(
@@ -808,7 +805,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     TestPackageId,
                     version,
                     initialWaitTimeout: TimeSpan.Zero,
-                    waitTimeout: TimeSpan.FromMilliseconds(50));
+                    waitTimeout: TimeSpan.FromMilliseconds(50),
+                    errorReporter: reporter);
             };
 
             acquire.Should().Throw<ToolPackageException>()
@@ -816,6 +814,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     CliStrings.ToolInstallationTimeout,
                     TestPackageId,
                     TestPackageVersion));
+            string waitingMessage = reporter.Lines.Should().ContainSingle().Subject;
+            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux())
+            {
+                waitingMessage.Should().Contain($"Process {Environment.ProcessId} (");
+            }
+            else
+            {
+                waitingMessage.Should().Be(string.Format(
+                    CliStrings.ToolInstallationWaiting,
+                    TestPackageId,
+                    TestPackageVersion));
+            }
         }
 
         [TestMethod]

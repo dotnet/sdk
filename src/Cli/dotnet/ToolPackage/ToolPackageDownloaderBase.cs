@@ -248,13 +248,15 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         PackageId packageId,
         NuGetVersion packageVersion,
         TimeSpan? initialWaitTimeout = null,
-        TimeSpan? waitTimeout = null)
+        TimeSpan? waitTimeout = null,
+        IReporter? errorReporter = null)
     {
         string lockFilePath = GetToolInstallLockFilePath(packageInstallRoot, packageId, packageVersion);
         Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
 
         initialWaitTimeout ??= s_lockInitialWaitTimeout;
         waitTimeout ??= s_lockWaitTimeout;
+        errorReporter ??= Reporter.Error;
         Stopwatch stopwatch = Stopwatch.StartNew();
         bool waitingReported = false;
 
@@ -262,20 +264,31 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         {
             try
             {
-                return new FileStream(
+                FileStream lockStream = new(
                     lockFilePath,
                     FileMode.OpenOrCreate,
                     FileAccess.ReadWrite,
                     FileShare.None);
+
+                return lockStream;
             }
             catch (IOException exception) when (IsToolInstallLockContention(exception))
             {
                 if (!waitingReported && stopwatch.Elapsed >= initialWaitTimeout)
                 {
-                    Reporter.Error.WriteLine(string.Format(
-                        CliStrings.ToolInstallationWaiting,
-                        packageId,
-                        packageVersion.ToNormalizedString()));
+                    FileLockOwner? lockOwner = FileLockOwnerFinder.TryGetFileLockOwner(lockFilePath);
+                    string message = lockOwner is not null
+                        ? string.Format(
+                            CliStrings.ToolInstallationWaitingWithProcess,
+                            packageId,
+                            packageVersion.ToNormalizedString(),
+                            lockOwner.ProcessId,
+                            lockOwner.ProcessName)
+                        : string.Format(
+                            CliStrings.ToolInstallationWaiting,
+                            packageId,
+                            packageVersion.ToNormalizedString());
+                    errorReporter.WriteLine(message);
                     waitingReported = true;
                 }
 

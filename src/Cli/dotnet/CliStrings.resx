@@ -347,6 +347,9 @@ setx PATH "%PATH%;{0}"
   <data name="ToolInstallationWaiting" xml:space="preserve">
     <value>Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</value>
   </data>
+  <data name="ToolInstallationWaitingWithProcess" xml:space="preserve">
+    <value>Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</value>
+  </data>
   <data name="ToolPackageNotATool" xml:space="preserve">
     <value>Package {0} is not a .NET tool.</value>
   </data>
