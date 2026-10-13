@@ -1,14 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -19,7 +22,14 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 {
+    private static readonly TimeSpan s_lockInitialWaitTimeout = TimeSpan.FromMilliseconds(50);
+    private static readonly TimeSpan s_lockRetryDelay = TimeSpan.FromMilliseconds(10);
+    private static readonly TimeSpan s_lockWaitTimeout = TimeSpan.FromMinutes(5);
     private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
+    private const int WindowsSharingViolationHResult = unchecked((int)0x80070020);
+    private const int WindowsLockViolationHResult = unchecked((int)0x80070021);
+    private const int LinuxWouldBlockError = 11;
+    private const int MacOSWouldBlockError = 35;
 
     private readonly IToolPackageStore _toolPackageStore;
 
@@ -158,6 +168,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool isGlobalToolRollForward,
         VerbosityOptions verbosity)
     {
+        using FileStream installLock = AcquireToolInstallLock(_toolPackageStore.Root, packageId, packageVersion);
+
         // Check if package already exists in global tools location
         var nugetPackageRootDirectory = new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion);
         if (IsPackageInstalled(packageId, packageVersion, nugetPackageRootDirectory))
@@ -231,6 +243,73 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             });
     }
 
+    internal static FileStream AcquireToolInstallLock(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        TimeSpan? initialWaitTimeout = null,
+        TimeSpan? waitTimeout = null)
+    {
+        string lockFilePath = GetToolInstallLockFilePath(packageInstallRoot, packageId, packageVersion);
+        Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
+
+        initialWaitTimeout ??= s_lockInitialWaitTimeout;
+        waitTimeout ??= s_lockWaitTimeout;
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool waitingReported = false;
+
+        while (true)
+        {
+            try
+            {
+                return new FileStream(
+                    lockFilePath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None);
+            }
+            catch (IOException exception) when (IsToolInstallLockContention(exception))
+            {
+                if (!waitingReported && stopwatch.Elapsed >= initialWaitTimeout)
+                {
+                    Reporter.Error.WriteLine(string.Format(
+                        CliStrings.ToolInstallationWaiting,
+                        packageId,
+                        packageVersion.ToNormalizedString()));
+                    waitingReported = true;
+                }
+
+                if (stopwatch.Elapsed >= waitTimeout)
+                {
+                    throw new ToolPackageException(string.Format(
+                        CliStrings.ToolInstallationTimeout,
+                        packageId,
+                        packageVersion.ToNormalizedString()));
+                }
+
+                Thread.Sleep(s_lockRetryDelay);
+            }
+        }
+    }
+
+    internal static string GetToolInstallLockFilePath(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId,
+        NuGetVersion packageVersion)
+    {
+        string lockIdentity = $"{packageId.ToString().ToLowerInvariant()}\n{packageVersion.ToNormalizedString().ToLowerInvariant()}";
+        string lockFileName = $"{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(lockIdentity)))}.lock";
+        return Path.Combine(
+            Path.GetFullPath(packageInstallRoot.Value),
+            ToolPackageStoreAndQuery.LockDirectory,
+            lockFileName);
+    }
+
+    internal static bool IsToolInstallLockContention(IOException exception) =>
+        OperatingSystem.IsWindows()
+            ? exception.HResult is WindowsSharingViolationHResult or WindowsLockViolationHResult
+            : exception.HResult is LinuxWouldBlockError or MacOSWouldBlockError;
+
     protected IToolPackage InstallLocalToolPackageInternal(
         PackageSourceLocation packageSourceLocation,
         INuGetPackageDownloader nugetPackageDownloader,
@@ -240,6 +319,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         string? targetFramework,
         VerbosityOptions verbosity)
     {
+        using FileStream installLock = AcquireToolInstallLock(_localToolDownloadDir, packageId, packageVersion);
+
         return TransactionalAction.Run<IToolPackage>(
             action: () =>
             {

@@ -341,6 +341,12 @@ setx PATH "%PATH%;{0}"
   <data name="ToolPackageConflictPackageId" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') is already installed.</value>
   </data>
+  <data name="ToolInstallationTimeout" xml:space="preserve">
+    <value>Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</value>
+  </data>
+  <data name="ToolInstallationWaiting" xml:space="preserve">
+    <value>Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</value>
+  </data>
   <data name="ToolPackageNotATool" xml:space="preserve">
     <value>Package {0} is not a .NET tool.</value>
   </data>
