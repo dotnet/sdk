@@ -58,8 +58,8 @@ the provider being authenticated**; downloading the client from that provider wo
 the authentication meaningless.
 
 The *build* owns the keypair.
-[`EnsureDotNetWatchBrowserToolsKey`](../../src/StaticWebAssetsSdk/Tasks/EnsureDotNetWatchBrowserToolsKey.cs)
-creates an RSA-2048 pair per project into `obj/<configuration>/<tfm>/dotnet-watch/`,
+[`EnsureHotReloadBrowserToolsKey`](../../src/StaticWebAssetsSdk/Tasks/EnsureHotReloadBrowserToolsKey.cs)
+creates an RSA-2048 pair per project into `obj/<configuration>/<tfm>/HotReload/`,
 writing `browser-tools-key.public.json` (base64 `SubjectPublicKeyInfo`) and
 `browser-tools-key.private.json` (raw `RSAParameters` components, portable to .NET
 Framework). Neither file is a static web asset. A valid, matching pair is reused so
@@ -80,12 +80,12 @@ the build would let the provider authenticate itself. The private key never leav
 `obj` folder and the watch process; the 32-byte secret the browser generates is never
 persisted and travels only RSA-OAEP encrypted as the WebSocket subprotocol.
 
-[`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../../src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets)
+[`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets`](../../src/StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets)
 turns that key into build-only static web assets under
-`obj/<configuration>/<tfm>/dotnet-watch/`: the SDK-specific activation initializer, the
-[browser-tools client](../../src/StaticWebAssetsSdk/Targets/DotNetWatch/dotnet-watch-browser-tools.js),
+`obj/<configuration>/<tfm>/HotReload/`: the SDK-specific activation initializer, the
+[browser-tools client](../../src/StaticWebAssetsSdk/Targets/HotReload/HotReload-browser-tools.js),
 and a configuration module generated from a
-[checked-in template](../../src/StaticWebAssetsSdk/Targets/DotNetWatch/dotnet-watch-browser-tools.config.js.template)
+[checked-in template](../../src/StaticWebAssetsSdk/Targets/HotReload/HotReload-browser-tools.config.js.template)
 that pins the public key and the fixed `/_framework/dotnet-browser-tools` route. The assets
 are `AssetKind=Build` with `CopyToPublishDirectory=Never`, are tracked through `FileWrites`
 (including both key files, so `Clean` removes key material), and are written only when their
@@ -110,8 +110,8 @@ deterministic private-key output. This avoids competing host/client keys.
 The [WebAssembly SDK](../../src/WasmSdk/Sdk/Sdk.targets) and the
 [Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) opt in by naming their asset
 prefix and initializer
-([WebAssembly module](../../src/WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template),
-[Blazor Web module](../../src/WebSdk/Web/Targets/DotNetWatch/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js)).
+([WebAssembly module](../../src/WasmSdk/Sdk/HotReload/Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js.template),
+[Blazor Web module](../../src/WebSdk/Web/Targets/HotReload/Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js)).
 The WebAssembly initializer signals the Hot Reload agent through the watch-private
 `__DOTNET_WATCH_BROWSER_TOOLS` runtime configuration variable rather than a shared global
 or the legacy `__ASPNETCORE_BROWSER_TOOLS` switch, and must not capture globals at module
@@ -144,7 +144,7 @@ ASP.NET Core host.
 The provider serves no JavaScript. Its HTTP surface is the `/connect` WebSocket,
 `/clear-cache`, and the non-executable `/hot-reload-settings.json` availability response;
 see
-[`BrowserToolsEndpointRouter`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserToolsEndpointRouter.cs).
+[`BrowserRefreshServer.HandleRequestAsync`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserRefreshServer.cs).
 There is no session descriptor, protocol version negotiation, HTTP replay endpoint, or wire
 level generation id: replay is serialized on the authenticated WebSocket, which sends the
 current snapshot first and releases live messages only after the browser acknowledges it.

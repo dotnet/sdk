@@ -3,12 +3,13 @@
 
 using System.Security.Cryptography;
 using System.Text.Json;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 /// <summary>
-/// The build owns the browser tools key pair; dotnet-watch only reads it back from deterministic
+/// The build owns the browser tools key pair; Hot Reload host only reads it back from deterministic
 /// paths under the project's intermediate output. These tests pin the two halves of that contract:
 /// the provider is keyed with the key the application pinned, and
 /// anything that would make the provider unusable fails loudly instead of silently disabling the
@@ -23,7 +24,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
 
     public BrowserToolsBuildOutputsTests()
     {
-        _directory = Path.Combine(Path.GetTempPath(), "dotnet-watch-browser-tools", Guid.NewGuid().ToString("N"));
+        _directory = Path.Combine(Path.GetTempPath(), "hot-reload-browser-tools", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(_directory);
         _publicKeyPath = Path.Combine(_directory, BrowserToolsBuildOutputs.PublicKeyFileName);
         _privateKeyPath = Path.Combine(_directory, BrowserToolsBuildOutputs.PrivateKeyFileName);
@@ -38,13 +39,14 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     }
 
     private BrowserToolsBuildOutputs CreateOutputs()
-        => BrowserToolsBuildOutputs.CreateForTesting("test.csproj", _directory, NullLogger.Instance);
+        => BrowserToolsBuildOutputs.CreateForTesting(_directory);
 
-    private RSA WriteValidKeyPair()
+    private SharedSecretProvider WriteValidKeyPair()
     {
-        var rsa = RSA.Create(2048);
-        var publicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
-        var p = rsa.ExportParameters(includePrivateParameters: true);
+        var provider = new SharedSecretProvider();
+
+        var publicKey = provider.GetPublicKey();
+        var p = provider.RSA.ExportParameters(includePrivateParameters: true);
 
         File.WriteAllText(_publicKeyPath, $$"""
             {
@@ -74,7 +76,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
             }
             """);
 
-        return rsa;
+        return provider;
     }
 
     /// <summary>
@@ -84,16 +86,17 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     [TestMethod]
     public void CreateSessionKey_UsesTheKeyPairTheBuildProduced()
     {
-        using var rsa = WriteValidKeyPair();
-        var expectedPublicKey = Convert.ToBase64String(rsa.ExportSubjectPublicKeyInfo());
+        using var provider = WriteValidKeyPair();
+        var expectedPublicKey = provider.GetPublicKey();
 
-        using var sessionKey = CreateOutputs().CreateSessionKey();
+        using var sessionKey = CreateOutputs().TryCreateSessionKey(NullLogger.Instance);
 
+        Assert.IsNotNull(sessionKey);
         Assert.AreEqual(expectedPublicKey, sessionKey.GetPublicKey());
 
         // The provider decrypts the secret the browser encrypts with the pinned public key.
-        var secret = Convert.ToBase64String(new byte[] { 1, 2, 3, 4 });
-        var encrypted = Convert.ToBase64String(rsa.Encrypt(Convert.FromBase64String(secret), RSAEncryptionPadding.OaepSHA256));
+        var secret = Convert.ToBase64String([1, 2, 3, 4]);
+        var encrypted = Convert.ToBase64String(provider.RSA.Encrypt(Convert.FromBase64String(secret), RSAEncryptionPadding.OaepSHA256));
         Assert.AreEqual(secret, sessionKey.DecryptSecret(encrypted));
     }
 
@@ -116,7 +119,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         }
 
         var outputs = CreateOutputs();
-        Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(() => outputs.CreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey(NullLogger.Instance));
     }
 
     [TestMethod]
@@ -131,7 +134,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         File.WriteAllText(_privateKeyPath, content);
 
         var outputs = CreateOutputs();
-        Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(() => outputs.CreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey(NullLogger.Instance));
     }
 
     /// <summary>
@@ -149,7 +152,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
         File.WriteAllText(_privateKeyPath, mismatchedPrivate);
 
         var outputs = CreateOutputs();
-        Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(() => outputs.CreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey(NullLogger.Instance));
     }
 
     /// <summary>
@@ -160,7 +163,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
     public void CreateSessionKey_FailsWhenThePrivateComponentsDescribeADifferentKey()
     {
         using var pinned = WriteValidKeyPair();
-        var pinnedPublicKey = Convert.ToBase64String(pinned.ExportSubjectPublicKeyInfo());
+        var pinnedPublicKey = pinned.GetPublicKey();
 
         using var other = RSA.Create(2048);
         var p = other.ExportParameters(includePrivateParameters: true);
@@ -185,7 +188,7 @@ public class BrowserToolsBuildOutputsTests : IDisposable
             """);
 
         var outputs = CreateOutputs();
-        Assert.ThrowsExactly<BrowserToolsBuildOutputsException>(() => outputs.CreateSessionKey());
+        Assert.IsNull(outputs.TryCreateSessionKey(NullLogger.Instance));
     }
 
 }

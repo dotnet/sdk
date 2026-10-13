@@ -22,21 +22,21 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     /// none of it reaches publish output.
     /// </summary>
     [TestClass]
-    public class DotNetWatchBrowserToolsIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
+    public class HotReloadBrowserToolsIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        protected override string RestoreNugetPackagePath => nameof(DotNetWatchBrowserToolsIntegrationTest);
+        protected override string RestoreNugetPackagePath => nameof(HotReloadBrowserToolsIntegrationTest);
 
         private const string TestAsset = "RazorComponentApp";
-        private const string ConfigFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js";
-        private const string ClientFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js";
-        private const string InitializerFileName = "Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js";
+        private const string ConfigFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js";
+        private const string ClientFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js";
+        private const string InitializerFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js";
 
         // Contract with Microsoft.DotNet.Watch.BrowserToolsBuildOutputs.
         private const string PublicKeyFileName = "browser-tools-key.public.json";
         private const string PrivateKeyFileName = "browser-tools-key.private.json";
 
         private string GeneratedDirectory(MSBuildCommand command)
-            => Path.Combine(command.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(), "dotnet-watch");
+            => Path.Combine(command.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(), "HotReload");
 
         [TestMethod]
         public void Build_GeneratesKeyPairInDeterministicIntermediatePaths()
@@ -63,7 +63,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             Assert.AreEqual("RSAParameters", privateRoot.GetProperty("format").GetString());
             Assert.AreEqual(publicKey, privateRoot.GetProperty("publicKey").GetString());
 
-            // Every component dotnet-watch needs to import the key has to be present.
+            // Every component Hot Reload host needs to import the key has to be present.
             var parameters = privateRoot.GetProperty("parameters");
             foreach (var name in new[] { "modulus", "exponent", "d", "p", "q", "dp", "dq", "inverseQ" })
             {
@@ -169,7 +169,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var manifest = StaticWebAssetsManifest.FromJsonBytes(
                 File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
 
-            var assets = manifest.Assets.Where(a => a.RelativePath.Contains("DotNetWatch.BrowserTools")).ToArray();
+            var assets = manifest.Assets.Where(a => a.RelativePath.Contains("HotReload.BrowserTools")).ToArray();
 
             // The client and its configuration, plus the compressed alternative of each.
             assets.Where(a => a.IsPrimaryAsset()).Should().HaveCount(2);
@@ -226,7 +226,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             new DirectoryInfo(Path.Combine(
                 build.GetIntermediateDirectory(DefaultTfm, "Release").ToString(),
-                "dotnet-watch")).Should().NotExist();
+                "HotReload")).Should().NotExist();
         }
 
         [TestMethod]
@@ -242,7 +242,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             var generated = Path.Combine(
                 build.GetIntermediateDirectory(DefaultTfm, "Release").ToString(),
-                "dotnet-watch");
+                "HotReload");
             new FileInfo(Path.Combine(generated, PublicKeyFileName)).Should().Exist();
             new FileInfo(Path.Combine(generated, InitializerFileName)).Should().Exist();
         }
@@ -257,12 +257,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             var hostGenerated = Path.Combine(
                 build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
-                "dotnet-watch");
+                "HotReload");
             var clientIntermediate = OutputPathCalculator
                 .FromProject(Path.Combine(testInstance.TestRoot, "blazorwasm"))
                 .GetIntermediateDirectory(DefaultTfm, "Debug")
                 .ToString();
-            var clientGenerated = Path.Combine(clientIntermediate, "dotnet-watch");
+            var clientGenerated = Path.Combine(clientIntermediate, "HotReload");
 
             new DirectoryInfo(hostGenerated).Should().NotExist();
             new FileInfo(Path.Combine(clientGenerated, PublicKeyFileName)).Should().Exist();
@@ -272,7 +272,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
                 "staticwebassets.build.json")));
             var initializerAssets = hostManifest.Assets
-                .Where(a => a.RelativePath.Replace('\\', '/').Contains("Microsoft.NET.Sdk.WebAssembly.DotNetWatch"))
+                .Where(a => a.RelativePath.Replace('\\', '/').Contains("Microsoft.NET.Sdk.WebAssembly.HotReload"))
                 .Where(a => a.IsPrimaryAsset())
                 .ToArray();
 
@@ -356,7 +356,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
                 "staticwebassets.publish.json"));
 
-            publishManifest.Should().NotContain("DotNetWatch.BrowserTools");
+            publishManifest.Should().NotContain("HotReload.BrowserTools");
             publishManifest.Should().NotContain("hot-reload-settings");
 
             Directory.GetFiles(

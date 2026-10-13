@@ -24,7 +24,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     /// the provider cannot load.
     /// </summary>
     [TestClass]
-    public class EnsureDotNetWatchBrowserToolsKeyTest
+    public class EnsureHotReloadBrowserToolsKeyTest
     {
         private string _directory;
         private string _publicKeyPath;
@@ -48,7 +48,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        private EnsureDotNetWatchBrowserToolsKey CreateTask() => new()
+        private EnsureHotReloadBrowserToolsKey CreateTask() => new()
         {
             BuildEngine = Mock.Of<IBuildEngine>(),
             PublicKeyPath = _publicKeyPath,
@@ -290,8 +290,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         [TestMethod]
         public void CreatesTheIntermediateDirectoryWhenItIsMissing()
         {
-            var nested = Path.Combine(_directory, "nested", "dotnet-watch");
-            var task = new EnsureDotNetWatchBrowserToolsKey
+            var nested = Path.Combine(_directory, "nested", "HotReload");
+            var task = new EnsureHotReloadBrowserToolsKey
             {
                 BuildEngine = Mock.Of<IBuildEngine>(),
                 PublicKeyPath = Path.Combine(nested, "browser-tools-key.public.json"),
