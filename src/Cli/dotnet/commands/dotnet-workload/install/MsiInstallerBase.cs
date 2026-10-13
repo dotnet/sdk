@@ -334,6 +334,8 @@ namespace Microsoft.DotNet.Installer.Windows
 
             if (IsElevated)
             {
+                SecurityUtils.EnsureSecureProgramDataRoot();
+                Cache.VerifyPackageSignature(packagePath);
                 ConfigureInstall(logFile);
                 string installProperties = InstallProperties.Create(InstallProperties.SystemComponent,
                     InstallProperties.FastInstall, InstallProperties.SuppressReboot,

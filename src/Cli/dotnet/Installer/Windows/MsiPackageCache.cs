@@ -5,6 +5,7 @@ using System.Runtime.Versioning;
 #if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
 #endif
+using Microsoft.DotNet;
 using Microsoft.DotNet.Workloads.Workload;
 using Newtonsoft.Json;
 
@@ -45,12 +46,12 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             // Validate that packageId and packageVersion do not contain path traversal characters
             // to prevent an IPC client from constructing paths outside the package cache.
-            if (!WindowsUtils.ValidatePathComponent(packageId))
+            if (!PathComponentUtilities.IsValidPathComponent(packageId))
             {
                 throw new ArgumentException($"Invalid package ID: {packageId}");
             }
 
-            if (!WindowsUtils.ValidatePathComponent(packageVersion))
+            if (!PathComponentUtilities.IsValidPathComponent(packageVersion))
             {
                 throw new ArgumentException($"Invalid package version: {packageVersion}");
             }
@@ -77,8 +78,11 @@ namespace Microsoft.DotNet.Installer.Windows
             {
                 string packageDirectory = GetPackageDirectory(packageId, packageVersion);
 
-                // Delete the package directory and create a new one that's secure. If all the files were properly
-                // cached, the client would not request this action.
+                if (TrustedMachinePath.IsUnderRoot(packageDirectory, TrustedMachinePath.ProgramDataDotnetRoot))
+                {
+                    SecurityUtils.EnsureSecureProgramDataRoot();
+                }
+
                 if (Directory.Exists(packageDirectory))
                 {
                     Directory.Delete(packageDirectory, recursive: true);
@@ -171,7 +175,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Verifies that an MSI package contains an Authenticode signature that terminates in a trusted Microsoft root certificate.
         /// </summary>
         /// <param name="msiPath">The path of the MSI to verify.</param>
-        private void VerifyPackageSignature(string msiPath)
+        internal void VerifyPackageSignature(string msiPath)
         {
             if (VerifySignatures)
             {
