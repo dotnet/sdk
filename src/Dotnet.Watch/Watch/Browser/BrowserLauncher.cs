@@ -21,7 +21,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
     public Action<OutputLine>? TryGetBrowserLaunchOutputObserver(
         ProjectGraphNode projectNode,
         ProjectOptions projectOptions,
-        AbstractBrowserRefreshServer? server,
+        BrowserRefreshServer? server,
         CancellationToken cancellationToken)
     {
         if (!CanLaunchBrowser(projectNode, projectOptions, out var launchProfile))
@@ -58,7 +58,7 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
             Uri.TryCreate(outputLaunchUrl, UriKind.Absolute, out var launchUri) ? new Uri(launchUri, profileLaunchUrl).ToString() :
             outputLaunchUrl;
 
-    private void LaunchBrowser(string launchUrl, AbstractBrowserRefreshServer? server)
+    private void LaunchBrowser(string launchUrl, BrowserRefreshServer? server)
     {
         var (fileName, arg, useShellExecute) = environmentOptions.BrowserPath is { } browserPath
             ? (browserPath, launchUrl, false)
