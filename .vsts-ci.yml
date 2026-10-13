@@ -1,5 +1,4 @@
 # Pipeline: https://dev.azure.com/dnceng/internal/_build?definitionId=286
-# Test-only PR to validate VMR security fixes against SDK tests.
 
 trigger:
   batch: true
@@ -97,7 +96,6 @@ extends:
         - template: /eng/common/core-templates/job/helix-job-monitor.yml@self
           parameters:
             helixAccessToken: $(HelixApiAccessToken)
-            timeoutInMinutes: 150
 
       ############### WINDOWS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
