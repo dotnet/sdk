@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Uninstall
             : base(parseResult, reporter: reporter, nugetPackageDownloader: nugetPackageDownloader)
         {
             _workloadIds = parseResult.GetValue(WorkloadUninstallCommandParser.WorkloadIdArgument)
-                .Select(workloadId => new WorkloadId(workloadId)).ToList().AsReadOnly();
+                .Select(ParseWorkloadId).ToList().AsReadOnly();
 
             _workloadResolverFactory = workloadResolverFactory ?? new WorkloadResolverFactory();
 
