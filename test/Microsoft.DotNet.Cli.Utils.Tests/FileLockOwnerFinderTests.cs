@@ -20,7 +20,7 @@ public class FileLockOwnerFinderTests : SdkTest
 
         FileLockOwner? owner = FileLockOwnerFinder.TryGetFileLockOwner(filePath);
 
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux())
         {
             owner.Should().NotBeNull();
             owner.ProcessId.Should().Be(Environment.ProcessId);
@@ -30,6 +30,27 @@ public class FileLockOwnerFinderTests : SdkTest
         {
             owner.Should().BeNull();
         }
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Linux)]
+    public void GivenAProcessWithAnUnrelatedLockAndTheTargetOpenItDoesNotReportThatProcess()
+    {
+        string directory = TestAssetsManager.CreateTestDirectory().Path;
+        string targetPath = Path.Combine(directory, "target");
+        string unrelatedPath = Path.Combine(directory, "unrelated");
+        using var target = new FileStream(
+            targetPath,
+            FileMode.OpenOrCreate,
+            FileAccess.ReadWrite,
+            FileShare.ReadWrite);
+        using var unrelatedLock = new FileStream(
+            unrelatedPath,
+            FileMode.OpenOrCreate,
+            FileAccess.ReadWrite,
+            FileShare.None);
+
+        FileLockOwnerFinder.TryGetFileLockOwner(targetPath).Should().BeNull();
     }
 
     [TestMethod]

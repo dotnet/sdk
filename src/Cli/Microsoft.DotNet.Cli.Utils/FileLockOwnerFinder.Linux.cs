@@ -13,8 +13,9 @@ internal static partial class FileLockOwnerFinder
     /// Correlates Linux advisory lock owners with the target path so contention diagnostics report the correct process.
     /// </summary>
     /// <remarks>
-    /// <c>/proc/locks</c> supplies candidate PIDs, which are verified against <c>/proc/&lt;pid&gt;/fd</c>.
-    /// Permission restrictions and process lifetime races are treated as an unknown owner.
+    /// <c>/proc/locks</c> supplies candidate PIDs. The matching descriptor's <c>fdinfo</c> must also identify the
+    /// exclusive <c>flock</c>, which avoids reporting a process that merely has the target path open.
+    /// Permission restrictions, older kernels, and process lifetime races are treated as an unknown owner.
     /// </remarks>
     private static FileLockOwner? TryGetLinuxFileLockOwner(string filePath)
     {
@@ -22,7 +23,7 @@ internal static partial class FileLockOwnerFinder
 
         foreach (int processId in GetExclusiveFlockOwnerProcessIds())
         {
-            if (TryFindOpenFile(processId, targetPath) &&
+            if (TryFindLockedFile(processId, targetPath) &&
                 TryGetLinuxProcessName(processId) is string processName)
             {
                 return new FileLockOwner(processId, processName);
@@ -108,10 +109,13 @@ internal static partial class FileLockOwnerFinder
     }
 
     /// <summary>
-    /// Confirms that a candidate lock-owning process has the target file open.
+    /// Confirms that a target descriptor in the candidate process owns an exclusive <c>flock</c>.
     /// </summary>
-    /// <remarks>Descriptors can disappear during inspection, so individual lookup failures are ignored.</remarks>
-    private static bool TryFindOpenFile(int processId, string targetPath)
+    /// <remarks>
+    /// Linux exposes locks associated with a descriptor through <c>/proc/&lt;pid&gt;/fdinfo/&lt;fd&gt;</c>.
+    /// Descriptors can disappear during inspection, so individual lookup failures are ignored.
+    /// </remarks>
+    private static bool TryFindLockedFile(int processId, string targetPath)
     {
         string[] fileDescriptors;
         try
@@ -129,7 +133,8 @@ internal static partial class FileLockOwnerFinder
             {
                 FileSystemInfo? linkTarget = new FileInfo(fileDescriptor).ResolveLinkTarget(returnFinalTarget: true);
                 if (linkTarget is not null &&
-                    string.Equals(linkTarget.FullName, targetPath, StringComparison.Ordinal))
+                    string.Equals(linkTarget.FullName, targetPath, StringComparison.Ordinal) &&
+                    FileDescriptorHasExclusiveFlock(processId, Path.GetFileName(fileDescriptor)))
                 {
                     return true;
                 }
@@ -138,6 +143,32 @@ internal static partial class FileLockOwnerFinder
             {
                 // The process can close a descriptor while it is being inspected.
             }
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Checks whether Linux reports an exclusive <c>flock</c> on one process descriptor.
+    /// </summary>
+    private static bool FileDescriptorHasExclusiveFlock(int processId, string fileDescriptor)
+    {
+        try
+        {
+            foreach (string fdInfoEntry in File.ReadLines($"/proc/{processId}/fdinfo/{fileDescriptor}"))
+            {
+                ReadOnlySpan<char> remaining = fdInfoEntry;
+                if (ReadNextField(ref remaining).SequenceEqual("lock:") &&
+                    TryParseExclusiveFlockOwnerProcessId(remaining, out int ownerProcessId) &&
+                    ownerProcessId == processId)
+                {
+                    return true;
+                }
+            }
+        }
+        catch (Exception)
+        {
+            // The process can close a descriptor while it is being inspected.
         }
 
         return false;
