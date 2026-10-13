@@ -60,7 +60,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         [DataRow("net9.0", false, true)]
         [DataRow("net10.0", true, false)]
         [DataRow(ToolsetInfo.CurrentTargetFramework, true, false)]
-        public void Build_AddsDotNetWatchInitializer_WhenBrowserToolsAreEnabled(string targetFramework, bool expectSdkHotReloadAgent, bool expectRuntimeHotReloadAgent)
+        public void Build_AddsHotReloadInitializer_WhenBrowserToolsAreEnabled(string targetFramework, bool expectSdkHotReloadAgent, bool expectRuntimeHotReloadAgent)
         {
             ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal")
                 .WithTargetFramework(targetFramework);
@@ -68,7 +68,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var build = CreateBuildCommand(ProjectDirectory);
 
             // Browser tools assets are part of every Hot Reload-enabled build: the build owns the
-            // key pair and dotnet-watch reads the private half when the browser connects.
+            // key pair and Hot Reload reads the private half when the browser connects.
             ExecuteCommand(build).Should().Pass();
 
             var initializers = GetLibraryInitializers(build, targetFramework);
@@ -76,7 +76,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // The watch activation initializer is added for all target frameworks. It activates the browser tools
             // client, which applies updates via the Hot Reload agent shipped by the SDK on .NET 10+, via the
             // runtime's own agent on .NET 9.0, and via window.Blazor._internal.applyHotReload on .NET 8.0.
-            initializers.Should().ContainMatch("*Microsoft.NET.Sdk.WebAssembly.DotNetWatch*.lib.module.js");
+            initializers.Should().ContainMatch("*Microsoft.NET.Sdk.WebAssembly.HotReload*.lib.module.js");
 
             initializers.Should().NotContainMatch("*Microsoft.DotNet.HotReload.WebAssembly.Browser*.lib.module.js");
 
@@ -86,8 +86,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // produces, and .NET 10.0 and later ship their own agent instead.
             var initializerPath = Path.Combine(
                 build.GetIntermediateDirectory(targetFramework, "Debug").ToString(),
-                "dotnet-watch",
-                "Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js");
+                "HotReload",
+                "Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js");
             var initializerContent = File.ReadAllText(initializerPath);
 
             initializerContent.Should().Contain($"const useRuntimeHotReloadAgent = {(expectRuntimeHotReloadAgent ? "true" : "false")};");
@@ -99,14 +99,14 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        public void Build_DoesNotAddDotNetWatchInitializer_WhenBrowserToolsAreDisabled()
+        public void Build_DoesNotAddHotReloadInitializer_WhenBrowserToolsAreDisabled()
         {
             ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal");
 
             var build = CreateBuildCommand(ProjectDirectory);
             ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
 
-            GetLibraryInitializers(build, DefaultTfm).Should().NotContainMatch("*Microsoft.NET.Sdk.WebAssembly.DotNetWatch*");
+            GetLibraryInitializers(build, DefaultTfm).Should().NotContainMatch("*Microsoft.NET.Sdk.WebAssembly.HotReload*");
         }
 
         private static string[] GetLibraryInitializers(BuildCommand build, string targetFramework)
