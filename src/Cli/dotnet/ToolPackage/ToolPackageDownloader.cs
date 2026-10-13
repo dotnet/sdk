@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage
                     var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
                         toolDownloadDir,
                         verboseLogger: nugetLogger,
-                        isNuGetTool: true,
+                        shouldUsePackageSourceMapping: true,
                         restoreActionConfig: restoreActionConfig);
 
                     var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, null, packageLocation.AdditionalFeeds);

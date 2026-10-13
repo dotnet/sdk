@@ -5,6 +5,7 @@ using System.IO.Pipes;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.DotNet;
 using Microsoft.DotNet.Cli.Utils;
 #if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Installer.Windows.Security;
@@ -29,6 +30,8 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Default inheritance to apply to directory ACLs.
         /// </summary>
         private static readonly InheritanceFlags s_DefaultInheritance = InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit;
+
+        private static bool s_programDataRootValidated;
 
         /// <summary>
         /// SID that matches built-in administrators.
@@ -90,17 +93,42 @@ namespace Microsoft.DotNet.Installer.Windows
 
         /// <summary>
         /// Creates the specified directory and secures it by configuring access rules (ACLs) that allow sub-directories
-        /// and files to inherit access control entries. 
+        /// and files to inherit access control entries.
         /// </summary>
         /// <param name="path">The path of the directory to create.</param>
         public static void CreateSecureDirectory(string path)
         {
+            if (TrustedMachinePath.IsUnderRoot(path, TrustedMachinePath.ProgramDataDotnetRoot))
+            {
+                EnsureSecureProgramDataRoot();
+            }
+
             if (!Directory.Exists(path))
             {
                 DirectorySecurity ds = new();
                 SetDirectoryAccessRules(ds);
                 ds.CreateDirectory(path);
             }
+        }
+
+        internal static void EnsureSecureProgramDataRoot()
+        {
+            if (s_programDataRootValidated)
+            {
+                return;
+            }
+
+            string root = TrustedMachinePath.ProgramDataDotnetRoot;
+
+            if (!Directory.Exists(root))
+            {
+                DirectorySecurity ds = new();
+                SetDirectoryAccessRules(ds);
+                ds.CreateDirectory(root);
+            }
+
+            TrustedMachinePath.ValidateDirectory(root);
+            s_programDataRootValidated = true;
         }
 
         /// <summary>
@@ -113,12 +141,12 @@ namespace Microsoft.DotNet.Installer.Windows
         {
             // Validate that packageId and packageVersion do not contain path traversal characters
             // to prevent an IPC client from constructing paths outside the package cache.
-            if (!WindowsUtils.ValidatePathComponent(packageId))
+            if (!PathComponentUtilities.IsValidPathComponent(packageId))
             {
                 throw new ArgumentException($"Invalid package ID: {packageId}");
             }
 
-            if (!WindowsUtils.ValidatePathComponent(packageVersion))
+            if (!PathComponentUtilities.IsValidPathComponent(packageVersion))
             {
                 throw new ArgumentException($"Invalid package version: {packageVersion}");
             }
@@ -144,6 +172,11 @@ namespace Microsoft.DotNet.Installer.Windows
             if (IsElevated)
             {
                 string packageDirectory = GetPackageDirectory(packageId, packageVersion);
+
+                if (TrustedMachinePath.IsUnderRoot(packageDirectory, TrustedMachinePath.ProgramDataDotnetRoot))
+                {
+                    EnsureSecureProgramDataRoot();
+                }
 
                 // Delete the package directory and create a new one that's secure. If all the files were properly
                 // cached, the client would not request this action.
@@ -286,7 +319,7 @@ namespace Microsoft.DotNet.Installer.Windows
         /// Verifies that an MSI package contains an Authenticode signature that terminates in a trusted Microsoft root certificate.
         /// </summary>
         /// <param name="msiPath">The path of the MSI to verify.</param>
-        private void VerifyPackageSignature(string msiPath)
+        internal void VerifyPackageSignature(string msiPath)
         {
             if (VerifySignatures)
             {

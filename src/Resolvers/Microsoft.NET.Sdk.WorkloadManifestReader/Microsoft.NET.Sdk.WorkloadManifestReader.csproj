@@ -20,7 +20,9 @@
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" Namespace="Microsoft.NET.Sdk.Localization" />
     <Compile Include="..\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\PathComponentUtilities.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Installer\Windows\TrustedMachinePath.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup>
@@ -32,6 +34,10 @@
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <Reference Include="System" />
     <Reference Include="System.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.NET.Sdk.WorkloadManifestReader.Tests" />
   </ItemGroup>
 
 </Project>
