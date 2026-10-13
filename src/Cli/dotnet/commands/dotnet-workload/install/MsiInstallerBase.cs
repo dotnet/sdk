@@ -286,6 +286,12 @@ namespace Microsoft.DotNet.Installer.Windows
 
             if (IsElevated)
             {
+                if (TrustedMachinePath.IsUnderRoot(packagePath, TrustedMachinePath.ProgramDataDotnetRoot))
+                {
+                    MsiPackageCache.EnsureSecureProgramDataRoot();
+                }
+
+                Cache.VerifyPackageSignature(packagePath);
                 ConfigureInstall(logFile);
                 string installProperties = InstallProperties.Create(InstallProperties.SystemComponent,
                     InstallProperties.FastInstall, InstallProperties.SuppressReboot,

@@ -2,7 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 
+using System.Runtime.InteropServices;
 using Microsoft.NET.Sdk.Localization;
+using Microsoft.DotNet.Installer.Windows;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -27,6 +29,23 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         {
             public static InstallState ReadInstallState(string installStatePath)
             {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    return ReadInstallState(installStatePath, TrustedMachinePath.ProgramDataDotnetRoot);
+                }
+
+                return ReadInstallState(installStatePath, programDataDotnetRoot: null);
+            }
+
+            internal static InstallState ReadInstallState(string installStatePath, string? programDataDotnetRoot)
+            {
+                if (programDataDotnetRoot != null &&
+                    RuntimeInformation.IsOSPlatform(OSPlatform.Windows) &&
+                    TrustedMachinePath.IsUnderRoot(installStatePath, programDataDotnetRoot))
+                {
+                    TrustedMachinePath.ValidateDirectory(programDataDotnetRoot);
+                }
+
                 using var fileStream = File.OpenRead(installStatePath);
 
 #if USE_SYSTEM_TEXT_JSON
@@ -101,4 +120,3 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         }
     }
 }
-
