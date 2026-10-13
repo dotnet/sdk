@@ -727,6 +727,98 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
+        public async Task GivenConcurrentInstallationsOnlyOneInstallsThePackage()
+        {
+            var source = GetTestLocalFeedPath();
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, _) = Setup(
+                useMock: true,
+                includeLocalFeedInNugetConfig: false);
+
+            Task<IToolPackage>[] installs = Enumerable.Range(0, 5)
+                .Select(_ => Task.Run(
+                    () => downloader.InstallPackage(
+                        new PackageLocation(additionalFeeds: [source]),
+                        packageId: TestPackageId,
+                        verbosity: TestVerbosity,
+                        versionRange: VersionRange.Parse(TestPackageVersion),
+                        targetFramework: _testTargetframework,
+                        isGlobalTool: true,
+                        verifySignatures: false),
+                    TestContext.CancellationToken))
+                .ToArray();
+
+            string expectedConflict = string.Format(
+                CliStrings.ToolPackageConflictPackageId,
+                TestPackageId,
+                TestPackageVersion);
+            IToolPackage[] results = await Task.WhenAll(installs.Select(async install =>
+            {
+                try
+                {
+                    return await install;
+                }
+                catch (ToolPackageException exception)
+                {
+                    exception.Message.Should().Be(expectedConflict);
+                    return null;
+                }
+            }));
+
+            IToolPackage package = results.Should().ContainSingle(result => result != null).Subject;
+            AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
+            uninstaller.Uninstall(package.PackageDirectory);
+        }
+
+        [TestMethod]
+        public void GivenAStaleLockFileInstallationCanAcquireTheLock()
+        {
+            DirectoryPath root = new(TestAssetsManager.CreateTestDirectory().Path);
+            NuGetVersion version = NuGetVersion.Parse(TestPackageVersion);
+            string lockFilePath = ToolPackageDownloaderBase.GetToolInstallLockFilePath(root, TestPackageId, version);
+            Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
+            File.WriteAllText(lockFilePath, "stale");
+
+            using FileStream installLock = ToolPackageDownloaderBase.AcquireToolInstallLock(
+                root,
+                TestPackageId,
+                version,
+                initialWaitTimeout: TimeSpan.Zero,
+                waitTimeout: TimeSpan.FromSeconds(1));
+
+            installLock.Should().NotBeNull();
+        }
+
+        [TestMethod]
+        public void GivenAContendedLockInstallationTimesOut()
+        {
+            DirectoryPath root = new(TestAssetsManager.CreateTestDirectory().Path);
+            NuGetVersion version = NuGetVersion.Parse(TestPackageVersion);
+            string lockFilePath = ToolPackageDownloaderBase.GetToolInstallLockFilePath(root, TestPackageId, version);
+            Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
+
+            using var heldLock = new FileStream(
+                lockFilePath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None);
+            Action acquire = () =>
+            {
+                using FileStream _ = ToolPackageDownloaderBase.AcquireToolInstallLock(
+                    root,
+                    TestPackageId,
+                    version,
+                    initialWaitTimeout: TimeSpan.Zero,
+                    waitTimeout: TimeSpan.FromMilliseconds(50));
+            };
+
+            acquire.Should().Throw<ToolPackageException>()
+                .WithMessage(string.Format(
+                    CliStrings.ToolInstallationTimeout,
+                    TestPackageId,
+                    TestPackageVersion));
+        }
+
+        [TestMethod]
         public void GivenARootWithNonAsciiCharacterInstallSucceeds()
         {
             var surrogate = char.ConvertFromUtf32(int.Parse("2A601", NumberStyles.HexNumber));
@@ -870,7 +962,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Directory
                 .EnumerateFileSystemEntries(store.Root.Value)
                 .Should()
-                .NotContain(e => Path.GetFileName(e) != ToolPackageStoreAndQuery.StagingDirectory);
+                .NotContain(e =>
+                    Path.GetFileName(e) != ToolPackageStoreAndQuery.LockDirectory &&
+                    Path.GetFileName(e) != ToolPackageStoreAndQuery.StagingDirectory);
 
             fileSystem
                 .Directory
