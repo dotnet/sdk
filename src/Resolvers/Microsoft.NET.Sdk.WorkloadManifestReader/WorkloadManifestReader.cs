@@ -81,6 +81,18 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private static void ThrowDuplicateKeyException<T> (ref Utf8JsonStreamReader reader, T key)
             => throw new WorkloadManifestFormatException(Strings.DuplicateKeyAtOffset, key?.ToString() ?? throw new ArgumentNullException (nameof(key)), reader.TokenStartIndex);
 
+        private static T ParsePathBasedId<T>(ref Utf8JsonStreamReader reader, string value, Func<string, T> parse)
+        {
+            try
+            {
+                return parse(value);
+            }
+            catch (ArgumentException e)
+            {
+                throw new WorkloadManifestFormatException($"{e.Message} at offset {reader.TokenStartIndex}", e);
+            }
+        }
+
         private static WorkloadManifest ReadWorkloadManifest(
             string id, string manifestPath,
             LocalizationCatalog? localizationCatalog,
@@ -261,7 +273,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var workloadId = new WorkloadId(reader.GetString());
+                        var workloadId = ParsePathBasedId(ref reader, reader.GetString() ?? string.Empty, value => new WorkloadId(value));
                         var workload = ReadWorkloadDefinition(workloadId, ref reader, localizationCatalog);
                         if (workloads.ContainsKey(workloadId)) ThrowDuplicateKeyException(ref reader, workloadId);
                         workloads.Add(workloadId, workload);
@@ -287,7 +299,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.PropertyName:
-                        var packId = new WorkloadPackId (reader.GetString());
+                        var packId = ParsePathBasedId(ref reader, reader.GetString() ?? string.Empty, value => new WorkloadPackId(value));
                         var pack = ReadWorkloadPack(packId,ref reader);
                         if (packs.ContainsKey(packId)) ThrowDuplicateKeyException(ref reader, packId);
                         packs[packId] = pack;
@@ -336,7 +348,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 switch (reader.TokenType)
                 {
                     case JsonTokenType.String:
-                        list.Add(map(reader.GetString()));
+                        list.Add(ParsePathBasedId(ref reader, reader.GetString() ?? string.Empty, map));
                         continue;
                     case JsonTokenType.EndArray:
                         return list;
@@ -386,7 +398,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 {
                     case JsonTokenType.PropertyName:
                         var name = reader.GetString();
-                        var val = mapValue(ReadString(ref reader));
+                        var val = ParsePathBasedId(ref reader, ReadString(ref reader) ?? string.Empty, mapValue);
                         if (dictionary.ContainsKey(name)) ThrowDuplicateKeyException(ref reader, name);
                         dictionary.Add(name, val);
                         continue;
@@ -473,7 +485,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         if (string.Equals("replace-with", propName, StringComparison.OrdinalIgnoreCase))
                         {
                             if (replaceWith != null) ThrowDuplicateKeyException(ref reader, propName);
-                            replaceWith = new WorkloadId (ReadString(ref reader));
+                            replaceWith = ParsePathBasedId(ref reader, ReadString(ref reader) ?? string.Empty, value => new WorkloadId(value));
                             continue;
                         }
 
