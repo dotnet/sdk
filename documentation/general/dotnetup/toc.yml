@@ -18,6 +18,8 @@
     href: channels/daily.md
 - name: CLI reference
   items:
+  - name: Environment variables
+    href: reference/environment-variables.md
   - name: dotnetup
     href: reference/dotnetup.md
   - name: dotnetup install
