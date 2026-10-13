@@ -12,6 +12,13 @@ internal static partial class FileLockOwnerFinder
     private const int RestartManagerSessionKeyLength = 33;
     private const int RestartManagerMaxRetries = 6;
 
+    /// <summary>
+    /// Uses Windows Restart Manager to identify the process holding the contended file open.
+    /// </summary>
+    /// <remarks>
+    /// Restart Manager can resize its process list between calls, so retrieval is retried. Session setup, access,
+    /// and process lifetime failures return an unknown owner.
+    /// </remarks>
     private static unsafe FileLockOwner? TryGetWindowsFileLockOwner(string filePath)
     {
         Span<char> sessionKey = stackalloc char[RestartManagerSessionKeyLength];

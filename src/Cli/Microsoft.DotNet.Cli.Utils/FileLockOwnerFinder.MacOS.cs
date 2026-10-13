@@ -15,6 +15,13 @@ internal static partial class FileLockOwnerFinder
     private const int ProcessNameBufferSize = 1024;
     private const int ProcessListGrowth = 16;
 
+    /// <summary>
+    /// Uses macOS process APIs to identify a process with the contended lock file open.
+    /// </summary>
+    /// <remarks>
+    /// <c>proc_listpidspath</c> avoids reproducing private descriptor structure layouts. Event-only descriptors are
+    /// excluded, and the process list is retried when it grows between the sizing and retrieval calls.
+    /// </remarks>
     private static unsafe FileLockOwner? TryGetMacOSFileLockOwner(string filePath)
     {
         string targetPath = Path.GetFullPath(filePath);
@@ -75,6 +82,10 @@ internal static partial class FileLockOwnerFinder
         return null;
     }
 
+    /// <summary>
+    /// Gets the short macOS process name used in the contention message.
+    /// </summary>
+    /// <remarks><c>proc_name</c> returns a UTF-8, null-terminated name that may be shorter than the supplied buffer.</remarks>
     private static unsafe string? TryGetMacOSProcessName(int processId)
     {
         Span<byte> processNameBuffer = stackalloc byte[ProcessNameBufferSize];
@@ -100,6 +111,10 @@ internal static partial class FileLockOwnerFinder
         return string.IsNullOrWhiteSpace(processName) ? null : processName;
     }
 
+    /// <summary>
+    /// Calls <c>libproc</c> to list processes that hold an open reference to a path.
+    /// </summary>
+    /// <remarks>A null buffer requests the minimum buffer size in bytes.</remarks>
     [LibraryImport(LibProc, EntryPoint = "proc_listpidspath", StringMarshalling = StringMarshalling.Utf8)]
     private static unsafe partial int proc_listpidspath(
         uint type,
@@ -109,6 +124,9 @@ internal static partial class FileLockOwnerFinder
         void* buffer,
         int bufferSize);
 
+    /// <summary>
+    /// Calls <c>libproc</c> to retrieve a process name without constructing a managed <see cref="Process"/>.
+    /// </summary>
     [LibraryImport(LibProc, EntryPoint = "proc_name")]
     private static unsafe partial int proc_name(int processId, byte* buffer, uint bufferSize);
 }

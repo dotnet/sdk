@@ -243,6 +243,14 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             });
     }
 
+    /// <summary>
+    /// Serializes installation of one package version so concurrent processes cannot mutate the same files.
+    /// </summary>
+    /// <remarks>
+    /// The lock file persists, but only its open <see cref="FileShare.None"/> handle represents ownership. A terminated
+    /// process therefore releases the lock without requiring stale-file cleanup. Prolonged contention is reported and
+    /// eventually fails with a timeout.
+    /// </remarks>
     internal static FileStream AcquireToolInstallLock(
         DirectoryPath packageInstallRoot,
         PackageId packageId,
@@ -305,6 +313,13 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
     }
 
+    /// <summary>
+    /// Creates a stable per-root lock path so only installations of the same package version contend.
+    /// </summary>
+    /// <remarks>
+    /// The normalized, case-insensitive package identity is hashed to produce a fixed-length valid file name under
+    /// the package root's lock directory.
+    /// </remarks>
     internal static string GetToolInstallLockFilePath(
         DirectoryPath packageInstallRoot,
         PackageId packageId,
@@ -318,6 +333,13 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             lockFileName);
     }
 
+    /// <summary>
+    /// Distinguishes retryable lock contention from I/O failures that must be surfaced immediately.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="FileStream"/> exposes the relevant Windows sharing errors and Unix <c>EWOULDBLOCK</c> values through
+    /// <see cref="Exception.HResult"/>.
+    /// </remarks>
     internal static bool IsToolInstallLockContention(IOException exception) =>
         OperatingSystem.IsWindows()
             ? exception.HResult is WindowsSharingViolationHResult or WindowsLockViolationHResult

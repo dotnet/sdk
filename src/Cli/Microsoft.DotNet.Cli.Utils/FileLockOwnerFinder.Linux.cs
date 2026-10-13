@@ -9,6 +9,13 @@ namespace Microsoft.DotNet.Cli.Utils;
 
 internal static partial class FileLockOwnerFinder
 {
+    /// <summary>
+    /// Correlates Linux advisory lock owners with the target path so contention diagnostics report the correct process.
+    /// </summary>
+    /// <remarks>
+    /// <c>/proc/locks</c> supplies candidate PIDs, which are verified against <c>/proc/&lt;pid&gt;/fd</c>.
+    /// Permission restrictions and process lifetime races are treated as an unknown owner.
+    /// </remarks>
     private static FileLockOwner? TryGetLinuxFileLockOwner(string filePath)
     {
         string targetPath = ResolvePath(filePath);
@@ -25,6 +32,13 @@ internal static partial class FileLockOwnerFinder
         return null;
     }
 
+    /// <summary>
+    /// Enumerates candidate PIDs that hold the kind of advisory lock used by <see cref="FileShare.None"/>.
+    /// </summary>
+    /// <remarks>
+    /// .NET implements <see cref="FileShare.None"/> with an exclusive <c>flock</c> on Linux. Duplicate PIDs are
+    /// removed because a process can own more than one such lock.
+    /// </remarks>
     private static IEnumerable<int> GetExclusiveFlockOwnerProcessIds()
     {
         string[] lockEntries;
@@ -49,6 +63,10 @@ internal static partial class FileLockOwnerFinder
         }
     }
 
+    /// <summary>
+    /// Parses the owner PID from a Linux exclusive <c>flock</c> record without allocating strings for its fields.
+    /// </summary>
+    /// <remarks>Only <c>FLOCK ADVISORY WRITE</c> records are relevant to the lock used by this feature.</remarks>
     private static bool TryParseExclusiveFlockOwnerProcessId(
         ReadOnlySpan<char> lockEntry,
         out int processId)
@@ -66,6 +84,9 @@ internal static partial class FileLockOwnerFinder
                 out processId);
     }
 
+    /// <summary>
+    /// Consumes the next whitespace-delimited field from a <c>/proc/locks</c> record without allocating.
+    /// </summary>
     private static ReadOnlySpan<char> ReadNextField(ref ReadOnlySpan<char> remaining)
     {
         int fieldStart = 0;
@@ -86,6 +107,10 @@ internal static partial class FileLockOwnerFinder
         return field;
     }
 
+    /// <summary>
+    /// Confirms that a candidate lock-owning process has the target file open.
+    /// </summary>
+    /// <remarks>Descriptors can disappear during inspection, so individual lookup failures are ignored.</remarks>
     private static bool TryFindOpenFile(int processId, string targetPath)
     {
         string[] fileDescriptors;
@@ -118,6 +143,13 @@ internal static partial class FileLockOwnerFinder
         return false;
     }
 
+    /// <summary>
+    /// Gets a stable process label for the contention message.
+    /// </summary>
+    /// <remarks>
+    /// The executable symlink provides the preferred name; <c>/proc/&lt;pid&gt;/comm</c> is used when it is
+    /// unavailable.
+    /// </remarks>
     private static string? TryGetLinuxProcessName(int processId)
     {
         try
@@ -150,6 +182,10 @@ internal static partial class FileLockOwnerFinder
         }
     }
 
+    /// <summary>
+    /// Resolves the target path before comparing it with process descriptor symlink targets.
+    /// </summary>
+    /// <remarks>Resolution is best-effort and falls back to the absolute path when the final entry is not a symlink.</remarks>
     private static string ResolvePath(string filePath)
     {
         var fileInfo = new FileInfo(Path.GetFullPath(filePath));

@@ -3,10 +3,20 @@
 
 namespace Microsoft.DotNet.Cli.Utils;
 
+/// <summary>
+/// Identifies a process that is reported as holding a file lock.
+/// </summary>
 internal sealed record FileLockOwner(int ProcessId, string ProcessName);
 
 internal static partial class FileLockOwnerFinder
 {
+    /// <summary>
+    /// Finds a file lock owner so contention diagnostics can identify the process the user is waiting for.
+    /// </summary>
+    /// <remarks>
+    /// Discovery is best-effort and platform-specific. Unsupported platforms, access restrictions, and process
+    /// lifetime races return <see langword="null"/> rather than affecting the operation that encountered contention.
+    /// </remarks>
     internal static FileLockOwner? TryGetFileLockOwner(string filePath)
     {
         if (string.IsNullOrWhiteSpace(filePath))
@@ -42,6 +52,10 @@ internal static partial class FileLockOwnerFinder
         return null;
     }
 
+    /// <summary>
+    /// Bounds and sanitizes an OS-provided process name before including it in terminal output.
+    /// </summary>
+    /// <remarks>Control characters are replaced and names are limited to 256 characters.</remarks>
     private static string SanitizeProcessName(string processName) =>
         string.Concat(processName.Take(256).Select(character => char.IsControl(character) ? '?' : character));
 }
