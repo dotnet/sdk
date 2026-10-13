@@ -1,0 +1,105 @@
+From 66326f27bb4ffdacdf8a9c2402bcfc96395eba36 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Tue, 13 Oct 2026 08:52:26 -0500
+Subject: [PATCH] Support overriding the Microsoft.NET.Test.Sdk version in
+ generated test projects
+
+Add an optional TestSdkPackageVersion environment variable that sets the Microsoft.NET.Test.Sdk
+PackageReference version of generated xUnit, NUnit, and MSTest projects, so they can use a
+Test SDK compatible with a source-built VSTest runner.
+---
+ README.md                                     |  9 +++++-
+ .../DotNetSdkHelper.cs                        | 30 +++++++++++++++++++
+ .../SdkTemplateTest.cs                        |  9 ++++++
+ 3 files changed, 47 insertions(+), 1 deletion(-)
+
+diff --git a/README.md b/README.md
+index 9ac41571397..21c725cda0f 100644
+--- a/README.md
++++ b/README.md
+@@ -39,4 +39,11 @@ Optionally, for SxS SDK installations, a `-sdk-version` option may be used to ov
+ 
+ For other options, see the help of the scenario test harness:
+ 
+-`dotnet <test dll> --help`
+\ No newline at end of file
++`dotnet <test dll> --help`
++
++For private SDK builds, `TestSdkPackageVersion` optionally selects a compatible
++`Microsoft.NET.Test.Sdk` package for generated xUnit, NUnit, and MSTest projects.
++Other templates retain their normal `dotnet test` behavior without requiring a
++Test SDK package reference. The selected package and its dependencies must be
++available from the test's NuGet sources. This is distinct from `TestSdkVersion`,
++which selects the SDK installation.
+\ No newline at end of file
+diff --git a/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/DotNetSdkHelper.cs b/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/DotNetSdkHelper.cs
+index d815d188e07..1390d9c01d0 100644
+--- a/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/DotNetSdkHelper.cs
++++ b/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/DotNetSdkHelper.cs
+@@ -7,6 +7,7 @@ using System.Diagnostics;
+ using System.Runtime.InteropServices;
+ using System.Xml.XPath;
+ using System.Xml;
++using System.Xml.Linq;
+ using Xunit.Abstractions;
+ 
+ namespace Microsoft.DotNet.ScenarioTests.SdkTemplateTests;
+@@ -252,6 +253,35 @@ internal class DotNetSdkHelper
+     public void ExecuteTest(string projectDirectory) =>
+         ExecuteCmd($"test {GetBinLogOption(projectDirectory, "test")}", workingDirectory: projectDirectory);
+ 
++    internal static void OverrideTestSdkVersion(string projectDirectory, string version)
++    {
++        string projectFilePath = Directory.GetFiles(projectDirectory, "*.*proj", SearchOption.TopDirectoryOnly)
++            .Where(path => Path.GetExtension(path) is ".csproj" or ".fsproj" or ".vbproj")
++            .Single();
++        XDocument project = XDocument.Load(projectFilePath, LoadOptions.PreserveWhitespace);
++        XElement reference = project.Descendants()
++            .SingleOrDefault(element => element.Name.LocalName == "PackageReference"
++                && string.Equals((string?)element.Attribute("Include"), "Microsoft.NET.Test.Sdk", StringComparison.OrdinalIgnoreCase))
++            ?? throw new InvalidOperationException($"Test project '{projectFilePath}' does not reference Microsoft.NET.Test.Sdk.");
++
++        XAttribute? versionAttribute = reference.Attribute("Version");
++        XElement? versionElement = reference.Elements().SingleOrDefault(element => element.Name.LocalName == "Version");
++        if (versionAttribute is not null)
++        {
++            versionAttribute.Value = version;
++        }
++        else if (versionElement is not null)
++        {
++            versionElement.Value = version;
++        }
++        else
++        {
++            reference.SetAttributeValue("Version", version);
++        }
++
++        project.Save(projectFilePath);
++    }
++
+     private static string GetBinLogOption(string projectDirectory, string command, string? differentiator = null)
+     {
+         string fileName = $"{command}";
+diff --git a/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTest.cs b/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTest.cs
+index 53d49fd9c48..ba0ee206960 100644
+--- a/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTest.cs
++++ b/src/Microsoft.DotNet.ScenarioTests.SdkTemplateTests/SdkTemplateTest.cs
+@@ -109,6 +109,15 @@ public class SdkTemplateTest
+         }
+         if (Commands.HasFlag(DotNetSdkActions.Test))
+         {
++            if (Template is DotNetSdkTemplate.XUnit or DotNetSdkTemplate.NUnit or DotNetSdkTemplate.MSTest)
++            {
++                string? testSdkPackageVersion = Environment.GetEnvironmentVariable("TestSdkPackageVersion");
++                if (!string.IsNullOrEmpty(testSdkPackageVersion))
++                {
++                    DotNetSdkHelper.OverrideTestSdkVersion(projectDirectory, testSdkPackageVersion);
++                }
++            }
++
+             dotNetHelper.ExecuteTest(projectDirectory);
+         }
+     }
+-- 
+2.53.0.windows.4
+

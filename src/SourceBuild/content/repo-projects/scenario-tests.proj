@@ -47,6 +47,8 @@
     <MakeDir Directories="$(ScenarioTestsResultsDir)" />
 
     <ItemGroup>
+      <TestEnvironmentVariable Include="TestSdkPackageVersion=$(SmokeTestsTestSdkVersion)"
+                               Condition="'$(SmokeTestsTestSdkVersion)' != ''" />
       <TestEnvironmentVariable Include="
         TestRoot=$(_TestRoot);
         DotNetRoot=$(DotNetSdkExtractDir);

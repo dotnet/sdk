@@ -404,11 +404,16 @@ jobs:
       # Setup the NuGet sources used by the tests to use private feeds. This is necessary when testing internal-only product
       # builds where the packages are only available in the private feeds. This allows the tests to restore from those feeds.
       - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-        - task: Bash@3
-          displayName: Setup Private Feeds Credentials
-          inputs:
-            filePath: $(sourcesPath)/src/sdk/eng/common/SetupNugetSources.sh
-            arguments: $(sourcesPath)/src/sdk/NuGet.config $Token
+        - script: |
+            set -euo pipefail
+            config="$(sourcesPath)/src/sdk/NuGet.config"
+            if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
+              sed -i '/<\/packageSources>/i\    <add key="darc-int-smoke-test-tools" value="https://pkgs.dev.azure.com/dnceng/internal/_packaging/dotnet-tools-internal/nuget/v3/index.json" />' "$config"
+            fi
+            bash "$(sourcesPath)/src/sdk/eng/common/SetupNugetSources.sh" "$config" "$Token"
+            cp "$config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
+            cp "$config" "$(sourcesPath)/test/NuGet.config"
+          displayName: Setup Private Feeds for Smoke and Scenario Tests
           env:
             # The smoke tests restore from internal darc-int feeds while running inside a container, so the
             # Azure Artifacts credential provider on the host agent is unreachable. Instead, embed a valid
@@ -417,15 +422,20 @@ jobs:
             # a service-connection-less NuGetAuthenticate uses to authenticate to these dnceng/internal feeds.
             Token: $(System.AccessToken)
 
-        - script: cp "$(sourcesPath)/src/sdk/NuGet.config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
-          displayName: Copy Test NuGet Config for Smoke Tests
-
       - script: |
           set -ex
 
           dockerVolumeArgs="-v $(sourcesPath):/vmr"
           customBuildArgs=''
           extraBuildProperties=''
+          if [[ '$(System.TeamProject)' == 'internal' && '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
+            # TODO: Remove this temporary hotfix version override after the 10.0.114 release.
+            testSdkHotfixVersion='18.0.2-hotfix-26507-109'
+            extraBuildProperties="$extraBuildProperties /p:SmokeTestsTestSdkVersion=$testSdkHotfixVersion"
+            if [[ -n '${{ parameters.reuseBuildArtifactsFrom }}' && '${{ parameters.withPreviousSDK }}' != 'True' ]]; then
+              extraBuildProperties="$extraBuildProperties /p:MicrosoftNETTestSdkVersion=$testSdkHotfixVersion"
+            fi
+          fi
 
           if [[ ! -z '${{ parameters.targetOS }}' ]]; then
             extraBuildProperties="$extraBuildProperties /p:TargetOS=${{ parameters.targetOS }}"

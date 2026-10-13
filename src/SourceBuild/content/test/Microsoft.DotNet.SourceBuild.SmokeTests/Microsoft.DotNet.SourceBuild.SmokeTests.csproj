@@ -95,6 +95,9 @@
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SourceBuiltArtifactsPath">
         <Value>$(SourceBuiltArtifactsPath)</Value>
       </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).TestSdkVersion">
+        <Value>$(SmokeTestsTestSdkVersion)</Value>
+      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).WarnOnLicenseScanDiffs">
         <Value>$(SmokeTestsWarnOnLicenseScanDiffs)</Value>
       </RuntimeHostConfigurationOption>

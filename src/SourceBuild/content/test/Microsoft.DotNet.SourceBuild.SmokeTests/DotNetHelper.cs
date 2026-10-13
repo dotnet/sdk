@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Xml.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -94,6 +95,35 @@ internal class DotNetHelper
             }
             File.WriteAllText(nugetConfigPath, nugetConfig);
         }
+    }
+
+    internal static void OverrideTestSdkVersion(string projectDirectory, string version)
+    {
+        string projectFilePath = Directory.GetFiles(projectDirectory, "*.*proj", SearchOption.TopDirectoryOnly)
+            .Where(path => Path.GetExtension(path) is ".csproj" or ".fsproj" or ".vbproj")
+            .Single();
+        XDocument project = XDocument.Load(projectFilePath, LoadOptions.PreserveWhitespace);
+        XElement testSdkReference = project.Descendants()
+            .SingleOrDefault(element => element.Name.LocalName == "PackageReference"
+                && string.Equals((string?)element.Attribute("Include"), "Microsoft.NET.Test.Sdk", StringComparison.OrdinalIgnoreCase))
+            ?? throw new InvalidOperationException($"Test project '{projectFilePath}' does not reference Microsoft.NET.Test.Sdk.");
+
+        XAttribute? versionAttribute = testSdkReference.Attribute("Version");
+        XElement? versionElement = testSdkReference.Elements().SingleOrDefault(element => element.Name.LocalName == "Version");
+        if (versionAttribute is not null)
+        {
+            versionAttribute.Value = version;
+        }
+        else if (versionElement is not null)
+        {
+            versionElement.Value = version;
+        }
+        else
+        {
+            testSdkReference.SetAttributeValue("Version", version);
+        }
+
+        project.Save(projectFilePath);
     }
 
     public void ExecuteCmd(string args, string? workingDirectory = null, Action<Process>? processConfigCallback = null,
@@ -229,8 +259,15 @@ internal class DotNetHelper
     public void ExecuteWebDll(string projectName, string workingDirectory, DotNetTemplate template) =>
         ExecuteWeb(projectName, $"{projectName}.dll", workingDirectory, template, expectedExitCode: 0);
 
-    public void ExecuteTest(string projectName) =>
+    public void ExecuteTest(string projectName)
+    {
+        if (!string.IsNullOrEmpty(Config.TestSdkVersion))
+        {
+            OverrideTestSdkVersion(GetProjectDirectory(projectName), Config.TestSdkVersion);
+        }
+
         ExecuteCmd($"test {GetBinLogOption(projectName, "test")}", GetProjectDirectory(projectName));
+    }
 
     private void ExecuteWeb(string projectName, string args, string workingDirectory, DotNetTemplate template, int expectedExitCode)
     {
