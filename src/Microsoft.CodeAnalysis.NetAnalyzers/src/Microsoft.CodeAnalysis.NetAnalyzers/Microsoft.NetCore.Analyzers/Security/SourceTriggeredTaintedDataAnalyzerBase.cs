@@ -555,6 +555,7 @@ namespace Microsoft.NetCore.Analyzers.Security
                     case ILockOperation lockOperation when lockOperation.LockedValue.Type is ITypeSymbol lockedType &&
                         SymbolEqualityComparer.Default.Equals(lockedType, compilation.GetTypeByMetadataName("System.Threading.Lock")):
                     case IConditionalOperation conditional when !conditional.Condition.ConstantValue.HasValue:
+                    case ICatchClauseOperation { Filter: { ConstantValue.HasValue: false } }:
                     case ILoopOperation:
                     case ISwitchOperation:
                     case ISwitchExpressionOperation:
