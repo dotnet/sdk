@@ -4,7 +4,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Formats.Tar;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -67,6 +69,30 @@ public class SourceBuiltArtifactsTests : SdkTests
         finally
         {
             Directory.Delete(outputDir, recursive: true);
+        }
+    }
+
+    [ConditionalFact(typeof(SourceBuiltArtifactsTests), nameof(IncludeSourceBuiltArtifactsTests))]
+    public void SourceBuiltTarballsHaveExpectedOwnership()
+    {
+        Assert.NotNull(Config.SourceBuiltArtifactsPath);
+
+        string artifactsDirectory = Path.GetDirectoryName(Config.SourceBuiltArtifactsPath)!;
+        string[] tarballPaths = Directory.GetFiles(artifactsDirectory, "*.tar.gz", SearchOption.AllDirectories);
+        Assert.NotEmpty(tarballPaths);
+
+        foreach (string tarballPath in tarballPaths)
+        {
+            using FileStream fileStream = File.OpenRead(tarballPath);
+            using GZipStream gzipStream = new(fileStream, CompressionMode.Decompress);
+            using TarReader reader = new(gzipStream);
+
+            TarEntry? entry;
+            while ((entry = reader.GetNextEntry()) is not null)
+            {
+                Assert.True(entry.Uid == 2001, $"{tarballPath}: {entry.Name} has UID {entry.Uid}, expected 2001.");
+                Assert.True(entry.Gid == 2001, $"{tarballPath}: {entry.Name} has GID {entry.Gid}, expected 2001.");
+            }
         }
     }
 }
