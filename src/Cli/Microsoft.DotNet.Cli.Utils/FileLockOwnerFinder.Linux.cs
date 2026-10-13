@@ -40,18 +40,50 @@ internal static partial class FileLockOwnerFinder
         var processIds = new HashSet<int>();
         foreach (string lockEntry in lockEntries)
         {
-            string[] fields = lockEntry.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-            if (fields.Length >= 5 &&
-                fields[1] == "FLOCK" &&
-                fields[2] == "ADVISORY" &&
-                fields[3] == "WRITE" &&
-                int.TryParse(fields[4], NumberStyles.None, CultureInfo.InvariantCulture, out int processId) &&
+            if (TryParseExclusiveFlockOwnerProcessId(lockEntry, out int processId) &&
                 processId > 0 &&
                 processIds.Add(processId))
             {
                 yield return processId;
             }
         }
+    }
+
+    private static bool TryParseExclusiveFlockOwnerProcessId(
+        ReadOnlySpan<char> lockEntry,
+        out int processId)
+    {
+        processId = 0;
+
+        _ = ReadNextField(ref lockEntry);
+        return ReadNextField(ref lockEntry).SequenceEqual("FLOCK") &&
+            ReadNextField(ref lockEntry).SequenceEqual("ADVISORY") &&
+            ReadNextField(ref lockEntry).SequenceEqual("WRITE") &&
+            int.TryParse(
+                ReadNextField(ref lockEntry),
+                NumberStyles.None,
+                CultureInfo.InvariantCulture,
+                out processId);
+    }
+
+    private static ReadOnlySpan<char> ReadNextField(ref ReadOnlySpan<char> remaining)
+    {
+        int fieldStart = 0;
+        while (fieldStart < remaining.Length && char.IsWhiteSpace(remaining[fieldStart]))
+        {
+            fieldStart++;
+        }
+
+        remaining = remaining[fieldStart..];
+        int fieldLength = 0;
+        while (fieldLength < remaining.Length && !char.IsWhiteSpace(remaining[fieldLength]))
+        {
+            fieldLength++;
+        }
+
+        ReadOnlySpan<char> field = remaining[..fieldLength];
+        remaining = remaining[fieldLength..];
+        return field;
     }
 
     private static bool TryFindOpenFile(int processId, string targetPath)
@@ -123,7 +155,6 @@ internal static partial class FileLockOwnerFinder
         var fileInfo = new FileInfo(Path.GetFullPath(filePath));
         return fileInfo.ResolveLinkTarget(returnFinalTarget: true)?.FullName ?? fileInfo.FullName;
     }
-
 }
 
 #endif

@@ -20,7 +20,7 @@ public class FileLockOwnerFinderTests : SdkTest
 
         FileLockOwner? owner = FileLockOwnerFinder.TryGetFileLockOwner(filePath);
 
-        if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux())
+        if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
         {
             owner.Should().NotBeNull();
             owner.ProcessId.Should().Be(Environment.ProcessId);
