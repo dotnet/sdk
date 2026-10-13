@@ -194,6 +194,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     packageSourceLocation,
                     givenSpecificVersion,
                     assetFileDirectory: _globalToolStageDir,
+                    acquireInstallLock: false,
                     targetFramework,
                     verbosity);
 
@@ -354,8 +355,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         string? targetFramework,
         VerbosityOptions verbosity)
     {
-        using FileStream installLock = AcquireToolInstallLock(_localToolDownloadDir, packageId, packageVersion);
-
         return TransactionalAction.Run<IToolPackage>(
             action: () =>
             {
@@ -367,6 +366,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     packageSourceLocation,
                     givenSpecificVersion,
                     assetFileDirectory: _localToolAssetDir,
+                    acquireInstallLock: true,
                     targetFramework,
                     verbosity);
 
@@ -388,26 +388,82 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         PackageSourceLocation packageSourceLocation,
         bool givenSpecificVersion,
         DirectoryPath assetFileDirectory,
+        bool acquireInstallLock,
         string? targetFramework,
         VerbosityOptions verbosity)
     {
-
-        if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
-        {
-            DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion, verbosity: verbosity);
-        }
+        EnsurePackageInstalled(
+            packageDownloadDir,
+            packageId,
+            packageVersion,
+            nugetPackageDownloader,
+            packageSourceLocation,
+            includeUnlisted: givenSpecificVersion,
+            acquireInstallLock,
+            verbosity);
 
         CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
 
         //  Also download RID-specific package if needed
         if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory, verbosity) is PackageId ridSpecificPackage)
         {
-            if (!IsPackageInstalled(ridSpecificPackage, packageVersion, packageDownloadDir.Value))
-            {
-                DownloadAndExtractPackage(ridSpecificPackage, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: true, verbosity: verbosity);
-            }
+            EnsurePackageInstalled(
+                packageDownloadDir,
+                ridSpecificPackage,
+                packageVersion,
+                nugetPackageDownloader,
+                packageSourceLocation,
+                includeUnlisted: true,
+                acquireInstallLock,
+                verbosity);
 
             CreateAssetFile(ridSpecificPackage, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
+        }
+    }
+
+    /// <summary>
+    /// Locks only cache misses so complete shared packages remain usable from read-only package roots.
+    /// </summary>
+    /// <remarks>The package is checked again after locking because another process can complete installation first.</remarks>
+    private void EnsurePackageInstalled(
+        DirectoryPath packageDownloadDir,
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        INuGetPackageDownloader nugetPackageDownloader,
+        PackageSourceLocation packageSourceLocation,
+        bool includeUnlisted,
+        bool acquireInstallLock,
+        VerbosityOptions verbosity)
+    {
+        if (IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
+        {
+            return;
+        }
+
+        if (!acquireInstallLock)
+        {
+            DownloadAndExtractPackage(
+                packageId,
+                nugetPackageDownloader,
+                packageDownloadDir.Value,
+                packageVersion,
+                packageSourceLocation,
+                verbosity,
+                includeUnlisted);
+            return;
+        }
+
+        using FileStream installLock = AcquireToolInstallLock(packageDownloadDir, packageId, packageVersion);
+        if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
+        {
+            DownloadAndExtractPackage(
+                packageId,
+                nugetPackageDownloader,
+                packageDownloadDir.Value,
+                packageVersion,
+                packageSourceLocation,
+                verbosity,
+                includeUnlisted);
         }
     }
 

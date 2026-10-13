@@ -75,17 +75,16 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 
             // look for package on disk and read the version
             NuGetVersion version;
+            string packageHash;
+            string hashPath;
 
             using (FileStream packageStream = File.OpenRead(packagePath))
             {
                 PackageArchiveReader reader = new(packageStream);
                 version = new NuspecReader(reader.GetNuspec()).GetVersion();
 
-                var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
-                var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
-
-                Directory.CreateDirectory(Path.GetDirectoryName(hashPath)!);
-                File.WriteAllText(hashPath, packageHash);
+                packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
+                hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
             }
 
             if (verbosity.IsDetailedOrDiagnostic())
@@ -97,6 +96,10 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
             nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
             _extractActivity?.Stop();
+
+            // NuGet treats the hash as a package completion marker, so publish it only after extraction succeeds.
+            Directory.CreateDirectory(Path.GetDirectoryName(hashPath)!);
+            File.WriteAllText(hashPath, packageHash);
 
             return version;
         }, rollback: () =>
