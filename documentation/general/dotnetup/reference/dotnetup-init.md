@@ -28,10 +28,21 @@ system-managed installations. For descriptions of the access modes, see
 
 Run this command again to reconfigure dotnetup.
 
+### Admin mode
+
+On Windows, `--mode admin` switches the machine to `admin` mode, in which
+`dotnetup sdk install` and `dotnetup runtime install` run the official .NET
+installers into Program Files. Switching into or out of `admin` mode changes a
+machine-wide setting for all users and asks for administrator permission. While
+`admin` mode is active, `dotnetup init` without `--mode` makes no changes; run
+`dotnetup init --mode <none|shell|everywhere>` to leave it. For details, see
+[dotnetup admin mode](../designs/dotnetup-admin-mode.md).
+
 ## Options
 
 | Option | Description |
 | --- | --- |
+| `--mode <none\|shell\|everywhere\|admin>` | Select the access mode. Without this option, non-interactive runs keep their existing defaults. `admin` is only available on Windows; it switches this machine to `admin` mode and does not install .NET. |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--no-progress [<true\|false>]` | Disable progress display. |
@@ -47,4 +58,5 @@ Run this command again to reconfigure dotnetup.
 dotnetup init
 dotnetup init --shell bash
 dotnetup init --install-path .\.dotnet
+dotnetup init --interactive false --mode admin
 ```

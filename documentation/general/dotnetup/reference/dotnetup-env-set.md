@@ -28,12 +28,15 @@ The optional .NET access mode:
 | `none` | Does not modify these environment variables. Run .NET with `dotnetup dotnet`. |
 | `shell` | Modifies the shell profile to set these environment variables. Processes started from that shell use the .NET SDKs and Runtimes installed by dotnetup. |
 | `everywhere` | Modifies the system `PATH` and sets the user-level `DOTNET_ROOT` environment variable. Only available on Windows. |
+| `admin` | Switches this machine to `admin` mode, in which installs run the official .NET installers into Program Files. Changes a machine-wide setting for all users and asks for administrator permission. Only available on Windows. See [dotnetup admin mode](../designs/dotnetup-admin-mode.md). |
 
 For details about each mode and considerations for `everywhere`, see
 [dotnetup environment configuration](../concepts/environment.md).
 
 When you omit `MODE`, the command reapplies the stored mode. The command
-fails if no readable configuration exists.
+fails if no readable configuration exists. While `admin` mode is active,
+omitting `MODE` makes no changes, and selecting another mode leaves `admin`
+mode first.
 
 ## Options
 
