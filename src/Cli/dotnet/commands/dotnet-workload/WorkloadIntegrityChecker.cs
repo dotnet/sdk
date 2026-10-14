@@ -22,7 +22,8 @@ namespace Microsoft.DotNet.Workloads.Workload
             var packageDownloader = new NuGetPackageDownloader(
                 tempPackagesDirectory,
                 verboseLogger: new NullLogger(),
-                verifySignatures: verifySignatures);
+                verifySignatures: verifySignatures,
+                shouldUsePackageSourceMapping: true);
 
             var installer = WorkloadInstallerFactory.GetWorkloadInstaller(
                 reporter,
