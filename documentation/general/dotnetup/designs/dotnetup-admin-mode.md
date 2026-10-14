@@ -107,30 +107,44 @@ Rollout for other commands will be integrated later, such as:
 
 ### Mode Storage
 
-By default, the selected mode is stored per user in the existing `dotnetup` configuration under the user's data directory. That setting is a user preference, not a security boundary: an unelevated user can change it with `env` or `init`, replace the configuration file or its containing directory, or redirect the data directory with `DOTNET_DOTNETUP_DATA_DIR`. Switching out of `admin` mode does not affect existing machine-wide installs, which remain protected by their Program Files ACLs.
+On Windows, `admin` mode is a machine-wide setting stored in admin-only `HKLM` registry values. Changing it requires elevation. The other modes (`none`, `shell`, and `everywhere`) remain per-user preferences in the existing `dotnetup` configuration under the user's data directory.
 
-The user configuration will not be ACL-protected, and a protected subdirectory of the user profile would not help: the user controls the parent directory and can rename the protected directory, then create a replacement. A protected directory under `%ProgramData%` would be enforceable, but it would duplicate the registry policy below without Group Policy or Intune support.
+The per-user configuration cannot enforce `admin` mode. An unelevated user can replace the configuration file or its containing directory, or redirect the data directory with `DOTNET_DOTNETUP_DATA_DIR`. ACL-protecting the file, or a subdirectory of the user profile, would not help because the user controls the parent directory and can rename the protected item, then create a replacement. A protected directory under `%ProgramData%` would be enforceable, but it would duplicate the registry settings below without Group Policy or Intune support.
 
-#### `RequireAdminMode` Policy (Windows only)
+#### Registry Values (Windows only)
 
-Administrators who must enforce `admin` mode can set a `REG_DWORD` policy value under the same key as [`BlockUnsignedDownloads`](../signature-verification.md):
+Two `REG_DWORD` values control `admin` mode. They are read from the native registry view, so WOW64 redirection does not split them.
 
-```
-HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup!RequireAdminMode
-```
+| Value | Written by | Purpose |
+| --- | --- | --- |
+| `HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup!RequireAdminMode` | IT administrators through Group Policy, Intune, or similar tools | Organizational policy. It sits under the same key as [`BlockUnsignedDownloads`](../signature-verification.md). `dotnetup` never writes or deletes it. |
+| `HKLM\SOFTWARE\dotnet\Dotnetup!AdminMode` | `dotnetup init` and `dotnetup env set`, after elevation | Machine setting selected through `dotnetup`. |
 
-When the value is nonzero:
+`dotnetup` does not write under `HKLM\SOFTWARE\Policies` because that key is reserved for managed policy. If `dotnetup` cleared a policy value when a user left `admin` mode, it could silently remove an IT-deployed setting until the next policy refresh.
 
-- `admin` is the effective mode for every user. The configured mode is ignored but not rewritten, so it applies again if the policy is removed.
-- `init` and `env set` fail with a policy error if another mode is requested. Interactive `init` does not prompt for a mode.
-- First-use onboarding treats the mode as already selected.
-- Telemetry records that the mode came from policy.
+The effective mode is resolved in this order:
 
-The value is read from `HKLM` only. Only administrators can write to `HKLM\SOFTWARE\Policies`, while standard users can read it. As with `BlockUnsignedDownloads`, a missing or unreadable value means the policy is not set.
+1. If `RequireAdminMode` exists, it decides the mode. A nonzero value forces `admin` mode, and zero prevents `admin` mode. `init` and `env set` fail with a "managed by your organization" error if the user tries to change the mode, even when elevated.
+2. Otherwise, a nonzero `AdminMode` selects `admin` mode.
+3. Otherwise, the per-user configuration determines the mode.
 
-The policy constrains only `dotnetup`. It does not remove archive installs, `PATH` entries, or the user-level `DOTNET_ROOT` from earlier modes, although `dotnetup` should warn about them. It also does not prevent users from acquiring .NET through other tools.
+When either value selects `admin` mode, the per-user configuration is ignored but not rewritten. Its previous mode therefore applies again if `admin` mode is later disabled. Interactive `init` does not prompt for a mode, first-use onboarding treats the mode as already selected, and telemetry records whether the mode came from policy, the machine setting, or user configuration.
 
-`RequireAdminMode` does not imply `BlockUnsignedDownloads`. Because `admin` mode runs installers elevated, administrators who require it should also set `BlockUnsignedDownloads` to prevent unsigned daily installers from running with administrative rights.
+A missing or unreadable value is treated as unset, matching `BlockUnsignedDownloads`. Only administrators can write either value, while standard users can read both.
+
+#### Changing the Mode
+
+Selecting `admin` mode with `init` or `env set` sets `AdminMode` to `1`, and leaving it deletes `AdminMode`. Both operations prompt for UAC before changing any state. If elevation is declined or fails, the command fails and neither the registry nor the per-user configuration changes. This also applies to `dotnetup init --interactive false --mode admin` when called by C#DK.
+
+Elevation reuses the existing hidden-command pattern used for the system `PATH` ([`WindowsPathHelper.StartElevatedProcess`](../../../../src/Installer/dotnetup.Library/WindowsPathHelper.cs)). The elevated command accepts only `set` or `clear` and writes the fixed value. It must not accept registry paths, value names, or data from its arguments. Because that pattern elevates `dotnetup.exe` from a user-writable location, a future alternative is to elevate `%SystemRoot%\System32\reg.exe` with fixed arguments instead.
+
+Because `AdminMode` is machine-wide, selecting or leaving `admin` mode affects every user on the machine. `init` and `env set` must state this before prompting for UAC.
+
+#### Limitations
+
+The registry values constrain only `dotnetup`. They do not remove archive installs, `PATH` entries, or the user-level `DOTNET_ROOT` from earlier modes, although `dotnetup` should warn about them. They also do not prevent users from acquiring .NET through other tools.
+
+Neither value implies `BlockUnsignedDownloads`. Because `admin` mode runs installers elevated, administrators who require it should also set `BlockUnsignedDownloads` to prevent unsigned daily installers from running with administrative rights.
 
 No equivalent exists on other platforms because `admin` mode is Windows-only.
 
