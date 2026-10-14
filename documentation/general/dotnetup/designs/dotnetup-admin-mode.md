@@ -207,6 +207,10 @@ Each machine may have it's own [Removal Policy](https://learn.microsoft.com/en-u
 
 `/install` in the `.exe` bundle today already respects Removal Policy. The process of `update` should strictly run the `.exe` with `/install` on the latest version per the referenced `dotnetup` semantic channel - e.g. `11.0` or `11.0.1xx`.
 
+Note that `/install` updats across patch versions; so in the runtime, `X.Y.xx` and in the sdk, `X.Y.Zxx` - we respect other update patterns, e.g. `latest` which is cross-major.minor, or channels akin to roll forward values in global.json that update differently, so running `/install` to update and clean up won't always be correct.
+
+Per the owner of the `.exe`, we know that update is the default system behavior and would clean up older patch versions.
+
 Update will require a specific version in `admin` mode. In admin mode, `dotnetup <> update`, outside of `self`, will fail with a deliberate error.
 
 `dotnetup <> update <channel or version>` in `admin` mode will only take one argument and it will not be initially supported when `admin` mode rolls out.
@@ -223,6 +227,12 @@ Garbage collection may aggressively try to trim installs managed by other tools.
 To uninstall a system install, the following arguments can be given to the `.exe` bundle: `['/uninstall', '/passive', '/norestart']`.
 
 `dotnetup uninstall` will not initially be supported in `admin` mode.
+
+`/uninstall` respects reference counts but only VS and a few others respect it - e.g. when tools like PowerToys give the user a link to download the Runtime, that is not reference counted, so garbage collection as it is for non-`admin` modes would remove what users had already requested if the installs are not respected from other sources.
+
+We also know `/uninstall` on the `.exe` may return `0` even if the install was not uninstalled if other references remain so we must make our own hostfxr API check afterward to see if something was actually uninstalled or not.
+
+Replacement policy is not respected by the `.exe` in terms of muxer or other settings and there currently exists no such control.
 
 ## Concurrency
 
