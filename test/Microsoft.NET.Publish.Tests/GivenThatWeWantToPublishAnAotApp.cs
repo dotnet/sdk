@@ -1394,6 +1394,7 @@ public class NativeLibraryClass
         public void Aot_optimized_publish_targets_are_reviewed_when_CoreBuildDependsOn_changes()
         {
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "CoreBuildDependsOn", true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "CoreBuildDependsOn")
@@ -1427,6 +1428,25 @@ public class NativeLibraryClass
                 "GenerateBuildDependencyFile",
                 "GenerateBuildRuntimeConfigurationFiles"],
                 because: "CoreBuildDependsOn changed. Review added or removed targets for their impact on optimized publish, update the optimized target chain if necessary, then update this expected list.");
+
+            var optimizedPublishTargetsCommand = new GetValuesCommand(testAsset, "_BeforeOptimizedPublishTargets")
+            {
+                ShouldCompile = false
+            };
+
+            optimizedPublishTargetsCommand
+                .Execute()
+                .Should().Pass();
+
+            optimizedPublishTargetsCommand.GetValues().Should().Equal([
+                "BuildOnlySettings",
+                "PrepareForBuild",
+                "PreBuildEvent",
+                "ResolveReferences",
+                "PrepareResources",
+                "ResolveKeySource",
+                "Compile",
+                "CreateSatelliteAssemblies"]);
         }
 
         [TestMethod]
