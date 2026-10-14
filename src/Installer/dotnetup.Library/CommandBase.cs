@@ -53,6 +53,7 @@ public abstract class CommandBase
 
         try
         {
+            AdminModeGate.Enforce(ParseResult, GetAdminModeSupport(ParseResult.CommandResult.Command), AccessModeResolver.Resolve());
             SelfUpdateInvocation.Current?.EnterCommand(CanRunDuringSelfUpdate);
             RecordOptionUsage();
             // Start before the command's work so a background refresh can finish while it runs.
