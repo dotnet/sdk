@@ -41,6 +41,17 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .HaveStdErrContaining(String.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadNotRecognized, "fake"));
         }
 
+        [Fact]
+        public void GivenWorkloadInstallItHandlesInvalidWorkloadIdentifiersGracefully()
+        {
+            var invalidWorkloadId = "../escape";
+            var parseResult = Parser.Instance.Parse(new[] { "dotnet", "workload", "install", invalidWorkloadId, "--skip-manifest-update" });
+            (_, var installManager, _, _, _, _) = GetTestInstallers(parseResult, false, "6.0.100");
+
+            var exceptionThrown = Assert.Throws<GracefulException>(() => installManager.Execute());
+            exceptionThrown.Message.Should().Be(String.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadNotRecognized, invalidWorkloadId));
+        }
+
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/26624")]
         public void ItErrorUsingSkipManifestAndRollback()
         {
