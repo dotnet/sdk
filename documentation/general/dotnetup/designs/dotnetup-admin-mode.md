@@ -94,6 +94,8 @@ To rapidly support an emerging C#DK release, `dotnetup` will rollout `admin` sup
 
 `--muxer` related replacement commands or configuration is not controllable for MSI installs so this flag will cause failure if it is applied under `admin` mode, similar to `--install-directory`, meaning `dotnet` must NOT be in use to have `admin` installs succeed.
 
+In general, flags will be blocked in `admin` mode unless they are specifically marked to be under `admin` support for MVP. We may change this architecture later.
+
 Hidden commands that are not impacted by the mode such as the underlying telemetry drainer and self update will still work regardless of the mode.
 
 Rollout for other commands will be integrated later, such as:
@@ -105,9 +107,32 @@ Rollout for other commands will be integrated later, such as:
 
 ### Mode Storage
 
-The selected mode is stored per user in the existing `dotnetup` configuration under the user's data directory. The mode is a user preference, not a security boundary: an unelevated user can change it with `env` or `init`, or by replacing the configuration file or its containing directory. Switching out of `admin` mode does not require elevation and does not affect the machine-wide installs, which remain protected by their Program Files ACLs.
+By default, the selected mode is stored per user in the existing `dotnetup` configuration under the user's data directory. That setting is a user preference, not a security boundary: an unelevated user can change it with `env` or `init`, replace the configuration file or its containing directory, or redirect the data directory with `DOTNET_DOTNETUP_DATA_DIR`. Switching out of `admin` mode does not affect existing machine-wide installs, which remain protected by their Program Files ACLs.
 
-The configuration will not be ACL-protected. Restricting the file alone cannot be enforced while its parent directories remain user-controlled, and it would interfere with other `dotnetup` writes to the same directory. Administrator-controlled storage, such as `HKLM` or `%ProgramData%`, is also not used because it would make the mode machine-wide, while every other mode is per user.
+The user configuration will not be ACL-protected, and a protected subdirectory of the user profile would not help: the user controls the parent directory and can rename the protected directory, then create a replacement. A protected directory under `%ProgramData%` would be enforceable, but it would duplicate the registry policy below without Group Policy or Intune support.
+
+#### `RequireAdminMode` Policy (Windows only)
+
+Administrators who must enforce `admin` mode can set a `REG_DWORD` policy value under the same key as [`BlockUnsignedDownloads`](../signature-verification.md):
+
+```
+HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup!RequireAdminMode
+```
+
+When the value is nonzero:
+
+- `admin` is the effective mode for every user. The configured mode is ignored but not rewritten, so it applies again if the policy is removed.
+- `init` and `env set` fail with a policy error if another mode is requested. Interactive `init` does not prompt for a mode.
+- First-use onboarding treats the mode as already selected.
+- Telemetry records that the mode came from policy.
+
+The value is read from `HKLM` only. Only administrators can write to `HKLM\SOFTWARE\Policies`, while standard users can read it. As with `BlockUnsignedDownloads`, a missing or unreadable value means the policy is not set.
+
+The policy constrains only `dotnetup`. It does not remove archive installs, `PATH` entries, or the user-level `DOTNET_ROOT` from earlier modes, although `dotnetup` should warn about them. It also does not prevent users from acquiring .NET through other tools.
+
+`RequireAdminMode` does not imply `BlockUnsignedDownloads`. Because `admin` mode runs installers elevated, administrators who require it should also set `BlockUnsignedDownloads` to prevent unsigned daily installers from running with administrative rights.
+
+No equivalent exists on other platforms because `admin` mode is Windows-only.
 
 ## Command Parity
 
