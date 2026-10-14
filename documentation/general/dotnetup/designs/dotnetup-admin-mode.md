@@ -261,6 +261,7 @@ UAC cancellation / 1602	Cancellation | Simply fail.
 1618	| Bounded busy retry or actionable failure.
 1603 | Policy rejection, invalid payload	Preserve diagnostics; no blanket retry.
 Timeout / interrupted parent | Confirm within a bounded wait that the original elevated installation operation has ended, then re-query installation state. Retry at most once only if installation is still needed. If the original operation's status cannot be established, report an actionable failure without launching another installer.
+Ctrl+C while an installer runs | Keep waiting for the running installer and report its real result. Do not launch any further installers in the batch; report each remaining install as cancelled (`OperationCancelled`).
 
 
 ## Other Potential Issues - Needs Investigation

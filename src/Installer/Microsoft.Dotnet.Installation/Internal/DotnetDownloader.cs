@@ -204,6 +204,14 @@ internal class DotnetDownloader : IArchiveDownloader
         ReleaseVersion resolvedVersion,
         string destinationBasePath,
         IProgress<DownloadProgress>? progress = null)
+        => DownloadVerifiedArtifact(installRequest, resolvedVersion, destinationBasePath, progress).Path;
+
+    /// <inheritdoc/>
+    public VerifiedDownload DownloadVerifiedArtifact(
+        DotnetInstallRequest installRequest,
+        ReleaseVersion resolvedVersion,
+        string destinationBasePath,
+        IProgress<DownloadProgress>? progress = null)
     {
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
         string extension = GetExtensionFromUrl(downloadUrl);
@@ -211,7 +219,8 @@ internal class DotnetDownloader : IArchiveDownloader
             new Uri(downloadUrl), expectedHash,
             DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture), resolvedVersion,
             IsUnsigned: downloadUrl.StartsWith(BlobFeedUrlBuilder.ArchiveBaseUrl + "/", StringComparison.Ordinal));
-        return DownloadWithVerification(download, destinationBasePath + extension, progress);
+        string path = DownloadWithVerification(download, destinationBasePath + extension, progress);
+        return new VerifiedDownload(path, expectedHash, download.IsUnsigned);
     }
 
     /// <summary>
@@ -678,6 +687,16 @@ internal class DotnetDownloader : IArchiveDownloader
     private static void VerifyFileHash(string filePath, string expectedHash, bool allowAlternateHashes)
         => VerifyHash(ComputeFileHash(filePath), expectedHash, allowAlternateHashes);
 
+    /// <summary>
+    /// Returns whether <paramref name="actualHash"/> is accepted for a .NET artifact whose expected hash is
+    /// <paramref name="expectedHash"/>, using the same rules <see cref="DownloadVerifiedArtifact"/> applies.
+    /// </summary>
+    internal static bool IsAcceptedArtifactHash(string actualHash, string expectedHash)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(expectedHash);
+        return IsAcceptedHash(actualHash, expectedHash, allowAlternateHashes: true);
+    }
+
     private static void VerifyHash(string actualHash, string expectedHash, bool allowAlternateHashes)
     {
         if (string.IsNullOrEmpty(expectedHash))
@@ -685,14 +704,7 @@ internal class DotnetDownloader : IArchiveDownloader
             throw new ArgumentException("Expected hash cannot be null or empty", nameof(expectedHash));
         }
 
-        if (string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        // Check if the actual hash is a known acceptable alternate for this expected hash
-        if (allowAlternateHashes && s_knownAlternateHashes.TryGetValue(expectedHash, out var alternate) &&
-            string.Equals(actualHash, alternate, StringComparison.OrdinalIgnoreCase))
+        if (IsAcceptedHash(actualHash, expectedHash, allowAlternateHashes))
         {
             return;
         }
@@ -700,5 +712,17 @@ internal class DotnetDownloader : IArchiveDownloader
         throw new DotnetInstallException(
                        DotnetInstallErrorCode.HashMismatch,
                        $"File hash mismatch. Expected: {expectedHash}, Actual: {actualHash}");
+    }
+
+    private static bool IsAcceptedHash(string actualHash, string expectedHash, bool allowAlternateHashes)
+    {
+        if (string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Check if the actual hash is a known acceptable alternate for this expected hash
+        return allowAlternateHashes && s_knownAlternateHashes.TryGetValue(expectedHash, out var alternate) &&
+            string.Equals(actualHash, alternate, StringComparison.OrdinalIgnoreCase);
     }
 }

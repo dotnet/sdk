@@ -446,6 +446,15 @@ does two things:
    `UnsignedDownloadBlockedByPolicy` error (defense-in-depth check inside
   `DotnetDownloader.ResolveBlobFeedEntry`).
 
+The channel-based predicate only drives the warning. Admin-mode Windows installer
+bundles decide whether a failed Authenticode check is acceptable from the actual
+download source: only a bundle that was downloaded from the blob feed may run
+unsigned, after its SHA-512 hash is verified and only while the IT opt-out is off.
+A bundle resolved from the signed releases manifest must always pass Authenticode,
+whatever the channel. The bundle is re-hashed against the downloader's expected
+hash through a handle that denies write and delete access, and that handle is held
+until the installer exits.
+
 ### Enabling the IT opt-out
 
 Administrators that want to disallow unsigned dnup downloads can set

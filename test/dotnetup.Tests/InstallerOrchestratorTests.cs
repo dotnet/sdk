@@ -337,6 +337,72 @@ public class InstallerOrchestratorTests
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallFailed);
     }
 
+    [TestMethod]
+    public void ConsumePreparedInstalls_WithoutCancellation_CommitsEveryInstall()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var batchContext = new InstallBatchContext(reporter, 8);
+        var artifacts = new[] { new FakeArtifact(), new FakeArtifact() };
+        var (results, failures) = ConsumePrepared(testEnv, batchContext, artifacts);
+
+        results.Should().HaveCount(2);
+        failures.Should().BeEmpty();
+        artifacts.Should().OnlyContain(a => a.CommitCalls == 1 && a.Disposed);
+    }
+
+    [TestMethod]
+    public void ConsumePreparedInstalls_CancellationRequestedDuringCommit_RecordsRemainingInstallsAsCancelled()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var batchContext = new InstallBatchContext(reporter, 8);
+        var first = new FakeArtifact { OnCommit = batchContext.RequestCancellation };
+        var second = new FakeArtifact();
+        var (results, failures) = ConsumePrepared(testEnv, batchContext, first, second);
+
+        results.Should().ContainSingle();
+        failures.Should().ContainSingle().Which.Exception.ErrorCode.Should().Be(DotnetInstallErrorCode.OperationCancelled);
+        first.CommitCalls.Should().Be(1);
+        second.CommitCalls.Should().Be(0);
+        second.Disposed.Should().BeTrue();
+    }
+
+    private static (List<InstallResult> Results, List<InstallFailure> Failures) ConsumePrepared(
+        TestEnvironment testEnv,
+        InstallBatchContext batchContext,
+        params FakeArtifact[] artifacts)
+    {
+        var prepared = artifacts.Select(artifact =>
+        {
+            var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.Archive, untracked: true);
+            var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+            return new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+        });
+        using var readyQueue = new System.Collections.Concurrent.BlockingCollection<InstallerOrchestratorSingleton.PreparedInstall>(
+            new System.Collections.Concurrent.ConcurrentQueue<InstallerOrchestratorSingleton.PreparedInstall>(prepared));
+        readyQueue.CompleteAdding();
+        var results = new List<InstallResult>();
+        var failures = new List<InstallFailure>();
+        var fatalExceptions = new List<Exception>();
+
+        InstallerOrchestratorSingleton.ConsumeConcurrentPreparedInstallsAndCommit(
+            readyQueue,
+            batchContext,
+            prepared =>
+            {
+                prepared.Artifact.Commit();
+                return new InstallResult(prepared.Install, WasAlreadyInstalled: false);
+            },
+            results,
+            failures,
+            fatalExceptions,
+            new object());
+
+        fatalExceptions.Should().BeEmpty();
+        return (results, failures);
+    }
+
     private static ResolvedInstallRequest MakeResolvedRequest(TestEnvironment testEnv, InstallMechanism mechanism, bool untracked)
     {
         var request = new DotnetInstallRequest(
@@ -356,17 +422,23 @@ public class InstallerOrchestratorTests
     {
         public int CommitCalls { get; private set; }
 
+        public bool Disposed { get; private set; }
+
+        public Action? OnCommit { get; init; }
+
         public IReadOnlyList<string> ExtractedSubcomponents => [];
 
         public void Prepare()
         {
         }
 
-        public void Commit() => CommitCalls++;
-
-        public void Dispose()
+        public void Commit()
         {
+            CommitCalls++;
+            OnCommit?.Invoke();
         }
+
+        public void Dispose() => Disposed = true;
     }
 
     #endregion

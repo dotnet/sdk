@@ -92,7 +92,7 @@ internal class InstallerOrchestratorSingleton
         using var readyQueue = new System.Collections.Concurrent.BlockingCollection<PreparedInstall>();
 
         var downloadTask = Task.Run(() => PrepareConcurrent(requests, batchContext, readyQueue, results, failures, fatalExceptions, installResultCollectionLock));
-        ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, results, failures, fatalExceptions, installResultCollectionLock);
+        ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, batchContext, CommitPreparedInstall, results, failures, fatalExceptions, installResultCollectionLock);
         downloadTask.Wait();
 
         // Fatal (non-DotnetInstallException) errors still abort the batch entirely.
@@ -158,9 +158,13 @@ internal class InstallerOrchestratorSingleton
     /// Consumes the ready queue and commits (extracts + records) each install as it arrives.
     /// CommitPreparedInstall acquires the install-state mutex, so commits are serialized.
     /// <see cref="DotnetInstallException"/> failures are captured per-request; other exceptions are fatal.
+    /// Once the user has asked to cancel the batch, remaining installs are recorded as cancelled instead of committed.
+    /// <c>commit</c> commits one prepared install; production code passes <see cref="CommitPreparedInstall"/>.
     /// </summary>
-    private void ConsumeConcurrentPreparedInstallsAndCommit(
+    internal static void ConsumeConcurrentPreparedInstallsAndCommit(
         System.Collections.Concurrent.BlockingCollection<PreparedInstall> readyQueue,
+        InstallBatchContext batchContext,
+        Func<PreparedInstall, InstallResult> commit,
         List<InstallResult> results,
         List<InstallFailure> failures,
         List<Exception> fatalExceptions,
@@ -182,9 +186,15 @@ internal class InstallerOrchestratorSingleton
                     continue;
                 }
 
+                if (batchContext.IsCancellationRequested)
+                {
+                    lock (installResultCollectionLock) { failures.Add(new InstallFailure(prepared.ResolvedRequest, CreateCancelledBeforeStartException(prepared))); }
+                    continue;
+                }
+
                 try
                 {
-                    results.Add(CommitPreparedInstall(prepared));
+                    results.Add(commit(prepared));
                 }
                 catch (DotnetInstallException ex)
                 {
@@ -201,6 +211,12 @@ internal class InstallerOrchestratorSingleton
             foreach (var p in committedInstalls) { p.Dispose(); }
         }
     }
+
+    private static DotnetInstallException CreateCancelledBeforeStartException(PreparedInstall prepared) => new(
+        DotnetInstallErrorCode.OperationCancelled,
+        $"Installation was cancelled before {prepared.Request.Component.GetDisplayName()} {prepared.Version} was installed.",
+        version: prepared.Version.ToString(),
+        component: prepared.Request.Component.ToString());
 
     /// <summary>
     /// Represents a prepared (downloaded but not yet committed) installation.

@@ -3,10 +3,12 @@
 
 using System.ComponentModel;
 using System.Globalization;
+using System.Security.Cryptography;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 
@@ -97,11 +99,28 @@ public class WindowsBundleArtifactTests : IDisposable
     [TestMethod]
     [DataRow("daily")]
     [DataRow("10.0.100-preview.4.25216.37")]
+    public void Commit_SignatureFailureOnSignedSourceForPrereleaseChannel_ThrowsAndDoesNotRunInstaller(string channel)
+    {
+        UnsignedSourcePolicy.OverrideForTesting = () => false;
+        var runner = new FakeRunner(exitCode: 0);
+        var artifact = CreateArtifact(channel, downloader: CreateDownloader(isUnsigned: false), verifier: FakeVerifier.Untrusted, runner: runner);
+        artifact.Prepare();
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
+        runner.Calls.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    [DataRow("daily")]
+    [DataRow("10.0.100-preview.4.25216.37")]
+    [DataRow(StableChannel)]
     public void Commit_UnsignedSourceAllowedByPolicy_RunsInstaller(string channel)
     {
         UnsignedSourcePolicy.OverrideForTesting = () => false;
         var runner = new FakeRunner(exitCode: 0);
-        var artifact = CreateArtifact(channel, verifier: FakeVerifier.Untrusted, runner: runner);
+        var artifact = CreateArtifact(channel, downloader: CreateDownloader(isUnsigned: true), verifier: FakeVerifier.Untrusted, runner: runner);
         artifact.Prepare();
 
         artifact.Commit();
@@ -114,7 +133,7 @@ public class WindowsBundleArtifactTests : IDisposable
     {
         UnsignedSourcePolicy.OverrideForTesting = () => true;
         var runner = new FakeRunner(exitCode: 0);
-        var artifact = CreateArtifact("daily", verifier: FakeVerifier.Untrusted, runner: runner);
+        var artifact = CreateArtifact("daily", downloader: CreateDownloader(isUnsigned: true), verifier: FakeVerifier.Untrusted, runner: runner);
         artifact.Prepare();
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
@@ -124,17 +143,105 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
-    public void Commit_BundleModifiedAfterDownload_ThrowsAndDoesNotRunInstaller()
+    public void Prepare_BundleReplacedAfterDownloadVerification_ThrowsHashMismatchAndReleasesFile()
     {
+        var downloader = CreateDownloader();
+        downloader.ExpectedHash = Convert.ToHexStringLower(SHA512.HashData(downloader.FakeArchiveContent));
+        downloader.FakeArchiveContent = [0x4D, 0x5A, 9, 9, 9];
         var runner = new FakeRunner(exitCode: 0);
-        var artifact = CreateArtifact(StableChannel, runner: runner);
+        var artifact = CreateArtifact(StableChannel, downloader: downloader, runner: runner);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Prepare);
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.HashMismatch);
+        artifact.BundlePath.Should().BeNull();
+        Assert.ThrowsExactly<InvalidOperationException>(artifact.Commit);
+        runner.Calls.Should().BeEmpty();
+        File.Delete(downloader.DownloadCalls[0].DestinationPath);
+    }
+
+    [TestMethod]
+    public void Prepare_AcceptsExpectedHashInAnyCase()
+    {
+        var downloader = CreateDownloader();
+        downloader.ExpectedHash = Convert.ToHexString(SHA512.HashData(downloader.FakeArchiveContent));
+        var artifact = CreateArtifact(StableChannel, downloader: downloader);
+
         artifact.Prepare();
-        File.WriteAllBytes(artifact.BundlePath!, [9, 9, 9]);
+
+        artifact.BundlePath.Should().NotBeNull();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void Prepare_LocksBundleAgainstWriteAndDeleteUntilDisposed()
+    {
+        var artifact = CreateArtifact(StableChannel);
+        artifact.Prepare();
+        string bundlePath = artifact.BundlePath!;
+
+        Record.Exception(() => File.Delete(bundlePath)).Should().Match<Exception>(e => e is IOException || e is UnauthorizedAccessException);
+        Record.Exception(() => File.OpenWrite(bundlePath).Dispose()).Should().Match<Exception>(e => e is IOException || e is UnauthorizedAccessException);
+        File.ReadAllBytes(bundlePath).Should().NotBeEmpty("other readers such as the installer must still be able to read the bundle");
+
+        artifact.Dispose();
+
+        File.Exists(bundlePath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void Commit_CancelRequestedWhileInstallerRuns_ReportsInstallerResultAndFlagsBatch()
+    {
+        var batchContext = new InstallBatchContext(_reporter, 8);
+        var runner = new FakeRunner(exitCode: 0) { RequestCancellation = true };
+        var artifact = CreateArtifact(StableChannel, runner: runner, batchContext: batchContext);
+        artifact.Prepare();
+
+        artifact.Commit();
+
+        runner.Calls.Should().ContainSingle();
+        batchContext.IsCancellationRequested.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void Commit_CancelRequestedAndInstallerFails_ReportsInstallerFailure()
+    {
+        var batchContext = new InstallBatchContext(_reporter, 8);
+        var artifact = CreateArtifact(StableChannel, runner: new FakeRunner(exitCode: 1603) { RequestCancellation = true }, batchContext: batchContext);
+        artifact.Prepare();
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
 
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.HashMismatch);
-        runner.Calls.Should().BeEmpty();
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerFailed);
+        batchContext.IsCancellationRequested.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void ConsumePreparedInstalls_CancelRequestedDuringFirstInstaller_SkipsRemainingInstallers()
+    {
+        var batchContext = new InstallBatchContext(_reporter, 8);
+        var firstRunner = new FakeRunner(exitCode: 0) { RequestCancellation = true };
+        var secondRunner = new FakeRunner(exitCode: 0);
+        var first = Prepare(CreateArtifact(StableChannel, runner: firstRunner, batchContext: batchContext), StableChannel);
+        var second = Prepare(CreateArtifact("10.0.200", runner: secondRunner, batchContext: batchContext), "10.0.200");
+        using var readyQueue = new System.Collections.Concurrent.BlockingCollection<InstallerOrchestratorSingleton.PreparedInstall>(
+            new System.Collections.Concurrent.ConcurrentQueue<InstallerOrchestratorSingleton.PreparedInstall>([first, second]));
+        readyQueue.CompleteAdding();
+        var results = new List<InstallResult>();
+        var failures = new List<InstallFailure>();
+        var fatalExceptions = new List<Exception>();
+
+        InstallerOrchestratorSingleton.ConsumeConcurrentPreparedInstallsAndCommit(
+            readyQueue, batchContext, CommitWithoutValidation, results, failures, fatalExceptions, new object());
+
+        results.Should().ContainSingle().Which.Install.Should().Be(first.Install);
+        failures.Should().ContainSingle();
+        failures[0].Request.Should().Be(second.ResolvedRequest);
+        failures[0].Exception.ErrorCode.Should().Be(DotnetInstallErrorCode.OperationCancelled);
+        fatalExceptions.Should().BeEmpty();
+        firstRunner.Calls.Should().ContainSingle();
+        secondRunner.Calls.Should().BeEmpty();
+        Directory.Exists(((WindowsBundleArtifact)second.Artifact).ScratchDirectory).Should().BeFalse("skipped installs are still disposed");
     }
 
     [TestMethod]
@@ -267,28 +374,45 @@ public class WindowsBundleArtifactTests : IDisposable
         BundleExitCodes.Classify(exitCode).Should().Be(expected);
     }
 
-    private static MockArchiveDownloader CreateDownloader() => new()
+    private static MockArchiveDownloader CreateDownloader(bool isUnsigned = false) => new()
     {
         ArchiveFileExtension = ".exe",
         FakeArchiveContent = [0x4D, 0x5A, 1, 2, 3, 4],
+        IsUnsigned = isUnsigned,
     };
+
+    private static DotnetInstallRequest CreateRequest(string channel) => new(
+        new DotnetInstallRoot(Path.Combine(Path.GetTempPath(), "dotnetup-bundle-root-unused"), InstallArchitecture.x64),
+        new UpdateChannel(channel),
+        InstallComponent.SDK,
+        new InstallRequestOptions { Untracked = true, InstallMechanism = InstallMechanism.WindowsInstallerBundle });
+
+    private static InstallerOrchestratorSingleton.PreparedInstall Prepare(WindowsBundleArtifact artifact, string channel)
+    {
+        artifact.Prepare();
+        var resolvedRequest = new ResolvedInstallRequest(CreateRequest(channel), new ReleaseVersion("10.0.100"));
+        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        return new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+    }
+
+    private static InstallResult CommitWithoutValidation(InstallerOrchestratorSingleton.PreparedInstall prepared)
+    {
+        prepared.Artifact.Commit();
+        return new InstallResult(prepared.Install, WasAlreadyInstalled: false);
+    }
 
     private WindowsBundleArtifact CreateArtifact(
         string channel,
         MockArchiveDownloader? downloader = null,
         IInstallerSignatureVerifier? verifier = null,
         FakeRunner? runner = null,
-        TextWriter? notices = null)
+        TextWriter? notices = null,
+        InstallBatchContext? batchContext = null)
     {
-        var request = new DotnetInstallRequest(
-            new DotnetInstallRoot(Path.Combine(Path.GetTempPath(), "dotnetup-bundle-root-unused"), InstallArchitecture.x64),
-            new UpdateChannel(channel),
-            InstallComponent.SDK,
-            new InstallRequestOptions { Untracked = true, InstallMechanism = InstallMechanism.WindowsInstallerBundle });
         var artifact = new WindowsBundleArtifact(
-            request,
+            CreateRequest(channel),
             new ReleaseVersion("10.0.100"),
-            new InstallBatchContext(_reporter, 8),
+            batchContext ?? new InstallBatchContext(_reporter, 8),
             downloader ?? CreateDownloader(),
             verifier ?? FakeVerifier.Trusted,
             runner ?? new FakeRunner(exitCode: 0),
@@ -314,9 +438,17 @@ public class WindowsBundleArtifactTests : IDisposable
 
         public Action<string>? OnRun { get; init; }
 
-        public int Run(string bundlePath, IReadOnlyList<string> arguments)
+        /// <summary>Simulates the user pressing Ctrl+C while the installer runs.</summary>
+        public bool RequestCancellation { get; init; }
+
+        public int Run(string bundlePath, IReadOnlyList<string> arguments, Action onCancelRequested)
         {
             Calls.Add((bundlePath, arguments));
+            if (RequestCancellation)
+            {
+                onCancelRequested();
+            }
+
             OnRun?.Invoke(bundlePath);
             return exitCode;
         }

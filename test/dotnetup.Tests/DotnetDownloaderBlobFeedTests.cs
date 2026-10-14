@@ -862,6 +862,38 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         history.Should().ContainSingle();
     }
 
+    /// <summary>
+    /// A bundle that falls back to the blob feed is reported as unsigned together with the hash it was
+    /// verified against, so the installer artifact can decide the Authenticode allowance from the real source.
+    /// </summary>
+    [TestMethod]
+    public void DownloadVerifiedArtifact_BlobFeedBundle_ReportsUnsignedSourceAndVerifiedHash()
+    {
+        UnsignedSourcePolicy.OverrideForTesting = () => false;
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        const string version = "10.0.100-preview.4.25216.37";
+        const string content = "unsigned installer bytes";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        string bundleUrl = $"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-{version}-{rid}.exe";
+        string expectedHash = Convert.ToHexStringLower(System.Security.Cryptography.SHA512.HashData(Encoding.UTF8.GetBytes(content)));
+        var (handler, _) = BuildHandler(new()
+        {
+            [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}.exe.sha512"] = (HttpStatusCode.OK, expectedHash),
+            [bundleUrl] = (HttpStatusCode.OK, content),
+        });
+        using var http = new HttpClient(handler);
+        var manifest = new ThrowingReleaseManifest(DotnetInstallErrorCode.VersionNotFound);
+        var downloader = new DotnetDownloader(manifest, http, Path.Combine(testEnv.TempRoot, "cache"));
+        string destinationBase = Path.Combine(testEnv.TempRoot, "bundle");
+
+        VerifiedDownload download = downloader.DownloadVerifiedArtifact(BuildBundleRequest(version, InstallComponent.SDK), new ReleaseVersion(version), destinationBase);
+
+        download.Path.Should().Be(destinationBase + ".exe");
+        download.ExpectedHash.Should().Be(expectedHash);
+        download.IsUnsigned.Should().BeTrue();
+        File.ReadAllText(download.Path).Should().Be(content);
+    }
+
     [TestMethod]
     public void ResolveManifestEntry_BundleMechanism_BlobFeed404_ThrowsVersionNotFoundAfterSingleProbe()
     {

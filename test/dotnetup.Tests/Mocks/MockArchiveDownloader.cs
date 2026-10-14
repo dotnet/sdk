@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -49,6 +50,28 @@ internal class MockArchiveDownloader : IArchiveDownloader
     /// The extension to append to the base path. Defaults to <see cref="DotnetupTestUtilities.DefaultArchiveFileExtension"/>.
     /// </summary>
     public string ArchiveFileExtension { get; set; } = DotnetupTestUtilities.DefaultArchiveFileExtension;
+
+    /// <summary>
+    /// The expected hash reported by <see cref="DownloadVerifiedArtifact"/>. Defaults to the SHA-512 of
+    /// <see cref="FakeArchiveContent"/>; set it to simulate a file that changed after verification.
+    /// </summary>
+    public string? ExpectedHash { get; set; }
+
+    /// <summary>
+    /// Whether <see cref="DownloadVerifiedArtifact"/> reports the download as coming from the unsigned blob feed.
+    /// </summary>
+    public bool IsUnsigned { get; set; }
+
+    public VerifiedDownload DownloadVerifiedArtifact(
+        DotnetInstallRequest installRequest,
+        ReleaseVersion resolvedVersion,
+        string destinationBasePath,
+        IProgress<DownloadProgress>? progress = null)
+    {
+        string path = DownloadArchiveWithVerification(installRequest, resolvedVersion, destinationBasePath, progress);
+        string expectedHash = ExpectedHash ?? Convert.ToHexStringLower(SHA512.HashData(FakeArchiveContent));
+        return new VerifiedDownload(path, expectedHash, IsUnsigned);
+    }
 
     public string DownloadArchiveWithVerification(
         DotnetInstallRequest installRequest,

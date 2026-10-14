@@ -24,9 +24,13 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     private readonly IInstallerSignatureVerifier _signatureVerifier;
     private readonly IBundleProcessRunner _processRunner;
     private readonly ExtractorProgressTracker _progress;
+    private readonly InstallBatchContext _batchContext;
     private readonly TextWriter _notices;
-    private string? _bundlePath;
-    private string? _downloadedHash;
+    private VerifiedDownload? _download;
+
+    // Denies write and delete access from the moment the bundle is verified until this artifact is
+    // disposed, so the file that was verified is the file that runs.
+    private FileStream? _lockedBundle;
 
     public WindowsBundleArtifact(
         DotnetInstallRequest request,
@@ -43,6 +47,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         _signatureVerifier = signatureVerifier ?? new AuthenticodeInstallerSignatureVerifier();
         _processRunner = processRunner ?? new BundleProcessRunner();
         _notices = notices ?? Console.Error;
+        _batchContext = batchContext;
         _progress = new ExtractorProgressTracker(batchContext.Reporter, request.Component, version.ToString(), batchContext.VersionDisplayWidth);
         ScratchDirectory = Directory.CreateTempSubdirectory().FullName;
     }
@@ -51,7 +56,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     internal string ScratchDirectory { get; }
 
     /// <summary>The downloaded bundle path once <see cref="Prepare"/> has completed. Exposed for testing.</summary>
-    internal string? BundlePath => _bundlePath;
+    internal string? BundlePath => _download?.Path;
 
     public IReadOnlyList<string> ExtractedSubcomponents => [];
 
@@ -59,37 +64,32 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     {
         var (reporter, downloadTask) = _progress.BeginDownload();
         string basePath = Path.Combine(ScratchDirectory, $"{BlobFeedUrlBuilder.GetArchivePrefix(_request.Component)}-{Guid.NewGuid():N}");
-        string bundlePath = Download(basePath, reporter);
+        VerifiedDownload download = Download(basePath, reporter);
+        EnsureInstallerExtension(download.Path);
 
-        if (!bundlePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        FileStream lockedBundle = OpenLocked(download.Path);
+        try
         {
-            throw CreateException(
-                DotnetInstallErrorCode.InstallerFailed,
-                $"Expected a Windows installer (.exe) for {Describe()}, but the download resolved to '{Path.GetFileName(bundlePath)}'.");
+            EnsureMatchesVerifiedHash(lockedBundle, download.ExpectedHash);
+        }
+        catch
+        {
+            lockedBundle.Dispose();
+            throw;
         }
 
-        using (var stream = new FileStream(bundlePath, FileMode.Open, FileAccess.Read, FileShare.Read))
-        {
-            _downloadedHash = ComputeHash(stream);
-        }
-
-        _bundlePath = bundlePath;
-        _progress.CompleteDownload(downloadTask, bundlePath);
+        _lockedBundle = lockedBundle;
+        _download = download;
+        _progress.CompleteDownload(downloadTask, download.Path);
     }
 
     public void Commit()
     {
-        string bundlePath = _bundlePath ?? throw new InvalidOperationException("Prepare() must be called before Commit().");
+        VerifiedDownload download = _download ?? throw new InvalidOperationException("Prepare() must be called before Commit().");
         var installTask = _progress.BeginExtraction();
 
-        // Hold a handle that denies write and delete access until the installer exits, so the file that
-        // was verified is the file that runs.
-        using (var lockedBundle = OpenLocked(bundlePath))
-        {
-            EnsureUnchangedSinceDownload(lockedBundle);
-            EnsureTrustedSignature(bundlePath);
-            HandleExitCode(RunInstaller(bundlePath));
-        }
+        EnsureTrustedSignature(download);
+        HandleExitCode(RunInstaller(download.Path));
 
         installTask.Value = installTask.MaxValue;
         _progress.CompleteExtraction(installTask);
@@ -97,6 +97,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
 
     public void Dispose()
     {
+        _lockedBundle?.Dispose();
+        _lockedBundle = null;
         try
         {
             if (Directory.Exists(ScratchDirectory))
@@ -109,11 +111,11 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         }
     }
 
-    private string Download(string basePath, IProgress<DownloadProgress>? reporter)
+    private VerifiedDownload Download(string basePath, IProgress<DownloadProgress>? reporter)
     {
         try
         {
-            return _downloader.DownloadArchiveWithVerification(_request, _version, basePath, reporter);
+            return _downloader.DownloadVerifiedArtifact(_request, _version, basePath, reporter);
         }
         catch (DotnetInstallException)
         {
@@ -143,20 +145,35 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         }
     }
 
-    private void EnsureUnchangedSinceDownload(FileStream lockedBundle)
+    private void EnsureInstallerExtension(string bundlePath)
     {
-        if (!string.Equals(ComputeHash(lockedBundle), _downloadedHash, StringComparison.Ordinal))
+        if (!bundlePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
             throw CreateException(
-                DotnetInstallErrorCode.HashMismatch,
-                $"The downloaded installer for {Describe()} was modified after it was verified. Run the command again.");
+                DotnetInstallErrorCode.InstallerFailed,
+                $"Expected a Windows installer (.exe) for {Describe()}, but the download resolved to '{Path.GetFileName(bundlePath)}'.");
         }
     }
 
-    private void EnsureTrustedSignature(string bundlePath)
+    /// <summary>
+    /// Re-hashes the bundle through the locked handle and compares it with the hash the downloader verified,
+    /// so a file swapped on disk after the download (in the scratch directory or the hard-linked download
+    /// cache) is rejected.
+    /// </summary>
+    private void EnsureMatchesVerifiedHash(FileStream lockedBundle, string expectedHash)
     {
-        InstallerSignatureResult result = _signatureVerifier.Verify(bundlePath);
-        if (result.IsTrusted || IsUnsignedSourceAllowed())
+        if (!DotnetDownloader.IsAcceptedArtifactHash(ComputeHash(lockedBundle), expectedHash))
+        {
+            throw CreateException(
+                DotnetInstallErrorCode.HashMismatch,
+                $"The downloaded installer for {Describe()} does not match its expected hash; it may have been modified after it was downloaded. Run the command again.");
+        }
+    }
+
+    private void EnsureTrustedSignature(VerifiedDownload download)
+    {
+        InstallerSignatureResult result = _signatureVerifier.Verify(download.Path);
+        if (result.IsTrusted || IsUnsignedSourceAllowed(download))
         {
             return;
         }
@@ -167,18 +184,18 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     }
 
     /// <summary>
-    /// Daily and unreleased prerelease builds come from the blob feed, whose installers are not Authenticode
-    /// signed. Their SHA-512 hash was verified during download and the user was warned up front, so they
-    /// may run unless IT policy blocks unsigned downloads.
+    /// Installers from the blob feed are not Authenticode signed. Their SHA-512 hash was verified during
+    /// download and the user was warned up front, so they may run unless IT policy blocks unsigned downloads.
+    /// Installers resolved from the signed releases manifest must always pass Authenticode, whatever the channel.
     /// </summary>
-    private bool IsUnsignedSourceAllowed() =>
-        UnsignedSourcePolicy.MayDownloadUnsigned(_request) && !UnsignedSourcePolicy.IsUnsignedDownloadBlocked();
+    private static bool IsUnsignedSourceAllowed(VerifiedDownload download) =>
+        download.IsUnsigned && !UnsignedSourcePolicy.IsUnsignedDownloadBlocked();
 
     private int RunInstaller(string bundlePath)
     {
         try
         {
-            return _processRunner.Run(bundlePath, InstallArguments);
+            return _processRunner.Run(bundlePath, InstallArguments, _batchContext.RequestCancellation);
         }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or IOException or PlatformNotSupportedException)
         {
