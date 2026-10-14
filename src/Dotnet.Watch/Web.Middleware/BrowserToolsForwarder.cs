@@ -14,6 +14,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -36,6 +37,7 @@ internal sealed class BrowserToolsForwarder : IDisposable
     private readonly Uri _providerAddress;
     private readonly HttpClient _httpClient;
     private readonly ILogger<BrowserToolsForwarder> _logger;
+    private readonly CancellationToken _applicationStopping;
 
     // ClientWebSocketOptions.CollectHttpResponseDetails and ClientWebSocket.HttpStatusCode were added in
     // .NET 7. This assembly targets the lowest runtime it can be injected into, but it executes on the
@@ -48,10 +50,11 @@ internal sealed class BrowserToolsForwarder : IDisposable
     private static readonly PropertyInfo? s_httpStatusCode =
         typeof(ClientWebSocket).GetProperty("HttpStatusCode", BindingFlags.Public | BindingFlags.Instance);
 
-    public BrowserToolsForwarder(Uri providerAddress, ILogger<BrowserToolsForwarder> logger)
+    public BrowserToolsForwarder(Uri providerAddress, IHostApplicationLifetime applicationLifetime, ILogger<BrowserToolsForwarder> logger)
     {
         _providerAddress = providerAddress;
         _logger = logger;
+        _applicationStopping = applicationLifetime.ApplicationStopping;
         _httpClient = new HttpClient(new SocketsHttpHandler
         {
             AllowAutoRedirect = false,
@@ -147,7 +150,8 @@ internal sealed class BrowserToolsForwarder : IDisposable
         }
 
         using var browserSocket = await context.WebSockets.AcceptWebSocketAsync(providerSocket.SubProtocol);
-        using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
+        // Kestrel waits for upgraded requests during graceful shutdown before aborting them.
+        using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted, _applicationStopping);
 
         var browserToProvider = PumpWebSocketAsync(browserSocket, providerSocket, cancellationSource.Token);
         var providerToBrowser = PumpWebSocketAsync(providerSocket, browserSocket, cancellationSource.Token);
@@ -155,6 +159,10 @@ internal sealed class BrowserToolsForwarder : IDisposable
         try
         {
             await Task.WhenAll(browserToProvider, providerToBrowser);
+        }
+        catch (OperationCanceledException) when (_applicationStopping.IsCancellationRequested)
+        {
+            _logger.LogDebug("Browser tools WebSocket forwarding canceled during application shutdown.");
         }
         catch
         {
