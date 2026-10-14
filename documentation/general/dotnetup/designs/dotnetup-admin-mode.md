@@ -144,7 +144,7 @@ Because `AdminMode` is machine-wide, selecting or leaving `admin` mode affects e
 
 The registry values constrain only `dotnetup`. They do not remove archive installs, `PATH` entries, or the user-level `DOTNET_ROOT` from earlier modes, although `dotnetup` should warn about them. They also do not prevent users from acquiring .NET through other tools.
 
-Neither value implies `BlockUnsignedDownloads`. Because `admin` mode runs installers elevated, administrators who require it should also set `BlockUnsignedDownloads` to prevent unsigned daily installers from running with administrative rights.
+When admin mode is initially set via UAC, `BlockUnsignedDownloads` will also be set.
 
 No equivalent exists on other platforms because `admin` mode is Windows-only.
 
