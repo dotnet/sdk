@@ -35,20 +35,10 @@ public class RestoringCommand : MSBuildForwardingApp
     public RestoringCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
-        string? msbuildPath = null,
-        string? userProfileDir = null,
-        bool? advertiseWorkloadUpdates = null)
-        : this(msbuildArgs, noRestore, msbuildPath, userProfileDir, advertiseWorkloadUpdates, services: null)
-    {
-    }
-
-    public RestoringCommand(
-        MSBuildArgs msbuildArgs,
-        bool noRestore,
         string? msbuildPath,
         string? userProfileDir,
         bool? advertiseWorkloadUpdates,
-        CommandServices? services)
+        CommandServices services)
         : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath, services)
     {
         userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;

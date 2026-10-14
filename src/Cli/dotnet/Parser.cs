@@ -467,7 +467,10 @@ public static class Parser
             }
             else if (command is MSBuildCommandDefinition)
             {
-                new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute();
+                new MSBuildForwardingApp(
+                    MSBuildArgs.ForHelp,
+                    msbuildPath: null,
+                    CommandServices.CreateDefault()).Execute();
                 context.Output.WriteLine();
                 additionalOption(context);
             }

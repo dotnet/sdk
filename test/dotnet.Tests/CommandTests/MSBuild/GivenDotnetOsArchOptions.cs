@@ -93,7 +93,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => BuildCommand.FromArgs(["--os", "os", "--runtime", "rid"], msbuildPath));
+                var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => BuildCommand.FromArgs(
+                    ["--os", "os", "--runtime", "rid"],
+                    msbuildPath,
+                    TestCommandServices.CreateNonLLM()));
                 exceptionThrown.Message.Should().Be(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
             });
         }
@@ -104,7 +107,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => BuildCommand.FromArgs(["--arch", "arch", "--runtime", "rid"], msbuildPath));
+                var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => BuildCommand.FromArgs(
+                    ["--arch", "arch", "--runtime", "rid"],
+                    msbuildPath,
+                    TestCommandServices.CreateNonLLM()));
                 exceptionThrown.Message.Should().Be(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
             });
         }

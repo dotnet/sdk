@@ -17,7 +17,7 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
 
     private readonly EnvironmentDetectionRuleWithResult<string>[] _detectionRules;
 
-    public LLMEnvironmentDetectorForTelemetry(IEnvironmentProvider? environmentProvider = null)
+    public LLMEnvironmentDetectorForTelemetry(IEnvironmentProvider? environmentProvider)
     {
         _detectionRules = environmentProvider is null
             ? s_detectionRules

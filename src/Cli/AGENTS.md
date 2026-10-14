@@ -80,13 +80,10 @@ rest are supporting libraries:
 ## Per-command services
 
 [`CommandServices`](dotnet/CommandServices.cs) holds immutable service dependencies.
-[`CommandBase`](dotnet/CommandBase.cs) retains them per instance, resolving production
-defaults when none are supplied. The build-family factories have service-aware
-overloads; pass the same instance to subordinate commands, as
+[`CommandBase`](dotnet/CommandBase.cs) retains them per instance. Build-family factories
+require callers to provide services explicitly; pass the same instance to subordinate commands, as
 [`RestoringCommand`](dotnet/Commands/Restore/RestoringCommand.cs) does for separate restore.
-Keep the existing public/protected constructor and factory signatures when adding
-dependencies; optional parameters alone do not preserve their CLR signatures. See
-[`CommandApiCompatibilityTests`](../../test/dotnet.Tests/CommandTests/MSBuild/CommandApiCompatibilityTests.cs).
+CLI entry points that do not receive services create the production defaults explicitly.
 
 For in-process LLM tests, inject a detector through these services rather than changing
 the process environment or adding ambient overrides. Keep command-path tests entering

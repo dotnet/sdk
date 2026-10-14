@@ -93,8 +93,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
         MSBuildArgs msbuildArgs,
-        string? artifactsPath = null,
-        CommandServices? services = null) : base(services)
+        CommandServices services,
+        string? artifactsPath = null) : base(services)
     {
         MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(
             CommonRunHelpers.CreateFileBasedRunGlobalProperties().AsReadOnly());

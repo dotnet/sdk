@@ -13,22 +13,16 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Store;
 
 public sealed class StoreCommand : MSBuildForwardingApp
 {
-    private StoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null, CommandServices services = null)
+    private StoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath, CommandServices services)
         : base(msbuildArgs, msbuildPath, services)
     {
     }
-
-    public static StoreCommand FromArgs(string[] args, string msbuildPath = null)
-        => FromArgs(args, msbuildPath, services: null);
 
     public static StoreCommand FromArgs(string[] args, string msbuildPath, CommandServices services)
     {
         var result = Parser.Parse(["dotnet", "store", .. args]);
         return FromParseResult(result, msbuildPath, services);
     }
-
-    public static StoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
-        => FromParseResult(result, msbuildPath, services: null);
 
     public static StoreCommand FromParseResult(ParseResult result, string msbuildPath, CommandServices services)
     {
@@ -54,6 +48,6 @@ public sealed class StoreCommand : MSBuildForwardingApp
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
     }
 }

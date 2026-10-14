@@ -9,25 +9,15 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
-public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath, CommandServices? services) : MSBuildForwardingApp(msbuildArgs, msbuildPath, services)
+public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath, CommandServices services) : MSBuildForwardingApp(msbuildArgs, msbuildPath, services)
 {
-    public CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) : this(msbuildArgs, msbuildPath, services: null)
-    {
-    }
-
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
-        => FromArgs(args, msbuildPath, services: null);
-
-    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices? services)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices services)
     {
         var result = Parser.Parse(["dotnet", "clean", .. args]);
         return FromParseResult(result, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
-        => FromParseResult(result, msbuildPath, services: null);
-
-    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath, CommandServices? services)
+    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath, CommandServices services)
     {
         var definition = (CleanCommandDefinition)result.CommandResult.Command;
 
@@ -62,6 +52,6 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath, C
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
     }
 }

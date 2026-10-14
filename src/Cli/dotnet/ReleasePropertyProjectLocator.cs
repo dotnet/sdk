@@ -105,7 +105,10 @@ internal sealed class ReleasePropertyProjectLocator(
         {
             if (VirtualProjectBuilder.IsValidEntryPointPath(arg))
             {
-                return new VirtualProjectBuildingCommand(Path.GetFullPath(arg), MSBuildArgs.FromProperties(globalProps))
+                return new VirtualProjectBuildingCommand(
+                    Path.GetFullPath(arg),
+                    MSBuildArgs.FromProperties(globalProps),
+                    CommandServices.CreateDefault())
                     .CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
             }
             else if (IsValidProjectFilePath(arg))

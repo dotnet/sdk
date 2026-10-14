@@ -21,27 +21,16 @@ public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
     string? msbuildPath,
-    CommandServices? services
+    CommandServices services
     ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath, userProfileDir: null, advertiseWorkloadUpdates: null, services: services)
 {
-    public PackCommand(MSBuildArgs msbuildArgs, bool noRestore, string? msbuildPath = null)
-        : this(msbuildArgs, noRestore, msbuildPath, services: null)
-    {
-    }
-
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
-        => FromArgs(args, msbuildPath, services: null);
-
-    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices? services)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices services)
     {
         var parseResult = Parser.Parse(["dotnet", "pack", .. args]);
         return FromParseResult(parseResult, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
-        => FromParseResult(parseResult, msbuildPath, services: null);
-
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices? services)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices services)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
 
@@ -163,6 +152,6 @@ public class PackCommand(
         }
 
         // Fallback to MSBuild-based packing
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
     }
 }

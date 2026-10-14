@@ -12,7 +12,7 @@ public abstract class CommandBase
 {
     protected ParseResult _parseResult;
 
-    protected CommandBase(ParseResult parseResult) : this(parseResult, services: null)
+    protected CommandBase(ParseResult parseResult) : this(parseResult, CommandServices.CreateDefault())
     {
     }
 
@@ -22,13 +22,13 @@ public abstract class CommandBase
         parseResult.ShowHelpOrErrorIfAppropriate();
     }
 
-    protected CommandBase() : this(services: null)
+    protected CommandBase() : this(CommandServices.CreateDefault())
     {
     }
 
     protected CommandBase(CommandServices services)
     {
-        Services = services ?? new CommandServices();
+        Services = services;
     }
 
     protected internal CommandServices Services { get; }
@@ -39,7 +39,7 @@ public abstract class CommandBase
 public abstract class CommandBase<TDefinition>(ParseResult parseResult, CommandServices services) : CommandBase(parseResult, services)
     where TDefinition : Command
 {
-    public CommandBase(ParseResult parseResult) : this(parseResult, services: null)
+    public CommandBase(ParseResult parseResult) : this(parseResult, CommandServices.CreateDefault())
     {
     }
 

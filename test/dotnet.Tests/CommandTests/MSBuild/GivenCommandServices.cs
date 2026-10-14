@@ -33,9 +33,9 @@ public class GivenCommandServices : SdkTest
         var llmServices = CreateServices(isLLMEnvironment: true);
         var nonLLMServices = CreateServices(isLLMEnvironment: false);
 
-        var llmCommand = (MSBuildForwardingApp)CreateCommand(commandName, llmServices);
-        var nonLLMCommand = (MSBuildForwardingApp)CreateCommand(commandName, nonLLMServices);
-        var defaultCommand = CreateCommand(commandName);
+        var llmCommand = (MSBuildForwardingApp)CreateCommand(commandName, llmServices, args: []);
+        var nonLLMCommand = (MSBuildForwardingApp)CreateCommand(commandName, nonLLMServices, args: []);
+        var defaultCommand = CreateCommand(commandName, CommandServices.CreateDefault(), args: []);
 
         llmCommand.Services.Should().BeSameAs(llmServices);
         nonLLMCommand.Services.Should().BeSameAs(nonLLMServices);
@@ -94,9 +94,8 @@ public class GivenCommandServices : SdkTest
         return new CommandServices(detector.Object);
     }
 
-    private static CommandBase CreateCommand(string commandName, CommandServices? services = null, string[]? args = null)
+    private static CommandBase CreateCommand(string commandName, CommandServices services, string[] args)
     {
-        args ??= [];
         const string msbuildPath = "<msbuildpath>";
         return commandName switch
         {
