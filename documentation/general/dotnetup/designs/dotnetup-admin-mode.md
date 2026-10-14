@@ -95,6 +95,14 @@ Hidden commands that are not impacted by the mode such as the underlying telemet
 Rollout for other commands will be integrated later, such as:
 `uninstall`, `update`, etc.
 
+### MVP Telemetry
+
+`admin` mode telemetry should not be part of the queries in the kusto ADX dashboard. `admin` installers have lower install success rates, which we don't want to distract from `dotnetup`. The ADX dashboard must be able to differentiate via a flag across all telemetry whether it is in `admin` mode or not - likely `mode` can be part of all auto-ingested telemetry properties, though it may also be `unknown` before `init`.
+
+### Mode Storage
+
+The selected mode is stored in a user controlled folder as `dotnetup` configuration. The configuration will begin to block user level write access if `admin` mode is selected which means `env` or `init` to swap back out of `admin` mode would require a UAC prompt.
+
 ## Command Parity
 
 The initial intent was to reduce UX confusion where commands behave differently across modes. Engineering cost is related; testing and supporting different functionality and expected behavior is costly.
@@ -171,17 +179,17 @@ To uninstall a system install, the following arguments can be given to the `.exe
 
 ## Concurrency
 
-Simultaneous commit operations - which in non-admin means 'extract', is not possible with MSI installs. `dotnetup` already defers the extract operation to one sequential step with concurrent downloads. The commit operation will happen sequentially in the same way.
+Simultaneous commit operations - which in non-admin means 'extract', is not possible with MSI installs. `dotnetup` already defers the extract operation to one sequential step with concurrent downloads. The commit operation will happen sequentially in the same way. Concurrency will be deferred to avoid multi-UAC prompting.
 
 ## `global.json`
 
 `global.json` functionality will be very limited and only influence version resolution when it is not provided.
 
-A `global.json` file in the `cwd` influences the behavior of `dotnetup`. `global.json` files may or may not have the same file privilege boundary as a system protected file.
+A `global.json` file in the `cwd` influences the behavior of `dotnetup`. `global.json` files may or may not have the same file privilege boundary as a system protected file. If callers want to use `global.json` `cwd` must be applied.
 
 Because UAC is required, the user's intent will be assumed and respected, so `global.json` will still influence the channel/version if no `channel` is provided when running a command such as `dotnetup sdk install` or `dotnetup runtime install`. It will not influence update behavior.
 
-SDK `Paths` functionality as a `global.json` node will not be respected as it is not respected by `admin` installers today, and this behavior should not be allowed to influence system level decisions.
+SDK `Paths` functionality as a `global.json` node will not be respected as it is not respected by `admin` installers today, and this behavior should not be allowed to influence system level decisions. It will not be a failure to install due to this to prevent unexpected failure.
 
 ## `.exe` Installer Error Handling
 
@@ -200,7 +208,7 @@ Timeout / interrupted parent | Retry Once
 
 ## Other Potential Issues - Needs Investigation
 
-Elevation should be minimally held and leverage existing SID connection workloads logic.
+Elevation should be minimally held and leverage existing SID connection workloads logic if needed.
 
 Machine locks need deliberate cross-user ACLs.
 
