@@ -87,8 +87,12 @@ To rapidly support an emerging C#DK release, `dotnetup` will rollout `admin` sup
 `dotnetup sdk install` and `dotnetup runtime install` will be the only functional commands in `admin` mode.
 
 ### `dotnetup <> Install` Command Arguments under `admin`:
-In the intial stage, `--untracked` must also be provided in `admin` mode.
+
+`--untracked` must also be provided in `admin` mode, at least in the MVP stage.
+
 `--install-directory` will remain unsupported as MSI based installation will only ever install to the expected system managed, shared directory.
+
+`--muxer` related replacement commands or configuration is not controllable for MSI installs so this flag will cause failure if it is applied under `admin` mode, similar to `--install-directory`, meaning `dotnet` must NOT be in use to have `admin` installs succeed.
 
 Hidden commands that are not impacted by the mode such as the underlying telemetry drainer and self update will still work regardless of the mode.
 
@@ -101,7 +105,9 @@ Rollout for other commands will be integrated later, such as:
 
 ### Mode Storage
 
-The selected mode is stored in a user controlled folder as `dotnetup` configuration. The configuration will begin to block user level write access if `admin` mode is selected which means `env` or `init` to swap back out of `admin` mode would require a UAC prompt.
+The selected mode is stored per user in the existing `dotnetup` configuration under the user's data directory. The mode is a user preference, not a security boundary: an unelevated user can change it with `env` or `init`, or by replacing the configuration file or its containing directory. Switching out of `admin` mode does not require elevation and does not affect the machine-wide installs, which remain protected by their Program Files ACLs.
+
+The configuration will not be ACL-protected. Restricting the file alone cannot be enforced while its parent directories remain user-controlled, and it would interfere with other `dotnetup` writes to the same directory. Administrator-controlled storage, such as `HKLM` or `%ProgramData%`, is also not used because it would make the mode machine-wide, while every other mode is per user.
 
 ## Command Parity
 
