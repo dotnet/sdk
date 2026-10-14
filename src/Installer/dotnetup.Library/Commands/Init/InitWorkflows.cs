@@ -512,6 +512,7 @@ internal class InitWorkflows
             DotnetAccessMode.None => Strings.PathGuidanceNone,
             DotnetAccessMode.Shell => Strings.PathGuidanceShell,
             DotnetAccessMode.Everywhere => Strings.PathGuidanceEverywhere,
+            DotnetAccessMode.Admin => null,
             _ => null,
         };
 

@@ -41,6 +41,11 @@ internal static class EnvSettingsApplier
     {
         ArgumentException.ThrowIfNullOrEmpty(dotnetRoot);
 
+        if (targetEnv == DotnetAccessMode.Admin)
+        {
+            throw new InvalidOperationException("Admin mode is applied through the admin mode switcher.");
+        }
+
         if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(targetEnv))
         {
             throw new PlatformNotSupportedException(

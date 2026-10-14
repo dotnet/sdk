@@ -166,6 +166,27 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The user declined confirmation of an operation.</summary>
     OperationCancelled,
+
+    /// <summary>The invoked command is not supported while dotnetup is in admin mode.</summary>
+    AdminModeCommandNotSupported,
+
+    /// <summary>An option or argument passed to the command is not supported while dotnetup is in admin mode.</summary>
+    AdminModeSymbolNotSupported,
+
+    /// <summary>The operation requires <c>--untracked</c> while dotnetup is in admin mode.</summary>
+    AdminModeRequiresUntracked,
+
+    /// <summary>Admin mode could not be enabled or disabled because elevation was declined or failed, or the policy could not be written.</summary>
+    AdminModeChangeFailed,
+
+    /// <summary>Another Windows Installer (MSI) installation is in progress (exit code 1618).</summary>
+    InstallerBusy,
+
+    /// <summary>The Windows installer bundle returned a failure exit code.</summary>
+    InstallerFailed,
+
+    /// <summary>The Windows installer bundle reported success, but the expected installation could not be verified afterwards.</summary>
+    InstallerPostInstallVerificationFailed,
 }
 
 /// <summary>

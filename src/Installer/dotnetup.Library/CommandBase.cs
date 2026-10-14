@@ -41,6 +41,12 @@ public abstract class CommandBase
     /// </summary>
     protected virtual bool ShowsUpdateNotification => false;
 
+    /// <summary>
+    /// Admin mode support for this command when it is invoked as <paramref name="command"/>.
+    /// Default: unsupported (default deny).
+    /// </summary>
+    internal virtual AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.Unsupported;
+
     public int Execute()
     {
         _exitCode = 1;

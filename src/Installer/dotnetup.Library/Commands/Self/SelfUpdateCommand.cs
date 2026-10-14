@@ -31,6 +31,9 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
     /// <inheritdoc/>
     protected override bool CanRunDuringSelfUpdate => true;
 
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
         if (_updateNotifications is bool enabled)

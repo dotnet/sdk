@@ -231,4 +231,48 @@ public class DotnetupConfigTests : IDisposable
         // numeric value is surfaced as a corrupt config.
         DotnetupConfig.Read().Should().BeNull();
     }
+
+    [TestMethod]
+    public void WriteAccessSettings_Admin_Throws()
+    {
+        Action act = () => DotnetupConfig.WriteAccessSettings(DotnetAccessMode.Admin, dotnetupOnPath: true);
+
+        act.Should().Throw<ArgumentException>();
+        File.Exists(DotnetupPaths.ConfigPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void Write_Admin_Throws()
+    {
+        Action act = () => DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });
+
+        act.Should().Throw<ArgumentException>();
+        File.Exists(DotnetupPaths.ConfigPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void Read_AdminAccessMode_TreatedAsUnset()
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(
+            DotnetupPaths.ConfigPath,
+            """{ "schemaVersion": "1", "accessMode": "admin", "updateNotifications": false }""");
+
+        DotnetupConfig.Read().Should().BeNull();
+        DotnetupConfig.ReadAccessMode().Should().BeNull();
+        DotnetupConfig.ReadAccessModeSilently().Should().BeNull();
+        DotnetupConfig.Exists().Should().BeFalse();
+        DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void SetUpdateNotifications_AdminAccessMode_DropsAdmin()
+    {
+        DotnetupPaths.EnsureDataDirectoryExists();
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": "admin" }""");
+
+        DotnetupConfig.SetUpdateNotifications(false);
+
+        File.ReadAllText(DotnetupPaths.ConfigPath).Should().NotContain("admin");
+    }
 }

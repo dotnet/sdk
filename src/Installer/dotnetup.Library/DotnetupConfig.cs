@@ -26,6 +26,14 @@ internal enum DotnetAccessMode
 
     /// <summary>Shell profile plus system PATH and user-level DOTNET_ROOT (so cmd.exe and GUI apps see the user dotnet too).</summary>
     Everywhere = 3,
+
+    /// <summary>
+    /// Windows-only. Installs are managed through the Windows installer in the shared system folder
+    /// alongside other tools. Enabled only by the machine policy (see
+    /// <see cref="Microsoft.Dotnet.Installation.Internal.DotnetupPolicy"/>); it is never persisted to
+    /// or honored from the per-user config, and dotnetup does no PATH or DOTNET_ROOT wiring for it.
+    /// </summary>
+    Admin = 4,
 }
 
 /// <summary>
@@ -110,6 +118,8 @@ internal static class DotnetupConfig
     /// </summary>
     public static void Write(DotnetupConfigData config)
     {
+        ArgumentNullException.ThrowIfNull(config);
+        ThrowIfAdmin(config.ConfiguredAccessMode, nameof(config));
         DotnetupPaths.EnsureDataDirectoryExists();
         var json = JsonSerializer.Serialize(config, DotnetupConfigJsonContext.Default.DotnetupConfigData);
         File.WriteAllText(DotnetupPaths.ConfigPath, json);
@@ -120,6 +130,7 @@ internal static class DotnetupConfig
     /// </summary>
     public static DotnetupConfigData WriteAccessSettings(DotnetAccessMode accessMode, bool dotnetupOnPath)
     {
+        ThrowIfAdmin(accessMode, nameof(accessMode));
         var config = new DotnetupConfigData
         {
             AccessMode = accessMode,
@@ -167,6 +178,14 @@ internal static class DotnetupConfig
     }
 
     /// <summary>
+    /// Returns the recorded access mode, or <c>null</c> when the config is missing, records no
+    /// access mode, or cannot be read. Unlike <see cref="ReadAccessMode"/>, never warns or records
+    /// telemetry, so it is safe for background resolution.
+    /// </summary>
+    internal static DotnetAccessMode? ReadAccessModeSilently()
+        => TryLoad(out var config, out _) == ConfigFileState.Loaded ? config!.ConfiguredAccessMode : null;
+
+    /// <summary>
     /// Returns true if a config file records the init choices, or exists but cannot be read.
     /// A config holding only other settings does not indicate that init has been completed.
     /// </summary>
@@ -176,6 +195,16 @@ internal static class DotnetupConfig
         ConfigFileState.Loaded => config!.ConfiguredAccessMode is not null,
         _ => false,
     };
+
+    private static void ThrowIfAdmin(DotnetAccessMode? accessMode, string paramName)
+    {
+        if (accessMode == DotnetAccessMode.Admin)
+        {
+            throw new ArgumentException(
+                "Admin mode is controlled by machine policy and cannot be stored in the dotnetup config.",
+                paramName);
+        }
+    }
 
     private enum ConfigFileState
     {
@@ -205,6 +234,13 @@ internal static class DotnetupConfig
 
             config = JsonSerializer.Deserialize(text, DotnetupConfigJsonContext.Default.DotnetupConfigData)
                 ?? throw new JsonException("The config file is empty.");
+
+            // Admin mode is only enabled by machine policy, so a hand-edited value is treated as unset.
+            if (config.ConfiguredAccessMode == DotnetAccessMode.Admin)
+            {
+                config.ConfiguredAccessMode = null;
+            }
+
             return ConfigFileState.Loaded;
         }
         catch (Exception ex)

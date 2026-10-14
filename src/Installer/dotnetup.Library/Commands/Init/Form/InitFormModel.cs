@@ -154,6 +154,9 @@ internal sealed class InitFormModel
                 return lines;
             }
 
+            case DotnetAccessMode.Admin:
+                return [new DetailLine("Installs .NET with the Windows installer into the shared system folder. Requires elevation.")];
+
             default:
                 return [];
         }
@@ -312,14 +315,14 @@ internal sealed class InitFormModel
         var modes = new List<DotnetAccessMode> { DotnetAccessMode.None, DotnetAccessMode.Shell };
         var choices = new List<FieldChoice>
         {
-            new(AccessModeTitle(DotnetAccessMode.None), "Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected."),
-            new(AccessModeTitle(DotnetAccessMode.Shell), "Configure your shell profile so shell sessions use dotnetup's .NET installs."),
+            new(AccessModeTitle(DotnetAccessMode.None), AccessModeDescription(DotnetAccessMode.None)),
+            new(AccessModeTitle(DotnetAccessMode.Shell), AccessModeDescription(DotnetAccessMode.Shell)),
         };
 
         if (isWindows)
         {
             modes.Add(DotnetAccessMode.Everywhere);
-            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Everywhere), "Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation)."));
+            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Everywhere), AccessModeDescription(DotnetAccessMode.Everywhere)));
         }
 
         int defaultIndex = Math.Max(0, modes.IndexOf(recommended));
@@ -334,6 +337,16 @@ internal sealed class InitFormModel
     // The access-mode value shown to the user, capitalized (None / Shell / Everywhere), matching the
     // 'dotnetup env' vocabulary.
     private static string AccessModeTitle(DotnetAccessMode mode) => mode.ToString();
+
+    // The help text shown beneath each access-mode choice.
+    internal static string AccessModeDescription(DotnetAccessMode mode) => mode switch
+    {
+        DotnetAccessMode.None => "Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected.",
+        DotnetAccessMode.Shell => "Configure your shell profile so shell sessions use dotnetup's .NET installs.",
+        DotnetAccessMode.Everywhere => "Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation).",
+        DotnetAccessMode.Admin => "Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.",
+        _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
+    };
 
     private static FormField BuildMigrateField(bool migrateByDefault, Func<bool> isVisible)
     {

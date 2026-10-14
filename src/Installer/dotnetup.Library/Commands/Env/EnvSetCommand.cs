@@ -24,6 +24,9 @@ internal class EnvSetCommand : CommandBase
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
 
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
         DotnetupConfigData? previous = DotnetupConfig.Read();
