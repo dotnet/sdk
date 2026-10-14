@@ -1,4 +1,4 @@
-# 'dotnetup Admin Mode
+# `dotnetup` Admin Mode
 
 `admin` mode with `dotnetup` enables management of installs via `.exe bundles` (via `msis`), as opposed to `.tar.gz` and `.zip` install of `.NET.`
 
@@ -6,11 +6,19 @@
 
 `admin` mode is a side scenario for `dotnetup`: the primary and default experience will be to use the default mode (`shell` on Unix or `everywhere` mode on Windows.) Under these modes, install times will be faster, less disk space will be consumed, and `dotnetup` will be able to provide more coherent and enforced management of the installs.
 
-Tools that manage install policy and integrate into IT Systems for .NET management such as [DNIM](https://learn.microsoft.com/en-us/dotnet/core/additional-tools/dnim-overview), MU (Microsoft Update) exist today and `dotnetup` is not meant to replace or align with those tools. `dotnetup` remains a developer focused tool focused on archive based installs. However, we recognize that some users may want to manage their 'admin' controlled installs from a `CLI` that matches their experience using `dotnetup`; some users may also want to keep their management within Visual Studio but engage with the command line to manage other installs.
+### Why Admin Mode
+
+Tools that manage install policy and integrate into IT Systems for .NET management such as [DNIM](https://learn.microsoft.com/en-us/dotnet/core/additional-tools/dnim-overview), MU (Microsoft Update), and others, exist today. `dotnetup` is not meant to replace or align with those tools. `dotnetup` remains a developer focused tool focused on archive based installs.
+
+However, we recognize that some users may need Visual Studio integration alongside VS Code, and Visual Studio uses `admin` type installers. Some users may depend on updates to the .NET runtime used by applications across the system that must be managed outside of `dotnetup`. This is the decision that C#DK and other extensions made, to prefer smoother integration with VS at the cost of install reliability, speed, and disk space.
+
+Users also may want to manage their 'admin' controlled installs from a `CLI` that matches their experience using `dotnetup`.
 
 ## Mode Semantics
 
-`admin` was preferred over `system` because it outlines the differentiation; user local paths may be set to take precedence on the system path, so dotnetup can manage system-level installs without needing `admin` mode per se. Of course, `elevation` may be required to modify the system install `PATH`, but that's not necessarily always the case.
+`admin` was preferred over `system` because it outlines the differentiation; user local paths may be set to take precedence on the system path, so dotnetup can manage system-level installs without needing `admin` mode per se.
+
+Of course, `elevation` may be required to modify the system install `PATH`, but that's not necessarily always the case.
 
 ### Mode Communication
 
@@ -31,28 +39,40 @@ dotnetup will install .NET SDKs and runtimes in C:\Users\noahgilson\AppData\Loca
     Everywhere  (default)
       Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation).
     Admin
-      Installs are managed by other tools alongside `dotnetup` in a system wide folder.
-      Installs may be slower and consume more disk space but can be centrally managed outside of dotnetup.
+      Installs are managed by other tools alongside `dotnetup` in a shared system folder.
+      Installation is slower and consumes more disk space but supports external central IT management.
 
 ```
 
 If the 'system' path is already pointed towards somewhere besides an expected program files location `dotnetup` will fail.
+
 The `PATH` will not be managed by `dotnetup` as the[ MSI installer already does this](https://github.com/dotnet/runtime/blob/ede6e05426a1fb94637c8c04cb26a6230bf5ea59/src/installer/pkg/sfx/installers/host.wxs#L47-L73), provided the installs match the native architecture.
+
+#### Required & Expected Installation Paths
 
 `PR`: `Environment.SpecialFolder.ProgramFiles`
 `PRx86` : `Environment.SpecialFolder.ProgramFilesX86`
 
-Windows | architecture	| Installer payload	Default installation root
-x64	| x64	| `PR`\dotnet
-x64	| x86	| `PRx86`\dotnet
-Arm64	| Arm64	| `PR`\dotnet
-Arm64	| x64	| `PR`\dotnet\x64
+| Windows architecture | Installer payload | Default installation root |
+| --- | --- | --- |
+| x64 | x64 | `PR\dotnet` |
+| x64 | x86 | `PRx86\dotnet` |
+| Arm64 | Arm64 | `PR\dotnet` |
+| Arm64 | x64 | `PR\dotnet\x64` |
 
 Migrating system installs is meaningless and so it will always be 'No.'
 
+## dotnetup `init`
+
+`init` will get a `--interactive false` flag. Under said flag, `--mode <>` must be provided and match `none`, `shell`, `everywhere` or `admin`, depending upon supported OS context.
+
+Defaults remain the same for other options, with migration being true or false depending on the pre-existing default. (`admin` mode will never `migrate`.)
+
+Callers such as C#DK that want integration with VS will need to call `dotnetup init --interactive false --mode admin`.
+
 ## Bifurcated Behavior
 
-`dotnetup` will only behave in one mode at a time.
+`dotnetup` will only behave in one mode at a time. We don't want users to be switching back and forth. A command line argument across all commands such as `sdk install` would encourage this behavior, but considering the PATH can only point to one main directory, this split is something we want to direct users away from.
 
 `dotnetup sdk install` for example, will only install to the user folder using archives if the mode is not `admin`. If the mode is `admin`, it will only ever install via `msi`s.
 
@@ -60,7 +80,20 @@ Migrating system installs is meaningless and so it will always be 'No.'
 
 `dotnetup update` will not try to update installs from the other management mode, and so on.
 
-Commands may take in a flag `--mode` to enforce specific mode behavior from the CLI or process invocation, but commands that modify user configuration will block the `--mode` flag.
+## Admin Mode MVP
+
+To rapidly support an emerging C#DK release, `dotnetup` will rollout `admin` support over time per command.
+
+`dotnetup sdk install` and `dotnetup runtime install` will be the only functional commands in `admin` mode.
+
+### `dotnetup <> Install` Command Arguments under `admin`:
+In the intial stage, `--untracked` must also be provided in `admin` mode.
+`--install-directory` will remain unsupported as MSI based installation will only ever install to the expected system managed, shared directory.
+
+Hidden commands that are not impacted by the mode such as the underlying telemetry drainer and self update will still work regardless of the mode.
+
+Rollout for other commands will be integrated later, such as:
+`uninstall`, `update`, etc.
 
 ## Command Parity
 
@@ -68,26 +101,35 @@ The initial intent was to reduce UX confusion where commands behave differently 
 
 However, management of admin installs behaves much differently. `dotnetup` is not the sole driving force - IT policy exists across many different applications and outlines specific retention, update timeframes, uninstall policies, etc. Other tools may pin or block actions from `dotnetup`. The realm of this should remain in those existing tools.
 
-Therefore, `dotnetup` and its commands will behave differently in `admin` mode, and users will interact with them distinctly as well.
-
-Arguments such as `--install-directory` will not be allowed in `admin` mode.
+Therefore, `dotnetup` and its commands will behave differently in `admin` mode, and users will interact with them distinctly as well. See below for more context.
 
 ## Channels
 
-Channel semantics remain the same to a degree.
+Channel semantics remain the same.
 
-`dotnetup sdk install daily` would still install the same version regardless of the `mode`.
-The names for channels will remain the same. What a channel does however will be different.
+`dotnetup sdk install daily`, or `11.0.1xx` would still install the same version regardless of the `mode`. The names for channels will remain the same. What a channel does however will be different.
 
-Channels in modes that are not `admin` define specific update and retention policies. In `admin` mode, channels strictly relate to shorthands for specific versions to manage (and for checks as to whether a version exists) and do not influence other behavior such as update cadence.
+`daily` blobs exist but are not authenticode signed, so similar warnings and signature validation checks for daily builds would apply to `.exe` installers: https://aka.ms/dotnet/12.0.1xx/daily/dotnet-sdk-win-x64.exe
+It admins remain able to block these via policy.
+
+
+### Channel Differentiators under `admin`
+Channels in modes that are not `admin` define specific update and retention policies.
+
+In `admin` mode, channels strictly relate to shorthands for specific versions to manage (and for checks as to whether a version exists) and do not influence other behavior such as update cadence.
 
 ## `dotnetup` Manifest Behavior
 
 The manifest will be ignored and there will be no `admin` dotnetup manifest.
 
-The dotnetup manifest exists to speed up checks, such as whether or not the install already exists, and to inform `dotnetup` of what is managed on the machine across numerous locations.
+The dotnetup manifest exists to speed up checks, such as whether or not the install already exists, and to inform `dotnetup` of what is managed on the machine across numerous locations, and what to update.
 
-Initial designs may consider a separate manifest file for `admin` installs, or `admin` installed baked into the manifest. However, the manifest will never be correct and it will always need revalidation, because other software on the machine may manipulate or change installations or install policy. In addition, update and retention policies outside of `dotnetup` influence `.exe` behavior, so the manifest behavior is not necessary.
+Initial designs may consider a separate manifest file for `admin` installs, or `admin` installed baked into the manifest. However, the manifest will never be correct and it will always need revalidation, because other software on the machine may manipulate or change installations or install policy. In addition, update and retention policies outside of `dotnetup` influence `.exe` behavior.
+
+
+### Future Manifest Behavior
+
+We may add later support for an `admin` based manifest to allow updating everything tracked by `dotnetup` to provide a more similar experience.
 
 ### Install Lookup
 
@@ -95,7 +137,7 @@ Instead of a manifest, `dotnetup` will need to query the system for the current 
 
 `dotnetup list`, `dotnetup --info` and other commands in `admin` mode will defer to `hostfxr` APIs to avoid duplicated or sharded implementation.
 
-### Install Directory
+### Install Directory with `admin` mode
 
 Environment variables that control the install location will be ignored. The same is true for those that control the 'scratch' directory or download cache directory. The admin install must not be world-writeable.
 
@@ -104,7 +146,7 @@ The `.exe` bundle will manage the destination. Destinations such as `<>\dotnet\x
 
 # Update, Uninstall & Garbage Collection
 
-Each machine may have it's own [Removal Policy](https://learn.microsoft.com/en-us/dotnet/core/install/windows#choose-when-previous-versions-are-removed) per channel or version. `dotnetup` is not a tool for System Admins, and it will not be cognizant of those policies, as they may conflict with the channel that a user had specified via `dotnetup`.
+Each machine may have it's own [Removal Policy](https://learn.microsoft.com/en-us/dotnet/core/install/windows#choose-when-previous-versions-are-removed) per channel or version. `dotnetup` is not a tool for System Admins, and it will not be cognizant of those policies, as they may conflict with the channel that a user had specified via `dotnetup`. We are not going to reimplement policy semantics that are already implemented elsewhere.
 
 ### Update
 
