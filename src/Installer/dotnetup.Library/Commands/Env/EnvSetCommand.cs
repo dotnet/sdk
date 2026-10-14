@@ -78,35 +78,37 @@ internal class EnvSetCommand : CommandBase
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.
         bool targetDotnetupOnPath = _dotnetupOnPathArg ?? previous?.DotnetupOnPath ?? true;
 
+        // HandleAdminMode returned false, so admin mode is only still active when an explicit
+        // non-admin mode was requested; leave it right before applying that mode.
+        if (AdminModeSwitcher.IsAdminModeActive())
+        {
+            AdminSwitcher.Disable();
+        }
+
         EnvSettingsWriter.ApplyAndPersist(targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector);
     }
 
+    private AdminModeSwitcher AdminSwitcher => _adminModeSwitcher ?? new AdminModeSwitcher();
+
     /// <summary>
     /// Routes admin mode before anything else changes: <c>env set admin</c> only enables admin
-    /// mode; another explicit mode first leaves admin mode and then applies normally; no mode while
-    /// in admin mode changes nothing. Returns true when the command is fully handled.
+    /// mode, and no mode while in admin mode changes nothing. Another explicit mode leaves admin
+    /// mode right before it is applied. Returns true when the command is fully handled.
     /// </summary>
     private bool HandleAdminMode()
     {
-        AdminModeSwitcher switcher = _adminModeSwitcher ?? new AdminModeSwitcher();
         if (_modeArg == DotnetAccessMode.Admin)
         {
-            switcher.Enable();
+            AdminSwitcher.Enable();
             return true;
         }
 
-        if (!AdminModeSwitcher.IsAdminModeActive())
-        {
-            return false;
-        }
-
-        if (_modeArg is null)
+        if (_modeArg is null && AdminModeSwitcher.IsAdminModeActive())
         {
             AdminModeMessages.WriteAdminModeActive(SpectreAnsiConsole.Console);
             return true;
         }
 
-        switcher.Disable();
         return false;
     }
 }

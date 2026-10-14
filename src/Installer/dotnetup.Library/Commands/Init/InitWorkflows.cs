@@ -30,13 +30,19 @@ internal class InitWorkflows
 
     private AdminModeSwitcher AdminSwitcher => _adminModeSwitcher ?? new AdminModeSwitcher();
 
+    /// <summary>
+    /// Replaces the interactive form (or the non-interactive defaults) in tests. Returns the
+    /// selection, or <c>null</c> when the user exits without changes.
+    /// </summary>
+    internal Func<InstallCommand, InitFormDefaults, InitFormSelection?>? FormSelectionOverride { get; init; }
+
     // ── Init Flow Orchestrators ──
 
     /// <summary>
-    /// Entry point for the <c>dotnetup init</c> command. Handles switching into and out of admin
-    /// mode before running the regular walkthrough with <paramref name="requestedAccessMode"/>
-    /// preselected. Admin mode is switched before any other state change, so a declined elevation
-    /// leaves everything untouched.
+    /// Entry point for the <c>dotnetup init</c> command. Switches into admin mode directly, or runs
+    /// the regular walkthrough with <paramref name="requestedAccessMode"/> preselected. Admin mode
+    /// is only left right before a non-admin setup is applied, so exiting the walkthrough or a
+    /// walkthrough that makes no changes leaves admin mode on.
     /// </summary>
     public List<ResolvedInstallRequest> RunInit(InstallCommand command, DotnetAccessMode? requestedAccessMode)
     {
@@ -46,22 +52,10 @@ internal class InitWorkflows
             return [];
         }
 
-        if (AdminModeSwitcher.IsAdminModeActive())
+        if (requestedAccessMode is null && AdminModeSwitcher.IsAdminModeActive())
         {
-            if (requestedAccessMode is null)
-            {
-                AdminModeMessages.WriteAdminModeActive(SpectreAnsiConsole.Console);
-                return [];
-            }
-
-            if (command.DryRun)
-            {
-                SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim("(dry run) Admin mode would be disabled for all users on this computer before setup."));
-            }
-            else
-            {
-                AdminSwitcher.Disable();
-            }
+            AdminModeMessages.WriteAdminModeActive(SpectreAnsiConsole.Console);
+            return [];
         }
 
         return InitWalkthrough(command, requests: null, requestedAccessMode);
@@ -123,27 +117,71 @@ internal class InitWorkflows
 
         // Show the interactive form (or, non-interactively, take the recommended defaults) and read
         // back the user's raw choices without resolving any install requests yet.
-        InitFormSelection? formSelection = ResolveFormSelection(command, defaults);
+        InitFormSelection? formSelection = FormSelectionOverride is { } selectForm
+            ? selectForm(command, defaults)
+            : ResolveFormSelection(command, defaults);
         if (formSelection is null)
         {
             return []; // User chose to exit without changes.
         }
 
+        return ApplySelection(command, requests, defaults, formSelection, previousConfig);
+    }
+
+    /// <summary>
+    /// Applies the user's accepted selection: switches into admin mode, previews a dry run, or
+    /// leaves admin mode (when active) and then installs and configures the selected setup.
+    /// </summary>
+    private List<ResolvedInstallRequest> ApplySelection(
+        InstallCommand command,
+        List<ResolvedInstallRequest>? requests,
+        InitFormDefaults defaults,
+        InitFormSelection formSelection,
+        DotnetupConfigData? previousConfig)
+    {
         if (formSelection.AccessMode == DotnetAccessMode.Admin)
         {
             // Admin mode only switches the machine policy; installs are done separately.
-            SwitchToAdminMode(command.DryRun);
+            SelectAdminMode(command.DryRun);
             return [];
         }
 
+        bool leaveAdminMode = AdminModeSwitcher.IsAdminModeActive();
         if (command.DryRun)
         {
             PrintDryRunPreview(defaults, formSelection);
+            if (leaveAdminMode)
+            {
+                SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim("Admin mode would be disabled for all users on this computer before setup."));
+            }
+
             return [];
+        }
+
+        // Leave admin mode before resolving the plan: in admin mode, install requests would target
+        // the machine-wide installer instead of the selected user-level setup.
+        if (leaveAdminMode)
+        {
+            AdminSwitcher.Disable();
         }
 
         InitExecutionPlan plan = ResolveExecutionPlan(command, requests, defaults, formSelection);
         return ExecutePlan(command, plan, defaults.InstallRoot, previousConfig);
+    }
+
+    /// <summary>
+    /// Applies an admin mode selection from the form. Selecting admin mode while it is already
+    /// active changes nothing and does not prompt for elevation.
+    /// </summary>
+    private void SelectAdminMode(bool dryRun)
+    {
+        if (AdminModeSwitcher.IsAdminModeActive())
+        {
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim("Admin mode is already enabled, so no changes were made."));
+            return;
+        }
+
+        SwitchToAdminMode(dryRun);
     }
 
     /// <summary>

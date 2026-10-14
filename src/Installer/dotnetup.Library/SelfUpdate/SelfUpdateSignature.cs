@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
 #if TARGET_WINDOWS
 using System.Globalization;
 using System.Security.Cryptography;
@@ -16,10 +17,25 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate
     /// </summary>
     internal static class SelfUpdateSignature
     {
+        /// <summary>
+        /// Returns whether <see cref="VerifyReplacement"/> requires a Microsoft-rooted Authenticode
+        /// signature on the replacement for <paramref name="installedPath"/>. Such a download is not
+        /// trusted on its hash alone, so the unsigned-download policy does not apply to it.
+        /// </summary>
+        [SupportedOSPlatformGuard("windows5.1.2600")]
+        public static bool RequiresSignedReplacement(string installedPath)
+        {
+#if TARGET_WINDOWS
+            return OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600) && Signature.IsAuthenticodeSigned(installedPath) == 0;
+#else
+            return false;
+#endif
+        }
+
         public static void VerifyReplacement(string installedPath, string stagedPath)
         {
 #if TARGET_WINDOWS
-            if (!OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600) || Signature.IsAuthenticodeSigned(installedPath) != 0)
+            if (!RequiresSignedReplacement(installedPath))
             {
                 return;
             }

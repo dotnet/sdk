@@ -140,11 +140,13 @@ Elevation reuses the existing hidden-command pattern used for the system `PATH` 
 
 Because `AdminMode` is machine-wide, selecting or leaving `admin` mode affects every user on the machine. `init` and `env set` must state this before prompting for UAC.
 
+Leaving `admin` mode happens only right before the newly selected mode is applied. If `init` exits without changes (the user exits the form, or a local `global.json` sets `sdk.paths`), or runs as a dry run, `admin` mode stays enabled. Selecting `admin` mode while it is already active changes nothing and does not prompt.
+
 #### Limitations
 
 The registry values constrain only `dotnetup`. They do not remove archive installs, `PATH` entries, or the user-level `DOTNET_ROOT` from earlier modes, although `dotnetup` should warn about them. They also do not prevent users from acquiring .NET through other tools.
 
-When admin mode is initially set via UAC, `BlockUnsignedDownloads` will also be set.
+When admin mode is initially set via UAC, `BlockUnsignedDownloads` will also be set. `self update` stays available: an Authenticode-signed `dotnetup` requires a Microsoft-rooted Authenticode signature on its replacement, so `BlockUnsignedDownloads` does not block its update. Unsigned `dotnetup` builds remain blocked by the policy.
 
 No equivalent exists on other platforms because `admin` mode is Windows-only.
 

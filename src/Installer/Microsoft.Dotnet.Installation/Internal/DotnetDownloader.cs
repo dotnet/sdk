@@ -178,15 +178,26 @@ internal class DotnetDownloader : IArchiveDownloader
     public ResolvedDownload ResolveDotnetupDownload(string rid)
         => ResolveDotnetupDownload("daily", rid);
 
-    public ResolvedDownload ResolveDotnetupDownload(string channel, string rid)
+    /// <param name="channel">The release channel to resolve.</param>
+    /// <param name="rid">The runtime identifier of the dotnetup build.</param>
+    /// <param name="replacementSignatureEnforced">
+    /// <c>true</c> when the caller verifies a Microsoft-rooted Authenticode signature on the downloaded
+    /// executable before using it; the unsigned-download policy then does not apply.
+    /// </param>
+    public ResolvedDownload ResolveDotnetupDownload(string channel, string rid, bool replacementSignatureEnforced = false)
     {
-        ThrowIfUnsignedDownloadBlocked("dotnetup", channel);
+        if (!replacementSignatureEnforced)
+        {
+            ThrowIfUnsignedDownloadBlocked("dotnetup", channel);
+        }
+
         using var resolver = new DailyChannelResolver(_releaseManifest, _httpClient);
         ResolvedDotnetupArtifact resolved = resolver.ResolveDotnetupArtifact(channel, rid);
         var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(resolved.Version, rid);
         string hash = TryGetHashFromUrl(location.ChecksumUrl, resolved.Version, "dotnetup", requirePinnedUri: true)
             ?? throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, $"No checksum is published for dotnetup {resolved.Version} ({rid}).");
-        return new ResolvedDownload(resolved.ArchiveUri, hash, rid, resolved.Version, IsUnsigned: true, IsDotnetup: true);
+        return new ResolvedDownload(resolved.ArchiveUri, hash, rid, resolved.Version,
+            IsUnsigned: !replacementSignatureEnforced, IsDotnetup: true);
     }
 
     /// <summary>
@@ -234,7 +245,7 @@ internal class DotnetDownloader : IArchiveDownloader
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, "Cannot verify a download without its expected hash.");
         }
-        if (download.IsUnsigned || download.IsDotnetup)
+        if (download.IsUnsigned)
         {
             ThrowIfUnsignedDownloadBlocked(download.IsDotnetup ? "dotnetup" : ".NET", download.Version.ToString());
         }

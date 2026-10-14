@@ -67,7 +67,7 @@ internal sealed class SelfUpdateNotifier
 
         try
         {
-            if (!DotnetupConfig.ReadUpdateNotificationsEnabled() || UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
+            if (!DotnetupConfig.ReadUpdateNotificationsEnabled() || IsSelfUpdateBlockedByPolicy(invocation.Paths.InstalledPath))
             {
                 return null;
             }
@@ -89,6 +89,13 @@ internal sealed class SelfUpdateNotifier
             return null;
         }
     }
+
+    /// <summary>
+    /// Returns whether the unsigned-download policy blocks <c>self update</c> for the executable at
+    /// <paramref name="installedPath"/>. Installations that require a signed replacement are exempt.
+    /// </summary>
+    internal static bool IsSelfUpdateBlockedByPolicy(string installedPath)
+        => UnsignedSourcePolicy.IsUnsignedDownloadBlocked() && !SelfUpdateSignature.RequiresSignedReplacement(installedPath);
 
     internal void StartRefreshIfStale()
     {
