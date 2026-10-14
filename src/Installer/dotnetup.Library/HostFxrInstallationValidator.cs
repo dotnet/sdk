@@ -2,20 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Validates an installation by asking the install root's hostfxr which SDKs and runtimes it can see.
-/// Used for installations laid down by the Windows installer bundles, whose layout dotnetup does not own.
-/// Never throws: a missing install root, a missing hostfxr, or a hostfxr failure reports "not installed".
+/// Validates an installation by asking the install root's hostfxr, through that root's muxer in a child
+/// process, which SDKs and runtimes it can see. Used for installations laid down by the Windows installer
+/// bundles, whose layout dotnetup does not own.
+/// Never throws: a missing install root, a missing hostfxr, or a query failure reports "not installed".
 /// </summary>
 internal sealed class HostFxrInstallationValidator : IInstallationValidator
 {
     private readonly Func<string, IEnumerable<DotnetInstall>> _getInstalls;
 
     public HostFxrInstallationValidator()
-        : this(HostFxrWrapper.getInstalls)
+        : this(MuxerInstallQuery.GetInstalls)
     {
     }
 

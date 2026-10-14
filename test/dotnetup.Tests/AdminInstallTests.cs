@@ -7,6 +7,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -129,5 +130,46 @@ public class HostFxrInstallationValidatorTests
             ? "hostfxr.dll"
             : OperatingSystem.IsMacOS() ? "libhostfxr.dylib" : "libhostfxr.so";
         File.WriteAllText(Path.Combine(fxrDirectory, libraryName), string.Empty);
+    }
+}
+
+[TestClass]
+public class MuxerInstallQueryTests
+{
+    private static readonly DotnetInstallRoot s_root = new(@"C:\PF\dotnet", InstallArchitecture.x64);
+
+    [TestMethod]
+    public void ParseSdks_ReadsVersions_AndSkipsMalformedLines()
+    {
+        const string output = "10.0.100 [C:\\Program Files\\dotnet\\sdk]\r\n11.0.100-rc.2.26504.105 [C:\\Program Files\\dotnet\\sdk]\r\nnot-a-version [x]\r\ngarbage\r\n";
+
+        var installs = MuxerInstallQuery.ParseSdks(output, s_root).ToList();
+
+        installs.Select(i => i.Version.ToString()).Should().Equal("10.0.100", "11.0.100-rc.2.26504.105");
+        installs.Should().OnlyContain(i => i.Component == InstallComponent.SDK && i.InstallRoot == s_root);
+    }
+
+    [TestMethod]
+    public void ParseRuntimes_MapsKnownFrameworks_AndSkipsUnknown()
+    {
+        const string output =
+            "Microsoft.AspNetCore.App 10.0.0 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n" +
+            "Microsoft.NETCore.App 10.0.0 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n" +
+            "Microsoft.WindowsDesktop.App 10.0.0 [C:\\Program Files\\dotnet\\shared\\Microsoft.WindowsDesktop.App]\n" +
+            "Some.Other.App 1.0.0 [C:\\x]\n";
+
+        var installs = MuxerInstallQuery.ParseRuntimes(output, s_root).ToList();
+
+        installs.Select(i => i.Component).Should().Equal(
+            InstallComponent.ASPNETCore, InstallComponent.Runtime, InstallComponent.WindowsDesktop);
+        installs.Should().OnlyContain(i => i.Version.ToString() == "10.0.0");
+    }
+
+    [TestMethod]
+    public void GetInstalls_ReturnsEmpty_WhenMuxerIsMissing()
+    {
+        using var testEnv = new TestEnvironment();
+
+        MuxerInstallQuery.GetInstalls(testEnv.InstallPath).Should().BeEmpty();
     }
 }
