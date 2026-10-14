@@ -22,6 +22,25 @@ const configModulePath = '__CONFIG_MODULE__';
 
 let hotReloadEnabled = false;
 
+// A hosted app can render static SSR pages without starting WebAssembly.
+export async function afterWebStarted() {
+    const agent = hotReloadAgentSignal();
+    if (!agent.isReady) {
+        agent.pendingUpdates ??= [];
+    }
+
+    if (!await isHotReloadEnabled()) {
+        return;
+    }
+
+    await import(new URL(configModulePath, import.meta.url).href);
+}
+
+// Older Blazor runtimes need their JS interop dispatcher before applying deferred updates.
+export function afterWebAssemblyStarted() {
+    hotReloadAgentSignal().setReady();
+}
+
 export async function onRuntimeConfigLoaded(config) {
     if (config.debugLevel === 0) {
         return;
@@ -87,7 +106,12 @@ export async function onRuntimeReady(runtime) {
 function hotReloadAgentSignal() {
     const agent = globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT ||= {};
     if (!agent.ready) {
-        agent.ready = new Promise(resolve => { agent.setReady = resolve; });
+        agent.ready = new Promise(resolve => {
+            agent.setReady = () => {
+                agent.isReady = true;
+                resolve();
+            };
+        });
     }
 
     return agent;
