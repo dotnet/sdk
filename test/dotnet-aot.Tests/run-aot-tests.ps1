@@ -106,6 +106,18 @@ if (-not $NoBuild) {
         exit $LASTEXITCODE
     }
 
+    # AotTestModules_RunsManagedTestModule runs the managed (JIT) build of this test module
+    # through dn. Build it explicitly rather than relying on the NativeAOT publish above to
+    # leave a RID-specific copy in artifacts/bin.
+    & $dotnet build $testProject `
+        -c $Configuration `
+        -r $RuntimeIdentifier
+
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Managed test module build failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+
     & $dotnet publish $productProject `
         -c $Configuration `
         -r $RuntimeIdentifier `

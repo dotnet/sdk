@@ -4,7 +4,6 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.Commands;
-using Microsoft.DotNet.FileBasedPrograms;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.Remove.Reference.Tests
@@ -393,8 +392,7 @@ Options:
         public void ItRemovesFileBasedAppReferenceDirective_FileBasedApp()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
-            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:ref Util.cs
                 #:project Other/Other.csproj
 
@@ -412,8 +410,7 @@ Options:
                 .Should().Pass()
                 .And.HaveStdOutContaining(string.Format(CliStrings.ProjectReferenceRemoved, "Util.cs"));
 
-            File.ReadAllText(appFile).Should().Be($$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            File.ReadAllText(appFile).Should().Be("""
                 #:project Other/Other.csproj
 
                 Console.WriteLine();
@@ -424,8 +421,7 @@ Options:
         public void ItRemovesMSBuildPropertyRefDirectiveWhenRemovingReference_FileBasedApp()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
-            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:ref $(MSBuildThisFileDirectory)Util.cs
                 #:ref Other.cs
 
@@ -446,8 +442,7 @@ Options:
                 .Should().Pass()
                 .And.HaveStdOutContaining(string.Format(CliStrings.ProjectReferenceRemoved, "$(MSBuildThisFileDirectory)Util.cs"));
 
-            File.ReadAllText(appFile).Should().Be($$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            File.ReadAllText(appFile).Should().Be("""
                 #:ref Other.cs
 
                 Console.WriteLine();
@@ -558,8 +553,7 @@ Options:
         public void ItPreservesFileBasedAppReferenceDirectiveWhenRemovingMissingProjectReference_FileBasedApp()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
-            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:project Missing
                 #:ref MissingRef
 
@@ -572,8 +566,7 @@ Options:
 
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, "Missing"));
-            File.ReadAllText(appFile).Should().Be($$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            File.ReadAllText(appFile).Should().Be("""
                 #:ref MissingRef
 
                 Console.WriteLine();
@@ -584,9 +577,7 @@ Options:
         public void WhenFileBasedAppReferenceWithoutExistingFileIsNotThereItPrintsMessage_FileBasedApp()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
-            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
-
+            var appFile = CreateFileBasedApp(testInstance.Path, """
                 Console.WriteLine();
                 """);
             var contentBefore = File.ReadAllText(appFile);
@@ -606,8 +597,7 @@ Options:
         public void ItRemovesFileBasedAppReferenceDirectiveWhenReferencedFileDoesNotExist_FileBasedApp(string referenceArgument)
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
-            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:ref Missing
 
                 Console.WriteLine();
@@ -619,9 +609,7 @@ Options:
 
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, "Missing"));
-            File.ReadAllText(appFile).Should().Be($$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
-
+            File.ReadAllText(appFile).Should().Be("""
                 Console.WriteLine();
                 """);
         }

@@ -747,6 +747,11 @@ Examples:
         <target state="translated">テスト モジュールには、ルート ディレクトリが指定されています。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryRequiresTestModules">
+        <source>The '--root-directory' option can only be used with '--test-modules'.</source>
+        <target state="new">The '--root-directory' option can only be used with '--test-modules'.</target>
+        <note>{Locked="--root-directory"}{Locked="--test-modules"}</note>
+      </trans-unit>
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">テスト出力の詳細。</target>
@@ -1962,10 +1967,15 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">テンプレートをインスタンス化する場合に、テンプレート パッケージの更新の確認を無効にします。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">Microsoft Testplatform バナーを表示せずにテストを実行する</target>
-        <note />
+        <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
+        <target state="needs-review-translation">Microsoft Testplatform バナーを表示せずにテストを実行する</target>
+        <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>

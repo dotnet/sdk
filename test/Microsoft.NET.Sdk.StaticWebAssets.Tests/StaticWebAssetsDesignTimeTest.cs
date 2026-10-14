@@ -27,6 +27,35 @@ public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
 #endif
 
     [TestMethod]
+    public void StaticWebAssetFingerprintPattern_ItemsAreNotVisibleByDefault()
+    {
+        var testAsset = CreateAspNetSdkTestAsset("VanillaWasm", identifier: nameof(StaticWebAssetFingerprintPattern_ItemsAreNotVisibleByDefault))
+            .WithProjectChanges(project =>
+            {
+                project.Root.Add(
+                    new XElement("ItemGroup",
+                        new XElement("StaticWebAssetFingerprintPattern",
+                            new XAttribute("Include", "JS"),
+                            new XAttribute("Pattern", "*.js"),
+                            new XAttribute("Expression", "#[.{fingerprint}]!"))));
+            });
+
+        var msbuild = new MSBuildCommand(testAsset, string.Empty);
+        var result = msbuild.Execute("-getItem:StaticWebAssetFingerprintPattern", "-nologo");
+
+        result.Should().Pass();
+
+        using var output = JsonDocument.Parse(result.StdOut);
+        var fingerprintPattern = output.RootElement
+            .GetProperty("Items")
+            .GetProperty("StaticWebAssetFingerprintPattern")
+            .EnumerateArray()
+            .Single(item => item.GetProperty("Identity").GetString() == "JS");
+
+        fingerprintPattern.GetProperty("Visible").GetString().Should().Be("false");
+    }
+
+    [TestMethod]
     public void ResolveWebAssemblyProjectReferences_ReturnsReferencedWebAssemblyProject()
     {
         var testAsset = CreateAspNetSdkTestAsset("BlazorHosted");

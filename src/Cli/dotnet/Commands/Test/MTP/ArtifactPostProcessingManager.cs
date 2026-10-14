@@ -181,9 +181,12 @@ internal sealed class ArtifactPostProcessingManager
                     artifactPostProcessingInvocation: invocation);
 
                 int exitCode = await application.RunAsync(ctrlC);
-                ApplyOutputs(output, job, invocation.SnapshotOutputs());
-
-                if (invocation.FailureMessage is { } failureMessage)
+                string? failureMessage = invocation.FailureMessage;
+                if (ShouldApplyOutputs(failureMessage, exitCode))
+                {
+                    ApplyOutputs(output, job, invocation.SnapshotOutputs());
+                }
+                else if (failureMessage is not null)
                 {
                     failedJobs += ReportFailureUnlessCancelled(output, ctrlC, string.Format(
                         CultureInfo.CurrentCulture,
@@ -255,6 +258,9 @@ internal sealed class ArtifactPostProcessingManager
         output.WriteWarningMessage(message);
         return true;
     }
+
+    internal static bool ShouldApplyOutputs(string? failureMessage, int exitCode)
+        => failureMessage is null && exitCode == ExitCode.Success;
 
     internal IReadOnlyList<ArtifactPostProcessingApplication> SnapshotApplications()
     {

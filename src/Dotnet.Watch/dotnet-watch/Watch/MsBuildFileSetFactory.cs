@@ -32,7 +32,7 @@ internal class MSBuildFileSetFactory(
 
     private readonly ProjectGraphFactory _buildGraphFactory = new(
         [new ProjectRepresentation(rootProjectFile, entryPointFilePath: null)],
-        buildProperties: BuildUtilities.ParseBuildProperties(buildArguments).ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value),
+        buildProperties: BuildUtilities.ParseBuildPropertiesToImmutableDictionary(buildArguments),
         logger,
         globalOptions,
         environmentOptions);

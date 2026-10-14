@@ -15,7 +15,7 @@ internal sealed class TestHotReloadClient() : HotReloadClient(new TestLogger(), 
     {
     }
 
-    public override void InitiateConnection(CancellationToken cancellationToken)
+    public override void InitiateConnection(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
     {
     }
 

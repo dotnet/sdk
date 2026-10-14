@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
@@ -72,6 +74,52 @@ public class DisplayMessageSerializerTests
 
         Assert.AreEqual(DisplayMessageLevels.Information, deserialized.Level);
         Assert.AreEqual("info", deserialized.Text);
+    }
+
+    [TestMethod]
+    public void Deserialize_LevelFieldWithPadding_PreservesFollowingField()
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            byte[] text = Encoding.UTF8.GetBytes("after-padding");
+
+            writer.Write((ushort)2);
+            writer.Write(DisplayMessageFieldsId.Level);
+            writer.Write(2);
+            writer.Write(DisplayMessageLevels.Warning);
+            writer.Write((byte)0xff);
+            writer.Write(DisplayMessageFieldsId.Text);
+            writer.Write(text.Length);
+            writer.Write(text);
+        }
+
+        stream.Position = 0;
+        var deserialized = (DisplayMessage)new DisplayMessageSerializer().Deserialize(stream);
+
+        Assert.AreEqual(DisplayMessageLevels.Warning, deserialized.Level);
+        Assert.AreEqual("after-padding", deserialized.Text);
+    }
+
+    [TestMethod]
+    public void Deserialize_LevelFieldSmallerThanByte_ThrowsInvalidDataException()
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new BinaryWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            byte[] text = Encoding.UTF8.GetBytes("must-not-be-read");
+
+            writer.Write((ushort)2);
+            writer.Write(DisplayMessageFieldsId.Level);
+            writer.Write(0);
+            writer.Write(DisplayMessageFieldsId.Text);
+            writer.Write(text.Length);
+            writer.Write(text);
+        }
+
+        stream.Position = 0;
+
+        Assert.ThrowsExactly<InvalidDataException>(() => new DisplayMessageSerializer().Deserialize(stream));
     }
 
     [TestMethod]

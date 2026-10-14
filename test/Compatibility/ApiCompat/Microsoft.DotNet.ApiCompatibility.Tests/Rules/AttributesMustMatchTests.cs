@@ -187,6 +187,112 @@ namespace CompatTests
 ",
 new CompatDifference[] {}
             },
+            // Repeated attribute removed
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+  }
+
+  [Foo(""S"")]
+  [Foo(""T"")]
+  public class First {}
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+  }
+
+  [Foo(""S"")]
+  public class First {}
+}
+",
+new CompatDifference[] {
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
+}
+            },
+            // Identical repeated attribute removed
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+  }
+
+  [Foo(""S"")]
+  [Foo(""S"")]
+  public class First {}
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+  }
+
+  [Foo(""S"")]
+  public class First {}
+}
+",
+new CompatDifference[] {
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
+}
+            },
+            // Repeated attribute changed and removed
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+  }
+
+  [Foo(""S"")]
+  [Foo(""T"")]
+  public class First {}
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+  }
+
+  [Foo(""U"")]
+  public class First {}
+}
+",
+new CompatDifference[] {
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First:[T:CompatTests.FooAttribute]"),
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotRemoveAttribute, "", DifferenceType.Removed, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
+}
+            },
 
             // Attribute added to type
             {
@@ -845,7 +951,42 @@ namespace CompatTests
 }
 ",
 new CompatDifference[] {
-    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotChangeAttribute, "", DifferenceType.Changed, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
+}
+            },
+            // Identical attribute repeated
+            {
+                @"
+namespace CompatTests
+{
+  using System;
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+  }
+
+  [Foo(""S"")]
+  public class First {}
+}
+",
+                @"
+namespace CompatTests
+{
+  using System;
+
+  [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+  public class FooAttribute : Attribute {
+    public FooAttribute(String s) {}
+  }
+
+  [Foo(""S"")]
+  [Foo(""S"")]
+  public class First {}
+}
+",
+new CompatDifference[] {
+    CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.CannotAddAttribute, "", DifferenceType.Added, "T:CompatTests.First:[T:CompatTests.FooAttribute]")
 }
             },
             // Attributes on method

@@ -35,7 +35,7 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
     /// </summary>
     internal ClientTransport Transport => transport;
 
-    public override void InitiateConnection(CancellationToken cancellationToken)
+    public override void InitiateConnection(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
     {
         // It is important to establish the connection (WaitForConnectionAsync) before we return,
         // otherwise the client wouldn't be able to connect.
@@ -72,6 +72,9 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
                 var result = AddImplicitCapabilities(capabilities.Split(' '));
 
                 Logger.Log(LogEvents.Capabilities, string.Join(" ", result));
+
+                // Initialize process:
+                await SetEnvironmentVariablesAsync(environmentVariables, cancellationToken);
 
                 // fire and forget:
                 _ = ListenForResponsesAsync(cancellationToken);
@@ -134,9 +137,11 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
         }
     }
 
+#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
     [MemberNotNull(nameof(_capabilitiesTask))]
     private Task<ImmutableArray<string>> GetCapabilitiesTask()
         => _capabilitiesTask ?? throw new InvalidOperationException();
+#pragma warning restore VSTHRD200
 
     [MemberNotNull(nameof(_capabilitiesTask))]
     private void RequireReadyForUpdates()
@@ -164,6 +169,33 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
     private ResponseLoggingLevel ResponseLoggingLevel
         => Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
+    public async ValueTask SetEnvironmentVariablesAsync(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
+    {
+        if (environmentVariables.Count == 0)
+        {
+            return;
+        }
+
+        // Send a request to set environment variables:
+        await transport.WriteAsync((byte)RequestType.SetEnvironmentVariables, async (stream, cancellationToken) =>
+        {
+            await stream.WriteAsync(environmentVariables.Count, cancellationToken);
+
+            foreach (var (name, value) in environmentVariables)
+            {
+                await stream.WriteAsync(name, cancellationToken);
+                await stream.WriteAsync(value, cancellationToken);
+            }
+        }, cancellationToken);
+
+        // Wait until the environment variables are set in the target process:
+        using var response = await transport.ReadAsync(cancellationToken);
+        if (response != null && response.Value.Type != ResponseType.EnvironmentVariablesSet)
+        {
+            throw new InvalidOperationException($"Unexpected response received from the agent: {response.Value.Type}");
+        }
+    }
+
     public async override Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
         RequireReadyForUpdates();
@@ -184,7 +216,7 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
         var request = new ManagedCodeUpdateRequest(ToRuntimeUpdates(applicableUpdates), ResponseLoggingLevel);
 
         // Only cancel apply operation when the process exits:
-        var updateCompletionTask = QueueUpdateBatchRequest(request, applyOperationCancellationToken);
+        var updateCompletionTask = QueueUpdateBatchRequestAsync(request, applyOperationCancellationToken);
 
         return CompleteApplyOperationAsync();
 
@@ -233,7 +265,7 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
             Logger.LogDebug("Sending static file update request for asset '{Url}'.", update.RelativePath);
 
             // Only cancel apply operation when the process exits:
-            return QueueUpdateBatchRequest(request, processExitedCancellationToken);
+            return QueueUpdateBatchRequestAsync(request, processExitedCancellationToken);
         });
 
         return CompleteApplyOperationAsync();
@@ -245,10 +277,10 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
         }
     }
 
-    private Task<bool> QueueUpdateBatchRequest<TRequest>(TRequest request, CancellationToken applyOperationCancellationToken)
+    private Task<bool> QueueUpdateBatchRequestAsync<TRequest>(TRequest request, CancellationToken applyOperationCancellationToken)
         where TRequest : IUpdateRequest
     {
-        return QueueUpdateBatch(
+        return QueueUpdateBatchAsync(
             sendAndReceive: async batchId =>
             {
                 await transport.WriteAsync((byte)request.Type, request.WriteAsync, applyOperationCancellationToken);

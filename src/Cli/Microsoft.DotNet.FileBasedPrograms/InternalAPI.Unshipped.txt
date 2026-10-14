@@ -1,5 +1,4 @@
 const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.MappingPropertyName = "FileBasedProgramsItemMapping" -> string!
-const Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective = "ExperimentalFileBasedProgramEnableRefDirective" -> string!
 const Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective" -> string!
 const Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.FromRefDirectiveMetadataName = "FileBasedProgramsFromRefDirective" -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective

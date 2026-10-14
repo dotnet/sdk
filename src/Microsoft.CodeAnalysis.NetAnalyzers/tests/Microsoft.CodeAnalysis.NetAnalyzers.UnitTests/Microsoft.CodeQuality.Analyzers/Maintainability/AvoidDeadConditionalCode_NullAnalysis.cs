@@ -6968,6 +6968,28 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         }
 
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
+        [TestMethod]
+        public async Task LocalFunctionInvocation_PreservesUnrelatedReferenceAliasAsync()
+        {
+            await VerifyCSharpAnalyzerAsync("""
+                class Test
+                {
+                    void M()
+                    {
+                        object captured = new object();
+                        object alias = captured;
+                        void Reset() => captured = null;
+                        Reset();
+                        if (captured == null) { }
+                        if (alias == null) { }
+                    }
+                }
+                """,
+                GetCSharpResultAt(9, 13, "captured == null", "true"),
+                GetCSharpResultAt(10, 13, "alias == null", "false"));
+        }
+
+        [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.NullAnalysis)]
         [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.CopyAnalysis)]
         [TestMethod]
         public async Task CopyAnalysisAssert_IndexerArrayAccessWithCastAsync()

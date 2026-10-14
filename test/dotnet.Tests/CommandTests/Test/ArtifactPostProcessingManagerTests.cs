@@ -221,6 +221,75 @@ public class ArtifactPostProcessingManagerTests
     }
 
     [TestMethod]
+    public void ShouldApplyOutputs_FailureMessageAfterOutputRecorded_PreservesOriginalArtifacts()
+        => AssertFailedPostProcessingPreservesOriginalArtifacts(
+            failureMessage: "Merge failed after producing an output.",
+            exitCode: TestExitCode.Success);
+
+    [TestMethod]
+    public void ShouldApplyOutputs_NonzeroExitAfterOutputRecorded_PreservesOriginalArtifacts()
+        => AssertFailedPostProcessingPreservesOriginalArtifacts(
+            failureMessage: null,
+            exitCode: TestExitCode.GenericFailure);
+
+    private static void AssertFailedPostProcessingPreservesOriginalArtifacts(
+        string? failureMessage,
+        int exitCode)
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        ArtifactPostProcessingArtifact first = CreateArtifact("first.trx", "microsoft.testing.trx");
+        ArtifactPostProcessingArtifact second = CreateArtifact("second.trx", "microsoft.testing.trx");
+        ArtifactPostProcessingApplication application = CreateApplication();
+        var group = new ArtifactPostProcessingGroup(
+            "microsoft.testing.trx",
+            IsKind: true,
+            [first, second],
+            [application]);
+        var job = new ArtifactPostProcessingJob(application, [group]);
+        reporter.ArtifactAdded(false, "A.dll", "net10.0", "x64", "execution-1", null, first.Path);
+        reporter.ArtifactAdded(false, "B.dll", "net10.0", "x64", "execution-2", null, second.Path);
+
+        var invocation = new ArtifactPostProcessingInvocation("manifest.json");
+        invocation.RecordOutput(
+            application.Module,
+            application.TargetFramework,
+            application.Architecture,
+            "execution-3",
+            new FileArtifactMessage(
+                "merged.trx",
+                "TRX",
+                Description: null,
+                TestUid: null,
+                TestDisplayName: null,
+                SessionUid: null,
+                Kind: "microsoft.testing.trx",
+                InputArtifactPaths: [first.Path, second.Path]));
+        if (failureMessage is not null)
+        {
+            invocation.RecordFailure(failureMessage);
+        }
+
+        bool shouldApplyOutputs = ArtifactPostProcessingManager.ShouldApplyOutputs(
+            invocation.FailureMessage,
+            exitCode);
+        if (shouldApplyOutputs)
+        {
+            ArtifactPostProcessingManager.ApplyOutputs(reporter, job, invocation.SnapshotOutputs());
+        }
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        shouldApplyOutputs.Should().BeFalse();
+        invocation.SnapshotOutputs().Should().ContainSingle(
+            "the processor output must have been recorded before its failure was observed");
+        string output = console.GetOutput();
+        output.Should().Contain("first.trx");
+        output.Should().Contain("second.trx");
+        output.Should().NotContain("merged.trx");
+    }
+
+    [TestMethod]
     public void GetArtifactPostProcessingLaunchArguments_DotnetCommand_UsesOnlyExecAndTargetPath()
     {
         ArtifactPostProcessingApplication application = CreateApplication();

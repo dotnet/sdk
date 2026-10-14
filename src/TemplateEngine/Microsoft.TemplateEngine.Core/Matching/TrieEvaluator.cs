@@ -96,7 +96,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
                 {
                     //If we matched another byte, advance the current node in
                     //  the path and log the encountered terminal (if applicable)
-                    if (path.CurrentNode.NextNodes.TryGetValue(data, out next))
+                    if (path.CurrentNode.TryGetNextNode(data, out next))
                     {
                         path.CurrentNode = next;
 
@@ -121,7 +121,7 @@ namespace Microsoft.TemplateEngine.Core.Matching
             }
 
             //Try to start a new path in the trie
-            if (_trie.NextNodes.TryGetValue(data, out next))
+            if (_trie.TryGetNextNode(data, out next))
             {
                 TriePath<T> path = new TriePath<T>(sequenceNumber)
                 {

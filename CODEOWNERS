@@ -106,7 +106,7 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @dotnet/dotnet-cli
 
 # Area-ClickOnce
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
+/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @dotnet/msbuild-clickonce
 
 # Area-Watch
 /test/TestAssets/TestProjects/Watch*/ @dotnet/hot-reload

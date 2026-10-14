@@ -14,7 +14,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     public const string ConnectionServerLogComponentName = "BrowserConnection:Server";
     public const string ConnectionAgentLogComponentName = "BrowserConnection:Agent";
 
-    // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
+    // This needs to be in sync with the version the browser tools hosting startup is compiled against.
     private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
     private const string MiddlewareTargetFramework = "net6.0";
 
@@ -26,6 +26,17 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// Project that's used for launching the application.
     /// </summary>
     public abstract ProjectGraphNode LaunchingProject { get; }
+
+    /// <summary>
+    /// True if gateway proxy is used to serve the app.
+    /// </summary>
+    public abstract bool HasGatewayProxy { get; }
+
+    /// <summary>
+    /// Project whose browser initializer, settings document and pinned public key are served to the
+    /// browser. Usually the launching project; for hosted WebAssembly it is the client project.
+    /// </summary>
+    public virtual ProjectGraphNode BrowserToolsProject => LaunchingProject;
 
     protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
 
@@ -45,29 +56,63 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         var capabilities = clientProject.GetWebAssemblyCapabilities().ToImmutableArray();
         var targetFramework = clientProject.GetTargetFrameworkVersion() ?? throw new InvalidOperationException($"Project doesn't define {PropertyNames.TargetFrameworkMoniker}");
 
-        return new WebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, capabilities, targetFramework, context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser));
+        return new WebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, browserRefreshServer.ResetUpdates(), capabilities, targetFramework, context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser));
     }
+
+    private bool SuppressTimeouts
+        => context.EnvironmentOptions.TestFlags != TestFlags.None;
 
     private static string GetMiddlewareAssemblyPath()
         => GetInjectedAssemblyPath(MiddlewareTargetFramework, "Microsoft.AspNetCore.Watch.BrowserRefresh");
 
-    public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
+    /// <summary>
+    /// Creates the browser tools provider for the project. The application host is configured by
+    /// <see cref="ConfigureBrowserToolsLaunchEnvironment"/> to expose it on the app's own origin.
+    ///
+    /// Each connection is authenticated with the private half of the key pair the project's build
+    /// produced. The key is loaded when the browser connects, after <c>dotnet run</c> has built and
+    /// launched the application that serves the matching public half.
+    /// </summary>
+    public BrowserRefreshServer? TryCreateRefreshServer()
     {
+        var projectNode = BrowserToolsProject;
         var logger = context.LoggerFactory.CreateLogger(ServerLogComponentName, projectNode.GetDisplayName());
 
-        if (IsServerSupported(projectNode, logger))
+        if (!IsServerSupported(projectNode, logger))
         {
-            return new BrowserRefreshServer(
-                logger,
-                connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
-                connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
-                middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
-                dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
-                webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
-                suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
+            return null;
         }
 
-        return null;
+        if (BrowserToolsBuildOutputs.FromProject(projectNode.ProjectInstance, logger) is not { } browserToolsOutputs)
+        {
+            // The application has no pinned key, so nothing in the browser would ever connect to a
+            // provider. This is not an error: the project simply does not opt into browser tools.
+            // Reason has already been logged.
+            return null;
+        }
+
+        return new BrowserRefreshServer(
+            logger,
+            connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
+            connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
+            sessionKeyFactory: () => browserToolsOutputs.TryCreateSessionKey(logger),
+            middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
+            useGatewayProxy: HasGatewayProxy,
+            suppressTimeouts: SuppressTimeouts);
+    }
+
+    public async ValueTask<WebSocketConfig> GetRefreshServerWebSocketConfigAsync(CancellationToken cancellationToken)
+    {
+        var config = context.EnvironmentOptions.BrowserWebSocketConfig;
+        var dotnetPath = context.EnvironmentOptions.GetMuxerPath();
+
+        var supportsTls = await KestrelWebSocketServer.IsTlsSupportedAsync(dotnetPath, SuppressTimeouts, cancellationToken);
+        if (!supportsTls)
+        {
+            config = config.WithSecurePort(null);
+        }
+
+        return config; 
     }
 
     private static string GetBrowserLoggerName(int connectionId)

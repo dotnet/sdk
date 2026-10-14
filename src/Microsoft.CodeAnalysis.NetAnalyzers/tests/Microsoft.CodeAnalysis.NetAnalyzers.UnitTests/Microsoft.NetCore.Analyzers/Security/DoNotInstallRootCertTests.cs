@@ -8,6 +8,9 @@ using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotInstallRootCert,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Security.DoNotInstallRootCert,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
@@ -15,6 +18,38 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     [TestClass]
     public class DoNotInstallRootCertTests
     {
+        [TestMethod]
+        public async Task StoreParameterWithoutConstructor_CSharp_NoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    void Method(X509Store store)
+                    {
+                        store.Add(new X509Certificate2());
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
+        public async Task StoreCreatedFromRoot_VB_DiagnosticAsync()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Security.Cryptography.X509Certificates
+
+                Public Class TestClass
+                    Public Sub Method()
+                        Dim store = New X509Store(StoreName.Root)
+                        store.Add(New X509Certificate2())
+                    End Sub
+                End Class
+                """,
+                GetBasicResultAt(6, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
+        }
+
         [TestMethod]
         public async Task TestConstructorWithStoreNameParameterDiagnosticAsync()
         {
@@ -501,6 +536,12 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)
 #pragma warning disable RS0030 // Do not use banned APIs
             => VerifyCS.Diagnostic(rule)
+                .WithLocation(line, column);
+#pragma warning restore RS0030 // Do not use banned APIs
+
+        private static DiagnosticResult GetBasicResultAt(int line, int column, DiagnosticDescriptor rule)
+#pragma warning disable RS0030 // Do not use banned APIs
+            => VerifyVB.Diagnostic(rule)
                 .WithLocation(line, column);
 #pragma warning restore RS0030 // Do not use banned APIs
     }

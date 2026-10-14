@@ -4,15 +4,65 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
+using NuGet.Packaging;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
     [TestClass]
     public class GivenThatWeWantToPackAToolSelfContainedProject : SdkTest
     {
-//  TODO: Add tests for Self-contained / AOT tools, which are now supported
+        [TestMethod]
+        [DataRow(true, true)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        public void Windows_targeted_tool_requires_a_self_contained_RID_specific_implementation(bool selfContained, bool hasRidSpecificImplementation)
+        {
+            TestAsset asset = TestAssetsManager
+                .CopyTestAsset("PortableTool", nameof(Windows_targeted_tool_requires_a_self_contained_RID_specific_implementation), identifier: $"{selfContained}-{hasRidSpecificImplementation}")
+                .WithSource()
+                .WithTargetFramework($"{ToolsetInfo.CurrentTargetFramework}-windows")
+                .WithProjectChanges(project =>
+                {
+                    XNamespace ns = project.Root.Name.Namespace;
+                    XElement properties = project.Root.Elements(ns + "PropertyGroup").First();
+                    properties.Add(new XElement(ns + "SelfContained", selfContained.ToString().ToLowerInvariant()));
+                    properties.Add(new XElement(ns + "EnableWindowsTargeting", "true"));
+                    if (hasRidSpecificImplementation)
+                    {
+                        properties.Add(new XElement(ns + "RuntimeIdentifiers", "win-x64"));
+                    }
+                });
+
+            var packCommand = new PackCommand(asset);
+            CommandResult result = packCommand.Execute();
+
+            if (selfContained && hasRidSpecificImplementation)
+            {
+                result.Should().Pass();
+                string packagePath = Directory.GetFiles(packCommand.GetPackageDirectory().FullName, "*.win-x64.*.nupkg").Single();
+                using var package = new PackageArchiveReader(packagePath);
+                package.GetFiles().Should().Contain("tools/any/win-x64/consoledemo.exe");
+
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                    && RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                {
+                    CommandResult toolResult = new DotnetToolCommand(Log, "exec", "consoledemo", "--yes", "--source", packCommand.GetPackageDirectory().FullName)
+                        .WithWorkingDirectory(asset.TestRoot)
+                        .Execute();
+                    toolResult.Should().Pass();
+                    toolResult.StdOut.Should().Contain("Hello World from Global Tool");
+                }
+            }
+            else
+            {
+                result.Should().Fail().And.HaveStdOutContaining("NETSDK1146");
+            }
+        }
+
+//  TODO: Add tests for AOT tools, which are now supported
 
         //[TestMethod]
         //public void It_should_fail_with_error_message()

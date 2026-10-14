@@ -747,6 +747,11 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
         <target state="translated">Test modülleri belirtilen kök dizine sahip.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryRequiresTestModules">
+        <source>The '--root-directory' option can only be used with '--test-modules'.</source>
+        <target state="new">The '--root-directory' option can only be used with '--test-modules'.</target>
+        <note>{Locked="--root-directory"}{Locked="--test-modules"}</note>
+      </trans-unit>
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">Test çıkışının ayrıntı düzeyi.</target>
@@ -1962,10 +1967,15 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <target state="translated">Bir şablon örneği oluşturulurken şablon paketi güncelleştirmelerinin denetlenmesini devre dışı bırakır.</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCmdMTPNoLogo">
+        <source>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</source>
+        <target state="new">Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</target>
+        <note>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</note>
+      </trans-unit>
       <trans-unit id="TestCmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">Testleri Microsoft Testplatform bandını görüntülemeden çalıştır</target>
-        <note />
+        <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
+        <target state="needs-review-translation">Testleri Microsoft Testplatform bandını görüntülemeden çalıştır</target>
+        <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>

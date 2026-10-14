@@ -49,6 +49,7 @@ internal sealed class ProjectLauncher(
         var agentLogger = context.LoggerFactory.CreateLogger(HotReloadDotNetWatcher.AgentLogComponentName, projectDisplayName);
 
         var appModel = HotReloadAppModel.InferFromProject(context, projectNode);
+
         var clients = await appModel.CreateClientsAsync(clientLogger, agentLogger, cancellationToken);
 
         var processSpec = new ProcessSpec
@@ -62,13 +63,6 @@ internal sealed class ProjectLauncher(
 
         var environmentBuilder = new Dictionary<string, string>();
 
-        // initialize with project settings:
-        foreach (var (name, value) in projectOptions.LaunchEnvironmentVariables)
-        {
-            environmentBuilder[name] = value;
-        }
-
-        // override any project settings:
         environmentBuilder[EnvironmentVariables.Names.DotnetWatch] = "1";
         environmentBuilder[EnvironmentVariables.Names.DotnetWatchIteration] = (Iteration + 1).ToString(CultureInfo.InvariantCulture);
 

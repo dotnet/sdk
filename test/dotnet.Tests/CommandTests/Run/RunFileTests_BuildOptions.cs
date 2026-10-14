@@ -1149,8 +1149,6 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
-        EnableRefDirective(testInstance);
-
         File.WriteAllText(Path.Join(testInstance.Path, "refLib.cs"), """
             #:property OutputType=Library
             namespace RefLib;

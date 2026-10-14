@@ -3,7 +3,6 @@
 
 using Msbuild.Tests.Utilities;
 using Microsoft.DotNet.Cli.Commands;
-using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Add.Reference.Tests
 {
@@ -300,9 +299,7 @@ Commands:
         public void ItAddsFileBasedAppReferenceDirective_FileBasedApp()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
-            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
-
+            var appFile = CreateFileBasedApp(testInstance.Path, """
                 Console.WriteLine();
                 """);
             File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
@@ -316,9 +313,8 @@ Commands:
                 .Should().Pass()
                 .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Util.cs"));
 
-            File.ReadAllText(appFile).Should().Be($$"""
+            File.ReadAllText(appFile).Should().Be("""
                 #:ref Util.cs
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
 
                 Console.WriteLine();
                 """);
@@ -328,8 +324,7 @@ Commands:
         public void WhenFileBasedAppReferenceAlreadyExistsItDoesntDuplicate_FileBasedApp()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
-            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:ref Util.cs
 
                 Console.WriteLine();
@@ -353,8 +348,7 @@ Commands:
         public void ItMatchesMSBuildPropertyRefDirectiveWhenAddingReference_FileBasedApp()
         {
             var testInstance = TestAssetsManager.CreateTestDirectory();
-            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
-                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+            var appFile = CreateFileBasedApp(testInstance.Path, """
                 #:ref $(MSBuildThisFileDirectory)Util.cs
 
                 Console.WriteLine();

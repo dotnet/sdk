@@ -16,7 +16,7 @@
 
   <Target Name="_GenerateWorkloadManifestFiles">
     <ItemGroup>
-      <_WorkloadManifestValues Include="NetVersion" Value="net11" />
+      <_WorkloadManifestValues Include="NetVersion" Value="net12" />
       <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
       <_WorkloadManifestValues Include="EmsdkVersion" Value="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
       <_WorkloadManifestValues Include="EmscriptenVersion" Value="$(EmscriptenVersionCurrent)" />
@@ -26,10 +26,12 @@
            Text="No value specified for template variable '%(_WorkloadManifestValues.Identity)'" />
 
     <GenerateFileFromTemplate
+      SkipUnchanged="true"
       TemplateFile="WorkloadManifest.json.in"
       Properties="@(_WorkloadManifestValues->'%(Identity)=%(Value)')"
       OutputPath="$(WorkloadManifestPath)" />
     <GenerateFileFromTemplate
+      SkipUnchanged="true"
       TemplateFile="WorkloadManifest.targets.in"
       Properties="@(_WorkloadManifestValues->'%(Identity)=%(Value)')"
       OutputPath="$(WorkloadManifestTargetsPath)" />

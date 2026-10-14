@@ -221,6 +221,29 @@ Options:
         [DataRow("solution", ".sln")]
         [DataRow("sln", ".slnx")]
         [DataRow("solution", ".slnx")]
+        public void WhenPassedAReferenceWithoutExtensionNotInSlnItPrintsStatus(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = TestAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}{solutionExtension}NotFoundNoExt")
+                .WithSource()
+                .Path;
+
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+            var contentBefore = File.ReadAllText(solutionPath);
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", "invalid");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectNotFoundInTheSolution, "invalid"));
+            File.ReadAllText(solutionPath)
+                .Should().BeVisuallyEquivalentTo(contentBefore);
+        }
+
+        [TestMethod]
+        [DataRow("sln", ".sln")]
+        [DataRow("solution", ".sln")]
+        [DataRow("sln", ".slnx")]
+        [DataRow("solution", ".slnx")]
         public async Task WhenPassedAReferenceItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = TestAssetsManager
@@ -255,7 +278,7 @@ Options:
         public async Task WhenPassedAReferenceWithoutExtensionItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = TestAssetsManager
-                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}{solutionExtension}RemoveNoExt")
                 .WithSource()
                 .Path;
 
@@ -266,12 +289,14 @@ Options:
 
             solution.SolutionProjects.Count.Should().Be(2);
 
+            Directory.Delete(Path.Combine(projectDirectory, "Lib"), recursive: true);
+
             var projectToRemove = "Lib";
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectRemovedFromTheSolution, Path.Combine(projectToRemove, "Lib.csproj")));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectRemovedFromTheSolution, projectToRemove));
 
             solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
             solution.SolutionProjects.Count.Should().Be(1);

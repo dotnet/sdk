@@ -66,9 +66,9 @@ namespace Microsoft.NET.ILLink.Tests
             var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var intermediateLinkDir = Path.Combine(intermediateDirectory, "linked");
 
-            var linkSemaphore = Path.Combine(intermediateLinkDir, "Link.semaphore");
-
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true").Should().Pass();
+            var linkSemaphore = FindLinkSemaphore(intermediateLinkDir);
+            linkSemaphore.Should().NotBeNull();
             DateTime semaphoreFirstModifiedTime = File.GetLastWriteTimeUtc(linkSemaphore);
 
             WaitForUtcNowToAdvance();
@@ -178,10 +178,10 @@ namespace Microsoft.NET.ILLink.Tests
             var intermediateDirectory = publishCommand.GetIntermediateDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var linkedDirectory = Path.Combine(intermediateDirectory, "linked");
 
-            var linkSemaphore = Path.Combine(linkedDirectory, "Link.semaphore");
-
             // Link, keeping classlib
             publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:PublishTrimmed=true").Should().Pass();
+            var linkSemaphore = FindLinkSemaphore(linkedDirectory);
+            linkSemaphore.Should().NotBeNull();
             DateTime semaphoreFirstModifiedTime = File.GetLastWriteTimeUtc(linkSemaphore);
 
             var publishedDllKeptFirstTimeOnly = Path.Combine(publishDirectory, $"{referenceProjectName}.dll");

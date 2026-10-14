@@ -11,9 +11,9 @@ internal sealed class TerminalTestReporterOptions
     public string? BaseDirectory { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether we should show passed tests.
+    /// Gets the set of test outcomes whose per-test terminal block is rendered.
     /// </summary>
-    public bool ShowPassedTests { get; init; }
+    public TestResultVisibility ShowTestResults { get; init; } = TestResultVisibility.All;
 
     /// <summary>
     /// Gets a value indicating whether we should show information about which assembly is the source of the data on screen. Turn this off when running directly from an exe to reduce noise, because the path will always be the same.
@@ -80,6 +80,16 @@ internal sealed class TerminalTestReporterOptions
     /// slowest-tests section and the error recaps — is rendered regardless.
     /// </summary>
     public bool ShowRunSummary { get; init; } = true;
+}
+
+[Flags]
+internal enum TestResultVisibility
+{
+    None = 0,
+    Passed = 1,
+    Failed = 1 << 1,
+    Skipped = 1 << 2,
+    All = Passed | Failed | Skipped,
 }
 
 internal enum AnsiMode

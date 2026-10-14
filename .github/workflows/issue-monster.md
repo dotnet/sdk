@@ -47,9 +47,8 @@ permissions:
   issues: read
   copilot-requests: write
 
-sandbox:
-  agent:
-    sudo: false
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
 
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.

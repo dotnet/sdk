@@ -87,4 +87,27 @@ public class ZshShellProviderTests : VerifyMSTest.VerifyBase
         };
         await _provider.Verify(command, TestContext);
     }
+
+    [TestMethod]
+    public async Task WindowsStyleAliasesAreFilteredOut()
+    {
+        // Options with Windows-style aliases (starting with '/') should not appear in zsh completions
+        // because zsh's _arguments does not support them, causing errors like:
+        // "_arguments:comparguments:327: invalid argument: /v=[...]"
+        var flagOption = new Option<bool>("--verbose", "/v", "-v")
+        {
+            Arity = ArgumentArity.Zero
+        };
+        var valueOption = new Option<string>("--verbosity", "/verbosity", "-verbosity", "-v")
+        {
+            Description = "Set verbosity level"
+        };
+        valueOption.AcceptOnlyFromAmong("quiet", "normal", "detailed");
+        Command command = new Command("my-app")
+        {
+            flagOption,
+            valueOption
+        };
+        await _provider.Verify(command, TestContext);
+    }
 }

@@ -53,7 +53,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
     /// </summary>
     public static async Task<WebSocketClientTransport> CreateAsync(WebSocketConfig config, ILogger logger, CancellationToken cancellationToken)
     {
-        var handler = new RequestHandler(logger);
+        var handler = new RequestHandler(config, logger);
         var server = await KestrelWebSocketServer.StartServerAsync(config, handler.HandleRequestAsync, cancellationToken);
         var transport = new WebSocketClientTransport(server, handler);
 
@@ -81,7 +81,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
     public override ValueTask<ClientTransportResponse?> ReadAsync(CancellationToken cancellationToken)
         => _handler.ReadAsync(cancellationToken);
 
-    private sealed class RequestHandler(ILogger logger) : IDisposable
+    private sealed class RequestHandler(WebSocketConfig webSocketConfig, ILogger logger) : IDisposable
     {
         public SharedSecretProvider SharedSecretProvider { get; } = new();
         public TaskCompletionSource<WebSocket?> ClientConnectedSource { get; } = new();
@@ -89,7 +89,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
         private WebSocket? _clientSocket;
 
         public bool IsClientSocketAborted
-            => _clientSocket?.State is System.Net.WebSockets.WebSocketState.Aborted;
+            => _clientSocket?.State is WebSocketState.Aborted;
 
         // Reused across WriteAsync calls to avoid allocations.
         // WriteAsync is invoked under a semaphore in DefaultHotReloadClient.
@@ -118,7 +118,15 @@ internal sealed class WebSocketClientTransport : ClientTransport
         {
             if (!context.WebSockets.IsWebSocketRequest)
             {
-                context.Response.StatusCode = 400;
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+
+            // check the domain of the Origin header:
+            if (!Uri.TryCreate(context.Request.Headers.Origin.FirstOrDefault(), UriKind.Absolute, out var originUri) ||
+                !webSocketConfig.GetAllowedOriginDomains().Contains(originUri.Host, StringComparer.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
                 return;
             }
 
@@ -128,7 +136,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
             if (subProtocol == null)
             {
                 logger.LogWarning("WebSocket connection rejected: missing subprotocol (shared secret)");
-                context.Response.StatusCode = 401;
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
             }
 
@@ -140,7 +148,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
             catch (Exception ex)
             {
                 logger.LogWarning("WebSocket connection rejected: invalid shared secret - {Message}", ex.Message);
-                context.Response.StatusCode = 401;
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
             }
 
@@ -200,6 +208,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
             var buffer = ArrayPool<byte>.Shared.Rent(4096);
             try
             {
+#pragma warning disable VSTHRD103 // Write, Dispose synchronously blocks. https://github.com/microsoft/vs-threading/issues/1699
                 var stream = new MemoryStream();
                 WebSocketReceiveResult result;
                 do
@@ -210,6 +219,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
                         stream.Dispose();
                         return null;
                     }
+
                     stream.Write(buffer, 0, result.Count);
                 }
                 while (!result.EndOfMessage);
@@ -217,8 +227,9 @@ internal sealed class WebSocketClientTransport : ClientTransport
                 stream.Position = 0;
 
                 // Read the response type byte from the message
-                var type = (ResponseType)await stream.ReadByteAsync(cancellationToken);
+                var type = (ResponseType)stream.ReadByte();
                 return new ClientTransportResponse(type, stream, disposeStream: true);
+#pragma warning restore VSTHRD103
             }
             finally
             {

@@ -35,11 +35,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandInvocation.cs" Link="CommandInvocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\AutomaticEncodingRestorer.cs" Link="AutomaticEncodingRestorer.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryClient.cs" Link="TelemetryClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryCommonProperties.cs" Link="TelemetryCommonProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\InternalMicrosoft\InternalMicrosoftTelemetry.cs" Link="Telemetry\InternalMicrosoft\InternalMicrosoftTelemetry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ITelemetryClient.cs" Link="ITelemetryClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryDiskLogger.cs" Link="TelemetryDiskLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\IDockerContainerDetector.cs" Link="Telemetry\IDockerContainerDetector.cs" />

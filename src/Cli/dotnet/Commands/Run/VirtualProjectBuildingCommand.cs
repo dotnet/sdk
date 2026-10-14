@@ -214,7 +214,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         IDisposable? environmentScope = null;
         try
         {
-            environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+            Dictionary<string, string?> additionalEnvironmentVariables = [];
+            if (!NoRestore && !evalOnly)
+            {
+                NuGetSignatureVerificationEnabler.ConditionallyEnable(additionalEnvironmentVariables);
+            }
+
+            environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables(
+                additionalEnvironmentVariables);
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
@@ -236,6 +243,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 MultiThreaded = multiThreaded,
             };
 
+            using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             int exitCode = 0;
@@ -514,11 +522,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         path: item.GetMetadataValue("FullPath"),
                         basePath: entryPointFileDirectory);
 
-                    cache.CurrentEntry.AdditionalSources.Add(fullPath);
+                    cache.CurrentEntry.AdditionalSources.Add(RunFileBuildCacheEntry.AdditionalSource.Create(fullPath));
                 }
             }
 
-            cache.CurrentEntry.AdditionalSources.Remove(Builder.EntryPointFileFullPath);
+            cache.CurrentEntry.AdditionalSources.Remove(RunFileBuildCacheEntry.AdditionalSource.Create(Builder.EntryPointFileFullPath));
         }
 
         void PrintBuildInformation(ProjectCollection projectCollection, ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)

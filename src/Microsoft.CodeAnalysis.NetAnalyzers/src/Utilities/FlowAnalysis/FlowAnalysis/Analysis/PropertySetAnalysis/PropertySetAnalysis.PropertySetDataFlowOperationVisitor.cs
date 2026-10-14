@@ -150,7 +150,11 @@ namespace Analyzer.Utilities.FlowAnalysis.Analysis.PropertySetAnalysis
                 if (this.TrackedTypeSymbols.Any(s => operation.Type.GetBaseTypesAndThis().Contains(s)))
                 {
                     ConstructorMapper constructorMapper = this.DataFlowAnalysisContext.ConstructorMapper;
-                    if (!constructorMapper.PropertyAbstractValues.IsEmpty)
+                    if (constructorMapper.MapWithoutValueContent?.Invoke(operation.Constructor) is PropertySetAbstractValue mappedValue)
+                    {
+                        abstractValue = mappedValue;
+                    }
+                    else if (!constructorMapper.PropertyAbstractValues.IsEmpty)
                     {
                         abstractValue = PropertySetAbstractValue.GetInstance(constructorMapper.PropertyAbstractValues);
                     }
