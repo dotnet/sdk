@@ -117,6 +117,8 @@ Channel semantics remain the same.
 
 `dotnetup sdk install daily`, or `11.0.1xx` would still install the same version regardless of the `mode`. The names for channels will remain the same. What a channel does however will be different.
 
+When switching to admin mode, the existing reg-key IT policy would be set, to block unsigned exes by default.
+
 `daily` blobs exist but are not authenticode signed, so similar warnings and signature validation checks for daily builds would apply to `.exe` installers: https://aka.ms/dotnet/12.0.1xx/daily/dotnet-sdk-win-x64.exe
 It admins remain able to block these via policy.
 
