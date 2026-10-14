@@ -838,6 +838,62 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
 
     // --- UnsignedSourcePolicy coverage ---
 
+    /// <summary>
+    /// Installer bundle requests only accept the .exe bundle from the blob feed; archives are never probed.
+    /// </summary>
+    [TestMethod]
+    public void ResolveManifestEntry_BundleMechanism_ProbesOnlyExeOnBlobFeed()
+    {
+        const string version = "10.0.100-preview.4.25216.37";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        string expectedHash = new string('d', 128);
+        var (handler, history) = BuildHandler(new()
+        {
+            [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}.exe.sha512"] = (HttpStatusCode.OK, expectedHash),
+        });
+
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+
+        var (url, hash) = InvokeResolveManifestEntry(downloader, BuildBundleRequest(version, InstallComponent.SDK), new ReleaseVersion(version));
+
+        url.Should().Be($"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-{version}-{rid}.exe");
+        hash.Should().Be(expectedHash);
+        history.Should().ContainSingle();
+    }
+
+    [TestMethod]
+    public void ResolveManifestEntry_BundleMechanism_BlobFeed404_ThrowsVersionNotFoundAfterSingleProbe()
+    {
+        const string version = "10.0.0-preview.4.25216.10";
+        var (handler, history) = BuildHandler(new());
+
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildBundleRequest(version, InstallComponent.Runtime), new ReleaseVersion(version)));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
+        history.Should().ContainSingle().Which.Should().EndWith(".exe.sha512");
+    }
+
+    [TestMethod]
+    public void ResolveManifestEntry_BundleMechanism_NoBundleInManifest_ThrowsNoUserInstallableArtifact()
+    {
+        const string version = "9.0.0";
+        var (handler, _) = BuildHandler(new());
+
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.NoUserInstallableArtifact);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildBundleRequest(version, InstallComponent.Runtime), new ReleaseVersion(version)));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.NoUserInstallableArtifact);
+        ex.Message.Should().Contain("Windows installer");
+    }
+
     [TestMethod]
     [DataRow("daily", true)]                          // bare daily channel
     [DataRow("10.0-daily", true)]                     // suffixed daily channel
@@ -927,6 +983,16 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     {
         var root = new DotnetInstallRoot(@"C:\dotnet-test", InstallArchitecture.x64);
         return new DotnetInstallRequest(root, new UpdateChannel(channel), component, new InstallRequestOptions());
+    }
+
+    private static DotnetInstallRequest BuildBundleRequest(string channel, InstallComponent component)
+    {
+        var root = new DotnetInstallRoot(@"C:\dotnet-test", InstallArchitecture.x64);
+        return new DotnetInstallRequest(
+            root,
+            new UpdateChannel(channel),
+            component,
+            new InstallRequestOptions { Untracked = true, InstallMechanism = InstallMechanism.WindowsInstallerBundle });
     }
 
     private static DotnetDownloader CreateDownloader(HttpClient http, DotnetInstallErrorCode manifestThrows)

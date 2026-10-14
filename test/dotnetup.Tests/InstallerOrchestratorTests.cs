@@ -8,6 +8,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
@@ -227,6 +228,145 @@ public class InstallerOrchestratorTests
         using var testEnv = new TestEnvironment();
 
         DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeFalse();
+    }
+
+    #endregion
+
+    #region Install mechanism
+
+    [TestMethod]
+    public void CreateInstallArtifact_UsesArchiveExtractorForArchiveRequests()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+
+        using var artifact = InstallerOrchestratorSingleton.CreateInstallArtifact(
+            MakeResolvedRequest(testEnv, InstallMechanism.Archive, untracked: false),
+            new ReleaseManifest(),
+            new InstallBatchContext(reporter, 8));
+
+        artifact.Should().BeOfType<DotnetArchiveExtractor>();
+    }
+
+    [TestMethod]
+    public void CreateInstallArtifact_UsesWindowsBundleArtifactForBundleRequests()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+
+        using var artifact = InstallerOrchestratorSingleton.CreateInstallArtifact(
+            MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true),
+            new ReleaseManifest(),
+            new InstallBatchContext(reporter, 8));
+
+        artifact.Should().BeOfType<WindowsBundleArtifact>();
+    }
+
+    [TestMethod]
+    public void CreateInstallationValidator_SelectsValidatorByMechanism()
+    {
+        InstallerOrchestratorSingleton.CreateInstallationValidator(InstallMechanism.Archive)
+            .Should().BeOfType<ArchiveInstallationValidator>();
+        InstallerOrchestratorSingleton.CreateInstallationValidator(InstallMechanism.WindowsInstallerBundle)
+            .Should().BeOfType<HostFxrInstallationValidator>();
+    }
+
+    [TestMethod]
+    public void PrepareInstall_TrackedBundleRequest_ThrowsAdminModeRequiresUntracked()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var validator = new MockInstallationValidator(validateResult: true);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: false),
+            new InstallBatchContext(reporter, 8),
+            out _,
+            validator));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
+        validator.ValidateCalls.Should().Be(0);
+        File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void PrepareInstall_BundleAlreadyInstalled_ReturnsAlreadyInstalledWithoutDownloading()
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        var validator = new MockInstallationValidator(validateResult: true);
+
+        var prepared = InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true),
+            new InstallBatchContext(reporter, 8),
+            out var alreadyInstalledResult,
+            validator);
+
+        prepared.Should().BeNull();
+        alreadyInstalledResult!.WasAlreadyInstalled.Should().BeTrue();
+        validator.ValidateCalls.Should().Be(1);
+        File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_BundleNotVisibleToHostFxr_ThrowsPostInstallVerificationFailed()
+    {
+        using var testEnv = new TestEnvironment();
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var artifact = new FakeArtifact();
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed);
+        artifact.CommitCalls.Should().Be(1);
+        File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_ArchiveValidationFailure_StillThrowsInstallFailed()
+    {
+        using var testEnv = new TestEnvironment();
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.Archive, untracked: true);
+        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, new FakeArtifact());
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallFailed);
+    }
+
+    private static ResolvedInstallRequest MakeResolvedRequest(TestEnvironment testEnv, InstallMechanism mechanism, bool untracked)
+    {
+        var request = new DotnetInstallRequest(
+            new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64),
+            new UpdateChannel("10.0.100"),
+            InstallComponent.SDK,
+            new InstallRequestOptions
+            {
+                Untracked = untracked,
+                ManifestPath = testEnv.ManifestPath,
+                InstallMechanism = mechanism,
+            });
+        return new ResolvedInstallRequest(request, new ReleaseVersion("10.0.100"));
+    }
+
+    private sealed class FakeArtifact : IInstallArtifact
+    {
+        public int CommitCalls { get; private set; }
+
+        public IReadOnlyList<string> ExtractedSubcomponents => [];
+
+        public void Prepare()
+        {
+        }
+
+        public void Commit() => CommitCalls++;
+
+        public void Dispose()
+        {
+        }
     }
 
     #endregion

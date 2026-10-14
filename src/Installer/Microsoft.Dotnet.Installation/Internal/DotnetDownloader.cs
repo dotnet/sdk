@@ -303,11 +303,7 @@ internal class DotnetDownloader : IArchiveDownloader
             case FindReleaseFileStatus.NoUserInstallableArtifact:
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.NoUserInstallableArtifact,
-                    string.Format(
-                        System.Globalization.CultureInfo.CurrentCulture,
-                        Strings.NoUserInstallableArtifact,
-                        installRequest.Component,
-                        resolvedVersion),
+                    GetNoUserInstallableArtifactMessage(installRequest, resolvedVersion),
                     version: resolvedVersion.ToString(),
                     component: installRequest.Component.ToString());
 
@@ -335,6 +331,20 @@ internal class DotnetDownloader : IArchiveDownloader
             default:
                 throw new InvalidOperationException($"Unexpected {nameof(FindReleaseFileStatus)}: {result.Status}");
         }
+    }
+
+    private static string GetNoUserInstallableArtifactMessage(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+    {
+        if (installRequest.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
+        {
+            return $".NET {installRequest.Component} {resolvedVersion} has no Windows installer for {installRequest.InstallRoot.Architecture}. Choose a different version.";
+        }
+
+        return string.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            Strings.NoUserInstallableArtifact,
+            installRequest.Component,
+            resolvedVersion);
     }
 
     private static (string DownloadUrl, string ExpectedHash) BuildEntryFromReleaseFile(
@@ -417,23 +427,14 @@ internal class DotnetDownloader : IArchiveDownloader
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var locationsChecked = new List<string>();
 
-        // Prefer tar.gz, fall back to zip if unavailable (older .NET versions may not publish tar.gz for Windows)
-        var tarLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".tar.gz");
-        locationsChecked.Add(tarLocation.ChecksumUrl);
-        string? hash = TryGetHashFromUrl(tarLocation.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
-        if (hash != null)
+        foreach (string extension in GetBlobFeedExtensions(installRequest))
         {
-            return (tarLocation.ArchiveUrl, hash);
-        }
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            var zipLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".zip");
-            locationsChecked.Add(zipLocation.ChecksumUrl);
-            hash = TryGetHashFromUrl(zipLocation.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
+            var location = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, extension);
+            locationsChecked.Add(location.ChecksumUrl);
+            string? hash = TryGetHashFromUrl(location.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
             if (hash != null)
             {
-                return (zipLocation.ArchiveUrl, hash);
+                return (location.ArchiveUrl, hash);
             }
         }
 
@@ -442,6 +443,26 @@ internal class DotnetDownloader : IArchiveDownloader
             $"Version {resolvedVersion} for {installRequest.Component} was not found in the release manifest or blob feed (checked: {string.Join(", ", locationsChecked)})",
             version: resolvedVersion.ToString(),
             component: installRequest.Component.ToString());
+    }
+
+    /// <summary>
+    /// The blob feed file extensions to probe, in order of preference. Installer bundle requests
+    /// only accept the .exe bundle. Archive requests prefer tar.gz and fall back to zip on Windows
+    /// (older .NET versions may not publish tar.gz for Windows).
+    /// </summary>
+    private static IEnumerable<string> GetBlobFeedExtensions(DotnetInstallRequest installRequest)
+    {
+        if (installRequest.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
+        {
+            yield return ".exe";
+            yield break;
+        }
+
+        yield return ".tar.gz";
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            yield return ".zip";
+        }
     }
 
     /// <summary>
