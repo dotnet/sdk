@@ -8,6 +8,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     [UsesVerify]
     public abstract partial class BaseIntegrationTest : SdkTest
     {
+        // Common templates can advance before the SDK's default application framework.
+        protected const string CommonTemplateTargetFramework = "net12.0";
+
         public BaseIntegrationTest()
         {
         }

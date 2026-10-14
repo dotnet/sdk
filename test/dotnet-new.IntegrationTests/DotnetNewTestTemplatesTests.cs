@@ -13,7 +13,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     {
         private ITestOutputHelper _log => Log;
 
-        private static readonly ImmutableArray<string> SupportedTargetFrameworks =
+        private static readonly ImmutableArray<string> CommonSupportedTargetFrameworks =
+        [
+            CommonTemplateTargetFramework
+        ];
+
+        private static readonly ImmutableArray<string> MSTestSupportedTargetFrameworks =
         [
             ToolsetInfo.CurrentTargetFramework
         ];
@@ -65,7 +70,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // This is the live location of the build
             string templatePackagePath = Path.Combine(
                 RepoTemplatePackages,
-                $"Microsoft.DotNet.Common.ProjectTemplates.{ToolsetInfo.CurrentTargetFrameworkVersion}",
+                "Microsoft.DotNet.Common.ProjectTemplates.12.0",
                 "content");
 
             var dummyLog = new NullTestOutputHelper();
@@ -608,9 +613,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         public static IEnumerable<object[]> GetTemplateItemsToTest()
         {
-            foreach (var targetFramework in SupportedTargetFrameworks)
+            foreach (var (projectTemplate, itemTemplate, languages, supportsTestingPlatform) in AvailableItemTemplates)
             {
-                foreach (var (projectTemplate, itemTemplate, languages, supportsTestingPlatform) in AvailableItemTemplates)
+                var targetFrameworks = projectTemplate == "mstest" ? MSTestSupportedTargetFrameworks : CommonSupportedTargetFrameworks;
+                foreach (var targetFramework in targetFrameworks)
                 {
                     foreach (var language in languages)
                     {
@@ -622,7 +628,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         public static IEnumerable<object[]> GetTemplateProjectsToTest()
         {
-            foreach (var targetFramework in SupportedTargetFrameworks)
+            foreach (var targetFramework in CommonSupportedTargetFrameworks)
             {
                 foreach (var (projectTemplate, languages, runDotnetTest, supportsTestingPlatform) in AvailableProjectTemplates)
                 {
@@ -638,7 +644,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             var coverageTools = new[] { "Microsoft.CodeCoverage", "coverlet" };
             var testRunners = new[] { "VSTest", "Microsoft.Testing.Platform" };
-            foreach (var targetFramework in SupportedTargetFrameworks)
+            foreach (var targetFramework in MSTestSupportedTargetFrameworks)
             {
                 // mstest: all languages, runDotnetTest = true
                 foreach (var language in Languages.All)
@@ -674,7 +680,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static IEnumerable<object[]> GetXUnitV3TestRunnerCombinations()
         {
             var testRunners = new[] { "VSTest", "Microsoft.Testing.Platform" };
-            foreach (var targetFramework in SupportedTargetFrameworks)
+            foreach (var targetFramework in CommonSupportedTargetFrameworks)
             {
                 foreach (var language in Languages.All)
                 {
@@ -689,7 +695,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static IEnumerable<object[]> GetNUnitTestRunnerCombinations()
         {
             var testRunners = new[] { "VSTest", "Microsoft.Testing.Platform" };
-            foreach (var targetFramework in SupportedTargetFrameworks)
+            foreach (var targetFramework in CommonSupportedTargetFrameworks)
             {
                 foreach (var language in Languages.All)
                 {
