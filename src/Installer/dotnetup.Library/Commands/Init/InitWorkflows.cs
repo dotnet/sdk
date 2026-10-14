@@ -20,24 +20,79 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 internal class InitWorkflows
 {
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
+    private readonly AdminModeSwitcher? _adminModeSwitcher;
 
-    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment)
+    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment, AdminModeSwitcher? adminModeSwitcher = null)
     {
         _dotnetEnvironment = dotnetEnvironment;
+        _adminModeSwitcher = adminModeSwitcher;
     }
 
+    private AdminModeSwitcher AdminSwitcher => _adminModeSwitcher ?? new AdminModeSwitcher();
+
     // ── Init Flow Orchestrators ──
+
+    /// <summary>
+    /// Entry point for the <c>dotnetup init</c> command. Handles switching into and out of admin
+    /// mode before running the regular walkthrough with <paramref name="requestedAccessMode"/>
+    /// preselected. Admin mode is switched before any other state change, so a declined elevation
+    /// leaves everything untouched.
+    /// </summary>
+    public List<ResolvedInstallRequest> RunInit(InstallCommand command, DotnetAccessMode? requestedAccessMode)
+    {
+        if (requestedAccessMode == DotnetAccessMode.Admin)
+        {
+            SwitchToAdminMode(command.DryRun);
+            return [];
+        }
+
+        if (AdminModeSwitcher.IsAdminModeActive())
+        {
+            if (requestedAccessMode is null)
+            {
+                AdminModeMessages.WriteAdminModeActive(SpectreAnsiConsole.Console);
+                return [];
+            }
+
+            if (command.DryRun)
+            {
+                SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim("(dry run) Admin mode would be disabled for all users on this computer before setup."));
+            }
+            else
+            {
+                AdminSwitcher.Disable();
+            }
+        }
+
+        return InitWalkthrough(command, requests: null, requestedAccessMode);
+    }
+
+    private void SwitchToAdminMode(bool dryRun)
+    {
+        if (dryRun)
+        {
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim("(dry run \u2014 no changes were made to your machine)"));
+            SpectreAnsiConsole.MarkupLine("Admin mode would be enabled for all users on this computer.");
+            return;
+        }
+
+        AdminSwitcher.Enable();
+        AdminModeMessages.WriteNextSteps(SpectreAnsiConsole.Console);
+    }
 
     /// <summary>
     /// Interactive onboarding flow used both by the explicit <c>dotnetup init</c> command
     /// and by the first interactive install when dotnetup has not yet been configured.
     /// Resolves the recommended setup, and shows the form where the options can be reviewed and modified.
     /// When <paramref name="requests"/> is supplied, those already-resolved install requests are
-    /// reused as the recommended requests instead of resolving the default SDK channel.
+    /// reused as the recommended requests instead of resolving the default SDK channel. A non-null
+    /// <paramref name="requestedAccessMode"/> replaces the configured access mode as the preselected
+    /// (and, non-interactively, the applied) mode.
     /// </summary>
     public List<ResolvedInstallRequest> InitWalkthrough(
         InstallCommand command,
-        List<ResolvedInstallRequest>? requests = null)
+        List<ResolvedInstallRequest>? requests = null,
+        DotnetAccessMode? requestedAccessMode = null)
     {
         // When a nearby global.json pins a local SDK via "sdk.paths", dotnetup is not the
         // environment owner for this directory: skip onboarding (the form, access-mode setup, and
@@ -63,7 +118,7 @@ internal class InitWorkflows
             command,
             requests,
             _dotnetEnvironment,
-            configuredAccessMode: previousConfig?.AccessMode,
+            configuredAccessMode: requestedAccessMode ?? previousConfig?.AccessMode,
             ignoreGlobalJson: command.DryRun);
 
         // Show the interactive form (or, non-interactively, take the recommended defaults) and read
@@ -72,6 +127,13 @@ internal class InitWorkflows
         if (formSelection is null)
         {
             return []; // User chose to exit without changes.
+        }
+
+        if (formSelection.AccessMode == DotnetAccessMode.Admin)
+        {
+            // Admin mode only switches the machine policy; installs are done separately.
+            SwitchToAdminMode(command.DryRun);
+            return [];
         }
 
         if (command.DryRun)

@@ -102,6 +102,32 @@ public class InitFormModelTests
     }
 
     [TestMethod]
+    public void AdminAccessModeChoice_IsOfferedOnlyOnWindows()
+    {
+        var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+
+        bool hasAdmin = accessModeField.Choices.Any(choice => choice.Title == DotnetAccessMode.Admin.ToString());
+
+        hasAdmin.Should().Be(OperatingSystem.IsWindows());
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void AdminAccessModeChoice_MapsToAdminSelection()
+    {
+        var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+        int adminIndex = accessModeField.Choices
+            .Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == DotnetAccessMode.Admin.ToString())
+            .index;
+
+        accessModeField.SelectChoice(adminIndex);
+
+        model.SelectedAccessMode().Should().Be(DotnetAccessMode.Admin);
+    }
+
+    [TestMethod]
     [DataRow(DotnetAccessMode.None, false)]
     [DataRow(DotnetAccessMode.Shell, true)]
     [DataRow(DotnetAccessMode.Everywhere, true)]

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
@@ -34,11 +35,15 @@ public class EnvCommandTests : IDisposable
         // tests are synchronous.)
         DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
 
+        // Keep env set's admin mode routing off the real machine policy.
+        DotnetupPolicy.Store = new FakeDotnetupPolicyStore();
+
         _env = new MockDotnetInstallManager(defaultInstallPath: Path.Combine(_tempDir, "dotnet"));
     }
 
     public void Dispose()
     {
+        DotnetupPolicy.ResetStoreForTesting();
         DotnetupPaths.ClearTestDataDirectoryOverride();
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* best-effort cleanup */ }
     }

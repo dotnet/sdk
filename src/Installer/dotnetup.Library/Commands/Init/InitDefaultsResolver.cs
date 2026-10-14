@@ -134,7 +134,8 @@ internal static class InitDefaultsResolver
 
     /// <summary>
     /// Returns the access mode to select by default without prompting. A configured, supported mode
-    /// takes precedence. Otherwise, Windows defaults to everywhere mode; other platforms use
+    /// takes precedence; admin mode is never preselected because it is only entered explicitly.
+    /// Otherwise, Windows defaults to everywhere mode; other platforms use
     /// terminal-profile mode when a supported shell is available and isolation mode when it is not.
     /// </summary>
     public static DotnetAccessMode GetDefaultAccessMode(
@@ -142,6 +143,7 @@ internal static class InitDefaultsResolver
         DotnetAccessMode? configuredAccessMode = null)
     {
         if (configuredAccessMode is DotnetAccessMode configured &&
+            configured != DotnetAccessMode.Admin &&
             DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(configured))
         {
             return configured;

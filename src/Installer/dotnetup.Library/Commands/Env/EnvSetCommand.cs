@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
@@ -14,11 +15,17 @@ internal class EnvSetCommand : CommandBase
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
+    private readonly AdminModeSwitcher? _adminModeSwitcher;
 
-    public EnvSetCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result, "env set")
+    public EnvSetCommand(
+        ParseResult result,
+        IDotnetEnvironmentManager? dotnetEnvironment = null,
+        IEnvironmentStateInspector? inspector = null,
+        AdminModeSwitcher? adminModeSwitcher = null) : base(result, "env set")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
+        _adminModeSwitcher = adminModeSwitcher;
         _modeArg = result.GetValue(EnvSetCommandParser.ModeArgument);
         _dotnetupOnPathArg = result.GetValue(EnvSetCommandParser.DotnetupOnPathOption);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
@@ -29,6 +36,10 @@ internal class EnvSetCommand : CommandBase
 
     protected override void ExecuteCore()
     {
+        if (HandleAdminMode())
+        {
+            return;
+        }
         DotnetupConfigData? previous = DotnetupConfig.Read();
 
         // Resolve the dotnet-access mode: explicit argument wins, otherwise re-apply the
@@ -68,5 +79,34 @@ internal class EnvSetCommand : CommandBase
         bool targetDotnetupOnPath = _dotnetupOnPathArg ?? previous?.DotnetupOnPath ?? true;
 
         EnvSettingsWriter.ApplyAndPersist(targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector);
+    }
+
+    /// <summary>
+    /// Routes admin mode before anything else changes: <c>env set admin</c> only enables admin
+    /// mode; another explicit mode first leaves admin mode and then applies normally; no mode while
+    /// in admin mode changes nothing. Returns true when the command is fully handled.
+    /// </summary>
+    private bool HandleAdminMode()
+    {
+        AdminModeSwitcher switcher = _adminModeSwitcher ?? new AdminModeSwitcher();
+        if (_modeArg == DotnetAccessMode.Admin)
+        {
+            switcher.Enable();
+            return true;
+        }
+
+        if (!AdminModeSwitcher.IsAdminModeActive())
+        {
+            return false;
+        }
+
+        if (_modeArg is null)
+        {
+            AdminModeMessages.WriteAdminModeActive(SpectreAnsiConsole.Console);
+            return true;
+        }
+
+        switcher.Disable();
+        return false;
     }
 }

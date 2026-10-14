@@ -155,7 +155,11 @@ internal sealed class InitFormModel
             }
 
             case DotnetAccessMode.Admin:
-                return [new DetailLine("Installs .NET with the Windows installer into the shared system folder. Requires elevation.")];
+                return
+                [
+                    new DetailLine("Installs .NET with the Windows installer into the shared system folder. Requires elevation."),
+                    new DetailLine("Changes a machine-wide setting for all users. Choosing it only switches the mode; install .NET afterwards with 'dotnetup sdk install <version> --untracked'."),
+                ];
 
             default:
                 return [];
@@ -323,6 +327,8 @@ internal sealed class InitFormModel
         {
             modes.Add(DotnetAccessMode.Everywhere);
             choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Everywhere), AccessModeDescription(DotnetAccessMode.Everywhere)));
+            modes.Add(DotnetAccessMode.Admin);
+            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Admin), AccessModeDescription(DotnetAccessMode.Admin)));
         }
 
         int defaultIndex = Math.Max(0, modes.IndexOf(recommended));
