@@ -65,7 +65,7 @@ writing `browser-tools-key.public.json` (base64 `SubjectPublicKeyInfo`) and
 Framework). Neither file is a static web asset. A valid, matching pair is reused so
 rebuilds stay incremental; anything missing, malformed, mismatched or cleaned regenerates
 both halves. `dotnet watch` reads the private half back through
-[`BrowserToolsBuildOutputs`](../../src/Dotnet.Watch/Watch/Browser/BrowserToolsBuildOutputs.cs)
+[`BrowserToolsBuildOutputs`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserToolsBuildOutputs.cs)
 — derived from the project's evaluated `IntermediateOutputPath`, not from a filesystem
 search. A **per-project** provider in
 [`BrowserRefreshServerFactory`](../../src/Dotnet.Watch/Watch/Browser/BrowserRefreshServerFactory.cs)
@@ -105,7 +105,13 @@ file.
 For hosted WebAssembly applications, the browser-facing client project owns the key,
 initializer and configuration assets. The launching server consumes those referenced
 assets and hosts the forwarding route, while `dotnet watch` reads the client project's
-deterministic private-key output. This avoids competing host/client keys.
+deterministic private-key output. This avoids competing host/client keys. The client-owned
+[initializer](../../src/WasmSdk/Sdk/HotReload/Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js.template)
+also activates browser tools from `afterWebStarted`, independently of WebAssembly startup,
+so per-page static SSR pages receive refresh notifications before any interactive component
+starts. The client initializer enables deferred update retention on the shared Hot Reload
+agent signal; the browser client drains those updates in order when WebAssembly becomes
+ready, without delaying SSR refresh or opening another connection.
 
 The [WebAssembly SDK](../../src/WasmSdk/Sdk/Sdk.targets) and the
 [Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) opt in by naming their asset
