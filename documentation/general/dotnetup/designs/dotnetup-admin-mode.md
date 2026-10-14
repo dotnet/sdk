@@ -246,11 +246,11 @@ https://github.com/dotnet/vscode-dotnet-runtime/blob/f54c68789e1bdfca13e8262045c
 
 # Result | Handling
 0	| Record completion.
-3010 | Restart required - do not restart, just communicate it with a specific user failure.
+3010 | Restart required - do not restart, not a failure but should message.
 UAC cancellation / 1602	Cancellation | Simply fail.
 1618	| Bounded busy retry or actionable failure.
 1603 | Policy rejection, invalid payload	Preserve diagnostics; no blanket retry.
-Timeout / interrupted parent | Retry Once
+Timeout / interrupted parent | Confirm within a bounded wait that the original elevated installation operation has ended, then re-query installation state. Retry at most once only if installation is still needed. If the original operation's status cannot be established, report an actionable failure without launching another installer.
 
 
 ## Other Potential Issues - Needs Investigation
