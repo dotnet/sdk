@@ -157,13 +157,11 @@ resources/localization, build assets, static initialization, process-global stat
 and binary-size contribution.
 
 Review the [size and trimming contracts](../../../src/Cli/dotnet-aot/DESIGN.md#size-and-trimming-contracts)
-in the same change. Preserve full CLI string tables without build-time source scans.
-Resource substitution XML removes entire manifest resources, not keys within a string table.
-Do not substitute away a table containing required messages or its translated equivalents.
-Preserve cultures and the full definition/help resource surface.
-Keep platform provider construction behind direct OS intrinsics and keep Linux's WSL
-parsers. Do not root the all-platform test factory through static initialization.
-Validate trimming in a clean native publish and native execution, not only managed tests.
+in the same change. Preserve full CLI string tables, cultures, and definition/help resources;
+do not scan source to select keys or substitute away required tables. Guard platform-provider
+construction with direct OS intrinsics, retain Linux WSL parsers, and avoid rooting the
+all-platform test factory. Validate a clean native publish and execution; managed tests alone
+are insufficient.
 
 ### 5. Preserve both preprocessor views
 

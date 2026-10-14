@@ -53,7 +53,7 @@ in the same change. In particular:
   Resource-removal substitutions remove complete manifest resources, not individual string keys.
   Do not remove a table containing required messages.
 - Revisit the excluded MSBuild-task diagnostic resources before adding an in-process
-  consumer. Keep `AotSourceFiles.props` and the resource regression test synchronized.
+  consumer. Keep `AotSourceFiles.props` aligned with in-process consumers.
 - Keep production detection-provider construction behind direct `OperatingSystem`
   checks. Do not root the all-platform test factory through static initialization.
   Linux needs WSL providers and their Windows data parsers.
