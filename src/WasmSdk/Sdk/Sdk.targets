@@ -10,6 +10,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project ToolsVersion="14.0">
+  <PropertyGroup Condition="'$(UseMonoRuntime)' == '' and '$(TargetFramework)' != ''">
+    <UseMonoRuntime>$([MSBuild]::VersionLessThan($([MSBuild]::GetTargetFrameworkVersion('$(TargetFramework)')), '12.0'))</UseMonoRuntime>
+  </PropertyGroup>
+
   <!-- For browser-wasm, we want to import StaticWebAssets SDK which imports SDK. -->
   <!-- For wasi-wasm, we don't want to import StaticWebAssets SDK. -->
   <Import Sdk="Microsoft.NET.Sdk.StaticWebAssets" Project="Sdk.targets" Condition="'$(RuntimeIdentifier)' != 'wasi-wasm' and '$(_WasmSdkImportsMicrosoftNETSdkStaticWebAssets)' == 'true'" />
