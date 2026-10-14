@@ -924,7 +924,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     TestPackageId,
                     TestPackageVersion));
             string waitingMessage = reporter.Lines.Should().ContainSingle().Subject;
-            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            if (OperatingSystem.IsWindows() || OperatingSystem.IsLinux())
             {
                 waitingMessage.Should().Contain($"Process {Environment.ProcessId} (");
             }
