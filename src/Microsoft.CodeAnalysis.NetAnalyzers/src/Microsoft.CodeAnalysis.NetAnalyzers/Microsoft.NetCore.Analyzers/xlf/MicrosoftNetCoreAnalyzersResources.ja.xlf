@@ -1833,6 +1833,26 @@ Enumerable.OfType&lt;T&gt; で使用されるジェネリック型チェック (
         <target state="translated">アクション メソッド {0} では、HTTP 要求の種類を明示的に指定する必要があります</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramCodeFixTitle">
+        <source>Add '#!' (shebang)</source>
+        <target state="translated">'#!' の追加(シバン)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramDescription">
+        <source>When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.</source>
+        <target state="translated">ファイルベースのプログラムが複数のファイルで構成されている場合、エントリ ポイントのファイルは、他のインクルード ファイルと明確に区別するために、シバン ('#!') 行で始める必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramMessage">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="translated">ファイルベースのプログラムのエントリ ポイントは '#!' で始まる必要があります</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingShebangInFileBasedProgramTitle">
+        <source>File-based program entry point should start with '#!'</source>
+        <target state="translated">ファイルベースのプログラムのエントリ ポイントは '#!' で始まる必要があります</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ModuleInitializerAttributeShouldNotBeUsedInLibrariesDescription">
         <source>Module initializers are intended to be used by application code to ensure an application's components are initialized before the application code begins executing. If library code declares a method with the 'ModuleInitializerAttribute', it can interfere with application initialization and also lead to limitations in that application's trimming abilities. Instead of using methods marked with 'ModuleInitializerAttribute', the library should expose methods that can be used to initialize any components within the library and allow the application to invoke the method during application initialization.</source>
         <target state="translated">モジュール初期化子は、アプリケーション コードの実行を開始する前にアプリケーションのコンポーネントが初期化されるように、アプリケーション コードによって使用されることを目的としています。ライブラリ コードで 'ModuleInitializerAttribute' を使用してメソッドを宣言する場合、アプリケーションの初期化を妨げる可能性があり、そのアプリケーションのトリミング機能の制限にもつながります。'ModuleInitializerAttribute' でマークされたメソッドを使用する代わりに、ライブラリ内のコンポーネントを初期化し、アプリケーションの初期化中にアプリケーションがメソッドを呼び出せるようにするために使用できるメソッドを公開する必要があります。</target>

@@ -8,7 +8,9 @@ using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.NET.TestFramework.Utilities;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -61,7 +63,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
             _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
             _localToolDownloadDir = new DirectoryPath(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "nuget", "package"));
-            _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
+            _localToolAssetDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
 
             _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             _reporter = reporter;

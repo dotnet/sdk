@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   .And.Contain(EnvironmentVariable2)
                   .And.Contain(EnvironmentVariable3);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 1")
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   .And.Contain(EnvironmentVariable2)
                   .And.Contain(EnvironmentVariable3);
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 1")

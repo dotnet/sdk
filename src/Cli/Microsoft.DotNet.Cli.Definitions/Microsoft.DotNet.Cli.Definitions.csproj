@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <Nullable>enable</Nullable>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(SdkSrcRoot)Common\WorkloadSetVersion.cs" LinkBase="Common" />
+    <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\EnvironmentProvider.cs" LinkBase="Common\NativeWrapper" />
+    <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\Constants.cs" LinkBase="Common\NativeWrapper" />
+    <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\FileInterop.cs" LinkBase="Common\NativeWrapper" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnet" />
+    <InternalsVisibleTo Include="dotnet-watch" />
+    <InternalsVisibleTo Include="dotnet.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NuGet.Versioning" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.CommandLine\Microsoft.DotNet.Cli.CommandLine.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.CoreUtils\Microsoft.DotNet.Cli.CoreUtils.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="CommandDefinitionStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
+  </ItemGroup>
+</Project>

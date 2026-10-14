@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>net9.0;$(CurrentTargetFramework)</TargetFrameworks>
+    <EnableDefaultItems>false</EnableDefaultItems>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.cs" />
+  </ItemGroup>
+
+  <!-- Generate a file with Device and RuntimeIdentifier properties if they are set -->
+  <Target Name="GenerateDeviceInfo"
+          BeforeTargets="CoreCompile"
+          Condition="'$(Device)' != ''">
+
+    <PropertyGroup>
+      <DeviceInfoFile>$(IntermediateOutputPath)DeviceInfo.cs</DeviceInfoFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <DeviceInfoLines Include="// &lt;auto-generated/&gt;" />
+      <DeviceInfoLines Include="namespace DotNetRunDevicesWorkload%3B" />
+      <DeviceInfoLines Include=" " />
+      <DeviceInfoLines Include="internal static class DeviceInfo" />
+      <DeviceInfoLines Include="{" />
+      <DeviceInfoLines Include="    public const string Device = &quot;$(Device)&quot;%3B" />
+      <DeviceInfoLines Include="    public const string RuntimeIdentifier = &quot;$(RuntimeIdentifier)&quot;%3B" />
+      <DeviceInfoLines Include="}" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(DeviceInfoFile)" Lines="@(DeviceInfoLines)" Overwrite="true" />
+
+    <ItemGroup>
+      <Compile Include="$(DeviceInfoFile)" />
+      <FileWrites Include="$(DeviceInfoFile)" />
+    </ItemGroup>
+  </Target>
+
+  <!-- Simulate MAUI workload: device targets only available for TFM-specific inner builds -->
+  <Import Project="Devices.targets" Condition="'$(TargetFramework)' != ''" />
+
+</Project>

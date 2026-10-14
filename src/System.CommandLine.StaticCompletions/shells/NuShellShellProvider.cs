@@ -7,7 +7,7 @@ namespace System.CommandLine.StaticCompletions.Shells;
 
 public class NushellShellProvider : IShellProvider
 {
-    public string ArgumentName => "nushell";
+    public string ArgumentName => ShellNames.Nushell;
 
     public string Extension => "nu";
 

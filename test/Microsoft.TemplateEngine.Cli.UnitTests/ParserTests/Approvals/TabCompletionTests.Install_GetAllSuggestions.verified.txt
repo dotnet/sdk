@@ -7,6 +7,13 @@
     Detail: Specifies a NuGet source to use.
   },
   {
+    Label: --diagnostics,
+    Kind: Keyword,
+    SortText: --diagnostics,
+    InsertText: --diagnostics,
+    Detail: Enables diagnostic output.
+  },
+  {
     Label: --force,
     Kind: Keyword,
     SortText: --force,
@@ -26,5 +33,26 @@
     SortText: --nuget-source,
     InsertText: --nuget-source,
     Detail: Specifies a NuGet source to use.
+  },
+  {
+    Label: --verbosity,
+    Kind: Keyword,
+    SortText: --verbosity,
+    InsertText: --verbosity,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
+  },
+  {
+    Label: -d,
+    Kind: Keyword,
+    SortText: -d,
+    InsertText: -d,
+    Detail: Enables diagnostic output.
+  },
+  {
+    Label: -v,
+    Kind: Keyword,
+    SortText: -v,
+    InsertText: -v,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
   }
 ]

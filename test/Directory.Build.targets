@@ -20,6 +20,17 @@
     <NoDefaultExcludes>true</NoDefaultExcludes>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(IsTestProject)' == 'true'">
+    <Using Include="FluentAssertions" />
+    <Using Include="Microsoft.NET.TestFramework" />
+    <Using Include="Microsoft.NET.TestFramework.Assertions" />
+    <Using Include="Microsoft.NET.TestFramework.Commands" />
+    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <Using Include="Xunit" />
+    <Using Include="Xunit.Abstractions" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(IsTestProject)' == 'true' AND '$(OutputType)' == 'Exe' AND '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <Compile Include="$(MSBuildThisFileDirectory)Common\Program.cs" />
   </ItemGroup>
@@ -76,6 +87,15 @@
           WorkingDirectory="$(TestLocalToolFolder)"
           EnvironmentVariables="DOTNET_CLI_HOME=$(DOTNET_CLI_HOME)"
           IgnoreStandardErrorWarningFormat="true" />
+  </Target>
+
+  <!-- Temporary workaround for https://github.com/microsoft/vstest/pull/15794:
+       Microsoft.CodeCoverage overwrites project-selected publish assets, so restore them afterward. -->
+  <Target Name="RestoreResolvedFilesAfterCodeCoverageCopy"
+          AfterTargets="CopyTraceDataCollectorArtifacts"
+          Condition="'$(IsTestProject)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <Copy SourceFiles="@(ResolvedFileToPublish)"
+          DestinationFiles="@(ResolvedFileToPublish->'$(PublishDir)%(RelativePath)')" />
   </Target>
 
   <Import Project="..\Directory.Build.targets" />

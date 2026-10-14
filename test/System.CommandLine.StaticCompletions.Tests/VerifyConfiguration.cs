@@ -25,5 +25,6 @@ public static class VerifyConfiguration
 
         EmptyFiles.FileExtensions.AddTextExtension("ps1");
         EmptyFiles.FileExtensions.AddTextExtension("nu");
+        EmptyFiles.FileExtensions.AddTextExtension("fish");
     }
 }

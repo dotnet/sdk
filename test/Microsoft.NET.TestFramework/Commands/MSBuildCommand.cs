@@ -126,11 +126,11 @@ namespace Microsoft.NET.TestFramework.Commands
             return new DirectoryInfo(output);
         }
 
-        protected virtual bool ExecuteWithRestoreByDefault => true;
+        public bool ShouldRestore { get; set; } = true;
 
         public override CommandResult Execute(IEnumerable<string> args)
         {
-            if (ExecuteWithRestoreByDefault)
+            if (ShouldRestore)
             {
                 args = new[] { "/restore" }.Concat(args);
             }
@@ -165,7 +165,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var newArgs = args.ToList();
             newArgs.Insert(0, FullPathProjectFile);
 
-            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(Target, newArgs);
+            return SdkTestContext.Current.ToolsetUnderTest.CreateCommandForTarget(Target, newArgs);
         }
     }
 }

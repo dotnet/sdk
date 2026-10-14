@@ -27,10 +27,6 @@ namespace Microsoft.NET.TestFramework.Commands
         public List<string> MetadataNames { get; set; } = new List<string>();
         public Dictionary<string, string> Properties { get; } = new Dictionary<string, string>();
 
-        public bool ShouldRestore { get; set; } = true;
-
-        protected override bool ExecuteWithRestoreByDefault => ShouldRestore;
-
         public GetValuesCommand(ITestOutputHelper log, string projectPath, string targetFramework,
             string valueName, ValueType valueType = ValueType.Property)
             : base(log, "WriteValuesToFile", projectPath, relativePathToProject: null)
@@ -139,7 +135,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var outputDirectory = GetValuesOutputDirectory(_targetFramework);
             outputDirectory.Create();
 
-            return TestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
+            return SdkTestContext.Current.ToolsetUnderTest.CreateCommandForTarget(TargetName, newArgs);
         }
 
         public List<string> GetValues()

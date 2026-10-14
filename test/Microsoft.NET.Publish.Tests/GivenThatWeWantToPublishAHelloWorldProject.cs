@@ -1157,12 +1157,12 @@ public static class Program
                 case "AppRelative":
                     // Copy the host and runtime to the expected .NET root
                     expectedRoot = Path.Combine(publishDirectory, appRelativeDotNet);
-                    CopyDirectory(Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "host"), Path.Combine(expectedRoot, "host"));
-                    CopyDirectory(Path.Combine(TestContext.Current.ToolsetUnderTest.DotNetRoot, "shared", "Microsoft.NETCore.App"), Path.Combine(expectedRoot, "shared", "Microsoft.NETCore.App"));
+                    CopyDirectory(Path.Combine(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot, "host"), Path.Combine(expectedRoot, "host"));
+                    CopyDirectory(Path.Combine(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot, "shared", "Microsoft.NETCore.App"), Path.Combine(expectedRoot, "shared", "Microsoft.NETCore.App"));
                     break;
                 case "EnvironmentVariable":
                     // Set DOTNET_ROOT_<arch> environment variable to the expected .NET root
-                    expectedRoot = TestContext.Current.ToolsetUnderTest.DotNetRoot;
+                    expectedRoot = SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
                     runCommand = runCommand.WithEnvironmentVariable($"DOTNET_ROOT_{RuntimeInformation.OSArchitecture.ToString().ToUpperInvariant()}", expectedRoot);
                     break;
                 default:

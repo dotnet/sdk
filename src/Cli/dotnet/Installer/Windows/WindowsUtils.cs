@@ -11,6 +11,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Utilities;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
@@ -142,29 +143,20 @@ public static class WindowsUtils
     /// <returns>The validated log file path.</returns>
     public static string ValidateLogFilePath(string logFile, string serverTempPath = null)
     {
-        // Canonicalize the path to resolve any '..' segments before comparison,
-        // preventing traversal attacks like "C:\Users\..\..\Windows\System32\evil.log".
         string fullLogPath = Path.GetFullPath(logFile);
         string serverTemp = Path.GetFullPath(serverTempPath ?? Path.GetTempPath());
 
-        // Fast path: log file is under the server's own temp directory.
         if (IsPathUnder(fullLogPath, serverTemp))
         {
             return fullLogPath;
         }
 
-        // Trusted client-supplied temp: the unelevated client tells the server its Path.GetTempPath()
-        // value at launch via the --client-temp argument. Honors custom TEMP env vars and over-the-shoulder
-        // UAC scenarios where the elevated server resolves a different temp directory than the client.
         string clientTemp = InstallerBase.TrustedClientTempDirectory;
         if (!string.IsNullOrEmpty(clientTemp) && IsPathUnder(fullLogPath, clientTemp))
         {
             return fullLogPath;
         }
 
-        // Profile-based check: resolve the parent user's profile temp directory
-        // to handle the case where the elevated server and unelevated client have
-        // different temp paths (e.g., different user profiles after UAC elevation).
         if (InstallerBase.ParentProcess != null)
         {
             try
@@ -183,23 +175,15 @@ public static class WindowsUtils
             }
             catch
             {
-                // If we can't resolve the parent user's profile, fall through to the redirect.
             }
         }
 
-        // The path is not in an allowed location — redirect to the server's temp directory.
         return Path.Combine(serverTemp, Path.GetFileName(fullLogPath));
     }
 
     /// <summary>
-    /// Validates that an IPC-supplied workload manifest path lives under an allowed root, to prevent
-    /// a same-user attacker on the install pipe from coercing the elevated server into reading or moving
-    /// arbitrary files. Allowed roots are the server's own temp directory and the trusted client temp
-    /// directory (if supplied at server launch via <c>--client-temp</c>).
+    /// Validates that an IPC-supplied workload manifest path lives under an allowed root.
     /// </summary>
-    /// <param name="manifestPath">The manifest path supplied by the client.</param>
-    /// <param name="serverTempPath">The server's temp directory. If null, defaults to <see cref="Path.GetTempPath"/>.</param>
-    /// <returns><see langword="true"/> if the canonicalized path is under an allowed root; otherwise <see langword="false"/>.</returns>
     public static bool ValidateManifestPath(string manifestPath, string serverTempPath = null)
     {
         if (string.IsNullOrWhiteSpace(manifestPath))
@@ -232,14 +216,8 @@ public static class WindowsUtils
         return false;
     }
 
-    /// <summary>
-    /// Returns true if <paramref name="fullPath"/> equals or is contained beneath <paramref name="root"/>.
-    /// Both inputs must already be canonicalized via <see cref="Path.GetFullPath(string)"/>.
-    /// </summary>
     private static bool IsPathUnder(string fullPath, string root)
     {
-        // Normalize both paths by trimming trailing separators so that
-        // "C:\Temp\" and "C:\Temp" compare identically.
         string normalizedPath = fullPath.TrimEnd(Path.DirectorySeparatorChar);
         string normalizedRoot = root.TrimEnd(Path.DirectorySeparatorChar);
         string rootWithSep = normalizedRoot + Path.DirectorySeparatorChar;
@@ -256,8 +234,6 @@ public static class WindowsUtils
     /// <returns>The profile path, or <see langword="null"/> if the profile is not found.</returns>
     public static string GetUserProfilePath(SecurityIdentifier sid)
     {
-        // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{SID}\ProfileImagePath
-        // contains the full path to the user's profile directory (e.g., C:\Users\username).
         // RegistryKey.GetValue expands REG_EXPAND_SZ values by default, but call ExpandEnvironmentVariables
         // explicitly to also handle the rare case where the value was stored as REG_SZ with literal %vars%.
         using RegistryKey profileListKey = Registry.LocalMachine.OpenSubKey(
@@ -298,13 +274,12 @@ public static class WindowsUtils
     }
 
     /// <summary>
-    /// Validates that the specified path, after canonicalization, is the expected root directory itself
-    /// or is contained beneath it. Prevents directory traversal and sibling-prefix attacks
-    /// (e.g., <c>C:\Temp2\evil</c> against root <c>C:\Temp</c>).
+    /// Validates that the specified path, after canonicalization, is under the expected root directory.
+    /// Prevents directory traversal and sibling-prefix attacks.
     /// </summary>
     /// <param name="path">The path to validate.</param>
     /// <param name="expectedRoot">The expected root directory.</param>
-    /// <returns><see langword="true"/> if the canonicalized path equals or is under the root; otherwise <see langword="false"/>.</returns>
+    /// <returns><see langword="true"/> if the canonicalized path is under the root; otherwise <see langword="false"/>.</returns>
     public static bool ValidatePathUnderRoot(string path, string expectedRoot)
     {
         string fullPath = Path.GetFullPath(path);

@@ -339,6 +339,9 @@ public class NETFramework
                 TargetFrameworks = "net462",
             };
 
+            // The conflict-resolution packages this test references are intentionally old and
+            // trigger NuGet audit warnings, which break the "no warnings" assertions below. We
+            // don't want to maintain those dependencies, so disable auditing for this project.
             project.AdditionalProperties["NuGetAudit"] = "false";
 
             project.SourceFiles[project.Name + ".cs"] = $@"
@@ -439,12 +442,12 @@ public static class {project.Name}
             string correctHttpReference;
             if (useFacades)
             {
-                string microsoftNETBuildExtensionsPath = TestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath();
+                string microsoftNETBuildExtensionsPath = SdkTestContext.Current.ToolsetUnderTest.GetMicrosoftNETBuildExtensionsPath();
                 correctHttpReference = Path.Combine(microsoftNETBuildExtensionsPath, @"net461\lib\System.Net.Http.dll");
             }
             else
             {
-                correctHttpReference = Path.Combine(TestContext.Current.NuGetCachePath, "system.net.http", "4.3.2", "ref", "net46", "System.Net.Http.dll");
+                correctHttpReference = Path.Combine(SdkTestContext.Current.NuGetCachePath, "system.net.http", "4.3.2", "ref", "net46", "System.Net.Http.dll");
             }
 
             var valuesWithMetadata = getValuesCommand.GetValuesWithMetadata();

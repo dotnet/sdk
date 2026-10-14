@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
@@ -14,23 +16,28 @@ using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class TemplateCommand : Command
+    internal sealed class TemplateCommand : Command
     {
         private static readonly TimeSpan ConstraintEvaluationTimeout = TimeSpan.FromMilliseconds(1000);
         private static readonly string[] _helpAliases = new[] { "-h", "/h", "--help", "-?", "/?" };
         private readonly TemplatePackageManager _templatePackageManager;
         private readonly IEngineEnvironmentSettings _environmentSettings;
-        private readonly BaseCommand _instantiateCommand;
-        private readonly TemplateGroup _templateGroup;
+        private readonly Command _newOrInstantiateCommand;
         private readonly CliTemplateInfo _template;
         private Dictionary<string, TemplateOption> _templateSpecificOptions = new();
+
+        public readonly Option<FileInfo> OutputOption = SharedOptionsFactory.CreateOutputOption();
+        public readonly Option<string> NameOption = SharedOptionsFactory.CreateNameOption();
+        public readonly Option<bool> DryRunOption = SharedOptionsFactory.CreateDryRunOption();
+        public readonly Option<bool> ForceOption = SharedOptionsFactory.CreateForceOption();
+        public readonly Option<bool> NoUpdateCheckOption = SharedOptionsFactory.CreateNoUpdateCheckOption();
 
         /// <summary>
         /// Create command for instantiation of specific template.
         /// </summary>
         /// <exception cref="InvalidTemplateParametersException">when <paramref name="template"/> has invalid template parameters.</exception>
         public TemplateCommand(
-            BaseCommand instantiateCommand,
+            Command newOrInstantiateCommand,
             IEngineEnvironmentSettings environmentSettings,
             TemplatePackageManager templatePackageManager,
             TemplateGroup templateGroup,
@@ -40,21 +47,22 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                   templateGroup.ShortNames[0],
                   template.Name + Environment.NewLine + template.Description)
         {
-            _instantiateCommand = instantiateCommand;
+            Debug.Assert(newOrInstantiateCommand is NewCommand or InstantiateCommand);
+
+            _newOrInstantiateCommand = newOrInstantiateCommand;
             _environmentSettings = environmentSettings;
             _templatePackageManager = templatePackageManager;
-            _templateGroup = templateGroup;
             _template = template;
             foreach (var item in templateGroup.ShortNames.Skip(1))
             {
                 Aliases.Add(item);
             }
 
-            Options.Add(SharedOptions.OutputOption);
-            Options.Add(SharedOptions.NameOption);
-            Options.Add(SharedOptions.DryRunOption);
-            Options.Add(SharedOptions.ForceOption);
-            Options.Add(SharedOptions.NoUpdateCheckOption);
+            Options.Add(OutputOption);
+            Options.Add(NameOption);
+            Options.Add(DryRunOption);
+            Options.Add(ForceOption);
+            Options.Add(NoUpdateCheckOption);
 
             string? templateLanguage = template.GetLanguage();
             string? defaultLanguage = environmentSettings.GetDefaultLanguage();
@@ -146,7 +154,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal async Task<NewCommandStatus> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
         {
-            TemplateCommandArgs args = new(this, _instantiateCommand, parseResult);
+            TemplateCommandArgs args = new(this, _newOrInstantiateCommand, parseResult);
             TemplateInvoker invoker = new(_environmentSettings, () => Console.ReadLine() ?? string.Empty);
             TemplatePackageCoordinator packageCoordinator = new(_environmentSettings, _templatePackageManager);
             TemplateConstraintManager constraintManager = new(_environmentSettings);
@@ -237,8 +245,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             if (!templateArgs.IsForceFlagSpecified)
             {
-                reporter.WriteLine(LocalizableStrings.TemplateCommand_DisplayConstraintResults_Hint, SharedOptions.ForceOption.Name);
-                reporter.WriteCommand(Example.FromExistingTokens(templateArgs.ParseResult).WithOption(SharedOptions.ForceOption));
+                reporter.WriteLine(LocalizableStrings.TemplateCommand_DisplayConstraintResults_Hint, SharedOptionsFactory.ForceOptionName);
+                reporter.WriteCommand(Example.FromExistingTokens<TemplateCommand>(templateArgs.ParseResult).WithOption(c => c.ForceOption));
             }
             else
             {
@@ -256,7 +264,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             HashSet<string> reservedAliases = new();
             AddReservedNamesAndAliases(reservedAliases, this);
             //add options of parent? - this covers debug: options
-            AddReservedNamesAndAliases(reservedAliases, _instantiateCommand);
+            AddReservedNamesAndAliases(reservedAliases, _newOrInstantiateCommand);
 
             //add restricted aliases: language, type, baseline (they may be optional)
             foreach (var option in new[] { SharedOptionsFactory.CreateLanguageOption(), SharedOptionsFactory.CreateTypeOption(), SharedOptionsFactory.CreateBaselineOption() })

@@ -2,20 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using TestCommand = Microsoft.DotNet.Cli.Commands.Test.TestCommand;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
-    public class TestCommandParserTests
+    public class TestCommandDefinitionTests
     {
-        [Fact]
-        public void SurroundWithDoubleQuotesWithNullThrows()
-        {
-            Assert.Throws<ArgumentNullException>(() =>
-                TestCommandParser.SurroundWithDoubleQuotes(null!));
-        }
-
         [Theory]
         [InlineData("")]
         [InlineData("\"a\"")]
@@ -23,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void SurroundWithDoubleQuotesWhenAlreadySurroundedDoesNothing(string input)
         {
             var escapedInput = "\"" + input + "\"";
-            var result = TestCommandParser.SurroundWithDoubleQuotes(escapedInput);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(escapedInput);
             result.Should().Be(escapedInput);
         }
 
@@ -35,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("a\"")]
         public void SurroundWithDoubleQuotesWhenNotSurroundedSurrounds(string input)
         {
-            var result = TestCommandParser.SurroundWithDoubleQuotes(input);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
@@ -46,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("/\\/\\/\\\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyEvenCountOfTrailingBackslashes(string input)
         {
-            var result = TestCommandParser.SurroundWithDoubleQuotes(input);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\"");
         }
 
@@ -57,21 +51,104 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData("/\\/\\/\\")]
         public void SurroundWithDoubleQuotesHandlesCorrectlyOddCountOfTrailingBackslashes(string input)
         {
-            var result = TestCommandParser.SurroundWithDoubleQuotes(input);
+            var result = MSBuildPropertyParser.SurroundWithDoubleQuotes(input);
             result.Should().Be("\"" + input + "\\\"");
         }
 
         [Fact]
         public void VSTestCommandIncludesPropertiesOption()
         {
-            var command = TestCommandParser.GetCommand();
+            var command = TestCommandDefinition.Create();
             
             // Verify that the command includes a property option that supports the /p alias
             var propertyOption = command.Options.FirstOrDefault(o => 
                 o.Aliases.Contains("/p") || o.Aliases.Contains("--property"));
             
-            propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.PropertiesOption to support /p Property=Value syntax");
-            propertyOption.Aliases.Should().Contain("/p", "PropertiesOption should include /p alias for MSBuild compatibility");
+            propertyOption.Should().NotBeNull("VSTest command should include CommonOptions.CreatePropertyOption to support /p Property=Value syntax");
+            propertyOption.Aliases.Should().Contain("/p", "CreatePropertyOption should include /p alias for MSBuild compatibility");
+        }
+
+        [Theory]
+        [InlineData("--no-logo")]
+        [InlineData("--nologo")]
+        [InlineData("-nologo")]
+        [InlineData("/nologo")]
+        public void MTPCommandTranslatesNoLogoOptionToNoBanner(string optionAlias)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([optionAlias]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+            buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain(optionAlias);
+        }
+
+        [Theory]
+        [InlineData("--no-banner")]
+        [InlineData("--no-banner=true")]
+        [InlineData("--no-banner=false")]
+        public void MTPCommandDoesNotDuplicateNoBannerOption(string noBannerOption)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--nologo", noBannerOption]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            buildOptions.TestApplicationArguments
+                .Where(arg => arg.StartsWith("--no-banner", StringComparison.Ordinal))
+                .Should().ContainSingle().Which.Should().Be(noBannerOption);
+        }
+
+        [Fact]
+        public void MTPCommandHonorsDotnetNoLogoEnvironmentVariable()
+        {
+            string? previousValue = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
+            try
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "true");
+                var enabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var enabledBuildOptions = MSBuildUtility.GetBuildOptions(enabledCommand.Parse([]));
+
+                enabledBuildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "false");
+                var disabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var disabledBuildOptions = MSBuildUtility.GetBuildOptions(disabledCommand.Parse([]));
+
+                disabledBuildOptions.TestApplicationArguments.Should().NotContain("--no-banner");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", previousValue);
+            }
+        }
+
+        [Theory]
+        [InlineData(null, nameof(ResultsDirectoryLayout.Flat))]
+        [InlineData("flat", nameof(ResultsDirectoryLayout.Flat))]
+        [InlineData("per-module", nameof(ResultsDirectoryLayout.PerModule))]
+        public void MTPCommandParsesResultsDirectoryLayout(string? value, string expected)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = value is null
+                ? command.Parse([])
+                : command.Parse(["--results-directory-layout", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            MSBuildUtility.GetBuildOptions(parseResult).PathOptions.ResultsDirectoryLayout.ToString().Should().Be(expected);
+        }
+
+        [Fact]
+        public void MTPCommandRejectsInvalidResultsDirectoryLayout()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--results-directory-layout", "invalid"]);
+            parseResult.Errors.Should().NotBeEmpty();
+            parseResult.Errors.Should().NotBeEmpty();
         }
 
         [Fact]

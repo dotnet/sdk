@@ -13,12 +13,10 @@ namespace EndToEnd.Tests
             var result = new DotnetCommand(Log).Execute("--version");
             result.Should().Pass();
 
-            var dotnetFolder = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);
-            var sdkFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "sdk"));
-            sdkFolders.Length.Should().Be(1, "Only one SDK folder is expected in the layout");
-
-            var expectedSdkVersion = Path.GetFileName(sdkFolders.Single());
-            result.StdOut.Trim().Should().Be(expectedSdkVersion);
+            var dotnetFolder = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
+            string sdkVersion = result.StdOut.Trim();
+            Directory.Exists(Path.Combine(dotnetFolder, "sdk", sdkVersion))
+                .Should().BeTrue($"dotnet --version should return an SDK installed under {dotnetFolder}");
         }
     }
 }

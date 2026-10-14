@@ -84,7 +84,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             A.CallTo(() => searchMetadata.ProjectUrl).Returns(new Uri("http://github.com"));
             A.CallTo(() => searchMetadata.LicenseUrl).Returns(new Uri("https://github.com/dotnet/sdk"));
             A.CallTo(() => searchMetadata.LicenseMetadata).Returns(licenseMetadata);
-            A.CallTo(() => searchMetadata.LicenseMetadata.LicenseExpression.ToString()).Returns("MIT");
+            A.CallTo(() => searchMetadata.LicenseMetadata!.LicenseExpression!.ToString()).Returns("MIT");
 
             var extraMetadata = A.Fake<IPackageSearchMetadata>();
             A.CallTo(() => extraMetadata.Owners).Returns("packageOwner");
@@ -130,7 +130,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             A.CallTo(() => searchMetadata.ProjectUrl).Returns(new Uri("http://github.com"));
             A.CallTo(() => searchMetadata.LicenseUrl).Returns(new Uri("https://github.com/dotnet/sdk"));
             A.CallTo(() => searchMetadata.LicenseMetadata).Returns(licenseMetadata);
-            A.CallTo(() => searchMetadata.LicenseMetadata.LicenseExpression.ToString()).Returns("MIT");
+            A.CallTo(() => searchMetadata.LicenseMetadata!.LicenseExpression!.ToString()).Returns("MIT");
 
             var extraMetadata = A.Fake<IPackageSearchMetadata>();
             A.CallTo(() => extraMetadata.Owners).Returns("packageOwner");
@@ -177,7 +177,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             A.CallTo(() => searchMetadata.ProjectUrl).Returns(new Uri("http://github.com"));
             A.CallTo(() => searchMetadata.LicenseUrl).Returns(new Uri("https://github.com/dotnet/sdk"));
             A.CallTo(() => searchMetadata.LicenseMetadata).Returns(licenseMetadata);
-            A.CallTo(() => searchMetadata.LicenseMetadata.LicenseExpression.ToString()).Returns("MIT");
+            A.CallTo(() => searchMetadata.LicenseMetadata!.LicenseExpression!.ToString()).Returns("MIT");
 
             var extraMetadata = A.Fake<IPackageSearchMetadata>();
             A.CallTo(() => extraMetadata.Owners).Returns("packageOwner");
@@ -220,7 +220,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
             A.CallTo(() => searchMetadata.ProjectUrl).Returns(new Uri("http://github.com"));
             A.CallTo(() => searchMetadata.LicenseUrl).Returns(new Uri("https://github.com/dotnet/sdk"));
             A.CallTo(() => searchMetadata.LicenseMetadata).Returns(licenseMetadata);
-            A.CallTo(() => searchMetadata.LicenseMetadata.LicenseExpression.ToString()).Returns("MIT");
+            A.CallTo(() => searchMetadata.LicenseMetadata!.LicenseExpression!.ToString()).Returns("MIT");
 
             var extraMetadata = A.Fake<IPackageSearchMetadata>();
             A.CallTo(() => extraMetadata.Owners).Returns("owner1, owner2");
