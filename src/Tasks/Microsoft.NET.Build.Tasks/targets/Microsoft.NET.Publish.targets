@@ -158,6 +158,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Native AOT is currently the only publish mode that supports optimized publish. -->
     <_UseOptimizedPublish Condition="'$(PublishAot)' == 'true' and '$(UseOptimizedPublish)' == 'true'">true</_UseOptimizedPublish>
     <_BeforeOptimizedPublishTargets Condition="'$(_UseOptimizedPublish)' == 'true'">
+      _CheckForInvalidConfigurationAndPlatform;
       BuildOnlySettings;
       PrepareForBuild;
       PrepareResources;

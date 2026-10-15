@@ -43,10 +43,13 @@ Key insight: All post-processing steps read from `@(IntermediateAssembly)` (obj)
 
 Target chain for optimized AOT publish:
 ```
-BuildOnlySettings → PrepareForBuild → PrepareResources → Compile → CreateSatelliteAssemblies
+_CheckForInvalidConfigurationAndPlatform → BuildOnlySettings → PrepareForBuild → PrepareResources → Compile → CreateSatelliteAssemblies
 ```
 
 Where `Compile` includes `ResolveReferences → ResolveProjectReferences → CoreCompile`.
+The optimized path retains the configuration/platform validation target and its SDK
+hooks, including runtime identifier/platform compatibility and apphost/hosting checks.
+`NoBuild=true` continues to use the separate no-build publish path.
 
 ### PublishTrimmed (IL Trimming)
 

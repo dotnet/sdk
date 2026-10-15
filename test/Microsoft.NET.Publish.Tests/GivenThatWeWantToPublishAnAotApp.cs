@@ -1391,6 +1391,24 @@ public class NativeLibraryClass
         }
 
         [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
+        public void NativeAot_publish_validates_platform_target(bool useOptimizedPublish)
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NativeAotInvalidPlatform", true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = "win-x64";
+            testProject.AdditionalProperties["PlatformTarget"] = "x86";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = useOptimizedPublish.ToString();
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: useOptimizedPublish.ToString());
+
+            new PublishCommand(testAsset)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdOutContaining("NETSDK1032");
+        }
+
+        [TestMethod]
         public void Aot_optimized_publish_targets_are_reviewed_when_CoreBuildDependsOn_changes()
         {
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "CoreBuildDependsOn", true);
