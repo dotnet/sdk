@@ -60,6 +60,13 @@ tracked compiler outputs, including intermediate DLL, PDB, and generated XML doc
 This retains build cleanup bookkeeping; it does not add tracking for every native compiler
 or publish artifact.
 
+For tool projects (`PackAsTool=true`) with explicit `PackAsToolShimRuntimeIdentifiers`,
+the PackTool SDK adds `GenerateShimsAssets` to the optimized-build extension point.
+Shims are generated before incremental cleanup and publish file collection, so requested
+`publish\shims\<rid>\` assets are preserved without copying the managed deployment to
+the build directory. Projects without requested shims do not add this step, and no-build
+publish continues to locate and reuse shims from a previous build rather than generate them.
+
 ### PublishTrimmed (IL Trimming)
 
 **Status: Not yet optimized — candidate for future optimization**
@@ -120,7 +127,7 @@ before publish. Instead, it runs only `Compile` (and resource/satellite assembly
   skipped (consistent with `--no-build` behavior).
 - **Output directory**: `bin\<config>\<tfm>\<rid>\` will no longer contain managed apphost,
   DLLs, deps.json, runtimeconfig.json, or runtime pack files. Only `native\` and `publish\`
-  subdirectories will be present.
+  subdirectories will be present, along with `shims\` for explicitly requested tool shims.
 
 ### Opt-Out
 

@@ -317,6 +317,10 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     -->
 
   <PropertyGroup>
+    <_AdditionalOptimizedPublishTargets Condition="'$(PackAsTool)' == 'true' and '$(PackAsToolShimRuntimeIdentifiers)' != ''">
+      $(_AdditionalOptimizedPublishTargets);
+      GenerateShimsAssets;
+    </_AdditionalOptimizedPublishTargets>
     <_ShimInputCacheFile Condition="'$(_ShimInputCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).shiminput.cache</_ShimInputCacheFile>
     <_ShimInputCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_ShimInputCacheFile)))</_ShimInputCacheFile>
     <_ShimCreatedSentinelFile Condition="'$(_ShimCreatedSentinelFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).shimcreated.sentinel</_ShimCreatedSentinelFile>
