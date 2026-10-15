@@ -3,6 +3,219 @@
 
 #include "precomp.h"
 
+static const DWORD c_trustedModificationRights =
+    GENERIC_ALL |
+    GENERIC_WRITE |
+    FILE_WRITE_DATA |
+    FILE_APPEND_DATA |
+    FILE_WRITE_EA |
+    FILE_WRITE_ATTRIBUTES |
+    DELETE |
+    FILE_DELETE_CHILD |
+    WRITE_DAC |
+    WRITE_OWNER;
+
+static BOOL HasTrustedFullControl(DWORD dwRights)
+{
+    return (dwRights & FILE_ALL_ACCESS) == FILE_ALL_ACCESS ||
+        (dwRights & GENERIC_ALL) == GENERIC_ALL;
+}
+
+static BOOL IsTrustedMachineRootSid(PSID pSid, PSID pAdministratorsSid, PSID pLocalSystemSid)
+{
+    return pSid && ::IsValidSid(pSid) &&
+        (::EqualSid(pSid, pAdministratorsSid) || ::EqualSid(pSid, pLocalSystemSid));
+}
+
+static HRESULT AllocateWellKnownSid(_In_ WELL_KNOWN_SID_TYPE sidType, _Outptr_ PSID* ppSid)
+{
+    DWORD cbSid = SECURITY_MAX_SID_SIZE;
+    PSID pSid = ::LocalAlloc(LMEM_FIXED, cbSid);
+
+    if (!pSid)
+    {
+        return E_OUTOFMEMORY;
+    }
+
+    if (!::CreateWellKnownSid(sidType, NULL, pSid, &cbSid))
+    {
+        DWORD dwError = ::GetLastError();
+        ::LocalFree(pSid);
+        return HRESULT_FROM_WIN32(dwError);
+    }
+
+    *ppSid = pSid;
+    return S_OK;
+}
+
+static HRESULT ValidateTrustedMachineDirectory(LPCWSTR wzPath)
+{
+    HRESULT hr = S_OK;
+    DWORD dwAttributes = ::GetFileAttributesW(wzPath);
+    DWORD dwAdministratorsRights = 0;
+    DWORD dwLocalSystemRights = 0;
+    PACL pDacl = NULL;
+    PSID pOwner = NULL;
+    PSECURITY_DESCRIPTOR pSecurityDescriptor = NULL;
+    PSID pAdministratorsSid = NULL;
+    PSID pLocalSystemSid = NULL;
+
+    if (INVALID_FILE_ATTRIBUTES == dwAttributes)
+    {
+        return HRESULT_FROM_WIN32(::GetLastError());
+    }
+
+    if (0 == (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) || 0 != (dwAttributes & FILE_ATTRIBUTE_REPARSE_POINT))
+    {
+        return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+    }
+
+    DWORD dwResult = ::GetNamedSecurityInfoW(
+        const_cast<LPWSTR>(wzPath),
+        SE_FILE_OBJECT,
+        OWNER_SECURITY_INFORMATION | DACL_SECURITY_INFORMATION,
+        &pOwner,
+        NULL,
+        &pDacl,
+        NULL,
+        &pSecurityDescriptor);
+    if (ERROR_SUCCESS != dwResult)
+    {
+        hr = HRESULT_FROM_WIN32(dwResult);
+        goto LExit;
+    }
+
+    if (!pDacl)
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        goto LExit;
+    }
+
+    hr = AllocateWellKnownSid(WinBuiltinAdministratorsSid, &pAdministratorsSid);
+    if (FAILED(hr))
+    {
+        goto LExit;
+    }
+
+    hr = AllocateWellKnownSid(WinLocalSystemSid, &pLocalSystemSid);
+    if (FAILED(hr))
+    {
+        goto LExit;
+    }
+
+    if (!IsTrustedMachineRootSid(pOwner, pAdministratorsSid, pLocalSystemSid))
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+        goto LExit;
+    }
+
+    for (DWORD i = 0; i < pDacl->AceCount; ++i)
+    {
+        LPVOID pAce = NULL;
+
+        if (!::GetAce(pDacl, i, &pAce))
+        {
+            hr = HRESULT_FROM_WIN32(::GetLastError());
+            goto LExit;
+        }
+
+        ACE_HEADER* pAceHeader = static_cast<ACE_HEADER*>(pAce);
+
+        if (ACCESS_DENIED_ACE_TYPE == pAceHeader->AceType)
+        {
+            continue;
+        }
+
+        if (ACCESS_ALLOWED_ACE_TYPE != pAceHeader->AceType)
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+            goto LExit;
+        }
+
+        ACCESS_ALLOWED_ACE* pAccessAllowedAce = static_cast<ACCESS_ALLOWED_ACE*>(pAce);
+        PSID pAceSid = reinterpret_cast<PSID>(&pAccessAllowedAce->SidStart);
+
+        if (!::IsValidSid(pAceSid))
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+            goto LExit;
+        }
+
+        if (::EqualSid(pAceSid, pAdministratorsSid))
+        {
+            dwAdministratorsRights |= pAccessAllowedAce->Mask;
+        }
+        else if (::EqualSid(pAceSid, pLocalSystemSid))
+        {
+            dwLocalSystemRights |= pAccessAllowedAce->Mask;
+        }
+        else if (0 != (pAccessAllowedAce->Mask & c_trustedModificationRights))
+        {
+            hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+            goto LExit;
+        }
+    }
+
+    if (!HasTrustedFullControl(dwAdministratorsRights) ||
+        !HasTrustedFullControl(dwLocalSystemRights))
+    {
+        hr = HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+    }
+
+LExit:
+    if (pSecurityDescriptor)
+    {
+        ::LocalFree(pSecurityDescriptor);
+    }
+
+    if (pAdministratorsSid)
+    {
+        ::LocalFree(pAdministratorsSid);
+    }
+
+    if (pLocalSystemSid)
+    {
+        ::LocalFree(pLocalSystemSid);
+    }
+
+    return hr;
+}
+
+static HRESULT ValidateProgramDataDotnetRoot()
+{
+    HRESULT hr = S_OK;
+    LPWSTR sczProgramData = NULL;
+    LPWSTR sczProgramDataDotnetRoot = NULL;
+    DWORD dwAttributes = 0;
+
+    hr = ShelGetFolder(&sczProgramData, CSIDL_COMMON_APPDATA);
+    ExitOnFailure(hr, "Failed to get shell folder.");
+
+    hr = PathConcat(sczProgramData, L"dotnet", &sczProgramDataDotnetRoot);
+    ExitOnFailure(hr, "Failed to build ProgramData dotnet path.");
+
+    dwAttributes = ::GetFileAttributesW(sczProgramDataDotnetRoot);
+    if (INVALID_FILE_ATTRIBUTES == dwAttributes)
+    {
+        DWORD dwError = ::GetLastError();
+        if (ERROR_FILE_NOT_FOUND == dwError || ERROR_PATH_NOT_FOUND == dwError)
+        {
+            hr = S_OK;
+            goto LExit;
+        }
+
+        hr = HRESULT_FROM_WIN32(dwError);
+        goto LExit;
+    }
+
+    hr = ValidateTrustedMachineDirectory(sczProgramDataDotnetRoot);
+
+LExit:
+    ReleaseStr(sczProgramDataDotnetRoot);
+    ReleaseStr(sczProgramData);
+    return hr;
+}
+
 extern "C" HRESULT Initialize(int argc, wchar_t* argv[])
 {
     HRESULT hr = S_OK;
@@ -522,6 +735,14 @@ void RemoveInstallStateFile(LPWSTR sczSdkFeatureBandVersion, LPWSTR sczPlatform)
 
     if (FileExistsEx(sczInstallStatePath, NULL))
     {
+        hr = ValidateProgramDataDotnetRoot();
+        if (FAILED(hr))
+        {
+            LogStringLine(REPORT_STANDARD, "Retaining install state path below an untrusted machine root: %ls (hr=0x%08x)", sczInstallStatePath, hr);
+            hr = S_OK;
+            goto LExit;
+        }
+
         LogStringLine(REPORT_STANDARD, "Deleting install state file: %ls", sczInstallStatePath);
         hr = FileEnsureDelete(sczInstallStatePath);
         ExitOnFailure(hr, "Failed to delete install state file: %ls", sczInstallStatePath);

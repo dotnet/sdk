@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             {
                 if (!availableWorkloads.Select(workload => workload.Id.ToString()).Contains(workloadId))
                 {
-                    var exceptionMessage = _workloadResolver.IsPlatformIncompatibleWorkload(new WorkloadId(workloadId)) ?
+                    var exceptionMessage = _workloadResolver.IsPlatformIncompatibleWorkload(ParseWorkloadId(workloadId)) ?
                         LocalizableStrings.WorkloadNotSupportedOnPlatform : LocalizableStrings.WorkloadNotRecognized;
 
                     throw new GracefulException(string.Format(exceptionMessage, workloadId), isUserError: false);
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 //  which require new packs for currently installed workloads, those packs will be downloaded.
                 //  If the packs are already installed, they won't be included in the results
                 var existingWorkloads = GetInstalledWorkloads(false);
-                var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
+                var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(ParseWorkloadId)).ToList();
 
                 var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
 
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     //  which require new packs for currently installed workloads, those packs will be downloaded.
                     //  If the packs are already installed, they won't be included in the results
                     var existingWorkloads = GetInstalledWorkloads(false);
-                    var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
+                    var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(ParseWorkloadId)).ToList();
 
                     DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
                 }
@@ -209,7 +209,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 }
 
                 // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
-                var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
+                var workloadIds = _workloadIds.Select(ParseWorkloadId);
                 var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
                 var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
                 if (previouslyInstalledWorkloads.Any())

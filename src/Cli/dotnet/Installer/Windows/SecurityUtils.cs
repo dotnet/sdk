@@ -15,6 +15,10 @@ namespace Microsoft.DotNet.Installer.Windows
     [SupportedOSPlatform("windows")]
     internal static class SecurityUtils
     {
+        public static readonly string ProgramDataDotnetRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+            "dotnet");
+
         /// <summary>
         /// Default inheritance to apply to directory ACLs.
         /// </summary>
@@ -71,11 +75,30 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <param name="path">The path of the directory to create.</param>
         public static void CreateSecureDirectory(string path)
         {
+            if (TrustedMachinePath.IsUnderRoot(path, ProgramDataDotnetRoot))
+            {
+                EnsureSecureProgramDataRoot();
+            }
+
             if (!Directory.Exists(path))
             {
                 DirectorySecurity ds = new();
                 SecurityUtils.SetDirectoryAccessRules(ds);
                 ds.CreateDirectory(path);
+            }
+        }
+
+        public static void EnsureSecureProgramDataRoot()
+        {
+            if (Directory.Exists(ProgramDataDotnetRoot))
+            {
+                TrustedMachinePath.ValidateDirectory(ProgramDataDotnetRoot);
+            }
+            else
+            {
+                DirectorySecurity ds = new();
+                SetDirectoryAccessRules(ds);
+                ds.CreateDirectory(ProgramDataDotnetRoot);
             }
         }
 
