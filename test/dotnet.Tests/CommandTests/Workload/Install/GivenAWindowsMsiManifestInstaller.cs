@@ -5,7 +5,9 @@ using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.InternalAbstractions;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Moq;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests;
 
