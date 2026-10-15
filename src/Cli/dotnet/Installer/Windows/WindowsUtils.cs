@@ -7,6 +7,7 @@ using System.Runtime.Versioning;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.DotNet;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Win32;
@@ -69,8 +70,10 @@ namespace Microsoft.DotNet.Installer.Windows
             using RegistryKey sessionKey = localMachineKey?.OpenSubKey(@"SYSTEM\CurrentControlSet\Control\Session Manager");
 
             string[] pendingFileRenameOperations = (string[])sessionKey?.GetValue("PendingFileRenameOperations") ?? new string[0];
+            // Destination files for pending renames start with !\??\, whereas the source does not have the leading "!".
+            bool hasPendingFileRenames = pendingFileRenameOperations.Any(s => !string.IsNullOrWhiteSpace(s) && s.StartsWith(@"!\??\"));
 
-            return (auKey != null || cbsKey != null || pendingFileRenameOperations.Length > 0);
+            return (auKey != null || cbsKey != null || hasPendingFileRenames);
         }
 
         /// <summary>
@@ -129,7 +132,8 @@ namespace Microsoft.DotNet.Installer.Windows
 
         /// <summary>
         /// Validates and returns the log file path to use for MSI operations.
-        /// Ensures the path is under the server's temp directory or the parent user's profile temp directory.
+        /// Ensures the path is under the server's temp directory, the trusted client temp directory
+        /// (if supplied at server launch), or the parent user's profile temp directory.
         /// If the path is not in an allowed location, it is redirected to the server's temp directory.
         /// </summary>
         /// <param name="logFile">The requested log file path.</param>
@@ -175,6 +179,11 @@ namespace Microsoft.DotNet.Installer.Windows
             return Path.Combine(serverTemp, Path.GetFileName(fullLogPath));
         }
 
+        /// <summary>
+        /// Validates that an IPC-supplied workload manifest path lives under an allowed root.
+        /// Allowed roots are the server's own temp directory and the trusted client temp
+        /// directory (if supplied at server launch via <c>--client-temp</c>).
+        /// </summary>
         public static bool ValidateManifestPath(string manifestPath, string serverTempPath = null)
         {
             if (string.IsNullOrWhiteSpace(manifestPath))
@@ -225,6 +234,9 @@ namespace Microsoft.DotNet.Installer.Windows
         /// <returns>The profile path, or <see langword="null"/> if the profile is not found.</returns>
         public static string GetUserProfilePath(SecurityIdentifier sid)
         {
+            // HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{SID}\ProfileImagePath
+            // RegistryKey.GetValue expands REG_EXPAND_SZ values by default, but call ExpandEnvironmentVariables
+            // explicitly to also handle the rare case where the value was stored as REG_SZ with literal %vars%.
             using RegistryKey profileListKey = Registry.LocalMachine.OpenSubKey(
                 $@"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\{sid.Value}");
 
@@ -245,21 +257,13 @@ namespace Microsoft.DotNet.Installer.Windows
         }
 
         /// <summary>
-        /// Validates that a path component (such as a package ID or version) does not contain
-        /// directory separator characters or parent-directory traversal sequences.
+        /// Validates that a package ID or version can be safely used as a single path component.
         /// </summary>
         /// <param name="component">The path component to validate.</param>
         /// <returns><see langword="true"/> if the component is safe to use in <see cref="Path.Combine"/>; otherwise <see langword="false"/>.</returns>
         public static bool ValidatePathComponent(string component)
         {
-            if (string.IsNullOrWhiteSpace(component))
-            {
-                return false;
-            }
-
-            return !component.Contains(Path.DirectorySeparatorChar)
-                && !component.Contains(Path.AltDirectorySeparatorChar)
-                && !component.Contains("..");
+            return PathComponentUtilities.IsValidPathComponent(component);
         }
 
         /// <summary>

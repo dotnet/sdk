@@ -16,7 +16,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public partial class SdkDirectoryWorkloadManifestProvider
     {
-        static class GlobalJsonReader
+        public static class GlobalJsonReader
         {
             public static string? GetWorkloadVersionFromGlobalJson(string? globalJsonPath)
             {

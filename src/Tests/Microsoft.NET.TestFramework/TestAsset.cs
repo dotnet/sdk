@@ -102,7 +102,14 @@ namespace Microsoft.NET.TestFramework
                 this.UpdateProjProperty(property[0], property[1], property[2]);
             }
 
-            this.ReplaceTheNewtonsoftJsonPackageVersionVariable();
+            string[][] PackageVersionVariables = {
+                new string[] { "NewtonsoftJsonPackageVersion", ToolsetInfo.GetNewtonsoftJsonPackageVersion() },
+                new string[] { "SystemDataSqlClientPackageVersion", ToolsetInfo.GetSystemDataSqlClientPackageVersion() }};
+
+            foreach (string[] PackageVersionVariable in PackageVersionVariables)
+            {
+                this.ReplacePackageVersionVariable(PackageVersionVariable[0], PackageVersionVariable[1]);
+            }
 
             return this;
         }
@@ -119,10 +126,9 @@ namespace Microsoft.NET.TestFramework
             });
         }
 
-        public TestAsset ReplaceTheNewtonsoftJsonPackageVersionVariable()
+        public TestAsset ReplacePackageVersionVariable(string targetName, string targetValue)
         {
             string[] PropertyNames = new[] { "PackageReference", "Package" };
-            string targetName = "NewtonsoftJsonPackageVersion";
 
             return WithProjectChanges(project =>
             {
@@ -134,7 +140,7 @@ namespace Microsoft.NET.TestFramework
                             .Where(p => p.Attribute("Version") != null && p.Attribute("Version").Value.Equals($"$({targetName})", StringComparison.OrdinalIgnoreCase));
                     foreach (var packageReference in packageReferencesToUpdate)
                     {
-                        packageReference.Attribute("Version").Value = ToolsetInfo.GetNewtonsoftJsonPackageVersion();
+                        packageReference.Attribute("Version").Value = targetValue;
                     }
                 }
             });

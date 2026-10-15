@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -47,7 +48,7 @@ namespace Microsoft.DotNet.Cli
             return workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
         }
 
-        internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null)
+        internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null, bool showVersion = true)
         {
             workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
             IEnumerable<WorkloadId> installedList = workloadInfoHelper.InstalledSdkWorkloadIds;
@@ -55,7 +56,14 @@ namespace Microsoft.DotNet.Cli
             reporter ??= Cli.Utils.Reporter.Output;
             string dotnetPath = dotnetDir ?? Path.GetDirectoryName(Environment.ProcessPath);
 
-            reporter.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
+            if (showVersion)
+            {
+                reporter.WriteLine($" Workload version: {workloadInfoHelper.ManifestProvider.GetWorkloadVersion()}");
+            }
+
+            var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.DotnetPath), "default.json")).UseWorkloadSets;
+            var workloadSetsString = useWorkloadSets == true ? "workload sets" : "loose manifests";
+            reporter.WriteLine(string.Format(CommonStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
 
             if (installedWorkloads.Count == 0)
             {
@@ -78,7 +86,7 @@ namespace Microsoft.DotNet.Cli
                 reporter.Write($"{separator}{CommonStrings.WorkloadSourceColumn}:");
                 reporter.WriteLine($" {workload.Value,align}");
 
-                reporter.Write($"{separator}{CommonStrings.WorkloadManfiestVersionColumn}:");
+                reporter.Write($"{separator}{CommonStrings.WorkloadManifestVersionColumn}:");
                 reporter.WriteLine($"    {workloadManifest.Version + '/' + workloadFeatureBand,align}");
 
                 reporter.Write($"{separator}{CommonStrings.WorkloadManifestPathColumn}:");
@@ -121,6 +129,7 @@ namespace Microsoft.DotNet.Cli
             command.Subcommands.Add(WorkloadRestoreCommandParser.GetCommand());
             command.Subcommands.Add(WorkloadCleanCommandParser.GetCommand());
             command.Subcommands.Add(WorkloadElevateCommandParser.GetCommand());
+            command.Subcommands.Add(WorkloadConfigCommandParser.GetCommand());
 
             command.Validators.Add(commandResult =>
             {

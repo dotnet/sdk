@@ -151,6 +151,25 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [Fact]
+        public void Target_after_AfterSdkPublish_executes()
+        {
+            var projectChanges = (XDocument doc) =>
+            {
+                var ns = doc.Root.Name.Namespace;
+                var target = new XElement("Target");
+                target.ReplaceAttributes(new XAttribute[] { new XAttribute("Name", "AfterAfterSdkPublish"), new XAttribute("AfterTargets", "AfterSdkPublish") });
+                var message = new XElement("Message");
+                message.ReplaceAttributes(new XAttribute[] { new XAttribute("Importance", "High"), new XAttribute("Text", "Executed AfterAfterSdkPublish") });
+                target.Add(message);
+                doc.Root.Add(target);
+            };
+
+            var publishResults = GetPublishCommand(projectChanges: projectChanges).Execute();
+            publishResults.Should().Pass();
+            publishResults.Should().HaveStdOutContaining("Executed AfterAfterSdkPublish");
+        }
+
+        [Fact]
         public void It_errors_when_publishing_single_file_lib()
         {
             var testProject = new TestProject()

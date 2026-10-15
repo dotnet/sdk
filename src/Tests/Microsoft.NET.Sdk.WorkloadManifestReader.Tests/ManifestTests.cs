@@ -20,6 +20,55 @@ namespace ManifestReaderTests
 
         string GetSampleManifestPath(string name) => Path.Combine(SampleProjectPath, name);
 
+        [Theory]
+        [InlineData("../escape")]
+        [InlineData(".")]
+        [InlineData("..")]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData(null)]
+        public void PathBasedIdsRejectInvalidComponents(string id)
+        {
+            Assert.Throws<ArgumentException>(() => new ManifestId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadPackId(id));
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData(@"..\escape")]
+        [InlineData(@"C:\escape")]
+        [InlineData("C:relative")]
+        [InlineData("invalid:name")]
+        [InlineData("trailingdot.")]
+        [InlineData("trailingspace ")]
+        public void PathBasedIdsRejectWindowsInvalidComponents(string id)
+        {
+            Assert.Throws<ArgumentException>(() => new ManifestId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadPackId(id));
+        }
+
+        [Fact]
+        public void InvalidWorkloadIdInManifestThrowsManifestFormatException()
+        {
+            const string manifest = @"{
+  ""version"": ""1.0.0"",
+  ""workloads"": {
+    ""../escape"": {
+      ""description"": ""Invalid workload""
+    }
+  }
+}";
+            using MemoryStream manifestStream = new(System.Text.Encoding.UTF8.GetBytes(manifest));
+
+            var exception = Assert.Throws<WorkloadManifestFormatException>(
+                () => WorkloadManifestReader.ReadWorkloadManifest("Invalid", manifestStream, "invalid.json"));
+
+            Assert.IsType<ArgumentException>(exception.InnerException);
+            Assert.Contains("valid path component", exception.Message);
+            Assert.Contains("at offset", exception.Message);
+        }
+
         [Fact]
         public void ItCanDeserialize()
         {
@@ -179,7 +228,9 @@ namespace ManifestReaderTests
                 {  "AAA", MakeManifest("20.0.0", ("BBB", "5.0.0"), ("CCC", "63.0.0"), ("DDD", "25.0.0")) }
             };
 
-            var missingManifestEx = Assert.Throws<WorkloadManifestCompositionException>(() => WorkloadResolver.CreateForTests(missingManifestProvider, fakeRootPath));
+            var missingManifestResolver = WorkloadResolver.CreateForTests(missingManifestProvider, fakeRootPath);
+
+            var missingManifestEx = Assert.Throws<WorkloadManifestCompositionException>(() => missingManifestResolver.GetAvailableWorkloads().ToList());
             Assert.StartsWith("Did not find workload manifest dependency 'BBB' required by manifest 'AAA'", missingManifestEx.Message);
 
             var inconsistentManifestProvider = new InMemoryFakeManifestProvider
@@ -190,7 +241,8 @@ namespace ManifestReaderTests
                 {  "DDD", MakeManifest("30.0.0") },
             };
 
-            var inconsistentManifestEx = Assert.Throws<WorkloadManifestCompositionException>(() => WorkloadResolver.CreateForTests(inconsistentManifestProvider, fakeRootPath));
+            var inconsistentManifestResolver = WorkloadResolver.CreateForTests(inconsistentManifestProvider, fakeRootPath);
+            var inconsistentManifestEx = Assert.Throws<WorkloadManifestCompositionException>(() => inconsistentManifestResolver.GetAvailableWorkloads().ToList());
             Assert.StartsWith("Workload manifest dependency 'DDD' version '30.0.0' is lower than version '39.0.0' required by manifest 'BBB'", inconsistentManifestEx.Message);
         }
 

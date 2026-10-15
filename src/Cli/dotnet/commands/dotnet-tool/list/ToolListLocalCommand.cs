@@ -51,9 +51,7 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 LocalizableStrings.ManifestFileColumn,
                 p => p.SourceManifest.Value);
 
-            var packageEnumerable = _toolManifestInspector.Inspect().Where(
-                 (t) => PackageIdMatches(t.toolManifestPackage, packageId)
-             );
+            var packageEnumerable = GetPackages(packageId);
             table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
 
             if (packageId.HasValue && !packageEnumerable.Any())
@@ -62,6 +60,13 @@ namespace Microsoft.DotNet.Tools.Tool.List
                 return 1;
             }
             return 0;
+        }
+
+        public IEnumerable<(ToolManifestPackage, FilePath)> GetPackages(PackageId? packageId)
+        {
+            return _toolManifestInspector.Inspect().Where(
+                 (t) => PackageIdMatches(t.toolManifestPackage, packageId)
+                 );
         }
 
         private bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)

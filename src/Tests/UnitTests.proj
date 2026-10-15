@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.DotNet.Helix.Sdk">
+﻿<Project Sdk="Microsoft.DotNet.Helix.Sdk">
 
   <PropertyGroup>
     <HelixType>test/product/</HelixType>
@@ -45,6 +45,9 @@
       <TargetFramework>net472</TargetFramework>
       <RuntimeTargetFramework>net472</RuntimeTargetFramework>
     </SDKCustomXUnitProject>
+
+    <!-- Don't run MSI installation tests in Helix / CI -->
+    <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(_CustomHelixTargetQueue)' != '' ">

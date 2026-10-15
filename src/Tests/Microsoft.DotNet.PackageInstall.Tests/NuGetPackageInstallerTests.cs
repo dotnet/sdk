@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals));
             _toolInstaller =
                 new NuGetPackageDownloader(_tempDirectory, null, new MockFirstPartyNuGetPackageSigningVerifier(), _logger,
-                    restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals), isNuGetTool: true);
+                    restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals), shouldUsePackageSourceMapping: true);
         }
 
         [Fact]
@@ -244,6 +244,28 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             bufferedReporter.Lines.Should()
                 .ContainSingle(
                     Cli.NuGetPackageDownloader.LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+            File.Exists(packagePath).Should().BeTrue();
+        }
+
+        [WindowsOnlyFact]
+        public async Task GivenANonSignedSdkItShouldNotPrintMessageInQuiet()
+        {
+            BufferedReporter bufferedReporter = new BufferedReporter();
+            NuGetPackageDownloader nuGetPackageDownloader = new NuGetPackageDownloader(_tempDirectory, null,
+                new MockFirstPartyNuGetPackageSigningVerifier(),
+                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true), verbosityOptions: VerbosityOptions.quiet);
+            await nuGetPackageDownloader.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+
+            // download 2 packages should only print the message once
+            string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
+
+            bufferedReporter.Lines.Should().BeEmpty();
             File.Exists(packagePath).Should().BeTrue();
         }
 

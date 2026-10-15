@@ -56,6 +56,16 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             exceptionThrown.Message.Should().Contain("mock-1");
         }
 
+        [Fact]
+        public void GivenWorkloadUninstallItHandlesInvalidWorkloadIdentifiersGracefully()
+        {
+            var invalidWorkloadId = "../escape";
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+
+            var exceptionThrown = Assert.Throws<GracefulException>(() => UninstallWorkload(invalidWorkloadId, testDirectory, "6.0.100"));
+            exceptionThrown.Message.Should().Be(String.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadNotRecognized, invalidWorkloadId));
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

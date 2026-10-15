@@ -5,6 +5,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 #endif
+using Microsoft.DotNet;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -20,9 +21,9 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public WorkloadPackId(string id)
         {
-            if (string.IsNullOrWhiteSpace(id))
+            if (!PathComponentUtilities.IsValidPathComponent(id))
             {
-                throw new ArgumentException($"'{nameof(id)}' cannot be null or whitespace", nameof(id));
+                throw new ArgumentException($"'{nameof(id)}' must be a valid path component", nameof(id));
             }
 
             _id = id;
