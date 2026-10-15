@@ -19,7 +19,7 @@ internal abstract class AspireWatcherLauncher(GlobalOptions globalOptions, Envir
             ? loggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName)
             : Logger;
 
-        using var context = new DotNetWatchContext()
+        await using var context = new DotNetWatchContext()
         {
             ProcessOutputReporter = Reporter,
             LoggerFactory = loggerFactory,

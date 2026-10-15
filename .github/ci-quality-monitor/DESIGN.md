@@ -37,13 +37,24 @@ The workflow supports four delivery paths:
 | Trigger | Behavior |
 | --- | --- |
 | Completed Azure check suite | Resolve the public SDK build and inspect a failed direct stable-branch build. |
-| Merged pull request | Locate the final public SDK validation and inspect it only when the PR merged into an allowlisted stable target after a failed validation. |
+| Merged pull request | Run from the protected base-branch context, locate the final public SDK validation, and inspect it only when the PR merged into an allowlisted stable target after a failed validation. |
 | Daily schedule | Reconcile missed stable-branch events and check registered branch heartbeats. |
 | Manual dispatch | Inspect the requested completed public build without consulting the automatic processed-build ledger. |
 
 The current automatic policy covers stable-branch incidents. Open pull request
 failures are not treated as repository-wide incidents because the pull request
 itself is a plausible cause.
+
+The merged-PR path uses `pull_request_target` so GitHub evaluates protected
+environments against the base branch rather than the synthetic PR merge ref.
+The workflow treats pull request metadata as untrusted and never checks out or
+executes code from the pull request head.
+
+The collector, agent source checkout, and dispatch helper are pinned
+to `main` in the workflow repository so they do not depend on unserviced monitor
+copies on release branches. Build selection still uses the event's branch and
+commit metadata. The checkout pins do not override the triggering workflow ref
+or the protected environment's branch policy.
 
 ## Failure Model
 
