@@ -15,6 +15,7 @@ using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Versioning;
 using NuGet.Configuration;
 
@@ -453,7 +454,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void GivenFailureWhenInstallLocalToolsItWillRollbackPackageVersion(bool testMockBehaviorIsInSync)
+        public void GivenFailureAfterInstallingLocalToolThePublishedPackageIsNotRolledBack(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
 
@@ -500,19 +501,20 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
 
             a.Should().Throw<GracefulException>().WithMessage("simulated error");
-            
+
             fileSystem
-            .Directory
+                .Directory
                 .Exists(localToolDownloadDir)
                 .Should()
                 .BeTrue();
 
-            
             fileSystem
                 .Directory
                 .Exists(localToolVersionDir)
                 .Should()
-                .BeFalse();
+                .BeTrue();
+
+            fileSystem.Directory.Delete(localToolVersionDir, true);
         }
 
         [TestMethod]
@@ -777,7 +779,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var root = TestAssetsManager.CreateTestDirectory();
             var packagesRoot = new DirectoryPath(Path.Combine(root.Path, "packages"));
             var store = new ToolPackageStoreAndQuery(new DirectoryPath(Path.Combine(root.Path, "tools")));
-            var downloader = new TestableToolPackageDownloader(
+            using var downloader = new TestableToolPackageDownloader(
                 store,
                 Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json"),
                 root.Path);
@@ -813,6 +815,57 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             (await download).Should().Be(packageVersion);
             downloader.IsInstalled(TestPackageId, packageVersion, packagesRoot.Value).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task GivenPackageHashPublicationInProgressThePackageIsNotReportedAsInstalled()
+        {
+            string source = GetTestLocalFeedPath();
+            var root = TestAssetsManager.CreateTestDirectory();
+            var packagesRoot = new DirectoryPath(Path.Combine(root.Path, "packages"));
+            var store = new ToolPackageStoreAndQuery(new DirectoryPath(Path.Combine(root.Path, "tools")));
+            using var downloader = new TestableToolPackageDownloader(
+                store,
+                Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json"),
+                root.Path,
+                pauseHashPublication: true);
+            var packageVersion = NuGetVersion.Parse(TestPackageVersion);
+            var packageSourceLocation = new PackageSourceLocation(
+                additionalSourceFeeds: [source],
+                basePath: root.Path);
+
+            Task<NuGetVersion> download = Task.Run(
+                () => downloader.DownloadAndExtract(
+                    TestPackageId,
+                    downloader.CreatePackageDownloader(),
+                    packagesRoot.Value,
+                    packageVersion,
+                    packageSourceLocation),
+                TestContext.CancellationToken);
+
+            try
+            {
+                Task firstCompleted = await Task.WhenAny(downloader.HashMoveStarted, download);
+                firstCompleted.Should().Be(
+                    downloader.HashMoveStarted,
+                    "the package download should reach completion-marker publication before completing");
+
+                string hashPath = new VersionFolderPathResolver(packagesRoot.Value)
+                    .GetHashPath(TestPackageId.ToString(), packageVersion);
+                File.Exists(hashPath).Should().BeFalse(
+                    "the final completion-marker path must not exist until the complete marker is atomically moved");
+                downloader.IsInstalled(TestPackageId, packageVersion, packagesRoot.Value).Should().BeFalse();
+            }
+            finally
+            {
+                downloader.ContinueHashMove();
+            }
+
+            (await download).Should().Be(packageVersion);
+            downloader.IsInstalled(TestPackageId, packageVersion, packagesRoot.Value).Should().BeTrue();
+            string publishedHashPath = new VersionFolderPathResolver(packagesRoot.Value)
+                .GetHashPath(TestPackageId.ToString(), packageVersion);
+            File.ReadAllText(publishedHashPath).Should().NotBeEmpty();
         }
 
         [TestMethod]
@@ -876,6 +929,69 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             Directory.Exists(lockDirectory).Should().BeFalse(
                 "reusing a complete package must not require write access to the shared package root");
+        }
+
+        [TestMethod]
+        public async Task GivenOneLocalInstallFailsAfterPublicationAnotherInstallCanKeepUsingThePackage()
+        {
+            string source = GetTestLocalFeedPath();
+            var root = TestAssetsManager.CreateTestDirectory();
+            string packagesRoot = Path.Combine(root.Path, "packages");
+            var nugetConfigPath = new FilePath(Path.Combine(root.Path, "NuGet.config"));
+            var fileSystem = new FileSystemWrapper();
+            fileSystem.File.WriteAllText(nugetConfigPath.Value, FormatNuGetConfig(source, packagesRoot));
+            string runtimeJsonPath = Path.Combine(
+                SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
+                "RuntimeIdentifierGraph.json");
+            var packageLocation = new PackageLocation(nugetConfig: nugetConfigPath);
+            var packageVersion = VersionRange.Parse(TestPackageVersion);
+            using var failingDownloader = new FailingAfterPublicationToolPackageDownloader(
+                new ToolPackageStoreAndQuery(new DirectoryPath(Path.Combine(root.Path, "failing-tools"))),
+                runtimeJsonPath,
+                root.Path);
+            var reusingDownloader = new ToolPackageDownloader(
+                new ToolPackageStoreAndQuery(new DirectoryPath(Path.Combine(root.Path, "reusing-tools"))),
+                runtimeJsonPath,
+                root.Path);
+
+            Task<IToolPackage> failingInstall = Task.Run(
+                () => failingDownloader.InstallPackage(
+                    packageLocation,
+                    TestPackageId,
+                    TestVerbosity,
+                    packageVersion,
+                    _testTargetframework,
+                    isGlobalTool: false,
+                    verifySignatures: false),
+                TestContext.CancellationToken);
+
+            Task firstCompleted = await Task.WhenAny(failingDownloader.AssetCreationStarted, failingInstall);
+            firstCompleted.Should().Be(
+                failingDownloader.AssetCreationStarted,
+                "the first install should publish the package before its simulated validation failure");
+
+            IToolPackage reusedPackage;
+            try
+            {
+                reusedPackage = reusingDownloader.InstallPackage(
+                    packageLocation,
+                    TestPackageId,
+                    TestVerbosity,
+                    packageVersion,
+                    _testTargetframework,
+                    isGlobalTool: false,
+                    verifySignatures: false);
+            }
+            finally
+            {
+                failingDownloader.ContinueAssetCreation();
+            }
+
+            Func<Task> awaitFailingInstall = async () => await failingInstall;
+            await awaitFailingInstall.Should().ThrowAsync<ToolPackageException>()
+                .WithMessage(FailingAfterPublicationToolPackageDownloader.FailureMessage);
+            File.Exists(reusedPackage.Command.Executable.Value).Should().BeTrue(
+                "a later failure must not remove a shared package that another install already reused");
         }
 
         [TestMethod]
@@ -1194,15 +1310,24 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         public ToolPackageDownloaderTests() { }
 
-        private sealed class TestableToolPackageDownloader : ToolPackageDownloader
+        private sealed class TestableToolPackageDownloader : ToolPackageDownloader, IDisposable
         {
+            private readonly bool _pauseHashPublication;
+            private readonly TaskCompletionSource _hashMoveStarted =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly ManualResetEventSlim _continueHashMove = new(initialState: false);
+
             public TestableToolPackageDownloader(
                 IToolPackageStore store,
                 string runtimeJsonPathForTests,
-                string currentWorkingDirectory)
+                string currentWorkingDirectory,
+                bool pauseHashPublication = false)
                 : base(store, runtimeJsonPathForTests, currentWorkingDirectory)
             {
+                _pauseHashPublication = pauseHashPublication;
             }
+
+            public Task HashMoveStarted => _hashMoveStarted.Task;
 
             public INuGetPackageDownloader CreatePackageDownloader() =>
                 CreateNuGetPackageDownloader(
@@ -1226,6 +1351,58 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             public bool IsInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath) =>
                 IsPackageInstalled(packageId, packageVersion, packagesRootPath);
+
+            public void ContinueHashMove() => _continueHashMove.Set();
+
+            protected override void MovePackageHash(string temporaryHashPath, string hashPath)
+            {
+                if (_pauseHashPublication)
+                {
+                    _hashMoveStarted.TrySetResult();
+                    _continueHashMove.Wait();
+                }
+
+                base.MovePackageHash(temporaryHashPath, hashPath);
+            }
+
+            public void Dispose() => _continueHashMove.Dispose();
+        }
+
+        private sealed class FailingAfterPublicationToolPackageDownloader : ToolPackageDownloader, IDisposable
+        {
+            public const string FailureMessage = "Simulated failure after package publication.";
+
+            private readonly TaskCompletionSource _assetCreationStarted =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly ManualResetEventSlim _continueAssetCreation = new(initialState: false);
+
+            public FailingAfterPublicationToolPackageDownloader(
+                IToolPackageStore store,
+                string runtimeJsonPathForTests,
+                string currentWorkingDirectory)
+                : base(store, runtimeJsonPathForTests, currentWorkingDirectory)
+            {
+            }
+
+            public Task AssetCreationStarted => _assetCreationStarted.Task;
+
+            public void ContinueAssetCreation() => _continueAssetCreation.Set();
+
+            protected override void CreateAssetFile(
+                PackageId packageId,
+                NuGetVersion version,
+                DirectoryPath packagesRootPath,
+                string assetFilePath,
+                string runtimeJsonGraph,
+                VerbosityOptions verbosity,
+                string targetFramework = null)
+            {
+                _assetCreationStarted.TrySetResult();
+                _continueAssetCreation.Wait();
+                throw new ToolPackageException(FailureMessage);
+            }
+
+            public void Dispose() => _continueAssetCreation.Dispose();
         }
 
         private sealed class BlockingNuGetPackageDownloader : INuGetPackageDownloader, IDisposable

@@ -64,7 +64,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
 
         string? folderToDeleteOnFailure = null;
-        return TransactionalAction.Run(() =>
+        try
         {
             var _downloadActivity = Activities.Source.StartActivity("download-tool");
             _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
@@ -98,18 +98,50 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             _extractActivity?.Stop();
 
             // NuGet treats the hash as a package completion marker, so publish it only after extraction succeeds.
-            Directory.CreateDirectory(Path.GetDirectoryName(hashPath)!);
-            File.WriteAllText(hashPath, packageHash);
+            PublishPackageHash(hashPath, packageHash);
 
             return version;
-        }, rollback: () =>
+        }
+        catch
         {
             //  If something fails, don't leave a folder with partial contents (such as a .nupkg but no hash or extracted contents)
             if (folderToDeleteOnFailure != null && Directory.Exists(folderToDeleteOnFailure))
             {
                 Directory.Delete(folderToDeleteOnFailure, true);
             }
-        });
+
+            throw;
+        }
+    }
+
+    /// <summary>
+    /// Makes the package completion marker visible only after its complete contents have been written to a closed file.
+    /// </summary>
+    /// <remarks>The temporary file must be a sibling so the final move is atomic on the package file system.</remarks>
+    private void PublishPackageHash(string hashPath, string packageHash)
+    {
+        string hashDirectory = Path.GetDirectoryName(hashPath)!;
+        Directory.CreateDirectory(hashDirectory);
+        string temporaryHashPath = Path.Combine(hashDirectory, Path.GetRandomFileName());
+
+        try
+        {
+            File.WriteAllText(temporaryHashPath, packageHash);
+            MovePackageHash(temporaryHashPath, hashPath);
+        }
+        finally
+        {
+            File.Delete(temporaryHashPath);
+        }
+    }
+
+    /// <summary>
+    /// Defines the atomic publication point so tests can pause while only the completed temporary marker is visible.
+    /// </summary>
+    /// <remarks>The source and destination are sibling files; overrides must preserve that same-file-system move.</remarks>
+    protected virtual void MovePackageHash(string temporaryHashPath, string hashPath)
+    {
+        File.Move(temporaryHashPath, hashPath, overwrite: true);
     }
 
     protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)
