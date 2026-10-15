@@ -51,6 +51,15 @@ The optimized path retains the configuration/platform validation target and its 
 hooks, including runtime identifier/platform compatibility and apphost/hosting checks.
 `NoBuild=true` continues to use the separate no-build publish path.
 
+After compilation and additional optimized-build targets, `IncrementalClean` records
+the current intermediate outputs and removes tracked outputs that are no longer produced.
+This also removes obsolete managed build-directory outputs from an earlier full build.
+If the optimized build fails, `_CleanRecordFileWrites` preserves prior and newly generated
+file tracking without deleting stale outputs. A subsequent `dotnet clean` can remove the
+tracked compiler outputs, including intermediate DLL, PDB, and generated XML documentation.
+This retains build cleanup bookkeeping; it does not add tracking for every native compiler
+or publish artifact.
+
 ### PublishTrimmed (IL Trimming)
 
 **Status: Not yet optimized — candidate for future optimization**

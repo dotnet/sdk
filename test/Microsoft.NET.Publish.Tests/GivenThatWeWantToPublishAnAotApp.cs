@@ -1409,6 +1409,99 @@ public class NativeLibraryClass
         }
 
         [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void NativeAot_optimized_publish_tracks_intermediate_outputs_for_clean(bool buildFirst)
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NativeAotCleanIntermediates", true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier;
+            testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
+            // Exercise compiler documentation tracking independently of publishing documentation.
+            testProject.AdditionalProperties["PublishDocumentationFile"] = "false";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: buildFirst.ToString());
+            var publishCommand = new PublishCommand(testAsset);
+
+            if (buildFirst)
+            {
+                new BuildCommand(testAsset).Execute().Should().Pass();
+            }
+
+            publishCommand.Execute().Should().Pass();
+            publishCommand.Execute().Should().Pass();
+
+            var intermediateDirectory = publishCommand.GetIntermediateDirectory(
+                ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier).FullName;
+            string[] intermediateFiles = [
+                $"{testProject.Name}.dll",
+                $"{testProject.Name}.pdb",
+                $"{testProject.Name}.xml",
+                $"{testProject.Name}.AssemblyInfo.cs",
+                $"{testProject.Name}.AssemblyInfoInputs.cache",
+                $"{testProject.Name}.csproj.CoreCompileInputs.cache"];
+            foreach (var file in intermediateFiles)
+            {
+                File.Exists(Path.Combine(intermediateDirectory, file)).Should().BeTrue(file);
+            }
+
+            var publishDirectory = publishCommand.GetOutputDirectory(
+                ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier).FullName;
+            File.Exists(Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}")).Should().BeTrue();
+            Directory.GetFiles(Path.GetDirectoryName(publishDirectory)).Should().BeEmpty();
+
+            new CleanCommand(testAsset).Execute().Should().Pass();
+            foreach (var file in intermediateFiles)
+            {
+                File.Exists(Path.Combine(intermediateDirectory, file)).Should().BeFalse(file);
+            }
+        }
+
+        [TestMethod]
+        [DataRow("BeforeTargets")]
+        [DataRow("AfterTargets")]
+        public void NativeAot_failed_optimized_publish_tracks_generated_files_for_clean(string hook)
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NativeAotFailedClean", true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier;
+            testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
+            testProject.AdditionalProperties["PublishDocumentationFile"] = "false";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: hook)
+                .WithProjectChanges(project => project.Root.Add(XElement.Parse($"""
+                    <Target Name="FailDuringOptimizedBuild" {hook}="Compile">
+                      <WriteLinesToFile File="$(IntermediateOutputPath)generated-before-error.txt" Lines="generated" Overwrite="true" />
+                      <ItemGroup>
+                        <FileWrites Include="$(IntermediateOutputPath)generated-before-error.txt" />
+                      </ItemGroup>
+                      <Error Text="Intentional optimized build failure" />
+                    </Target>
+                    """)));
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute().Should().Fail()
+                .And.HaveStdOutContaining("Intentional optimized build failure");
+
+            var intermediateDirectory = publishCommand.GetIntermediateDirectory(
+                ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier).FullName;
+            var generatedFile = Path.Combine(intermediateDirectory, "generated-before-error.txt");
+            File.Exists(generatedFile).Should().BeTrue();
+            string[] compileOutputs = [$"{testProject.Name}.dll", $"{testProject.Name}.pdb", $"{testProject.Name}.xml"];
+            if (hook == "AfterTargets")
+            {
+                foreach (var file in compileOutputs)
+                {
+                    File.Exists(Path.Combine(intermediateDirectory, file)).Should().BeTrue(file);
+                }
+            }
+
+            new CleanCommand(testAsset).Execute().Should().Pass();
+            File.Exists(generatedFile).Should().BeFalse();
+            foreach (var file in compileOutputs)
+            {
+                File.Exists(Path.Combine(intermediateDirectory, file)).Should().BeFalse(file);
+            }
+        }
+
+        [TestMethod]
         public void Aot_optimized_publish_targets_are_reviewed_when_CoreBuildDependsOn_changes()
         {
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "CoreBuildDependsOn", true);

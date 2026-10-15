@@ -177,7 +177,14 @@ Copyright (c) .NET Foundation. All rights reserved.
        publish targets that consume its outputs. -->
   <Target Name="_PublishOptimizedBuildAlternative"
           Condition="'$(NoBuild)' != 'true' and '$(_UseOptimizedPublish)' == 'true'"
-          DependsOnTargets="$(_BeforeOptimizedPublishTargets);$(_AdditionalOptimizedPublishTargets);$(_CorePublishTargets)" />
+          DependsOnTargets="_BuildForOptimizedPublish;$(_CorePublishTargets)" />
+
+  <!-- Keep build cleanup before publish post-processing, matching CoreBuild's successful and
+       failed build bookkeeping without copying managed outputs to the build directory. -->
+  <Target Name="_BuildForOptimizedPublish"
+          DependsOnTargets="$(_BeforeOptimizedPublishTargets);$(_AdditionalOptimizedPublishTargets);IncrementalClean">
+    <OnError ExecuteTargets="_CleanRecordFileWrites" />
+  </Target>
 
   <Target Name="_PublishNoBuildAlternative"
           Condition="'$(NoBuild)' == 'true'"
