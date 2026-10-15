@@ -15,7 +15,6 @@ namespace Microsoft.CodeAnalysis.Tools
         internal const int UnhandledExceptionExitCode = 1;
         internal const int CheckFailedExitCode = 2;
         internal const int UnableToLocateMSBuildExitCode = 3;
-        internal const int UnableToLocateDotNetCliExitCode = 4;
 
         private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
         private static string[] SeverityLevels => new[] { "info", "warn", "error" };
@@ -101,14 +100,6 @@ namespace Microsoft.CodeAnalysis.Tools
             {
                 var runtimeVersion = GetRuntimeVersion();
                 logger.LogDebug(Resources.The_dotnet_runtime_version_is_0, runtimeVersion);
-
-                if (!TryGetDotNetCliVersion(out var dotnetVersion))
-                {
-                    logger.LogError(Resources.Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH);
-                    return UnableToLocateDotNetCliExitCode;
-                }
-
-                logger.LogTrace(Resources.The_dotnet_CLI_version_is_0, dotnetVersion);
 
                 if (!TryLoadMSBuild(out var msBuildPath))
                 {
@@ -352,23 +343,6 @@ namespace Microsoft.CodeAnalysis.Tools
             return Assembly.GetExecutingAssembly()
                 .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
                 ?.InformationalVersion;
-        }
-
-        internal static bool TryGetDotNetCliVersion([NotNullWhen(returnValue: true)] out string? dotnetVersion)
-        {
-            try
-            {
-                var processInfo = ProcessRunner.CreateProcess("dotnet", "--version", captureOutput: true, displayWindow: false);
-                var versionResult = processInfo.Result.GetAwaiter().GetResult();
-
-                dotnetVersion = versionResult.OutputLines[0].Trim();
-                return true;
-            }
-            catch
-            {
-                dotnetVersion = null;
-                return false;
-            }
         }
 
         internal static bool TryLoadMSBuild([NotNullWhen(returnValue: true)] out string? msBuildPath)

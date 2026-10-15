@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUpdateGlobalOrToolPathCommand = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                         fileSystem: _fileSystem,
                         reporter: _reporter,
@@ -357,7 +357,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store,
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store,
                     new ToolPackageDownloaderMock(
                         store: _store,
                         fileSystem: _fileSystem,
@@ -384,7 +384,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store,
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store,
                     new ToolPackageDownloaderMock(
                         store: _store,
                         fileSystem: _fileSystem,
@@ -422,7 +422,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (_, _) => (_store, _store, new ToolPackageDownloaderMock(
+                (_, _, _) => (_store, _store, new ToolPackageDownloaderMock(
                         store:_store,
                         fileSystem: _fileSystem,
                         reporter: _reporter,
@@ -455,7 +455,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
                 packageId is null ? _packageId : new PackageId(packageId) ,
-                (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                     fileSystem: _fileSystem,
                     _reporter,
@@ -472,7 +472,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             return new ToolUpdateGlobalOrToolPathCommand(
                 result,
-                (location, forwardArguments) => (_store, _store, new ToolPackageDownloaderMock(
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, new ToolPackageDownloaderMock(
                     store: _store,
                     fileSystem: _fileSystem,
                     _reporter,

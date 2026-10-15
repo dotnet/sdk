@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 
 namespace Microsoft.DotNet.Workloads.Workload
@@ -15,6 +16,20 @@ namespace Microsoft.DotNet.Workloads.Workload
     /// </summary>
     internal abstract class WorkloadCommandBase : CommandBase
     {
+        protected static WorkloadId ParseWorkloadId(string workloadId)
+        {
+            try
+            {
+                return new WorkloadId(workloadId);
+            }
+            catch (ArgumentException)
+            {
+                throw new GracefulException(
+                    string.Format(Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings.WorkloadNotRecognized, workloadId),
+                    isUserError: false);
+            }
+        }
+
         /// <summary>
         /// The package downloader to use for acquiring NuGet packages.
         /// </summary>
@@ -85,7 +100,7 @@ namespace Microsoft.DotNet.Workloads.Workload
         public WorkloadCommandBase(
             ParseResult parseResult,
             CliOption<VerbosityOptions> verbosityOptions = null,
-            IReporter reporter = null,
+            IReporter? reporter = null,
             string tempDirPath = null,
             INuGetPackageDownloader nugetPackageDownloader = null) : base(parseResult)
         {

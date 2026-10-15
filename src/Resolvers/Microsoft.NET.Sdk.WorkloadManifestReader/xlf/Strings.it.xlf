@@ -117,11 +117,6 @@
         <target state="translated">Il carico di lavoro '{0}' di reindirizzamento ha chiavi diverse da ' Redirect-to '</target>
         <note />
       </trans-unit>
-      <trans-unit id="ShouldInstallAWorkloadSet">
-        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
-        <target state="translated">I carichi di lavoro sono configurati per l'installazione e l'aggiornamento con le versioni del carico di lavoro, ma non ne sono stati trovati. Eseguire il "ripristino del carico di lavoro dotnet" per installare una versione del carico di lavoro.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnexpectedTokenAtOffset">
         <source>Unexpected token '{0}' at offset {1}</source>
         <target state="translated">Token '{0}' imprevisto alla posizione di offset {1}</target>

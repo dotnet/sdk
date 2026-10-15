@@ -77,15 +77,17 @@ namespace Microsoft.DotNet.Cli
             return option;
         }
 
+        internal static Dictionary<CliOption, Dictionary<CliCommand, string>> HelpDescriptionCustomizations = new();
+
         public static CliOption<T> WithHelpDescription<T>(this CliOption<T> option, CliCommand command, string helpText)
         {
-            if (Parser.HelpDescriptionCustomizations.ContainsKey(option))
+            if (HelpDescriptionCustomizations.ContainsKey(option))
             {
-                Parser.HelpDescriptionCustomizations[option].Add(command, helpText);
+                HelpDescriptionCustomizations[option].Add(command, helpText);
             }
             else
             {
-                Parser.HelpDescriptionCustomizations.Add(option, new Dictionary<CliCommand, string>() { { command, helpText } });
+                HelpDescriptionCustomizations.Add(option, new Dictionary<CliCommand, string>() { { command, helpText } });
             }
 
             return option;

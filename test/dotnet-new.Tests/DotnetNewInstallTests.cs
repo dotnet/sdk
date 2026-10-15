@@ -42,21 +42,22 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [Theory]
-        [InlineData("-i")]
-        [InlineData("install")]
-        public void CanInstallRemoteNuGetPackage_LatestVariations(string commandName)
+        [InlineData("::")]
+        [InlineData("@")]
+        public void CanInstallRemoteNuGetPackage_LatestVariations(string separator)
         {
+            var commandName = "install";
             CommandResult command1 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
 
-            CommandResult command2 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::")
+            CommandResult command2 = new DotnetNewCommand(_log, commandName, $"Microsoft.DotNet.Common.ProjectTemplates.5.0{separator}")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
 
-            CommandResult command3 = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Common.ProjectTemplates.5.0::*")
+            CommandResult command3 = new DotnetNewCommand(_log, commandName, $"Microsoft.DotNet.Common.ProjectTemplates.5.0{separator}*")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -82,6 +83,23 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             Assert.Equal(command1.StdOut, command2.StdOut);
             Assert.Equal(command1.StdOut, command3Out);
+        }
+
+        [Fact]
+        public void CanInstallToPathWithAt()
+        {
+            string path = Path.Combine(Path.GetTempPath(), "repro@4");
+            try
+            {
+                Directory.CreateDirectory(path);
+                new DotnetCommand(_log, "new", "console", "-o", path, "-n", "myconsole").Execute().Should().Pass();
+                new DotnetCommand(_log, "add", "package", "--project", Path.Combine(path, "myconsole.csproj"), "Microsoft.Azure.Functions.Worker.ProjectTemplates", "-v", "4.0.5086", "--package-directory", path).Execute().Should().Pass();
+                new DotnetCommand(_log, "new", "install", Path.Combine(path, "microsoft.azure.functions.worker.projecttemplates/4.0.5086/microsoft.azure.functions.worker.projecttemplates.4.0.5086.nupkg")).Execute().Should().Pass();
+            }
+            finally
+            {
+                Directory.Delete(path, recursive: true);
+            }
         }
 
         [Theory]

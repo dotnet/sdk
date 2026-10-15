@@ -13,8 +13,8 @@ namespace Microsoft.DotNet.Cli
         public VSTestForwardingApp(IEnumerable<string> argsToForward)
             : base(GetVSTestExePath(), argsToForward)
         {
-            (bool hasRootVariable, string rootVariableName, string rootValue) = GetRootVariable();
-            if (!hasRootVariable)
+            Dictionary<string, string> variables = GetVSTestRootVariables();
+            foreach (var (rootVariableName, rootValue) in variables)
             {
                 WithEnvironmentVariable(rootVariableName, rootValue);
                 VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
@@ -37,15 +37,18 @@ namespace Microsoft.DotNet.Cli
             return Path.Combine(AppContext.BaseDirectory, VstestAppName);
         }
 
-        internal static (bool hasRootVariable, string rootVariableName, string rootValue) GetRootVariable()
+        internal static Dictionary<string, string> GetVSTestRootVariables()
         {
-            string rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
-            bool hasRootVariable = Environment.GetEnvironmentVariable(rootVariableName) != null;
-            string rootValue = hasRootVariable ? null : Path.GetDirectoryName(new Muxer().MuxerPath);
-
-            // We rename env variable to support --arch switch that relies on DOTNET_ROOT/DOTNET_ROOT(x86)
-            // We provide VSTEST_WINAPPHOST_ only in case of testhost*.exe removing VSTEST_WINAPPHOST_ prefix and passing as env vars.
-            return (hasRootVariable, $"VSTEST_WINAPPHOST_{rootVariableName}", rootValue);
+            // Gather the current .NET SDK dotnet.exe location and forward it to vstest.console.dll so it can use it
+            // to setup DOTNET_ROOT for testhost.exe, to find the same installation of NET SDK that is running `dotnet test`.
+            // This way if we have private installation of .NET SDK, the testhost.exe will be able to use the same private installation.
+            // The way to set the environment is complicated and depends on the version of testhost, so we leave that implementation to vstest console,
+            // we just tell it where the current .net SDK is located, and what is the architecture of it. We don't have more information than that here.
+            return new()
+            {
+                ["VSTEST_DOTNET_ROOT_PATH"] = Path.GetDirectoryName(new Muxer().MuxerPath),
+                ["VSTEST_DOTNET_ROOT_ARCHITECTURE"] = RuntimeInformation.ProcessArchitecture.ToString()
+            };
         }
     }
 }

@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
@@ -354,7 +356,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         (MsiPayload msi, string msiPackageId, string installationFolder) GetWorkloadSetPayload(string workloadSetVersion, DirectoryPath? offlineCache)
         {
             SdkFeatureBand workloadSetFeatureBand;
-            string msiPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
+            string msiPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
             string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand).ToString();
 
             Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({workloadSetVersion}) to {msiPackageId} ({msiPackageVersion}).");
@@ -1125,7 +1127,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             bool shouldLog = true)
         {
             ISynchronizingLogger logger =
-                shouldLog ? new TimestampedFileLogger(Path.Combine(Path.GetTempPath(), $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log"))
+                shouldLog ? new TimestampedFileLogger(Path.Combine(Path.GetTempPath(), string.Create(CultureInfo.InvariantCulture, $"Microsoft.NET.Workload_{Environment.ProcessId}_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log")))
                           : new NullInstallerLogger();
             InstallClientElevationContext elevationContext = new(logger);
 
@@ -1183,5 +1185,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
             Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
         }
+
+        // This method should never be called for this kind of installer. It is challenging to get this information from an MSI
+        // and totally unnecessary as the information is identical from a file-based installer. It was added to IInstaller only
+        // to facilitate testing. As a consequence, it does not need to be implemented.
+        public WorkloadSet GetWorkloadSetContents(string workloadVersion) => throw new NotImplementedException();
     }
 }

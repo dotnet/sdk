@@ -1,12 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Runtime.Versioning;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.DotNet;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Win32;
@@ -278,21 +281,14 @@ public static class WindowsUtils
     }
 
     /// <summary>
-    /// Validates that a path component (such as a package ID or version) does not contain
-    /// directory separator characters or parent-directory traversal sequences.
+    /// Validates that a path component (such as a package ID or version) can be used as a single
+    /// file or directory name on the current operating system.
     /// </summary>
     /// <param name="component">The path component to validate.</param>
     /// <returns><see langword="true"/> if the component is safe to use in <see cref="Path.Combine"/>; otherwise <see langword="false"/>.</returns>
     public static bool ValidatePathComponent(string component)
     {
-        if (string.IsNullOrWhiteSpace(component))
-        {
-            return false;
-        }
-
-        return !component.Contains(Path.DirectorySeparatorChar)
-            && !component.Contains(Path.AltDirectorySeparatorChar)
-            && !component.Contains("..");
+        return PathComponentUtilities.IsValidPathComponent(component);
     }
 
     /// <summary>

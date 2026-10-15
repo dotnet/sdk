@@ -75,7 +75,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        targets into their packages are expected to disable the generation of $(PackageId).props files and
        to manually import build\Microsoft.AspNetCore.StaticWebAssets.props in their custom props files.
    -->
-  <Target Name="GenerateStaticWebAssetsPackFiles" AfterTargets="GenerateStaticWebAssetsManifest">
+  <Target Name="GenerateStaticWebAssetsPackFiles" Condition="'$(IsPackable)' == 'true'" AfterTargets="GenerateStaticWebAssetsManifest">
 
     <ItemGroup>
 

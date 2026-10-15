@@ -139,6 +139,9 @@
   <data name="CommandOptionNoLaunchProfileDescription" xml:space="preserve">
     <value>Do not attempt to use launchSettings.json to configure the application.</value>
   </data>
+  <data name="CommandOptionNoLaunchProfileArgumentsDescription" xml:space="preserve">
+    <value>Do not use arguments specified in launch profile to run the application.</value>
+  </data>
   <data name="ConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to run for. The default for most projects is 'Debug'.</value>
   </data>

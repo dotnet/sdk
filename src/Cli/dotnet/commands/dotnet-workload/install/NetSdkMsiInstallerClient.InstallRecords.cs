@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                     {
                         using RegistryKey workloadSetPackageVersionKey = workloadSetFeatureBandKey.OpenSubKey(workloadSetPackageVersion);
 
-                        string workloadSetVersion = WorkloadManifestUpdater.WorkloadSetPackageVersionToWorkloadSetVersion(new SdkFeatureBand(workloadSetFeatureBand), workloadSetPackageVersion);
+                        string workloadSetVersion = WorkloadSetVersion.FromWorkloadSetPackageVersion(new SdkFeatureBand(workloadSetFeatureBand), workloadSetPackageVersion);
 
                         WorkloadSetRecord record = new WorkloadSetRecord()
                         {

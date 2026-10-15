@@ -16,7 +16,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 "3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE",
                 "AA12DA22A49BCE7D5C1AE64CC1F3D892F150DA76140F210ABD2CBFFCA2C18A27",
-                "566A31882BE208BE4422F7CFD66ED09F5D4524A5994F50CCC8B05EC0528C1353"
+                "566A31882BE208BE4422F7CFD66ED09F5D4524A5994F50CCC8B05EC0528C1353",
+                "9A1B131BEE0605433056A4EA3815478A8E177961A968C6C0027C1093D1FEB630"
             };
 
         private readonly HashSet<string> _upperFirstPartyCertificateThumbprints =
@@ -74,10 +75,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
         }
 
-        private static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput)
+        public static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput, string currentWorkingDirectory = null)
         {
             var args = new[] { "verify", "--all", nupkgToVerify.Value };
-            var command = new DotNetCommandFactory(alwaysRunOutOfProc: true)
+            var command = new DotNetCommandFactory(alwaysRunOutOfProc: true, currentWorkingDirectory)
                 .Create("nuget", args);
 
             var commandResult = command.CaptureStdOut().Execute();

@@ -1,5 +1,11 @@
 ﻿{
   "author": "Microsoft",
   "name": "解决方案文件",
-  "description": "创建不包含项目的空解决方案"
+  "description": "创建不包含项目的空解决方案",
+  "symbols/Format/description": "选择解决方案文件的格式: sln 或 slnx。",
+  "symbols/Format/displayName": "解决方案文件格式",
+  "symbols/Format/choices/sln/description": "解决方案文件",
+  "symbols/Format/choices/sln/displayName": ".sln 格式",
+  "symbols/Format/choices/slnx/description": "XML 解决方案文件",
+  "symbols/Format/choices/slnx/displayName": ".slnx 格式"
 }

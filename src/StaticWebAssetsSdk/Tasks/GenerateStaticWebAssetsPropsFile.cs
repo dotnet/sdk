@@ -25,7 +25,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private const string CopyToOutputDirectory = "CopyToOutputDirectory";
         private const string CopyToPublishDirectory = "CopyToPublishDirectory";
         private const string OriginalItemSpec = "OriginalItemSpec";
-
+        private const string FileLength = "FileLength";
+        private const string LastWriteTime = "LastWriteTime";
 
         [Required]
         public string TargetPropsFilePath { get; set; }
@@ -82,6 +83,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                     new XElement(Integrity, element.GetMetadata(Integrity)),
                     new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
                     new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory)),
+                    new XElement(FileLength, element.GetMetadata(FileLength)),
+                    new XElement(LastWriteTime, element.GetMetadata(LastWriteTime)),
                     new XElement(OriginalItemSpec, fullPathExpression)));
             }
 
@@ -138,16 +141,13 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 
         private static string ComputeHash(byte[] data)
         {
+#if !NET9_0_OR_GREATER
             using var sha256 = SHA256.Create();
-
             var result = sha256.ComputeHash(data);
+#else
+            var result = SHA256.HashData(data);
+#endif
             return Convert.ToBase64String(result);
-        }
-
-        private XmlWriter GetXmlWriter(XmlWriterSettings settings)
-        {
-            var fileStream = new FileStream(TargetPropsFilePath, FileMode.Create);
-            return XmlWriter.Create(fileStream, settings);
         }
 
         private bool ValidateArguments()
@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             return true;
         }
 
-        private bool HasMetadata(ITaskItem item, string metadataName)
+        private static bool HasMetadata(ITaskItem item, string metadataName)
         {
             foreach (var name in item.MetadataNames)
             {
