@@ -33,6 +33,8 @@ namespace Microsoft.NET.Publish.Tests
         [DataRow("optimized", true)]
         [DataRow("full", true)]
         [DataRow("no-build", true)]
+        [DataRow("build-optimized", true)]
+        [DataRow("optimized-custom-root", true)]
         [DataRow("optimized", false)]
         public void NativeAot_publish_includes_explicitly_requested_shims(string mode, bool requestShims)
         {
@@ -49,14 +51,15 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["PackAsTool"] = "true";
             testProject.AdditionalProperties["RuntimeIdentifier"] = RuntimeInformation.RuntimeIdentifier;
             testProject.AdditionalProperties["ToolCommandName"] = _customToolCommandName;
+            if (mode == "optimized-custom-root")
+            {
+                testProject.AdditionalProperties["PackagedShimOutputRootDirectory"] = "$(MSBuildProjectDirectory)/custom-shims";
+            }
             if (requestShims)
             {
                 testProject.AdditionalProperties["PackAsToolShimRuntimeIdentifiers"] = "win-x64";
             }
-            if (mode == "full")
-            {
-                testProject.AdditionalProperties["UseOptimizedPublish"] = "false";
-            }
+            testProject.AdditionalProperties["UseOptimizedPublish"] = (mode != "full").ToString();
             var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{mode}_{requestShims}")
                 .WithProjectChanges(project => project.Root.Add(XElement.Parse("""
                     <Target Name="RejectShimGenerationWithNoBuild" BeforeTargets="GenerateShimsAssets"
@@ -64,7 +67,7 @@ namespace Microsoft.NET.Publish.Tests
                       <Error Text="NoBuild must reuse previously generated shims" />
                     </Target>
                     """)));
-            if (mode == "no-build")
+            if (mode == "no-build" || mode == "build-optimized")
             {
                 new BuildCommand(testAsset).Execute().Should().Pass();
             }
@@ -77,12 +80,24 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishDirectory = publishCommand.GetOutputDirectory(
                 ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: RuntimeInformation.RuntimeIdentifier).FullName;
-            File.Exists(Path.Combine(publishDirectory, "shims", "win-x64", _customToolCommandName + ".exe"))
-                .Should().Be(requestShims);
+            var publishedShim = Path.Combine(publishDirectory, "shims", "win-x64", _customToolCommandName + ".exe");
+            File.Exists(publishedShim).Should().Be(requestShims);
             File.Exists(Path.Combine(publishDirectory, $"{testProject.Name}{Constants.ExeSuffix}")).Should().BeTrue();
-            if (mode == "optimized")
+            if (mode != "full" && mode != "no-build")
             {
                 Directory.GetFiles(Path.GetDirectoryName(publishDirectory)).Should().BeEmpty();
+            }
+
+            byte[] shimContents = requestShims ? File.ReadAllBytes(publishedShim) : [];
+            if (requestShims)
+            {
+                File.Delete(publishedShim);
+            }
+            publishCommand.Execute("/p:NoBuild=true").Should().Pass();
+            File.Exists(publishedShim).Should().Be(requestShims);
+            if (requestShims)
+            {
+                File.ReadAllBytes(publishedShim).Should().Equal(shimContents);
             }
         }
 
@@ -101,17 +116,24 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [TestMethod]
-        public void It_contains_dependencies_shims_with_no_build()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void It_contains_dependencies_shims_with_no_build(bool selfContained)
         {
-            var testAsset = SetupTestAsset();
+            var testAsset = SetupTestAsset($"{nameof(It_contains_dependencies_shims_with_no_build)}_{selfContained}");
+            string[] arguments = selfContained
+                ? [$"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}", "/p:SelfContained=true"]
+                : [];
             var buildCommand = new BuildCommand(testAsset);
-            buildCommand.Execute();
+            buildCommand.Execute(arguments).Should().Pass();
 
             var publishCommand = new PublishCommand(testAsset);
 
-            publishCommand.Execute("/p:NoBuild=true");
+            publishCommand.Execute([.. arguments, "/p:NoBuild=true"]).Should().Pass();
 
-            publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework)
+            publishCommand.GetOutputDirectory(
+                targetFramework: ToolsetInfo.CurrentTargetFramework,
+                runtimeIdentifier: selfContained ? RuntimeInformation.RuntimeIdentifier : "")
                 .Sub("shims")
                 .Sub("win-x64")
                 .EnumerateFiles().Should().Contain(f => f.Name == _customToolCommandName + ".exe");

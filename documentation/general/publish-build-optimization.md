@@ -66,6 +66,10 @@ Shims are generated before incremental cleanup and publish file collection, so r
 `publish\shims\<rid>\` assets are preserved without copying the managed deployment to
 the build directory. Projects without requested shims do not add this step, and no-build
 publish continues to locate and reuse shims from a previous build rather than generate them.
+Generation, incremental-build discovery, and no-build discovery share the staging directory
+`$(PackagedShimOutputRootDirectory)\shims\$(TargetFramework)\`. It does not depend on
+`SelfContained`, which can be inferred differently during build and publish. This allows
+both Build and optimized publish outputs to be reused by a subsequent no-build publish.
 
 ### PublishTrimmed (IL Trimming)
 
