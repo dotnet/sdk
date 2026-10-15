@@ -144,6 +144,46 @@ public class BuildProjects
     }
 
     [TestMethod]
+    [DataRow("device;InjectedProperty=true", "device%3bInjectedProperty=true")]
+    [DataRow("device,InjectedProperty=true", "device%2CInjectedProperty=true")]
+    [DataRow("device%3BInjectedProperty=true", "device%253BInjectedProperty=true")]
+    [DataRow("\"device\";InjectedProperty=true", "%22device%22%3bInjectedProperty=true")]
+    public async Task SingleProject_DeviceIdIsEscaped(string deviceId, string escapedDeviceId)
+    {
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [escapedDeviceId]);
+        var project = Path.Combine(dir.Path, "Project.csproj");
+        File.WriteAllText(project, $"""
+        <Project>
+          <PropertyGroup>
+            <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+          </PropertyGroup>
+          <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+            <ItemGroup>
+              <Devices Include="{escapedDeviceId}" />
+            </ItemGroup>
+          </Target>
+        </Project>
+        """);
+
+        using var context = CreateContext([project]);
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(project, entryPointFilePath: null)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.ProjectOptions with { TargetFramework = ToolsetInfo.CurrentTargetFramework },
+            frameworkSelector: null,
+            deviceSelector: (_, _) => throw new AssertFailedException("A single device should be selected automatically"),
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(deviceId, result.SelectedDevice);
+        AssertEx.SequenceEqual(
+        [
+            $"restore {project} -p A=1 -consoleLoggerParameters:NoSummary",
+            $"build {project} -p A=1 --framework {ToolsetInfo.CurrentTargetFramework} -p:Device={escapedDeviceId} --no-restore"
+        ], context.BuildInvocations);
+    }
+
+    [TestMethod]
     public async Task MultipleProjects()
     {
         var dir = TestAssetsManager.CreateTestDirectory();

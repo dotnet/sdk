@@ -187,6 +187,69 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    [DataRow("device;InjectedProperty=true", "device%3bInjectedProperty=true", false)]
+    [DataRow("device;InjectedProperty=true", "device%3bInjectedProperty=true", true)]
+    [DataRow("device,InjectedProperty=true", "device%2CInjectedProperty=true", false)]
+    [DataRow("device,InjectedProperty=true", "device%2CInjectedProperty=true", true)]
+    [DataRow("device%3BInjectedProperty=true", "device%253BInjectedProperty=true", false)]
+    [DataRow("device%3BInjectedProperty=true", "device%253BInjectedProperty=true", true)]
+    [DataRow("\"device\";InjectedProperty=true", "%22device%22%3bInjectedProperty=true", false)]
+    [DataRow("\"device\";InjectedProperty=true", "%22device%22%3bInjectedProperty=true", true)]
+    public void ItPreservesLiteralDeviceIds(string deviceId, string escapedDeviceId, bool explicitDevice)
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: $"{explicitDevice}-{escapedDeviceId}")
+            .WithSource();
+        string projectPath = Path.Combine(testInstance.Path, "DotnetRunDevices.csproj");
+        string projectContents = File.ReadAllText(projectPath).Replace(
+            "</Project>",
+            $"""
+              <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+                <ItemGroup>
+                  <Devices Include="{escapedDeviceId}" />
+                </ItemGroup>
+              </Target>
+              <Target Name="GenerateDeviceInfo" />
+            </Project>
+            """);
+
+        foreach (string target in new[] { "CoreCompile", "DeployToDevice", "ComputeRunArguments" })
+        {
+            projectContents = projectContents.Replace(
+                "</Project>",
+                $"""
+                  <Target Name="_ValidateDeviceFor{target}" BeforeTargets="{target}">
+                    <Error Condition="'$(InjectedProperty)' != '' Or '$(Device)' != '{escapedDeviceId}'"
+                           Text="Device ID was not preserved as a literal property value." />
+                  </Target>
+                </Project>
+                """);
+        }
+
+        File.WriteAllText(projectPath, projectContents);
+        File.WriteAllText(Path.Combine(testInstance.Path, "Program.cs"), """System.Console.WriteLine("Device escaping validated.");""");
+
+        var args = new List<string> { "--framework", ToolsetInfo.CurrentTargetFramework, "--no-interactive", "-bl" };
+        if (explicitDevice)
+        {
+            args.AddRange(["--device", deviceId]);
+        }
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(args.ToArray())
+            .Should().Pass()
+            .And.HaveStdOutContaining("Device escaping validated.");
+
+        AssertTargetInBinlog(Path.Combine(testInstance.Path, "msbuild.binlog"), "_ValidateDeviceForCoreCompile",
+            targets => targets.Should().ContainSingle());
+        foreach (string target in new[] { "DeployToDevice", "ComputeRunArguments" })
+        {
+            AssertTargetInBinlog(Path.Combine(testInstance.Path, "msbuild-dotnet-run.binlog"), $"_ValidateDeviceFor{target}",
+                targets => targets.Should().ContainSingle());
+        }
+    }
+
+    [TestMethod]
     public void ItCreatesBinlogWhenRequestedForDeviceSelection()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")

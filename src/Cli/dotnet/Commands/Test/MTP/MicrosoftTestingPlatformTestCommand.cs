@@ -1494,7 +1494,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // Add Device to MSBuild args so the build and evaluation see it
         return buildOptions with
         {
-            MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:Device={buildOptions.Device}"]
+            MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:Device={MSBuildPropertyEscaping.Escape(buildOptions.Device!)}"]
         };
     }
 
