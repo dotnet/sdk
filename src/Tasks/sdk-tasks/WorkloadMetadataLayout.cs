@@ -4,8 +4,12 @@
 namespace Microsoft.DotNet.Build.Tasks;
 
 /// <summary>
-/// Discovers only feature-band userlocal markers owned by the source-only layout.
+/// Discovers feature-band userlocal markers in a repository build staging layout.
 /// </summary>
+/// <remarks>
+/// Use only with build staging directories, not installed SDKs, where other
+/// feature bands or workloads may still depend on the markers reported as stale.
+/// </remarks>
 public sealed class GetWorkloadUserLocalLayout : Task
 {
     [Required]
