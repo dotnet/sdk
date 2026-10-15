@@ -20,6 +20,56 @@ namespace ManifestReaderTests
 
         string GetSampleManifestPath(string name) => Path.Combine(SampleProjectPath, name);
 
+        [Theory]
+        [InlineData("../escape")]
+        [InlineData(".")]
+        [InlineData("..")]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData(null)]
+        public void PathBasedIdsRejectInvalidComponents(string? id)
+        {
+            Assert.Throws<ArgumentException>(() => new ManifestId(id!));
+            Assert.Throws<ArgumentException>(() => new WorkloadId(id!));
+            Assert.Throws<ArgumentException>(() => new WorkloadPackId(id!));
+        }
+
+        [WindowsOnlyTheory]
+        [InlineData(@"..\escape")]
+        [InlineData(@"C:\escape")]
+        [InlineData("C:relative")]
+        [InlineData("invalid:name")]
+        [InlineData("trailingdot.")]
+        [InlineData("trailingspace ")]
+        public void PathBasedIdsRejectWindowsInvalidComponents(string id)
+        {
+            Assert.Throws<ArgumentException>(() => new ManifestId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadPackId(id));
+        }
+
+        [Fact]
+        public void InvalidWorkloadIdInManifestThrowsManifestFormatException()
+        {
+            const string manifest = @"{
+    ""version"": ""1.0.0"",
+    ""workloads"": {
+        ""../escape"": {
+            ""description"": ""Invalid workload""
+        }
+    }
+}";
+
+            using MemoryStream manifestStream = new(System.Text.Encoding.UTF8.GetBytes(manifest));
+
+            var exception = Assert.Throws<WorkloadManifestFormatException>(
+                () => WorkloadManifestReader.ReadWorkloadManifest("Invalid", manifestStream, "invalid.json"));
+
+            Assert.IsType<ArgumentException>(exception.InnerException);
+            Assert.Contains("valid path component", exception.Message);
+            Assert.Contains("at offset", exception.Message);
+        }
+
         [Fact]
         public void ItCanDeserialize()
         {
