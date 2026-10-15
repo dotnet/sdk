@@ -15,10 +15,10 @@ internal static partial class WebServerProcessStateObserver
     private static readonly Regex s_nowListeningRegex = GetNowListeningOnRegex();
     private static readonly Regex s_aspireDashboardUrlRegex = GetAspireDashboardUrlRegex();
 
-    [GeneratedRegex(@"Now listening on: (?<url>[^\s]*)\s*$", RegexOptions.Compiled)]
+    [GeneratedRegex(@"Now listening on: (?<url>[^\s]+)\s*$", RegexOptions.Compiled)]
     private static partial Regex GetNowListeningOnRegex();
 
-    [GeneratedRegex(@"Login to the dashboard at (?<url>[^\s]*)\s*$", RegexOptions.Compiled)]
+    [GeneratedRegex(@"Login to the dashboard at (?<url>[^\s]+)\s*$", RegexOptions.Compiled)]
     private static partial Regex GetAspireDashboardUrlRegex();
 
     public static Action<OutputLine> GetObserver(bool isAspireHost, Action<string> onServerListening)
