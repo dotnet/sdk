@@ -156,7 +156,6 @@ jobs:
         - script: eng/common/build.sh
                     $(_CIBuild)
                     --configuration $(_BuildConfig)
-                    $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
                     -p:Test=false
