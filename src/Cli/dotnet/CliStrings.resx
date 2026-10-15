@@ -350,6 +350,15 @@ setx PATH "%PATH%;{0}"
   <data name="ToolInstallationWaitingWithProcess" xml:space="preserve">
     <value>Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</value>
   </data>
+  <data name="ToolPackageMutationTimeout" xml:space="preserve">
+    <value>Timed out waiting for another operation on tool '{0}' to complete.</value>
+  </data>
+  <data name="ToolPackageMutationWaiting" xml:space="preserve">
+    <value>Another operation on tool '{0}' is in progress. Waiting for it to complete...</value>
+  </data>
+  <data name="ToolPackageMutationWaitingWithProcess" xml:space="preserve">
+    <value>Process {1} ({2}) is modifying tool '{0}'. Waiting for it to complete...</value>
+  </data>
   <data name="ToolPackageNotATool" xml:space="preserve">
     <value>Package {0} is not a .NET tool.</value>
   </data>

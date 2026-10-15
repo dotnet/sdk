@@ -62,56 +62,84 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         )
     {
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
+        var expectedIdentity = new PackageIdentity(packageId.ToString(), packageVersion);
+        string targetNupkgPath = versionFolderPathResolver.GetPackageFilePath(expectedIdentity.Id, expectedIdentity.Version);
+        string hashPath = versionFolderPathResolver.GetHashPath(expectedIdentity.Id, expectedIdentity.Version);
+        string metadataPath = versionFolderPathResolver.GetNupkgMetadataPath(expectedIdentity.Id, expectedIdentity.Version);
+        string packageDirectory = versionFolderPathResolver.GetInstallPath(expectedIdentity.Id, expectedIdentity.Version);
 
-        string? folderToDeleteOnFailure = null;
-        try
+        ConcurrencyUtilities.ExecuteWithFileLocked(targetNupkgPath, () =>
         {
-            var _downloadActivity = Activities.Source.StartActivity("download-tool");
-            _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
-            var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
-                        includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
-            _downloadActivity?.Stop();
-            folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
-
-            // look for package on disk and read the version
-            NuGetVersion version;
-            string packageHash;
-            string hashPath;
-
-            using (FileStream packageStream = File.OpenRead(packagePath))
+            if (File.Exists(metadataPath))
             {
-                PackageArchiveReader reader = new(packageStream);
-                version = new NuspecReader(reader.GetNuspec()).GetVersion();
-
-                packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
-                hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
+                return;
             }
 
-            if (verbosity.IsDetailedOrDiagnostic())
+            if (File.Exists(hashPath))
             {
-                Reporter.Output.WriteLine($"Extracting package {packageId}@{packageVersion} to {packagePath}");
-            }
-            // Extract the package
-            var _extractActivity = Activities.Source.StartActivity("extract-tool");
-            var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
-            nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
-            _extractActivity?.Stop();
-
-            // NuGet treats the hash as a package completion marker, so publish it only after extraction succeeds.
-            PublishPackageHash(hashPath, packageHash);
-
-            return version;
-        }
-        catch
-        {
-            //  If something fails, don't leave a folder with partial contents (such as a .nupkg but no hash or extracted contents)
-            if (folderToDeleteOnFailure != null && Directory.Exists(folderToDeleteOnFailure))
-            {
-                Directory.Delete(folderToDeleteOnFailure, true);
+                string packageHash = File.ReadAllText(hashPath);
+                using FileStream packageStream = File.OpenRead(targetNupkgPath);
+                using PackageArchiveReader reader = new(packageStream);
+                string contentHash = reader.GetContentHash(CancellationToken.None, () => packageHash);
+                PublishPackageMetadata(metadataPath, contentHash);
+                return;
             }
 
-            throw;
-        }
+            try
+            {
+                var _downloadActivity = Activities.Source.StartActivity("download-tool");
+                _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
+                string packagePath = nugetPackageDownloader.DownloadPackageAsync(
+                    packageId,
+                    packageVersion,
+                    packageSourceLocation,
+                    includeUnlisted: includeUnlisted,
+                    downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
+                _downloadActivity?.Stop();
+
+                string packageHash;
+                string contentHash;
+                using (FileStream packageStream = File.OpenRead(packagePath))
+                {
+                    packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(packageStream));
+                    packageStream.Position = 0;
+                    using PackageArchiveReader reader = new(packageStream);
+                    PackageIdentity actualIdentity = reader.GetIdentity();
+                    if (!PackageIdentityComparer.Default.Equals(expectedIdentity, actualIdentity))
+                    {
+                        throw new PackagingException(
+                            $"The downloaded package identity '{actualIdentity}' does not match the requested package identity '{expectedIdentity}'.");
+                    }
+
+                    contentHash = reader.GetContentHash(CancellationToken.None, () => packageHash);
+                }
+
+                if (verbosity.IsDetailedOrDiagnostic())
+                {
+                    Reporter.Output.WriteLine($"Extracting package {packageId}@{packageVersion} to {packagePath}");
+                }
+
+                var _extractActivity = Activities.Source.StartActivity("extract-tool");
+                nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(packageDirectory)).ConfigureAwait(false).GetAwaiter().GetResult();
+                _extractActivity?.Stop();
+
+                // NuGet readers treat these files as completion markers, so publish them only after extraction succeeds.
+                PublishPackageHash(hashPath, packageHash);
+                PublishPackageMetadata(metadataPath, contentHash);
+            }
+            catch
+            {
+                // If something fails, don't leave a folder with partial contents.
+                if (Directory.Exists(packageDirectory))
+                {
+                    Directory.Delete(packageDirectory, true);
+                }
+
+                throw;
+            }
+        });
+
+        return packageVersion;
     }
 
     /// <summary>
@@ -142,6 +170,32 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
     protected virtual void MovePackageHash(string temporaryHashPath, string hashPath)
     {
         File.Move(temporaryHashPath, hashPath, overwrite: true);
+    }
+
+    /// <summary>
+    /// Publishes NuGet's canonical completion marker so other NuGet writers preserve the completed package.
+    /// </summary>
+    /// <remarks>The metadata is written to a sibling temporary file and moved last while the NuGet package lock is held.</remarks>
+    private static void PublishPackageMetadata(string metadataPath, string contentHash)
+    {
+        string metadataDirectory = Path.GetDirectoryName(metadataPath)!;
+        Directory.CreateDirectory(metadataDirectory);
+        string temporaryMetadataPath = Path.Combine(metadataDirectory, Path.GetRandomFileName());
+
+        try
+        {
+            NupkgMetadataFileFormat.Write(
+                temporaryMetadataPath,
+                new NupkgMetadataFile
+                {
+                    ContentHash = contentHash
+                });
+            File.Move(temporaryMetadataPath, metadataPath, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporaryMetadataPath);
+        }
     }
 
     protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)

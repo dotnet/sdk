@@ -260,7 +260,69 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         TimeSpan? waitTimeout = null,
         IReporter? errorReporter = null)
     {
-        string lockFilePath = GetToolInstallLockFilePath(packageInstallRoot, packageId, packageVersion);
+        return AcquireToolLock(
+            GetToolInstallLockFilePath(packageInstallRoot, packageId, packageVersion),
+            initialWaitTimeout,
+            waitTimeout,
+            errorReporter,
+            lockOwner => lockOwner is not null
+                ? string.Format(
+                    CliStrings.ToolInstallationWaitingWithProcess,
+                    packageId,
+                    packageVersion.ToNormalizedString(),
+                    lockOwner.ProcessId,
+                    lockOwner.ProcessName)
+                : string.Format(
+                    CliStrings.ToolInstallationWaiting,
+                    packageId,
+                    packageVersion.ToNormalizedString()),
+            () => string.Format(
+                CliStrings.ToolInstallationTimeout,
+                packageId,
+                packageVersion.ToNormalizedString()));
+    }
+
+    /// <summary>
+    /// Serializes all global-tool mutations for one package ID through transaction completion.
+    /// </summary>
+    /// <remarks>
+    /// The lock identity intentionally excludes the version so install, update, and uninstall operations cannot mutate
+    /// different versions of the same global tool concurrently.
+    /// </remarks>
+    internal static FileStream AcquireToolPackageMutationLock(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId,
+        TimeSpan? initialWaitTimeout = null,
+        TimeSpan? waitTimeout = null,
+        IReporter? errorReporter = null)
+    {
+        return AcquireToolLock(
+            GetToolPackageMutationLockFilePath(packageInstallRoot, packageId),
+            initialWaitTimeout,
+            waitTimeout,
+            errorReporter,
+            lockOwner => lockOwner is not null
+                ? string.Format(
+                    CliStrings.ToolPackageMutationWaitingWithProcess,
+                    packageId,
+                    lockOwner.ProcessId,
+                    lockOwner.ProcessName)
+                : string.Format(
+                    CliStrings.ToolPackageMutationWaiting,
+                    packageId),
+            () => string.Format(
+                CliStrings.ToolPackageMutationTimeout,
+                packageId));
+    }
+
+    private static FileStream AcquireToolLock(
+        string lockFilePath,
+        TimeSpan? initialWaitTimeout,
+        TimeSpan? waitTimeout,
+        IReporter? errorReporter,
+        Func<FileLockOwner?, string> getWaitingMessage,
+        Func<string> getTimeoutMessage)
+    {
         Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
 
         initialWaitTimeout ??= s_lockInitialWaitTimeout;
@@ -286,27 +348,13 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 if (!waitingReported && stopwatch.Elapsed >= initialWaitTimeout)
                 {
                     FileLockOwner? lockOwner = FileLockOwnerFinder.TryGetFileLockOwner(lockFilePath);
-                    string message = lockOwner is not null
-                        ? string.Format(
-                            CliStrings.ToolInstallationWaitingWithProcess,
-                            packageId,
-                            packageVersion.ToNormalizedString(),
-                            lockOwner.ProcessId,
-                            lockOwner.ProcessName)
-                        : string.Format(
-                            CliStrings.ToolInstallationWaiting,
-                            packageId,
-                            packageVersion.ToNormalizedString());
-                    errorReporter.WriteLine(message);
+                    errorReporter.WriteLine(getWaitingMessage(lockOwner));
                     waitingReported = true;
                 }
 
                 if (stopwatch.Elapsed >= waitTimeout)
                 {
-                    throw new ToolPackageException(string.Format(
-                        CliStrings.ToolInstallationTimeout,
-                        packageId,
-                        packageVersion.ToNormalizedString()));
+                    throw new ToolPackageException(getTimeoutMessage());
                 }
 
                 Thread.Sleep(s_lockRetryDelay);
@@ -327,11 +375,25 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         NuGetVersion packageVersion)
     {
         string lockIdentity = $"{packageId.ToString().ToLowerInvariant()}\n{packageVersion.ToNormalizedString().ToLowerInvariant()}";
+        return GetToolInstallLockFilePath(packageInstallRoot, lockIdentity);
+    }
+
+    /// <summary>
+    /// Creates one stable lock path for every version of a global-tool package.
+    /// </summary>
+    /// <remarks>The separate identity prevents collisions with the version-specific shared-cache locks.</remarks>
+    internal static string GetToolPackageMutationLockFilePath(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId)
+    {
+        string lockIdentity = $"{packageId.ToString().ToLowerInvariant()}\n<all-versions>";
+        return GetToolInstallLockFilePath(packageInstallRoot, lockIdentity);
+    }
+
+    private static string GetToolInstallLockFilePath(DirectoryPath packageInstallRoot, string lockIdentity)
+    {
         string lockFileName = $"{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(lockIdentity)))}.lock";
-        return Path.Combine(
-            Path.GetFullPath(packageInstallRoot.Value),
-            ToolPackageStoreAndQuery.LockDirectory,
-            lockFileName);
+        return Path.Combine(Path.GetFullPath(packageInstallRoot.Value), ToolPackageStoreAndQuery.LockDirectory, lockFileName);
     }
 
     /// <summary>
