@@ -395,7 +395,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
                 }
-                defaultSources = defaultSources.Where(source => sources.Contains(source.Name)).ToList();
+                defaultSources = defaultSources.Where(source => sources.Contains(source.Name, StringComparer.OrdinalIgnoreCase)).ToList();
                 if (defaultSources.Count == 0)
                 {
                     throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));

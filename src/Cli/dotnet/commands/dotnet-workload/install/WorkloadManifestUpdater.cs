@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
         {
             string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
-            var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
+            var installStateContents = InstallStateContents.FromPath(path);
             return installStateContents.UseWorkloadSets ?? false;
         }
 
