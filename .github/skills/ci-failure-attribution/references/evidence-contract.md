@@ -146,6 +146,9 @@ segments, retaining the canonical text as `signatureMechanism` alongside the raw
 mechanism. Assertion messages, including timestamp-only multiline expected values,
 are not treated as transport logs. Timestamp-only log lines are retained as values.
 Stable GUIDs such as COM CLSIDs and other expected/actual values remain distinct.
+Temporary/workspace normalization recognizes absolute path-token roots only,
+not interior `tmp`, `var/tmp`, or workspace-like segments. Unix paths retain
+case sensitivity; Windows root matching remains case-insensitive.
 Signatures normalize CRLF transport line endings to LF but preserve spaces, tabs,
 line breaks, and boundary whitespace. Task/test diagnostic extraction also preserves
 that whitespace; different assertion values must not become matching failures.

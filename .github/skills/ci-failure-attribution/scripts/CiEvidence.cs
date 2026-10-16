@@ -409,8 +409,8 @@ static class Comparison
         const string GuidPattern = @"[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}\b";
         text = Regex.Replace(text, $@"(?i)(\b(?:HelixJob|(?:Correlation|Activity|Request)[ _-]?Id)\s*[:=]\s*){GuidPattern}", "$1<guid>");
         text = Regex.Replace(text, $@"(?i)(https://helix\.dot\.net/(?:api/)?jobs/){GuidPattern}", "$1<guid>");
-        text = Regex.Replace(text, @"(?i)(?:[A-Z]:\\(?:Users\\[^\\\s]+\\AppData\\Local\\)?(?:tmp|temp)\\|/(?:tmp|var/tmp)/)", "<temporary-root>/");
-        text = Regex.Replace(text, @"(?i)(?:[A-Z]:\\a\\_work\\\d+\\s\\|/mnt/vss/_work/\d+/s/)", "<workspace>/");
+        text = Regex.Replace(text, @"(?<![\w./\\-])(?:(?i:[A-Z]:\\(?:Users\\[^\\\s]+\\AppData\\Local\\)?(?:tmp|temp)\\)|/(?:tmp|var/tmp)/)", "<temporary-root>/");
+        text = Regex.Replace(text, @"(?<![\w./\\-])(?:(?i:[A-Z]:\\a\\_work\\\d+\\s\\)|/mnt/vss/_work/\d+/s/)", "<workspace>/");
         text = text.Replace("\r\n", "\n", StringComparison.Ordinal);
         return $"{observation.Text("kind")}|{observation.Text("name")}|{text}";
     }

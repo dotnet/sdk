@@ -161,6 +161,30 @@ sealed class Checks(string outputDirectory, string? filter)
             Assert(row["matchingOccurrences"]!.GetValue<int>() == 0 && row["signature"]!.GetValue<string>().Contains(@"8.0\A.dll", StringComparison.Ordinal),
                 "Meaningful temporary-path suffix erased.");
         });
+        await CaseAsync("Temporary path normalization respects absolute roots and Unix casing", async () =>
+        {
+            foreach ((string first, string second) in new[]
+            {
+                ("/opt/pkg/tmp/A.targets", "/opt/pkg/var/tmp/A.targets"),
+                ("/TMP/A.targets", "/tmp/A.targets"),
+                ("/opt/pkg/mnt/vss/_work/1/s/A.targets", "/mnt/vss/_work/1/s/A.targets"),
+                ("/MNT/vss/_work/1/s/A.targets", "/mnt/vss/_work/1/s/A.targets")
+            })
+            {
+                JsonObject fixture = Fixtures.New("existing-flake");
+                Observation(Current(fixture))["mechanism"] = "Missing " + first;
+                Observation(Previous(fixture))["mechanism"] = "Missing " + second;
+                JsonNode row = Row(await CompareAsync(fixture));
+                Assert(row["matchingOccurrences"]!.GetValue<int>() == 0 &&
+                    row["signature"]!.GetValue<string>().Contains(first, StringComparison.Ordinal),
+                    "An interior path segment or case-sensitive Unix root was treated as a volatile directory.");
+            }
+            JsonObject roots = Fixtures.New("existing-flake");
+            Observation(Current(roots))["mechanism"] = "Missing '/tmp/pkg/A.targets'";
+            Observation(Previous(roots))["mechanism"] = "Missing '/var/tmp/pkg/A.targets'";
+            Assert(Row(await CompareAsync(roots))["matchingOccurrences"]!.GetValue<int>() == 1,
+                "Known absolute temporary roots stopped normalizing.");
+        });
         await CaseAsync("Normalize volatile GUIDs without matching an empty mechanism", async () =>
         {
             JsonObject fixture = Fixtures.New();
