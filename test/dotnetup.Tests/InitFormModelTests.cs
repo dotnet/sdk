@@ -127,6 +127,33 @@ public class InitFormModelTests
         model.SelectedAccessMode().Should().Be(DotnetAccessMode.Admin);
     }
 
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void AdminAccessMode_HidesMigrationAndRestoresSelectionWhenLeaving()
+    {
+        var model = CreateModel(
+            new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
+            [CreateMigration("10.0.1xx", "10.0.100")],
+            DotnetAccessMode.Everywhere);
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+        int everywhereIndex = accessModeField.SelectedIndex;
+        int adminIndex = accessModeField.Choices
+            .Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == DotnetAccessMode.Admin.ToString()).index;
+        migrationField.IsVisible.Should().BeTrue();
+        model.MigrateSelected().Should().BeTrue();
+
+        accessModeField.SelectChoice(adminIndex);
+
+        migrationField.IsVisible.Should().BeFalse();
+        model.MigrateSelected().Should().BeFalse();
+
+        accessModeField.SelectChoice(everywhereIndex);
+
+        migrationField.IsVisible.Should().BeTrue();
+        model.MigrateSelected().Should().BeTrue();
+    }
+
     [TestMethod]
     [DataRow(DotnetAccessMode.None, false)]
     [DataRow(DotnetAccessMode.Shell, true)]

@@ -231,7 +231,8 @@ internal sealed class InitFormModel
                 defaults.MigrateSystemInstalls,
                 isVisible: () =>
                 {
-                    return MigrationWorkflow.FilterMigrationSelections(
+                    return accessModes[accessModeField.SelectedIndex] != DotnetAccessMode.Admin
+                        && MigrationWorkflow.FilterMigrationSelections(
                         defaults.Migrations,
                         GetCurrentInstallSpecs(channelField, channelTokens, defaults.DefaultInstallSpecs)).Count > 0;
                 });
