@@ -1394,6 +1394,7 @@ public class NativeLibraryClass
         public void Aot_optimized_publish_targets_are_reviewed_when_CoreBuildDependsOn_changes()
         {
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "CoreBuildDependsOn", true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var getValuesCommand = new GetValuesCommand(testAsset, "CoreBuildDependsOn")
@@ -1427,6 +1428,93 @@ public class NativeLibraryClass
                 "GenerateBuildDependencyFile",
                 "GenerateBuildRuntimeConfigurationFiles"],
                 because: "CoreBuildDependsOn changed. Review added or removed targets for their impact on optimized publish, update the optimized target chain if necessary, then update this expected list.");
+
+            var optimizedPublishTargetsCommand = new GetValuesCommand(testAsset, "_BeforeOptimizedPublishTargets")
+            {
+                ShouldCompile = false
+            };
+
+            optimizedPublishTargetsCommand
+                .Execute()
+                .Should().Pass();
+
+            optimizedPublishTargetsCommand.GetValues().Should().Equal([
+                "BuildOnlySettings",
+                "PrepareForBuild",
+                "PreBuildEvent",
+                "ResolveReferences",
+                "PrepareResources",
+                "ResolveKeySource",
+                "Compile",
+                "CreateSatelliteAssemblies"]);
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        public void NativeAot_publish_includes_resources_added_before_ResolveReferences()
+        {
+            var projectName = "NativeAotGeneratedResource";
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.RecordPropertiesBeforeTarget("Publish");
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                testProject.AdditionalProperties["StripSymbols"] = "true";
+            }
+            testProject.SourceFiles[$"{projectName}.cs"] = """
+                using System;
+                using System.IO;
+
+                class Test
+                {
+                    static int Main()
+                    {
+                        using var resource = typeof(Test).Assembly.GetManifestResourceStream("!Generated");
+                        if (resource is null)
+                        {
+                            Console.Error.WriteLine("Generated resource is missing");
+                            return 1;
+                        }
+
+                        using var reader = new StreamReader(resource);
+                        var contents = reader.ReadToEnd().Trim();
+                        Console.WriteLine(contents);
+                        return contents == "Generated resource contents" ? 0 : 2;
+                    }
+                }
+                """;
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project =>
+                {
+                    project.Root.Add(XElement.Parse("""
+                        <Target Name="AddGeneratedResource" BeforeTargets="ResolveReferences">
+                          <WriteLinesToFile File="$(IntermediateOutputPath)generated.bin"
+                                            Lines="Generated resource contents"
+                                            Overwrite="true" />
+                          <ItemGroup>
+                            <EmbeddedResource Include="$(IntermediateOutputPath)generated.bin" LogicalName="!Generated" />
+                          </ItemGroup>
+                        </Target>
+                        """));
+                });
+
+            var publishCommand = new PublishCommand(testAsset);
+            publishCommand.Execute("/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
+            var publishedExe = Path.Combine(publishDirectory, $"{projectName}{Constants.ExeSuffix}");
+            IsNativeImage(publishedExe).Should().BeTrue();
+
+            new RunExeCommand(Log, publishedExe)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Generated resource contents");
         }
 
         [TestMethod]
