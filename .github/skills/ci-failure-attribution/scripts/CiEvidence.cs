@@ -558,6 +558,10 @@ static class Comparison
             }
         }
         limitations.Add("Queue, toolchain and platform require source/log verification");
+        if (string.IsNullOrWhiteSpace(other.Text("branch")) || string.IsNullOrWhiteSpace(other.Text("reason")))
+        {
+            limitations.Add("Unverified trigger provenance");
+        }
         return new(knownIdentity && differences.Count == 0 && executed, differences.ToArray(), limitations.ToArray(), executions);
     }
 
@@ -676,7 +680,9 @@ static class Comparison
                         buildId = other.Text("id"), url = other["url"], branch = other["branch"], commit = other["commit"],
                         reason = other["reason"], complete = other.Flag("complete"),
                         sameSource = other.Text("commit").Length > 0 && other.Text("commit") == build.Text("commit"),
-                        samePrHead = other.Text("prHeadSha").Length > 0 && other.Text("prHeadSha") == build.Text("prHeadSha"),
+                        samePrHead = build.Text("prHeadSha").Length > 0 &&
+                            (other.Text("prHeadSha") == build.Text("prHeadSha") || other.Text("commit") == build.Text("prHeadSha")),
+                        independentProvenance = KnownNonPrExecution(other),
                         eligible = compatibility.Eligible, limitations = compatibility.Limitations, differences = compatibility.Differences,
                         outcomes = compatibility.Executions.Select(e => e.Text("outcome")).ToArray(),
                         matchingFailure = compatibility.Executions.Any(e =>
@@ -697,8 +703,7 @@ static class Comparison
                     mostRecentPassingExecution = passing.FirstOrDefault(), matchingOccurrences = matching.Length,
                     independentMatchingOccurrences = matching.Count(c => c.Text("commit").Length > 0 && build.Text("commit").Length > 0 &&
                         !c.Flag("sameSource") && !c.Flag("samePrHead") &&
-                        !string.Equals(c.Text("reason"), "pullRequest", StringComparison.OrdinalIgnoreCase) &&
-                        !c.Text("branch").StartsWith("refs/pull/", StringComparison.Ordinal)),
+                        c.Flag("independentProvenance")),
                     observedMixedOutcomes = passing.Length > 0 && matching.Length > 0
                 }));
             }
@@ -711,6 +716,12 @@ static class Comparison
             interpretation = "Comparison facts only. Eligible controls still require verification of their listed limitations."
         });
     }
+
+    private static bool KnownNonPrExecution(JsonNode build) =>
+        (build.Text("branch").StartsWith("refs/heads/", StringComparison.Ordinal) ||
+         build.Text("branch").StartsWith("refs/tags/", StringComparison.Ordinal)) &&
+        build.Text("reason").ToLowerInvariant() is "manual" or "individualci" or "batchedci" or
+            "schedule" or "scheduleforced" or "buildcompletion" or "resourcetrigger";
 
     public static void Write(JsonObject comparison, string outputDirectory)
     {

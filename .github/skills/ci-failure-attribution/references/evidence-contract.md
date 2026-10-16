@@ -133,6 +133,9 @@ parameter/resource differences, and test selection still need verification.
 `observedMixedOutcomes` is not a "flaky and unrelated" verdict.
 `independentMatchingOccurrences` excludes same-source executions, matching PR
 heads, PR-triggered builds, and `refs/pull/` validations in both invocation modes.
+It requires a known non-PR trigger and a heads/tags ref; null or unknown trigger
+provenance is not proof of independence. Direct manual execution of the tested
+PR head also remains PR evidence even without a populated `prHeadSha` field.
 Selecting a PR validation with `--build` alone does not turn earlier attempts into
 independent evidence, even when their merge SHAs differ. Their ordinary matching
 history and candidate source boundaries remain available.

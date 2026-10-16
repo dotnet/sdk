@@ -451,6 +451,27 @@ sealed class Checks(string outputDirectory)
                 }
             }
         });
+        await CaseAsync("Unknown trigger provenance and the tested PR head are not independent history", async () =>
+        {
+            foreach ((string key, string? value) in new (string, string?)[]
+            {
+                ("branch", null), ("branch", ""), ("branch", " \t"), ("reason", null), ("reason", ""), ("reason", "unknown")
+            })
+            {
+                JsonObject fixture = Fixtures.New("existing-flake");
+                Previous(fixture)[key] = value;
+                JsonNode row = Row(await CompareAsync(fixture));
+                Assert(row["matchingOccurrences"]!.GetValue<int>() == 1 &&
+                    row["independentMatchingOccurrences"]!.GetValue<int>() == 0,
+                    "A missing or unknown trigger established independent history or discarded ordinary matching evidence.");
+            }
+            JsonObject manual = Fixtures.New("existing-flake");
+            Previous(manual)["commit"] = Current(manual)["prHeadSha"]!.DeepClone();
+            Previous(manual)["reason"] = "manual";
+            JsonNode head = Row(await CompareAsync(manual));
+            Assert(head["matchingOccurrences"]!.GetValue<int>() == 1 && head["independentMatchingOccurrences"]!.GetValue<int>() == 0,
+                "A manual execution of the tested PR head was called independent.");
+        });
         await CaseAsync("Preceding failure and older passing control remain different facts", async () =>
         {
             JsonObject fixture = Fixtures.New("existing-flake");
