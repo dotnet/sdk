@@ -129,7 +129,7 @@ See the algorithm's [replacement smoke test](self-update-algorithm.md#smoke-test
 
 The built-in `--version` action runs during `ParseResult.Invoke` and returns before any `CommandBase` is constructed, so it never reaches the gate. That is load-bearing rather than incidental: `P` holds both `A` and `U` exclusively while the child runs, so a gated child would block on its own opens and every transaction would fail. If the verification path ever becomes a subcommand, that subcommand must be classified `safe`.
 
-The verifier disables telemetry and suppresses the first-run banner in the child environment, supplies EOF through a null stdin handle, and uses `Process.RunAndCaptureTextAsync` to capture both output streams and terminate the child on cancellation. Execution remains time-limited, but output capture is no longer capped at 4 KiB. A private environment request makes dotnetup startup use UTF-8 for this child, matching the parent's decoder even when normal interactive encoding preferences differ. `--version` follows ordinary startup; there is no separate hidden identity action or embedded-record scan.
+The verifier disables telemetry and suppresses the first-run banner in the child environment, supplies EOF through a null stdin handle, and uses `Process.ReadAllTextAsync` to capture both output streams. Execution remains time-limited, but output capture is no longer capped at 4 KiB. It retains explicit process ownership to kill the process tree and wait up to five seconds for termination before file operations resume; the one-shot `Process.RunAndCaptureTextAsync` API does not wait for termination when cancellation interrupts output capture. A private environment request makes dotnetup startup use UTF-8 for this child, matching the parent's decoder even when normal interactive encoding preferences differ. `--version` follows ordinary startup; there is no separate hidden identity action or embedded-record scan.
 
 ## Rollback
 
@@ -137,7 +137,7 @@ See the algorithm's [rollback behavior](self-update-algorithm.md#roll-back).
 
 [Workflow tests](../../../../../test/dotnetup.Tests/SelfUpdateWorkflowTests.cs) inject a reported kill error or termination timeout through the existing verification hook and exercise real file rollback and lock retention. This tests the recovery policy without launching an unkillable process; it does not test an operating-system termination failure itself.
 
-[SelfUpdateVerifier](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs) delegates process termination to the runtime and reports cancellation as a verification timeout. [SelfUpdateWorkflow](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) retains the original verification exception when reporting verification or rollback failure.
+[SelfUpdateVerifier](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs) reports cancellation as a verification timeout. [SelfUpdateWorkflow](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) retains the original verification exception when reporting verification or rollback failure.
 
 Let `rejectedPath` be `D/dotnetup.exe.old.<t>.rejected`, a transaction-specific sibling path that must not already exist. When the canonical path exists, `P` first renames the rejected executable aside, then renames the original backup back to the canonical path:
 

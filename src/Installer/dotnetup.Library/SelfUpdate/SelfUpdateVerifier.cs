@@ -82,19 +82,17 @@ internal static class SelfUpdateVerifier
         var startInfo = CreateStartInfo(installedPath);
         startInfo.StandardInputHandle = standardInput;
         using var cancellation = new CancellationTokenSource(timeout);
+        using var process = Process.Start(startInfo)!;
         try
         {
-            var result = await Process.RunAndCaptureTextAsync(startInfo, cancellation.Token).ConfigureAwait(false);
-            if (result.ExitStatus.Canceled)
-            {
-                throw new OperationCanceledException(cancellation.Token);
-            }
+            var (stdout, stderr) = await process.ReadAllTextAsync(cancellation.Token).ConfigureAwait(false);
+            await process.WaitForExitAsync(cancellation.Token).ConfigureAwait(false);
 
-            var version = result.StandardOutput.Trim();
-            if (result.ExitStatus.ExitCode != 0 || !ReleaseVersion.TryParse(version, out _))
+            var version = stdout.Trim();
+            if (process.ExitCode != 0 || !ReleaseVersion.TryParse(version, out _))
             {
-                var diagnostic = new string(result.StandardError.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
-                throw new IOException($"Verification exited with code {result.ExitStatus.ExitCode} or returned invalid version output. Stderr: {diagnostic}");
+                var diagnostic = new string(stderr.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
+                throw new IOException($"Verification exited with code {process.ExitCode} or returned invalid version output. Stderr: {diagnostic}");
             }
 
             return version;
@@ -102,6 +100,22 @@ internal static class SelfUpdateVerifier
         catch (OperationCanceledException exception)
         {
             throw new IOException("The verification child exceeded its timeout.", exception);
+        }
+        finally
+        {
+            if (!process.HasExited)
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException) when (process.HasExited)
+                {
+                }
+
+                using var termination = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                await process.WaitForExitAsync(termination.Token).ConfigureAwait(false);
+            }
         }
     }
 
