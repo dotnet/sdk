@@ -313,11 +313,21 @@ internal sealed class DefaultHotReloadClient(
         return QueueUpdateBatchAsync(
             sendAndReceive: async batchId =>
             {
-                await transport.WriteAsync((byte)request.Type, request.WriteAsync, applyOperationCancellationToken);
+                try
+                {
+                    await transport.WriteAsync((byte)request.Type, request.WriteAsync, applyOperationCancellationToken);
 
-                var success = await ReceiveUpdateResponseAsync(applyOperationCancellationToken);
-                Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
-                return success;
+                    var success = await ReceiveUpdateResponseAsync(applyOperationCancellationToken);
+                    Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
+                    return success;
+                }
+                catch (Exception e) when (transport.IsExpectedConnectionTermination(e, applyOperationCancellationToken))
+                {
+                    applyOperationCancellationToken.ThrowIfCancellationRequested();
+
+                    // pipe might be disconnected before the cancellation token is signaled:
+                    throw new OperationCanceledException();
+                }
             },
             applyOperationCancellationToken);
     }
