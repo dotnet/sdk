@@ -1705,7 +1705,13 @@ sealed class Checks(string outputDirectory, string? filter)
             JsonNode row = comparison["comparisons"]!.AsArray().First(r => r!["kind"]!.GetValue<string>() == "work-item")!;
             Assert(row["mechanism"]!.GetValue<string>().Contains("MSB4036", StringComparison.Ordinal) &&
                 row["mostRecentPassingExecution"]!["buildId"]!.GetValue<string>() == "2", "Console or executed control lost.");
-            JsonNode item = Current(dossier)["observations"]!.AsArray().First(o => o!["kind"]!.GetValue<string>() == "work-item")!;
+            JsonNode item = Current(dossier)["observations"]!.AsArray().First(o =>
+                o!["kind"]!.GetValue<string>() == "work-item" && o["outcome"]!.GetValue<string>() == "Failed")!;
+            JsonNode passedItem = Previous(dossier)["observations"]!.AsArray().First(o =>
+                o!["kind"]!.GetValue<string>() == "work-item" && o["outcome"]!.GetValue<string>() == "Passed")!;
+            Assert(new[] { "kind", "name", "lane", "queue", "submissionContexts", "contextOnly" }
+                .All(key => JsonNode.DeepEquals(item[key], passedItem[key])),
+                "Passed and failed work-item observations have inconsistent shared identity fields.");
             Assert(item["artifacts"]!["binlogs"]!.AsArray().Count == 1, "Actual artifact inventory lost.");
             string missing = Path.Combine(outputDirectory, "helix-missing-console");
             Directory.CreateDirectory(missing);

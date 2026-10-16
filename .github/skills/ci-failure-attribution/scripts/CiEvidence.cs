@@ -1299,14 +1299,11 @@ sealed class Collector
         }
         string lane = contexts.Count == 0 || !queueKnown ? "" :
             $"{jobData.Text("QueueId")} > {string.Join(" | ", contexts.Order(StringComparer.Ordinal))}";
+        string[] submissionContexts = contexts.Order(StringComparer.Ordinal).ToArray();
         foreach (JsonObject item in passed.Objects())
         {
-            record.Rows("observations").Add(JsonData.Object(new
-            {
-                id = $"helix:{job}:{item.Text("Name")}", kind = "work-item", name = item["Name"], lane,
-                queue = jobData["QueueId"], submissionContexts = contexts.Order(StringComparer.Ordinal).ToArray(),
-                outcome = "Passed", mechanism = "", url = item["ConsoleLogUrl"], contextOnly = false
-            }));
+            record.Rows("observations").Add(WorkItemObservation(item, job, lane, jobData["QueueId"],
+                submissionContexts, "Passed", ""));
         }
         foreach (JsonObject item in failed.Objects())
         {
@@ -1364,14 +1361,20 @@ sealed class Collector
             {
                 record["complete"] = false;
             }
-            record.Rows("observations").Add(JsonData.Object(new
-            {
-                id = $"helix:{job}:{item.Text("Name")}", kind = "work-item", name = item["Name"], lane,
-                queue = jobData["QueueId"], submissionContexts = contexts.Order(StringComparer.Ordinal).ToArray(),
-                outcome = "Failed", mechanism, signatureMechanism, url = item["ConsoleLogUrl"], contextOnly = false, artifacts = files.Data
-            }));
+            JsonObject observation = WorkItemObservation(item, job, lane, jobData["QueueId"],
+                submissionContexts, "Failed", mechanism);
+            observation["signatureMechanism"] = signatureMechanism;
+            observation["artifacts"] = files.Data?.DeepClone();
+            record.Rows("observations").Add(observation);
         }
     }
+
+    private static JsonObject WorkItemObservation(JsonObject item, string job, string lane, JsonNode? queue,
+        string[] submissionContexts, string outcome, string mechanism) => JsonData.Object(new
+        {
+            id = $"helix:{job}:{item.Text("Name")}", kind = "work-item", name = item["Name"], lane,
+            queue, submissionContexts, outcome, mechanism, url = item["ConsoleLogUrl"], contextOnly = false
+        });
 
     private async Task WindowAsync(JsonObject record, JsonObject? baseline, string observationId)
     {
