@@ -71,6 +71,11 @@ Test results are acquired through authenticated `az rest` GET requests with
 `detailsToInclude=SubResults` and explicit 200-result pagination. The raw
 [Azure result contract](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/list?view=azure-devops-rest-7.1)
 retains `resultGroupType` and recursive `subResults`, unlike hlx's typed projection.
+Full retrieval does not specify an outcome filter, so valid unknown/unexecuted
+states are not silently omitted. Diagnostic-only retrieval excludes `Passed`
+but includes all other documented Azure outcomes. Observations retain the raw
+`producerOutcome`; None/Unspecified/Paused/InProgress remain unknown and
+NotImpacted remains skipped, never an executed pass.
 Aggregate results use `kind: test-group` and remain context. Child observations
 include their display-name hierarchy and `parentResultId`; an aggregate pass
 cannot stand in for an unexecuted parameterized case. Missing children of grouped

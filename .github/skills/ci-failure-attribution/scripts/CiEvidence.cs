@@ -1056,7 +1056,7 @@ sealed class Collector
     {
         "passed" or "succeeded" => "Passed",
         "failed" or "error" or "timeout" or "aborted" or "canceled" or "abandoned" => "Failed",
-        "skipped" or "notexecuted" or "notapplicable" => "Skipped",
+        "skipped" or "notexecuted" or "notapplicable" or "notimpacted" => "Skipped",
         _ => "Unknown"
     };
 
@@ -1214,10 +1214,13 @@ sealed class Collector
         {
             FindHelix(run.Text("name"), helixJobs,
                 string.IsNullOrWhiteSpace(run.Text("name")) ? "" : $"run:{RunLane(run.Text("name"))}");
-            string outcomes = fullResults ? "Passed,Failed,Error,Timeout,Aborted,Inconclusive,NotExecuted,NotApplicable,Blocked,Warning"
-                : "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning";
+            string query = "detailsToInclude=SubResults";
+            if (!fullResults)
+            {
+                query += "&outcomes=Unspecified,None,Failed,Inconclusive,Timeout,Aborted,Blocked,NotExecuted,Warning,Error,NotApplicable,Paused,InProgress,NotImpacted";
+            }
             JsonArray results = await AzureRowsAsync(record, $"test/Runs/{run.Text("id")}/results",
-                $"detailsToInclude=SubResults&outcomes={outcomes}");
+                query);
             foreach (JsonObject test in results.Objects())
             {
                 AddTestResult(record, run, test, $"test:{run.Text("id")}:{test.Text("id")}",
@@ -1269,7 +1272,8 @@ sealed class Collector
             runAttempt = int.TryParse(Regex.Match(run.Text("name"), RunAttemptPattern).Groups["attempt"].Value,
                 NumberStyles.None, CultureInfo.InvariantCulture, out int attempt) ? attempt : (int?)null,
             lane = RunLane(run.Text("name")),
-            outcome, mechanism = string.Join('\n', new[] { test.Text("errorMessage"), test.Text("stackTrace") }.Where(s => s.Length > 0)),
+            outcome, producerOutcome = test["outcome"],
+            mechanism = string.Join('\n', new[] { test.Text("errorMessage"), test.Text("stackTrace") }.Where(s => s.Length > 0)),
             url = $"{record.Text("url")}&view=ms.vss-test-web.build-test-results-tab&runId={run.Text("id")}&resultId={id.Split(':')[2].Split('/')[0]}",
             contextOnly = group || test.Text("testCaseTitle").EndsWith(" Work Item", StringComparison.OrdinalIgnoreCase)
         }));

@@ -1109,7 +1109,7 @@ sealed class Checks(string outputDirectory, string? filter)
                 }
             });
             Fixtures.Save(replay, "az", Fixtures.RunArguments("3"), new { id = 3, name = "Linux", state = "Completed" });
-            Fixtures.Save(replay, "az", Fixtures.ResultArguments("3", "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning"),
+            Fixtures.Save(replay, "az", Fixtures.ResultArguments("3", Fixtures.DiagnosticOutcomes),
                 new { count = 0, value = new JsonArray() });
             JsonObject dossier = await CollectAsync(replay, expectedError: "Evidence is incomplete");
             JsonNode run = Current(dossier)["testRuns"]![0]!;
@@ -1279,6 +1279,54 @@ sealed class Checks(string outputDirectory, string? filter)
             Assert(Row(await CompareAsync(legacy))["mostRecentPassingExecution"] is null,
                 "An older projected parent with unknown hierarchy established a case-level passing control.");
         });
+        await CaseAsync("Raw result acquisition retains every official Azure outcome without inventing passes", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "all-result-outcomes");
+            string[] outcomes =
+            [
+                "Unspecified", "None", "Passed", "Failed", "Inconclusive", "Timeout", "Aborted", "Blocked",
+                "NotExecuted", "Warning", "Error", "NotApplicable", "Paused", "InProgress", "NotImpacted"
+            ];
+            Fixtures.Collection(replay);
+            Fixtures.TestRun(replay, "3");
+            foreach (string outcome in outcomes)
+            {
+                Fixtures.IssueSearch(replay, "Example." + outcome);
+            }
+            Fixtures.Save(replay, "az", Fixtures.RunArguments("3"), new
+            {
+                id = 3, name = "Linux", state = "Completed", incompleteTests = 0,
+                totalTests = outcomes.Length, failedTests = 1, passedTests = 1
+            });
+            foreach (bool full in new[] { true, false })
+            {
+                var results = outcomes.Where(o => full || o != "Passed").Select((outcome, index) => new
+                {
+                    id = index + 1, automatedTestName = "Example." + outcome, testCaseTitle = "Example." + outcome,
+                    outcome, errorMessage = "", stackTrace = ""
+                }).ToArray();
+                Fixtures.Save(replay, "az", Fixtures.ResultArguments("3", full ? "" : Fixtures.DiagnosticOutcomes),
+                    new { count = results.Length, value = results });
+                JsonObject dossier = await CollectAsync(replay, full ? null : ["--test-result-limit", "1"], "Evidence is incomplete");
+                JsonObject comparison = await CompareAsync(dossier);
+                JsonNode[] tests = Current(dossier)["observations"]!.AsArray()
+                    .Where(o => o!["kind"]!.GetValue<string>() == "test").Select(o => o!).ToArray();
+                Assert(tests.Length == results.Length && tests.All(t =>
+                    t["outcome"]!.GetValue<string>() == (t["producerOutcome"]!.GetValue<string>() switch
+                    {
+                        "Passed" => "Passed",
+                        "Failed" or "Error" or "Timeout" or "Aborted" => "Failed",
+                        "NotExecuted" or "NotApplicable" or "NotImpacted" => "Skipped",
+                        _ => "Unknown"
+                    })) && tests.Any(t => t["producerOutcome"]!.GetValue<string>() == "None") &&
+                    !comparison["coverageGaps"]!.AsArray().Any(g =>
+                        g!.GetValue<string>().Contains("Test result coverage for run", StringComparison.Ordinal)) &&
+                    dossier["acquisitions"]!.AsArray().Where(a =>
+                        a!["description"]!.GetValue<string>().Contains("/test/Runs/3/results?", StringComparison.Ordinal))
+                        .All(a => a!["description"]!.GetValue<string>().Contains("&outcomes=", StringComparison.Ordinal) != full),
+                    "Outcome filtering lost valid states, created false passes, or caused artificial counter mismatches.");
+            }
+        });
         await CaseAsync("Diagnostic-only results reconcile failures without requiring omitted passes", async () =>
         {
             string replay = Path.Combine(outputDirectory, "diagnostic-result-counts");
@@ -1291,7 +1339,7 @@ sealed class Checks(string outputDirectory, string? filter)
                     Fixtures.FirstResult(data)["totalTests"] = 2;
                     Fixtures.FirstResult(data)["passedTests"] = id == "3" ? 1 : 2;
                 });
-                Fixtures.Save(replay, "az", Fixtures.ResultArguments(id, "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning"), id == "3" ? new
+                Fixtures.Save(replay, "az", Fixtures.ResultArguments(id, Fixtures.DiagnosticOutcomes), id == "3" ? new
                     {
                         count = 1, value = new[]
                         {
@@ -1307,7 +1355,7 @@ sealed class Checks(string outputDirectory, string? filter)
                     g!.GetValue<string>().Contains("Test result coverage for run", StringComparison.Ordinal)) &&
                 comparison["comparisons"]!.AsArray().Any(r => r!["kind"]!.GetValue<string>() == "test"),
                 "Intentionally omitted passes caused a counter mismatch or discarded acquired failures.");
-            Fixtures.Save(replay, "az", Fixtures.ResultArguments("3", "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning"),
+            Fixtures.Save(replay, "az", Fixtures.ResultArguments("3", Fixtures.DiagnosticOutcomes),
                 new { count = 0, value = new JsonArray() });
             comparison = await CompareAsync(await CollectAsync(replay, ["--test-result-limit", "1"], "Evidence is incomplete"));
             Assert(comparison["coverageGaps"]!.AsArray().Any(g =>
@@ -1948,10 +1996,11 @@ static class Fixtures
         }
     }
     public static object Envelope() => new { ok = true, results = new JsonArray(), complete = true, truncated = false };
-    public static string[] ResultArguments(string id,
-        string outcomes = "Passed,Failed,Error,Timeout,Aborted,Inconclusive,NotExecuted,NotApplicable,Blocked,Warning", int skip = 0) =>
+    public const string DiagnosticOutcomes =
+        "Unspecified,None,Failed,Inconclusive,Timeout,Aborted,Blocked,NotExecuted,Warning,Error,NotApplicable,Paused,InProgress,NotImpacted";
+    public static string[] ResultArguments(string id, string outcomes = "", int skip = 0) =>
         ["rest", "--method", "GET", "--url",
-            $"https://dev.azure.com/dnceng-public/public/_apis/test/Runs/{id}/results?api-version=7.1&detailsToInclude=SubResults&outcomes={outcomes}&$skip={skip}&$top=200",
+            $"https://dev.azure.com/dnceng-public/public/_apis/test/Runs/{id}/results?api-version=7.1&detailsToInclude=SubResults{(outcomes.Length == 0 ? "" : "&outcomes=" + outcomes)}&$skip={skip}&$top=200",
             "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"];
     public static bool IsRawResults(JsonObject snapshot, string id) => snapshot["tool"]!.GetValue<string>() == "az" &&
         snapshot["arguments"]![4]!.GetValue<string>().Contains($"/test/Runs/{id}/results?", StringComparison.Ordinal);
@@ -2099,12 +2148,17 @@ static class Fixtures
         Save(directory, "hlx", ["azdo", "changes", BuildUrl("3"), "--all", "--json"], Envelope());
         foreach (string term in helix ? new[] { "MSB4036", "Example.WorkItem" } : new[] { "MSB4036" })
         {
-            foreach (string state in new[] { "open", "closed" })
-            {
-                string query = Uri.EscapeDataString($"{term} repo:dotnet/sdk is:issue is:{state}");
-                Save(directory, "gh", ["api", "--method", "GET", $"search/issues?q={query}&per_page=10"],
-                    new { total_count = 0, incomplete_results = false, items = new JsonArray() });
-            }
+            IssueSearch(directory, term);
+        }
+    }
+
+    public static void IssueSearch(string directory, string term)
+    {
+        foreach (string state in new[] { "open", "closed" })
+        {
+            string query = Uri.EscapeDataString($"{term} repo:dotnet/sdk is:issue is:{state}");
+            Save(directory, "gh", ["api", "--method", "GET", $"search/issues?q={query}&per_page=10"],
+                new { total_count = 0, incomplete_results = false, items = new JsonArray() });
         }
     }
 
