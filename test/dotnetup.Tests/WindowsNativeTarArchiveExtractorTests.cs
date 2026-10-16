@@ -13,18 +13,60 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [TestClass]
 public class WindowsNativeTarArchiveExtractorTests
 {
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [TestMethod]
     public void NativeTarProcessRunner_ExposesExitCodeAndStandardError()
     {
         var runner = new NativeTarProcessRunner();
 
         NativeTarProcessResult result = runner.Run(
-            "cmd.exe",
-            ["/d", "/c", "echo process failure 1>&2 & exit /b 7"]);
+            OperatingSystem.IsWindows() ? "cmd.exe" : "/bin/sh",
+            OperatingSystem.IsWindows()
+                ? ["/d", "/c", "echo process failure 1>&2 & exit /b 7"]
+                : ["-c", "echo 'process failure' >&2; exit 7"]);
 
         result.ExitCode.Should().Be(7);
         result.StandardError.Should().Contain("process failure");
         result.StartFailure.Should().BeNull();
+    }
+
+    [TestMethod]
+    public void NativeTarProcessRunner_MissingExecutableReturnsStartFailure()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        var runner = new NativeTarProcessRunner();
+
+        var result = runner.Run(Path.Combine(testEnv.TempRoot, "missing-executable"), []);
+
+        result.ExitCode.Should().BeNull();
+        result.StandardError.Should().BeEmpty();
+        result.StartFailure.Should().BeOfType<System.ComponentModel.Win32Exception>();
+    }
+
+    [TestMethod]
+    public void NativeTarProcessRunner_ProvidesStandardInputEof()
+    {
+        using var files = new SelfUpdateTestFiles(mode: "stdin-eof");
+        var runner = new NativeTarProcessRunner();
+
+        var result = runner.Run(files.Paths.InstalledPath, ["--version"]);
+
+        result.ExitCode.Should().Be(0);
+        result.StartFailure.Should().BeNull();
+        result.StandardError.Should().Contain("SelfUpdateProcess mode: stdin-eof");
+    }
+
+    [TestMethod]
+    public void NativeTarProcessRunner_DrainsLargeStandardErrorAndCapsDiagnostics()
+    {
+        using var files = new SelfUpdateTestFiles(mode: "stderr-flood");
+        var runner = new NativeTarProcessRunner();
+
+        var result = runner.Run(files.Paths.InstalledPath, ["--version"]);
+
+        result.ExitCode.Should().Be(0);
+        result.StartFailure.Should().BeNull();
+        var prefix = "SelfUpdateProcess mode: stderr-flood" + Environment.NewLine;
+        result.StandardError.Should().Be(prefix + new string('x', 16 * 1024 - prefix.Length));
     }
 
     [TestMethod]
