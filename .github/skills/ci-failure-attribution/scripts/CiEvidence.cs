@@ -462,6 +462,8 @@ static class Comparison
             {
                 yield return $"{context}: duplicate result IDs.";
             }
+            bool outcomesReconcile = run["totalTests"] is not null && distinct.Length == run.Number("totalTests") &&
+                distinct.All(o => o.Text("outcome") is "Passed" or "Failed" or "Skipped");
             foreach ((string counter, long count, bool exact) in new (string, long, bool)[]
             {
                 ("totalTests", distinct.Length, includePassed),
@@ -475,6 +477,10 @@ static class Comparison
                 }
                 if (run[counter] is null)
                 {
+                    if (counter == "failedTests" && outcomesReconcile)
+                    {
+                        continue;
+                    }
                     yield return $"{context}: missing {counter} counter.";
                     continue;
                 }
@@ -1213,6 +1219,20 @@ sealed class Collector
                 AddTestResult(record, run, test, $"test:{run.Text("id")}:{test.Text("id")}",
                     $"{test.Text("automatedTestName")} | {test.Text("testCaseTitle")}", null);
             }
+            JsonObject[] runResults = record.Rows("observations").Objects()
+                .Where(o => o.Text("kind") is "test" or "test-group" &&
+                    o["parentResultId"] is null &&
+                    o.Text("id").StartsWith($"test:{run.Text("id")}:", StringComparison.Ordinal))
+                .DistinctBy(o => o.Text("id"), StringComparer.Ordinal)
+                .ToArray();
+            run["acquiredResultCounts"] = JsonData.Object(new
+            {
+                total = runResults.Length,
+                failed = runResults.LongCount(o => o.Text("outcome") == "Failed"),
+                passed = runResults.LongCount(o => o.Text("outcome") == "Passed"),
+                skipped = runResults.LongCount(o => o.Text("outcome") == "Skipped"),
+                unknown = runResults.LongCount(o => o.Text("outcome") == "Unknown")
+            });
         }
         Acquisition artifacts = await ReadAsync("hlx", ["azdo", "artifacts", url, "--all", "--json"], list: true);
         if (artifacts.Complete)

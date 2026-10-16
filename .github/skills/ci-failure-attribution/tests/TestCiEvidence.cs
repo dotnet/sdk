@@ -1117,13 +1117,27 @@ sealed class Checks(string outputDirectory, string? filter)
                 (await CompareAsync(dossier))["coverageGaps"]!.AsArray().Any(g =>
                     g!.GetValue<string>().Contains("missing failedTests counter", StringComparison.Ordinal)),
                 "Typed default zero counters replaced missing raw metadata or supported complete empty coverage.");
+
+            replay = Path.Combine(outputDirectory, "derived-failed-count");
+            Fixtures.Collection(replay);
+            Fixtures.TestRun(replay, "3");
+            Fixtures.TestRun(replay, "2");
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>() == Fixtures.RunArguments("3")[4],
+                data => data.AsObject().Remove("failedTests"));
+            dossier = await CollectAsync(replay);
+            run = Current(dossier)["testRuns"]!.AsArray().Single(r => r!["id"]!.GetValue<int>() == 3)!;
+            JsonArray coverageGaps = (await CompareAsync(dossier))["coverageGaps"]!.AsArray();
+            Assert(run["failedTests"] is null && run["acquiredResultCounts"]!["failed"]!.GetValue<long>() == 1 &&
+                !coverageGaps.Any(g => g!.GetValue<string>().Contains("missing failedTests counter", StringComparison.Ordinal)),
+                "A missing raw failure counter remained a gap despite complete, reconciled result outcomes.");
         });
         await CaseAsync("Run counters expose missing, contradictory and duplicate test results", async () =>
         {
             string replay = Path.Combine(outputDirectory, "test-result-counts");
             foreach (string id in new[] { "3", "2" })
             {
-                foreach (string mutation in new[] { "empty", "total", "failed", "passed", "duplicate", "missing-counter" })
+                foreach (string mutation in new[] { "empty", "total", "failed", "passed", "duplicate" })
                 {
                     Fixtures.Collection(replay);
                     Fixtures.TestRun(replay, "3");
@@ -1147,9 +1161,6 @@ sealed class Checks(string outputDirectory, string? filter)
                                 case "passed":
                                     entry["failedTests"] = 0;
                                     entry["passedTests"] = 1;
-                                    break;
-                                case "missing-counter":
-                                    entry.Remove("failedTests");
                                     break;
                             }
                         }

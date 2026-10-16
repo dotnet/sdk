@@ -77,6 +77,11 @@ Azure REST, using hlx only to enumerate run IDs. Missing counters remain absent,
 not the typed producer's default zeros. Raw run IDs/build associations must match
 the requested evidence. An unknown total uses diagnostic-only result retrieval
 with explicit coverage gaps, not an invented zero-test run.
+Each run also records `acquiredResultCounts` from distinct top-level result
+observations. When a raw `failedTests` counter is absent, complete acquired
+outcomes reconcile to `totalTests`, and every outcome is known, the collected
+results establish the observed failure count without fabricating the missing
+producer counter. Otherwise the missing counter remains an explicit coverage gap.
 Test results are acquired through authenticated `az rest` GET requests with
 `detailsToInclude=SubResults` and explicit 200-result pagination. The raw
 [Azure result contract](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/list?view=azure-devops-rest-7.1)

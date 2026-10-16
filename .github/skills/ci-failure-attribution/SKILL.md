@@ -119,8 +119,10 @@ Check:
   or a green build without this scenario do not establish a passing control.
 - Scenario names and lanes are known. Matching blank names, empty composite test
   names, or unresolved job identities cannot establish controls or source boundaries.
-- Run counters agree with acquired results. A successful empty list does not
-  establish coverage when the run advertises tests or failures.
+- Run counters agree with acquired results. A missing `failedTests` counter is
+  reconciled only when distinct acquired outcomes exactly cover `totalTests` and
+  every outcome is known; inspect each run's `acquiredResultCounts`. A successful
+  empty list does not establish coverage when the run advertises tests or failures.
 - The same test **and mechanism** match. Different assertions in the same test
   are separate failures; generic work-item parents do not identify an assertion.
 - Prior PR attempts and same-source retries are distinct from independent
