@@ -37,6 +37,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [DataRow(new string[] { "-v", "minimal" }, new string[] { "--verbosity:minimal" })]
         [DataRow(new string[] { "--verbosity", "minimal" }, new string[] { "--verbosity:minimal" })]
         [DataRow(new string[] { "--use-lock-file" }, new string[] { "--property:RestorePackagesWithLockFile=true" })]
+        [DataRow(new string[] { "--logger:xyz" }, new string[] { "--logger:xyz" })]
         [DataRow(new string[] { "--locked-mode" }, new string[] { "--property:RestoreLockedMode=true" })]
         [DataRow(new string[] { "--force-evaluate" }, new string[] { "--property:RestoreForceEvaluate=true" })]
         [DataRow(new string[] { "--lock-file-path", "<lockFilePath>" }, new string[] { "--property:NuGetLockFilePath=<lockFilePath>" })]
