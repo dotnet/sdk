@@ -4,19 +4,14 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 
-/// <summary>Reads the full version via executable startup with bounded output and execution time; it does not authenticate releases.</summary>
+/// <summary>Reads the full version via executable startup with bounded execution time; it does not authenticate releases.</summary>
 internal static class SelfUpdateVerifier
 {
-    private const int StandardOutputCaptureLimit = 4096;
-    private const int StandardErrorCaptureLimit = 4096;
-    private const int CaptureBufferSize = 4096;
     internal const string Utf8EnvironmentVariable = "DOTNETUP_PRIVATE_VERSION_UTF8";
-    private static readonly TimeSpan s_terminationTimeout = TimeSpan.FromSeconds(5);
 
     public static string ReadVersion(string installedPath) => ReadVersion(installedPath, TimeSpan.FromSeconds(15));
 
@@ -83,71 +78,44 @@ internal static class SelfUpdateVerifier
 
     private static async Task<string> ReadVersionAsync(string installedPath, TimeSpan timeout)
     {
-        using var process = new Process
-        {
-            StartInfo = CreateStartInfo(installedPath),
-        };
-        if (!process.Start())
-        {
-            throw new IOException("The verification child could not be started.");
-        }
-
+        using var standardInput = File.OpenNullHandle();
+        var startInfo = CreateStartInfo(installedPath);
+        startInfo.StandardInputHandle = standardInput;
         using var cancellation = new CancellationTokenSource(timeout);
-        var stdoutTask = CaptureAsync(process.StandardOutput.BaseStream, StandardOutputCaptureLimit, cancellation.Token);
-        var stderrTask = CaptureAsync(process.StandardError.BaseStream, StandardErrorCaptureLimit, cancellation.Token);
-        Exception? failure = null;
-        string? version = null;
+        using var process = Process.Start(startInfo)!;
         try
         {
-            process.StandardInput.Close();
-            await Task.WhenAll(process.WaitForExitAsync(cancellation.Token), stdoutTask, stderrTask)
-                .WaitAsync(cancellation.Token).ConfigureAwait(false);
-            var output = await stdoutTask.ConfigureAwait(false);
-            var stdout = Encoding.UTF8.GetString(output).Trim();
-            if (process.ExitCode != 0 || output.Length >= StandardOutputCaptureLimit || !Microsoft.Deployment.DotNet.Releases.ReleaseVersion.TryParse(stdout, out _))
+            var (stdout, stderr) = await process.ReadAllTextAsync(cancellation.Token).ConfigureAwait(false);
+            await process.WaitForExitAsync(cancellation.Token).ConfigureAwait(false);
+
+            var version = stdout.Trim();
+            if (process.ExitCode != 0 || !ReleaseVersion.TryParse(version, out _))
             {
-                var stderr = Encoding.UTF8.GetString(await stderrTask.ConfigureAwait(false));
                 var diagnostic = new string(stderr.Select(character => char.IsControl(character) ? ' ' : character).ToArray());
                 throw new IOException($"Verification exited with code {process.ExitCode} or returned invalid version output. Stderr: {diagnostic}");
             }
 
-            version = stdout;
+            return version;
         }
         catch (OperationCanceledException exception)
         {
-            failure = new IOException("The verification child exceeded its timeout.", exception);
+            throw new IOException("The verification child exceeded its timeout.", exception);
         }
-        catch (Exception exception)
+        finally
         {
-            failure = exception;
-        }
+            if (!process.HasExited)
+            {
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException) when (process.HasExited)
+                {
+                }
 
-        await CompleteProcessAsync(process, cancellation, stdoutTask, stderrTask, failure).ConfigureAwait(false);
-        return version!;
-    }
-
-    private static async Task CompleteProcessAsync(
-        Process process,
-        CancellationTokenSource cancellation,
-        Task<byte[]> stdoutTask,
-        Task<byte[]> stderrTask,
-        Exception? failure)
-    {
-        await cancellation.CancelAsync().ConfigureAwait(false);
-        try
-        {
-            await TerminateAsync(process).ConfigureAwait(false);
-        }
-        catch (Exception exception) when (exception is Win32Exception or InvalidOperationException or OperationCanceledException)
-        {
-            failure = new IOException("The verification child could not be terminated within five seconds.",
-                failure is null ? exception : new AggregateException(failure, exception));
-        }
-
-        await DrainAsync(stdoutTask, stderrTask).ConfigureAwait(false);
-        if (failure is not null)
-        {
-            ExceptionDispatchInfo.Capture(failure).Throw();
+                using var termination = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+                await process.WaitForExitAsync(termination.Token).ConfigureAwait(false);
+            }
         }
     }
 
@@ -157,62 +125,15 @@ internal static class SelfUpdateVerifier
         {
             UseShellExecute = false,
             CreateNoWindow = true,
-            RedirectStandardInput = true,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
         };
         startInfo.ArgumentList.Add("--version");
         startInfo.Environment["DOTNET_NOLOGO"] = "1";
         startInfo.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
         startInfo.Environment[Utf8EnvironmentVariable] = "1";
         return startInfo;
-    }
-
-    private static async Task TerminateAsync(Process process)
-    {
-        if (!process.HasExited)
-        {
-            try
-            {
-                process.Kill(entireProcessTree: true);
-            }
-            catch (InvalidOperationException) when (process.HasExited)
-            {
-            }
-
-            using var termination = new CancellationTokenSource(s_terminationTimeout);
-            await process.WaitForExitAsync(termination.Token).ConfigureAwait(false);
-        }
-    }
-
-    private static async Task DrainAsync(Task<byte[]> stdoutTask, Task<byte[]> stderrTask)
-    {
-        try
-        {
-            await Task.WhenAll(stdoutTask, stderrTask).WaitAsync(s_terminationTimeout).ConfigureAwait(false);
-        }
-        catch (Exception exception) when (exception is OperationCanceledException or IOException or TimeoutException)
-        {
-        }
-    }
-
-    private static async Task<byte[]> CaptureAsync(Stream stream, int limit, CancellationToken cancellationToken)
-    {
-        var captured = new byte[limit];
-        var buffer = new byte[CaptureBufferSize];
-        var length = 0;
-        // Keep draining after the capture limit so the child cannot deadlock on a full redirected pipe.
-        while (true)
-        {
-            var read = await stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false);
-            if (read == 0)
-            {
-                return captured[..length];
-            }
-
-            var keep = Math.Min(read, limit - length);
-            buffer.AsSpan(0, keep).CopyTo(captured.AsSpan(length));
-            length += keep;
-        }
     }
 }

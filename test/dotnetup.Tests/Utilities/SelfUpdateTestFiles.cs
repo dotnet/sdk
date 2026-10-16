@@ -123,21 +123,9 @@ internal sealed class SelfUpdateTestFiles : IDisposable
             startInfo.ArgumentList.Add(argument);
         }
 
-        using var process = Process.Start(startInfo);
-        Assert.IsNotNull(process);
-        try
-        {
-            Assert.IsTrue(process.WaitForExit(120_000), "Self-update process fixture publish timed out.");
-            Assert.AreEqual(0, process.ExitCode, "Self-update process fixture publish failed.");
-        }
-        finally
-        {
-            if (!process.HasExited)
-            {
-                process.Kill(entireProcessTree: true);
-                Assert.IsTrue(process.WaitForExit(10_000));
-            }
-        }
+        var status = Process.Run(startInfo, TimeSpan.FromMinutes(2));
+        Assert.IsFalse(status.Canceled, "Self-update process fixture publish timed out.");
+        Assert.AreEqual(0, status.ExitCode, "Self-update process fixture publish failed.");
 
         return output;
     }

@@ -392,60 +392,16 @@ internal static class DotnetupTestUtilities
     {
         string dotnetupPath = executablePath ?? GetDotnetupExecutablePath();
 
-        using var process = new Process();
-        process.StartInfo.FileName = dotnetupPath;
-        process.StartInfo.Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args);
-        process.StartInfo.UseShellExecute = false;
-        process.StartInfo.CreateNoWindow = true;
-        process.StartInfo.RedirectStandardOutput = captureOutput;
-        process.StartInfo.RedirectStandardError = captureOutput;
-        process.StartInfo.RedirectStandardInput = standardInput is not null;
-        process.StartInfo.WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory;
-
-        ConfigureProcessEnvironment(process.StartInfo, environmentVariables);
-        StringBuilder outputBuilder = new();
-        if (captureOutput)
+        var startInfo = new ProcessStartInfo(dotnetupPath)
         {
-            CaptureProcessOutput(process, outputBuilder);
-        }
-
-        process.Start();
-
-        if (captureOutput)
-        {
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-        }
-
-        if (standardInput is not null)
-        {
-            process.StandardInput.Write(standardInput);
-            process.StandardInput.Close();
-        }
-
-        int effectiveTimeoutMilliseconds = timeout is { } limit
-            ? checked((int)limit.TotalMilliseconds)
-            : timeoutMilliseconds;
-
-        if (!process.WaitForExit(effectiveTimeoutMilliseconds))
-        {
-            process.Kill(entireProcessTree: true);
-            if (process.WaitForExit(10_000))
-            {
-                process.WaitForExit();
-            }
-
-            string timeoutDescription = timeout is null ? $"{timeoutMilliseconds} ms" : timeout.ToString()!;
-            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {timeoutDescription}. Output:\n{outputBuilder}");
-        }
-
-        process.WaitForExit();
-        return (process.ExitCode, outputBuilder.ToString());
-    }
-
-    private static void ConfigureProcessEnvironment(
-        ProcessStartInfo startInfo, Dictionary<string, string>? environmentVariables)
-    {
+            Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args),
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = captureOutput,
+            RedirectStandardError = captureOutput,
+            RedirectStandardInput = standardInput is not null,
+            WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory,
+        };
         // Suppress the .NET welcome message / first-run experience in test output
         startInfo.Environment["DOTNET_NOLOGO"] = "1";
 
@@ -462,23 +418,80 @@ internal static class DotnetupTestUtilities
             }
         }
 
-    }
-
-    private static void CaptureProcessOutput(Process process, StringBuilder outputBuilder)
-    {
-        void AppendLine(string? line)
+        int effectiveTimeoutMilliseconds = timeout is { } limit
+            ? checked((int)limit.TotalMilliseconds)
+            : timeoutMilliseconds;
+        string timeoutDescription = timeout is null ? $"{timeoutMilliseconds} ms" : timeout.ToString()!;
+        if (standardInput is null)
         {
-            if (line is not null)
+            using var cancellation = new System.Threading.CancellationTokenSource(effectiveTimeoutMilliseconds);
+            string output = string.Empty;
+            try
             {
-                lock (outputBuilder)
+                ProcessExitStatus status;
+                if (captureOutput)
                 {
-                    outputBuilder.AppendLine(line);
+                    var result = Process.RunAndCaptureTextAsync(startInfo, cancellation.Token).GetAwaiter().GetResult();
+                    status = result.ExitStatus;
+                    output = NormalizeCapturedOutput(result.StandardOutput) + NormalizeCapturedOutput(result.StandardError);
+                }
+                else
+                {
+                    status = Process.RunAsync(startInfo, cancellation.Token).GetAwaiter().GetResult();
+                }
+
+                if (!status.Canceled)
+                {
+                    return (status.ExitCode, output);
                 }
             }
+            catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
+            {
+            }
+
+            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {timeoutDescription}. Output:\n{output}");
         }
 
-        process.OutputDataReceived += (_, e) => AppendLine(e.Data);
-        process.ErrorDataReceived += (_, e) => AppendLine(e.Data);
+        // Interactive callers need access to the child's stdin before waiting for exit.
+        using var process = new Process { StartInfo = startInfo };
+        process.Start();
+        var outputTask = captureOutput ? process.ReadAllTextAsync() : null;
+        process.StandardInput.Write(standardInput);
+        process.StandardInput.Close();
+
+        bool exitedWithinTimeout = process.WaitForExit(effectiveTimeoutMilliseconds);
+        bool terminated = exitedWithinTimeout;
+        if (!exitedWithinTimeout)
+        {
+            process.Kill(entireProcessTree: true);
+            terminated = process.WaitForExit(10_000);
+        }
+
+        string capturedOutput = string.Empty;
+        if (outputTask is not null && terminated)
+        {
+            var (standardOutput, standardError) = outputTask.GetAwaiter().GetResult();
+            capturedOutput = NormalizeCapturedOutput(standardOutput) + NormalizeCapturedOutput(standardError);
+        }
+
+        if (!exitedWithinTimeout)
+        {
+            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {timeoutDescription}. Output:\n{capturedOutput}");
+        }
+
+        return (process.ExitCode, capturedOutput);
+    }
+
+    private static string NormalizeCapturedOutput(string output)
+    {
+        using var reader = new StringReader(output);
+        var builder = new StringBuilder();
+        while (reader.ReadLine() is { } line)
+        {
+            builder.AppendLine(line);
+        }
+
+        return builder.ToString();
     }
 
     private static string GetRepositoryRoot()

@@ -93,8 +93,8 @@ public enum DotnetInstallErrorCode
     InstallPathHasUntrackedArtifacts,
 
     /// <summary>
-    /// Failed to start a child <c>dotnet</c> process (Process.Start returned null
-    /// or threw). Distinct from <see cref="Unknown"/> so the telemetry classifier
+    /// Failed to start a child <c>dotnet</c> process.
+    /// Distinct from <see cref="Unknown"/> so the telemetry classifier
     /// can route this to the Product category with a stable signal name.
     /// </summary>
     ProcessStartFailed,
