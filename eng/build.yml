@@ -307,7 +307,6 @@ jobs:
                     --build
                     --pack
                     --ci
-                    $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
                     -p:Test=false
@@ -452,7 +451,6 @@ jobs:
                     --restore
                     --build
                     --ci
-                    $(_SignArgs)
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
                     -p:Test=false
