@@ -1,118 +1,133 @@
 # Publish Build Optimization
 
-## Overview
+## Scope and rollout
 
-When `dotnet publish` runs, it implicitly runs a full `Build` before the publish step.
-This is necessary because the SDK cannot assume the previous `dotnet build` used the same
-configuration (e.g., the default build configuration is `Debug` while publish defaults to
-`Release`), runtime identifier, or other settings.
+`dotnet publish` normally runs a full `Build` before publishing. It cannot assume
+that an earlier build used the same configuration, runtime identifier, or properties.
+For supported scenarios, `UseOptimizedPublish` replaces that implicit root-project
+`Build` with compilation and the prerequisites needed by publish. Compilation is
+not skipped. The intended deployment remains `PublishDir`.
 
-However, for some publish modes, the full `Build` output (written to `bin\<config>\<tfm>\<rid>\`)
-is never used by the publish pipeline. The publish steps read from intermediate outputs
-(`obj\`) and resolution items, not from the `bin\` directory. This means the `Build` step
-produces artifacts that are confusing to users and automation, as `bin\<config>\<tfm>\<rid>\`
-contains a full self-contained managed deployment that is not the intended output.
+Native AOT has used this route by default since .NET 11. The first .NET 12 expansion
+adds **plain trimmed C# executable projects targeting .NET 11 or later**, subject to
+all of these restrictions:
 
-## How Publish Modes Work Today
+- `.NETCoreApp`, self-contained, with no target platform identifier.
+- One of `win-x64`, `win-arm64`, `linux-x64`, `linux-arm64`, `linux-musl-x64`,
+  `linux-musl-arm64`, `osx-x64`, or `osx-arm64`.
+- Neither `PublishSingleFile` nor `PublishReadyToRun` is enabled.
+- No Web, Razor, Worker, WebAssembly, MAUI, WPF, or Windows Forms SDK scenario.
+- No COM hosting/registration, IJW hosting, dynamic loading, or explicitly enabled
+  serialization assembly generation.
+- No ClickOnce publishing/manifests or tool packaging.
 
-### Common Architecture
+The TFM restriction is deliberate. The expansion applies to .NET 11 projects
+using the .NET 12 SDK; it is not implicitly restricted to `net12.0`.
+Projects targeting .NET 10 or earlier retain
+the full Build route. Platform-specific mobile, browser-Wasm, Windows
+desktop/native-host integration, and combined trimmed modes
+remain outside this first expansion. This is an SDK graph eligibility check, not
+a guarantee that every third-party package or custom target supports the route.
 
-All publish modes share this flow:
+| Publish scenario | Default route |
+| --- | --- |
+| Native AOT (including its implied trimming) | Optimized; existing eligibility unchanged |
+| Plain trimmed application satisfying all restrictions above | Optimized |
+| Trimmed + single-file and/or ReadyToRun, without AOT | Full Build |
+| Older-TFM or otherwise excluded trimmed application | Full Build |
+| Ordinary framework-dependent or self-contained application | Full Build |
+| ReadyToRun-only or single-file-only application | Full Build |
+| `NoBuild=true` / `--no-build` | Separate no-build route |
 
-1. **Build** (or equivalent) — produces the IL assembly at `@(IntermediateAssembly)` in `obj\`
-2. **ComputeResolvedFilesToPublishList** — collects files to publish from `@(IntermediateAssembly)`,
-   `@(RuntimeCopyLocalItems)`, `@(RuntimePackAsset)`, and content items
-3. **Post-processing** — mode-specific transformations (ILC, ILLink, crossgen2, bundler)
-4. **Copy to PublishDir** — final output written to `bin\<config>\<tfm>\<rid>\publish\`
+Eligibility and public default selection are separate. Setting
+`UseOptimizedPublish=true` does not force an unsupported scenario onto the optimized
+route. The new restrictions do not narrow existing Native AOT routing.
+See [the routing and eligibility definitions](../../src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets).
 
-Key insight: All post-processing steps read from `@(IntermediateAssembly)` (obj) and
-`@(ResolvedFileToPublish)` (resolved from NuGet/project references), **never** from the
-`Build` output directory.
+## Prerequisites and output ownership
 
-### PublishAot (Native AOT)
+The common optimized prerequisites are:
 
-**Status: Optimized**
-
-- `IlcCompile` reads `@(IntermediateAssembly)` from `obj\` and produces a native binary
-- The full `Build` was running a self-contained deployment to `bin\<config>\<tfm>\<rid>\`,
-  including apphost, managed DLLs, deps.json, runtimeconfig.json, and runtime pack files
-- **None of these files are used** by the AOT pipeline
-- **Optimization**: Replace `Build` with `Compile` (plus resource/satellite targets)
-- **Opt-out**: Set `UseOptimizedPublish=false` to restore full Build behavior
-- `UseOptimizedPublish` currently has no effect when `PublishAot` is not enabled
-
-Target chain for optimized AOT publish:
+```text
+BuildOnlySettings -> PrepareForBuild -> PrepareResources -> Compile -> CreateSatelliteAssemblies
 ```
-BuildOnlySettings → PrepareForBuild → PrepareResources → Compile → CreateSatelliteAssemblies
-```
 
-Where `Compile` includes `ResolveReferences → ResolveProjectReferences → CoreCompile`.
+`Compile` includes reference resolution and compilation. Referenced projects still
+run their normal builds and can produce files under their own `bin` directories.
+Their resolved outputs can be publish inputs. This is not a change to project-instance
+compilation, RID propagation, or the project-reference build graph.
 
-### PublishTrimmed (IL Trimming)
+The managed route also generates the root runtime configuration with the existing
+SDK task, under
+`$(IntermediateOutputPath)publish\$(ProjectRuntimeConfigFileName)`. It uses the normal
+runtime settings, user runtimeconfig template, and input-cache logic, and records
+the intermediate file for incremental builds and Clean. It does not create a
+publish-specific `runtimeconfig.dev.json`.
+The metadata registration does not take ownership of the published deployment in
+Build's incremental-clean bookkeeping; a subsequent Build must leave that deployment intact.
 
-**Status: Not yet optimized — candidate for future optimization**
+Public build properties such as `ProjectRuntimeConfigFilePath` and
+`ProjectRuntimeConfigDevFilePath` are **not** rebased to intermediate paths.
+Explicit Build, build output groups, and reference consumers retain their build
+contracts, including custom build paths. A custom `IntermediateOutputPath` moves the
+managed publish runtime configuration with it; `ProjectRuntimeConfigFileName`
+controls the publish filename. `ProjectRuntimeConfigFilePath` remains a build-only
+destination on this route, not a source of previously generated publish metadata.
 
-- `ILLink` (the IL trimmer) processes `@(ResolvedFileToPublish)` items marked with
-  `PostprocessAssembly=true`
-- These items come from `ComputeResolvedFilesToPublishList` which reads from
-  `@(IntermediateAssembly)` (obj) and resolved references
-- The `Build` output in `bin\` is not consumed by the trimmer
-- The same `Compile`-based optimization would apply here
+Trimmed publish generates its own dependency metadata rather than reusing an
+absent or stale build deps file. Existing `PublishDepsFilePath` behavior is retained.
+The root assembly, symbols, satellite assemblies, and XML documentation are collected
+from their intermediate/compiler-produced sources. App.config and content retain
+their normal publish item processing. Apphost generation already participates in
+compilation/publish and is not duplicated.
 
-### PublishReadyToRun (R2R / Crossgen2)
+See [runtime configuration generation](../../src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.targets)
+and [publish file collection and dependency generation](../../src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets).
+Native compilation, ILLink, ReadyToRun compilation, and bundling operate on their
+respective publish inputs, but that alone does not prove their complete prerequisite
+graphs are independent of Build output.
 
-**Status: Not yet optimized — candidate for future optimization**
+For a clean eligible root project using default paths, optimized publish avoids
+the redundant loose managed deployment in `bin\<configuration>\<tfm>\<rid>\`.
+Publish output still appears under its `publish` subdirectory. Existing build files
+are not deleted merely to make the root output directory empty. An explicit `Build`,
+including `Build;Publish` or `Publish;Build`, still requests normal build output.
+Custom output locations and project references can also produce files outside the
+publish directory.
 
-- `RunCrossgen2` processes `@(ResolvedFileToPublish)` items
-- Input assemblies come from resolution, not from `Build` output
-- Same optimization opportunity as trimming
+SDK extensions that need additional publish prerequisites can use the existing
+`_AdditionalOptimizedPublishTargets` internal extension point. For example, the
+Static Web Assets SDK contributes manifest generation because `PrepareForRun` is
+skipped. That extension does not establish compatibility for all Web/Razor/Blazor
+scenarios; those scenarios are excluded from the new managed expansion.
 
-### PublishSingleFile (Single-File Bundling)
+## Build-hook compatibility and opt-out
 
-**Status: Not yet optimized — candidate for future optimization**
+Optimized publish skips the root `Build` hooks: `BeforeBuild`, `AfterBuild`,
+`BeforeTargets="Build"`, `AfterTargets="Build"`, `PreBuildEvent`, and `PostBuildEvent`.
+This is an intentional behavior change for newly eligible trimmed projects using the .NET 12 SDK.
+Unlike `--no-build`, optimized publish still compiles.
 
-- `GenerateSingleFileBundle` bundles `@(ResolvedFileToPublish)` items into one executable
-- All inputs come from resolved items and `@(IntermediateAssembly)`
-- Same optimization opportunity
+Generators needed by compilation should run before compilation (for example through
+`BeforeTargets="CoreCompile"`), with correct incremental inputs/outputs and generated
+items. **`BeforeTargets="Publish"` is too late for compilation prerequisites**:
+Publish's dependencies have already executed. Post-publish work can attach to
+`AfterTargets="Publish"`.
 
-### Combined Modes
+Changing a hook is not sufficient when its implementation requires a runnable build
+deployment under `TargetPath`/`OutputPath`. Known coordination points include:
 
-These modes can be combined (e.g., `PublishAot` implies `PublishTrimmed`). The optimization
-applies when the outermost mode is optimized:
+- ASP.NET Core OpenAPI generation in
+  [Microsoft.Extensions.ApiDescription.Server.targets](https://github.com/dotnet/aspnetcore/blob/main/src/Tools/Extensions.ApiDescription.Server/src/build/Microsoft.Extensions.ApiDescription.Server.targets),
+  which hooks before Build and launches against `TargetPath`.
+- XML serialization generation in
+  [Microsoft.XmlSerializer.Generator.targets](https://github.com/dotnet/runtime/blob/main/src/libraries/Microsoft.XmlSerializer.Generator/src/build/Microsoft.XmlSerializer.Generator.targets),
+  which runs after Build and copies a generated assembly from `OutputPath`.
 
-| Combination | Optimized? | Notes |
-|---|---|---|
-| PublishAot (implies trimmed) | ✅ Yes | AOT is the outermost mode |
-| PublishTrimmed + PublishSingleFile | ❌ Not yet | Future candidate |
-| PublishReadyToRun + PublishSingleFile | ❌ Not yet | Future candidate |
-| PublishTrimmed alone | ❌ Not yet | Future candidate |
-| PublishReadyToRun alone | ❌ Not yet | Future candidate |
-
-## Breaking Change: AOT Publish Build Optimization
-
-### What Changed
-
-Starting in .NET 11, `dotnet publish` with `PublishAot=true` no longer runs a full `Build`
-before publish. Instead, it runs only `Compile` (and resource/satellite assembly targets).
-
-### Impact
-
-- **BeforeBuild / AfterBuild targets**: These will not execute during AOT publish. If you have
-  custom targets attached to `BeforeBuild`, `AfterBuild`, or using
-  `BeforeTargets="Build"` / `AfterTargets="Build"`, they will not run.
-  - **Workaround**: Attach your targets to `BeforeTargets="Publish"` / `AfterTargets="Publish"`,
-    or to `BeforeTargets="Compile"` / `AfterTargets="Compile"` instead.
-- **PreBuildEvent / PostBuildEvent**: These will not execute during AOT publish (consistent
-  with `--no-build` behavior).
-- **Third-party NuGet Build hooks**: Targets from NuGet packages that hook into `Build` will be
-  skipped (consistent with `--no-build` behavior).
-- **Output directory**: `bin\<config>\<tfm>\<rid>\` will no longer contain managed apphost,
-  DLLs, deps.json, runtimeconfig.json, or runtime pack files. Only `native\` and `publish\`
-  subdirectories will be present.
-
-### Opt-Out
-
-To restore the previous behavior of running a full `Build` before AOT publish, set:
+These integrations need upstream publish-aware prerequisite/output contracts.
+The SDK does not detect individual packages or silently emulate their build
+deployments. Projects depending on Build hooks or runnable build outputs should
+opt out until their integration supports optimized publishing:
 
 ```xml
 <PropertyGroup>
@@ -120,20 +135,19 @@ To restore the previous behavior of running a full `Build` before AOT publish, s
 </PropertyGroup>
 ```
 
-Or pass it on the command line:
+Or:
 
-```
+```text
 dotnet publish /p:UseOptimizedPublish=false
 ```
 
-## Future Work
+The opt-out restores the implicit full Build for both AOT and eligible trimmed
+publishing. It does not override `NoBuild`.
 
-The same optimization could be applied to `PublishTrimmed`, `PublishReadyToRun`, and
-`PublishSingleFile` modes, as they all share the same architecture of reading from
-`@(IntermediateAssembly)` and resolved references rather than `Build` output. Each mode
-would need:
+## Further expansion
 
-1. Compatibility analysis for Build hooks used by projects and NuGet packages
-2. The same target chain: `BuildOnlySettings → PrepareForBuild → PrepareResources → Compile → CreateSatelliteAssemblies`
-3. Tests verifying the expected build and publish outputs
-4. Documentation of the breaking change for that mode
+ReadyToRun, single-file, older TFMs, additional languages/RIDs, and specialized SDKs
+require explicit eligibility decisions and coverage before expansion. Each needs
+an audit of skipped producers, metadata paths and incremental/Clean behavior,
+combined modes, and ecosystem Build hooks. Sharing intermediate assembly inputs
+does not mean the same prerequisite list is sufficient.

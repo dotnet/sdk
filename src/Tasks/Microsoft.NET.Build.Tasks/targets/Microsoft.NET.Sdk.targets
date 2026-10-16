@@ -389,26 +389,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
   <Target Name="GenerateBuildRuntimeConfigurationFiles"
-          DependsOnTargets="_GenerateRuntimeConfigurationFilesInputCache"
+          DependsOnTargets="_PrepareRuntimeConfigurationFiles;_GenerateRuntimeConfigurationFilesInputCache"
           BeforeTargets="CopyFilesToOutputDirectory"
           Condition=" '$(GenerateRuntimeConfigurationFiles)' == 'true'"
           Inputs="@(GenerateRuntimeConfigurationFilesInputs)"
           Outputs="$(ProjectRuntimeConfigFilePath);$(ProjectRuntimeConfigDevFilePath)">
-
-    <PropertyGroup>
-      <_IsRollForwardSupported Condition="'$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0'">true</_IsRollForwardSupported>
-      <RollForward Condition="'$(RollForward)' == '' and '$(EnableDynamicLoading)' == 'true' and '$(_IsRollForwardSupported)' == 'true'">LatestMinor</RollForward>
-    </PropertyGroup>
-
-    <!-- RollForward is only supported since .NET Core 3.0, but we should allow limited usage when the app is targeting even lower versions
-         This is to let 2.* apps specify that they are OK to run on 3.0 and above. So explicitly allow just Major and LatestMajor
-         other values should still keep failing as they won't have any effect when run on 2.*. -->
-    <NETSdkError Condition="'$(RollForward)' != '' and '$(RollForward)' != 'Major' and '$(RollForward)' != 'LatestMajor' and '$(_IsRollForwardSupported)' != 'true'"
-                 ResourceName="RollForwardRequiresVersion30"/>
-
-    <PropertyGroup>
-      <_WriteIncludedFrameworks Condition="'$(SelfContained)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.1'">true</_WriteIncludedFrameworks>
-    </PropertyGroup>
 
     <GenerateRuntimeConfigurationFiles AssetsFilePath="$(ProjectAssetsFile)"
                                        TargetFramework="$(TargetFramework)"
@@ -437,6 +422,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="$(ProjectRuntimeConfigDevFilePath)" Condition="Exists('$(ProjectRuntimeConfigDevFilePath)')"/>
     </ItemGroup>
 
+  </Target>
+
+  <Target Name="_PrepareRuntimeConfigurationFiles">
+    <PropertyGroup>
+      <_IsRollForwardSupported Condition="'$(_TargetFrameworkVersionWithoutV)' &gt;= '3.0'">true</_IsRollForwardSupported>
+      <RollForward Condition="'$(RollForward)' == '' and '$(EnableDynamicLoading)' == 'true' and '$(_IsRollForwardSupported)' == 'true'">LatestMinor</RollForward>
+      <_WriteIncludedFrameworks Condition="'$(SelfContained)' == 'true' and '$(_TargetFrameworkVersionWithoutV)' &gt;= '3.1'">true</_WriteIncludedFrameworks>
+    </PropertyGroup>
+
+    <!-- Older apps may opt into 3.0 or later using Major or LatestMajor. -->
+    <NETSdkError Condition="'$(RollForward)' != '' and '$(RollForward)' != 'Major' and '$(RollForward)' != 'LatestMajor' and '$(_IsRollForwardSupported)' != 'true'"
+                 ResourceName="RollForwardRequiresVersion30"/>
   </Target>
 
   <!-- Add runtimeconfig.json file to BuiltProjectOutputGroupOutput, so that it will get included in the NuGet package by the Pack target -->

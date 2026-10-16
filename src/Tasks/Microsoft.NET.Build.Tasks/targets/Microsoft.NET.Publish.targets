@@ -164,20 +164,50 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <_PublishNoBuildAlternativeDependsOn>$(_BeforePublishNoBuildTargets);$(_CorePublishTargets)</_PublishNoBuildAlternativeDependsOn>
 
-    <!-- For AOT publish, we only need Compile (not full Build) since IlcCompile reads from
-         @(IntermediateAssembly) in obj\, not from bin\ output. Skipping Build avoids producing
-         unnecessary self-contained managed output (apphost, deps.json, runtimeconfig, runtime
-         pack files) in the output directory that would confuse users and automation.
-         Set UseOptimizedPublish=false to restore the previous behavior of running full Build. -->
-    <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">true</UseOptimizedPublish>
-    <!-- Native AOT is currently the only publish mode that supports optimized publish. -->
-    <_UseOptimizedPublish Condition="'$(PublishAot)' == 'true' and '$(UseOptimizedPublish)' == 'true'">true</_UseOptimizedPublish>
+    <!-- Expand gradually: plain trimming of .NET 11+ C# desktop/server executables only.
+         Keep eligibility separate from the public switch so explicit true cannot opt unsupported
+         modes into a graph that omits their Build prerequisites. Existing AOT eligibility is unchanged. -->
+    <_IsPlainTrimmedPublish Condition="
+        '$(PublishTrimmed)' == 'true' and '$(PublishAot)' != 'true' and
+        '$(PublishSingleFile)' != 'true' and '$(PublishReadyToRun)' != 'true'">true</_IsPlainTrimmedPublish>
+    <_IsOptimizedTrimmedPublishProject Condition="
+        '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
+        $([MSBuild]::VersionGreaterThanOrEquals('$(_TargetFrameworkVersionWithoutV)', '11.0')) and
+        '$(Language)' == 'C#' and '$(_IsExecutable)' == 'true' and '$(SelfContained)' == 'true' and
+        '$(TargetPlatformIdentifier)' == ''">true</_IsOptimizedTrimmedPublishProject>
+    <_IsOptimizedTrimmedPublishRuntime Condition="
+        '$(RuntimeIdentifier)' == 'win-x64' or '$(RuntimeIdentifier)' == 'win-arm64' or
+        '$(RuntimeIdentifier)' == 'linux-x64' or '$(RuntimeIdentifier)' == 'linux-arm64' or
+        '$(RuntimeIdentifier)' == 'linux-musl-x64' or '$(RuntimeIdentifier)' == 'linux-musl-arm64' or
+        '$(RuntimeIdentifier)' == 'osx-x64' or '$(RuntimeIdentifier)' == 'osx-arm64'">true</_IsOptimizedTrimmedPublishRuntime>
+    <_HasExcludedOptimizedTrimmedPublishSdk Condition="
+        '$(UsingMicrosoftNETSdkWeb)' == 'true' or '$(UsingMicrosoftNETSdkRazor)' == 'true' or
+        '$(UsingMicrosoftNETSdkWorker)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true' or
+        '$(UseMaui)' == 'true' or '$(UseWPF)' == 'true' or '$(UseWindowsForms)' == 'true'">true</_HasExcludedOptimizedTrimmedPublishSdk>
+    <_HasExcludedOptimizedTrimmedPublishIntegration Condition="
+        '$(EnableComHosting)' == 'true' or '$(UseIJWHost)' == 'true' or
+        '$(EnableDynamicLoading)' == 'true' or '$(RegisterForComInterop)' == 'true' or
+        '$(GenerateSerializationAssemblies)' == 'On' or
+        '$(PublishProtocol)' == 'ClickOnce' or '$(GenerateClickOnceManifests)' == 'true' or
+        '$(PackAsTool)' == 'true'">true</_HasExcludedOptimizedTrimmedPublishIntegration>
+    <_SupportsOptimizedTrimmedPublish Condition="
+        '$(_IsPlainTrimmedPublish)' == 'true' and
+        '$(_IsOptimizedTrimmedPublishProject)' == 'true' and
+        '$(_IsOptimizedTrimmedPublishRuntime)' == 'true' and
+        '$(_HasExcludedOptimizedTrimmedPublishSdk)' != 'true' and
+        '$(_HasExcludedOptimizedTrimmedPublishIntegration)' != 'true'">true</_SupportsOptimizedTrimmedPublish>
+    <UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == '' and
+                                   ('$(PublishAot)' == 'true' or '$(_SupportsOptimizedTrimmedPublish)' == 'true')">true</UseOptimizedPublish>
+    <_UseOptimizedPublish Condition="'$(UseOptimizedPublish)' == 'true' and
+                                    ('$(PublishAot)' == 'true' or '$(_SupportsOptimizedTrimmedPublish)' == 'true')">true</_UseOptimizedPublish>
     <_BeforeOptimizedPublishTargets Condition="'$(_UseOptimizedPublish)' == 'true'">
       BuildOnlySettings;
       PrepareForBuild;
       PrepareResources;
       Compile;
       CreateSatelliteAssemblies;
+      _PrepareManagedOptimizedPublish;
+      _GenerateOptimizedPublishRuntimeConfigurationFile;
     </_BeforeOptimizedPublishTargets>
   </PropertyGroup>
 
@@ -186,12 +216,72 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="Build;$(_CorePublishTargets)" />
 
   <!-- $(_AdditionalOptimizedPublishTargets) is an extension point for SDKs (e.g. Static Web Assets)
-       that hook additional work into the full Build via targets which the AOT-optimized path skips.
+       that hook additional work into the full Build via targets which the optimized path skips.
        It runs after Compile so contributors can rely on the intermediate assembly, and before the core
        publish targets that consume its outputs. -->
   <Target Name="_PublishOptimizedBuildAlternative"
           Condition="'$(NoBuild)' != 'true' and '$(_UseOptimizedPublish)' == 'true'"
-          DependsOnTargets="$(_BeforeOptimizedPublishTargets);$(_AdditionalOptimizedPublishTargets);$(_CorePublishTargets)" />
+          DependsOnTargets="$(_BeforeOptimizedPublishTargets);$(_AdditionalOptimizedPublishTargets);$(_CorePublishTargets);_RecordManagedOptimizedPublishFileWrites" />
+
+  <!-- This is execution state, not eligibility: Build, NoBuild and reference/output-group
+       requests must continue to use their normal build paths. Never rebase those public paths. -->
+  <Target Name="_PrepareManagedOptimizedPublish" Condition="'$(PublishAot)' != 'true'">
+    <PropertyGroup>
+      <_IsManagedOptimizedPublish>true</_IsManagedOptimizedPublish>
+      <_OptimizedPublishRuntimeConfigFilePath>$(IntermediateOutputPath)publish\$(ProjectRuntimeConfigFileName)</_OptimizedPublishRuntimeConfigFilePath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_GenerateOptimizedPublishRuntimeConfigurationFile"
+          DependsOnTargets="_PrepareRuntimeConfigurationFiles;_GenerateRuntimeConfigurationFilesInputCache"
+          Condition="'$(_IsManagedOptimizedPublish)' == 'true' and '$(GenerateRuntimeConfigurationFiles)' == 'true'"
+          Inputs="@(GenerateRuntimeConfigurationFilesInputs);$(MSBuildAllProjects)"
+          Outputs="$(_OptimizedPublishRuntimeConfigFilePath)">
+    <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(_OptimizedPublishRuntimeConfigFilePath)'))" />
+    <GenerateRuntimeConfigurationFiles AssetsFilePath="$(ProjectAssetsFile)"
+                                       TargetFramework="$(TargetFramework)"
+                                       TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
+                                       RuntimeConfigPath="$(_OptimizedPublishRuntimeConfigFilePath)"
+                                       RuntimeIdentifier="$(RuntimeIdentifier)"
+                                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
+                                       RuntimeFrameworks="@(RuntimeFramework)"
+                                       RollForward="$(RollForward)"
+                                       UserRuntimeConfig="$(UserRuntimeConfig)"
+                                       HostConfigurationOptions="@(RuntimeHostConfigurationOption)"
+                                       IsSelfContained="$(SelfContained)"
+                                       WriteIncludedFrameworks="$(_WriteIncludedFrameworks)"
+                                       AlwaysIncludeCoreFramework="$(AlwaysIncludeCoreFrameworkInRuntimeConfig)" />
+    <ItemGroup>
+      <_OptimizedPublishRuntimeConfigFile Include="$(_OptimizedPublishRuntimeConfigFilePath)" />
+      <FileWrites Include="@(_OptimizedPublishRuntimeConfigFile)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_RecordManagedOptimizedPublishFileWrites"
+          Condition="'$(_IsManagedOptimizedPublish)' == 'true'">
+    <!-- Record only our intermediate metadata, not the publish deployment. Do not prime
+         Build's once-per-execution Clean snapshot before a later explicit Build. -->
+    <ReadLinesFromFile File="$(IntermediateOutputPath)$(CleanFile)">
+      <Output TaskParameter="Lines" ItemName="_OptimizedPublishPriorFileWrites" />
+    </ReadLinesFromFile>
+    <RemoveDuplicates Inputs="@(_OptimizedPublishPriorFileWrites);@(_OptimizedPublishRuntimeConfigFile->'%(FullPath)')">
+      <Output TaskParameter="Filtered" ItemName="_OptimizedPublishFileWrites" />
+    </RemoveDuplicates>
+    <WriteLinesToFile File="$(IntermediateOutputPath)$(CleanFile)"
+                      Lines="@(_OptimizedPublishFileWrites)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+  </Target>
+
+  <Target Name="_RegisterOptimizedPublishRuntimeConfigurationFile"
+          BeforeTargets="_CleanGetCurrentAndPriorFileWrites">
+    <ItemGroup>
+      <!-- Preserve the publish metadata when a later Build runs IncrementalClean. -->
+      <_OptimizedPublishRuntimeConfigFile Include="$(IntermediateOutputPath)publish\$(ProjectRuntimeConfigFileName)"
+                                         Condition="Exists('$(IntermediateOutputPath)publish\$(ProjectRuntimeConfigFileName)')" />
+      <FileWrites Include="@(_OptimizedPublishRuntimeConfigFile)" />
+    </ItemGroup>
+  </Target>
 
   <Target Name="_PublishNoBuildAlternative"
           Condition="'$(NoBuild)' == 'true'"
@@ -599,6 +689,10 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="_ComputeResolvedCopyLocalPublishAssets;
                             _ComputeCopyToPublishDirectoryItems;
                             ComputeRefAssembliesToPublish">
+    <PropertyGroup>
+      <_RuntimeConfigFileToPublish>$(ProjectRuntimeConfigFilePath)</_RuntimeConfigFileToPublish>
+      <_RuntimeConfigFileToPublish Condition="'$(_IsManagedOptimizedPublish)' == 'true'">$(_OptimizedPublishRuntimeConfigFilePath)</_RuntimeConfigFileToPublish>
+    </PropertyGroup>
     <ItemGroup>
       <!-- Copy the build product (.dll or .exe). -->
       <ResolvedFileToPublish Include="@(IntermediateAssembly)"
@@ -615,7 +709,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ResolvedFileToPublish>
 
       <!-- Copy the runtime config file. -->
-      <ResolvedFileToPublish Include="$(ProjectRuntimeConfigFilePath)"
+      <ResolvedFileToPublish Include="$(_RuntimeConfigFileToPublish)"
                              Condition="'$(GenerateRuntimeConfigurationFiles)' == 'true'  and '$(PublishAot)' != 'true'">
         <RelativePath>$(ProjectRuntimeConfigFileName)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
@@ -669,10 +763,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       </ResolvedFileToPublish>
 
       <!-- Copy the xml documentation (if enabled) -->
-      <ResolvedFileToPublish Include="@(FinalDocFile)"
+      <_DocumentationFileToPublish Include="@(FinalDocFile)" Condition="'$(_IsManagedOptimizedPublish)' != 'true'" />
+      <_DocumentationFileToPublish Include="@(DocFileItem)" Condition="'$(_IsManagedOptimizedPublish)' == 'true'" />
+      <ResolvedFileToPublish Include="@(_DocumentationFileToPublish)"
                               Condition="'$(PublishDocumentationFile)' == 'true' and
                                          '$(CopyDocumentationFileToOutputDirectory)' != 'false'">
-        <RelativePath>@(FinalDocFile->'%(Filename)%(Extension)')</RelativePath>
+        <RelativePath>%(_DocumentationFileToPublish.Filename)%(_DocumentationFileToPublish.Extension)</RelativePath>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
 
@@ -1197,6 +1293,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_TrimRuntimeAssets Condition="'$(PublishSingleFile)' == 'true' and '$(SelfContained)' == 'true'">true</_TrimRuntimeAssets>
       <_UseBuildDependencyFile Condition="'@(_ExcludeFromPublishPackageReference)' == '' and
+                                          '$(_IsManagedOptimizedPublish)' != 'true' and
                                           '@(RuntimeStorePackages)' == '' and
                                           '$(PreserveStoreLayout)' != 'true' and
                                           '$(PublishTrimmed)' != 'true' and
