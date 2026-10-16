@@ -367,7 +367,7 @@ internal class InstallerOrchestratorSingleton
                 request,
                 version,
                 batchContext,
-                new DotnetDownloader(releaseManifest, cacheDirectory: DotnetupPaths.DownloadCacheDirectory)),
+                new DotnetDownloader(releaseManifest)),
             _ => new DotnetArchiveExtractor(request, version, releaseManifest, batchContext, cacheDirectory: DotnetupPaths.DownloadCacheDirectory),
         };
     }

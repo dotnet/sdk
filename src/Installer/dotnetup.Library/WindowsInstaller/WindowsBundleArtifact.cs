@@ -43,7 +43,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     {
         _request = request;
         _version = version;
-        _downloader = downloader ?? new DotnetDownloader(ReleaseManifest.Default, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
+        _downloader = downloader ?? new DotnetDownloader(ReleaseManifest.Default);
         _signatureVerifier = signatureVerifier ?? new AuthenticodeInstallerSignatureVerifier();
         _processRunner = processRunner ?? new BundleProcessRunner();
         _notices = notices ?? Console.Error;

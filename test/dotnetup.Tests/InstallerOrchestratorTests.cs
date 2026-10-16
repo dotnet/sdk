@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
@@ -260,6 +261,40 @@ public class InstallerOrchestratorTests
             new InstallBatchContext(reporter, 8));
 
         artifact.Should().BeOfType<WindowsBundleArtifact>();
+    }
+
+    [TestMethod]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, false)]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, true)]
+    [DataRow(InstallMechanism.Archive, false)]
+    internal void CreateInstallArtifact_OnlyArchivesUseOverriddenCache(InstallMechanism mechanism, bool directBundle)
+    {
+        using var testEnv = new TestEnvironment();
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+        DotnetupPaths.SetTestDataDirectoryOverride(testEnv.TempRoot);
+        try
+        {
+            var request = MakeResolvedRequest(testEnv, mechanism, untracked: true);
+            var batch = new InstallBatchContext(reporter, 8);
+            using IInstallArtifact artifact = directBundle
+                ? new WindowsBundleArtifact(request.Request, request.ResolvedVersion, batch)
+                : InstallerOrchestratorSingleton.CreateInstallArtifact(request, new ReleaseManifest(), batch);
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            string fieldName = mechanism == InstallMechanism.WindowsInstallerBundle ? "_downloader" : "_archiveDownloader";
+            var downloader = (DotnetDownloader)artifact.GetType().GetField(fieldName, flags)!.GetValue(artifact)!;
+            var cache = (DownloadCache)typeof(DotnetDownloader).GetField("_downloadCache", flags)!.GetValue(downloader)!;
+            var cacheDirectory = (string)typeof(DownloadCache).GetField("_cacheDirectory", flags)!.GetValue(cache)!;
+            string expected = mechanism == InstallMechanism.WindowsInstallerBundle
+                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
+                    "dotnetup", "downloadcache")
+                : DotnetupPaths.DownloadCacheDirectory;
+
+            cacheDirectory.Should().Be(expected);
+        }
+        finally
+        {
+            DotnetupPaths.ClearTestDataDirectoryOverride();
+        }
     }
 
     [TestMethod]
