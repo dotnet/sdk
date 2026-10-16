@@ -698,6 +698,36 @@ sealed class Checks(string outputDirectory, string? filter)
                 !json.Contains("password-value", StringComparison.Ordinal) && json.Contains("/v3", StringComparison.Ordinal) &&
                 json.Contains("MSB4036", StringComparison.Ordinal), "Credentials leaked or context erased.");
         });
+        await CaseAsync("Raw build inputs expose parameter template and resolved resource changes", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "raw-build-inputs");
+            Fixtures.Collection(replay);
+            Fixtures.Save(replay, "az", Fixtures.BuildInputArguments("3"), new
+            {
+                id = 3, sourceVersion = "3".PadLeft(40, '0'), repository = new { id = "dotnet/sdk" },
+                parameters = """{"configuration":"Release"}"""
+            });
+            Fixtures.Save(replay, "az", Fixtures.BuildInputArguments("3", pipeline: true), new
+            {
+                id = 3, pipeline = new { id = 101 }, templateParameters = new { configuration = "Release" },
+                resources = new { toolchain = "fixed-2" }, finalYaml = "CI_EVIDENCE_UNNEEDED_SECRET",
+                variables = new { credential = new { isSecret = true, value = "CI_EVIDENCE_UNNEEDED_SECRET" } }
+            });
+            Fixtures.Save(replay, "az", Fixtures.BuildInputArguments("2"), new
+            {
+                id = 2, sourceVersion = "2".PadLeft(40, '0'), repository = new { id = "dotnet/sdk" },
+                parameters = """{"configuration":"Debug"}"""
+            });
+            JsonObject dossier = await CollectAsync(replay);
+            JsonNode control = Row(await CompareAsync(dossier))["controls"]![0]!;
+            Assert(Current(dossier)["parameters"]!["configuration"]!.GetValue<string>() == "Release" &&
+                Current(dossier)["templateParameters"]!["configuration"]!.GetValue<string>() == "Release" &&
+                new[] { "parameters", "templateParameters", "resources" }.All(key =>
+                    control["limitations"]!.AsArray().Any(l => l!.GetValue<string>() == "Changed " + key)) &&
+                dossier["acquisitions"]!.AsArray().All(a => a!["snapshot"] is null ||
+                    !File.ReadAllText(a["snapshot"]!.GetValue<string>()).Contains("CI_EVIDENCE_UNNEEDED_SECRET", StringComparison.Ordinal)),
+                "Typed producer omissions hid raw input changes, or unrelated secret-bearing metadata was persisted.");
+        });
         await CaseAsync("Encoded build parameters are canonicalized and scrubbed before persistence", async () =>
         {
             string replay = Path.Combine(outputDirectory, "encoded-parameters");
@@ -706,9 +736,11 @@ sealed class Checks(string outputDirectory, string? filter)
             {
                 Fixtures.Collection(replay);
                 Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
-                    s["arguments"]!.AsArray().Count > 1 && s["arguments"]![1]!.GetValue<string>() == "builds", data =>
+                    s["arguments"]!.AsArray().Count > 1 && s["arguments"]![1]!.GetValue<string>() == "builds" ||
+                    s["tool"]!.GetValue<string>() == "az" && s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal), data =>
                 {
-                    foreach (JsonNode? build in data.AsArray())
+                    IEnumerable<JsonNode?> builds = data is JsonArray array ? array : [data];
+                    foreach (JsonNode? build in builds)
                     {
                         string parameters = build!["id"]!.GetValue<int>() == 3
                             ? $$$"""{"configuration":"Debug","key":1,"Key":2,"password":"{{{Canary}}}","nested":{"token":"{{{Canary}}}","value":42}}"""
@@ -731,6 +763,39 @@ sealed class Checks(string outputDirectory, string? filter)
                         !row!["controls"]![0]!["limitations"]!.AsArray().Any(n => n!.GetValue<string>() == "Changed parameters")) &&
                     comparison["coverageGaps"]!.AsArray().Count == 0,
                     "Encoded credentials were persisted, meaningful parameter values were lost, or equal inputs were reported changed.");
+            }
+        });
+        await CaseAsync("Raw build inputs reject malformed parameters and mismatched identities", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "invalid-raw-build-inputs");
+            const string Canary = "CI_EVIDENCE_INVALID_RAW_PARAMETER_SECRET";
+            foreach (string mode in new[] { "parameters", "build", "pipeline" })
+            {
+                Fixtures.Collection(replay);
+                bool pipeline = mode == "pipeline";
+                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                    s["arguments"]!.AsArray().Select(a => a!.GetValue<string>())
+                        .SequenceEqual(Fixtures.BuildInputArguments("3", pipeline)), data =>
+                {
+                    if (mode == "parameters")
+                    {
+                        data["parameters"] = $$"""{"password":"{{Canary}}","unfinished":""";
+                    }
+                    else
+                    {
+                        data["id"] = 99;
+                    }
+                });
+                JsonObject dossier = await CollectAsync(replay,
+                    expectedError: mode == "parameters" ? "build parameters" : "Evidence is incomplete");
+                Assert(!dossier.ToJsonString(Fixtures.Json).Contains(Canary, StringComparison.Ordinal) &&
+                    dossier["acquisitions"]!.AsArray().Where(a => a!["snapshot"] is not null).All(a =>
+                        !File.ReadAllText(a!["snapshot"]!.GetValue<string>()).Contains(Canary, StringComparison.Ordinal)) &&
+                    (mode == "parameters"
+                        ? dossier["acquisitions"]!.AsArray().Last()!["snapshot"] is null
+                        : dossier["acquisitions"]!.AsArray().Any(a =>
+                            a!["description"]!.GetValue<string>().Contains("mismatched", StringComparison.Ordinal))),
+                    "Malformed raw parameters leaked, or input metadata from a different build/run was accepted.");
             }
         });
         await CaseAsync("Empty parameters stay unverified and malformed parameters fail without leaking metadata", async () =>
@@ -1768,7 +1833,8 @@ static class Fixtures
         id, url = $"fixture://builds/{id}", repository = "dotnet/sdk", organization = "dnceng-public", project = "public",
         definitionId = 101, branch = "refs/heads/main", commit = Sha(id), prHeadSha = (string?)null, targetSha = (string?)null,
         queuedAt = $"2026-10-{id.PadLeft(2, '0')}T00:00:00Z", reason = "batchedCI", status = "completed", result = "failed",
-        complete = true, parameters = new { configuration = "Debug" }, resources = new { toolchain = "fixed-1" }, observations = new[] { observation }
+        complete = true, parameters = new { configuration = "Debug" }, templateParameters = new { },
+        resources = new { toolchain = "fixed-1" }, observations = new[] { observation }
     });
     public static object[] Commits() => [new { sha = "change-a" }, new { sha = "change-b" }];
 
@@ -1877,6 +1943,10 @@ static class Fixtures
     public static string[] RunArguments(string id) =>
         ["rest", "--method", "GET", "--url", $"https://dev.azure.com/dnceng-public/public/_apis/test/Runs/{id}?api-version=7.1",
             "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"];
+    public static string[] BuildInputArguments(string id, bool pipeline = false) =>
+        ["rest", "--method", "GET", "--url",
+            $"https://dev.azure.com/dnceng-public/public/_apis/{(pipeline ? $"pipelines/101/runs/{id}" : $"build/builds/{id}")}?api-version=7.1",
+            "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"];
     public static string[] CompareArguments() =>
         ["api", "--method", "GET", "--paginate", "--slurp", $"repos/dotnet/sdk/compare/{Sha("2")}...{Sha("3")}?per_page=100"];
 
@@ -1917,6 +1987,16 @@ static class Fixtures
                 Id = int.Parse(id, CultureInfo.InvariantCulture), SourceVersion = id == "3" ? head : baseSha, DefinitionId = 101,
                 DefinitionName = "fixture-pipeline", QueueTime = date.ToString("o"), Status = "completed",
                 Result = id == "3" ? "failed" : "succeeded", SourceBranch = id == "3" ? branch : "refs/heads/main"
+            });
+            Save(directory, "az", BuildInputArguments(id), new
+            {
+                id = int.Parse(id, CultureInfo.InvariantCulture), sourceVersion = id == "3" ? head : baseSha,
+                repository = new { id = "dotnet/sdk" }, parameters = (string?)null
+            });
+            Save(directory, "az", BuildInputArguments(id, pipeline: true), new
+            {
+                id = int.Parse(id, CultureInfo.InvariantCulture), pipeline = new { id = 101 },
+                templateParameters = new { }, resources = new { toolchain = "fixed-1" }
             });
             List<object> issues = id == "3" ? [new { message = Failure }] : [];
             if (helix)

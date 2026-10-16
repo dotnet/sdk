@@ -359,6 +359,19 @@ sealed class Reader(string snapshots, string? replayDirectory, string ghPath, st
                         build["parameters"] = JsonData.BuildParameters(build["parameters"]);
                     }
                 }
+                if (tool == "az" && data is JsonObject metadata && arguments.Length > 4 &&
+                    Regex.IsMatch(arguments[4], @"/_apis/(?:build/builds/\d+|pipelines/\d+/runs/\d+)\?"))
+                {
+                    JsonObject inputs = [];
+                    foreach (string key in new[] { "id", "sourceVersion", "repository", "pipeline", "parameters", "templateParameters", "resources" })
+                    {
+                        if (metadata.ContainsKey(key))
+                        {
+                            inputs[key] = key == "parameters" ? JsonData.BuildParameters(metadata[key]) : metadata[key]?.DeepClone();
+                        }
+                    }
+                    data = inputs;
+                }
                 stdout = data?.ToJsonString(JsonData.Compact) ?? "null";
             }
             catch (JsonException ex)
@@ -557,7 +570,7 @@ static class Comparison
         {
             limitations.Add("Verified scenario execution not found in this lane");
         }
-        foreach (string key in new[] { "parameters", "resources" })
+        foreach (string key in new[] { "parameters", "templateParameters", "resources" })
         {
             if (build[key] is null || other[key] is null)
             {
@@ -986,11 +999,42 @@ sealed class Collector
             branch = detail["SourceBranch"], commit = detail["SourceVersion"], prHeadSha = raw["triggerInfo"]?["pr.sourceSha"],
             prNumber = raw["triggerInfo"]?["pr.number"], targetSha = (JsonNode?)null, targetBranchHint = (JsonNode?)null,
             reason = raw["reason"], queuedAt = detail["QueueTime"], status = detail["Status"], result = detail["Result"],
-            parameters = raw["parameters"], resources = raw["resources"], complete = detail.Text("Status") == "completed",
+            parameters = (JsonNode?)null, templateParameters = (JsonNode?)null, resources = (JsonNode?)null,
+            complete = detail.Text("Status") == "completed",
             observations = new JsonArray(), artifacts = new JsonArray(), testRuns = new JsonArray()
         });
         _byId.Add(identity.Id, record);
         _dossier.Rows("builds").Add(record);
+        Acquisition buildInputs = await AzureAsync(record, $"build/builds/{identity.Id}");
+        if (buildInputs.Complete && buildInputs.Data is JsonObject inputBuild &&
+            inputBuild.Text("id") == identity.Id && inputBuild.Text("sourceVersion") == record.Text("commit") &&
+            inputBuild["repository"]?.Text("id") == "dotnet/sdk")
+        {
+            record["parameters"] = JsonData.BuildParameters(inputBuild["parameters"]);
+            record["templateParameters"] = inputBuild["templateParameters"]?.DeepClone();
+        }
+        else
+        {
+            Gap(record, $"Raw build inputs unavailable or mismatched for build {identity.Id}.");
+        }
+        if (record.Text("definitionId").Length > 0)
+        {
+            Acquisition pipelineInputs = await AzureAsync(record, $"pipelines/{record.Text("definitionId")}/runs/{identity.Id}");
+            if (pipelineInputs.Complete && pipelineInputs.Data is JsonObject pipeline &&
+                pipeline.Text("id") == identity.Id && pipeline["pipeline"]?.Text("id") == record.Text("definitionId"))
+            {
+                record["resources"] = pipeline["resources"]?.DeepClone();
+                record["templateParameters"] = pipeline["templateParameters"]?.DeepClone() ?? record["templateParameters"]?.DeepClone();
+            }
+            else
+            {
+                Gap(record, $"Raw pipeline inputs unavailable or mismatched for build {identity.Id}.");
+            }
+        }
+        else
+        {
+            Gap(record, $"Raw pipeline inputs unavailable for build {identity.Id}: missing pipeline identity.");
+        }
         if (record.Text("branch").StartsWith("refs/pull/", StringComparison.Ordinal) && record.Text("prHeadSha").Length > 0)
         {
             Acquisition merge = await ReadAsync("gh", ["api", "--method", "GET", $"repos/dotnet/sdk/git/commits/{record.Text("commit")}"]);

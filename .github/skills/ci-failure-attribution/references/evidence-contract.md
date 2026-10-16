@@ -44,8 +44,14 @@ draining wait indefinitely; a timeout remains an explicit failed acquisition.
 
 Each build has `id`, `url`, `repository`, `organization`, `project`, `definitionId`,
 `branch`, `commit`, `prHeadSha`, `targetSha`, `reason`, `queuedAt`, `parameters`,
-`resources`, `complete`, and `observations`. Source identity and missing configuration
+`templateParameters`, `resources`, `complete`, and `observations`. Source identity and missing configuration
 are preserved even when retrieval is partial.
+Queue parameters come from raw Azure Build GET metadata. Template parameters and
+resolved resources come from the matching pipeline Run GET, not hlx's typed
+build projection. Build/source and pipeline/run identities must match. Missing or
+unsupported metadata remains explicit; it is never converted to an empty object.
+Snapshots retain only the relevant raw input fields, not unrelated `variables`
+or expanded `finalYaml`. Comparison checks template parameters independently.
 The [parameter decoder](../scripts/CiEvidence.cs) accepts Azure's JSON-encoded
 parameter objects and object-valued metadata. It decodes and recursively scrubs
 credential fields before persisting build-metadata snapshots or dossier parameters.
@@ -190,6 +196,10 @@ Compare metadata contract errors also fail explicitly. Successful acquisition of
 failed CI is not a script failure.
 
 ## Azure DevOps authentication
+
+Raw Azure REST requests use Azure CLI's existing signed-in context with the
+DevOps resource explicitly selected. They do not initiate login. hlx may resolve
+a different context; the bridge below applies to its separate requests.
 
 `hlx azdo auth-status --json` reports the resolved authentication source without
 exposing credentials. Anonymous access can retrieve public build metadata while
