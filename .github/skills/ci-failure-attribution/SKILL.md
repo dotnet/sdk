@@ -55,17 +55,22 @@ artifacts as sensitive and review them before sharing.
 
 ```powershell
 $skill = '.github\skills\ci-failure-attribution'
-dotnet "$skill\scripts\CiEvidence.cs" -- collect --pull-request 12345 --output-directory $evidence
+$appArtifacts = Join-Path $evidence 'app-artifacts'
+dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts -- collect --pull-request 12345 --output-directory $evidence
 
 # Exact historical validation:
-dotnet "$skill\scripts\CiEvidence.cs" -- collect --pull-request 12345 --build $buildUrl --output-directory $evidence
+dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts -- collect --pull-request 12345 --build $buildUrl --output-directory $evidence
 
 # Standalone triggered, rolling, or scheduled build:
-dotnet "$skill\scripts\CiEvidence.cs" -- collect --build $buildUrl --output-directory $evidence
+dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts -- collect --build $buildUrl --output-directory $evidence
 
 # Explicit standalone change boundary:
-dotnet "$skill\scripts\CiEvidence.cs" -- collect --build $buildUrl --baseline-build $baselineUrl --output-directory $evidence
+dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts -- collect --build $buildUrl --baseline-build $baselineUrl --output-directory $evidence
 ```
+
+Use a different `--artifacts-path` for each invocation, especially when multiple
+investigators run concurrently; the file-based app compiler otherwise shares its
+default temporary output location.
 
 Defaults bound history to 20 builds per pipeline/ref within seven days. Increase
 `--history-limit`/`--lookback-days` only for a specific missing comparison and record
@@ -107,7 +112,8 @@ Never repeat a successful acquisition simply because a later step failed.
 Run the offline `compare` command in [CiEvidence.cs](scripts/CiEvidence.cs):
 
 ```powershell
-dotnet "$skill\scripts\CiEvidence.cs" -- compare `
+$compareArtifacts = Join-Path $comparison 'app-artifacts'
+dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $compareArtifacts -- compare `
   --evidence-path "$evidence\evidence.json" --output-directory $comparison
 ```
 
@@ -217,8 +223,9 @@ Run the dependency-free checks in [TestCiEvidence.cs](tests/TestCiEvidence.cs)
 and the repository [skill validator](../ValidateSkill.cs):
 
 ```powershell
-dotnet "$skill\tests\TestCiEvidence.cs" -- --output-directory $testArtifacts
-dotnet .github\skills\ValidateSkill.cs $skill
+$testAppArtifacts = Join-Path $testArtifacts 'app-artifacts'
+dotnet run "$skill\tests\TestCiEvidence.cs" --artifacts-path $testAppArtifacts -- --output-directory $testArtifacts
+dotnet run .github\skills\ValidateSkill.cs --artifacts-path (Join-Path $testArtifacts 'validator-artifacts') -- $skill
 ```
 
 The checks build the app once in the artifact directory, exercise its real command
