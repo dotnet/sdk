@@ -4,6 +4,7 @@
 #pragma once
 
 #include <windows.h>
+#include <Aclapi.h>
 #include <winerror.h>
 #include <iostream>
 #include <errno.h>
