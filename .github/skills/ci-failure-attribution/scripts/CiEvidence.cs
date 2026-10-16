@@ -1038,6 +1038,7 @@ sealed class Collector
             {
                 string mechanism = string.Join('\n', (task["issues"] as JsonArray ?? []).Objects().Select(i => i.Text("message")));
                 string signatureMechanism = mechanism;
+                string? discoveryLog = null;
                 string outcome = Outcome(task.Text("result"));
                 bool canceled = task.Text("result").ToLowerInvariant() is "canceled" or "abandoned";
                 bool executionVerified = task.Text("state").ToLowerInvariant() is not ("pending" or "notstarted") &&
@@ -1051,16 +1052,30 @@ sealed class Collector
                 {
                     record["complete"] = false;
                 }
-                if (outcome == "Failed" && task["log"] is JsonObject logInfo)
+                bool discoveryTask = task.Text("type") == "Task" &&
+                    Regex.IsMatch(task.Text("name"), @"(?i)\bhelix\b|\bqueue tests\b");
+                if ((outcome == "Failed" || discoveryTask) && task["log"] is JsonObject logInfo)
                 {
-                    Acquisition log = await ReadAsync("hlx", ["azdo", "log", url, logInfo.Text("id"), "--tail-lines", "120", "--json"]);
+                    string[] arguments = discoveryTask
+                        ? ["azdo", "log", url, logInfo.Text("id"), "--full", "--json"]
+                        : ["azdo", "log", url, logInfo.Text("id"), "--tail-lines", "120", "--json"];
+                    Acquisition log = await ReadAsync("hlx", arguments);
                     if (log.Complete)
                     {
                         if (log.Data is JsonValue value && value.TryGetValue(out string? excerpt))
                         {
-                            mechanism = mechanism.Length == 0 ? excerpt : mechanism + "\n" + excerpt;
-                            string normalized = JsonData.NormalizeLogTimestamps(excerpt);
-                            signatureMechanism = signatureMechanism.Length == 0 ? normalized : signatureMechanism + "\n" + normalized;
+                            discoveryLog = excerpt;
+                            if (outcome == "Failed")
+                            {
+                                string diagnostic = discoveryTask ? string.Join('\n', excerpt.Split('\n').TakeLast(120)) : excerpt;
+                                mechanism = mechanism.Length == 0 ? diagnostic : mechanism + "\n" + diagnostic;
+                                string normalized = JsonData.NormalizeLogTimestamps(diagnostic);
+                                signatureMechanism = signatureMechanism.Length == 0 ? normalized : signatureMechanism + "\n" + normalized;
+                            }
+                        }
+                        else if (discoveryTask && executionVerified && outcome is "Passed" or "Failed")
+                        {
+                            Gap(record, $"Helix discovery log unavailable for task {task.Text("id")} in build {record.Text("id")}.");
                         }
                         else
                         {
@@ -1079,8 +1094,13 @@ sealed class Collector
                 {
                     parent = next;
                 }
-                FindHelix(mechanism, helixJobs, parent.Text("type") == "Job" &&
-                    !string.IsNullOrWhiteSpace(parent.Text("name")) ? $"job:{parent.Text("name")}" : "");
+                string submission = parent.Text("type") == "Job" &&
+                    !string.IsNullOrWhiteSpace(parent.Text("name")) ? $"job:{parent.Text("name")}" : "";
+                FindHelix(mechanism, helixJobs, submission);
+                if (discoveryLog is not null)
+                {
+                    FindHelix(discoveryLog, helixJobs, submission);
+                }
                 record.Rows("observations").Add(JsonData.Object(new
                 {
                     id = $"timeline:{task.Text("id")}", kind = task.Text("type").ToLowerInvariant(), name = task["name"],

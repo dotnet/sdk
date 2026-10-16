@@ -1515,6 +1515,36 @@ sealed class Checks(string outputDirectory, string? filter)
             }
             await CollectAsync(missing, expectedError: "Evidence is incomplete");
         });
+        await CaseAsync("Successful Helix monitor logs supply executed controls outside diagnostic tails", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "successful-helix-discovery");
+            Fixtures.Collection(replay, helix: true);
+            foreach (string id in new[] { "3", "2" })
+            {
+                string job = $"{new string(id[0], 8)}-{new string(id[0], 4)}-{new string(id[0], 4)}-{new string(id[0], 4)}-{new string(id[0], 12)}";
+                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
+                    s["arguments"]!.AsArray().Count > 2 && s["arguments"]![1]!.GetValue<string>() == "timeline" &&
+                    s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl(id), data =>
+                {
+                    JsonNode task = data["records"]![1]!;
+                    task["name"] = "Monitor Helix Jobs";
+                    task["log"] = new JsonObject { ["id"] = 1 };
+                    task["issues"] = id == "3"
+                        ? new JsonArray(new JsonObject { ["message"] = "MSB4036: monitor failed" }) : new JsonArray();
+                });
+                string full = $"HelixJob:{job}\n" + string.Join('\n', Enumerable.Repeat("Monitoring completed", 250));
+                Fixtures.Save(replay, "hlx", ["azdo", "log", Fixtures.BuildUrl(id), "1", "--full", "--json"], full);
+                Fixtures.Save(replay, "hlx", ["azdo", "log", Fixtures.BuildUrl(id), "1", "--tail-lines", "120", "--json"],
+                    string.Join('\n', Enumerable.Repeat("Monitoring completed", 120)));
+            }
+            JsonObject dossier = await CollectAsync(replay);
+            JsonNode row = (await CompareAsync(dossier))["comparisons"]!.AsArray()
+                .Single(r => r!["kind"]!.GetValue<string>() == "work-item")!;
+            Assert(row["mostRecentPassingExecution"]!["buildId"]!.GetValue<string>() == "2" &&
+                dossier["acquisitions"]!.AsArray().Count(a =>
+                    a!["description"]!.GetValue<string>().Contains("--full --json", StringComparison.Ordinal)) == 2,
+                "Successful monitor logs or IDs preceding their diagnostic tails were not acquired.");
+        });
         await CaseAsync("Helix controls require the same submission stream as well as queue and work item", async () =>
         {
             string replay = Path.Combine(outputDirectory, "helix-streams");
