@@ -129,9 +129,9 @@
 /src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers
 
 # Area-Infrastructure
-.vsts-ci.yml @MiYanni @MichaelSimons
-.vsts-pr.yml @MiYanni @MichaelSimons
-/eng/pipelines @MiYanni @MichaelSimons
+.vsts-ci.yml @MiYanni
+.vsts-pr.yml @MiYanni
+/eng/pipelines @MiYanni
 
 # AI
 .github/ @mthalman @lbussell
