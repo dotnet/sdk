@@ -60,7 +60,7 @@ static class CiEvidence
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine(JsonData.ProtectText(ex.Message));
+            Console.Error.WriteLine(ex.Message);
             return 1;
         }
     }
@@ -136,7 +136,7 @@ static class JsonData
         node as JsonObject ?? throw new InvalidDataException("Expected a JSON object array entry."));
     public static JsonObject Object(object value) => JsonSerializer.SerializeToNode(value, Compact)!.AsObject();
     public static JsonArray Array(IEnumerable<JsonNode?> values) => new(values.Select(n => n?.DeepClone()).ToArray());
-    public static JsonNode? Parse(string text) => Protect(JsonNode.Parse(text, documentOptions: new() { MaxDepth = 100 }));
+    public static JsonNode? Parse(string text) => JsonNode.Parse(text, documentOptions: new() { MaxDepth = 100 });
     public static JsonObject Read(string path) => Parse(File.ReadAllText(path)) as JsonObject ??
         throw new InvalidDataException($"Expected a JSON object in {path}.");
     public static JsonNode? BuildParameters(JsonNode? node)
@@ -160,30 +160,15 @@ static class JsonData
         {
             throw new InvalidDataException("Expected build parameters to be a JSON object.");
         }
-        return Protect(node);
+        return node?.DeepClone();
     }
     public static string NormalizeLogTimestamps(string text) => Regex.Replace(text,
         @"(?m)^(\[?)\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})(\]?[ \t]+)(?=\S)",
         "$1<timestamp>$2");
-    public static string ProtectText(string text)
-    {
-        text = Regex.Replace(text, """(?i)([?&](?:access_token|token|sig|apikey|api_key)=)[^&\s"<>]+""", "$1<redacted>");
-        return Regex.Replace(text, @"(?i)\bBearer\s+[A-Za-z0-9._~+/-]+", "******");
-    }
-    public static JsonNode? Protect(JsonNode? node) => node switch
-    {
-        JsonObject obj => new JsonObject(obj.OrderBy(p => p.Key, StringComparer.Ordinal).Select(p =>
-            new KeyValuePair<string, JsonNode?>(p.Key,
-                Regex.IsMatch(p.Key, "^(?:authorization|password|secret|accessToken|access_token|token)$", RegexOptions.IgnoreCase)
-                    ? JsonValue.Create("<redacted>") : Protect(p.Value)))),
-        JsonArray array => new JsonArray(array.Select(Protect).ToArray()),
-        JsonValue value when value.TryGetValue(out string? text) => JsonValue.Create(ProtectText(text)),
-        _ => node?.DeepClone()
-    };
     public static void Write(JsonNode node, string path)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(path))!);
-        File.WriteAllText(path, Protect(node)!.ToJsonString(s_indented) + "\n", new UTF8Encoding(false));
+        File.WriteAllText(path, node.ToJsonString(s_indented) + "\n", new UTF8Encoding(false));
     }
     public static DateTimeOffset Time(JsonNode node) => DateTimeOffset.Parse(node.Text("queuedAt"), CultureInfo.InvariantCulture);
 }
@@ -345,7 +330,7 @@ sealed class Reader(string snapshots, string? replayDirectory, string ghPath, st
         string errorMessage = "";
         if (text)
         {
-            data = JsonValue.Create(JsonData.ProtectText(stdout));
+            data = JsonValue.Create(stdout);
         }
         else if (!string.IsNullOrWhiteSpace(stdout))
         {
@@ -385,8 +370,7 @@ sealed class Reader(string snapshots, string? replayDirectory, string ghPath, st
         }
         JsonData.Write(JsonData.Object(new
         {
-            tool, arguments, exitCode, stdout = JsonData.ProtectText(stdout),
-            stderr = JsonData.ProtectText(stderr), replayed = replayDirectory is not null
+            tool, arguments, exitCode, stdout, stderr, replayed = replayDirectory is not null
         }), snapshotPath);
         bool ok = exitCode == 0 && errorMessage.Length == 0;
         if (exitCode != 0 && errorMessage.Length == 0)
@@ -407,7 +391,7 @@ sealed class Reader(string snapshots, string? replayDirectory, string ghPath, st
             }
         }
         return new($"{tool} {string.Join(' ', arguments)}", snapshotPath, exitCode, ok, complete, data,
-            JsonData.ProtectText($"{errorMessage} {stderr}"), replayDirectory is not null, replayPath);
+            $"{errorMessage} {stderr}", replayDirectory is not null, replayPath);
     }
 }
 
@@ -580,7 +564,7 @@ static class Comparison
             {
                 limitations.Add($"Unverified {key}");
             }
-            else if (!JsonNode.DeepEquals(JsonData.Protect(build[key]), JsonData.Protect(other[key])))
+            else if (!JsonNode.DeepEquals(build[key], other[key]))
             {
                 limitations.Add($"Changed {key}");
             }
@@ -855,7 +839,7 @@ sealed class Collector
             _dossier.Rows("acquisitions").Add(JsonData.Object(new
             {
                 description = $"{tool} {string.Join(' ', arguments)}", snapshot = (string?)null, exitCode = (int?)null,
-                ok = false, complete = false, error = JsonData.ProtectText(ex.Message),
+                ok = false, complete = false, error = ex.Message,
                 replayed = _options["replay-directory"] is not null
             }));
             throw;
@@ -1361,8 +1345,8 @@ sealed class Collector
                 if (excerpt is not null)
                 {
                     JsonData.Write(excerpt, excerptPath);
-                    mechanism += "\n" + JsonData.ProtectText(excerpt.Text("text"));
-                    signatureMechanism += "\n" + JsonData.NormalizeLogTimestamps(JsonData.ProtectText(excerpt.Text("text")));
+                    mechanism += "\n" + excerpt.Text("text");
+                    signatureMechanism += "\n" + JsonData.NormalizeLogTimestamps(excerpt.Text("text"));
                 }
                 else
                 {
@@ -1423,7 +1407,7 @@ sealed class Collector
         {
             string path = Path.Combine(_outputDirectory, $"changes-{record.Text("id")}-{baseSha}.diff");
             Directory.CreateDirectory(_outputDirectory);
-            File.WriteAllText(path, JsonData.ProtectText(JsonData.Scalar(diff.Data)) + "\n", new UTF8Encoding(false));
+            File.WriteAllText(path, JsonData.Scalar(diff.Data) + "\n", new UTF8Encoding(false));
             window["diffPath"] = path;
         }
         else
@@ -1451,7 +1435,7 @@ sealed class Collector
         }
         catch (Exception ex)
         {
-            _dossier["error"] = JsonData.ProtectText(ex.Message);
+            _dossier["error"] = ex.Message;
             HashSet<string> selected = _dossier.Rows("selectedBuildIds").Select(JsonData.Scalar).ToHashSet(StringComparer.Ordinal);
             foreach (JsonObject record in _byId.Values.Where(b => selected.Contains(b.Text("id"))))
             {

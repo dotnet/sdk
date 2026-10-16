@@ -47,6 +47,8 @@ Run the `collect` command in [CiEvidence.cs](scripts/CiEvidence.cs), not a handw
 sequence of agent-selected API calls. Use an invocation-specific session artifact
 directory. The C# file-based app needs no packages or PowerShell runtime.
 Paths below use PowerShell shell syntax; do not write evidence into the repository.
+The scripts do not redact credentials from collected evidence or output. Treat
+artifacts as sensitive and review them before sharing.
 
 ```powershell
 $skill = '.github\skills\ci-failure-attribution'

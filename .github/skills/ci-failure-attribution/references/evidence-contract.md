@@ -4,6 +4,9 @@ The C# file-based apps use the repository-selected .NET SDK; they have no packag
 dependencies and do not require PowerShell. All JSON outputs use `schemaVersion: 1`.
 Unknown fields remain `null` or explicit gaps; they are not replaced by successful
 empty results. Paths supplied to the scripts are local invocation artifacts.
+The scripts do not redact credentials. Snapshots, logs, errors, diffs, and reports
+retain credential-bearing values present in the collected evidence. Treat these
+artifacts as sensitive and review them before sharing.
 
 `evidence.json` contains:
 
@@ -53,14 +56,14 @@ unsupported metadata remains explicit; it is never converted to an empty object.
 Snapshots retain only the relevant raw input fields, not unrelated `variables`
 or expanded `finalYaml`. Comparison checks template parameters independently.
 The [parameter decoder](../scripts/CiEvidence.cs) accepts Azure's JSON-encoded
-parameter objects and object-valued metadata. It decodes and recursively scrubs
-credential fields before persisting build-metadata snapshots or dossier parameters.
+parameter objects and object-valued metadata. It decodes them before persisting
+build-metadata snapshots or dossier parameters, preserving all parameter values.
 Offline comparison also accepts either representation in older dossiers.
 Parameter objects compare structurally: serialization whitespace and key order are
-not input changes, while case-distinct keys and non-secret values remain distinct.
+not input changes, while case-distinct keys and all values remain distinct.
 Null, empty/whitespace strings, and encoded JSON `null` remain unavailable parameters,
 not known empty objects. Malformed JSON and non-object parameter values fail
-explicitly without echoing their contents or saving the unsafe metadata snapshot.
+explicitly without echoing their contents or saving the invalid metadata snapshot.
 
 The [collector](../scripts/CiEvidence.cs) retains raw `testRuns` metadata from
 Azure REST, using hlx only to enumerate run IDs. Missing counters remain absent,
@@ -182,13 +185,13 @@ unsupported response shapes remain explicit gaps rather than becoming log text.
 Online acquisition records snapshots under `snapshots`. A `--replay-directory`
 containing those snapshots replays commands without running `gh`, `hlx`, or `az`.
 Helix console downloads additionally have a `.console.json` sidecar containing
-the scrubbed final 120 lines and source URL; include it in a replay. The collector
+the final 120 lines and source URL; include it in a replay. The collector
 never reads a local path from replayed command output. Missing console sidecars
 remain explicit coverage gaps. Work-item passes support work-item comparisons,
 not individual assertions absent from structured test results.
 Missing replay commands fail explicitly. Replays are marked as such and never
-claimed as live service validation. Scrubbing credentials can make an artifact
-unusable for authentication; never attempt to replay authenticated URLs.
+claimed as live service validation. Replay uses local snapshots, not authenticated
+source URLs.
 Helix work-item lanes include both the physical queue and sorted submission
 contexts from the Azure parent job and tagged test runs. Queue/name equality
 alone cannot equate ordinary and FullFramework streams. The original queue and
