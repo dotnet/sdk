@@ -56,11 +56,23 @@
       "kind": "string",
       "id": "29e92018-8bda-4e71-a574-b9f435751135",
       "displayName": "Version Filter",
-      "description": "Enter a dotnetup version to filter, or leave empty for all",
+      "description": "Select one or more dotnetup versions observed in telemetry during the selected time range, or select all",
       "variableName": "_versionFilter",
-      "selectionType": "freetext",
+      "selectionType": "array",
+      "includeAllOption": true,
+      "allIsNull": true,
       "defaultValue": {
         "kind": "all"
+      },
+      "dataSource": {
+        "kind": "query",
+        "queryRef": {
+          "kind": "query",
+          "queryId": "9b1d763a-36c0-4a9f-a69d-6b4c013f058e"
+        },
+        "columns": {
+          "value": "version"
+        }
       },
       "showOnPages": {
         "kind": "all"
@@ -345,7 +357,7 @@
     {
       "id": "eccf2c58-5072-4a07-ba21-6e04e551ba50",
       "title": "Product Success Rate Over Time (by Command, Latest Version)",
-      "description": "When no version filter is set, auto-scopes to the latest version so the chart is not cluttered with old data. When the user sets a version, respects it.",
+      "description": "When all versions are selected, auto-scopes to the latest version so the chart is not cluttered with old data. Otherwise, includes all selected versions.",
       "visualType": "line",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1424,6 +1436,18 @@
   ],
   "queries": [
     {
+      "id": "9b1d763a-36c0-4a9f-a69d-6b4c013f058e",
+      "dataSource": {
+        "kind": "inline",
+        "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
+      },
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| where isnotempty(version)\n| distinct version\n| extend version_sort = parse_version(extract(@\"^(\\d+(?:\\.\\d+){0,3})\", 1, version))\n| order by version_sort desc, version desc\n| project version",
+      "usedVariables": [
+        "_startTime",
+        "_endTime"
+      ]
+    },
+    {
       "id": "c1d2e3f4-a5b6-4c78-9d01-234567890abc",
       "dataSource": {
         "kind": "inline",
@@ -1473,7 +1497,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| extend llm_agent = tostring(Properties[\"llm.agent\"])\n| extend is_llm_agent = isnotempty(llm_agent)\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend os_platform = tostring(Properties[\"os.platform\"])\n| extend os_type = tostring(Properties[\"os.type\"])\n| extend process_arch = tostring(Properties[\"process.arch\"])\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| where (isempty(['_llmAgent']) or is_llm_agent == tobool(['_llmAgent']))\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| extend llm_agent = tostring(Properties[\"llm.agent\"])\n| extend is_llm_agent = isnotempty(llm_agent)\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend os_platform = tostring(Properties[\"os.platform\"])\n| extend os_type = tostring(Properties[\"os.type\"])\n| extend process_arch = tostring(Properties[\"process.arch\"])\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| where (isempty(['_llmAgent']) or is_llm_agent == tobool(['_llmAgent']))\n| where (isempty(_versionFilter) or version in (_versionFilter))\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",
@@ -1557,7 +1581,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "let effectiveVersion = iif(isempty(_versionFilter),\n    toscalar(_dotnetupCommands | where isnotempty(version) | distinct version | order by version desc | take 1),\n    _versionFilter);\n_dotnetupCommands\n| where isnotempty(command)\n| where version == effectiveVersion\n| where not(not(is_success) and error_category == \"user\")\n| summarize Total = count(), Successful = countif(is_success) by Day = bin(TimeGenerated, 1d), command\n| where Total > 0\n| extend SuccessRate = round(100.0 * Successful / Total, 1)\n| project Day, command, SuccessRate\n| order by Day asc, command asc",
+      "text": "let latestVersion = toscalar(_dotnetupCommands | where isnotempty(version) | distinct version | order by version desc | take 1);\n_dotnetupCommands\n| where isnotempty(command)\n| where (isempty(_versionFilter) and version == latestVersion) or version in (_versionFilter)\n| where not(not(is_success) and error_category == \"user\")\n| summarize Total = count(), Successful = countif(is_success) by Day = bin(TimeGenerated, 1d), command\n| where Total > 0\n| extend SuccessRate = round(100.0 * Successful / Total, 1)\n| project Day, command, SuccessRate\n| order by Day asc, command asc",
       "usedVariables": [
         "_dotnetupCommands",
         "_versionFilter"
