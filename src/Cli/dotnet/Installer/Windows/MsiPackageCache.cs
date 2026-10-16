@@ -18,10 +18,11 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// While NuGet verification checks the <c>.nupkg</c> wrapper, this class verifies the
 /// Authenticode signature of the <c>.msi</c> files extracted from those packages.</para>
 /// <para>Signature verification is performed when retrieving payloads from the cache via
-/// <see cref="TryGetPayloadFromCache"/>. The verification checks both that the MSI has a valid
-/// Authenticode signature and that the certificate chain terminates in a trusted Microsoft root.
-/// This two-step verification is controlled by the <c>verifyMsiSignature</c> parameter inherited
-/// from <see cref="InstallerBase"/>.</para>
+/// <see cref="TryGetPayloadFromCache"/> and before administratively extracting workload manifest
+/// MSI packages via <c>WindowsMsiManifestInstaller</c>. The verification checks both that the MSI
+/// has a valid Authenticode signature and that the certificate chain terminates in a trusted
+/// Microsoft root. This two-step verification is controlled by the <c>verifyMsiSignature</c>
+/// parameter inherited from <see cref="InstallerBase"/>.</para>
 /// </remarks>
 [SupportedOSPlatform("windows")]
 internal class MsiPackageCache(
@@ -169,7 +170,7 @@ internal class MsiPackageCache(
     /// this method logs a skip message and returns without checking.</para>
     /// </remarks>
     /// <param name="msiPath">The full path of the MSI to verify.</param>
-    private void VerifyPackageSignature(string msiPath)
+    internal void VerifyPackageSignature(string msiPath)
     {
         if (!VerifyMsiSignature)
         {
