@@ -3,27 +3,27 @@
 
 using FluentAssertions;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
 public class DotnetupPolicyTests
 {
-    private FakePolicyStore _store = null!;
+    private AdminModeTestEnvironment _environment = null!;
+    private FakeDotnetupPolicyStore _store => _environment.Store;
 
     [TestInitialize]
     public void Initialize()
     {
-        _store = new FakePolicyStore();
-        DotnetupPolicy.Store = _store;
-        UnsignedSourcePolicy.OverrideForTesting = null;
+        _environment = new AdminModeTestEnvironment();
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        DotnetupPolicy.ResetStoreForTesting();
-        UnsignedSourcePolicy.OverrideForTesting = null;
+        _environment.Dispose();
     }
 
     [TestMethod]
@@ -108,21 +108,4 @@ public class DotnetupPolicyTests
         UnsignedSourcePolicy.IsUnsignedDownloadBlocked().Should().Be(overrideValue);
     }
 
-    private sealed class FakePolicyStore : IDotnetupPolicyStore
-    {
-        public Dictionary<string, bool> Values { get; } = new(StringComparer.Ordinal);
-
-        public List<Dictionary<string, bool>> Writes { get; } = [];
-
-        public bool ReadFlag(string valueName) => Values.TryGetValue(valueName, out bool value) && value;
-
-        public void WriteFlags(IReadOnlyDictionary<string, bool> values)
-        {
-            Writes.Add(new Dictionary<string, bool>(values));
-            foreach (var (name, value) in values)
-            {
-                Values[name] = value;
-            }
-        }
-    }
 }

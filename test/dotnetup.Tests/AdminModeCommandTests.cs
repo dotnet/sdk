@@ -6,44 +6,34 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedSystemPath;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
-/// Covers how <c>init</c>, <c>env set</c>, and the hidden elevated command route admin mode
+/// Covers how <c>init</c> and the hidden elevated command route admin mode
 /// switches. The policy store and elevator are faked, so no test writes HKLM or prompts UAC.
 /// </summary>
 [TestClass]
 [DoNotParallelize]
 public class AdminModeCommandTests : IDisposable
 {
-    private readonly string _tempDir;
-    private readonly FakeDotnetupPolicyStore _store = new();
+    private readonly AdminModeTestEnvironment _environment = new();
+    private string _tempDir => _environment.TempRoot;
+    private FakeDotnetupPolicyStore _store => _environment.Store;
     private readonly FakeAdminModeElevator _elevator = new();
     private readonly MockDotnetInstallManager _env;
-    private readonly FakeEnvironmentStateInspector _inspector = new();
 
     public AdminModeCommandTests()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-admin-mode-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(_tempDir);
-        DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
-        DotnetupPolicy.Store = _store;
-        AccessModeResolver.OverrideForTesting = null;
         _env = new MockDotnetInstallManager(defaultInstallPath: Path.Combine(_tempDir, "dotnet"), existingSystemInstalls: []);
     }
 
-    public void Dispose()
-    {
-        DotnetupPolicy.ResetStoreForTesting();
-        AccessModeResolver.OverrideForTesting = null;
-        DotnetupPaths.ClearTestDataDirectoryOverride();
-        try { Directory.Delete(_tempDir, recursive: true); } catch { /* best-effort cleanup */ }
-    }
+    public void Dispose() => _environment.Dispose();
 
     // ── elevatedsystempath parsing ──
 
@@ -59,16 +49,6 @@ public class AdminModeCommandTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow("insertdotnet")]
-    [DataRow("removedotnet")]
-    public void ElevatedSystemPath_PathOperation_RequiresDotnetDir(string operation)
-    {
-        var parseResult = Parser.Parse(["elevatedsystempath", operation, "output.txt"]);
-
-        parseResult.Errors.Should().ContainSingle(e => e.Message.Contains("--dotnet-dir", StringComparison.Ordinal));
-    }
-
-    [TestMethod]
     public void ElevatedSystemPath_PathOperation_ParsesWithDotnetDir()
     {
         var parseResult = Parser.Parse(["elevatedsystempath", "insertdotnet", "output.txt", "--dotnet-dir", _tempDir]);
@@ -78,30 +58,24 @@ public class AdminModeCommandTests : IDisposable
 
     // ── init --mode ──
 
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Init_ModeAdmin_Parses()
-    {
-        var parseResult = Parser.Parse(["init", "--mode", "admin"]);
-
-        parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(InitCommandParser.ModeOption).Should().Be(DotnetAccessMode.Admin);
-    }
-
-    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    public void Init_ModeAdmin_RejectedOffWindows()
-    {
-        var parseResult = Parser.Parse(["init", "--mode", "admin"]);
-
-        parseResult.Errors.Should().Contain(e => e.Message.Contains("Windows", StringComparison.Ordinal));
-    }
-
     [TestMethod]
-    public void Init_ModeShell_Parses()
+    [DataRow("admin", DotnetAccessMode.Admin)]
+    [DataRow("shell", DotnetAccessMode.Shell)]
+    [DataRow("none", DotnetAccessMode.None)]
+    [DataRow("everywhere", DotnetAccessMode.Everywhere)]
+    internal void Init_Mode_ParsesOnSupportedPlatforms(string token, DotnetAccessMode mode)
     {
-        var parseResult = Parser.Parse(["init", "--mode", "shell"]);
+        var parseResult = Parser.Parse(["init", "--mode", token]);
 
-        parseResult.Errors.Should().BeEmpty();
-        parseResult.GetValue(InitCommandParser.ModeOption).Should().Be(DotnetAccessMode.Shell);
+        if (DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(mode))
+        {
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(InitCommandParser.ModeOption).Should().Be(mode);
+        }
+        else
+        {
+            parseResult.Errors.Should().Contain(e => e.Message.Contains("Windows", StringComparison.Ordinal));
+        }
     }
 
     [TestMethod]
@@ -244,118 +218,6 @@ public class AdminModeCommandTests : IDisposable
 
         CreateInitWorkflows().RunInit(command, DotnetAccessMode.Admin).Should().BeEmpty();
 
-        _elevator.Operations.Should().BeEmpty();
-        _store.Writes.Should().BeEmpty();
-    }
-
-    // ── env set ──
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void EnvSet_Admin_EnablesAdminModeOnly()
-    {
-        var parseResult = Parser.Parse(["env", "set", "admin"]);
-        parseResult.Errors.Should().BeEmpty();
-
-        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
-
-        exitCode.Should().Be(0);
-        _elevator.Operations.Should().Equal(AdminModeOperation.Enable);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
-        AssertNoEnvironmentOrConfigChanges();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void EnvSet_Admin_PreservesExistingUserConfigurationAndProfile()
-    {
-        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false });
-        string originalConfig = File.ReadAllText(DotnetupPaths.ConfigPath);
-        string profile = Path.Combine(_tempDir, "profile.ps1");
-        const string originalProfile = "dotnetup env script --shell pwsh --dotnet | Invoke-Expression";
-        File.WriteAllText(profile, originalProfile);
-
-        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "admin"]), _env, _inspector, CreateSwitcher()).Execute();
-
-        exitCode.Should().Be(0);
-        File.ReadAllText(DotnetupPaths.ConfigPath).Should().Be(originalConfig);
-        File.ReadAllText(profile).Should().Be(originalProfile);
-        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
-        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
-        _env.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void EnvSet_AdminCancelled_FailsWithoutChanges()
-    {
-        var elevator = new FakeAdminModeElevator
-        {
-            Failure = new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"),
-        };
-        var switcher = new AdminModeSwitcher(elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
-
-        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "admin"]), _env, _inspector, switcher).Execute();
-
-        exitCode.Should().NotBe(0);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeFalse();
-        AssertNoEnvironmentOrConfigChanges();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void EnvSet_ShellWhileAdmin_DisablesThenApplies()
-    {
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        var parseResult = Parser.Parse(["env", "set", "shell", "--shell", "bash"]);
-        parseResult.Errors.Should().BeEmpty();
-
-        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
-
-        exitCode.Should().Be(0);
-        _elevator.Operations.Should().Equal(AdminModeOperation.Disable);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeFalse();
-        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void EnvSet_ShellWhileAdminCancelled_AppliesNothing()
-    {
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        var elevator = new FakeAdminModeElevator
-        {
-            Failure = new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"),
-        };
-        var switcher = new AdminModeSwitcher(elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
-
-        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "shell", "--shell", "bash"]), _env, _inspector, switcher).Execute();
-
-        exitCode.Should().NotBe(0);
-        elevator.Operations.Should().Equal(AdminModeOperation.Disable);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
-        AssertNoEnvironmentOrConfigChanges();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void EnvSet_WithoutModeWhileAdmin_MakesNoChanges()
-    {
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
-
-        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set"]), _env, _inspector, CreateSwitcher()).Execute();
-
-        exitCode.Should().Be(0);
-        _elevator.Operations.Should().BeEmpty();
-        _store.Writes.Should().BeEmpty();
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
-        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
-        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
-    }
-
-    [TestMethod]
-    public void EnvSet_ShellWhileNotAdmin_DoesNotTouchPolicy()
-    {
-        var parseResult = Parser.Parse(["env", "set", "shell", "--shell", "bash"]);
-
-        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
-
-        exitCode.Should().Be(0);
         _elevator.Operations.Should().BeEmpty();
         _store.Writes.Should().BeEmpty();
     }

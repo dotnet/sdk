@@ -4,33 +4,27 @@
 using FluentAssertions;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
 public class AccessModeResolverTests
 {
-    private string _tempDir = null!;
-    private StubPolicyStore _store = null!;
+    private AdminModeTestEnvironment _environment = null!;
+    private FakeDotnetupPolicyStore _store => _environment.Store;
 
     [TestInitialize]
     public void Initialize()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-access-mode-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(_tempDir);
-        DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
-        _store = new StubPolicyStore();
-        DotnetupPolicy.Store = _store;
-        AccessModeResolver.OverrideForTesting = null;
+        _environment = new AdminModeTestEnvironment();
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        AccessModeResolver.OverrideForTesting = null;
-        DotnetupPolicy.ResetStoreForTesting();
-        DotnetupPaths.ClearTestDataDirectoryOverride();
-        try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
+        _environment.Dispose();
     }
 
     [TestMethod]
@@ -54,7 +48,7 @@ public class AccessModeResolverTests
     public void Resolve_PolicyWinsOverUserConfig()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Everywhere });
-        _store.AdminMode = true;
+        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
 
         var result = AccessModeResolver.Resolve();
 
@@ -65,7 +59,7 @@ public class AccessModeResolverTests
     [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void Resolve_IgnoresPolicyOffWindows()
     {
-        _store.AdminMode = true;
+        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
 
         AccessModeResolver.Resolve().Should().Be(EffectiveAccessMode.Unset);
     }
@@ -97,23 +91,4 @@ public class AccessModeResolverTests
         output.ToString().Should().BeEmpty();
     }
 
-    [TestMethod]
-    public void Resolve_UsesOverrideForTesting()
-    {
-        var expected = new EffectiveAccessMode(DotnetAccessMode.Admin, AccessModeSource.Policy);
-        AccessModeResolver.OverrideForTesting = () => expected;
-
-        AccessModeResolver.Resolve().Should().BeSameAs(expected);
-    }
-
-    private sealed class StubPolicyStore : IDotnetupPolicyStore
-    {
-        public bool AdminMode { get; set; }
-
-        public bool ReadFlag(string valueName) =>
-            valueName == DotnetupPolicy.AdminModeValueName && AdminMode;
-
-        public void WriteFlags(IReadOnlyDictionary<string, bool> values) =>
-            throw new InvalidOperationException("Resolution must not write policy.");
-    }
 }

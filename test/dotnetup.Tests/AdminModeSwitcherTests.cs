@@ -5,6 +5,8 @@ using FluentAssertions;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -13,23 +15,21 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [DoNotParallelize]
 public class AdminModeSwitcherTests
 {
-    private FakeDotnetupPolicyStore _store = null!;
+    private AdminModeTestEnvironment _environment = null!;
+    private FakeDotnetupPolicyStore _store => _environment.Store;
     private StringWriter _output = null!;
 
     [TestInitialize]
     public void Initialize()
     {
-        _store = new FakeDotnetupPolicyStore();
-        DotnetupPolicy.Store = _store;
-        AccessModeResolver.OverrideForTesting = null;
+        _environment = new AdminModeTestEnvironment();
         _output = new StringWriter();
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        DotnetupPolicy.ResetStoreForTesting();
-        AccessModeResolver.OverrideForTesting = null;
+        _environment.Dispose();
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
@@ -172,59 +172,4 @@ public class AdminModeSwitcherTests
         Out = new AnsiConsoleOutput(output),
         Ansi = AnsiSupport.No,
     });
-}
-
-/// <summary>In-memory <see cref="IDotnetupPolicyStore"/> so tests never touch HKLM.</summary>
-internal sealed class FakeDotnetupPolicyStore : IDotnetupPolicyStore
-{
-    public Dictionary<string, bool> Values { get; } = new(StringComparer.Ordinal);
-
-    public List<Dictionary<string, bool>> Writes { get; } = [];
-
-    public bool ReadFlag(string valueName) => Values.TryGetValue(valueName, out bool value) && value;
-
-    public void WriteFlags(IReadOnlyDictionary<string, bool> values)
-    {
-        Writes.Add(new Dictionary<string, bool>(values));
-        foreach (var (name, value) in values)
-        {
-            Values[name] = value;
-        }
-    }
-}
-
-/// <summary>
-/// Simulates the elevated child process: records the operation and, unless told otherwise,
-/// applies it through <see cref="DotnetupPolicy"/> (backed by the fake store). Never prompts UAC.
-/// </summary>
-internal sealed class FakeAdminModeElevator : IAdminModeElevator
-{
-    public List<AdminModeOperation> Operations { get; } = [];
-
-    public Exception? Failure { get; init; }
-
-    public bool AppliesChange { get; init; } = true;
-
-    public void Run(AdminModeOperation operation)
-    {
-        Operations.Add(operation);
-        if (Failure is not null)
-        {
-            throw Failure;
-        }
-
-        if (!AppliesChange)
-        {
-            return;
-        }
-
-        if (operation == AdminModeOperation.Enable)
-        {
-            DotnetupPolicy.EnableAdminMode();
-        }
-        else
-        {
-            DotnetupPolicy.DisableAdminMode();
-        }
-    }
 }

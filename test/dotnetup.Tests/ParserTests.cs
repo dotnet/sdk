@@ -141,12 +141,14 @@ public class ParserTests
     }
 
     [TestMethod]
-    public void Parser_ElevatedSystemPathCommand_RequiresDotnetDir()
+    [DataRow("insertdotnet")]
+    [DataRow("removedotnet")]
+    public void Parser_ElevatedSystemPathCommand_RequiresDotnetDir(string operation)
     {
         // Arrange - omit the required --dotnet-dir option
         var args = new[]
         {
-            "elevatedsystempath", "insertdotnet",
+            "elevatedsystempath", operation,
             @"C:\Users\User\AppData\Local\Temp\dotnetup_elevated\output.txt"
         };
 

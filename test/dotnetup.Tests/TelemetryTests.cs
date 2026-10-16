@@ -6,6 +6,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using UrlSanitizer = Microsoft.Dotnet.Installation.Internal.UrlSanitizer;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Tests;
@@ -101,63 +102,46 @@ public class TelemetryCommonPropertiesTests
     }
 
     [TestMethod]
-    public void GetCommonAttributes_AdminPolicy_TagsAccessMode()
+    [DataRow(DotnetAccessMode.Admin, "admin", "policy")]
+    [DataRow(DotnetAccessMode.Shell, "shell", "user_config")]
+    [DataRow(DotnetAccessMode.None, "none", "user_config")]
+    [DataRow(DotnetAccessMode.Everywhere, "everywhere", "user_config")]
+    [DataRow(null, "unset", "unset")]
+    internal void GetCommonAttributes_TagsResolvedAccessMode(DotnetAccessMode? mode, string expectedMode, string expectedSource)
     {
-        AssertAccessModeAttributes(
-            () => new EffectiveAccessMode(DotnetAccessMode.Admin, AccessModeSource.Policy),
-            expectedMode: "admin",
-            expectedSource: "policy");
-    }
+        if (mode == DotnetAccessMode.Admin && !OperatingSystem.IsWindows())
+        {
+            Assert.Inconclusive("Admin mode is only supported on Windows.");
+        }
 
-    [TestMethod]
-    public void GetCommonAttributes_ShellUserConfig_TagsAccessMode()
-    {
-        AssertAccessModeAttributes(
-            () => new EffectiveAccessMode(DotnetAccessMode.Shell, AccessModeSource.UserConfig),
-            expectedMode: "shell",
-            expectedSource: "user_config");
-    }
+        using var environment = new AdminModeTestEnvironment();
+        if (mode == DotnetAccessMode.Admin)
+        {
+            environment.Store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        }
+        else if (mode is DotnetAccessMode configuredMode)
+        {
+            DotnetupConfig.Write(new DotnetupConfigData { AccessMode = configuredMode });
+        }
 
-    [TestMethod]
-    public void GetCommonAttributes_Unset_TagsAccessModeAsUnset()
-    {
-        AssertAccessModeAttributes(() => EffectiveAccessMode.Unset, expectedMode: "unset", expectedSource: "unset");
+        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
+            .ToDictionary(kv => kv.Key, kv => kv.Value);
+
+        Assert.AreEqual(expectedMode, attributes[TelemetryTagNames.AccessMode]);
+        Assert.AreEqual(expectedSource, attributes[TelemetryTagNames.AccessModeSource]);
     }
 
     [TestMethod]
     public void GetCommonAttributes_ResolverThrows_TagsAccessModeAsUnset()
     {
-        AssertAccessModeAttributes(
-            () => throw new InvalidOperationException("boom"),
-            expectedMode: "unset",
-            expectedSource: "unset");
-    }
+        using var environment = new AdminModeTestEnvironment();
+        AccessModeResolver.OverrideForTesting = () => throw new InvalidOperationException("boom");
 
-    [TestMethod]
-    public void GetAccessModeTelemetryValue_IsLowercaseModeName()
-    {
-        Assert.AreEqual("none", TelemetryCommonProperties.GetAccessModeTelemetryValue(DotnetAccessMode.None));
-        Assert.AreEqual("shell", TelemetryCommonProperties.GetAccessModeTelemetryValue(DotnetAccessMode.Shell));
-        Assert.AreEqual("everywhere", TelemetryCommonProperties.GetAccessModeTelemetryValue(DotnetAccessMode.Everywhere));
-        Assert.AreEqual("admin", TelemetryCommonProperties.GetAccessModeTelemetryValue(DotnetAccessMode.Admin));
-        Assert.AreEqual("unset", TelemetryCommonProperties.GetAccessModeTelemetryValue(null));
-    }
+        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
+            .ToDictionary(kv => kv.Key, kv => kv.Value);
 
-    private static void AssertAccessModeAttributes(Func<EffectiveAccessMode> resolve, string expectedMode, string expectedSource)
-    {
-        AccessModeResolver.OverrideForTesting = resolve;
-        try
-        {
-            var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
-                .ToDictionary(kv => kv.Key, kv => kv.Value);
-
-            Assert.AreEqual(expectedMode, attributes[TelemetryTagNames.AccessMode]);
-            Assert.AreEqual(expectedSource, attributes[TelemetryTagNames.AccessModeSource]);
-        }
-        finally
-        {
-            AccessModeResolver.OverrideForTesting = null;
-        }
+        Assert.AreEqual("unset", attributes[TelemetryTagNames.AccessMode]);
+        Assert.AreEqual("unset", attributes[TelemetryTagNames.AccessModeSource]);
     }
 
     [TestMethod]

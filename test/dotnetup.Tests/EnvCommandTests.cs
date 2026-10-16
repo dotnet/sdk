@@ -2,11 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 using Microsoft.NET.TestFramework;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -18,35 +21,22 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// cannot be sandboxed cleanly in CI.
 /// </summary>
 [TestClass]
+[DoNotParallelize]
 public class EnvCommandTests : IDisposable
 {
-    private readonly string _tempDir;
+    private readonly AdminModeTestEnvironment _environment = new();
+    private string _tempDir => _environment.TempRoot;
+    private FakeDotnetupPolicyStore _store => _environment.Store;
+    private readonly FakeAdminModeElevator _elevator = new();
     private readonly MockDotnetInstallManager _env;
     private readonly FakeEnvironmentStateInspector _inspector = new();
 
     public EnvCommandTests()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), "dotnetup-env-cmd-tests", Guid.NewGuid().ToString("N"));
-        Directory.CreateDirectory(_tempDir);
-
-        // The override is thread-local ([ThreadStatic] in DotnetupPaths). Each xunit test case runs
-        // start-to-finish on a single thread, so parallel execution across tests doesn't cross-
-        // contaminate. (Thread-local state would not flow across async continuations, but these
-        // tests are synchronous.)
-        DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
-
-        // Keep env set's admin mode routing off the real machine policy.
-        DotnetupPolicy.Store = new FakeDotnetupPolicyStore();
-
         _env = new MockDotnetInstallManager(defaultInstallPath: Path.Combine(_tempDir, "dotnet"));
     }
 
-    public void Dispose()
-    {
-        DotnetupPolicy.ResetStoreForTesting();
-        DotnetupPaths.ClearTestDataDirectoryOverride();
-        try { Directory.Delete(_tempDir, recursive: true); } catch { /* best-effort cleanup */ }
-    }
+    public void Dispose() => _environment.Dispose();
 
     // ── EnvSetCommand ──
 
@@ -155,6 +145,128 @@ public class EnvCommandTests : IDisposable
 
         // A config exists but is unreadable → DotnetInstallException → exit code 1.
         exitCode.Should().Be(1);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_Admin_EnablesAdminModeOnly()
+    {
+        var parseResult = Parser.Parse(["env", "set", "admin"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
+
+        exitCode.Should().Be(0);
+        _elevator.Operations.Should().Equal(AdminModeOperation.Enable);
+        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        AssertNoEnvironmentOrConfigChanges();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_Admin_PreservesExistingUserConfigurationAndProfile()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false });
+        string originalConfig = File.ReadAllText(DotnetupPaths.ConfigPath);
+        string profile = Path.Combine(_tempDir, "profile.ps1");
+        const string originalProfile = "dotnetup env script --shell pwsh --dotnet | Invoke-Expression";
+        File.WriteAllText(profile, originalProfile);
+
+        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "admin"]), _env, _inspector, CreateSwitcher()).Execute();
+
+        exitCode.Should().Be(0);
+        File.ReadAllText(DotnetupPaths.ConfigPath).Should().Be(originalConfig);
+        File.ReadAllText(profile).Should().Be(originalProfile);
+        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        _env.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_AdminCancelled_FailsWithoutChanges()
+    {
+        var elevator = new FakeAdminModeElevator
+        {
+            Failure = new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"),
+        };
+        var switcher = new AdminModeSwitcher(elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
+
+        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "admin"]), _env, _inspector, switcher).Execute();
+
+        exitCode.Should().NotBe(0);
+        DotnetupPolicy.IsAdminModeEnabled().Should().BeFalse();
+        AssertNoEnvironmentOrConfigChanges();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_ShellWhileAdmin_DisablesThenApplies()
+    {
+        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        var parseResult = Parser.Parse(["env", "set", "shell", "--shell", "bash"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
+
+        exitCode.Should().Be(0);
+        _elevator.Operations.Should().Equal(AdminModeOperation.Disable);
+        DotnetupPolicy.IsAdminModeEnabled().Should().BeFalse();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_ShellWhileAdminCancelled_AppliesNothing()
+    {
+        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        var elevator = new FakeAdminModeElevator
+        {
+            Failure = new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"),
+        };
+        var switcher = new AdminModeSwitcher(elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
+
+        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "shell", "--shell", "bash"]), _env, _inspector, switcher).Execute();
+
+        exitCode.Should().NotBe(0);
+        elevator.Operations.Should().Equal(AdminModeOperation.Disable);
+        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        AssertNoEnvironmentOrConfigChanges();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_WithoutModeWhileAdmin_MakesNoChanges()
+    {
+        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
+
+        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set"]), _env, _inspector, CreateSwitcher()).Execute();
+
+        exitCode.Should().Be(0);
+        _elevator.Operations.Should().BeEmpty();
+        _store.Writes.Should().BeEmpty();
+        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void EnvSet_ShellWhileNotAdmin_DoesNotTouchPolicy()
+    {
+        var parseResult = Parser.Parse(["env", "set", "shell", "--shell", "bash"]);
+
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
+
+        exitCode.Should().Be(0);
+        _elevator.Operations.Should().BeEmpty();
+        _store.Writes.Should().BeEmpty();
+    }
+
+    private AdminModeSwitcher CreateSwitcher()
+        => new(_elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
+
+    private void AssertNoEnvironmentOrConfigChanges()
+    {
+        DotnetupConfig.Exists().Should().BeFalse();
+        _env.GetExistingSystemInstallsCallCount.Should().Be(0);
+        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        _env.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
     }
 
     // ── EnvClearCommand ──
