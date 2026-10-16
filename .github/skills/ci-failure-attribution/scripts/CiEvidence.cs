@@ -409,9 +409,15 @@ static class Comparison
         {
             return null;
         }
-        const string GuidPattern = @"[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}\b";
+        const string GuidPattern = JsonData.GuidPattern;
         text = Regex.Replace(text, $@"(?i)(\b(?:HelixJob|(?:Correlation|Activity|Request)[ _-]?Id)\s*[:=]\s*){GuidPattern}", "$1<guid>");
-        text = Regex.Replace(text, $@"(?i)(https://helix\.dot\.net/(?:api/)?jobs/){GuidPattern}", "$1<guid>");
+        text = Regex.Replace(text, $@"(?i)(https://helix\.dot\.net/(?:api/(?:\d{{4}}-\d{{2}}-\d{{2}}/)?)?jobs/){GuidPattern}", "$1<guid>");
+        text = Regex.Replace(text, JsonData.MonitorJobPattern, match =>
+        {
+            Group job = match.Groups["job"];
+            int offset = job.Index - match.Index;
+            return match.Value[..offset] + "<guid>" + match.Value[(offset + job.Length)..];
+        });
         text = Regex.Replace(text, @"(?<![\w./\\-])(?:(?i:[A-Z]:\\(?:Users\\[^\\\s]+\\AppData\\Local\\)?(?:tmp|temp)\\)|/(?:tmp|var/tmp)/)", "<temporary-root>/");
         text = Regex.Replace(text, @"(?<![\w./\\-])(?:(?i:[A-Z]:\\a\\_work\\\d+\\s\\)|/mnt/vss/_work/\d+/s/)", "<workspace>/");
         text = text.Replace("\r\n", "\n", StringComparison.Ordinal);

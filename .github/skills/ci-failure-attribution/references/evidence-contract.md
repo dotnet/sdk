@@ -142,6 +142,9 @@ history and candidate source boundaries remain available.
 The [signature implementation](../scripts/CiEvidence.cs) normalizes GUIDs only in
 known volatile contexts: labeled Helix job, correlation/activity/request IDs and
 Helix job URLs. It normalizes leading timestamps only while extracting known task/console log
+Versioned `/api/YYYY-MM-DD/jobs/GUID` URLs and the official parenthesized monitor
+job format normalize the job GUID only; API versions, queues, work-item names,
+and other diagnostic content remain meaningful. It normalizes leading timestamps only while extracting known task/console log
 segments, retaining the canonical text as `signatureMechanism` alongside the raw
 mechanism. Assertion messages, including timestamp-only multiline expected values,
 are not treated as transport logs. Timestamp-only log lines are retained as values.

@@ -203,6 +203,29 @@ sealed class Checks(string outputDirectory, string? filter)
             JsonNode row = Row(await CompareAsync(fixture));
             Assert(row["signature"] is null && row["matchingOccurrences"]!.GetValue<int>() == 0, "Empty mechanism matched.");
         });
+        await CaseAsync("Versioned Helix URLs and official monitor IDs normalize only volatile job identity", async () =>
+        {
+            const string first = "11111111-1111-1111-1111-111111111111";
+            const string second = "22222222-2222-2222-2222-222222222222";
+            foreach (string message in new[]
+            {
+                "See https://helix.dot.net/api/2019-06-17/jobs/{0}/workitems/Example.Test/console for MSB4036",
+                "Work item 'Example.Test' in job 'Linux x64 ({0})' failed: MSB4036"
+            })
+            {
+                JsonObject fixture = Fixtures.New("existing-flake");
+                Observation(Current(fixture))["mechanism"] = message.Replace("{0}", first, StringComparison.Ordinal);
+                Observation(Previous(fixture))["mechanism"] = message.Replace("{0}", second, StringComparison.Ordinal);
+                JsonNode row = Row(await CompareAsync(fixture));
+                Assert(row["matchingOccurrences"]!.GetValue<int>() == 1 &&
+                    !row["signature"]!.GetValue<string>().Contains(first, StringComparison.Ordinal),
+                    "A producer-supported volatile Helix job ID prevented the same mechanism from matching.");
+                Observation(Previous(fixture))["mechanism"] =
+                    Observation(Previous(fixture))["mechanism"]!.GetValue<string>().Replace("Example.Test", "Different.Test", StringComparison.Ordinal);
+                Assert(Row(await CompareAsync(fixture))["matchingOccurrences"]!.GetValue<int>() == 0,
+                    "Normalizing a job ID erased the meaningful work-item identity.");
+            }
+        });
         await CaseAsync("Stable GUIDs and expected timestamp values identify different mechanisms", async () =>
         {
             foreach ((string context, string first, string second, string suffix) in new[]
