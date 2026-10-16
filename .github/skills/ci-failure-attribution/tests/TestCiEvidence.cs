@@ -1627,13 +1627,17 @@ sealed class Checks(string outputDirectory, string? filter)
                 Fixtures.AddCheck(replay, "Same build", "https://dev.azure.com/dnceng-public/public/_build/results/?view=logs&buildId=3");
                 Fixtures.AddCheck(replay, "Uncollected check", url);
                 JsonObject dossier = await CollectAsync(replay, ["--pull-request", "12"]);
+                bool supported = url.StartsWith("https://dev.azure.com/", StringComparison.Ordinal) &&
+                    url.Contains("/_build/results", StringComparison.Ordinal);
                 Assert(dossier["checks"]!.AsArray().Count == 3 &&
                     dossier["checks"]!.AsArray().All(c => c!["coverage"]!.GetValue<string>() ==
-                        (c["name"]!.GetValue<string>() == "Uncollected check" ? "unassessed" : "assessed")),
+                        (c["name"]!.GetValue<string>() is "Same build" or "azure-pipelines" ? "assessed" :
+                            supported ? "unassessed" : "unsupported")),
                     "A check was assessed using only its numeric build ID.");
                 JsonObject comparison = await CompareAsync(dossier);
                 Assert(comparison["coverageGaps"]!.AsArray().Count == 1 &&
-                    comparison["coverageGaps"]![0]!.GetValue<string>() == "Unassessed check: Uncollected check",
+                    comparison["coverageGaps"]![0]!.GetValue<string>().StartsWith(
+                        $"{(supported ? "Unassessed" : "Unsupported")} check: Uncollected check", StringComparison.Ordinal),
                     "An uncollected check disappeared from coverage.");
             }
         });
@@ -1651,8 +1655,28 @@ sealed class Checks(string outputDirectory, string? filter)
             JsonObject dossier = Fixtures.Read(Path.Combine(directory, "evidence.json"));
             Assert(dossier["selectedBuildIds"]!.AsArray().Count == 1 &&
                 dossier["selectedBuildIds"]![0]!.GetValue<string>() == "3" &&
+                dossier["checks"]!.AsArray().Where(c => c!["name"]!.GetValue<string>() is "Unsupported check" or "Bare build ID")
+                    .All(c => c!["coverage"]!.GetValue<string>() == "unsupported") &&
                 (await CompareAsync(dossier))["coverageGaps"]!.AsArray().Count == 2,
                 "Unsupported check URLs became build identities or lost their coverage gaps.");
+        });
+        await CaseAsync("Skipped and pending checks retain distinct actionable coverage", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "skipped-pending-checks");
+            Fixtures.Collection(replay, pr: true);
+            const string buildUrl = "https://dev.azure.com/dnceng-public/public/_build/results?buildId=3";
+            Fixtures.AddCheck(replay, "Skipped check", buildUrl, conclusion: "skipped");
+            Fixtures.AddCheck(replay, "Pending check", buildUrl, status: "in_progress", conclusion: "");
+            JsonObject dossier = await CollectAsync(replay, ["--pull-request", "12"]);
+            JsonObject skipped = dossier["checks"]!.AsArray().Single(c => c!["name"]!.GetValue<string>() == "Skipped check")!.AsObject();
+            JsonObject pending = dossier["checks"]!.AsArray().Single(c => c!["name"]!.GetValue<string>() == "Pending check")!.AsObject();
+            Assert(skipped["coverage"]!.GetValue<string>() == "skipped" &&
+                pending["coverage"]!.GetValue<string>() == "unassessed" &&
+                skipped["coverageReason"]!.GetValue<string>().Contains("skipped", StringComparison.OrdinalIgnoreCase) &&
+                pending["coverageReason"]!.GetValue<string>().Contains("pending", StringComparison.OrdinalIgnoreCase) &&
+                (await CompareAsync(dossier))["coverageGaps"]!.AsArray().Count(g =>
+                    g!.GetValue<string>().Contains("check:", StringComparison.Ordinal)) == 2,
+                "Skipped and pending checks were collapsed into a generic coverage state.");
         });
         await CaseAsync("Explicit baseline is honored and mismatched PR/build identity rejected", async () =>
         {
@@ -2270,13 +2294,13 @@ static class Fixtures
         }
     }
 
-    public static void AddCheck(string directory, string name, string url)
+    public static void AddCheck(string directory, string name, string url, string status = "completed", string conclusion = "failure")
     {
         Change(directory, s => s["tool"]!.GetValue<string>() == "gh" &&
             s["arguments"]!.AsArray().Any(a => a!.GetValue<string>().Contains("/check-runs?", StringComparison.Ordinal)),
             data => data[0]!["check_runs"]!.AsArray().Add(Node(new
             {
-                name, details_url = url, status = "completed", conclusion = "failure"
+                name, details_url = url, status, conclusion
             })));
     }
 

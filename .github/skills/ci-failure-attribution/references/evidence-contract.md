@@ -15,7 +15,7 @@ artifacts as sensitive and review them before sharing.
 | `mode`, `repository` | `pr` or `build`; repository is `dotnet/sdk`. |
 | `selectedBuildIds` | Exact builds being assessed, separate from historical controls. |
 | `pr` | PR metadata, or null for standalone builds. Current PR metadata is not historical identity. |
-| `checks` | PR check inventory with `coverage` (`assessed` or `unassessed`) and source URLs; empty in standalone mode. |
+| `checks` | PR check inventory with `coverage` (`assessed`, `unsupported`, `skipped`, or `unassessed`), a reason, and source URLs; empty in standalone mode. |
 | `builds` | Selected and historical builds with observations, acquisition completeness, and collected semantic `coverageGaps`. |
 | `acquisitions` | Command description, snapshot path, producer exit status, `ok`, `complete`, attempt count, and transient errors. |
 | `changeWindows` | Tested base/head, baseline build, ancestry status, commit list, diff path, and completeness. |

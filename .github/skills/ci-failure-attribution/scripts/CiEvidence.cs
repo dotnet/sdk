@@ -687,7 +687,13 @@ static class Comparison
             }
         }
         gaps.AddRange(dossier.Rows("checks").Objects().Where(c => c.Text("coverage") != "assessed")
-            .Select(c => $"Unassessed check: {c.Text("name")}"));
+            .Select(c => $"{c.Text("coverage") switch
+            {
+                "unsupported" => "Unsupported",
+                "skipped" => "Skipped",
+                _ => "Unassessed"
+            }} check: {c.Text("name")}" +
+                (c.Text("coverageReason").Length > 0 ? $" ({c.Text("coverageReason")})" : "")));
         gaps.AddRange(dossier.Rows("changeWindows").Objects().Where(w => !w.Flag("complete"))
             .Select(w => $"Unverified change window for build {w.Text("buildId")}"));
         foreach (JsonObject build in builds)
@@ -989,22 +995,42 @@ sealed class Collector
             {
                 _dossier.Rows("buildAnalysis").Add(JsonData.Object(new { sha, report = check, coverage = "unverified-build-association" }));
             }
+            string coverage = CheckCoverage(check.Text("details_url"), check.Text("status"), check.Text("conclusion"));
             inventory.Add(JsonData.Object(new
             {
                 name = check["name"], sha, url = check["details_url"] ?? check["html_url"], status = check["status"],
-                conclusion = check["conclusion"], coverage = "unassessed"
+                conclusion = check["conclusion"], coverage, coverageReason = CheckCoverageReason(coverage, check.Text("status"))
             }));
         }
         foreach (JsonNode status in statuses.Objects())
         {
+            string coverage = CheckCoverage(status.Text("target_url"), status.Text("state"), status.Text("state"));
             inventory.Add(JsonData.Object(new
             {
                 name = status["context"], sha, url = status["target_url"], status = status["state"],
-                conclusion = status["state"], coverage = "unassessed"
+                conclusion = status["state"], coverage, coverageReason = CheckCoverageReason(coverage, status.Text("state"))
             }));
         }
         return inventory;
     }
+
+    private static string CheckCoverage(string url, string status, string conclusion)
+    {
+        if (conclusion.Equals("skipped", StringComparison.OrdinalIgnoreCase))
+        {
+            return "skipped";
+        }
+        return BuildIdentity.TryResolveUrl(url, out _) ? "unassessed" : "unsupported";
+    }
+
+    private static string CheckCoverageReason(string coverage, string status) => coverage switch
+    {
+        "skipped" => "GitHub reports this check was skipped.",
+        "unsupported" => "The check URL does not identify a supported Azure build.",
+        _ when status is not ("completed" or "success" or "failure" or "error") =>
+            "The check is pending or has not reached a terminal state.",
+        _ => "The referenced Azure build has not been collected."
+    };
 
     private async Task<JsonObject> BuildAsync(BuildIdentity identity)
     {
@@ -1615,11 +1641,13 @@ sealed class Collector
         }
         foreach (JsonObject check in _dossier.Rows("checks").Objects())
         {
-            if (BuildIdentity.TryResolveUrl(check.Text("url"), out BuildIdentity? checkBuild) &&
+            if (check.Text("coverage") != "skipped" &&
+                BuildIdentity.TryResolveUrl(check.Text("url"), out BuildIdentity? checkBuild) &&
                 selected.Any(b => b.Id == checkBuild.Id && b.Organization == checkBuild.Organization && b.Project == checkBuild.Project) &&
                 check.Text("status") is "completed" or "success" or "failure" or "error")
             {
                 check["coverage"] = "assessed";
+                check["coverageReason"] = "The referenced Azure build was collected.";
             }
         }
         JsonObject comparison = Comparison.Compare(_dossier);
