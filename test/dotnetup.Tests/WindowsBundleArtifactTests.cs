@@ -3,7 +3,10 @@
 
 using System.ComponentModel;
 using System.Globalization;
+using System.Runtime.Versioning;
+using System.Security.AccessControl;
 using System.Security.Cryptography;
+using System.Security.Principal;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
@@ -174,7 +177,7 @@ public class WindowsBundleArtifactTests : IDisposable
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void Prepare_LocksBundleAgainstWriteAndDeleteUntilDisposed()
+    public void Prepare_LocksBundleAgainstWriteDeleteAndRenameUntilDisposed()
     {
         var artifact = CreateArtifact(StableChannel);
         artifact.Prepare();
@@ -182,11 +185,71 @@ public class WindowsBundleArtifactTests : IDisposable
 
         Record.Exception(() => File.Delete(bundlePath)).Should().Match<Exception>(e => e is IOException || e is UnauthorizedAccessException);
         Record.Exception(() => File.OpenWrite(bundlePath).Dispose()).Should().Match<Exception>(e => e is IOException || e is UnauthorizedAccessException);
+        Record.Exception(() => File.Move(bundlePath, bundlePath + ".moved")).Should().Match<Exception>(e => e is IOException || e is UnauthorizedAccessException,
+            "renaming the bundle would let another file take its place");
+        Record.Exception(() => Directory.Move(artifact.ScratchDirectory, artifact.ScratchDirectory + "-moved")).Should().Match<Exception>(e => e is IOException || e is UnauthorizedAccessException,
+            "renaming the scratch directory would let another directory take its place");
         File.ReadAllBytes(bundlePath).Should().NotBeEmpty("other readers such as the installer must still be able to read the bundle");
 
         artifact.Dispose();
 
         File.Exists(bundlePath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void Constructor_NotPrivileged_UsesPerUserTempDirectory()
+    {
+        var artifact = CreateArtifact(StableChannel, isPrivilegedProcess: false);
+
+        artifact.UsesSecureScratchDirectory.Should().BeFalse();
+        artifact.ScratchDirectory.Should().StartWith(Path.GetTempPath());
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [SupportedOSPlatform("windows")]
+    public void SecureScratchDirectory_Security_GrantsWriteOnlyToSystemAndAdministrators()
+    {
+        var security = SecureScratchDirectory.CreateSecurity();
+        var administrators = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+        var system = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
+        const FileSystemRights AnyWrite = FileSystemRights.WriteData | FileSystemRights.AppendData | FileSystemRights.WriteExtendedAttributes
+            | FileSystemRights.WriteAttributes | FileSystemRights.Delete | FileSystemRights.DeleteSubdirectoriesAndFiles
+            | FileSystemRights.ChangePermissions | FileSystemRights.TakeOwnership;
+
+        security.AreAccessRulesProtected.Should().BeTrue("inherited permissions from the parent must not apply");
+        security.GetOwner(typeof(SecurityIdentifier)).Should().Be(administrators);
+        var rules = security.GetAccessRules(includeExplicit: true, includeInherited: true, typeof(SecurityIdentifier)).Cast<FileSystemAccessRule>().ToList();
+        rules.Should().OnlyContain(r => r.AccessControlType == AccessControlType.Allow);
+        rules.Should().Contain(r => r.IdentityReference.Equals(system) && r.FileSystemRights.HasFlag(FileSystemRights.FullControl));
+        rules.Should().Contain(r => r.IdentityReference.Equals(administrators) && r.FileSystemRights.HasFlag(FileSystemRights.FullControl));
+        rules.Where(r => !r.IdentityReference.Equals(system) && !r.IdentityReference.Equals(administrators))
+            .Should().OnlyContain(r => (r.FileSystemRights & AnyWrite) == 0, "no one else may change, rename, or delete what dotnetup runs elevated");
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [SupportedOSPlatform("windows")]
+    public void Prepare_Privileged_DownloadsIntoAdminOnlyDirectory()
+    {
+        if (!Environment.IsPrivilegedProcess)
+        {
+            Assert.Inconclusive("Creating an Administrators-owned directory requires an elevated test process.");
+        }
+
+        var artifact = CreateArtifact(StableChannel, isPrivilegedProcess: true);
+        artifact.Prepare();
+
+        artifact.UsesSecureScratchDirectory.Should().BeTrue();
+        artifact.ScratchDirectory.Should().StartWith(SecureScratchDirectory.DefaultParentDirectory);
+        artifact.BundlePath.Should().StartWith(artifact.ScratchDirectory);
+        var security = new DirectoryInfo(artifact.ScratchDirectory).GetAccessControl();
+        security.AreAccessRulesProtected.Should().BeTrue();
+        security.GetOwner(typeof(SecurityIdentifier)).Should().Be(new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null));
+
+        artifact.Dispose();
+
+        Directory.Exists(artifact.ScratchDirectory).Should().BeFalse();
     }
 
     [TestMethod]
@@ -407,7 +470,8 @@ public class WindowsBundleArtifactTests : IDisposable
         IInstallerSignatureVerifier? verifier = null,
         FakeRunner? runner = null,
         TextWriter? notices = null,
-        InstallBatchContext? batchContext = null)
+        InstallBatchContext? batchContext = null,
+        bool isPrivilegedProcess = false)
     {
         var artifact = new WindowsBundleArtifact(
             CreateRequest(channel),
@@ -416,7 +480,8 @@ public class WindowsBundleArtifactTests : IDisposable
             downloader ?? CreateDownloader(),
             verifier ?? FakeVerifier.Trusted,
             runner ?? new FakeRunner(exitCode: 0),
-            notices ?? TextWriter.Null);
+            notices ?? TextWriter.Null,
+            isPrivilegedProcess: isPrivilegedProcess);
         _artifacts.Add(artifact);
         return artifact;
     }

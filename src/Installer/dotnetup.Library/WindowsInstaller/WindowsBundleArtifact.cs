@@ -39,21 +39,39 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         IArchiveDownloader? downloader = null,
         IInstallerSignatureVerifier? signatureVerifier = null,
         IBundleProcessRunner? processRunner = null,
-        TextWriter? notices = null)
+        TextWriter? notices = null,
+        ReleaseManifest? releaseManifest = null,
+        bool? isPrivilegedProcess = null)
     {
         _request = request;
         _version = version;
-        _downloader = downloader ?? new DotnetDownloader(ReleaseManifest.Default);
         _signatureVerifier = signatureVerifier ?? new AuthenticodeInstallerSignatureVerifier();
         _processRunner = processRunner ?? new BundleProcessRunner();
         _notices = notices ?? Console.Error;
         _batchContext = batchContext;
         _progress = new ExtractorProgressTracker(batchContext.Reporter, request.Component, version.ToString(), batchContext.VersionDisplayWidth);
-        ScratchDirectory = Directory.CreateTempSubdirectory().FullName;
+
+        UsesSecureScratchDirectory = OperatingSystem.IsWindows() && (isPrivilegedProcess ?? Environment.IsPrivilegedProcess);
+        ScratchDirectory = CreateScratchDirectory();
+
+        // An elevated run keeps its cache inside the admin-only scratch directory. The per-user cache is writable
+        // without elevation, and serving from it would hard-link a user-writable file into the secure directory.
+        _downloader = downloader ?? new DotnetDownloader(
+            releaseManifest ?? ReleaseManifest.Default,
+            cacheDirectory: UsesSecureScratchDirectory ? Path.Combine(ScratchDirectory, "downloadcache") : null);
     }
 
-    /// <summary>Private download directory for the bundle. Exposed for testing.</summary>
+    /// <summary>
+    /// Download directory for the bundle. Exposed for testing. Without elevation it is a new directory under the
+    /// per-user temp directory: other users cannot reach it, but it inherits the user's profile ACL, so any process
+    /// running as the same user can write to it. In an elevated process it is created by
+    /// <see cref="SecureScratchDirectory"/>, so only SYSTEM and Administrators can modify it. In both cases the lock
+    /// taken in <see cref="Prepare"/> protects the bundle itself.
+    /// </summary>
     internal string ScratchDirectory { get; }
+
+    /// <summary>Whether <see cref="ScratchDirectory"/> is admin-only. Exposed for testing.</summary>
+    internal bool UsesSecureScratchDirectory { get; }
 
     /// <summary>The downloaded bundle path once <see cref="Prepare"/> has completed. Exposed for testing.</summary>
     internal string? BundlePath => _download?.Path;
@@ -108,6 +126,26 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         }
         catch
         {
+        }
+    }
+
+    private string CreateScratchDirectory()
+    {
+        if (!UsesSecureScratchDirectory || !OperatingSystem.IsWindows())
+        {
+            return Directory.CreateTempSubdirectory().FullName;
+        }
+
+        try
+        {
+            return SecureScratchDirectory.Create();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
+        {
+            throw CreateException(
+                DotnetInstallErrorCode.InstallerFailed,
+                $"Could not create a secure download directory for {Describe()}: {ex.Message}",
+                ex);
         }
     }
 

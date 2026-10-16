@@ -284,10 +284,12 @@ public class InstallerOrchestratorTests
             var downloader = (DotnetDownloader)artifact.GetType().GetField(fieldName, flags)!.GetValue(artifact)!;
             var cache = (DownloadCache)typeof(DotnetDownloader).GetField("_downloadCache", flags)!.GetValue(downloader)!;
             var cacheDirectory = (string)typeof(DownloadCache).GetField("_cacheDirectory", flags)!.GetValue(cache)!;
-            string expected = mechanism == InstallMechanism.WindowsInstallerBundle
-                ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
-                    "dotnetup", "downloadcache")
-                : DotnetupPaths.DownloadCacheDirectory;
+            string expected = mechanism != InstallMechanism.WindowsInstallerBundle
+                ? DotnetupPaths.DownloadCacheDirectory
+                : ((WindowsBundleArtifact)artifact).UsesSecureScratchDirectory
+                    ? Path.Combine(((WindowsBundleArtifact)artifact).ScratchDirectory, "downloadcache")
+                    : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify),
+                        "dotnetup", "downloadcache");
 
             cacheDirectory.Should().Be(expected);
         }
