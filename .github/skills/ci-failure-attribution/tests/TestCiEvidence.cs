@@ -527,6 +527,7 @@ sealed class Checks(string outputDirectory)
                     JsonNode otherKind = duplicateExecution.DeepClone();
                     otherKind["id"] = "helix:example:0";
                     otherKind["kind"] = "work-item";
+                    otherKind["submissionContexts"] = new JsonArray("job:Linux");
                     otherKind["outcome"] = "Failed";
                     otherKind["mechanism"] = "Expected 42; actual 43";
                     observations.Add(otherKind);
@@ -1382,6 +1383,21 @@ sealed class Checks(string outputDirectory)
             }
             await CollectAsync(missing, expectedError: "Evidence is incomplete");
         });
+        await CaseAsync("Helix controls require the same submission stream as well as queue and work item", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "helix-streams");
+            Fixtures.Collection(replay, helix: true);
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
+                s["arguments"]!.AsArray().Count > 2 && s["arguments"]![1]!.GetValue<string>() == "timeline" &&
+                s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl("2"), data =>
+                    data["records"]![0]!["name"] = "FullFramework");
+            JsonObject dossier = await CollectAsync(replay, expectedError: "Evidence is incomplete");
+            JsonNode row = (await CompareAsync(dossier))["comparisons"]!.AsArray()
+                .Single(r => r!["kind"]!.GetValue<string>() == "work-item")!;
+            Assert(row["mostRecentPassingExecution"] is null && row["precedingExecution"] is null &&
+                !row["controls"]![0]!["eligible"]!.GetValue<bool>(),
+                "A same-queue work item in a different framework stream became a passing control.");
+        });
         await CaseAsync("Native child processes use noninteractive credentials and safe argument boundaries", async () =>
         {
             string replay = Path.Combine(outputDirectory, "native-replay");
@@ -1756,7 +1772,7 @@ static class Fixtures
         foreach (string file in Directory.EnumerateFiles(directory, "*.json"))
         {
             JsonObject snapshot = Read(file);
-            if (predicate(snapshot))
+            if (snapshot["tool"] is not null && predicate(snapshot))
             {
                 JsonNode data = JsonNode.Parse(snapshot["stdout"]!.GetValue<string>())!;
                 mutate(data);

@@ -487,6 +487,10 @@ static class Comparison
         {
             yield return "Missing test hierarchy provenance";
         }
+        if (observation.Text("kind") == "work-item" && observation["submissionContexts"] is not JsonArray { Count: > 0 })
+        {
+            yield return "Missing Helix submission context";
+        }
         string lane = observation.Text("lane");
         if (string.IsNullOrWhiteSpace(lane) || observation.Text("kind") is "job" or "task" &&
             lane.Split(" > ", StringSplitOptions.None).Any(string.IsNullOrWhiteSpace))
@@ -975,18 +979,29 @@ sealed class Collector
         _ => "Unknown"
     };
 
-    private static void FindHelix(string text, HashSet<string> jobs)
+    private static string RunLane(string name) =>
+        Regex.Replace(name, @"(?i)\[HelixJob:[0-9a-f-]+\]", "[HelixJob]").Trim();
+
+    private static void FindHelix(string text, Dictionary<string, HashSet<string>> jobs, string context)
     {
         foreach (Match match in Regex.Matches(text, @"(?i)(?:HelixJob:|jobs/)([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})"))
         {
-            jobs.Add(match.Groups[1].Value);
+            if (!jobs.TryGetValue(match.Groups[1].Value, out HashSet<string>? contexts))
+            {
+                contexts = new(StringComparer.Ordinal);
+                jobs.Add(match.Groups[1].Value, contexts);
+            }
+            if (!string.IsNullOrWhiteSpace(context))
+            {
+                contexts.Add(context);
+            }
         }
     }
 
     private async Task ObservationsAsync(JsonObject record)
     {
         string url = record.Text("url");
-        HashSet<string> helixJobs = new(StringComparer.OrdinalIgnoreCase);
+        Dictionary<string, HashSet<string>> helixJobs = new(StringComparer.OrdinalIgnoreCase);
         Acquisition timeline = await ReadAsync("hlx", ["azdo", "timeline", url, "--filter", "all", "--json"]);
         if (!timeline.Complete || timeline.Data?["records"] is not JsonArray records)
         {
@@ -1022,7 +1037,6 @@ sealed class Collector
                         record["complete"] = false;
                     }
                 }
-                FindHelix(mechanism, helixJobs);
                 JsonObject parent = task;
                 HashSet<string> visited = new(StringComparer.Ordinal);
                 while (parent.Text("type") != "Job" && byId.TryGetValue(parent.Text("parentId"), out JsonObject? next) &&
@@ -1030,6 +1044,8 @@ sealed class Collector
                 {
                     parent = next;
                 }
+                FindHelix(mechanism, helixJobs, parent.Text("type") == "Job" &&
+                    !string.IsNullOrWhiteSpace(parent.Text("name")) ? $"job:{parent.Text("name")}" : "");
                 record.Rows("observations").Add(JsonData.Object(new
                 {
                     id = $"timeline:{task.Text("id")}", kind = task.Text("type").ToLowerInvariant(), name = task["name"],
@@ -1060,7 +1076,8 @@ sealed class Collector
         }
         foreach (JsonObject run in runRows.Objects())
         {
-            FindHelix(run.Text("name"), helixJobs);
+            FindHelix(run.Text("name"), helixJobs,
+                string.IsNullOrWhiteSpace(run.Text("name")) ? "" : $"run:{RunLane(run.Text("name"))}");
             string outcomes = fullResults ? "Passed,Failed,Error,Timeout,Aborted,Inconclusive,NotExecuted,NotApplicable,Blocked,Warning"
                 : "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning";
             JsonArray results = await AzureRowsAsync(record, $"test/Runs/{run.Text("id")}/results",
@@ -1084,9 +1101,9 @@ sealed class Collector
         {
             record["complete"] = false;
         }
-        foreach (string job in helixJobs)
+        foreach ((string job, HashSet<string> contexts) in helixJobs)
         {
-            await HelixAsync(record, job);
+            await HelixAsync(record, job, contexts);
         }
         foreach (string gap in Comparison.ScenarioIdentityGaps(record))
         {
@@ -1112,7 +1129,7 @@ sealed class Collector
         {
             id, kind = group ? "test-group" : "test", name, parentResultId, hierarchyVerified = true,
             resultGroupType = test["resultGroupType"],
-            lane = Regex.Replace(run.Text("name"), @"(?i)\[HelixJob:[0-9a-f-]+\]", "[HelixJob]").Trim(),
+            lane = RunLane(run.Text("name")),
             outcome, mechanism = string.Join('\n', new[] { test.Text("errorMessage"), test.Text("stackTrace") }.Where(s => s.Length > 0)),
             url = $"{record.Text("url")}&view=ms.vss-test-web.build-test-results-tab&runId={run.Text("id")}&resultId={id.Split(':')[2].Split('/')[0]}",
             contextOnly = group || test.Text("testCaseTitle").EndsWith(" Work Item", StringComparison.OrdinalIgnoreCase)
@@ -1129,7 +1146,7 @@ sealed class Collector
         }
     }
 
-    private async Task HelixAsync(JsonObject record, string job)
+    private async Task HelixAsync(JsonObject record, string job, HashSet<string> contexts)
     {
         Acquisition status = await ReadAsync("hlx", ["status", job, "all", "--json"]);
         if (!status.Complete)
@@ -1147,11 +1164,14 @@ sealed class Collector
         {
             record["complete"] = false;
         }
+        string lane = contexts.Count == 0 ? "" :
+            $"{jobData.Text("QueueId")} > {string.Join(" | ", contexts.Order(StringComparer.Ordinal))}";
         foreach (JsonObject item in passed.Objects())
         {
             record.Rows("observations").Add(JsonData.Object(new
             {
-                id = $"helix:{job}:{item.Text("Name")}", kind = "work-item", name = item["Name"], lane = jobData["QueueId"],
+                id = $"helix:{job}:{item.Text("Name")}", kind = "work-item", name = item["Name"], lane,
+                queue = jobData["QueueId"], submissionContexts = contexts.Order(StringComparer.Ordinal).ToArray(),
                 outcome = "Passed", mechanism = "", url = item["ConsoleLogUrl"], contextOnly = false
             }));
         }
@@ -1210,7 +1230,8 @@ sealed class Collector
             }
             record.Rows("observations").Add(JsonData.Object(new
             {
-                id = $"helix:{job}:{item.Text("Name")}", kind = "work-item", name = item["Name"], lane = jobData["QueueId"],
+                id = $"helix:{job}:{item.Text("Name")}", kind = "work-item", name = item["Name"], lane,
+                queue = jobData["QueueId"], submissionContexts = contexts.Order(StringComparer.Ordinal).ToArray(),
                 outcome = "Failed", mechanism, url = item["ConsoleLogUrl"], contextOnly = false, artifacts = files.Data
             }));
         }

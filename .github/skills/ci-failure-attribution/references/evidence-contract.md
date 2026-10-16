@@ -148,6 +148,11 @@ not individual assertions absent from structured test results.
 Missing replay commands fail explicitly. Replays are marked as such and never
 claimed as live service validation. Scrubbing credentials can make an artifact
 unusable for authentication; never attempt to replay authenticated URLs.
+Helix work-item lanes include both the physical queue and sorted submission
+contexts from the Azure parent job and tagged test runs. Queue/name equality
+alone cannot equate ordinary and FullFramework streams. The original queue and
+submission contexts are retained separately; unknown submission identity cannot
+establish a control.
 
 `CiEvidence.cs collect` exits nonzero on hard errors or incomplete mandatory evidence,
 while retaining a partial dossier when possible. Offline comparison can inspect
