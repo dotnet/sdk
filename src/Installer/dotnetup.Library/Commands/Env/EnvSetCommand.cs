@@ -78,8 +78,10 @@ internal class EnvSetCommand : CommandBase
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.
         bool targetDotnetupOnPath = _dotnetupOnPathArg ?? previous?.DotnetupOnPath ?? true;
 
-        // HandleAdminMode returned false, so admin mode is only still active when an explicit
-        // non-admin mode was requested; leave it right before applying that mode.
+        // HandleAdminMode already handled 'env set admin' and the no-mode case, so if admin mode is
+        // still active here, the user explicitly requested a non-admin mode. Disable admin mode first
+        // (elevating if needed) before writing any user-level settings. Disable throws if elevation is
+        // declined or the change fails, so nothing below is applied in that case.
         if (AdminModeSwitcher.IsAdminModeActive())
         {
             AdminSwitcher.Disable();
