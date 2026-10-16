@@ -54,18 +54,21 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 globalJsonPath: null);
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void ItSamplesTheOptOutAsDisabled()
         {
             WithOptOut("false", () => CachingWorkloadResolver.IsEnabled().Should().BeFalse());
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void ItSamplesTheOptOutCaseInsensitively()
         {
             WithOptOut("FALSE", () => CachingWorkloadResolver.IsEnabled().Should().BeFalse());
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void ItSamplesAnyOtherValueAsEnabled()
         {
             //  Only the exact word "false" opts out; anything else leaves resolution on.
@@ -74,6 +77,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void ItResolvesNothingWhenConstructedDisabled()
         {
             //  A disabled resolver answers without touching the filesystem, so a path that does
@@ -88,6 +92,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void ItDoesNotResampleTheOptOutWhenConstructedEnabled()
         {
             var (dotnetRoot, sdkVersion) = CreateEmptySdk("enabledResolver");
