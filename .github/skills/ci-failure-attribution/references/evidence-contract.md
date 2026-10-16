@@ -98,6 +98,9 @@ Each observation has `id`, `kind`, `name`, `lane`, `outcome`, `mechanism`, `url`
 and `contextOnly`. Outcomes are `Passed`, `Failed`, `Skipped`, or `Unknown`.
 Named tests include parameterized titles in their identity. Job/task parents stay
 visible as context; only the agent, with supporting evidence, groups root mechanisms.
+Structured test lanes remove only the producer's terminal `(attempt N)` annotation
+and volatile Helix job tag. Raw run names and parsed `runAttempt` remain provenance,
+while OS/framework/configuration text remains part of the scenario identity.
 Scenario names and lanes must contain actual identities, not null, empty, or
 whitespace-only values. A composite test name containing only the ` | ` separator
 is unknown; either a populated automated name or title is sufficient. Job/task

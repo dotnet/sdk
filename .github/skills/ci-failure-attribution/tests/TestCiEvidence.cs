@@ -1005,6 +1005,31 @@ sealed class Checks(string outputDirectory, string? filter)
                 }
             }
         });
+        await CaseAsync("Retry attempt provenance is separate from structured test scenario lanes", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "retry-run-lanes");
+            Fixtures.Collection(replay);
+            foreach (string id in new[] { "3", "2" })
+            {
+                Fixtures.TestRun(replay, id);
+                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                    s["arguments"]![4]!.GetValue<string>() == Fixtures.RunArguments(id)[4], data =>
+                    data["name"] = id == "3" ? "Linux (attempt 2)" : "Linux (attempt 1)");
+            }
+            JsonObject dossier = await CollectAsync(replay);
+            JsonNode test = Current(dossier)["observations"]!.AsArray().Single(o => o!["kind"]!.GetValue<string>() == "test")!;
+            JsonNode row = (await CompareAsync(dossier))["comparisons"]!.AsArray().Single(o => o!["kind"]!.GetValue<string>() == "test")!;
+            Assert(test["lane"]!.GetValue<string>() == "Linux" && test["runAttempt"]!.GetValue<int>() == 2 &&
+                test["runName"]!.GetValue<string>() == "Linux (attempt 2)" &&
+                row["mostRecentPassingExecution"]!["buildId"]!.GetValue<string>() == "2",
+                "Attempt annotations split the same scenario or retry provenance was discarded.");
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>() == Fixtures.RunArguments("2")[4], data =>
+                data["name"] = "Linux FullFramework (attempt 1)");
+            row = (await CompareAsync(await CollectAsync(replay, expectedError: "Evidence is incomplete")))["comparisons"]!
+                .AsArray().Single(o => o!["kind"]!.GetValue<string>() == "test")!;
+            Assert(row["mostRecentPassingExecution"] is null, "Removing an attempt annotation also erased the framework stream.");
+        });
         await CaseAsync("Raw run metadata preserves omitted counters rather than typed producer zeros", async () =>
         {
             string replay = Path.Combine(outputDirectory, "missing-raw-counters");

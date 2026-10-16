@@ -1012,8 +1012,11 @@ sealed class Collector
         _ => "Unknown"
     };
 
-    private static string RunLane(string name) =>
-        Regex.Replace(name, @"(?i)\[HelixJob:[0-9a-f-]+\]", "[HelixJob]").Trim();
+    private const string RunAttemptPattern =
+        @"(?i)[ \t]+\(attempt[ \t]+(?<attempt>[1-9][0-9]*)\)(?=[ \t]*(?:\[HelixJob(?::[0-9a-f-]+)?\])?[ \t]*$)";
+
+    private static string RunLane(string name) => Regex.Replace(
+        Regex.Replace(name, @"(?i)\[HelixJob:[0-9a-f-]+\]", "[HelixJob]"), RunAttemptPattern, "").Trim();
 
     private static void FindHelix(string text, Dictionary<string, HashSet<string>> jobs, string context)
     {
@@ -1214,6 +1217,9 @@ sealed class Collector
         {
             id, kind = group ? "test-group" : "test", name, parentResultId, hierarchyVerified = true,
             resultGroupType = test["resultGroupType"],
+            runName = run["name"],
+            runAttempt = int.TryParse(Regex.Match(run.Text("name"), RunAttemptPattern).Groups["attempt"].Value,
+                NumberStyles.None, CultureInfo.InvariantCulture, out int attempt) ? attempt : (int?)null,
             lane = RunLane(run.Text("name")),
             outcome, mechanism = string.Join('\n', new[] { test.Text("errorMessage"), test.Text("stackTrace") }.Where(s => s.Length > 0)),
             url = $"{record.Text("url")}&view=ms.vss-test-web.build-test-results-tab&runId={run.Text("id")}&resultId={id.Split(':')[2].Split('/')[0]}",
