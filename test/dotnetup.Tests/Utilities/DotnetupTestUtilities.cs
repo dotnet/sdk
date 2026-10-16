@@ -402,7 +402,22 @@ internal static class DotnetupTestUtilities
             RedirectStandardInput = standardInput is not null,
             WorkingDirectory = workingDirectory ?? Environment.CurrentDirectory,
         };
-        ConfigureProcessEnvironment(startInfo, environmentVariables);
+        // Suppress the .NET welcome message / first-run experience in test output
+        startInfo.Environment["DOTNET_NOLOGO"] = "1";
+
+        // Disable ANSI color codes so that string assertions on captured output
+        // are not broken by escape sequences inserted at line-wrap boundaries.
+        startInfo.Environment["NO_COLOR"] = "1";
+
+        // Apply any additional environment variables
+        if (environmentVariables != null)
+        {
+            foreach (var kvp in environmentVariables)
+            {
+                startInfo.Environment[kvp.Key] = kvp.Value;
+            }
+        }
+
         int effectiveTimeoutMilliseconds = timeout is { } limit
             ? checked((int)limit.TotalMilliseconds)
             : timeoutMilliseconds;
@@ -439,77 +454,32 @@ internal static class DotnetupTestUtilities
 
         // Interactive callers need access to the child's stdin before waiting for exit.
         using var process = new Process { StartInfo = startInfo };
-        StringBuilder outputBuilder = new();
-        if (captureOutput)
-        {
-            CaptureProcessOutput(process, outputBuilder);
-        }
-
         process.Start();
+        var outputTask = captureOutput ? process.ReadAllTextAsync() : null;
+        process.StandardInput.Write(standardInput);
+        process.StandardInput.Close();
 
-        if (captureOutput)
-        {
-            process.BeginOutputReadLine();
-            process.BeginErrorReadLine();
-        }
-
-        if (standardInput is not null)
-        {
-            process.StandardInput.Write(standardInput);
-            process.StandardInput.Close();
-        }
-
-        if (!process.WaitForExit(effectiveTimeoutMilliseconds))
+        bool exitedWithinTimeout = process.WaitForExit(effectiveTimeoutMilliseconds);
+        bool terminated = exitedWithinTimeout;
+        if (!exitedWithinTimeout)
         {
             process.Kill(entireProcessTree: true);
-            if (process.WaitForExit(10_000))
-            {
-                process.WaitForExit();
-            }
-
-            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {timeoutDescription}. Output:\n{outputBuilder}");
+            terminated = process.WaitForExit(10_000);
         }
 
-        process.WaitForExit();
-        return (process.ExitCode, outputBuilder.ToString());
-    }
-
-    private static void ConfigureProcessEnvironment(
-        ProcessStartInfo startInfo, Dictionary<string, string>? environmentVariables)
-    {
-        // Suppress the .NET welcome message / first-run experience in test output
-        startInfo.Environment["DOTNET_NOLOGO"] = "1";
-
-        // Disable ANSI color codes so that string assertions on captured output
-        // are not broken by escape sequences inserted at line-wrap boundaries.
-        startInfo.Environment["NO_COLOR"] = "1";
-
-        // Apply any additional environment variables
-        if (environmentVariables != null)
+        string capturedOutput = string.Empty;
+        if (outputTask is not null && terminated)
         {
-            foreach (var kvp in environmentVariables)
-            {
-                startInfo.Environment[kvp.Key] = kvp.Value;
-            }
+            var (standardOutput, standardError) = outputTask.GetAwaiter().GetResult();
+            capturedOutput = NormalizeCapturedOutput(standardOutput) + NormalizeCapturedOutput(standardError);
         }
 
-    }
-
-    private static void CaptureProcessOutput(Process process, StringBuilder outputBuilder)
-    {
-        void AppendLine(string? line)
+        if (!exitedWithinTimeout)
         {
-            if (line is not null)
-            {
-                lock (outputBuilder)
-                {
-                    outputBuilder.AppendLine(line);
-                }
-            }
+            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {timeoutDescription}. Output:\n{capturedOutput}");
         }
 
-        process.OutputDataReceived += (_, e) => AppendLine(e.Data);
-        process.ErrorDataReceived += (_, e) => AppendLine(e.Data);
+        return (process.ExitCode, capturedOutput);
     }
 
     private static string NormalizeCapturedOutput(string output)

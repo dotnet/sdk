@@ -123,14 +123,17 @@ public class DotnetupTestUtilitiesTests
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void RunDotnetupProcess_TimeoutTerminatesChild(bool captureOutput)
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void RunDotnetupProcess_TimeoutTerminatesChild(bool captureOutput, bool redirectInput)
     {
         using var files = new SelfUpdateTestFiles(mode: "timeout");
 
         var exception = Assert.ThrowsExactly<TimeoutException>(() => DotnetupTestUtilities.RunDotnetupProcess(
             ["--version"], captureOutput: captureOutput, executablePath: files.Paths.InstalledPath,
+            standardInput: redirectInput ? string.Empty : null,
             timeout: TimeSpan.FromSeconds(5)));
 
         Assert.Contains("did not exit within", exception.Message);
