@@ -309,6 +309,46 @@ public class InstallerOrchestratorTests
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void CommitPreparedInstall_RechecksBundleBeforeRunningInstaller(bool alreadyInstalled)
+    {
+        using var testEnv = new TestEnvironment();
+        string dotnetHost = SelfUpdateTestFiles.DotnetHostPath;
+        string dotnetDirectory = Path.GetDirectoryName(dotnetHost)!;
+        string sourceFxr = Directory.EnumerateFiles(Path.Combine(dotnetDirectory, "host", "fxr"), "hostfxr.dll", SearchOption.AllDirectories).First();
+        string destinationFxr = Path.Combine(testEnv.InstallPath, "host", "fxr", Path.GetFileName(Path.GetDirectoryName(sourceFxr)!));
+        Directory.CreateDirectory(destinationFxr);
+        File.Copy(sourceFxr, Path.Combine(destinationFxr, "hostfxr.dll"));
+        File.Copy(dotnetHost, Path.Combine(testEnv.InstallPath, "dotnet.exe"));
+
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        void InstallSdk()
+        {
+            string sdkDirectory = Path.Combine(testEnv.InstallPath, "sdk", install.Version.ToString());
+            Directory.CreateDirectory(sdkDirectory);
+            File.WriteAllText(Path.Combine(sdkDirectory, "dotnet.dll"), string.Empty);
+        }
+
+        if (alreadyInstalled)
+        {
+            InstallSdk();
+        }
+
+        var artifact = new FakeArtifact { OnCommit = InstallSdk };
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
+
+        result.WasAlreadyInstalled.Should().Be(alreadyInstalled);
+        artifact.CommitCalls.Should().Be(alreadyInstalled ? 0 : 1);
+        new HostFxrInstallationValidator().Validate(install).Should().BeTrue();
+        File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
     public void CommitPreparedInstall_BundleNotVisibleToHostFxr_ThrowsPostInstallVerificationFailed()
     {
         using var testEnv = new TestEnvironment();

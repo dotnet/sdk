@@ -105,6 +105,11 @@ internal sealed class AdminModeSwitcher
         VerifyChange(enable);
 
         _console.MarkupLine(DotnetupTheme.Success($"Admin mode is {StateWord(enable)}."));
+        if (enable)
+        {
+            _console.MarkupLine(DotnetupTheme.Notice(Strings.AdminModePreservesUserEnvironment.EscapeMarkup()));
+        }
+
         return true;
     }
 

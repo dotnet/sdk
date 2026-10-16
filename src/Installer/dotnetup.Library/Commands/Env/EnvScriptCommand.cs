@@ -27,6 +27,8 @@ internal class EnvScriptCommand : CommandBase
         _dotnetupOnly = result.GetValue(EnvScriptCommandParser.DotnetupOnlyOption);
     }
 
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
         DotnetupTelemetry.Instance.IsShellStartupCommand = true;
@@ -54,7 +56,8 @@ internal class EnvScriptCommand : CommandBase
                 string.Format(CultureInfo.InvariantCulture, Strings.EnvScriptUnsupportedShellError, shellName));
         }
 
-        EnvScriptSelection selection = EnvScriptSelectionResolver.Resolve(_dotnet, _dotnetup, _dotnetupOnly, DotnetupConfig.Read());
+        EnvScriptSelection selection = EnvScriptSelectionResolver.Resolve(
+            _dotnet, _dotnetup, _dotnetupOnly, DotnetupConfig.Read(), AccessModeResolver.Resolve().IsAdmin);
 
         // Determine the dotnet install path
         string installPath = _dotnetInstallPath ?? _dotnetEnvironment.GetDefaultDotnetInstallPath();

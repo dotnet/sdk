@@ -37,7 +37,7 @@ internal static class AdminModeGate
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeCommandNotSupported,
                 $"'{GetCommandPath(parseResult.CommandResult)}' is not available in admin mode. " +
-                "In admin mode, only 'sdk install', 'runtime install', 'init', 'env set', and 'self update' are available. " +
+                "In admin mode, only 'sdk install', 'runtime install', 'init', 'env set', 'env script', and 'self update' are available. " +
                 "Run 'dotnetup init --mode <mode>' to leave admin mode.");
         }
 

@@ -55,6 +55,7 @@ public class AdminModeGateTests
             .And.Contain("'runtime install'")
             .And.Contain("'init'")
             .And.Contain("'env set'")
+            .And.Contain("'env script'")
             .And.Contain("'self update'")
             .And.Contain("dotnetup init --mode <mode>");
     }
@@ -159,6 +160,7 @@ public class AdminModeGateTests
             typeof(InstallCommand),
             typeof(InitCommand),
             typeof(EnvSetCommand),
+            typeof(EnvScriptCommand),
             typeof(SelfUpdateCommand),
             typeof(ElevatedSystemPathCommand),
         });

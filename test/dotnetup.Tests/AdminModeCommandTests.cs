@@ -265,6 +265,25 @@ public class AdminModeCommandTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_Admin_PreservesExistingUserConfigurationAndProfile()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false });
+        string originalConfig = File.ReadAllText(DotnetupPaths.ConfigPath);
+        string profile = Path.Combine(_tempDir, "profile.ps1");
+        const string originalProfile = "dotnetup env script --shell pwsh --dotnet | Invoke-Expression";
+        File.WriteAllText(profile, originalProfile);
+
+        int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "admin"]), _env, _inspector, CreateSwitcher()).Execute();
+
+        exitCode.Should().Be(0);
+        File.ReadAllText(DotnetupPaths.ConfigPath).Should().Be(originalConfig);
+        File.ReadAllText(profile).Should().Be(originalProfile);
+        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        _env.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void EnvSet_AdminCancelled_FailsWithoutChanges()
     {
         var elevator = new FakeAdminModeElevator

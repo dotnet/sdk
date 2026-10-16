@@ -86,7 +86,7 @@ Callers such as C#DK that want integration with VS will need to call `dotnetup i
 
 To rapidly support an emerging C#DK release, `dotnetup` will rollout `admin` support over time per command.
 
-`dotnetup sdk install` and `dotnetup runtime install` will be the only functional install commands in `admin` mode. `init`, `env set`, and `self update` remain available so that users can change modes and update `dotnetup`. Every other command, including bare `dotnetup`, fails with `AdminModeCommandNotSupported`.
+`dotnetup sdk install` and `dotnetup runtime install` will be the only functional install commands in `admin` mode. `init`, `env set`, and `self update` remain available so that users can change modes and update `dotnetup`. [`env script`](../reference/dotnetup-env-script.md) and its hidden `print-env-script` compatibility alias also remain available so existing shell profiles can run without errors, but never activate user-level .NET in `admin` mode. Every other command, including bare `dotnetup`, fails with `AdminModeCommandNotSupported`.
 
 Commands are blocked by default: a command runs in `admin` mode only when its command class declares `admin` support, and that declaration lists the options and arguments it accepts there. Any other option or argument that the user supplies fails with `AdminModeSymbolNotSupported`.
 
@@ -131,7 +131,7 @@ The effective mode is resolved in this order:
 1. If `AdminMode` is nonzero, the mode is `admin`.
 2. Otherwise, the per-user configuration determines the mode. The per-user configuration can never select `admin` mode; a hand-edited `admin` value is treated as unset.
 
-When `AdminMode` selects `admin` mode, the per-user configuration is ignored but not rewritten. Its previous mode therefore applies again if `admin` mode is later disabled. Interactive `init` does not prompt for a mode, first-use onboarding treats the mode as already selected, and telemetry records whether the mode came from policy or user configuration.
+When `AdminMode` selects `admin` mode, the per-user access mode is ignored but not rewritten. Its previous mode therefore applies again if `admin` mode is later disabled. `env script` still honors the independent `dotnetup`-on-`PATH` selection. Interactive `init` does not prompt for a mode, first-use onboarding treats the mode as already selected, and telemetry records whether the mode came from policy or user configuration.
 
 Only administrators can write either value, while standard users can read both.
 
@@ -147,7 +147,9 @@ Leaving `admin` mode happens only right before the newly selected mode is applie
 
 #### Limitations
 
-The registry values constrain only `dotnetup`. They do not remove archive installs, `PATH` entries, or the user-level `DOTNET_ROOT` from earlier modes, although `dotnetup` should warn about them. They also do not prevent users from acquiring .NET through other tools.
+The registry values constrain only `dotnetup`. Entering `admin` mode leaves existing shell profiles and saved user settings untouched; it does not attempt to remove or rewrite profile entries from earlier setups. While `admin` mode is active, `env script` can add `dotnetup` to `PATH` but never adds the user-level .NET root or sets `DOTNET_ROOT`, including when an existing profile explicitly requests `--dotnet`. The preserved profiles can activate the saved setup again after leaving `admin` mode.
+
+Enabling `admin` mode explains this behavior. It does not remove archive installs, existing `PATH` entries, or user-level `DOTNET_ROOT` values from earlier modes. Open terminals may retain their previous environment; users should restart them and review any remaining environment settings if user-level .NET still takes precedence. The registry values also do not prevent users from acquiring .NET through other tools.
 
 No equivalent exists on other platforms because `admin` mode is Windows-only.
 
@@ -194,7 +196,7 @@ Instead of a manifest, `dotnetup` will need to query the system for the current 
 
 `dotnetup list`, `dotnetup --info` and other commands in `admin` mode will defer to `hostfxr` APIs to avoid duplicated or sharded implementation.
 
-Install checks query `hostfxr` through the install root's `dotnet` executable (`--list-sdks` and `--list-runtimes`) in a child process. Loading the system `hostfxr` into `dotnetup` itself would lock a file that the installer may need to replace, which can force a restart.
+Install checks query `hostfxr` through the install root's `dotnet` executable (`--list-sdks` and `--list-runtimes`) in a child process. Loading the system `hostfxr` into `dotnetup` itself would lock a file that the installer may need to replace, which can force a restart. Prepared bundle installs repeat this check while holding the commit mutex, before running the installer, so a request already satisfied by an earlier batch item or another process is skipped without another installer or UAC prompt.
 
 ### Install Directory with `admin` mode
 

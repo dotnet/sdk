@@ -43,7 +43,8 @@ public class AdminModeSwitcherTests
         elevator.Operations.Should().Equal(AdminModeOperation.Enable);
         DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
         _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName].Should().BeTrue();
-        _output.ToString().Should().Contain("affects all users").And.Contain("Admin mode is enabled.");
+        _output.ToString().Should().Contain("affects all users").And.Contain("Admin mode is enabled.")
+            .And.Contain("left unchanged").And.Contain("does not activate user-level .NET").And.Contain("restart open terminals");
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]

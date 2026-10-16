@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../Strings.resx">
     <body>
+      <trans-unit id="AdminModePreservesUserEnvironment">
+        <source>Your existing shell profiles, user settings, PATH entries, and DOTNET_ROOT are left unchanged. While admin mode is active, dotnetup env script can add dotnetup to PATH but does not activate user-level .NET. Existing environment settings may still take precedence; restart open terminals and review any remaining PATH or DOTNET_ROOT settings if needed.</source>
+        <target state="new">Your existing shell profiles, user settings, PATH entries, and DOTNET_ROOT are left unchanged. While admin mode is active, dotnetup env script can add dotnetup to PATH but does not activate user-level .NET. Existing environment settings may still take precedence; restart open terminals and review any remaining PATH or DOTNET_ROOT settings if needed.</target>
+        <note>{Locked="PATH"}{Locked="DOTNET_ROOT"}{Locked="dotnetup env script"}</note>
+      </trans-unit>
       <trans-unit id="CommandDone">
         <source>Done.</source>
         <target state="new">Done.</target>

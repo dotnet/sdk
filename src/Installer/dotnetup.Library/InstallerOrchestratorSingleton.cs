@@ -394,14 +394,16 @@ internal class InstallerOrchestratorSingleton
 
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            if (manifest?.InstallAlreadyExists(prepared.Install) == true)
+            IInstallationValidator validator = CreateInstallationValidator(prepared.Request.Options.InstallMechanism);
+            if (manifest?.InstallAlreadyExists(prepared.Install) == true
+                || (prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
+                    && validator.Validate(prepared.Install)))
             {
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
 
             prepared.Artifact.Commit();
 
-            IInstallationValidator validator = CreateInstallationValidator(prepared.Request.Options.InstallMechanism);
             if (!validator.Validate(prepared.Install, out string? validationFailure))
             {
                 throw CreatePostInstallValidationException(prepared, validationFailure);

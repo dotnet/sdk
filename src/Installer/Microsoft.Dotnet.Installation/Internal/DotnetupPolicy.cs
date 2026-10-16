@@ -96,7 +96,7 @@ internal static class DotnetupPolicy
         }
 
         public void WriteFlags(IReadOnlyDictionary<string, bool> values)
-        {
+        { 
             ArgumentNullException.ThrowIfNull(values);
 #if NET
             using RegistryKey baseKey = OpenLocalMachine();

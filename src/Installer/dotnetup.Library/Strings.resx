@@ -512,6 +512,10 @@ Or open a new terminal.</value>
     <value>--dotnetup-only cannot be combined with --dotnet or --dotnetup.</value>
     <comment>{Locked="--dotnetup-only"}{Locked="--dotnet"}{Locked="--dotnetup"}</comment>
   </data>
+  <data name="AdminModePreservesUserEnvironment" xml:space="preserve">
+    <value>Your existing shell profiles, user settings, PATH entries, and DOTNET_ROOT are left unchanged. While admin mode is active, dotnetup env script can add dotnetup to PATH but does not activate user-level .NET. Existing environment settings may still take precedence; restart open terminals and review any remaining PATH or DOTNET_ROOT settings if needed.</value>
+    <comment>{Locked="PATH"}{Locked="DOTNET_ROOT"}{Locked="dotnetup env script"}</comment>
+  </data>
   <data name="ConfirmationOptionsWithKeyboardHints" xml:space="preserve">
     <value>([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)</value>
     <comment>Confirmation hint. Y/N key bindings are not localized. {Locked="[bold underline]Y[/]/n"}</comment>

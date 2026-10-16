@@ -5,7 +5,9 @@ using System.CommandLine;
 using FluentAssertions;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -67,6 +69,26 @@ public class AdminModeGateExecutionTests
 
         command.Execute().Should().Be(0);
         command.Executed.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow(new[] { "env", "script", "--shell", "pwsh", "--dotnet" })]
+    [DataRow(new[] { "print-env-script", "--shell", "pwsh", "--dotnetup-only" })]
+    public void Execute_InAdminMode_AllowsExistingShellProfileCommands(string[] arguments)
+    {
+        using var environment = new TestEnvironment();
+        DotnetupPaths.SetTestDataDirectoryOverride(environment.TempRoot);
+        UseAccessMode(DotnetAccessMode.Admin);
+        try
+        {
+            var parseResult = Parser.Parse(arguments);
+            parseResult.Errors.Should().BeEmpty();
+            new EnvScriptCommand(parseResult).Execute().Should().Be(0);
+        }
+        finally
+        {
+            DotnetupPaths.ClearTestDataDirectoryOverride();
+        }
     }
 
     [TestMethod]
