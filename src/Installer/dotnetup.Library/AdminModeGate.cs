@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Help;
 using System.CommandLine.Parsing;
+using System.Globalization;
 using Microsoft.Dotnet.Installation;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -14,8 +15,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 internal static class AdminModeGate
 {
-    private const string RootCommandDisplayName = "dotnetup";
-
     /// <summary>
     /// Throws a <see cref="DotnetInstallException"/> when <paramref name="accessMode"/> is admin
     /// and the parsed command or one of its explicitly supplied symbols is not allowed by
@@ -36,9 +35,7 @@ internal static class AdminModeGate
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeCommandNotSupported,
-                $"'{GetCommandPath(parseResult.CommandResult)}' is not available in admin mode. " +
-                "In admin mode, only 'sdk install', 'runtime install', 'init', 'env set', 'env script', and 'self update' are available. " +
-                "Run 'dotnetup init --mode <mode>' to leave admin mode.");
+                string.Format(CultureInfo.CurrentCulture, Strings.AdminModeCommandNotSupported, parseResult.CommandResult.Command.Name));
         }
 
         if (support.AllowsAnySymbol)
@@ -46,14 +43,12 @@ internal static class AdminModeGate
             return;
         }
 
-        foreach (var symbol in GetExplicitSymbols(parseResult.CommandResult))
+        Symbol? unsupportedSymbol = GetExplicitSymbols(parseResult.CommandResult).FirstOrDefault(symbol => !support.Allows(symbol));
+        if (unsupportedSymbol is not null)
         {
-            if (!support.Allows(symbol))
-            {
-                throw new DotnetInstallException(
-                    DotnetInstallErrorCode.AdminModeSymbolNotSupported,
-                    $"{DescribeSymbol(symbol)} is not available for '{GetCommandPath(parseResult.CommandResult)}' in admin mode.");
-            }
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.AdminModeSymbolNotSupported,
+                string.Format(CultureInfo.CurrentCulture, Strings.AdminModeSymbolNotSupported, DescribeSymbol(unsupportedSymbol), parseResult.CommandResult.Command.Name));
         }
     }
 
@@ -91,26 +86,9 @@ internal static class AdminModeGate
 
     private static string DescribeSymbol(Symbol symbol) => symbol switch
     {
-        Option option => $"The option '{option.Name}'",
-        Argument argument => $"The argument '<{argument.Name}>'",
+        Option option => string.Format(CultureInfo.CurrentCulture, Strings.AdminModeOptionDisplayName, option.Name),
+        Argument argument => string.Format(CultureInfo.CurrentCulture, Strings.AdminModeArgumentDisplayName, argument.Name),
         _ => $"'{symbol.Name}'",
     };
 
-    /// <summary>Builds the command path as the user typed it, for example "dotnetup sdk install".</summary>
-    internal static string GetCommandPath(CommandResult commandResult)
-    {
-        var segments = new List<string>();
-        for (SymbolResult? current = commandResult; current is not null; current = current.Parent)
-        {
-            if (current is CommandResult command)
-            {
-                segments.Add(command.Command is RootCommand
-                    ? RootCommandDisplayName
-                    : command.IdentifierToken.Value);
-            }
-        }
-
-        segments.Reverse();
-        return string.Join(' ', segments);
-    }
 }

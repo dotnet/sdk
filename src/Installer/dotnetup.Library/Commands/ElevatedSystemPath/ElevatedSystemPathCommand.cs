@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Globalization;
 using System.Runtime.Versioning;
 using Microsoft.Dotnet.Installation.Internal;
 
@@ -71,7 +72,7 @@ internal class ElevatedSystemPathCommand : CommandBase
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InvalidArguments,
-                $"The '{operation}' operation requires the --dotnet-dir option.");
+                string.Format(CultureInfo.CurrentCulture, Strings.ElevatedSystemPathDotnetDirRequired, operation));
         }
 
         return operation switch

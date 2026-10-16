@@ -157,8 +157,8 @@ internal sealed class InitFormModel
             case DotnetAccessMode.Admin:
                 return
                 [
-                    new DetailLine("Installs .NET with the Windows installer into the shared system folder. Requires elevation."),
-                    new DetailLine("Changes a machine-wide setting for all users. Choosing it only switches the mode; install .NET afterwards with 'dotnetup sdk install <version> --untracked'."),
+                    new DetailLine(Strings.InitAdminModeInstallDescription),
+                    new DetailLine(Strings.InitAdminModeSelectionDescription),
                 ];
 
             default:
@@ -350,7 +350,7 @@ internal sealed class InitFormModel
         DotnetAccessMode.None => "Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected.",
         DotnetAccessMode.Shell => "Configure your shell profile so shell sessions use dotnetup's .NET installs.",
         DotnetAccessMode.Everywhere => "Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation).",
-        DotnetAccessMode.Admin => "Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.",
+        DotnetAccessMode.Admin => Strings.AccessModeAdminDescription,
         _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
     };
 

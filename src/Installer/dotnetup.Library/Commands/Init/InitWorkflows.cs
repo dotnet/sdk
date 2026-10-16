@@ -66,7 +66,7 @@ internal class InitWorkflows
         if (dryRun)
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim("(dry run \u2014 no changes were made to your machine)"));
-            SpectreAnsiConsole.MarkupLine("Admin mode would be enabled for all users on this computer.");
+            SpectreAnsiConsole.MarkupLine(Strings.AdminModeEnablePreview);
             return;
         }
 
@@ -152,7 +152,7 @@ internal class InitWorkflows
             PrintDryRunPreview(defaults, formSelection);
             if (leaveAdminMode)
             {
-                SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim("Admin mode would be disabled for all users on this computer before setup."));
+                SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.AdminModeDisablePreview));
             }
 
             return [];
@@ -177,7 +177,7 @@ internal class InitWorkflows
     {
         if (AdminModeSwitcher.IsAdminModeActive())
         {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim("Admin mode is already enabled, so no changes were made."));
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.AdminModeAlreadyEnabledNoChanges));
             return;
         }
 

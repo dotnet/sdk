@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Globalization;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedSystemPath;
 
@@ -11,23 +12,21 @@ internal static class ElevatedSystemPathCommandParser
     public static readonly Argument<string> OperationArgument = new("operation")
     {
         HelpName = "OPERATION",
-        Description = "The operation to perform: 'insertdotnet', 'removedotnet', 'enableadminmode', or 'disableadminmode'",
+        Description = Strings.ElevatedSystemPathOperationDescription,
         Arity = ArgumentArity.ExactlyOne,
     };
 
     public static readonly Argument<string> OutputFile = new("outputfile")
     {
         HelpName = "OUTPUT_FILE",
-        Description = "A file where any output that should be displayed to the user should be written.",
+        Description = Strings.ElevatedSystemPathOutputFileDescription,
         Arity = ArgumentArity.ExactlyOne,
     };
 
     public static readonly Option<string> DotnetDir = new("--dotnet-dir")
     {
         HelpName = "DOTNET_DIR",
-        Description = "The dotnet directory to insert into or remove from the system PATH. "
-            + "Required for 'insertdotnet' and 'removedotnet' because the elevated process may run under a "
-            + "different account and cannot recompute the invoking user's directory.",
+        Description = Strings.ElevatedSystemPathDotnetDirDescription,
     };
 
     internal const string InsertDotnetOperation = "insertdotnet";
@@ -48,7 +47,7 @@ internal static class ElevatedSystemPathCommandParser
 
     private static Command ConstructCommand()
     {
-        Command command = new("elevatedsystempath", "Modifies the machine-wide system PATH (requires elevated privileges)");
+        Command command = new("elevatedsystempath", Strings.ElevatedSystemPathCommandDescription);
         command.Hidden = true;
 
         command.Arguments.Add(OperationArgument);
@@ -66,7 +65,7 @@ internal static class ElevatedSystemPathCommandParser
         string? operation = result.GetValue(OperationArgument);
         if (RequiresDotnetDir(operation) && string.IsNullOrWhiteSpace(result.GetValue(DotnetDir)))
         {
-            result.AddError($"The '{operation}' operation requires the --dotnet-dir option.");
+            result.AddError(string.Format(CultureInfo.CurrentCulture, Strings.ElevatedSystemPathDotnetDirRequired, operation));
         }
     }
 }

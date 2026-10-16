@@ -39,7 +39,7 @@ internal sealed class WindowsAdminModeElevator : IAdminModeElevator
     {
         if (!OperatingSystem.IsWindows())
         {
-            throw new PlatformNotSupportedException("Admin mode is only supported on Windows.");
+            throw new PlatformNotSupportedException(Strings.AdminModeWindowsOnly);
         }
 
         WindowsPathHelper.StartElevatedProcess(ToOperationToken(operation));
@@ -95,7 +95,7 @@ internal sealed class AdminModeSwitcher
         bool enable = operation == AdminModeOperation.Enable;
         if (DotnetupPolicy.IsAdminModeEnabled() == enable)
         {
-            _console.MarkupLine(DotnetupTheme.Dim($"Admin mode is already {StateWord(enable)}."));
+            _console.MarkupLine(DotnetupTheme.Dim(enable ? Strings.AdminModeAlreadyEnabled : Strings.AdminModeAlreadyDisabled));
             return false;
         }
 
@@ -104,7 +104,7 @@ internal sealed class AdminModeSwitcher
         ApplyChange(operation, privileged);
         VerifyChange(enable);
 
-        _console.MarkupLine(DotnetupTheme.Success($"Admin mode is {StateWord(enable)}."));
+        _console.MarkupLine(DotnetupTheme.Success(enable ? Strings.AdminModeEnabled : Strings.AdminModeDisabled));
         if (enable)
         {
             _console.MarkupLine(DotnetupTheme.Notice(Strings.AdminModePreservesUserEnvironment.EscapeMarkup()));
@@ -115,10 +115,10 @@ internal sealed class AdminModeSwitcher
 
     private void WriteMachineWideNotice(bool enable, bool privileged)
     {
-        string notice = $"{(enable ? "Enabling" : "Disabling")} admin mode changes a machine-wide policy that affects all users on this computer.";
+        string notice = enable ? Strings.AdminModeEnablingNotice : Strings.AdminModeDisablingNotice;
         if (!privileged)
         {
-            notice += " Windows will ask for administrator permission.";
+            notice += " " + Strings.AdminModeElevationNotice;
         }
 
         _console.MarkupLine(DotnetupTheme.Notice(notice.EscapeMarkup()));
@@ -142,7 +142,7 @@ internal sealed class AdminModeSwitcher
             // The elevation helper reports a declined UAC prompt as PermissionDenied.
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeChangeFailed,
-                "Elevation was cancelled. Admin mode was not changed.",
+                Strings.AdminModeChangeCancelled,
                 ex);
         }
         catch (Exception ex) when (IsChangeFailure(ex))
@@ -150,9 +150,8 @@ internal sealed class AdminModeSwitcher
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeChangeFailed,
                 string.Format(
-                    CultureInfo.InvariantCulture,
-                    "Failed to {0} admin mode: {1}",
-                    operation == AdminModeOperation.Enable ? "enable" : "disable",
+                    CultureInfo.CurrentCulture,
+                    operation == AdminModeOperation.Enable ? Strings.AdminModeEnableFailed : Strings.AdminModeDisableFailed,
                     ex.Message),
                 ex);
         }
@@ -178,10 +177,7 @@ internal sealed class AdminModeSwitcher
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeChangeFailed,
-                string.Format(
-                    CultureInfo.InvariantCulture,
-                    "Admin mode was not {0}. The machine policy did not change, which can happen when it is managed by Group Policy.",
-                    StateWord(enable)));
+                enable ? Strings.AdminModeNotEnabled : Strings.AdminModeNotDisabled);
         }
     }
 
@@ -194,7 +190,6 @@ internal sealed class AdminModeSwitcher
             or SecurityException
             or PlatformNotSupportedException;
 
-    private static string StateWord(bool enabled) => enabled ? "enabled" : "disabled";
 }
 
 /// <summary>Guidance printed around admin mode switches.</summary>
@@ -203,15 +198,13 @@ internal static class AdminModeMessages
     /// <summary>Printed when a command that would change the access mode runs in admin mode without a mode.</summary>
     public static void WriteAdminModeActive(IAnsiConsole console)
     {
-        console.MarkupLine(DotnetupTheme.Notice("Admin mode is active on this machine, so no changes were made."));
-        console.MarkupLine(DotnetupTheme.Dim(
-            "To leave admin mode, run 'dotnetup init --mode <mode>' with 'none', 'shell', or 'everywhere'.".EscapeMarkup()));
+        console.MarkupLine(DotnetupTheme.Notice(Strings.AdminModeActive));
+        console.MarkupLine(DotnetupTheme.Dim(Strings.AdminModeLeaveInstructions.EscapeMarkup()));
     }
 
     /// <summary>Printed after switching into admin mode through <c>init</c>.</summary>
     public static void WriteNextSteps(IAnsiConsole console)
     {
-        console.MarkupLine(DotnetupTheme.Dim(
-            "Next, install the .NET SDK with 'dotnetup sdk install <version> --untracked'.".EscapeMarkup()));
+        console.MarkupLine(DotnetupTheme.Dim(Strings.AdminModeInstallNextSteps.EscapeMarkup()));
     }
 }

@@ -39,10 +39,10 @@ public class AdminModeGateTests
     }
 
     [TestMethod]
-    [DataRow(new[] { "list" }, "dotnetup list")]
-    [DataRow(new[] { "sdk", "update" }, "dotnetup sdk update")]
-    [DataRow(new string[0], "dotnetup")]
-    public void Enforce_UnsupportedCommand_ThrowsCommandNotSupported(string[] args, string expectedPath)
+    [DataRow(new[] { "list" })]
+    [DataRow(new[] { "sdk", "update" })]
+    [DataRow(new string[0])]
+    public void Enforce_UnsupportedCommand_ThrowsCommandNotSupported(string[] args)
     {
         var parseResult = Parser.Parse(args);
 
@@ -50,14 +50,9 @@ public class AdminModeGateTests
             () => AdminModeGate.Enforce(parseResult, AdminModeSupport.Unsupported, s_admin));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeCommandNotSupported);
-        ex.Message.Should().Contain($"'{expectedPath}'")
-            .And.Contain("'sdk install'")
-            .And.Contain("'runtime install'")
-            .And.Contain("'init'")
-            .And.Contain("'env set'")
-            .And.Contain("'env script'")
-            .And.Contain("'self update'")
+        ex.Message.Should().Contain($"'{parseResult.CommandResult.Command.Name}'")
             .And.Contain("dotnetup init --mode <mode>");
+        ex.Message.Should().NotContain("only");
     }
 
     [TestMethod]
@@ -78,7 +73,7 @@ public class AdminModeGateTests
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => AdminModeGate.Enforce(parseResult, support, s_admin));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSymbolNotSupported);
-        ex.Message.Should().Contain("'--install-path'").And.Contain("'dotnetup sdk install'");
+        ex.Message.Should().Contain("'--install-path'").And.Contain("'install'");
     }
 
     [TestMethod]
@@ -134,15 +129,8 @@ public class AdminModeGateTests
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => AdminModeGate.Enforce(parseResult, AdminModeSupport.Allow(), s_admin));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSymbolNotSupported);
-        ex.Message.Should().Contain("'--global'").And.Contain("'dotnetup sub'");
+        ex.Message.Should().Contain("'--global'").And.Contain("'sub'");
         AdminModeGate.Enforce(parseResult, AdminModeSupport.Allow(global), s_admin);
-    }
-
-    [TestMethod]
-    public void GetCommandPath_UsesTypedCommandNames()
-    {
-        AdminModeGate.GetCommandPath(Parser.Parse(["install"]).CommandResult).Should().Be("dotnetup install");
-        AdminModeGate.GetCommandPath(Parser.Parse(["runtime", "install"]).CommandResult).Should().Be("dotnetup runtime install");
     }
 
     [TestMethod]

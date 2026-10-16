@@ -30,11 +30,11 @@ internal static class InitCommandParser
     private static string BuildModeDescription()
     {
         string description = string.Format(
-            CultureInfo.InvariantCulture,
-            "The access mode to set up: {0}.",
+            CultureInfo.CurrentCulture,
+            Strings.InitModeOptionDescription,
             AccessModeCliParsing.FormatSupportedTokens());
         return DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(DotnetAccessMode.Admin)
-            ? description + " 'admin' only switches this machine to admin mode and does not install .NET."
+            ? description + " " + Strings.InitAdminModeOptionDescription
             : description;
     }
 
