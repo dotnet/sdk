@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Tool.Store;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Moq;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
 using MSBuildCommand = Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildCommand;
@@ -75,24 +74,19 @@ public class GivenCommandServices : SdkTest
 
         // Stop at logger creation, before in-process MSBuild can change shared process state.
         var stopBeforeBuild = new InvalidOperationException("Stop before MSBuild starts.");
-        var detector = new Mock<ILLMEnvironmentDetector>(MockBehavior.Strict);
-        detector.Setup(d => d.IsLLMEnvironment()).Throws(stopBeforeBuild);
-        var services = new CommandServices(detector.Object);
+        var detector = new TestLLMEnvironmentDetector(stopBeforeBuild);
+        var services = new CommandServices(detector);
         var command = (VirtualProjectBuildingCommand)CreateCommand(commandName, services, [entryPoint]);
 
         command.Services.Should().BeSameAs(services);
-        detector.Verify(d => d.IsLLMEnvironment(), Times.Never);
+        detector.IsLLMEnvironmentCallCount.Should().Be(0);
         Action execute = () => command.Execute();
         execute.Should().Throw<InvalidOperationException>().Which.Should().BeSameAs(stopBeforeBuild);
-        detector.Verify(d => d.IsLLMEnvironment(), Times.Once);
+        detector.IsLLMEnvironmentCallCount.Should().Be(1);
     }
 
-    private static CommandServices CreateServices(bool isLLMEnvironment)
-    {
-        var detector = new Mock<ILLMEnvironmentDetector>(MockBehavior.Strict);
-        detector.Setup(d => d.IsLLMEnvironment()).Returns(isLLMEnvironment);
-        return new CommandServices(detector.Object);
-    }
+    private static CommandServices CreateServices(bool isLLMEnvironment) =>
+        new(new TestLLMEnvironmentDetector(isLLMEnvironment));
 
     private static CommandBase CreateCommand(string commandName, CommandServices services, string[] args)
     {
