@@ -116,6 +116,9 @@ own job. Acquired observations remain in the dossier with explicit
 `Unverified scenario identity` gaps. Offline comparison checks these identities
 independently of completeness flags in both selected and historical builds,
 including older dossiers without additional identity metadata.
+Helix statuses with a missing/empty queue still retain known work-item outcomes,
+console excerpts, and artifact inventories. Their lanes remain empty with an
+explicit gap; both queue and submission context are required for controls.
 An unknown/empty mechanism never establishes a matching failure signature.
 Failed or canceled builds without any failed or unknown observations retain an
 explicit missing-failure-evidence gap, including pipeline validation/startup

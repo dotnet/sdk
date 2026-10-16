@@ -515,6 +515,10 @@ static class Comparison
         {
             yield return "Missing Helix submission context";
         }
+        if (observation.Text("kind") == "work-item" && string.IsNullOrWhiteSpace(observation.Text("queue")))
+        {
+            yield return "Missing Helix queue";
+        }
         if (observation.Text("kind") is "job" or "task" && !observation.Flag("executionVerified"))
         {
             yield return "Unverified timeline execution";
@@ -720,7 +724,7 @@ static class Comparison
                 {
                     buildId = build["id"], observationId = failure["id"], kind = failure["kind"], name = failure["name"],
                     hierarchyVerified = failure.Flag("hierarchyVerified"), executionVerified = failure.Flag("executionVerified"),
-                    submissionContexts = failure["submissionContexts"],
+                    submissionContexts = failure["submissionContexts"], queue = failure["queue"],
                     lane = failure["lane"], contextOnly = failure.Flag("contextOnly"), currentOutcome = failure["outcome"],
                     mechanism = failure["mechanism"], signature, url = failure["url"], controls,
                     precedingExecution = controls.FirstOrDefault(c => c.Flag("eligible") && c.Text("branch") == build.Text("branch")),
@@ -1290,7 +1294,7 @@ sealed class Collector
             return;
         }
         if (status.Data is not JsonObject data || data["failed"] is not JsonArray failed || data["passed"] is not JsonArray passed ||
-            data["job"] is not JsonObject jobData || jobData.Text("QueueId").Length == 0 || data["inProgressCount"] is null)
+            data["job"] is not JsonObject jobData || data["inProgressCount"] is null)
         {
             Gap(record, $"Helix job {job} has an unsupported status contract");
             return;
@@ -1299,7 +1303,12 @@ sealed class Collector
         {
             record["complete"] = false;
         }
-        string lane = contexts.Count == 0 ? "" :
+        bool queueKnown = !string.IsNullOrWhiteSpace(jobData.Text("QueueId"));
+        if (!queueKnown)
+        {
+            Gap(record, $"Helix job {job} has a missing queue; work-item evidence has unknown lane identity.");
+        }
+        string lane = contexts.Count == 0 || !queueKnown ? "" :
             $"{jobData.Text("QueueId")} > {string.Join(" | ", contexts.Order(StringComparer.Ordinal))}";
         foreach (JsonObject item in passed.Objects())
         {

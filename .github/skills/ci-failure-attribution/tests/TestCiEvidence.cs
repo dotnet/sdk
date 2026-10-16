@@ -612,6 +612,7 @@ sealed class Checks(string outputDirectory, string? filter)
                     otherKind["id"] = "helix:example:0";
                     otherKind["kind"] = "work-item";
                     otherKind["submissionContexts"] = new JsonArray("job:Linux");
+                    otherKind["queue"] = "Linux x64 Debug";
                     otherKind["outcome"] = "Failed";
                     otherKind["mechanism"] = "Expected 42; actual 43";
                     observations.Add(otherKind);
@@ -1613,7 +1614,7 @@ sealed class Checks(string outputDirectory, string? filter)
         {
             string replay = Path.Combine(outputDirectory, "helix-replay");
             Fixtures.Collection(replay, helix: true);
-            JsonObject dossier = await CollectAsync(replay);
+            JsonObject dossier = await CollectAsync(replay, ["--baseline-build", "2"]);
             JsonObject comparison = await CompareAsync(dossier);
             JsonNode row = comparison["comparisons"]!.AsArray().First(r => r!["kind"]!.GetValue<string>() == "work-item")!;
             Assert(row["mechanism"]!.GetValue<string>().Contains("MSB4036", StringComparison.Ordinal) &&
@@ -1627,6 +1628,29 @@ sealed class Checks(string outputDirectory, string? filter)
                 File.Copy(file, Path.Combine(missing, Path.GetFileName(file)), overwrite: true);
             }
             await CollectAsync(missing, expectedError: "Evidence is incomplete");
+        });
+        await CaseAsync("Helix jobs without queues retain failures logs and artifacts but not controls", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "helix-missing-queue");
+            foreach (string? queue in new string?[] { null, "", " \t" })
+            {
+                Fixtures.Collection(replay, helix: true);
+                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
+                    s["arguments"]![0]!.GetValue<string>() == "status", data => data["job"]!["QueueId"] = queue);
+                JsonObject dossier = await CollectAsync(replay, expectedError: "Evidence is incomplete");
+                JsonObject comparison = await CompareAsync(dossier);
+                JsonNode row = comparison["comparisons"]!.AsArray().Single(r => r!["kind"]!.GetValue<string>() == "work-item")!;
+                JsonNode item = Current(dossier)["observations"]!.AsArray().Single(o => o!["kind"]!.GetValue<string>() == "work-item")!;
+                Assert(item["lane"]!.GetValue<string>() == "" &&
+                    item["mechanism"]!.GetValue<string>().Contains("MSB4036", StringComparison.Ordinal) &&
+                    item["artifacts"]!["binlogs"]!.AsArray().Count == 1 &&
+                    Previous(dossier)["observations"]!.AsArray().Any(o =>
+                        o!["kind"]!.GetValue<string>() == "work-item" && o["outcome"]!.GetValue<string>() == "Passed") &&
+                    row["mostRecentPassingExecution"] is null && row["precedingExecution"] is null &&
+                    !row["controls"]![0]!["eligible"]!.GetValue<bool>() &&
+                    comparison["coverageGaps"]!.AsArray().Any(g => g!.GetValue<string>().Contains("missing queue", StringComparison.Ordinal)),
+                    "An unknown queue discarded acquired failures/artifacts, invented a lane, or qualified as an executed control.");
+            }
         });
         await CaseAsync("Official monitor failure messages discover Helix jobs without a URL", async () =>
         {
