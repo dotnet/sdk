@@ -1846,6 +1846,35 @@ sealed class Checks(string outputDirectory, string? filter)
             await CollectAsync(replay, ["--timeout-seconds", "1"], "exceeded 1 seconds", environment, Environment.ProcessPath!);
             await CollectAsync(replay, expectedError: "never-executed", environment: new());
         });
+        await CaseAsync("Azure GET timeouts retry once and do not stop independent evidence", async () =>
+        {
+            foreach (string mode in new[] { "once", "always" })
+            {
+                string replay = Path.Combine(outputDirectory, $"azure-timeout-{mode}");
+                Fixtures.Collection(replay);
+                Fixtures.TestRun(replay, "3");
+                Fixtures.TestRun(replay, "2");
+                Dictionary<string, string> environment = new()
+                {
+                    ["CI_EVIDENCE_TEST_REPLAY"] = replay,
+                    ["CI_EVIDENCE_TEST_TIMEOUT_AZ_CONTAINS"] = "/test/Runs/3/results?",
+                    ["CI_EVIDENCE_TEST_TIMEOUT_AZ_MODE"] = mode
+                };
+                JsonObject dossier = await CollectAsync(replay, ["--timeout-seconds", "1"],
+                    mode == "once" ? null : "Evidence is incomplete", environment, Environment.ProcessPath!);
+                JsonObject resultAcquisition = dossier["acquisitions"]!.AsArray()
+                    .Select(a => a!.AsObject())
+                    .Single(a => a["description"]!.GetValue<string>().Contains("/test/Runs/3/results?", StringComparison.Ordinal));
+                bool completed = mode == "once";
+                Assert(resultAcquisition["attempts"]!.GetValue<int>() == 2 &&
+                    resultAcquisition["complete"]!.GetValue<bool>() == completed &&
+                    resultAcquisition["transientErrors"]!.AsArray().Count == (mode == "once" ? 1 : 2) &&
+                    dossier["acquisitions"]!.AsArray().Any(a =>
+                        a!["description"]!.GetValue<string>().Contains("azdo artifacts", StringComparison.Ordinal) &&
+                        a["complete"]!.GetValue<bool>()),
+                    "A timed-out Azure GET was not retried once or prevented later independent artifact acquisition.");
+            }
+        });
         await CaseAsync("Acquisition deadlines bound inherited stdout and stderr after the producer exits", async () =>
         {
             string replay = Path.Combine(outputDirectory, "inherited-pipe-replay");
@@ -2258,6 +2287,7 @@ static class Fixtures
             await Task.Delay(TimeSpan.FromSeconds(10));
             return 0;
         }
+        string tool = arguments[0] switch { "api" => "gh", "rest" => "az", _ => "hlx" };
         if (Environment.GetEnvironmentVariable("CI_EVIDENCE_TEST_DELAY") is not null)
         {
             await Task.Delay(TimeSpan.FromSeconds(10));
@@ -2277,7 +2307,19 @@ static class Fixtures
             }) ?? throw new InvalidOperationException("Could not start the inherited-pipe fixture child.");
             File.WriteAllText(Path.Combine(replay, $"inherited-{pipe}.pid"), holder.Id.ToString(CultureInfo.InvariantCulture));
         }
-        string tool = arguments[0] switch { "api" => "gh", "rest" => "az", _ => "hlx" };
+        string? timeoutMatch = Environment.GetEnvironmentVariable("CI_EVIDENCE_TEST_TIMEOUT_AZ_CONTAINS");
+        if (tool == "az" && timeoutMatch is not null &&
+            arguments.Contains(timeoutMatch, StringComparer.Ordinal) == false &&
+            arguments.Any(a => a.Contains(timeoutMatch, StringComparison.Ordinal)))
+        {
+            string mode = Environment.GetEnvironmentVariable("CI_EVIDENCE_TEST_TIMEOUT_AZ_MODE") ?? "once";
+            string marker = Path.Combine(replay, $"timeout-{Key(tool, arguments)}");
+            if (mode == "always" || !File.Exists(marker))
+            {
+                File.WriteAllText(marker, "timed out");
+                await Task.Delay(TimeSpan.FromSeconds(10));
+            }
+        }
         string path = Path.Combine(replay, Key(tool, arguments) + ".json");
         if (!File.Exists(path))
         {

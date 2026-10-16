@@ -17,7 +17,7 @@ artifacts as sensitive and review them before sharing.
 | `pr` | PR metadata, or null for standalone builds. Current PR metadata is not historical identity. |
 | `checks` | PR check inventory with `coverage` (`assessed` or `unassessed`) and source URLs; empty in standalone mode. |
 | `builds` | Selected and historical builds with observations, acquisition completeness, and collected semantic `coverageGaps`. |
-| `acquisitions` | Command description, snapshot path, producer exit status, `ok`, and `complete`. |
+| `acquisitions` | Command description, snapshot path, producer exit status, `ok`, `complete`, attempt count, and transient errors. |
 | `changeWindows` | Tested base/head, baseline build, ancestry status, commit list, diff path, and completeness. |
 | `history` | Explicit query bounds; a bounded history is not an exhaustive failure history. |
 | `issueSearches`, `buildAnalysis` | Search candidates and original check reports, not automatic matches or causal verdicts. |
@@ -50,6 +50,11 @@ success/failure exit codes. Aborted collection marks selected builds incomplete.
 `--timeout-seconds` applies one deadline to native producer exit and both redirected
 output streams. Descendants retaining stdout or stderr handles cannot make output
 draining wait indefinitely; a timeout remains an explicit failed acquisition.
+An Azure GET timeout is retried once after a one-second delay. A repeated timeout
+is retained with a null snapshot and producer exit code, and callers continue
+acquiring independent evidence when the affected data is not required to identify
+the build. Successful retries record the attempt count and transient timeout without
+making the final acquisition incomplete.
 
 Each build has `id`, `url`, `repository`, `organization`, `project`, `definitionId`,
 `branch`, `commit`, `prHeadSha`, `targetSha`, `reason`, `queuedAt`, `parameters`,

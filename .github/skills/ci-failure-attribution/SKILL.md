@@ -68,7 +68,9 @@ Defaults bound history to 20 builds per pipeline/ref within seven days. Increase
 `--history-limit`/`--lookback-days` only for a specific missing comparison and record
 the expanded search. `--test-result-limit` defaults to 100000 estimated results per
 build; exceeding it preserves diagnostic results but omits passing controls and
-makes coverage incomplete. `--timeout-seconds` bounds each acquisition.
+makes coverage incomplete. `--timeout-seconds` bounds each producer attempt.
+An Azure GET timeout is retried once after a short delay; a repeated timeout is
+recorded as incomplete, and independent evidence collection continues where possible.
 
 Pass `--gh-path`/`--hlx-path`/`--az-path` when using local tools. Raw Azure REST
 results fetch top-level rows in 1000-result pages and request subresults only for

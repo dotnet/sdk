@@ -173,13 +173,14 @@ static class JsonData
     public static DateTimeOffset Time(JsonNode node) => DateTimeOffset.Parse(node.Text("queuedAt"), CultureInfo.InvariantCulture);
 }
 
-sealed record Acquisition(string Description, string Snapshot, int ExitCode, bool Ok, bool Complete,
-    JsonNode? Data, string Error, bool Replayed, string? ReplaySnapshot)
+sealed record Acquisition(string Description, string? Snapshot, int? ExitCode, bool Ok, bool Complete,
+    JsonNode? Data, string Error, bool Replayed, string? ReplaySnapshot, int Attempts = 1, string[]? TransientErrors = null)
 {
     public JsonObject Summary() => JsonData.Object(new
     {
         description = Description, snapshot = Snapshot, exitCode = ExitCode, ok = Ok,
-        complete = Complete, error = Error, replayed = Replayed
+        complete = Complete, error = Error, replayed = Replayed, attempts = Attempts,
+        transientErrors = TransientErrors ?? []
     });
 }
 
@@ -864,21 +865,40 @@ sealed class Collector
         {
             return cached;
         }
-        Acquisition result;
-        try
+        Acquisition? result = null;
+        List<string> transientErrors = [];
+        int attempts = 0;
+        for (int attempt = 1; result is null; attempt++)
         {
-            result = await _reader.ReadAsync(tool, arguments, text, list);
-        }
-        catch (Exception ex)
-        {
-            _dossier.Rows("acquisitions").Add(JsonData.Object(new
+            attempts = attempt;
+            try
             {
-                description = $"{tool} {string.Join(' ', arguments)}", snapshot = (string?)null, exitCode = (int?)null,
-                ok = false, complete = false, error = ex.Message,
-                replayed = _options["replay-directory"] is not null
-            }));
-            throw;
+                result = await _reader.ReadAsync(tool, arguments, text, list);
+            }
+            catch (TimeoutException ex) when (tool == "az" && attempt == 1)
+            {
+                transientErrors.Add(ex.Message);
+                Console.Error.WriteLine($"WARNING: {ex.Message} Retrying this Azure GET once.");
+                await Task.Delay(TimeSpan.FromSeconds(1));
+            }
+            catch (TimeoutException ex) when (tool == "az")
+            {
+                transientErrors.Add(ex.Message);
+                result = new($"{tool} {string.Join(' ', arguments)}", null, null, false, false, null,
+                    string.Join(" ", transientErrors), false, null);
+            }
+            catch (Exception ex)
+            {
+                _dossier.Rows("acquisitions").Add(JsonData.Object(new
+                {
+                    description = $"{tool} {string.Join(' ', arguments)}", snapshot = (string?)null, exitCode = (int?)null,
+                    ok = false, complete = false, error = ex.Message,
+                    replayed = _options["replay-directory"] is not null
+                }));
+                throw;
+            }
         }
+        result = result with { Attempts = attempts, TransientErrors = transientErrors.ToArray() };
         _dossier.Rows("acquisitions").Add(result.Summary());
         _cache.Add(key, result);
         if (!result.Complete)
@@ -1357,7 +1377,7 @@ sealed class Collector
             string signatureMechanism = mechanism;
             if (log.Complete)
             {
-                string excerptPath = Path.ChangeExtension(log.Snapshot, ".console.json");
+                string excerptPath = Path.ChangeExtension(log.Snapshot!, ".console.json");
                 JsonObject? excerpt = null;
                 if (log.Replayed)
                 {
