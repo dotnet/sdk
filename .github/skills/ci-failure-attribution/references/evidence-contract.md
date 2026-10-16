@@ -16,12 +16,18 @@ artifacts as sensitive and review them before sharing.
 | `selectedBuildIds` | Exact builds being assessed, separate from historical controls. |
 | `pr` | PR metadata, or null for standalone builds. Current PR metadata is not historical identity. |
 | `checks` | PR check inventory with `coverage` (`assessed` or `unassessed`) and source URLs; empty in standalone mode. |
-| `builds` | Selected and historical builds with observations and acquisition completeness. |
+| `builds` | Selected and historical builds with observations, acquisition completeness, and collected semantic `coverageGaps`. |
 | `acquisitions` | Command description, snapshot path, producer exit status, `ok`, and `complete`. |
 | `changeWindows` | Tested base/head, baseline build, ancestry status, commit list, diff path, and completeness. |
 | `history` | Explicit query bounds; a bounded history is not an exhaustive failure history. |
 | `issueSearches`, `buildAnalysis` | Search candidates and original check reports, not automatic matches or causal verdicts. |
 | `error` | Collection failure, when present; preserved as an offline comparison coverage gap. |
+
+Each collected build stores semantic validation findings in `coverageGaps` and
+marks itself incomplete when any are present. Comparison reports those findings
+without recording them as failed acquisitions.
+For older schema-version-1 dossiers without this field, offline comparison
+computes the same semantic coverage checks from the retained build data.
 
 The [collector](../scripts/CiEvidence.cs) marks a completed check assessed only when
 its supported Azure build URL matches a selected organization, project, and build

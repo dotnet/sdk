@@ -92,7 +92,8 @@ Its snapshots are replayable with `--replay-directory`; replay is not live valid
 
 Inspect the exit status and `evidence.json`. A nonzero exit may retain useful
 partial evidence; it never means zero failures. Identify acquisition errors,
-unknown identities/configuration, pending work, and unsupported checks.
+per-build `coverageGaps`, unknown identities/configuration, pending work, and
+unsupported checks. Semantic coverage gaps are distinct from failed acquisitions.
 Never repeat a successful acquisition simply because a later step failed.
 
 ## 2. Compare offline

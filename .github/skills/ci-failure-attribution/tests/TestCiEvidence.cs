@@ -391,6 +391,8 @@ sealed class Checks(string outputDirectory, string? filter)
                     affected == "both" || b!["id"]!.GetValue<string>() == affected))
                 {
                     Assert(!build!["complete"]!.GetValue<bool>() &&
+                        build["coverageGaps"] is JsonArray coverageGaps &&
+                        coverageGaps.Any(g => g!.GetValue<string>().Contains("Unverified scenario identity", StringComparison.Ordinal)) &&
                         build["observations"]!.AsArray().Any(o => o!["kind"]!.GetValue<string>() == "test"),
                         "Missing identity was reported as complete or its acquired result was discarded.");
                 }
@@ -401,14 +403,18 @@ sealed class Checks(string outputDirectory, string? filter)
                     Assert(row["controls"]!.AsArray().All(c => !c!["eligible"]!.GetValue<bool>()) &&
                         row["mostRecentPassingExecution"] is null && row["precedingExecution"] is null &&
                         row["matchingOccurrences"]!.GetValue<int>() == 0 &&
-                        comparison["coverageGaps"]!.AsArray().Any(g =>
-                            g!.GetValue<string>().Contains("Unverified scenario identity", StringComparison.Ordinal)),
-                        "Missing identity established a baseline or disappeared from offline coverage.");
+                        comparison["coverageGaps"]!.AsArray().Count(g =>
+                            g!.GetValue<string>().Contains("Unverified scenario identity", StringComparison.Ordinal)) ==
+                            (affected == "both" ? 2 : 1) &&
+                        !dossier["acquisitions"]!.AsArray().Any(a =>
+                            a!["description"]!.GetValue<string>().Contains("Unverified scenario identity", StringComparison.Ordinal)),
+                        "Missing identity established a baseline, was duplicated, or became an acquisition failure.");
                     dossier["error"] = null;
                     dossier["acquisitions"] = new JsonArray();
                     foreach (JsonNode? build in dossier["builds"]!.AsArray())
                     {
                         build!["complete"] = true;
+                        build.AsObject().Remove("coverageGaps");
                     }
                 }
             }
@@ -994,8 +1000,9 @@ sealed class Checks(string outputDirectory, string? filter)
             Assert(Current(dossier)["result"]!.GetValue<string>() == "failed" && !Current(dossier)["complete"]!.GetValue<bool>(),
                 "Empty failed timeline became complete.");
             JsonObject comparison = await CompareAsync(dossier);
-            Assert(comparison["coverageGaps"]!.AsArray().Any(g => g!.GetValue<string>().Contains("Missing failure evidence", StringComparison.Ordinal)),
-                "Failure without jobs disappeared from coverage.");
+            Assert(comparison["coverageGaps"]!.AsArray().Count(g =>
+                g!.GetValue<string>().Contains("Missing failure evidence", StringComparison.Ordinal)) == 1,
+                "Failure without jobs disappeared or was duplicated.");
             JsonObject legacy = Fixtures.New();
             Current(legacy)["observations"] = new JsonArray();
             Assert((await CompareAsync(legacy))["coverageGaps"]!.AsArray().Count == 1, "Legacy empty failed build was trusted.");
@@ -1046,13 +1053,16 @@ sealed class Checks(string outputDirectory, string? filter)
                         "Incomplete test-run metadata or known results were lost.");
                     JsonObject comparison = await CompareAsync(dossier);
                     string gap = $"Incomplete test run {id} for build {id}";
-                    Assert(comparison["coverageGaps"]!.AsArray().Any(g => g!.GetValue<string>().Contains(gap, StringComparison.Ordinal)),
-                        "Incomplete test run disappeared from collection coverage.");
+                    Assert(comparison["coverageGaps"]!.AsArray().Count(g => g!.GetValue<string>().Contains(gap, StringComparison.Ordinal)) == 1 &&
+                        !dossier["acquisitions"]!.AsArray().Any(a => a!["description"]!.GetValue<string>().StartsWith(gap, StringComparison.Ordinal)) &&
+                        build["coverageGaps"]!.AsArray().Any(g => g!.GetValue<string>().StartsWith(gap, StringComparison.Ordinal)),
+                        "Incomplete test-run coverage was duplicated or recorded as an acquisition failure.");
                     dossier["error"] = null;
                     dossier["acquisitions"] = new JsonArray();
                     foreach (JsonNode? record in dossier["builds"]!.AsArray())
                     {
                         record!["complete"] = true;
+                        record.AsObject().Remove("coverageGaps");
                     }
                     Assert((await CompareAsync(dossier))["coverageGaps"]!.AsArray().Any(g =>
                         g!.GetValue<string>().Contains(gap, StringComparison.Ordinal)),

@@ -533,6 +533,10 @@ static class Comparison
         }
     }
 
+    public static IEnumerable<string> CoverageGaps(JsonNode build) =>
+        IncompleteTestRuns(build).Concat(TestResultCoverageGaps(build))
+            .Concat(ScenarioIdentityGaps(build));
+
     private static (string Kind, string Name, string Lane) ScenarioKey(JsonNode observation) =>
         (observation.Text("kind"), observation.Text("name"), observation.Text("lane"));
 
@@ -610,6 +614,10 @@ static class Comparison
             JsonObject build = node as JsonObject ?? throw new InvalidDataException("Invalid build object.");
             RequireFields(build, "id", "url", "repository", "organization", "project", "definitionId", "branch",
                 "commit", "queuedAt", "observations", "complete", "reason", "parameters", "resources");
+            if (build["coverageGaps"] is not null and not JsonArray)
+            {
+                throw new InvalidDataException($"Invalid coverage gaps for build {build.Text("id")}.");
+            }
             if (!ids.Add(build.Text("id")))
             {
                 throw new InvalidDataException($"Duplicate build ID {build.Text("id")}.");
@@ -664,9 +672,12 @@ static class Comparison
             .Select(c => $"Unassessed check: {c.Text("name")}"));
         gaps.AddRange(dossier.Rows("changeWindows").Objects().Where(w => !w.Flag("complete"))
             .Select(w => $"Unverified change window for build {w.Text("buildId")}"));
-        gaps.AddRange(dossier.Rows("builds").Objects().SelectMany(IncompleteTestRuns));
-        gaps.AddRange(dossier.Rows("builds").Objects().SelectMany(TestResultCoverageGaps));
-        gaps.AddRange(dossier.Rows("builds").Objects().SelectMany(ScenarioIdentityGaps));
+        foreach (JsonObject build in builds)
+        {
+            gaps.AddRange(build["coverageGaps"] is JsonArray stored
+                ? stored.Select(JsonData.Scalar)
+                : CoverageGaps(build));
+        }
         HashSet<string> selected = dossier.Rows("selectedBuildIds").Select(JsonData.Scalar).ToHashSet(StringComparer.Ordinal);
         foreach (JsonObject build in dossier.Rows("builds").Objects().Where(b => selected.Contains(b.Text("id"))))
         {
@@ -674,7 +685,9 @@ static class Comparison
             {
                 gaps.Add($"Incomplete selected build {build.Text("id")}");
             }
-            if (MissingFailureEvidence(build))
+            if (MissingFailureEvidence(build) &&
+                !dossier.Rows("acquisitions").Objects().Any(a =>
+                    a.Text("description").StartsWith($"Missing failure evidence for build {build.Text("id")};", StringComparison.Ordinal)))
             {
                 gaps.Add($"Missing failure evidence for build {build.Text("id")}");
             }
@@ -1162,10 +1175,6 @@ sealed class Collector
                 runRows.Add(JsonData.Object(new { id = listedRun["id"], name = listedRun["name"] }));
             }
         }
-        foreach (string gap in Comparison.IncompleteTestRuns(record))
-        {
-            Gap(record, gap);
-        }
         bool totalsKnown = runRows.Objects().All(r => r["totalTests"] is JsonValue value &&
             value.TryGetValue(out long count) && count >= 0);
         long total = totalsKnown ? runRows.Objects().Sum(r => r.Number("totalTests")) : 0;
@@ -1194,10 +1203,6 @@ sealed class Collector
                     $"{test.Text("automatedTestName")} | {test.Text("testCaseTitle")}", null);
             }
         }
-        foreach (string gap in Comparison.TestResultCoverageGaps(record))
-        {
-            Gap(record, gap, ok: true);
-        }
         Acquisition artifacts = await ReadAsync("hlx", ["azdo", "artifacts", url, "--all", "--json"], list: true);
         if (artifacts.Complete)
         {
@@ -1211,9 +1216,11 @@ sealed class Collector
         {
             await HelixAsync(record, job, contexts);
         }
-        foreach (string gap in Comparison.ScenarioIdentityGaps(record))
+        JsonArray coverageGaps = new(Comparison.CoverageGaps(record).Select(g => (JsonNode?)JsonValue.Create(g)).ToArray());
+        record["coverageGaps"] = coverageGaps;
+        if (coverageGaps.Count > 0)
         {
-            Gap(record, gap, ok: true);
+            record["complete"] = false;
         }
         if (Comparison.MissingFailureEvidence(record))
         {
