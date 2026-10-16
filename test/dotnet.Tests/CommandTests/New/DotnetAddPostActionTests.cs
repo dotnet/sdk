@@ -303,6 +303,105 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual("System.Net.Json", callback.Reference);
         }
 
+        [TestMethod]
+        [DataRow(null, false, DisplayName = "no noRestore argument keeps the restore")]
+        [DataRow("false", false, DisplayName = "noRestore false keeps the restore")]
+        [DataRow("true", true, DisplayName = "noRestore true skips the restore")]
+        public void AddPackageRefPassesNoRestoreOnlyWhenTheTemplateAsksForIt(string? noRestoreArg, bool expected)
+        {
+            var callback = new MockAddProjectReferenceCallback();
+            DotnetAddPostActionProcessor actionProcessor = new(callback.AddPackageReference, callback.AddProjectReference);
+
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string projFileFullPath = Path.Combine(targetBasePath, "MyApp.csproj");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(projFileFullPath, string.Empty);
+
+            var args = new Dictionary<string, string>()
+            {
+                { "targetFiles", "[\"MyApp.csproj\"]" }, { "referenceType", "package" }, { "reference", "System.Text.Json" }, { "version", "9.0.0" }
+            };
+            if (noRestoreArg is not null)
+            {
+                args.Add("noRestore", noRestoreArg);
+            }
+
+            var postAction = new MockPostAction(default, default, default, default, default!) { ActionId = DotnetAddPostActionProcessor.ActionProcessorId, Args = args };
+            MockCreationEffects creationEffects = new MockCreationEffects()
+                .WithFileChange(new MockFileChange("./MyApp.csproj", "./MyApp.csproj", ChangeKind.Create));
+
+            actionProcessor.Process(_engineEnvironmentSettings, postAction, creationEffects, new MockCreationResult(), targetBasePath);
+
+            Assert.AreEqual(expected, callback.NoRestore);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsAnExistingCentralPackageVersion()
+        {
+            var callback = new MockAddProjectReferenceCallback();
+            DotnetAddPostActionProcessor actionProcessor = new(callback.AddPackageReference, callback.AddProjectReference);
+
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string projFileFullPath = Path.Combine(targetBasePath, "MyApp.csproj");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(projFileFullPath, string.Empty);
+
+            // The repository already pins this package centrally. Passing the template version
+            // would rewrite that entry for every project in the repository.
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(
+                Path.Combine(targetBasePath, "Directory.Packages.props"),
+                """
+                <Project>
+                  <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
+                  <ItemGroup><PackageVersion Include="NUnit" Version="4.5.0" /></ItemGroup>
+                </Project>
+                """);
+
+            var args = new Dictionary<string, string>()
+            {
+                { "targetFiles", "[\"MyApp.csproj\"]" }, { "referenceType", "package" }, { "reference", "NUnit" }, { "version", "4.6.1" }
+            };
+            var postAction = new MockPostAction(default, default, default, default, default!) { ActionId = DotnetAddPostActionProcessor.ActionProcessorId, Args = args };
+            MockCreationEffects creationEffects = new MockCreationEffects()
+                .WithFileChange(new MockFileChange("./MyApp.csproj", "./MyApp.csproj", ChangeKind.Create));
+
+            actionProcessor.Process(_engineEnvironmentSettings, postAction, creationEffects, new MockCreationResult(), targetBasePath);
+
+            Assert.IsNull(callback.Version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefUsesTheTemplateVersionWhenTheCentralFileHasNoEntry()
+        {
+            var callback = new MockAddProjectReferenceCallback();
+            DotnetAddPostActionProcessor actionProcessor = new(callback.AddPackageReference, callback.AddProjectReference);
+
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string projFileFullPath = Path.Combine(targetBasePath, "MyApp.csproj");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(projFileFullPath, string.Empty);
+
+            // Central package management is on, but nothing pins NUnit yet, so the template
+            // version is what creates the entry.
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(
+                Path.Combine(targetBasePath, "Directory.Packages.props"),
+                """
+                <Project>
+                  <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
+                  <ItemGroup><PackageVersion Include="Some.Other.Package" Version="1.0.0" /></ItemGroup>
+                </Project>
+                """);
+
+            var args = new Dictionary<string, string>()
+            {
+                { "targetFiles", "[\"MyApp.csproj\"]" }, { "referenceType", "package" }, { "reference", "NUnit" }, { "version", "4.6.1" }
+            };
+            var postAction = new MockPostAction(default, default, default, default, default!) { ActionId = DotnetAddPostActionProcessor.ActionProcessorId, Args = args };
+            MockCreationEffects creationEffects = new MockCreationEffects()
+                .WithFileChange(new MockFileChange("./MyApp.csproj", "./MyApp.csproj", ChangeKind.Create));
+
+            actionProcessor.Process(_engineEnvironmentSettings, postAction, creationEffects, new MockCreationResult(), targetBasePath);
+
+            Assert.AreEqual("4.6.1", callback.Version);
+        }
+
         private class MockAddProjectReferenceCallback
         {
             public string? Target { get; private set; }
@@ -322,7 +421,11 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 return true;
             }
 
-            public bool AddPackageReference(string target, string reference, string? version)
+            public string? Version { get; private set; }
+
+            public bool? NoRestore { get; private set; }
+
+            public bool AddPackageReference(string target, string reference, string? version, bool noRestore)
             {
                 if (Target != null)
                 {
@@ -331,6 +434,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
                 Target = target;
                 Reference = reference;
+                Version = version;
+                NoRestore = noRestore;
 
                 return true;
             }
