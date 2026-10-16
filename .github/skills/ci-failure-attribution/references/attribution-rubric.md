@@ -6,7 +6,7 @@
 | --- | --- |
 | PR-related / New-commit-related | A supported link from changed behavior to the observed mechanism. Executed comparable controls strengthen it. Intermittency does not exclude it. |
 | Pre-existing | The same material mechanism in comparable evidence without the PR changes or before the stated standalone window. Note unresolved exacerbation by new changes. |
-| External infrastructure | Evidence of an external service/agent/queue mechanism, accounting for changed source/configuration that could produce similar symptoms. |
+| External infrastructure | Evidence of an external CI service, agent, queue, or transport mechanism, after accounting for changed source/configuration that could produce similar symptoms. |
 | Inconclusive | Missing controls, incompatible runs, conflicting signals, incomplete identity/coverage, or no causal link. State the next discriminating check. |
 
 Behavior is **Intermittent**, **Deterministic**, or **Unknown**. Use actual execution
@@ -78,6 +78,17 @@ state, and latent source defects. An empty source diff does not prove infrastruc
 - Restore/network-looking failures can follow PR changes to URLs, credentials,
   dependency versions, or configuration. Inspect those changes before assigning
   external infrastructure.
+- Distinguish CI infrastructure from external dependency and configuration
+  failures. A feed HTTP 401/403, DNS failure for a package source, expired
+  credential, package vulnerability rejection, or invalid external service
+  configuration is not by itself evidence that Azure/Helix infrastructure failed.
+  Attribute it to the PR only when changed source/configuration causally explains
+  the request or credential; call it pre-existing only when comparable evidence
+  shows the same failure before the stated window. Otherwise use Inconclusive and
+  name the next check (for example, verify feed availability and credential scope).
+- Use External infrastructure for provider-side service outages, agent/queue
+  failures, or transport incidents only when logs, service status, or comparable
+  executions support that mechanism and changed configuration has been considered.
 - Normalize volatile identifiers only. Preserve diagnostic numbers, meaningful
   paths/versions, endpoints, expected/actual values, and distinct stack mechanisms.
   Stable GUIDs such as COM CLSIDs and assertion timestamps are meaningful values,
