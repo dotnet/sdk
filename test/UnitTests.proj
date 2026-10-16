@@ -213,6 +213,9 @@
       <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\BundledManifests.targets">
         <DestinationFolder>Layout/</DestinationFolder>
       </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\GenerateInstallerLayout.targets;$(RepoRoot)src\Layout\redist\dnx;$(RepoRoot)src\Layout\redist\dnx.cmd">
+        <DestinationFolder>Layout/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
       <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Workloads\Manifests\Directory.Build.targets;$(RepoRoot)src\Workloads\Manifests\manifest-packages.csproj">
         <DestinationFolder>Layout/Workloads/Manifests/</DestinationFolder>
       </TestExecutionDirectoryFiles>
