@@ -57,6 +57,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Condition="'$(MvcEnhancedModelMetadataSupport)' != ''"
                                     Value="$(MvcEnhancedModelMetadataSupport)"
                                     Trim="true" />
+    <!-- Keep the navigation switch visible to analyzers with either Razor compilation mode. -->
+    <CompilerVisibleProperty Include="BlazorDisableThrowNavigationException" />
     <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException"
                                     Condition="'$(BlazorDisableThrowNavigationException)' != ''"
                                     Value="$(BlazorDisableThrowNavigationException)"
