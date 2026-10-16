@@ -586,6 +586,17 @@ static class Comparison
         return new(knownIdentity && differences.Count == 0 && executed, differences.ToArray(), limitations.ToArray(), executions);
     }
 
+    public static JsonObject FindObservation(ILookup<string, JsonObject> observations, string id)
+    {
+        JsonObject[] matches = observations[id].Take(2).ToArray();
+        return matches.Length switch
+        {
+            1 => matches[0],
+            0 => throw new InvalidDataException($"Comparison observation {id} is absent from its build."),
+            _ => throw new InvalidDataException($"Comparison observation {id} is ambiguous in its build.")
+        };
+    }
+
     private static void RequireFields(JsonObject obj, params string[] keys)
     {
         foreach (string key in keys)
@@ -1554,6 +1565,8 @@ sealed class Collector
                 await WindowAsync(record, null, "");
                 continue;
             }
+            ILookup<string, JsonObject> observations = record.Rows("observations").Objects()
+                .ToLookup(o => o.Text("id"), StringComparer.Ordinal);
             foreach (JsonObject row in comparison.Rows("comparisons").Objects().Where(r => r.Text("buildId") == identity.Id))
             {
                 JsonObject? baseline = explicitBaseline;
@@ -1564,7 +1577,9 @@ sealed class Collector
                         index = Comparison.IndexExecutions(baseline);
                         baselineIndexes.Add(baseline.Text("id"), index);
                     }
-                    if (!Comparison.Compatible(record, baseline, row, index).Eligible || baseline.Text("branch") != record.Text("branch") ||
+                    JsonObject observation = Comparison.FindObservation(observations, row.Text("observationId"));
+                    if (!Comparison.Compatible(record, baseline, observation, index).Eligible ||
+                        baseline.Text("branch") != record.Text("branch") ||
                         JsonData.Time(baseline) >= JsonData.Time(record))
                     {
                         throw new InvalidDataException("Explicit baseline must be an earlier same-branch/pipeline execution of the scenario.");

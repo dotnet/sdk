@@ -1644,9 +1644,13 @@ sealed class Checks(string outputDirectory, string? filter)
             Fixtures.TestRun(replay, "3");
             Fixtures.TestRun(replay, "2");
             JsonObject dossier = await CollectAsync(replay, ["--baseline-build", "2"]);
+            string[] observationIds = Current(dossier)["observations"]!.AsArray()
+                .Select(o => o!["id"]!.GetValue<string>()).ToArray();
             Assert(dossier["changeWindows"]!.AsArray().Count == 3 &&
+                dossier["changeWindows"]!.AsArray().All(w =>
+                    observationIds.Contains(w!["observationId"]!.GetValue<string>(), StringComparer.Ordinal)) &&
                 dossier["changeWindows"]!.AsArray().All(w => w!["baselineBuildId"]!.GetValue<string>() == "2"),
-                "Explicit baseline ignored or execution provenance was lost between comparison and validation.");
+                "Explicit baseline ignored or a comparison row did not resolve to its source observation.");
             replay = Path.Combine(outputDirectory, "mismatched-pr");
             Fixtures.Collection(replay, pr: true);
             Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
