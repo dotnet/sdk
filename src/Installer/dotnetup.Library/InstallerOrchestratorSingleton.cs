@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
@@ -214,7 +215,7 @@ internal class InstallerOrchestratorSingleton
 
     private static DotnetInstallException CreateCancelledBeforeStartException(PreparedInstall prepared) => new(
         DotnetInstallErrorCode.OperationCancelled,
-        $"Installation was cancelled before {prepared.Request.Component.GetDisplayName()} {prepared.Version} was installed.",
+        string.Format(CultureInfo.CurrentCulture, Strings.InstallCancelledBeforeStart, prepared.Request.Component.GetDisplayName(), prepared.Version),
         version: prepared.Version.ToString(),
         component: prepared.Request.Component.ToString());
 
@@ -346,7 +347,7 @@ internal class InstallerOrchestratorSingleton
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeRequiresUntracked,
-                "Installs that use the Windows installer must be untracked. Run the command again with --untracked.",
+                Strings.WindowsInstallerRequiresUntracked,
                 version: version.ToString(),
                 component: installRequest.Component.ToString());
         }
@@ -363,11 +364,7 @@ internal class InstallerOrchestratorSingleton
 
         return request.Options.InstallMechanism switch
         {
-            InstallMechanism.WindowsInstallerBundle => new WindowsBundleArtifact(
-                request,
-                version,
-                batchContext,
-                releaseManifest: releaseManifest),
+            InstallMechanism.WindowsInstallerBundle => new WindowsBundleArtifact(request, version, batchContext, releaseManifest: releaseManifest),
             _ => new DotnetArchiveExtractor(request, version, releaseManifest, batchContext, cacheDirectory: DotnetupPaths.DownloadCacheDirectory),
         };
     }
@@ -428,9 +425,10 @@ internal class InstallerOrchestratorSingleton
         bool isBundle = prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle;
         return new DotnetInstallException(
             isBundle ? DotnetInstallErrorCode.InstallerPostInstallVerificationFailed : DotnetInstallErrorCode.InstallFailed,
-            isBundle
-                ? $"The Windows installer reported success, but the installation could not be verified: {validationFailure}"
-                : $"Installation validation failed: {validationFailure}",
+            string.Format(
+                CultureInfo.CurrentCulture,
+                isBundle ? Strings.WindowsInstallerPostInstallVerificationFailed : Strings.InstallValidationFailed,
+                validationFailure),
             version: prepared.Version.ToString(),
             component: prepared.Request.Component.ToString());
     }

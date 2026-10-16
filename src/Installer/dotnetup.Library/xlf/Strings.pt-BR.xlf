@@ -561,10 +561,20 @@ Or open a new terminal.</target>
         <target state="new">The access mode to set up: {0}.</target>
         <note>{0} lists supported command-line mode tokens.</note>
       </trans-unit>
+      <trans-unit id="InstallCancelledBeforeStart">
+        <source>Installation was cancelled before {0} {1} was installed.</source>
+        <target state="new">Installation was cancelled before {0} {1} was installed.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the component version.</note>
+      </trans-unit>
       <trans-unit id="InstallSpecSource">
         <source>(source: {0})</source>
         <target state="new">(source: {0})</target>
         <note>{0} is an install-source identifier or a global.json path.</note>
+      </trans-unit>
+      <trans-unit id="InstallValidationFailed">
+        <source>Installation validation failed: {0}</source>
+        <target state="new">Installation validation failed: {0}</target>
+        <note>{0} is the reason the installation validation failed.</note>
       </trans-unit>
       <trans-unit id="ListCommandDescription">
         <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
@@ -880,6 +890,16 @@ Or open a new terminal.</target>
         <source>Use {0} {1} to target these specs.</source>
         <target state="new">Use {0} {1} to target these specs.</target>
         <note>{0} is the source option name; {1} is the install-source value that selects every source.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerPostInstallVerificationFailed">
+        <source>The Windows installer reported success, but the installation could not be verified: {0}</source>
+        <target state="new">The Windows installer reported success, but the installation could not be verified: {0}</target>
+        <note>{0} is the reason the installation could not be verified.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerRequiresUntracked">
+        <source>Installs that use the Windows installer must be untracked. Run the command again with --untracked.</source>
+        <target state="new">Installs that use the Windows installer must be untracked. Run the command again with --untracked.</target>
+        <note>{Locked="--untracked"}</note>
       </trans-unit>
     </body>
   </file>
