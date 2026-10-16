@@ -56,8 +56,11 @@ Null, empty/whitespace strings, and encoded JSON `null` remain unavailable param
 not known empty objects. Malformed JSON and non-object parameter values fail
 explicitly without echoing their contents or saving the unsafe metadata snapshot.
 
-The [collector](../scripts/CiEvidence.cs) also retains `testRuns` metadata, including
-producer state and counters.
+The [collector](../scripts/CiEvidence.cs) retains raw `testRuns` metadata from
+Azure REST, using hlx only to enumerate run IDs. Missing counters remain absent,
+not the typed producer's default zeros. Raw run IDs/build associations must match
+the requested evidence. An unknown total uses diagnostic-only result retrieval
+with explicit coverage gaps, not an invented zero-test run.
 Test results are acquired through authenticated `az rest` GET requests with
 `detailsToInclude=SubResults` and explicit 200-result pagination. The raw
 [Azure result contract](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/list?view=azure-devops-rest-7.1)

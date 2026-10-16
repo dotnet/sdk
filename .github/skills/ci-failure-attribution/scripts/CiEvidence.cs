@@ -852,6 +852,15 @@ sealed class Collector
         return JsonData.Array(entries);
     }
 
+    private Task<Acquisition> AzureAsync(JsonObject record, string path, string query = "")
+    {
+        string endpoint = $"https://dev.azure.com/{Uri.EscapeDataString(record.Text("organization"))}/" +
+            $"{Uri.EscapeDataString(record.Text("project"))}/_apis/{path}?api-version=7.1" +
+            (query.Length > 0 ? "&" + query : "");
+        return ReadAsync("az", ["rest", "--method", "GET", "--url", endpoint,
+            "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"]);
+    }
+
     private async Task<JsonArray> AzureRowsAsync(JsonObject record, string path, string query)
     {
         JsonArray entries = [];
@@ -859,11 +868,7 @@ sealed class Collector
         const int PageSize = 200;
         while (true)
         {
-            string endpoint = $"https://dev.azure.com/{Uri.EscapeDataString(record.Text("organization"))}/" +
-                $"{Uri.EscapeDataString(record.Text("project"))}/_apis/{path}?api-version=7.1&{query}" +
-                $"&$skip={entries.Count}&$top={PageSize}";
-            Acquisition response = await ReadAsync("az", ["rest", "--method", "GET", "--url", endpoint,
-                "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"]);
+            Acquisition response = await AzureAsync(record, path, $"{query}&$skip={entries.Count}&$top={PageSize}");
             if (!response.Complete || response.Data?["value"] is not JsonArray page ||
                 response.Data["count"] is null || response.Data.Number("count") != page.Count || page.Count > PageSize)
             {
@@ -1076,18 +1081,36 @@ sealed class Collector
         {
             record["complete"] = false;
         }
-        JsonArray runRows = runs.Data?["results"] as JsonArray ?? [];
-        record["testRuns"] = runRows.DeepClone();
+        JsonArray runRows = [];
+        record["testRuns"] = runRows;
+        foreach (JsonObject listedRun in (runs.Data?["results"] as JsonArray ?? []).Objects())
+        {
+            Acquisition rawRun = await AzureAsync(record, $"test/Runs/{listedRun.Text("id")}");
+            if (rawRun.Complete && rawRun.Data is JsonObject detail && detail.Text("id") == listedRun.Text("id") &&
+                (detail["build"]?["id"] is null || detail["build"].Text("id") == record.Text("id")))
+            {
+                runRows.Add(detail.DeepClone());
+            }
+            else
+            {
+                Gap(record, $"Raw test-run metadata unavailable or mismatched for run {listedRun.Text("id")}.");
+                runRows.Add(JsonData.Object(new { id = listedRun["id"], name = listedRun["name"] }));
+            }
+        }
         foreach (string gap in Comparison.IncompleteTestRuns(record))
         {
             Gap(record, gap);
         }
-        long total = runRows.Objects().Sum(r => r.Number("totalTests"));
-        bool fullResults = total <= _testResultLimit;
+        bool totalsKnown = runRows.Objects().All(r => r["totalTests"] is JsonValue value &&
+            value.TryGetValue(out long count) && count >= 0);
+        long total = totalsKnown ? runRows.Objects().Sum(r => r.Number("totalTests")) : 0;
+        bool fullResults = totalsKnown && total <= _testResultLimit;
         record["testResultsIncludePassed"] = fullResults;
         if (!fullResults)
         {
-            Gap(record, $"Build {record.Text("id")} exceeds TestResultLimit {_testResultLimit}; passed controls omitted", ok: true);
+            Gap(record, totalsKnown
+                ? $"Build {record.Text("id")} exceeds TestResultLimit {_testResultLimit}; passed controls omitted"
+                : $"Build {record.Text("id")} has an unknown raw test count; passed controls omitted", ok: true);
         }
         foreach (JsonObject run in runRows.Objects())
         {

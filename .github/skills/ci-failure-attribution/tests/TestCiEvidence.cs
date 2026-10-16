@@ -309,7 +309,7 @@ sealed class Checks(string outputDirectory)
                     Fixtures.Change(replay, s => field == "name" ? Fixtures.IsRawResults(s, id) :
                         Fixtures.IsTestAcquisition(s, id) && !Fixtures.IsRawResults(s, id), data =>
                     {
-                        JsonObject entry = Fixtures.ResultRows(data)[0]!.AsObject();
+                        JsonObject entry = Fixtures.FirstResult(data);
                         foreach (string key in field == "name" ? new[] { "automatedTestName", "testCaseTitle" } : new[] { "name" })
                         {
                             if (value is null)
@@ -761,7 +761,7 @@ sealed class Checks(string outputDirectory)
             {
                 Fixtures.TestRun(replay, id);
                 string mechanism = id == "3" ? "  MSB4036: expected value  " : "MSB4036: expected value";
-                Fixtures.Change(replay, s => Fixtures.IsRawResults(s, id) || s["tool"]!.GetValue<string>() == "hlx" &&
+                Fixtures.Change(replay, s => Fixtures.IsTestAcquisition(s, id) || s["tool"]!.GetValue<string>() == "hlx" &&
                     s["arguments"]!.AsArray().Count > 2 && s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl(id), data =>
                 {
                     if (data["records"] is JsonArray records)
@@ -776,9 +776,9 @@ sealed class Checks(string outputDirectory)
                             }
                         }
                     }
-                    else if ((data["results"] ?? data["value"]) is JsonArray { Count: 1 } results)
+                    else if ((data["results"] ?? data["value"]) is JsonArray { Count: 1 } || data["totalTests"] is not null)
                     {
-                        JsonObject entry = results[0]!.AsObject();
+                        JsonObject entry = Fixtures.FirstResult(data);
                         if (entry.ContainsKey("totalTests"))
                         {
                             entry["failedTests"] = 1;
@@ -921,6 +921,29 @@ sealed class Checks(string outputDirectory)
                 }
             }
         });
+        await CaseAsync("Raw run metadata preserves omitted counters rather than typed producer zeros", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "missing-raw-counters");
+            Fixtures.Collection(replay);
+            Fixtures.TestRun(replay, "3");
+            Fixtures.Save(replay, "hlx", ["azdo", "test-runs", Fixtures.BuildUrl("3"), "--all", "--json"], new
+            {
+                ok = true, complete = true, truncated = false, results = new[]
+                {
+                    new { id = 3, name = "Linux", state = "Completed", incompleteTests = 0, totalTests = 0, failedTests = 0, passedTests = 0 }
+                }
+            });
+            Fixtures.Save(replay, "az", Fixtures.RunArguments("3"), new { id = 3, name = "Linux", state = "Completed" });
+            Fixtures.Save(replay, "az", Fixtures.ResultArguments("3", "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning"),
+                new { count = 0, value = new JsonArray() });
+            JsonObject dossier = await CollectAsync(replay, expectedError: "Evidence is incomplete");
+            JsonNode run = Current(dossier)["testRuns"]![0]!;
+            Assert(run["incompleteTests"] is null && run["totalTests"] is null &&
+                run["failedTests"] is null && run["passedTests"] is null &&
+                (await CompareAsync(dossier))["coverageGaps"]!.AsArray().Any(g =>
+                    g!.GetValue<string>().Contains("missing failedTests counter", StringComparison.Ordinal)),
+                "Typed default zero counters replaced missing raw metadata or supported complete empty coverage.");
+        });
         await CaseAsync("Run counters expose missing, contradictory and duplicate test results", async () =>
         {
             string replay = Path.Combine(outputDirectory, "test-result-counts");
@@ -933,7 +956,7 @@ sealed class Checks(string outputDirectory)
                     Fixtures.TestRun(replay, "2");
                     Fixtures.Change(replay, s => Fixtures.IsTestAcquisition(s, id), data =>
                     {
-                        JsonObject entry = Fixtures.ResultRows(data)[0]!.AsObject();
+                        JsonObject entry = Fixtures.FirstResult(data);
                         if (entry.ContainsKey("totalTests"))
                         {
                             switch (mutation)
@@ -1000,7 +1023,7 @@ sealed class Checks(string outputDirectory)
                 Fixtures.TestRun(replay, id);
                 Fixtures.Change(replay, s => Fixtures.IsTestAcquisition(s, id), data =>
                 {
-                    JsonObject entry = Fixtures.ResultRows(data)[0]!.AsObject();
+                    JsonObject entry = Fixtures.FirstResult(data);
                     if (entry.ContainsKey("totalTests"))
                     {
                         entry["totalTests"] = 0;
@@ -1020,7 +1043,7 @@ sealed class Checks(string outputDirectory)
                 Fixtures.TestRun(replay, id);
                 Fixtures.Change(replay, s => Fixtures.IsTestAcquisition(s, id), data =>
                 {
-                    JsonObject entry = Fixtures.ResultRows(data)[0]!.AsObject();
+                    JsonObject entry = Fixtures.FirstResult(data);
                     if (entry.ContainsKey("totalTests"))
                     {
                         entry["failedTests"] = 0;
@@ -1088,12 +1111,10 @@ sealed class Checks(string outputDirectory)
             foreach (string id in new[] { "3", "2" })
             {
                 Fixtures.TestRun(replay, id);
-                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
-                    s["arguments"]!.AsArray().Count > 2 && s["arguments"]![1]!.GetValue<string>() == "test-runs" &&
-                    s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl(id), data =>
+                Fixtures.Change(replay, s => Fixtures.IsTestAcquisition(s, id) && !Fixtures.IsRawResults(s, id), data =>
                 {
-                    data["results"]![0]!["totalTests"] = 2;
-                    data["results"]![0]!["passedTests"] = id == "3" ? 1 : 2;
+                    Fixtures.FirstResult(data)["totalTests"] = 2;
+                    Fixtures.FirstResult(data)["passedTests"] = id == "3" ? 1 : 2;
                 });
                 Fixtures.Save(replay, "az", Fixtures.ResultArguments(id, "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning"), id == "3" ? new
                     {
@@ -1685,23 +1706,30 @@ static class Fixtures
     public static bool IsRawResults(JsonObject snapshot, string id) => snapshot["tool"]!.GetValue<string>() == "az" &&
         snapshot["arguments"]![4]!.GetValue<string>().Contains($"/test/Runs/{id}/results?", StringComparison.Ordinal);
     public static bool IsTestAcquisition(JsonObject snapshot, string id) => IsRawResults(snapshot, id) ||
+        snapshot["tool"]!.GetValue<string>() == "az" &&
+        snapshot["arguments"]![4]!.GetValue<string>().Contains($"/test/Runs/{id}?", StringComparison.Ordinal) ||
         snapshot["tool"]!.GetValue<string>() == "hlx" && snapshot["arguments"]!.AsArray().Count > 2 &&
         snapshot["arguments"]![1]!.GetValue<string>() == "test-runs" &&
         snapshot["arguments"]![2]!.GetValue<string>() == BuildUrl(id);
     public static JsonArray ResultRows(JsonNode data) => (data["results"] ?? data["value"])!.AsArray();
+    public static JsonObject FirstResult(JsonNode data) =>
+        (data["results"] ?? data["value"]) is JsonArray rows ? rows[0]!.AsObject() : data.AsObject();
+    public static string[] RunArguments(string id) =>
+        ["rest", "--method", "GET", "--url", $"https://dev.azure.com/dnceng-public/public/_apis/test/Runs/{id}?api-version=7.1",
+            "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"];
     public static string[] CompareArguments() =>
         ["api", "--method", "GET", "--paginate", "--slurp", $"repos/dotnet/sdk/compare/{Sha("2")}...{Sha("3")}?per_page=100"];
 
     public static void TestRun(string directory, string id, string? state = "Completed", int? incompleteTests = 0)
     {
+        object run = new { id = int.Parse(id, CultureInfo.InvariantCulture), name = "Linux", state,
+            totalTests = 1 + incompleteTests.GetValueOrDefault(), incompleteTests,
+            failedTests = id == "3" ? 1 : 0, passedTests = id == "2" ? 1 : 0 };
         Save(directory, "hlx", ["azdo", "test-runs", BuildUrl(id), "--all", "--json"], new
         {
-            ok = true, complete = true, truncated = false, results = new[]
-            {
-                new { id = int.Parse(id, CultureInfo.InvariantCulture), name = "Linux", state, totalTests = 1 + incompleteTests.GetValueOrDefault(), incompleteTests,
-                    failedTests = id == "3" ? 1 : 0, passedTests = id == "2" ? 1 : 0 }
-            }
+            ok = true, complete = true, truncated = false, results = new[] { run }
         });
+        Save(directory, "az", RunArguments(id), run);
         Save(directory, "az", ResultArguments(id), new
         {
             count = 1, value = new[]
