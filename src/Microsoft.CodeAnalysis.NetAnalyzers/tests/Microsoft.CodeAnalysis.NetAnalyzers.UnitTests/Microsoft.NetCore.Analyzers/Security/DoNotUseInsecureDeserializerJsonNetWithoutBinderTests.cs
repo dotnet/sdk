@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
@@ -23,6 +25,75 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             DoNotUseInsecureDeserializerJsonNetWithoutBinder.DefinitelyInsecureSerializer;
         private static readonly DiagnosticDescriptor MaybeRule =
             DoNotUseInsecureDeserializerJsonNetWithoutBinder.MaybeInsecureSerializer;
+
+        [TestMethod]
+        [CombinatorialData]
+        public async Task SafeConstructorWithUnrelatedByteArrays_CSharp_NoDiagnosticAsync(NewtonsoftJsonVersion version)
+        {
+            string calls = string.Concat(Enumerable.Repeat("Bytes(1, 2, 3, 4);\n", 64));
+            Assert.AreEqual(0, await GetValueContentAnalysisCountAsync(version, $$"""
+                using Newtonsoft.Json;
+
+                class C
+                {
+                    static void Bytes(params byte[] values) { }
+
+                    void Method()
+                    {
+                        {{calls}}
+                        JsonSerializer serializer = new JsonSerializer();
+                    }
+                }
+                """));
+        }
+
+        [TestMethod]
+        [CombinatorialData]
+        public async Task TypeNameHandlingSetInHelper_CSharp_DiagnosticAsync(NewtonsoftJsonVersion version)
+        {
+            int count = await GetValueContentAnalysisCountAsync(version, """
+                using Newtonsoft.Json;
+
+                class C
+                {
+                    static void Configure(JsonSerializer serializer)
+                    {
+                        serializer.TypeNameHandling = TypeNameHandling.All;
+                    }
+
+                    object Method(JsonReader reader)
+                    {
+                        JsonSerializer serializer = new JsonSerializer();
+                        Configure(serializer);
+                        return serializer.Deserialize(reader);
+                    }
+                }
+                """,
+                GetCSharpResultAt(14, 16, DefinitelyRule));
+            Assert.IsGreaterThan(0, count);
+        }
+
+        [TestMethod]
+        [CombinatorialData]
+        public async Task TypeNameHandlingSetInHelper_VB_DiagnosticAsync(NewtonsoftJsonVersion version)
+        {
+            await VerifyBasicWithJsonNetAsync(version, """
+                Imports Newtonsoft.Json
+
+                Public Class C
+                    Private Shared Sub Configure(serializer As JsonSerializer)
+                        serializer.TypeNameHandling = TypeNameHandling.All
+                    End Sub
+
+                    Public Function Method(reader As JsonReader) As Object
+                        Dim serializer As New JsonSerializer()
+                        Configure(serializer)
+                        Return serializer.Deserialize(reader)
+                    End Function
+                End Class
+                """,
+                GetBasicResultAt(11, 16, DefinitelyRule));
+        }
 
         [TestMethod]
         [CombinatorialData]
@@ -774,6 +845,29 @@ class Blah
             }
 
             await csharpTest.RunAsync(CancellationToken.None);
+        }
+
+        private static async Task<int> GetValueContentAnalysisCountAsync(
+            NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
+        {
+            int count = 0;
+            var test = new CountingCSharpSecurityAnalyzerTest<DoNotUseInsecureDeserializerJsonNetWithoutBinder>(() =>
+                new DoNotUseInsecureDeserializerJsonNetWithoutBinder
+                {
+                    ValueContentAnalysisStarted = () => Interlocked.Increment(ref count),
+                })
+            {
+                ReferenceAssemblies = version switch
+                {
+                    NewtonsoftJsonVersion.Version10 => AdditionalMetadataReferences.DefaultWithNewtonsoftJson10,
+                    NewtonsoftJsonVersion.Version12 => AdditionalMetadataReferences.DefaultWithNewtonsoftJson12,
+                    _ => throw new NotSupportedException(),
+                },
+                TestCode = source,
+            };
+            test.ExpectedDiagnostics.AddRange(expected);
+            await test.RunAsync(CancellationToken.None);
+            return Volatile.Read(ref count);
         }
 
         private async Task VerifyCSharpWithJsonNetAsync(NewtonsoftJsonVersion version, string source, params DiagnosticResult[] expected)
