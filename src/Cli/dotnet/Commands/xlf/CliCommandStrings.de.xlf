@@ -4205,6 +4205,16 @@ Um einen Wert anzuzeigen, geben Sie die entsprechende Befehlszeilenoption an, oh
         <target state="translated">Pack "{0}" (Version {1}) ist bereits installiert.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadPackageSourceCouldNotBeLoaded">
+        <source>Unable to load the package source '{0}'. Make sure the value passed to --source is the URL of a NuGet feed and that it can be reached. {1}</source>
+        <target state="new">Unable to load the package source '{0}'. Make sure the value passed to --source is the URL of a NuGet feed and that it can be reached. {1}</target>
+        <note>{Locked="--source"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadPackageSourceIsNotANuGetFeed">
+        <source>The package source '{0}' is not a NuGet feed. Make sure the value passed to --source is the URL of a NuGet feed, for example 'https://api.nuget.org/v3/index.json'.</source>
+        <target state="new">The package source '{0}' is not a NuGet feed. Make sure the value passed to --source is the URL of a NuGet feed, for example 'https://api.nuget.org/v3/index.json'.</target>
+        <note>{Locked="--source"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadRepairCommandDescription">
         <source>Repair workload installations.</source>
         <target state="translated">Reparieren Sie Workloadinstallationen.</target>

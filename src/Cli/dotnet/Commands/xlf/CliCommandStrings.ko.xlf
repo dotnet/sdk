@@ -4205,6 +4205,16 @@ To display a value, specify the corresponding command-line option without provid
         <target state="translated">{0} 팩 버전 {1}이(가) 이미 설치되었습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadPackageSourceCouldNotBeLoaded">
+        <source>Unable to load the package source '{0}'. Make sure the value passed to --source is the URL of a NuGet feed and that it can be reached. {1}</source>
+        <target state="new">Unable to load the package source '{0}'. Make sure the value passed to --source is the URL of a NuGet feed and that it can be reached. {1}</target>
+        <note>{Locked="--source"}</note>
+      </trans-unit>
+      <trans-unit id="WorkloadPackageSourceIsNotANuGetFeed">
+        <source>The package source '{0}' is not a NuGet feed. Make sure the value passed to --source is the URL of a NuGet feed, for example 'https://api.nuget.org/v3/index.json'.</source>
+        <target state="new">The package source '{0}' is not a NuGet feed. Make sure the value passed to --source is the URL of a NuGet feed, for example 'https://api.nuget.org/v3/index.json'.</target>
+        <note>{Locked="--source"}</note>
+      </trans-unit>
       <trans-unit id="WorkloadRepairCommandDescription">
         <source>Repair workload installations.</source>
         <target state="translated">워크로드 설치를 복구합니다.</target>

@@ -124,6 +124,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
     {
         bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
         var filteredWorkloadIds = GetValidWorkloadIds();
+        ValidatePackageSources();
 
         if (_printDownloadLinkOnly)
         {
