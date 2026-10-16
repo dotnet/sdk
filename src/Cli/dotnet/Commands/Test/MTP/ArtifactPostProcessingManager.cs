@@ -77,6 +77,15 @@ internal sealed class ArtifactPostProcessingManager
         }
     }
 
+    internal bool ContainsArtifactPath(string path)
+    {
+        lock (_lock)
+        {
+            StringComparison comparison = OperatingSystem.IsWindows() ? StringComparison.OrdinalIgnoreCase : StringComparison.Ordinal;
+            return _artifacts.Any(artifact => string.Equals(artifact.Path, path, comparison));
+        }
+    }
+
     public async Task ExecuteAsync(
         BuildOptions buildOptions,
         TerminalTestReporter output,

@@ -28,6 +28,9 @@
 .PARAMETER ResultsDirectory
     Directory for the TRX report when -Trx is specified.
 
+.PARAMETER Filter
+    Optional Microsoft.Testing.Platform test filter for a focused native run.
+
 .EXAMPLE
     ./run-aot-tests.ps1
     ./run-aot-tests.ps1 -Configuration Release
@@ -39,7 +42,8 @@ param(
     [string]$RuntimeIdentifier,
     [switch]$NoBuild,
     [switch]$Trx,
-    [string]$ResultsDirectory
+    [string]$ResultsDirectory,
+    [string]$Filter
 )
 
 $ErrorActionPreference = "Stop"
@@ -199,6 +203,9 @@ foreach ($entry in $environment.GetEnumerator()) {
 # When -Trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
 # app, so it accepts the --report-trx options) so CI can publish the results.
 $runArgs = @()
+if ($Filter) {
+    $runArgs += @("--filter", $Filter)
+}
 if ($Trx) {
     if (-not $ResultsDirectory) {
         $ResultsDirectory = [System.IO.Path]::Combine($repoRoot, "artifacts", "TestResults", $Configuration)
@@ -219,7 +226,8 @@ finally {
 
 Write-Host ""
 if ($testExitCode -eq 0) {
-    Write-Host "All AOT tests passed." -ForegroundColor Green
+    $summary = if ($Filter) { "Selected AOT tests passed." } else { "All AOT tests passed." }
+    Write-Host $summary -ForegroundColor Green
 } else {
     Write-Host "AOT tests failed with exit code $testExitCode." -ForegroundColor Red
 }

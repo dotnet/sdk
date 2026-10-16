@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup>
+    <PackageVersion Include="MSTest.TestFramework" Version="$(BrowserWasmMSTestVersion)" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="$(BrowserWasmMSTestVersion)" />
+    <PackageVersion Include="Microsoft.Testing.Platform.Browser"
+                    Version="$(BrowserWasmMtpPackageVersion)" />
+  </ItemGroup>
+</Project>

@@ -209,3 +209,24 @@ internal static class ServerControlMessageFieldsId
 
     public const ushort Kind = 1;
 }
+
+internal static class FileArtifactTransferRequestFieldsId
+{
+    public const int MessagesSerializerId = 15;
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort TransferId = 3;
+    public const ushort FileName = 4;
+    public const ushort TotalLength = 5;
+    public const ushort Offset = 6;
+    public const ushort Data = 7;
+    public const ushort IsFinal = 8;
+}
+
+internal static class FileArtifactTransferResponseFieldsId
+{
+    public const int MessagesSerializerId = 16;
+    public const ushort NextOffset = 1;
+    public const ushort FullPath = 2;
+    public const ushort Error = 3;
+}
