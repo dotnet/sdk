@@ -153,7 +153,12 @@ Read [attribution-rubric.md](references/attribution-rubric.md) before assigning
 verdicts. For each current failure, form the smallest supported causal chain.
 Separate observed facts, inference, competing explanations, and missing evidence.
 Keep parent errors and artifact cascades visible, but group them only when the
-child/root evidence establishes the same mechanism.
+child/root evidence establishes the same mechanism. In the report, group rows
+under one root mechanism only when the causal chain supports it; list the
+contributing observation names/IDs and links so each failure remains traceable.
+Keep distinct test assertions, unrelated root errors, and unresolved failures as
+separate entries. Do not count a parent error and its proven downstream artifacts
+as independent mechanisms.
 
 Trace relevant source at the **tested SHA**, including shared targets, test assets,
 dependencies, and CI configuration. Use read-only source retrieval; do not check
@@ -186,7 +191,8 @@ window, and coverage limitations. Use:
 | --- | --- | --- | --- |
 | Specific mechanism | PR-related / New-commit-related / Pre-existing / External infrastructure / Inconclusive | Intermittent / Deterministic / Unknown | High / Medium / Low |
 
-Below the table, key concise details to each failure: diagnostic/source links,
+Below the table, key concise details to each failure or grouped root mechanism:
+diagnostic/source links,
 causal chain, comparable controls, known-issue coverage, contrary evidence,
 confidence justification, and remaining gaps. Distinguish attribution confidence
 from root-cause confidence when different.

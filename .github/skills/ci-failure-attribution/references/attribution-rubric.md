@@ -94,6 +94,11 @@ state, and latent source defects. An empty source diff does not prove infrastruc
   Stable GUIDs such as COM CLSIDs and assertion timestamps are meaningful values,
   not automatically volatile identifiers.
 - Cascades and generic parent jobs remain context, not extra independent causes.
+  When presenting several observations, group only those whose evidence supports
+  the same root mechanism. Preserve contributing observation names/IDs and links
+  for auditability; keep separate assertions, distinct mechanisms, and
+  unexplained failures separate. Never count a proven parent-to-artifact cascade
+  as several independent causes.
 - Authentication failures, truncation, incompatible schemas, and missing artifacts
   must remain explicit. Do not convert them to successful empty results.
 
