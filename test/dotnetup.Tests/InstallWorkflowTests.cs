@@ -160,10 +160,12 @@ public class InstallWorkflowTests : IDisposable
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
-    public void GenerateInstallRequests_AdminModeWithoutUntracked_ThrowsAdminModeRequiresUntracked()
+    [DataRow(new[] { "sdk", "install", "9.0.100" })]
+    [DataRow(new[] { "sdk", "install", "9.0.100", "--untracked", "false" })]
+    public void GenerateInstallRequests_AdminModeWithoutUntracked_ThrowsAdminModeRequiresUntracked(string[] arguments)
     {
         UseAdminMode();
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100"])));
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments)));
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
             workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")]));

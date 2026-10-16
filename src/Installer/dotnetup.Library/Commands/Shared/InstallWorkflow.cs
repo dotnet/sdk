@@ -245,7 +245,7 @@ internal class InstallWorkflow
                 RequireMuxerUpdate = _command.RequireMuxerUpdate,
                 InstallSource = isFromGlobalJson ? InstallRequestSource.GlobalJson : InstallRequestSource.Explicit,
                 GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
-                Untracked = target.IsAdmin || _command.Untracked,
+                Untracked = _command.Untracked,
                 Verbosity = _command.Verbosity,
                 InstallMechanism = target.IsAdmin ? InstallMechanism.WindowsInstallerBundle : InstallMechanism.Archive,
             });
