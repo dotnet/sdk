@@ -59,7 +59,7 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
-    public void Prepare_NonExeDownload_Throws()
+    public void Prepare_NonExeDownload_ThrowsWrongInstallerFileExtension()
     {
         var downloader = CreateDownloader();
         downloader.ArchiveFileExtension = ".zip";
@@ -67,7 +67,8 @@ public class WindowsBundleArtifactTests : IDisposable
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Prepare);
 
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerFailed);
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.WrongInstallerFileExtension);
+        ex.Message.Should().Contain(".exe");
     }
 
     [TestMethod]

@@ -193,7 +193,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         if (!bundlePath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
             throw CreateException(
-                DotnetInstallErrorCode.InstallerFailed,
+                DotnetInstallErrorCode.WrongInstallerFileExtension,
                 $"Expected a Windows installer (.exe) for {Describe()}, but the download resolved to '{Path.GetFileName(bundlePath)}'.");
         }
     }

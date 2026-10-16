@@ -187,6 +187,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>The Windows installer bundle reported success, but the expected installation could not be verified afterwards.</summary>
     InstallerPostInstallVerificationFailed,
+
+    /// <summary>The download resolved for a Windows installer bundle does not have the expected <c>.exe</c> file extension.</summary>
+    WrongInstallerFileExtension,
 }
 
 /// <summary>
