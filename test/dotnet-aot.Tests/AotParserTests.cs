@@ -69,6 +69,51 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    [DataRow("build --help")]
+    [DataRow("package --help")]
+    [DataRow("sln --help")]
+    [DataRow("tool --help")]
+    [DataRow("workload --help")]
+    public void ParseGenericCommandHelp_UsesMinimalTreeWithFullParserParity(string commandLine)
+    {
+        string[] args = commandLine.Split(' ');
+        Assert.IsTrue(Parser.TryParseGenericCommandHelp(args, out ParseResult? minimalResult));
+        Assert.HasCount(1, minimalResult.RootCommandResult.Command.Subcommands);
+
+        (int minimalExitCode, string minimalOutput, string minimalError) = InvokeWithCapture(minimalResult);
+        (int fullExitCode, string fullOutput, string fullError) = InvokeWithCapture(Parser.Parse(args));
+
+        Assert.AreEqual(fullExitCode, minimalExitCode);
+        Assert.AreEqual(fullOutput, minimalOutput);
+        Assert.AreEqual(fullError, minimalError);
+    }
+
+    [TestMethod]
+    [DataRow("new --help")]
+    [DataRow("new create --help")]
+    [DataRow("test --help")]
+    [DataRow("completions --help")]
+    public void ParseGenericCommandHelp_RejectsDynamicHelp(string commandLine)
+    {
+        Assert.IsFalse(Parser.TryParseGenericCommandHelp(commandLine.Split(' '), out ParseResult? parseResult));
+        Assert.IsNull(parseResult);
+    }
+
+    [TestMethod]
+    public void ParseGenericCommandHelp_CoversEveryEligibleTopLevelCommand()
+    {
+        HashSet<string> excludedCommands = ["new", "test", "completions"];
+
+        foreach (System.CommandLine.Command command in Parser.RootCommand.Subcommands)
+        {
+            Assert.AreEqual(
+                !excludedCommands.Contains(command.Name),
+                Parser.TryParseGenericCommandHelp([command.Name, "--help"], out _),
+                command.Name);
+        }
+    }
+
+    [TestMethod]
     public void ParseSdkCheck_HasNoErrors()
     {
         // `sdk check` is AOT-capable, so it parses cleanly from the shared command tree.
