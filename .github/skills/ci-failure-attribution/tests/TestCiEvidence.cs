@@ -20,12 +20,13 @@ if (Environment.GetEnvironmentVariable("CI_EVIDENCE_TEST_REPLAY") is string fake
 
 try
 {
-    if (args is not ["--output-directory", string outputDirectory])
+    if (args is not ["--output-directory", _, ..] || args.Length != 2 &&
+        (args is not [_, _, "--filter", string value] || string.IsNullOrWhiteSpace(value)))
     {
-        Console.Error.WriteLine("Usage: dotnet TestCiEvidence.cs -- --output-directory PATH");
+        Console.Error.WriteLine("Usage: dotnet TestCiEvidence.cs -- --output-directory PATH [--filter NAME_SUBSTRING]");
         return 1;
     }
-    await new Checks(Path.GetFullPath(outputDirectory)).RunAsync();
+    await new Checks(Path.GetFullPath(args[1]), args.Length == 4 ? args[3] : null).RunAsync();
     return 0;
 }
 catch (Exception ex)
@@ -34,7 +35,7 @@ catch (Exception ex)
     return 1;
 }
 
-sealed class Checks(string outputDirectory)
+sealed class Checks(string outputDirectory, string? filter)
 {
     private readonly string _source = Path.GetFullPath(Path.Combine(SourceDirectory(), "..", "scripts", "CiEvidence.cs"));
     private readonly string _dotnet = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ?? "dotnet";
@@ -87,6 +88,10 @@ sealed class Checks(string outputDirectory)
 
     private async Task CaseAsync(string name, Func<Task> body)
     {
+        if (filter is not null && !name.Contains(filter, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
         await body();
         _passed++;
         Console.WriteLine($"PASS {name}");
@@ -156,12 +161,12 @@ sealed class Checks(string outputDirectory)
             Assert(row["matchingOccurrences"]!.GetValue<int>() == 0 && row["signature"]!.GetValue<string>().Contains(@"8.0\A.dll", StringComparison.Ordinal),
                 "Meaningful temporary-path suffix erased.");
         });
-        await CaseAsync("Normalize volatile GUIDs/timestamps without matching an empty mechanism", async () =>
+        await CaseAsync("Normalize volatile GUIDs without matching an empty mechanism", async () =>
         {
             JsonObject fixture = Fixtures.New();
             Observation(Current(fixture))["mechanism"] = "[2026-10-12T10:00:00Z] Failure HelixJob:01234567-0123-0123-0123-012345678901";
             Observation(Previous(fixture))["outcome"] = "Failed";
-            Observation(Previous(fixture))["mechanism"] = "[2026-10-11T10:00:00Z] Failure HelixJob:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+            Observation(Previous(fixture))["mechanism"] = "[2026-10-12T10:00:00Z] Failure HelixJob:aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
             Assert(Row(await CompareAsync(fixture))["matchingOccurrences"]!.GetValue<int>() == 1, "Volatile identifiers did not normalize.");
             foreach (string context in new[] { "CorrelationId=", "Activity-Id: ", "Request Id: ", "https://helix.dot.net/api/jobs/" })
             {
@@ -192,6 +197,17 @@ sealed class Checks(string outputDirectory)
                 JsonNode row = Row(await CompareAsync(fixture));
                 Assert(row["matchingOccurrences"]!.GetValue<int>() == 0 && row["independentMatchingOccurrences"]!.GetValue<int>() == 0 &&
                     row["signature"]!.GetValue<string>().Contains(first, StringComparison.Ordinal), "Material diagnostic identifiers were erased.");
+            }
+        });
+        await CaseAsync("Multiline assertion timestamps are values rather than transport log prefixes", async () =>
+        {
+            foreach (string prefix in new[] { "Expected:\n", "Expected:\r\n", "Expected:\n  " })
+            {
+                JsonObject fixture = Fixtures.New("existing-flake");
+                Observation(Current(fixture))["mechanism"] = prefix + "2026-10-12T10:00:00Z";
+                Observation(Previous(fixture))["mechanism"] = prefix + "2026-10-11T10:00:00Z";
+                Assert(Row(await CompareAsync(fixture))["matchingOccurrences"]!.GetValue<int>() == 0,
+                    "A multiline expected timestamp was normalized into a matching failure.");
             }
         });
         await CaseAsync("Assertion whitespace is preserved while transport line endings normalize", async () =>
@@ -1401,6 +1417,7 @@ sealed class Checks(string outputDirectory)
         await CaseAsync("Explicit baseline is honored and mismatched PR/build identity rejected", async () =>
         {
             string replay = Path.Combine(outputDirectory, "build-replay");
+            Fixtures.Collection(replay);
             Fixtures.TestRun(replay, "3");
             Fixtures.TestRun(replay, "2");
             JsonObject dossier = await CollectAsync(replay, ["--baseline-build", "2"]);
@@ -1503,6 +1520,7 @@ sealed class Checks(string outputDirectory)
         await CaseAsync("Native timeouts and missing executables preserve explicit partial errors", async () =>
         {
             string replay = Path.Combine(outputDirectory, "native-replay");
+            Fixtures.Collection(replay);
             Dictionary<string, string> environment = new()
             {
                 ["CI_EVIDENCE_TEST_REPLAY"] = replay, ["CI_EVIDENCE_TEST_DELAY"] = "1"
@@ -1600,6 +1618,7 @@ sealed class Checks(string outputDirectory)
             }
         });
 
+        Assert(_passed > 0, "The filter selected no deterministic checks.");
         foreach (string scenario in new[] { "pr-regression", "existing-flake", "rolling-regression", "scheduled-same-source", "mixed-insufficient" })
         {
             await CompareAsync(Fixtures.New(scenario), Path.Combine(outputDirectory, scenario));

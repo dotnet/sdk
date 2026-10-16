@@ -205,4 +205,6 @@ dotnet .github\skills\ValidateSkill.cs $skill
 The checks build the app once in the artifact directory, exercise its real command
 entry points, and emit all five frozen agent scenarios. Agent evaluation prompts
 are in [evals.json](evals/evals.json); keep test results in session artifacts.
+Use `--filter NAME_SUBSTRING` to run focused checks; an unmatched filter fails
+instead of reporting a successful zero-check run.
 Neither script validation nor offline fixtures prove real-world accuracy.

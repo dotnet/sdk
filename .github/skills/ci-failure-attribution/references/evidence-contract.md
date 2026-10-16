@@ -141,7 +141,10 @@ independent evidence, even when their merge SHAs differ. Their ordinary matching
 history and candidate source boundaries remain available.
 The [signature implementation](../scripts/CiEvidence.cs) normalizes GUIDs only in
 known volatile contexts: labeled Helix job, correlation/activity/request IDs and
-Helix job URLs. It normalizes leading log timestamps, not assertion timestamps.
+Helix job URLs. It normalizes leading timestamps only while extracting known task/console log
+segments, retaining the canonical text as `signatureMechanism` alongside the raw
+mechanism. Assertion messages, including timestamp-only multiline expected values,
+are not treated as transport logs. Timestamp-only log lines are retained as values.
 Stable GUIDs such as COM CLSIDs and other expected/actual values remain distinct.
 Signatures normalize CRLF transport line endings to LF but preserve spaces, tabs,
 line breaks, and boundary whitespace. Task/test diagnostic extraction also preserves

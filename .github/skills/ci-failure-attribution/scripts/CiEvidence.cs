@@ -159,6 +159,9 @@ static class JsonData
         }
         return Protect(node);
     }
+    public static string NormalizeLogTimestamps(string text) => Regex.Replace(text,
+        @"(?m)^(\[?)\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})(\]?[ \t]+)(?=\S)",
+        "$1<timestamp>$2");
     public static string ProtectText(string text)
     {
         text = Regex.Replace(text, """(?i)([?&](?:access_token|token|sig|apikey|api_key)=)[^&\s"<>]+""", "$1<redacted>");
@@ -398,7 +401,7 @@ static class Comparison
 {
     public static string? Signature(JsonNode observation)
     {
-        string text = observation.Text("mechanism");
+        string text = observation["signatureMechanism"] is null ? observation.Text("mechanism") : observation.Text("signatureMechanism");
         if (string.IsNullOrWhiteSpace(text))
         {
             return null;
@@ -406,7 +409,6 @@ static class Comparison
         const string GuidPattern = @"[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}\b";
         text = Regex.Replace(text, $@"(?i)(\b(?:HelixJob|(?:Correlation|Activity|Request)[ _-]?Id)\s*[:=]\s*){GuidPattern}", "$1<guid>");
         text = Regex.Replace(text, $@"(?i)(https://helix\.dot\.net/(?:api/)?jobs/){GuidPattern}", "$1<guid>");
-        text = Regex.Replace(text, @"(?m)^(\[?)\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})(\]?(?:\s|$))", "$1<timestamp>$2");
         text = Regex.Replace(text, @"(?i)(?:[A-Z]:\\(?:Users\\[^\\\s]+\\AppData\\Local\\)?(?:tmp|temp)\\|/(?:tmp|var/tmp)/)", "<temporary-root>/");
         text = Regex.Replace(text, @"(?i)(?:[A-Z]:\\a\\_work\\\d+\\s\\|/mnt/vss/_work/\d+/s/)", "<workspace>/");
         text = text.Replace("\r\n", "\n", StringComparison.Ordinal);
@@ -1035,6 +1037,7 @@ sealed class Collector
             foreach (JsonObject task in records.Objects().Where(t => t.Text("type") is "Job" or "Task"))
             {
                 string mechanism = string.Join('\n', (task["issues"] as JsonArray ?? []).Objects().Select(i => i.Text("message")));
+                string signatureMechanism = mechanism;
                 string outcome = Outcome(task.Text("result"));
                 bool canceled = task.Text("result").ToLowerInvariant() is "canceled" or "abandoned";
                 bool executionVerified = task.Text("state").ToLowerInvariant() is not ("pending" or "notstarted") &&
@@ -1056,6 +1059,8 @@ sealed class Collector
                         if (log.Data is JsonValue value && value.TryGetValue(out string? excerpt))
                         {
                             mechanism = mechanism.Length == 0 ? excerpt : mechanism + "\n" + excerpt;
+                            string normalized = JsonData.NormalizeLogTimestamps(excerpt);
+                            signatureMechanism = signatureMechanism.Length == 0 ? normalized : signatureMechanism + "\n" + normalized;
                         }
                         else
                         {
@@ -1080,7 +1085,7 @@ sealed class Collector
                 {
                     id = $"timeline:{task.Text("id")}", kind = task.Text("type").ToLowerInvariant(), name = task["name"],
                     lane = parent.Text("type") == "Job" ? $"{parent.Text("name")} > {task.Text("name")}" : "",
-                    outcome, mechanism,
+                    outcome, mechanism, signatureMechanism,
                     url = $"{url}&view=logs&j={task.Text("parentId")}&t={task.Text("id")}", contextOnly = task.Text("type") == "Job",
                     parentId = task["parentId"], attempt = task["attempt"], startedAt = task["startTime"],
                     producerOutcome = task["result"], executionVerified
@@ -1229,6 +1234,7 @@ sealed class Collector
             Acquisition files = await ReadAsync("hlx", ["files", job, item.Text("Name"), "--json"]);
             Acquisition log = await ReadAsync("hlx", ["logs", job, item.Text("Name")], text: true);
             string mechanism = $"State={item.Text("State")}; exit code={item.Text("ExitCode")}";
+            string signatureMechanism = mechanism;
             if (log.Complete)
             {
                 string excerptPath = Path.ChangeExtension(log.Snapshot, ".console.json");
@@ -1262,11 +1268,13 @@ sealed class Collector
                 {
                     JsonData.Write(excerpt, excerptPath);
                     mechanism += "\n" + JsonData.ProtectText(excerpt.Text("text"));
+                    signatureMechanism += "\n" + JsonData.NormalizeLogTimestamps(JsonData.ProtectText(excerpt.Text("text")));
                 }
                 else
                 {
                     Gap(record, $"Helix console excerpt unavailable for {job}/{item.Text("Name")}");
                     mechanism += "\nConsole content not available in this command snapshot; inspect the source URL.";
+                    signatureMechanism = mechanism;
                 }
             }
             else
@@ -1281,7 +1289,7 @@ sealed class Collector
             {
                 id = $"helix:{job}:{item.Text("Name")}", kind = "work-item", name = item["Name"], lane,
                 queue = jobData["QueueId"], submissionContexts = contexts.Order(StringComparer.Ordinal).ToArray(),
-                outcome = "Failed", mechanism, url = item["ConsoleLogUrl"], contextOnly = false, artifacts = files.Data
+                outcome = "Failed", mechanism, signatureMechanism, url = item["ConsoleLogUrl"], contextOnly = false, artifacts = files.Data
             }));
         }
     }
