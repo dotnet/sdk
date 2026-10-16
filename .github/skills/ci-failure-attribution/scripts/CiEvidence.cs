@@ -348,7 +348,12 @@ sealed class Reader(string snapshots, string? replayDirectory, string ghPath, st
                     Regex.IsMatch(arguments[4], @"/_apis/(?:build/builds/\d+|pipelines/\d+/runs/\d+)\?"))
                 {
                     JsonObject inputs = [];
-                    foreach (string key in new[] { "id", "sourceVersion", "repository", "pipeline", "parameters", "templateParameters", "resources" })
+                    foreach (string key in new[]
+                    {
+                        "id", "sourceVersion", "sourceBranch", "repository", "definition", "queueTime",
+                        "status", "result", "reason", "triggerInfo", "pipeline", "parameters",
+                        "templateParameters", "resources"
+                    })
                     {
                         if (metadata.ContainsKey(key))
                         {
@@ -876,9 +881,15 @@ sealed class Collector
     }
 
     private Task<Acquisition> AzureAsync(JsonObject record, string path, string query = "")
+        => AzureAsync(record.Text("organization"), record.Text("project"), path, query);
+
+    private Task<Acquisition> AzureAsync(BuildIdentity identity, string path, string query = "")
+        => AzureAsync(identity.Organization, identity.Project, path, query);
+
+    private Task<Acquisition> AzureAsync(string organization, string project, string path, string query = "")
     {
-        string endpoint = $"https://dev.azure.com/{Uri.EscapeDataString(record.Text("organization"))}/" +
-            $"{Uri.EscapeDataString(record.Text("project"))}/_apis/{path}?api-version=7.1" +
+        string endpoint = $"https://dev.azure.com/{Uri.EscapeDataString(organization)}/" +
+            $"{Uri.EscapeDataString(project)}/_apis/{path}?api-version=7.1" +
             (query.Length > 0 ? "&" + query : "");
         return ReadAsync("az", ["rest", "--method", "GET", "--url", endpoint,
             "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"]);
@@ -942,7 +953,7 @@ sealed class Collector
         return inventory;
     }
 
-    private async Task<JsonObject> BuildAsync(BuildIdentity identity, JsonNode? raw = null)
+    private async Task<JsonObject> BuildAsync(BuildIdentity identity)
     {
         if (_byId.TryGetValue(identity.Id, out JsonObject? existing))
         {
@@ -952,59 +963,31 @@ sealed class Collector
             }
             return existing;
         }
-        Acquisition response = await ReadAsync("hlx", ["azdo", "build", identity.Url, "--json"]);
-        if (!response.Complete || response.Data is not JsonObject detail || detail.Text("SourceVersion").Length == 0)
+        Acquisition response = await AzureAsync(identity, $"build/builds/{identity.Id}");
+        if (!response.Complete || response.Data is not JsonObject detail ||
+            detail.Text("id") != identity.Id || detail["repository"]?.Text("id") != "dotnet/sdk")
         {
             throw new InvalidDataException($"Cannot identify selected/control build {identity.Id}. See acquisition snapshots.");
         }
-        if (!Regex.IsMatch(detail.Text("SourceVersion"), "^[0-9a-f]{40}$", RegexOptions.IgnoreCase))
+        if (!Regex.IsMatch(detail.Text("sourceVersion"), "^[0-9a-f]{40}$", RegexOptions.IgnoreCase))
         {
             throw new InvalidDataException("Expected a full tested GitHub source SHA.");
         }
-        if (raw is null)
-        {
-            DateTimeOffset queued = DateTimeOffset.Parse(detail.Text("QueueTime"), CultureInfo.InvariantCulture);
-            Acquisition metadata = await ReadAsync("hlx", ["azdo", "builds", "--org", identity.Organization, "--project", identity.Project,
-                "--definition-id", detail.Text("DefinitionId"), "--top", "20", "--min-time", queued.AddSeconds(-1).ToString("o"),
-                "--max-time", queued.AddSeconds(1).ToString("o"), "--query-order", "queueTimeDescending", "--json"]);
-            if (metadata.Complete && metadata.Data is JsonArray rows)
-            {
-                raw = rows.Objects().FirstOrDefault(r => r.Text("id") == identity.Id);
-            }
-        }
-        if (raw is not JsonObject || raw["repository"]?.Text("id") != "dotnet/sdk")
-        {
-            throw new InvalidDataException($"Build {identity.Id} repository/trigger identity could not be verified as dotnet/sdk.");
-        }
-        if (raw.Text("sourceVersion") != detail.Text("SourceVersion") || raw.Text("sourceBranch") != detail.Text("SourceBranch"))
-        {
-            throw new InvalidDataException($"Build {identity.Id} has conflicting tested source metadata.");
-        }
+        string definitionId = detail["definition"].Text("id");
         JsonObject record = JsonData.Object(new
         {
             id = identity.Id, url = identity.Url, repository = "dotnet/sdk", organization = identity.Organization,
-            project = identity.Project, definitionId = detail["DefinitionId"], definitionName = detail["DefinitionName"],
-            branch = detail["SourceBranch"], commit = detail["SourceVersion"], prHeadSha = raw["triggerInfo"]?["pr.sourceSha"],
-            prNumber = raw["triggerInfo"]?["pr.number"], targetSha = (JsonNode?)null, targetBranchHint = (JsonNode?)null,
-            reason = raw["reason"], queuedAt = detail["QueueTime"], status = detail["Status"], result = detail["Result"],
-            parameters = (JsonNode?)null, templateParameters = (JsonNode?)null, resources = (JsonNode?)null,
-            complete = detail.Text("Status") == "completed",
+            project = identity.Project, definitionId, definitionName = detail["definition"]?["name"],
+            branch = detail["sourceBranch"], commit = detail["sourceVersion"],
+            prHeadSha = detail["triggerInfo"]?["pr.sourceSha"], prNumber = detail["triggerInfo"]?["pr.number"],
+            targetSha = (JsonNode?)null, targetBranchHint = (JsonNode?)null, reason = detail["reason"],
+            queuedAt = detail["queueTime"], status = detail["status"], result = detail["result"],
+            parameters = JsonData.BuildParameters(detail["parameters"]), templateParameters = (JsonNode?)null,
+            resources = (JsonNode?)null, complete = detail.Text("status") == "completed",
             observations = new JsonArray(), artifacts = new JsonArray(), testRuns = new JsonArray()
         });
         _byId.Add(identity.Id, record);
         _dossier.Rows("builds").Add(record);
-        Acquisition buildInputs = await AzureAsync(record, $"build/builds/{identity.Id}");
-        if (buildInputs.Complete && buildInputs.Data is JsonObject inputBuild &&
-            inputBuild.Text("id") == identity.Id && inputBuild.Text("sourceVersion") == record.Text("commit") &&
-            inputBuild["repository"]?.Text("id") == "dotnet/sdk")
-        {
-            record["parameters"] = JsonData.BuildParameters(inputBuild["parameters"]);
-            record["templateParameters"] = inputBuild["templateParameters"]?.DeepClone();
-        }
-        else
-        {
-            Gap(record, $"Raw build inputs unavailable or mismatched for build {identity.Id}.");
-        }
         if (record.Text("definitionId").Length > 0)
         {
             Acquisition pipelineInputs = await AzureAsync(record, $"pipelines/{record.Text("definitionId")}/runs/{identity.Id}");
@@ -1536,7 +1519,7 @@ sealed class Collector
                 foreach (JsonObject raw in historyRows.Objects().Where(r => r.Text("status") == "completed"))
                 {
                     string url = $"https://dev.azure.com/{record.Text("organization")}/{record.Text("project")}/_build/results?buildId={raw.Text("id")}";
-                    await BuildAsync(BuildIdentity.Resolve(url), raw);
+                    await BuildAsync(BuildIdentity.Resolve(url));
                 }
             }
         }

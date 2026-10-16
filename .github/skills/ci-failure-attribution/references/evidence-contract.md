@@ -49,9 +49,10 @@ Each build has `id`, `url`, `repository`, `organization`, `project`, `definition
 `branch`, `commit`, `prHeadSha`, `targetSha`, `reason`, `queuedAt`, `parameters`,
 `templateParameters`, `resources`, `complete`, and `observations`. Source identity and missing configuration
 are preserved even when retrieval is partial.
-Queue parameters come from raw Azure Build GET metadata. Template parameters and
-resolved resources come from the matching pipeline Run GET, not hlx's typed
-build projection. Build/source and pipeline/run identities must match. Missing or
+Build identity and queue parameters come from the same raw Azure Build GET;
+history rows are discovery candidates, not authoritative build metadata.
+Template parameters and resolved resources come from the matching pipeline Run
+GET. Build/source and pipeline/run identities must match. Missing or
 unsupported metadata remains explicit; it is never converted to an empty object.
 Snapshots retain only the relevant raw input fields, not unrelated `variables`
 or expanded `finalYaml`. Comparison checks template parameters independently.

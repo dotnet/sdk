@@ -689,10 +689,10 @@ sealed class Checks(string outputDirectory, string? filter)
         {
             string replay = Path.Combine(outputDirectory, "raw-build-inputs");
             Fixtures.Collection(replay);
-            Fixtures.Save(replay, "az", Fixtures.BuildInputArguments("3"), new
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/3?", StringComparison.Ordinal), data =>
             {
-                id = 3, sourceVersion = "3".PadLeft(40, '0'), repository = new { id = "dotnet/sdk" },
-                parameters = """{"configuration":"Release"}"""
+                data["parameters"] = """{"configuration":"Release"}""";
             });
             Fixtures.Save(replay, "az", Fixtures.BuildInputArguments("3", pipeline: true), new
             {
@@ -700,20 +700,28 @@ sealed class Checks(string outputDirectory, string? filter)
                 resources = new { toolchain = "fixed-2" }, finalYaml = "CI_EVIDENCE_UNNEEDED_SECRET",
                 variables = new { credential = new { isSecret = true, value = "CI_EVIDENCE_UNNEEDED_SECRET" } }
             });
-            Fixtures.Save(replay, "az", Fixtures.BuildInputArguments("2"), new
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/2?", StringComparison.Ordinal), data =>
             {
-                id = 2, sourceVersion = "2".PadLeft(40, '0'), repository = new { id = "dotnet/sdk" },
-                parameters = """{"configuration":"Debug"}"""
+                data["parameters"] = """{"configuration":"Debug"}""";
             });
             JsonObject dossier = await CollectAsync(replay);
             JsonNode control = Row(await CompareAsync(dossier))["controls"]![0]!;
-            Assert(Current(dossier)["parameters"]!["configuration"]!.GetValue<string>() == "Release" &&
+            Assert(Current(dossier)["commit"]!.GetValue<string>() == "3".PadLeft(40, '0') &&
+                Current(dossier)["branch"]!.GetValue<string>() == "refs/heads/main" &&
+                Current(dossier)["definitionId"]!.GetValue<string>() == "101" &&
+                Current(dossier)["definitionName"]!.GetValue<string>() == "fixture-pipeline" &&
+                Current(dossier)["parameters"]!["configuration"]!.GetValue<string>() == "Release" &&
                 Current(dossier)["templateParameters"]!["configuration"]!.GetValue<string>() == "Release" &&
                 new[] { "parameters", "templateParameters", "resources" }.All(key =>
                     control["limitations"]!.AsArray().Any(l => l!.GetValue<string>() == "Changed " + key)) &&
+                dossier["acquisitions"]!.AsArray().Count(a =>
+                    a!["description"]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal)) == 2 &&
+                !dossier["acquisitions"]!.AsArray().Any(a =>
+                    a!["description"]!.GetValue<string>().StartsWith("hlx azdo build ", StringComparison.Ordinal)) &&
                 dossier["acquisitions"]!.AsArray().All(a => a!["snapshot"] is null ||
                     !File.ReadAllText(a["snapshot"]!.GetValue<string>()).Contains("CI_EVIDENCE_UNNEEDED_SECRET", StringComparison.Ordinal)),
-                "Typed producer omissions hid raw input changes, or unrelated secret-bearing metadata was persisted.");
+                "Build identity and inputs were not acquired together, typed omissions hid changes, or unrelated metadata was persisted.");
         });
         await CaseAsync("Encoded build parameters preserve values and structural equality", async () =>
         {
@@ -721,9 +729,8 @@ sealed class Checks(string outputDirectory, string? filter)
             foreach (bool encoded in new[] { false, true })
             {
                 Fixtures.Collection(replay);
-                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
-                    s["arguments"]!.AsArray().Count > 1 && s["arguments"]![1]!.GetValue<string>() == "builds" ||
-                    s["tool"]!.GetValue<string>() == "az" && s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal), data =>
+                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                    s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal), data =>
                 {
                     IEnumerable<JsonNode?> builds = data is JsonArray array ? array : [data];
                     foreach (JsonNode? build in builds)
@@ -769,13 +776,16 @@ sealed class Checks(string outputDirectory, string? filter)
                     }
                 });
                 JsonObject dossier = await CollectAsync(replay,
-                    expectedError: mode == "parameters" ? "build parameters" : "Evidence is incomplete");
+                    expectedError: mode == "parameters" ? "build parameters" :
+                        mode == "build" ? "Cannot identify selected/control build" : "Evidence is incomplete");
                 Assert(!dossier.ToJsonString(Fixtures.Json).Contains(Canary, StringComparison.Ordinal) &&
                     dossier["acquisitions"]!.AsArray().Where(a => a!["snapshot"] is not null).All(a =>
                         !File.ReadAllText(a!["snapshot"]!.GetValue<string>()).Contains(Canary, StringComparison.Ordinal)) &&
                     (mode == "parameters"
                         ? dossier["acquisitions"]!.AsArray().Last()!["snapshot"] is null
-                        : dossier["acquisitions"]!.AsArray().Any(a =>
+                        : mode == "build"
+                            ? dossier["builds"]!.AsArray().All(b => b!["id"]!.GetValue<string>() != "3")
+                            : dossier["acquisitions"]!.AsArray().Any(a =>
                             a!["description"]!.GetValue<string>().Contains("mismatched", StringComparison.Ordinal))),
                     "Malformed raw parameters leaked, or input metadata from a different build/run was accepted.");
             }
@@ -856,8 +866,9 @@ sealed class Checks(string outputDirectory, string? filter)
         {
             string replay = Path.Combine(outputDirectory, "json-task-logs");
             Fixtures.Collection(replay);
-            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" && s["arguments"]![0]!.GetValue<string>() == "azdo" &&
-                s["arguments"]![1]!.GetValue<string>() == "build", data => data["Result"] = "failed");
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal),
+                data => data["result"] = "failed");
             Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" && s["arguments"]![0]!.GetValue<string>() == "azdo" &&
                 s["arguments"]![1]!.GetValue<string>() == "timeline", data =>
                 {
@@ -895,7 +906,7 @@ sealed class Checks(string outputDirectory, string? filter)
                 Fixtures.Change(replay, s => Fixtures.IsTestAcquisition(s, id) || s["tool"]!.GetValue<string>() == "hlx" &&
                     s["arguments"]!.AsArray().Count > 2 && s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl(id), data =>
                 {
-                    if (data["records"] is JsonArray records)
+                    if (data is JsonObject { } response && response["records"] is JsonArray records)
                     {
                         foreach (JsonNode? task in records)
                         {
@@ -907,9 +918,10 @@ sealed class Checks(string outputDirectory, string? filter)
                             }
                         }
                     }
-                    else if ((data["results"] ?? data["value"]) is JsonArray { Count: 1 } || data["totalTests"] is not null)
+                    else if (data is JsonObject { } resultData &&
+                        ((resultData["results"] ?? resultData["value"]) is JsonArray { Count: 1 } || resultData["totalTests"] is not null))
                     {
-                        JsonObject entry = Fixtures.FirstResult(data);
+                        JsonObject entry = Fixtures.FirstResult(resultData);
                         if (entry.ContainsKey("totalTests"))
                         {
                             entry["failedTests"] = 1;
@@ -920,10 +932,6 @@ sealed class Checks(string outputDirectory, string? filter)
                             entry["outcome"] = "Failed";
                             entry["errorMessage"] = mechanism;
                         }
-                    }
-                    else if (data["Result"] is not null)
-                    {
-                        data["Result"] = "failed";
                     }
                 });
                 Fixtures.Save(replay, "hlx", ["azdo", "log", Fixtures.BuildUrl(id), "1", "--tail-lines", "120", "--json"], mechanism);
@@ -991,9 +999,9 @@ sealed class Checks(string outputDirectory, string? filter)
             JsonObject legacy = Fixtures.New();
             Current(legacy)["observations"] = new JsonArray();
             Assert((await CompareAsync(legacy))["coverageGaps"]!.AsArray().Count == 1, "Legacy empty failed build was trusted.");
-            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" && s["arguments"]![0]!.GetValue<string>() == "azdo" &&
-                s["arguments"]![1]!.GetValue<string>() == "build",
-                detail => { if (detail["Id"]!.GetValue<int>() == 3) { detail["Result"] = "succeeded"; } });
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal),
+                detail => { if (detail["id"]!.GetValue<int>() == 3) { detail["result"] = "succeeded"; } });
             JsonObject successful = await CollectAsync(replay);
             Assert((await CompareAsync(successful))["coverageGaps"]!.AsArray().Count == 0, "Empty successful build became a failure.");
         });
@@ -1517,13 +1525,15 @@ sealed class Checks(string outputDirectory, string? filter)
             string head = new('a', 40);
             string previousSha = "2".PadLeft(40, '0');
             DateTimeOffset queued = DateTimeOffset.Parse("2026-10-03T00:00:00Z", CultureInfo.InvariantCulture);
-            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
-                s["arguments"]!.AsArray().Count > 1 && s["arguments"]![1]!.GetValue<string>() == "build", data =>
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal), data =>
             {
-                if (data["Id"]!.GetValue<int>() == 2)
+                if (data["id"]!.GetValue<int>() == 2)
                 {
-                    data["SourceBranch"] = branch;
-                    data["Result"] = "failed";
+                    data["sourceBranch"] = branch;
+                    data["result"] = "failed";
+                    data["reason"] = "pullRequest";
+                    data["triggerInfo"] = new JsonObject { ["pr.sourceSha"] = head, ["pr.number"] = "12" };
                 }
             });
             Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
@@ -1629,16 +1639,13 @@ sealed class Checks(string outputDirectory, string? filter)
                 "Explicit baseline ignored or execution provenance was lost between comparison and validation.");
             replay = Path.Combine(outputDirectory, "mismatched-pr");
             Fixtures.Collection(replay, pr: true);
-            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" && s["arguments"]![0]!.GetValue<string>() == "azdo",
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal),
                 data =>
                 {
-                    if (data is JsonObject detail && detail["Id"]?.GetValue<int>() == 3)
+                    if (data is JsonObject detail && detail["id"]?.GetValue<int>() == 3)
                     {
-                        detail["SourceBranch"] = "refs/heads/main";
-                    }
-                    if (data is JsonArray { Count: 1 } rows && rows[0]!["id"]!.GetValue<int>() == 3)
-                    {
-                        rows[0]!["sourceBranch"] = "refs/heads/main";
+                        detail["sourceBranch"] = "refs/heads/main";
                     }
                 });
             await CollectAsync(replay, ["--pull-request", "12"], "does not validate the requested PR");
@@ -1647,12 +1654,12 @@ sealed class Checks(string outputDirectory, string? filter)
         {
             string replay = Path.Combine(outputDirectory, "missing-control-pipeline");
             Fixtures.Collection(replay);
-            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" && s["arguments"]![0]!.GetValue<string>() == "azdo" &&
-                s["arguments"]![1]!.GetValue<string>() == "build", detail =>
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal), detail =>
                 {
-                    if (detail["Id"]!.GetValue<int>() == 2)
+                    if (detail["id"]!.GetValue<int>() == 2)
                     {
-                        detail["DefinitionId"] = null;
+                        detail["definition"]!["id"] = null;
                     }
                 });
             JsonObject dossier = await CollectAsync(replay, expectedError: "Evidence is incomplete");
@@ -2072,16 +2079,20 @@ static class Fixtures
         {
             string url = BuildUrl(id);
             DateTimeOffset date = id == "3" ? queued : queued.AddDays(-1);
-            Save(directory, "hlx", ["azdo", "build", url, "--json"], new
-            {
-                Id = int.Parse(id, CultureInfo.InvariantCulture), SourceVersion = id == "3" ? head : baseSha, DefinitionId = 101,
-                DefinitionName = "fixture-pipeline", QueueTime = date.ToString("o"), Status = "completed",
-                Result = id == "3" ? "failed" : "succeeded", SourceBranch = id == "3" ? branch : "refs/heads/main"
-            });
             Save(directory, "az", BuildInputArguments(id), new
             {
                 id = int.Parse(id, CultureInfo.InvariantCulture), sourceVersion = id == "3" ? head : baseSha,
-                repository = new { id = "dotnet/sdk" }, parameters = (string?)null
+                sourceBranch = id == "3" ? branch : "refs/heads/main",
+                repository = new { id = "dotnet/sdk" },
+                definition = new { id = 101, name = "fixture-pipeline" },
+                queueTime = date.ToString("o"), status = "completed",
+                result = id == "3" ? "failed" : "succeeded", reason = id == "3" && pr ? "pullRequest" : "batchedCI",
+                triggerInfo = new Dictionary<string, string?>
+                {
+                    ["pr.sourceSha"] = id == "3" && pr ? prHead : null,
+                    ["pr.number"] = id == "3" && pr ? "12" : null
+                },
+                parameters = (string?)null
             });
             Save(directory, "az", BuildInputArguments(id, pipeline: true), new
             {
@@ -2123,20 +2134,11 @@ static class Fixtures
                 Save(directory, "hlx", ["azdo", command, url, "--all", "--json"], Envelope());
             }
         }
-        object rawSelected = new
-        {
-            id = 3, repository = new { id = "dotnet/sdk" }, sourceBranch = branch, sourceVersion = head,
-            status = "completed", reason = pr ? "pullRequest" : "batchedCI",
-            triggerInfo = new Dictionary<string, string?> { ["pr.sourceSha"] = pr ? prHead : null, ["pr.number"] = pr ? "12" : null }
-        };
         object rawControl = new
         {
             id = 2, repository = new { id = "dotnet/sdk" }, sourceBranch = "refs/heads/main", sourceVersion = baseSha,
             status = "completed", reason = "batchedCI", triggerInfo = new JsonObject()
         };
-        Save(directory, "hlx", ["azdo", "builds", "--org", "dnceng-public", "--project", "public", "--definition-id", "101",
-            "--top", "20", "--min-time", queued.AddSeconds(-1).ToString("o"), "--max-time", queued.AddSeconds(1).ToString("o"),
-            "--query-order", "queueTimeDescending", "--json"], new[] { rawSelected });
         foreach (string historyBranch in new[] { branch, "refs/heads/main" }.Distinct(StringComparer.Ordinal))
         {
             Save(directory, "hlx", ["azdo", "builds", "--org", "dnceng-public", "--project", "public", "--definition-id", "101",
