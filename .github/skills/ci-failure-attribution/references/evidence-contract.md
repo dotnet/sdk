@@ -29,6 +29,11 @@ Timeline acquisition explicitly requests `--filter all --json`, not the producer
 default failure-only view, so successful job/task executions remain available as
 controls. Replay snapshots must match that all-record request. Do not relabel
 older failure-only recordings as full timelines; acquire fresh all-record snapshots.
+Timeline observations retain start time, producer outcome, and `executionVerified`.
+Pending or never-started canceled/abandoned records remain unknown observations,
+not executed controls or source boundaries. Cancellation requires a real start
+time to establish execution; older timelines without execution provenance cannot
+establish controls.
 
 Fatal acquisition exceptions are retained with `ok: false` and `complete: false`.
 Their snapshot and producer exit status are `null` when unavailable, not invented

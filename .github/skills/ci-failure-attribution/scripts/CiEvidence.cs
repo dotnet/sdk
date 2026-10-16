@@ -491,6 +491,10 @@ static class Comparison
         {
             yield return "Missing Helix submission context";
         }
+        if (observation.Text("kind") is "job" or "task" && !observation.Flag("executionVerified"))
+        {
+            yield return "Unverified timeline execution";
+        }
         string lane = observation.Text("lane");
         if (string.IsNullOrWhiteSpace(lane) || observation.Text("kind") is "job" or "task" &&
             lane.Split(" > ", StringSplitOptions.None).Any(string.IsNullOrWhiteSpace))
@@ -685,6 +689,8 @@ static class Comparison
                 comparisons.Add(JsonData.Object(new
                 {
                     buildId = build["id"], observationId = failure["id"], kind = failure["kind"], name = failure["name"],
+                    hierarchyVerified = failure.Flag("hierarchyVerified"), executionVerified = failure.Flag("executionVerified"),
+                    submissionContexts = failure["submissionContexts"],
                     lane = failure["lane"], contextOnly = failure.Flag("contextOnly"), currentOutcome = failure["outcome"],
                     mechanism = failure["mechanism"], signature, url = failure["url"], controls,
                     precedingExecution = controls.FirstOrDefault(c => c.Flag("eligible") && c.Text("branch") == build.Text("branch")),
@@ -1014,6 +1020,14 @@ sealed class Collector
             {
                 string mechanism = string.Join('\n', (task["issues"] as JsonArray ?? []).Objects().Select(i => i.Text("message")));
                 string outcome = Outcome(task.Text("result"));
+                bool canceled = task.Text("result").ToLowerInvariant() is "canceled" or "abandoned";
+                bool executionVerified = task.Text("state").ToLowerInvariant() is not ("pending" or "notstarted") &&
+                    (!canceled || DateTimeOffset.TryParse(task.Text("startTime"), CultureInfo.InvariantCulture,
+                        DateTimeStyles.None, out DateTimeOffset started) && started > DateTimeOffset.MinValue);
+                if (!executionVerified)
+                {
+                    outcome = "Unknown";
+                }
                 if (outcome == "Unknown")
                 {
                     record["complete"] = false;
@@ -1052,7 +1066,8 @@ sealed class Collector
                     lane = parent.Text("type") == "Job" ? $"{parent.Text("name")} > {task.Text("name")}" : "",
                     outcome, mechanism,
                     url = $"{url}&view=logs&j={task.Text("parentId")}&t={task.Text("id")}", contextOnly = task.Text("type") == "Job",
-                    parentId = task["parentId"], attempt = task["attempt"]
+                    parentId = task["parentId"], attempt = task["attempt"], startedAt = task["startTime"],
+                    producerOutcome = task["result"], executionVerified
                 }));
             }
         }

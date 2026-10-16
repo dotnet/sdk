@@ -1142,6 +1142,51 @@ sealed class Checks(string outputDirectory)
             Assert(comparison["comparisons"]!.AsArray().Count == 3 &&
                 File.ReadAllText(Path.Combine(directory, "comparison.md")).Contains("Coverage gaps", StringComparison.Ordinal), "Persistent output differs.");
         });
+        await CaseAsync("Never-started canceled timeline records cannot narrow an executed source window", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "never-started");
+            Fixtures.Collection(replay);
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
+                s["arguments"]!.AsArray().Count > 2 && s["arguments"]![1]!.GetValue<string>() == "timeline" &&
+                s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl("2"), data =>
+            {
+                foreach (JsonNode? entry in data["records"]!.AsArray())
+                {
+                    entry!["result"] = "canceled";
+                    entry["startTime"] = null;
+                }
+            });
+            JsonObject dossier = await CollectAsync(replay, expectedError: "Evidence is incomplete");
+            Assert(dossier["changeWindows"]!.AsArray().All(w => w!["baselineBuildId"] is null),
+                "A never-started canceled build became the source boundary.");
+            JsonNode earlier = Previous(dossier).DeepClone();
+            earlier["id"] = "1";
+            earlier["commit"] = "1".PadLeft(40, '0');
+            earlier["queuedAt"] = "2026-10-01T00:00:00Z";
+            earlier["complete"] = true;
+            foreach (JsonNode? entry in earlier["observations"]!.AsArray())
+            {
+                entry!["outcome"] = "Passed";
+                entry["executionVerified"] = true;
+            }
+            dossier["builds"]!.AsArray().Add(earlier);
+            Assert((await CompareAsync(dossier))["comparisons"]!.AsArray()
+                .Where(r => r!["buildId"]!.GetValue<string>() == "3")
+                .All(r => r!["precedingExecution"]!["buildId"]!.GetValue<string>() == "1"),
+                "Cancellation without execution hid the actual preceding scenario execution.");
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
+                s["arguments"]!.AsArray().Count > 2 && s["arguments"]![1]!.GetValue<string>() == "timeline" &&
+                s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl("2"), data =>
+            {
+                foreach (JsonNode? entry in data["records"]!.AsArray())
+                {
+                    entry!["startTime"] = "2026-10-02T00:01:00Z";
+                }
+            });
+            Assert((await CompareAsync(await CollectAsync(replay)))["comparisons"]!.AsArray()
+                .All(r => r!["precedingExecution"]!["buildId"]!.GetValue<string>() == "2"),
+                "A canceled execution with a real start time was incorrectly discarded.");
+        });
         await CaseAsync("Full timelines preserve passing controls despite the producer's failure-only default", async () =>
         {
             string replay = Path.Combine(outputDirectory, "complete-timelines");
@@ -1314,8 +1359,12 @@ sealed class Checks(string outputDirectory)
         await CaseAsync("Explicit baseline is honored and mismatched PR/build identity rejected", async () =>
         {
             string replay = Path.Combine(outputDirectory, "build-replay");
+            Fixtures.TestRun(replay, "3");
+            Fixtures.TestRun(replay, "2");
             JsonObject dossier = await CollectAsync(replay, ["--baseline-build", "2"]);
-            Assert(dossier["changeWindows"]![0]!["baselineBuildId"]!.GetValue<string>() == "2", "Explicit baseline ignored.");
+            Assert(dossier["changeWindows"]!.AsArray().Count == 3 &&
+                dossier["changeWindows"]!.AsArray().All(w => w!["baselineBuildId"]!.GetValue<string>() == "2"),
+                "Explicit baseline ignored or execution provenance was lost between comparison and validation.");
             replay = Path.Combine(outputDirectory, "mismatched-pr");
             Fixtures.Collection(replay, pr: true);
             Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" && s["arguments"]![0]!.GetValue<string>() == "azdo",
