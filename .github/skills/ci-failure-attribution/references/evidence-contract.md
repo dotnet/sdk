@@ -82,10 +82,16 @@ observations. When a raw `failedTests` counter is absent, complete acquired
 outcomes reconcile to `totalTests`, and every outcome is known, the collected
 results establish the observed failure count without fabricating the missing
 producer counter. Otherwise the missing counter remains an explicit coverage gap.
-Test results are acquired through authenticated `az rest` GET requests with
-`detailsToInclude=SubResults` and explicit 200-result pagination. The raw
-[Azure result contract](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/list?view=azure-devops-rest-7.1)
-retains `resultGroupType` and recursive `subResults`, unlike hlx's typed projection.
+Test results are acquired through authenticated `az rest` GET requests. Top-level
+results omit subresult details and use explicit 1000-result pagination; only
+grouped results make an additional single-result request for `SubResults` using
+the Azure Test Results API. This reduces serial page requests while
+retaining parameterized child results. The raw
+[Azure list API](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/list?view=azure-devops-rest-7.1)
+allows up to 1000 rows without details, while the
+[single-result API](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/get?view=azure-devops-rest-7.1)
+supports `SubResults`. Raw results retain `resultGroupType` and recursive
+`subResults`, unlike hlx's typed projection.
 Full retrieval does not specify an outcome filter, so valid unknown/unexecuted
 states are not silently omitted. Diagnostic-only retrieval excludes `Passed`
 but includes all other documented Azure outcomes. Observations retain the raw

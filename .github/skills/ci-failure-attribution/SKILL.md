@@ -71,7 +71,8 @@ build; exceeding it preserves diagnostic results but omits passing controls and
 makes coverage incomplete. `--timeout-seconds` bounds each acquisition.
 
 Pass `--gh-path`/`--hlx-path`/`--az-path` when using local tools. Raw Azure REST
-results retain parameterized subresults that hlx's typed result projection omits.
+results fetch top-level rows in 1000-result pages and request subresults only for
+grouped results; hlx's typed result projection omits parameterized subresults.
 The adapter validates hlx 0.11.x
 envelopes and stops on incompatible output; do not quietly substitute an older
 tool or manual collection. If a prerequisite is missing, follow the environment's

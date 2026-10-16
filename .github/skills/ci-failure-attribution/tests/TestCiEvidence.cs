@@ -1252,20 +1252,22 @@ sealed class Checks(string outputDirectory, string? filter)
                 Fixtures.TestRun(replay, id);
                 Fixtures.Change(replay, s => Fixtures.IsRawResults(s, id), data =>
                 {
-                    JsonNode parent = Fixtures.ResultRows(data)[0]!;
+                    JsonObject parent = Fixtures.ResultRows(data)[0]!.AsObject();
                     parent["resultGroupType"] = "dataDriven";
-                    parent["subResults"] = new JsonArray(new JsonObject
+                    JsonArray children = new(new JsonObject
                     {
                         ["id"] = 10, ["displayName"] = "Case(1)", ["outcome"] = "Passed", ["resultGroupType"] = "none"
                     });
                     if (id == "3")
                     {
-                        parent["subResults"]!.AsArray().Add(new JsonObject
+                        children.Add(new JsonObject
                         {
                             ["id"] = 11, ["displayName"] = "Case(2)", ["outcome"] = "Failed", ["errorMessage"] = "MSB4036 Expected 42",
                             ["resultGroupType"] = "none"
                         });
                     }
+                    Fixtures.Save(replay, "az", Fixtures.GroupArguments(id, parent["id"]!.ToString()),
+                        new { id = parent["id"], subResults = children });
                 });
             }
             JsonObject dossier = await CollectAsync(replay, expectedError: "Evidence is incomplete");
@@ -1279,7 +1281,11 @@ sealed class Checks(string outputDirectory, string? filter)
                     g!.GetValue<string>().Contains("Test result coverage", StringComparison.Ordinal)),
                 "An aggregate pass qualified as execution of an absent parameterized case, or children inflated run counters.");
             Fixtures.Change(replay, s => Fixtures.IsRawResults(s, "2"), data =>
-                Fixtures.ResultRows(data)[0]!["subResults"] = new JsonArray());
+            {
+                JsonObject parent = Fixtures.ResultRows(data)[0]!.AsObject();
+                Fixtures.Save(replay, "az", Fixtures.GroupArguments("2", parent["id"]!.ToString()),
+                    new { id = parent["id"], subResults = new JsonArray() });
+            });
             comparison = await CompareAsync(await CollectAsync(replay, expectedError: "Evidence is incomplete"));
             Assert(comparison["coverageGaps"]!.AsArray().Any(g =>
                 g!.GetValue<string>().Contains("Unverified test hierarchy", StringComparison.Ordinal)),
@@ -2055,7 +2061,11 @@ static class Fixtures
         "Unspecified,None,Failed,Inconclusive,Timeout,Aborted,Blocked,NotExecuted,Warning,Error,NotApplicable,Paused,InProgress,NotImpacted";
     public static string[] ResultArguments(string id, string outcomes = "", int skip = 0) =>
         ["rest", "--method", "GET", "--url",
-            $"https://dev.azure.com/dnceng-public/public/_apis/test/Runs/{id}/results?api-version=7.1&detailsToInclude=SubResults{(outcomes.Length == 0 ? "" : "&outcomes=" + outcomes)}&$skip={skip}&$top=200",
+            $"https://dev.azure.com/dnceng-public/public/_apis/test/Runs/{id}/results?api-version=7.1{(outcomes.Length == 0 ? "" : "&outcomes=" + outcomes)}&$skip={skip}&$top=1000",
+            "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"];
+    public static string[] GroupArguments(string runId, string resultId) =>
+        ["rest", "--method", "GET", "--url",
+        $"https://dev.azure.com/dnceng-public/public/_apis/test/Runs/{runId}/results/{resultId}?api-version=7.1&detailsToInclude=SubResults",
             "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"];
     public static bool IsRawResults(JsonObject snapshot, string id) => snapshot["tool"]!.GetValue<string>() == "az" &&
         snapshot["arguments"]![4]!.GetValue<string>().Contains($"/test/Runs/{id}/results?", StringComparison.Ordinal);

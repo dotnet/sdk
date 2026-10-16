@@ -910,16 +910,16 @@ sealed class Collector
         return JsonData.Array(entries);
     }
 
-    private Task<Acquisition> AzureAsync(JsonObject record, string path, string query = "")
-        => AzureAsync(record.Text("organization"), record.Text("project"), path, query);
+    private Task<Acquisition> AzureAsync(JsonObject record, string path, string query = "", string apiVersion = "7.1")
+        => AzureAsync(record.Text("organization"), record.Text("project"), path, query, apiVersion);
 
-    private Task<Acquisition> AzureAsync(BuildIdentity identity, string path, string query = "")
-        => AzureAsync(identity.Organization, identity.Project, path, query);
+    private Task<Acquisition> AzureAsync(BuildIdentity identity, string path, string query = "", string apiVersion = "7.1")
+        => AzureAsync(identity.Organization, identity.Project, path, query, apiVersion);
 
-    private Task<Acquisition> AzureAsync(string organization, string project, string path, string query = "")
+    private Task<Acquisition> AzureAsync(string organization, string project, string path, string query = "", string apiVersion = "7.1")
     {
         string endpoint = $"https://dev.azure.com/{Uri.EscapeDataString(organization)}/" +
-            $"{Uri.EscapeDataString(project)}/_apis/{path}?api-version=7.1" +
+            $"{Uri.EscapeDataString(project)}/_apis/{path}?api-version={apiVersion}" +
             (query.Length > 0 ? "&" + query : "");
         return ReadAsync("az", ["rest", "--method", "GET", "--url", endpoint,
             "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"]);
@@ -929,10 +929,13 @@ sealed class Collector
     {
         JsonArray entries = [];
         HashSet<string> ids = new(StringComparer.Ordinal);
-        const int PageSize = 200;
+        const int PageSize = 1000;
         while (true)
         {
-            Acquisition response = await AzureAsync(record, path, $"{query}&$skip={entries.Count}&$top={PageSize}");
+            string pageQuery = query.Length == 0
+                ? $"$skip={entries.Count}&$top={PageSize}"
+                : $"{query}&$skip={entries.Count}&$top={PageSize}";
+            Acquisition response = await AzureAsync(record, path, pageQuery);
             if (!response.Complete || response.Data?["value"] is not JsonArray page ||
                 response.Data["count"] is null || response.Data.Number("count") != page.Count || page.Count > PageSize)
             {
@@ -1207,15 +1210,36 @@ sealed class Collector
         {
             FindHelix(run.Text("name"), helixJobs,
                 string.IsNullOrWhiteSpace(run.Text("name")) ? "" : $"run:{RunLane(run.Text("name"))}");
-            string query = "detailsToInclude=SubResults";
+            string query = "";
             if (!fullResults)
             {
                 query += "&outcomes=Unspecified,None,Failed,Inconclusive,Timeout,Aborted,Blocked,NotExecuted,Warning,Error,NotApplicable,Paused,InProgress,NotImpacted";
             }
             JsonArray results = await AzureRowsAsync(record, $"test/Runs/{run.Text("id")}/results",
-                query);
+                query.TrimStart('&'));
             foreach (JsonObject test in results.Objects())
             {
+                if (test.Text("resultGroupType").Length > 0 &&
+                    !test.Text("resultGroupType").Equals("none", StringComparison.OrdinalIgnoreCase))
+                {
+                    Acquisition detail = await AzureAsync(record,
+                        $"test/Runs/{run.Text("id")}/results/{test.Text("id")}",
+                        "detailsToInclude=SubResults");
+                    JsonObject? detailedResult = detail.Data as JsonObject;
+                    if (detailedResult?["value"] is JsonObject value)
+                    {
+                        detailedResult = value;
+                    }
+                    if (detail.Complete && detailedResult?.Text("id") == test.Text("id") &&
+                        detailedResult["subResults"] is JsonArray subResults)
+                    {
+                        test["subResults"] = subResults.DeepClone();
+                    }
+                    else
+                    {
+                        Gap(record, $"Unable to acquire subresults for grouped test {run.Text("id")}:{test.Text("id")}.");
+                    }
+                }
                 AddTestResult(record, run, test, $"test:{run.Text("id")}:{test.Text("id")}",
                     $"{test.Text("automatedTestName")} | {test.Text("testCaseTitle")}", null);
             }
