@@ -144,13 +144,12 @@ public class BuildProjects
     }
 
     [TestMethod]
-    [DataRow("device;InjectedProperty=true", "device%3bInjectedProperty=true")]
-    [DataRow("device,InjectedProperty=true", "device%2CInjectedProperty=true")]
-    [DataRow("device%3BInjectedProperty=true", "device%253BInjectedProperty=true")]
-    [DataRow("\"device\";InjectedProperty=true", "%22device%22%3bInjectedProperty=true")]
-    public async Task SingleProject_DeviceIdIsEscaped(string deviceId, string escapedDeviceId)
+    public async Task SingleProject_DeviceIdIsEscaped()
     {
-        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [escapedDeviceId]);
+        const string DeviceId = "\"device (" + TestConstants.GB18030 + ")\";InjectedProperty=true,OtherProperty=value%3B";
+        const string EscapedDeviceId = "%22device %28" + TestConstants.GB18030 + "%29%22%3bInjectedProperty=true%2COtherProperty=value%253B";
+
+        var dir = TestAssetsManager.CreateTestDirectory();
         var project = Path.Combine(dir.Path, "Project.csproj");
         File.WriteAllText(project, $"""
         <Project>
@@ -159,7 +158,7 @@ public class BuildProjects
           </PropertyGroup>
           <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
             <ItemGroup>
-              <Devices Include="{escapedDeviceId}" />
+              <Devices Include="{EscapedDeviceId}" />
             </ItemGroup>
           </Target>
         </Project>
@@ -175,11 +174,11 @@ public class BuildProjects
             CancellationToken.None);
 
         Assert.IsTrue(result.Success);
-        Assert.AreEqual(deviceId, result.SelectedDevice);
+        Assert.AreEqual(DeviceId, result.SelectedDevice);
         AssertEx.SequenceEqual(
         [
             $"restore {project} -p A=1 -consoleLoggerParameters:NoSummary",
-            $"build {project} -p A=1 --framework {ToolsetInfo.CurrentTargetFramework} -p:Device={escapedDeviceId} --no-restore"
+            $"build {project} -p A=1 --framework {ToolsetInfo.CurrentTargetFramework} -p:Device={EscapedDeviceId} --no-restore"
         ], context.BuildInvocations);
     }
 

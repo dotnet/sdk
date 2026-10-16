@@ -187,17 +187,14 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     }
 
     [TestMethod]
-    [DataRow("device;InjectedProperty=true", "device%3bInjectedProperty=true", false)]
-    [DataRow("device;InjectedProperty=true", "device%3bInjectedProperty=true", true)]
-    [DataRow("device,InjectedProperty=true", "device%2CInjectedProperty=true", false)]
-    [DataRow("device,InjectedProperty=true", "device%2CInjectedProperty=true", true)]
-    [DataRow("device%3BInjectedProperty=true", "device%253BInjectedProperty=true", false)]
-    [DataRow("device%3BInjectedProperty=true", "device%253BInjectedProperty=true", true)]
-    [DataRow("\"device\";InjectedProperty=true", "%22device%22%3bInjectedProperty=true", false)]
-    [DataRow("\"device\";InjectedProperty=true", "%22device%22%3bInjectedProperty=true", true)]
-    public void ItPreservesLiteralDeviceIds(string deviceId, string escapedDeviceId, bool explicitDevice)
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ItPreservesLiteralDeviceIds(bool explicitDevice)
     {
-        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: $"{explicitDevice}-{escapedDeviceId}")
+        const string DeviceId = "\"device (" + TestConstants.GB18030 + ")\";InjectedProperty=true,OtherProperty=value%3B";
+        const string EscapedDeviceId = "%22device %28" + TestConstants.GB18030 + "%29%22%3bInjectedProperty=true%2COtherProperty=value%253B";
+
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: explicitDevice.ToString())
             .WithSource();
         string projectPath = Path.Combine(testInstance.Path, "DotnetRunDevices.csproj");
         string projectContents = File.ReadAllText(projectPath).Replace(
@@ -205,7 +202,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             $"""
               <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
                 <ItemGroup>
-                  <Devices Include="{escapedDeviceId}" />
+                  <Devices Include="{EscapedDeviceId}" />
                 </ItemGroup>
               </Target>
               <Target Name="GenerateDeviceInfo" />
@@ -218,7 +215,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
                 "</Project>",
                 $"""
                   <Target Name="_ValidateDeviceFor{target}" BeforeTargets="{target}">
-                    <Error Condition="'$(InjectedProperty)' != '' Or '$(Device)' != '{escapedDeviceId}'"
+                    <Error Condition="'$(InjectedProperty)' != '' Or '$(Device)' != '{EscapedDeviceId}'"
                            Text="Device ID was not preserved as a literal property value." />
                   </Target>
                 </Project>
@@ -231,7 +228,7 @@ public class GivenDotnetRunSelectsDevice : SdkTest
         var args = new List<string> { "--framework", ToolsetInfo.CurrentTargetFramework, "--no-interactive", "-bl" };
         if (explicitDevice)
         {
-            args.AddRange(["--device", deviceId]);
+            args.AddRange(["--device", DeviceId]);
         }
 
         new DotnetCommand(Log, "run")
