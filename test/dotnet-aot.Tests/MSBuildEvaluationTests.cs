@@ -19,10 +19,16 @@ public class MSBuildEvaluationTests
     public TestContext TestContext { get; set; } = null!;
 
     [TestMethod]
-    public void UsesNuGetAotFeatureSwitch()
+    public void UsesAotFeatureSwitches()
     {
         Assert.IsTrue(AppContext.TryGetSwitch("NuGet.UseSystemTextJsonDeserialization", out bool useSystemTextJson));
         Assert.IsTrue(useSystemTextJson);
+        Assert.IsTrue(AppContext.TryGetSwitch("Newtonsoft.Json.Linq.JToken.SerializationIsSupported", out bool jsonSerialization));
+        Assert.IsFalse(jsonSerialization);
+        Assert.IsTrue(AppContext.TryGetSwitch("Newtonsoft.Json.Linq.JToken.ComponentModelIsSupported", out bool jsonComponentModel));
+        Assert.IsFalse(jsonComponentModel);
+        Assert.IsTrue(AppContext.TryGetSwitch("Newtonsoft.Json.Linq.JToken.DynamicIsSupported", out bool jsonDynamic));
+        Assert.IsFalse(jsonDynamic);
     }
 
     [TestMethod]
