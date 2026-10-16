@@ -117,6 +117,9 @@ sealed class Options
 
 static class JsonData
 {
+    public const string GuidPattern = @"[0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12}\b";
+    public const string MonitorJobPattern =
+        $@"(?i)\bWork item\s+'[^'\r\n]+'\s+in job\s+'[^'\r\n]*\((?<job>{GuidPattern})\)'\s+failed";
     public static readonly JsonSerializerOptions Compact = new() { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, MaxDepth = 100 };
     private static readonly JsonSerializerOptions s_indented = new(Compact) { WriteIndented = true };
 
@@ -1008,12 +1011,14 @@ sealed class Collector
 
     private static void FindHelix(string text, Dictionary<string, HashSet<string>> jobs, string context)
     {
-        foreach (Match match in Regex.Matches(text, @"(?i)(?:HelixJob:|jobs/)([0-9a-f]{8}-(?:[0-9a-f]{4}-){3}[0-9a-f]{12})"))
+        string pattern = $@"(?i)(?:HelixJob:\s*|jobs/)(?<job>{JsonData.GuidPattern})|{JsonData.MonitorJobPattern}";
+        foreach (Match match in Regex.Matches(text, pattern))
         {
-            if (!jobs.TryGetValue(match.Groups[1].Value, out HashSet<string>? contexts))
+            string job = match.Groups["job"].Value;
+            if (!jobs.TryGetValue(job, out HashSet<string>? contexts))
             {
                 contexts = new(StringComparer.Ordinal);
-                jobs.Add(match.Groups[1].Value, contexts);
+                jobs.Add(job, contexts);
             }
             if (!string.IsNullOrWhiteSpace(context))
             {

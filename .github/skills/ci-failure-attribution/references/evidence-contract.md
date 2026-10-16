@@ -174,6 +174,8 @@ Helix/queue-test task logs are acquired in full for job discovery, including
 successful historical tasks. Diagnostic observations still retain only their
 bounded failure excerpts. Missing discovery logs remain explicit gaps; an empty
 diagnostic tail is not proof that no Helix work ran.
+Job discovery recognizes the official `Work item 'X' in job 'queue (GUID)' failed`
+monitor message as well as tagged IDs and job URLs; a separate URL is not required.
 
 `CiEvidence.cs collect` exits nonzero on hard errors or incomplete mandatory evidence,
 while retaining a partial dossier when possible. Offline comparison can inspect

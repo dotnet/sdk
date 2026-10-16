@@ -1515,6 +1515,24 @@ sealed class Checks(string outputDirectory, string? filter)
             }
             await CollectAsync(missing, expectedError: "Evidence is incomplete");
         });
+        await CaseAsync("Official monitor failure messages discover Helix jobs without a URL", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "monitor-message-discovery");
+            Fixtures.Collection(replay, helix: true);
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
+                s["arguments"]!.AsArray().Count > 2 && s["arguments"]![1]!.GetValue<string>() == "timeline" &&
+                s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl("3"), data =>
+                    data["records"]![1]!["issues"] = new JsonArray(new JsonObject
+                    {
+                        ["message"] = "MSB4036: Work item 'Example.WorkItem' in job 'Linux x64 Debug (33333333-3333-3333-3333-333333333333)' failed"
+                    }));
+            JsonObject dossier = await CollectAsync(replay);
+            Assert(Current(dossier)["observations"]!.AsArray().Any(o =>
+                o!["kind"]!.GetValue<string>() == "work-item" && o["outcome"]!.GetValue<string>() == "Failed") &&
+                dossier["acquisitions"]!.AsArray().Any(a =>
+                    a!["description"]!.GetValue<string>() == "hlx status 33333333-3333-3333-3333-333333333333 all --json"),
+                "A supported monitor message became only a parent failure without acquiring its Helix child evidence.");
+        });
         await CaseAsync("Successful Helix monitor logs supply executed controls outside diagnostic tails", async () =>
         {
             string replay = Path.Combine(outputDirectory, "successful-helix-discovery");
