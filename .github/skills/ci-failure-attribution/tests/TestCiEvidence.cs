@@ -1362,6 +1362,42 @@ sealed class Checks(string outputDirectory, string? filter)
                 g!.GetValue<string>().Contains("Test result coverage for run 3 in build 3", StringComparison.Ordinal)),
                 "Diagnostic-only collection hid missing advertised failures.");
         });
+        await CaseAsync("Issue search budgets count unique queries rather than repeated failure observations", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "unique-issue-searches");
+            Fixtures.Collection(replay);
+            string[] diagnostics = ["NETSDK1045", "NETSDK1045", "NETSDK1045", "MSB4019", "CS1002", "NU1101"];
+            foreach (string term in diagnostics.Distinct(StringComparer.Ordinal))
+            {
+                Fixtures.IssueSearch(replay, term);
+            }
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
+                s["arguments"]!.AsArray().Count > 1 && s["arguments"]![1]!.GetValue<string>() == "timeline", data =>
+            {
+                JsonArray records = data["records"]!.AsArray();
+                JsonNode template = records[1]!.DeepClone();
+                records.RemoveAt(1);
+                for (int i = 0; i < diagnostics.Length; i++)
+                {
+                    JsonNode task = template.DeepClone();
+                    task["id"] = $"task-{i}";
+                    task["name"] = $"Build step {i}";
+                    task["issues"] = task["result"]!.GetValue<string>() == "failed"
+                        ? new JsonArray(new JsonObject { ["message"] = diagnostics[i] + ": synthetic failure" }) : new JsonArray();
+                    records.Add(task);
+                }
+            });
+            JsonObject dossier = await CollectAsync(replay);
+            string[] queries = dossier["issueSearches"]!.AsArray().Select(s => s!["query"]!.GetValue<string>()).ToArray();
+            Assert(queries.Length == 6 && queries.Distinct(StringComparer.Ordinal).Count() == 6 &&
+                new[] { "NETSDK1045", "MSB4019", "CS1002" }.All(term =>
+                    new[] { "open", "closed" }.All(state =>
+                        queries.Contains($"{term} repo:dotnet/sdk is:issue is:{state}", StringComparer.Ordinal))) &&
+                !queries.Any(q => q.StartsWith("NU1101 ", StringComparison.Ordinal)) &&
+                dossier["acquisitions"]!.AsArray().Count(a =>
+                    a!["description"]!.GetValue<string>().StartsWith("gh api --method GET search/issues?", StringComparison.Ordinal)) == 6,
+                "Duplicate queries consumed the budget, duplicate search rows were emitted, or the distinct-query cap was exceeded.");
+        });
         await CaseAsync("CLI rejects write commands, unknown options, invalid ranges and missing replay entries", async () =>
         {
             foreach (string[] arguments in new[]

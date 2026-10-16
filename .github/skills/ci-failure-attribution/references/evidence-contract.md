@@ -133,6 +133,9 @@ or Helix results account for the failure.
 History queries are bounded, queue-time-ordered candidates, not a guaranteed count
 of completed builds. The collector filters completed executions locally because
 Azure rejects combining that ordering with its completed-status filter.
+Issue search budgets count up to six distinct full open/closed query strings,
+not observations or cache hits. Each query appears once in `issueSearches`;
+repeated mechanisms do not prevent later diagnostics from using the remaining budget.
 GitHub comparison file lists reaching the 300-file cap make the change window
 incomplete, even when all commits and a diff were acquired. Do not claim exhaustive
 changed-file coverage from a capped list.
@@ -158,10 +161,11 @@ independent evidence, even when their merge SHAs differ. Their ordinary matching
 history and candidate source boundaries remain available.
 The [signature implementation](../scripts/CiEvidence.cs) normalizes GUIDs only in
 known volatile contexts: labeled Helix job, correlation/activity/request IDs and
-Helix job URLs. It normalizes leading timestamps only while extracting known task/console log
+Helix job URLs.
 Versioned `/api/YYYY-MM-DD/jobs/GUID` URLs and the official parenthesized monitor
 job format normalize the job GUID only; API versions, queues, work-item names,
-and other diagnostic content remain meaningful. It normalizes leading timestamps only while extracting known task/console log
+and other diagnostic content remain meaningful. It normalizes leading timestamps
+only while extracting known task/console log
 segments, retaining the canonical text as `signatureMechanism` alongside the raw
 mechanism. Assertion messages, including timestamp-only multiline expected values,
 are not treated as transport logs. Timestamp-only log lines are retained as values.
@@ -176,7 +180,7 @@ The collector decodes Azure task log JSON strings before signature normalization
 unsupported response shapes remain explicit gaps rather than becoming log text.
 
 Online acquisition records snapshots under `snapshots`. A `--replay-directory`
-containing those snapshots replays commands without running `gh` or `hlx`.
+containing those snapshots replays commands without running `gh`, `hlx`, or `az`.
 Helix console downloads additionally have a `.console.json` sidecar containing
 the scrubbed final 120 lines and source URL; include it in a replay. The collector
 never reads a local path from replayed command output. Missing console sidecars

@@ -1603,10 +1603,10 @@ sealed class Collector
                 await WindowAsync(record, baseline, row.Text("observationId"));
             }
         }
-        int searches = 0;
+        HashSet<string> searches = new(StringComparer.Ordinal);
         foreach (JsonObject row in comparison.Rows("comparisons").Objects().Where(r => !r.Flag("contextOnly")))
         {
-            if (searches >= 6)
+            if (searches.Count >= 6)
             {
                 break;
             }
@@ -1618,11 +1618,15 @@ sealed class Collector
             }
             foreach (string state in new[] { "open", "closed" })
             {
-                if (searches++ >= 6)
+                if (searches.Count >= 6)
                 {
                     break;
                 }
                 string query = $"{term} repo:dotnet/sdk is:issue is:{state}";
+                if (!searches.Add(query))
+                {
+                    continue;
+                }
                 Acquisition response = await ReadAsync("gh", ["api", "--method", "GET", $"search/issues?q={Uri.EscapeDataString(query)}&per_page=10"]);
                 _dossier.Rows("issueSearches").Add(JsonData.Object(new { query, response = response.Data, coverage = "bounded-candidates-not-verified-matches" }));
             }
