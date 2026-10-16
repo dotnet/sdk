@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
-#if NET
 using Microsoft.Win32;
-#endif
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -79,7 +77,6 @@ internal static class DotnetupPolicy
     {
         public bool ReadFlag(string valueName)
         {
-#if NET
             try
             {
                 using RegistryKey baseKey = OpenLocalMachine();
@@ -90,15 +87,11 @@ internal static class DotnetupPolicy
             {
                 return false;
             }
-#else
-            return false;
-#endif
         }
 
         public void WriteFlags(IReadOnlyDictionary<string, bool> values)
         { 
             ArgumentNullException.ThrowIfNull(values);
-#if NET
             using RegistryKey baseKey = OpenLocalMachine();
             using RegistryKey key = baseKey.CreateSubKey(WindowsPolicyKey, writable: true)
                 ?? throw new InvalidOperationException($@"Unable to open HKLM\{WindowsPolicyKey} for writing.");
@@ -106,17 +99,12 @@ internal static class DotnetupPolicy
             {
                 key.SetValue(valueName, enabled ? 1 : 0, RegistryValueKind.DWord);
             }
-#else
-            throw new PlatformNotSupportedException();
-#endif
         }
 
-#if NET
         private static RegistryKey OpenLocalMachine() =>
             RegistryKey.OpenBaseKey(
                 RegistryHive.LocalMachine,
                 Environment.Is64BitOperatingSystem ? RegistryView.Registry64 : RegistryView.Registry32);
-#endif
     }
 
     private sealed class UnsupportedPlatformPolicyStore : IDotnetupPolicyStore
