@@ -89,7 +89,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 && (op.Parent is not IArgumentOperation { Parent: IInvocationOperation invocation } ||
                                     !debugAssertMethods.Contains(invocation.TargetMethod, SymbolEqualityComparer.Default));
 
-                        if (operationRoot.HasAnyOperationDescendant(ShouldAnalyze))
+                        if (HasAnalyzableOperation(operationRoot))
                         {
                             // Skip duplicate analysis from operation blocks for constructor initializer and body.
                             if (!processedOperationRoots.Add(operationRoot.GetRoot()))
@@ -244,6 +244,38 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                                 var diagnostic = operation.CreateDiagnostic(AlwaysTrueFalseOrNullRule, arg1, arg2);
                                 operationBlockContext.ReportDiagnostic(diagnostic);
                             }
+                        }
+
+                        bool HasAnalyzableOperation(IOperation root)
+                        {
+                            var worklist = new Stack<IOperation>();
+                            worklist.Push(root);
+
+                            while (worklist.Count > 0)
+                            {
+                                var operation = worklist.Pop();
+                                if (ShouldAnalyze(operation))
+                                {
+                                    return true;
+                                }
+
+                                // Nested functions have their own CFG and cannot produce diagnostics
+                                // from the enclosing operation block's dataflow result.
+                                if (operation != root && operation is IAnonymousFunctionOperation or ILocalFunctionOperation)
+                                {
+                                    continue;
+                                }
+
+                                foreach (var child in operation.ChildOperations)
+                                {
+                                    if (child is not null)
+                                    {
+                                        worklist.Push(child);
+                                    }
+                                }
+                            }
+
+                            return false;
                         }
                     }
                 });
