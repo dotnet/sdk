@@ -38,6 +38,14 @@ internal sealed class AdminInstallRootResolver
     }
 
     /// <summary>Returns the install root that the installer bundle for <paramref name="architecture"/> uses.</summary>
+    /// <remarks>
+    /// Callers currently pass dotnetup's own process architecture, which is assumed to be the OS-native
+    /// architecture, so the result is <c>Program Files\dotnet</c>, the root the installers usually put on
+    /// the machine PATH. Nothing checks that PATH resolves <c>dotnet</c> to the returned root: for a
+    /// non-native architecture (<c>Program Files (x86)\dotnet</c> or <c>Program Files\dotnet\x64</c>), or
+    /// when PATH has been customized, the <c>dotnet</c> on PATH may belong to a different architecture.
+    /// Revisit this, and any code that assumes the root is the one on PATH, when <c>--arch</c> support is added.
+    /// </remarks>
     /// <exception cref="DotnetInstallException">The OS and payload architecture combination is not supported.</exception>
     public DotnetInstallRoot Resolve(InstallArchitecture architecture) => new(ResolvePath(architecture), architecture);
 
