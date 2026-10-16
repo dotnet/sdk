@@ -207,6 +207,7 @@ Opens a file in the editor. For command line cases this post action will be igno
      - `reference` (string): The package ID or relative path of the project to add the reference to.
      - `projectFileExtensions` (string) (optional): A semicolon delimited list of literal file extensions to use when searching for the project to add the reference to. If not specified, `*.*proj` mask is used when searching.
      - `version` (string) (optional) (package referenceType only): The version of the package to install.
+     - `noRestore` (bool) (optional) (package referenceType only): When true, the package is added without restoring the project (`dotnet package add --no-restore`), so package existence and compatibility are not validated at this step. Use it only when the template schedules its own restore, for example with the [Restore NuGet packages](#restore-nuget-packages) post-action. The default value is false, so the add restores the project as before.
  - **Supported in**:
    - `dotnet new3`
    - `dotnet new` (2.0.0 or higher)
