@@ -1128,7 +1128,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 TestPackageId,
                 version,
                 initialWaitTimeout: TimeSpan.Zero,
-                waitTimeout: TimeSpan.FromSeconds(1));
+                waitTimeout: TimeSpan.FromSeconds(1),
+                cancellationToken: TestContext.CancellationToken);
 
             installLock.Should().NotBeNull();
         }
@@ -1141,7 +1142,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             using FileStream heldLock = ToolPackageDownloaderBase.AcquireToolInstallLock(
                 root,
                 TestPackageId,
-                version);
+                version,
+                cancellationToken: TestContext.CancellationToken);
             var reporter = new BufferedReporter();
             Action acquire = () =>
             {
@@ -1151,7 +1153,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     version,
                     initialWaitTimeout: TimeSpan.Zero,
                     waitTimeout: TimeSpan.FromMilliseconds(50),
-                    errorReporter: reporter);
+                    errorReporter: reporter,
+                    cancellationToken: TestContext.CancellationToken);
             };
 
             acquire.Should().Throw<ToolPackageException>()
@@ -1171,6 +1174,33 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     TestPackageId,
                     TestPackageVersion));
             }
+        }
+
+        [TestMethod]
+        public void GivenAContendedLockInstallationCanBeCanceled()
+        {
+            DirectoryPath root = new(TestAssetsManager.CreateTestDirectory().Path);
+            NuGetVersion version = NuGetVersion.Parse(TestPackageVersion);
+            using FileStream heldLock = ToolPackageDownloaderBase.AcquireToolInstallLock(
+                root,
+                TestPackageId,
+                version,
+                cancellationToken: TestContext.CancellationToken);
+            using var cancellationTokenSource = new CancellationTokenSource();
+            var reporter = new CancelingReporter(cancellationTokenSource);
+            Action acquire = () =>
+            {
+                using FileStream _ = ToolPackageDownloaderBase.AcquireToolInstallLock(
+                    root,
+                    TestPackageId,
+                    version,
+                    initialWaitTimeout: TimeSpan.Zero,
+                    errorReporter: reporter,
+                    cancellationToken: cancellationTokenSource.Token);
+            };
+
+            acquire.Should().Throw<OperationCanceledException>();
+            reporter.Lines.Should().ContainSingle();
         }
 
         [TestMethod]
@@ -1486,6 +1516,23 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             }
 
             public void Dispose() => _continueHashMove.Dispose();
+        }
+
+        private sealed class CancelingReporter(CancellationTokenSource cancellationTokenSource) : IReporter
+        {
+            public List<string> Lines { get; } = [];
+
+            public void WriteLine(string message)
+            {
+                Lines.Add(message);
+                cancellationTokenSource.Cancel();
+            }
+
+            public void WriteLine() => WriteLine(string.Empty);
+
+            public void WriteLine(string format, params object[] args) => WriteLine(string.Format(format, args));
+
+            public void Write(string message) => WriteLine(message);
         }
 
         private sealed class FailingAfterPublicationToolPackageDownloader : ToolPackageDownloader, IDisposable

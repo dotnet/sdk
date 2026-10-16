@@ -207,7 +207,8 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
         using FileStream packageMutationLock = ToolPackageDownloaderBase.AcquireToolPackageMutationLock(
             toolPackageStore.Root,
-            packageId);
+            packageId,
+            cancellationToken: cancellationToken);
 
         var oldPackage = TryGetOldPackage(toolPackageStoreQuery, packageId);
 

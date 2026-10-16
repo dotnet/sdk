@@ -250,7 +250,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
     /// <remarks>
     /// The lock file persists, but only its open <see cref="FileShare.None"/> handle represents ownership. A terminated
     /// process therefore releases the lock without requiring stale-file cleanup. Prolonged contention is reported and
-    /// eventually fails with a timeout.
+    /// eventually fails with a timeout; callers can cancel while waiting.
     /// </remarks>
     internal static FileStream AcquireToolInstallLock(
         DirectoryPath packageInstallRoot,
@@ -258,13 +258,15 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         NuGetVersion packageVersion,
         TimeSpan? initialWaitTimeout = null,
         TimeSpan? waitTimeout = null,
-        IReporter? errorReporter = null)
+        IReporter? errorReporter = null,
+        CancellationToken cancellationToken = default)
     {
         return AcquireToolLock(
             GetToolInstallLockFilePath(packageInstallRoot, packageId, packageVersion),
             initialWaitTimeout,
             waitTimeout,
             errorReporter,
+            cancellationToken,
             lockOwner => lockOwner is not null
                 ? string.Format(
                     CliStrings.ToolInstallationWaitingWithProcess,
@@ -287,20 +289,22 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
     /// </summary>
     /// <remarks>
     /// The lock identity intentionally excludes the version so install, update, and uninstall operations cannot mutate
-    /// different versions of the same global tool concurrently.
+    /// different versions of the same global tool concurrently. Callers can cancel while waiting.
     /// </remarks>
     internal static FileStream AcquireToolPackageMutationLock(
         DirectoryPath packageInstallRoot,
         PackageId packageId,
         TimeSpan? initialWaitTimeout = null,
         TimeSpan? waitTimeout = null,
-        IReporter? errorReporter = null)
+        IReporter? errorReporter = null,
+        CancellationToken cancellationToken = default)
     {
         return AcquireToolLock(
             GetToolPackageMutationLockFilePath(packageInstallRoot, packageId),
             initialWaitTimeout,
             waitTimeout,
             errorReporter,
+            cancellationToken,
             lockOwner => lockOwner is not null
                 ? string.Format(
                     CliStrings.ToolPackageMutationWaitingWithProcess,
@@ -320,9 +324,11 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         TimeSpan? initialWaitTimeout,
         TimeSpan? waitTimeout,
         IReporter? errorReporter,
+        CancellationToken cancellationToken,
         Func<FileLockOwner?, string> getWaitingMessage,
         Func<string> getTimeoutMessage)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
 
         initialWaitTimeout ??= s_lockInitialWaitTimeout;
@@ -333,6 +339,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
         while (true)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             try
             {
                 FileStream lockStream = new(
@@ -345,12 +353,16 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             }
             catch (IOException exception) when (IsToolInstallLockContention(exception))
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 if (!waitingReported && stopwatch.Elapsed >= initialWaitTimeout)
                 {
                     FileLockOwner? lockOwner = FileLockOwnerFinder.TryGetFileLockOwner(lockFilePath);
                     errorReporter.WriteLine(getWaitingMessage(lockOwner));
                     waitingReported = true;
                 }
+
+                cancellationToken.ThrowIfCancellationRequested();
 
                 if (stopwatch.Elapsed >= waitTimeout)
                 {

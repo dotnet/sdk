@@ -154,7 +154,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             IToolPackage package = store.EnumeratePackageVersions(new PackageId(PackageId)).Single();
             FileStream mutationLock = ToolPackageDownloaderBase.AcquireToolPackageMutationLock(
                 store.Root,
-                package.Id);
+                package.Id,
+                cancellationToken: TestContext.CancellationToken);
             new ToolPackageUninstallerMock(_fileSystem, store).Uninstall(package.PackageDirectory);
 
             try
