@@ -246,7 +246,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             {
                 TestCode = testCode,
                 ExpectedDiagnostics = {
-                    VerifyCS.Diagnostic(Rules[(int)RuleKind.op_BitwiseAnd]).WithLocation(1),
+                    VerifyCS.Diagnostic(Rules[(int)RuleKind.op_BitwiseAnd])
+                        .WithLocation(1)
+                        .WithMessage("The bitwise-and operator should be preferred"),
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
