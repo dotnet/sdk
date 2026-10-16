@@ -7,6 +7,7 @@ using FluentAssertions;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
@@ -172,6 +173,20 @@ public class InstallWorkflowTests : IDisposable
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
         ex.Message.Should().Contain("--untracked");
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void GenerateInstallRequests_AdminModeRuntimeInstallWithoutUntracked_ThrowsAdminModeRequiresUntracked()
+    {
+        UseAdminMode();
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"])));
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")]));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
+        File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
     }
 
     [TestMethod]

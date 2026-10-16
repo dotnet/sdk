@@ -309,24 +309,6 @@ public class InstallerOrchestratorTests
     }
 
     [TestMethod]
-    public void PrepareInstall_TrackedBundleRequest_ThrowsAdminModeRequiresUntracked()
-    {
-        using var testEnv = new TestEnvironment();
-        using var reporter = new LazyProgressReporter(new NullProgressTarget());
-        var validator = new MockInstallationValidator(validateResult: true);
-
-        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.PrepareInstall(
-            MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: false),
-            new InstallBatchContext(reporter, 8),
-            out _,
-            validator));
-
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
-        validator.ValidateCalls.Should().Be(0);
-        File.Exists(testEnv.ManifestPath).Should().BeFalse();
-    }
-
-    [TestMethod]
     public void PrepareInstall_BundleAlreadyInstalled_ReturnsAlreadyInstalledWithoutDownloading()
     {
         using var testEnv = new TestEnvironment();

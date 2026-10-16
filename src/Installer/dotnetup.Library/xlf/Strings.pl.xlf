@@ -896,11 +896,6 @@ Or open a new terminal.</target>
         <target state="new">The Windows installer reported success, but the installation could not be verified: {0}</target>
         <note>{0} is the reason the installation could not be verified.</note>
       </trans-unit>
-      <trans-unit id="WindowsInstallerRequiresUntracked">
-        <source>Installs that use the Windows installer must be untracked. Run the command again with --untracked.</source>
-        <target state="new">Installs that use the Windows installer must be untracked. Run the command again with --untracked.</target>
-        <note>{Locked="--untracked"}</note>
-      </trans-unit>
     </body>
   </file>
 </xliff>

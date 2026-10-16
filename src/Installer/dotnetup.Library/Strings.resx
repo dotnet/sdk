@@ -626,10 +626,6 @@ Or open a new terminal.</value>
     <value>Your existing shell profiles, user settings, PATH entries, and DOTNET_ROOT are left unchanged. While admin mode is active, dotnetup env script can add dotnetup to PATH but does not activate user-level .NET. Existing environment settings may still take precedence; restart open terminals and review any remaining PATH or DOTNET_ROOT settings if needed.</value>
     <comment>{Locked="PATH"}{Locked="DOTNET_ROOT"}{Locked="dotnetup env script"}</comment>
   </data>
-  <data name="WindowsInstallerRequiresUntracked" xml:space="preserve">
-    <value>Installs that use the Windows installer must be untracked. Run the command again with --untracked.</value>
-    <comment>{Locked="--untracked"}</comment>
-  </data>
   <data name="WindowsInstallerPostInstallVerificationFailed" xml:space="preserve">
     <value>The Windows installer reported success, but the installation could not be verified: {0}</value>
     <comment>{0} is the reason the installation could not be verified.</comment>
