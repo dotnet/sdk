@@ -119,12 +119,37 @@ public class HostFxrInstallationValidatorTests
         failure.Should().Contain("hostfxr");
     }
 
+    [TestMethod]
+    public void Validate_ReturnsFalse_WhenHostFxrIsNestedBelowVersionDirectory()
+    {
+        using var testEnv = new TestEnvironment();
+        StubHostFxr(testEnv.InstallPath, "10.0.0", "nested");
+        var validator = new HostFxrInstallationValidator(_ => throw new InvalidOperationException("must not be called"));
+
+        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
+        failure.Should().Contain("No hostfxr library");
+    }
+
+    [TestMethod]
+    public void Validate_ReturnsFalse_WhenHostFxrIsNotInVersionDirectory()
+    {
+        using var testEnv = new TestEnvironment();
+        StubHostFxr(testEnv.InstallPath, []);
+        var validator = new HostFxrInstallationValidator(_ => throw new InvalidOperationException("must not be called"));
+
+        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
+        failure.Should().Contain("No hostfxr library");
+    }
+
     private static DotnetInstall MakeInstall(string root) =>
         new(new DotnetInstallRoot(root, InstallArchitecture.x64), new ReleaseVersion("10.0.100"), InstallComponent.SDK);
 
-    private static void StubHostFxr(string root)
+    private static void StubHostFxr(string root) => StubHostFxr(root, "10.0.0");
+
+    /// <summary>Creates an empty hostfxr library under <c>host/fxr</c> joined with <paramref name="subdirectories"/>.</summary>
+    private static void StubHostFxr(string root, params string[] subdirectories)
     {
-        string fxrDirectory = Path.Combine(root, "host", "fxr", "10.0.0");
+        string fxrDirectory = Path.Combine(root, "host", "fxr", Path.Combine(subdirectories));
         Directory.CreateDirectory(fxrDirectory);
         string libraryName = OperatingSystem.IsWindows()
             ? "hostfxr.dll"

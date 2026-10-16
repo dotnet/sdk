@@ -65,6 +65,10 @@ internal sealed class HostFxrInstallationValidator : IInstallationValidator
         return found;
     }
 
+    /// <summary>
+    /// Checks the layout hostfxr is loaded from, <c>host/fxr/&lt;version&gt;/&lt;hostfxr library&gt;</c>, without
+    /// searching deeper than the version directories.
+    /// </summary>
     private static bool HasHostFxr(string installRoot)
     {
         string hostFxrDirectory = Path.Combine(installRoot, "host", "fxr");
@@ -79,7 +83,8 @@ internal sealed class HostFxrInstallationValidator : IInstallationValidator
 
         try
         {
-            return Directory.EnumerateFiles(hostFxrDirectory, libraryName, SearchOption.AllDirectories).Any();
+            return Directory.EnumerateDirectories(hostFxrDirectory)
+                .Any(versionDirectory => File.Exists(Path.Combine(versionDirectory, libraryName)));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
