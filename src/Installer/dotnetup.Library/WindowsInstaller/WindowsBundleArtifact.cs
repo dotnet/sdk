@@ -45,7 +45,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     {
         _request = request;
         _version = version;
-        _signatureVerifier = signatureVerifier ?? new AuthenticodeInstallerSignatureVerifier();
+        _signatureVerifier = signatureVerifier ?? CreateDefaultSignatureVerifier();
         _processRunner = processRunner ?? new BundleProcessRunner();
         _notices = notices ?? Console.Error;
         _batchContext = batchContext;
@@ -128,6 +128,11 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         {
         }
     }
+
+    private static IInstallerSignatureVerifier CreateDefaultSignatureVerifier() =>
+        OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600)
+            ? new AuthenticodeInstallerSignatureVerifier()
+            : UnsupportedPlatformInstallerSignatureVerifier.Instance;
 
     private string CreateScratchDirectory()
     {

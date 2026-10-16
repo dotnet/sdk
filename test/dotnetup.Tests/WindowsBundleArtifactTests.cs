@@ -406,6 +406,7 @@ public class WindowsBundleArtifactTests : IDisposable
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
+    [SupportedOSPlatform("windows5.1.2600")]
     public void AuthenticodeVerifier_RejectsUnsignedFile()
     {
         string path = Path.Combine(Path.GetTempPath(), $"dotnetup-unsigned-{Guid.NewGuid():N}.exe");
