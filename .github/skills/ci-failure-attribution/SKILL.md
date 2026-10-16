@@ -11,7 +11,7 @@ description: >-
 license: MIT
 compatibility: >-
   The repository-selected .NET SDK with C# file-based app support, authenticated gh,
-  hlx 0.11.x, and access to the selected Azure DevOps/Helix evidence. Offline
+  hlx 0.11.x, authenticated Azure CLI, and access to the selected Azure DevOps/Helix evidence. Offline
   comparison and recorded replay need no service access.
 ---
 
@@ -68,7 +68,9 @@ the expanded search. `--test-result-limit` defaults to 100000 estimated results 
 build; exceeding it preserves diagnostic results but omits passing controls and
 makes coverage incomplete. `--timeout-seconds` bounds each acquisition.
 
-Pass `--gh-path`/`--hlx-path` when using local tools. The adapter validates hlx 0.11.x
+Pass `--gh-path`/`--hlx-path`/`--az-path` when using local tools. Raw Azure REST
+results retain parameterized subresults that hlx's typed result projection omits.
+The adapter validates hlx 0.11.x
 envelopes and stops on incompatible output; do not quietly substitute an older
 tool or manual collection. If a prerequisite is missing, follow the environment's
 approval policy before provisioning it. Do not install globally or modify PATH.

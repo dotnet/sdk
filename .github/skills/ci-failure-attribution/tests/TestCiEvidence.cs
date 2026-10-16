@@ -114,7 +114,8 @@ sealed class Checks(string outputDirectory)
     {
         string output = NextDirectory();
         List<string> arguments = [_assembly, "collect", "--build", "3", "--history-limit", "1", "--lookback-days", "2",
-            "--output-directory", output, "--gh-path", executable ?? "never-executed", "--hlx-path", executable ?? "never-executed"];
+            "--output-directory", output, "--gh-path", executable ?? "never-executed", "--hlx-path", executable ?? "never-executed",
+            "--az-path", executable ?? "never-executed"];
         if (environment is null)
         {
             arguments.AddRange(["--replay-directory", replay]);
@@ -305,12 +306,10 @@ sealed class Checks(string outputDirectory)
                 Fixtures.TestRun(replay, "2");
                 foreach (string id in new[] { "3", "2" }.Where(id => affected == "both" || id == affected))
                 {
-                    Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
-                        s["arguments"]!.AsArray().Count > 2 &&
-                        s["arguments"]![1]!.GetValue<string>() == (field == "name" ? "test-results" : "test-runs") &&
-                        s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl(id), data =>
+                    Fixtures.Change(replay, s => field == "name" ? Fixtures.IsRawResults(s, id) :
+                        Fixtures.IsTestAcquisition(s, id) && !Fixtures.IsRawResults(s, id), data =>
                     {
-                        JsonObject entry = data["results"]![0]!.AsObject();
+                        JsonObject entry = Fixtures.ResultRows(data)[0]!.AsObject();
                         foreach (string key in field == "name" ? new[] { "automatedTestName", "testCaseTitle" } : new[] { "name" })
                         {
                             if (value is null)
@@ -761,7 +760,7 @@ sealed class Checks(string outputDirectory)
             {
                 Fixtures.TestRun(replay, id);
                 string mechanism = id == "3" ? "  MSB4036: expected value  " : "MSB4036: expected value";
-                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
+                Fixtures.Change(replay, s => Fixtures.IsRawResults(s, id) || s["tool"]!.GetValue<string>() == "hlx" &&
                     s["arguments"]!.AsArray().Count > 2 && s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl(id), data =>
                 {
                     if (data["records"] is JsonArray records)
@@ -776,7 +775,7 @@ sealed class Checks(string outputDirectory)
                             }
                         }
                     }
-                    else if (data["results"] is JsonArray { Count: 1 } results)
+                    else if ((data["results"] ?? data["value"]) is JsonArray { Count: 1 } results)
                     {
                         JsonObject entry = results[0]!.AsObject();
                         if (entry.ContainsKey("totalTests"))
@@ -906,7 +905,7 @@ sealed class Checks(string outputDirectory)
                         build["observations"]!.AsArray().Any(o => o!["kind"]!.GetValue<string>() == "test"),
                         "Incomplete test-run metadata or known results were lost.");
                     JsonObject comparison = await CompareAsync(dossier);
-                    string gap = $"Incomplete test run 1 for build {id}";
+                    string gap = $"Incomplete test run {id} for build {id}";
                     Assert(comparison["coverageGaps"]!.AsArray().Any(g => g!.GetValue<string>().Contains(gap, StringComparison.Ordinal)),
                         "Incomplete test run disappeared from collection coverage.");
                     dossier["error"] = null;
@@ -931,11 +930,9 @@ sealed class Checks(string outputDirectory)
                     Fixtures.Collection(replay);
                     Fixtures.TestRun(replay, "3");
                     Fixtures.TestRun(replay, "2");
-                    Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
-                        s["arguments"]!.AsArray().Count > 2 && s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl(id) &&
-                        s["arguments"]![1]!.GetValue<string>() is "test-runs" or "test-results", data =>
+                    Fixtures.Change(replay, s => Fixtures.IsTestAcquisition(s, id), data =>
                     {
-                        JsonObject entry = data["results"]![0]!.AsObject();
+                        JsonObject entry = Fixtures.ResultRows(data)[0]!.AsObject();
                         if (entry.ContainsKey("totalTests"))
                         {
                             switch (mutation)
@@ -963,7 +960,7 @@ sealed class Checks(string outputDirectory)
                             switch (mutation)
                             {
                                 case "empty":
-                                    data["results"] = new JsonArray();
+                                    Fixtures.ResultRows(data).Clear();
                                     break;
                                 case "failed":
                                     entry["outcome"] = "Passed";
@@ -972,7 +969,7 @@ sealed class Checks(string outputDirectory)
                                     entry["outcome"] = "Failed";
                                     break;
                                 case "duplicate":
-                                    data["results"]!.AsArray().Add(entry.DeepClone());
+                                    Fixtures.ResultRows(data).Add(entry.DeepClone());
                                     break;
                             }
                         }
@@ -981,7 +978,7 @@ sealed class Checks(string outputDirectory)
                     JsonNode build = dossier["builds"]!.AsArray().Single(b => b!["id"]!.GetValue<string>() == id)!;
                     Assert(!build["complete"]!.GetValue<bool>() && build["testRuns"]!.AsArray().Count == 1,
                         "Inconsistent run counters were discarded or treated as complete.");
-                    string gap = $"Test result coverage for run 1 in build {id}";
+                    string gap = $"Test result coverage for run {id} in build {id}";
                     Assert((await CompareAsync(dossier))["coverageGaps"]!.AsArray().Any(g =>
                         g!.GetValue<string>().Contains(gap, StringComparison.Ordinal)), "A result-count mismatch disappeared from coverage.");
                     dossier["error"] = null;
@@ -1000,11 +997,9 @@ sealed class Checks(string outputDirectory)
             foreach (string id in new[] { "3", "2" })
             {
                 Fixtures.TestRun(replay, id);
-                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
-                    s["arguments"]!.AsArray().Count > 2 && s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl(id) &&
-                    s["arguments"]![1]!.GetValue<string>() is "test-runs" or "test-results", data =>
+                Fixtures.Change(replay, s => Fixtures.IsTestAcquisition(s, id), data =>
                 {
-                    JsonObject entry = data["results"]![0]!.AsObject();
+                    JsonObject entry = Fixtures.ResultRows(data)[0]!.AsObject();
                     if (entry.ContainsKey("totalTests"))
                     {
                         entry["totalTests"] = 0;
@@ -1013,7 +1008,7 @@ sealed class Checks(string outputDirectory)
                     }
                     else
                     {
-                        data["results"] = new JsonArray();
+                        Fixtures.ResultRows(data).Clear();
                     }
                 });
             }
@@ -1022,11 +1017,9 @@ sealed class Checks(string outputDirectory)
             foreach (string id in new[] { "3", "2" })
             {
                 Fixtures.TestRun(replay, id);
-                Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
-                    s["arguments"]!.AsArray().Count > 2 && s["arguments"]![2]!.GetValue<string>() == Fixtures.BuildUrl(id) &&
-                    s["arguments"]![1]!.GetValue<string>() is "test-runs" or "test-results", data =>
+                Fixtures.Change(replay, s => Fixtures.IsTestAcquisition(s, id), data =>
                 {
-                    JsonObject entry = data["results"]![0]!.AsObject();
+                    JsonObject entry = Fixtures.ResultRows(data)[0]!.AsObject();
                     if (entry.ContainsKey("totalTests"))
                     {
                         entry["failedTests"] = 0;
@@ -1040,6 +1033,52 @@ sealed class Checks(string outputDirectory)
             }
             Assert((await CompareAsync(await CollectAsync(replay)))["coverageGaps"]!.AsArray().Count == 0,
                 "A normalized error or skipped result incorrectly contradicted run counters.");
+        });
+        await CaseAsync("Raw result hierarchies retain parameterized cases without inventing parent-pass controls", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "parameterized-results");
+            Fixtures.Collection(replay);
+            foreach (string id in new[] { "3", "2" })
+            {
+                Fixtures.TestRun(replay, id);
+                Fixtures.Change(replay, s => Fixtures.IsRawResults(s, id), data =>
+                {
+                    JsonNode parent = Fixtures.ResultRows(data)[0]!;
+                    parent["resultGroupType"] = "dataDriven";
+                    parent["subResults"] = new JsonArray(new JsonObject
+                    {
+                        ["id"] = 10, ["displayName"] = "Case(1)", ["outcome"] = "Passed", ["resultGroupType"] = "none"
+                    });
+                    if (id == "3")
+                    {
+                        parent["subResults"]!.AsArray().Add(new JsonObject
+                        {
+                            ["id"] = 11, ["displayName"] = "Case(2)", ["outcome"] = "Failed", ["errorMessage"] = "MSB4036 Expected 42",
+                            ["resultGroupType"] = "none"
+                        });
+                    }
+                });
+            }
+            JsonObject dossier = await CollectAsync(replay, expectedError: "Evidence is incomplete");
+            JsonObject comparison = await CompareAsync(dossier);
+            JsonNode failure = comparison["comparisons"]!.AsArray().Single(r =>
+                r!["name"]!.GetValue<string>().EndsWith(" > Case(2)", StringComparison.Ordinal))!;
+            Assert(Current(dossier)["observations"]!.AsArray().Count(o => o!["kind"]!.GetValue<string>() == "test") == 2 &&
+                failure["mostRecentPassingExecution"] is null && failure["precedingExecution"] is null &&
+                !failure["controls"]![0]!["eligible"]!.GetValue<bool>() &&
+                !comparison["coverageGaps"]!.AsArray().Any(g =>
+                    g!.GetValue<string>().Contains("Test result coverage", StringComparison.Ordinal)),
+                "An aggregate pass qualified as execution of an absent parameterized case, or children inflated run counters.");
+            Fixtures.Change(replay, s => Fixtures.IsRawResults(s, "2"), data =>
+                Fixtures.ResultRows(data)[0]!["subResults"] = new JsonArray());
+            comparison = await CompareAsync(await CollectAsync(replay, expectedError: "Evidence is incomplete"));
+            Assert(comparison["coverageGaps"]!.AsArray().Any(g =>
+                g!.GetValue<string>().Contains("Unverified test hierarchy", StringComparison.Ordinal)),
+                "A grouped parent without acquired children became a complete named assertion.");
+            JsonObject legacy = Fixtures.New();
+            Observation(Previous(legacy)).AsObject().Remove("hierarchyVerified");
+            Assert(Row(await CompareAsync(legacy))["mostRecentPassingExecution"] is null,
+                "An older projected parent with unknown hierarchy established a case-level passing control.");
         });
         await CaseAsync("Diagnostic-only results reconcile failures without requiring omitted passes", async () =>
         {
@@ -1055,15 +1094,14 @@ sealed class Checks(string outputDirectory)
                     data["results"]![0]!["totalTests"] = 2;
                     data["results"]![0]!["passedTests"] = id == "3" ? 1 : 2;
                 });
-                Fixtures.Save(replay, "hlx", ["azdo", "test-results", Fixtures.BuildUrl(id), "1", "--all", "--outcomes",
-                    "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning", "--json"], id == "3" ? new
+                Fixtures.Save(replay, "az", Fixtures.ResultArguments(id, "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning"), id == "3" ? new
                     {
-                        ok = true, complete = true, truncated = false, results = new[]
+                        count = 1, value = new[]
                         {
                             new { id = 1, automatedTestName = "Example.Test", testCaseTitle = "Example.Test",
                                 outcome = "Failed", errorMessage = "MSB4036: SDKExampleTask task was not found.", stackTrace = "" }
                         }
-                    } : Fixtures.Envelope());
+                    } : new { count = 0, value = new JsonArray() });
             }
             JsonObject dossier = await CollectAsync(replay, ["--test-result-limit", "1"], "Evidence is incomplete");
             JsonObject comparison = await CompareAsync(dossier);
@@ -1072,11 +1110,11 @@ sealed class Checks(string outputDirectory)
                     g!.GetValue<string>().Contains("Test result coverage for run", StringComparison.Ordinal)) &&
                 comparison["comparisons"]!.AsArray().Any(r => r!["kind"]!.GetValue<string>() == "test"),
                 "Intentionally omitted passes caused a counter mismatch or discarded acquired failures.");
-            Fixtures.Save(replay, "hlx", ["azdo", "test-results", Fixtures.BuildUrl("3"), "1", "--all", "--outcomes",
-                "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning", "--json"], Fixtures.Envelope());
+            Fixtures.Save(replay, "az", Fixtures.ResultArguments("3", "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning"),
+                new { count = 0, value = new JsonArray() });
             comparison = await CompareAsync(await CollectAsync(replay, ["--test-result-limit", "1"], "Evidence is incomplete"));
             Assert(comparison["coverageGaps"]!.AsArray().Any(g =>
-                g!.GetValue<string>().Contains("Test result coverage for run 1 in build 3", StringComparison.Ordinal)),
+                g!.GetValue<string>().Contains("Test result coverage for run 3 in build 3", StringComparison.Ordinal)),
                 "Diagnostic-only collection hid missing advertised failures.");
         });
         await CaseAsync("CLI rejects write commands, unknown options, invalid ranges and missing replay entries", async () =>
@@ -1348,6 +1386,8 @@ sealed class Checks(string outputDirectory)
         {
             string replay = Path.Combine(outputDirectory, "native-replay");
             Fixtures.Collection(replay);
+            Fixtures.TestRun(replay, "3");
+            Fixtures.TestRun(replay, "2");
             Dictionary<string, string> environment = new() { ["CI_EVIDENCE_TEST_REPLAY"] = replay };
             JsonObject dossier = await CollectAsync(replay, environment: environment, executable: Environment.ProcessPath!);
             Assert(!dossier["replayed"]!.GetValue<bool>() && dossier["acquisitions"]!.AsArray().All(a => a!["complete"]!.GetValue<bool>()),
@@ -1475,7 +1515,8 @@ static class Fixtures
         File.WriteAllText(path, node.ToJsonString(Json) + "\n");
     }
     private static JsonObject Observation(string outcome = "Failed", string mechanism = "Expected 42; actual 43", string name = "Example.Test | Example.Test") =>
-        Node(new { id = name, kind = "test", name, lane = "Linux x64 Debug", outcome, mechanism, url = $"fixture://results/{name}", contextOnly = false });
+        Node(new { id = name, kind = "test", name, lane = "Linux x64 Debug", outcome, mechanism,
+            url = $"fixture://results/{name}", contextOnly = false, hierarchyVerified = true });
     private static JsonObject Build(string id, JsonObject observation) => Node(new
     {
         id, url = $"fixture://builds/{id}", repository = "dotnet/sdk", organization = "dnceng-public", project = "public",
@@ -1571,6 +1612,18 @@ static class Fixtures
         }
     }
     public static object Envelope() => new { ok = true, results = new JsonArray(), complete = true, truncated = false };
+    public static string[] ResultArguments(string id,
+        string outcomes = "Passed,Failed,Error,Timeout,Aborted,Inconclusive,NotExecuted,NotApplicable,Blocked,Warning", int skip = 0) =>
+        ["rest", "--method", "GET", "--url",
+            $"https://dev.azure.com/dnceng-public/public/_apis/test/Runs/{id}/results?api-version=7.1&detailsToInclude=SubResults&outcomes={outcomes}&$skip={skip}&$top=200",
+            "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"];
+    public static bool IsRawResults(JsonObject snapshot, string id) => snapshot["tool"]!.GetValue<string>() == "az" &&
+        snapshot["arguments"]![4]!.GetValue<string>().Contains($"/test/Runs/{id}/results?", StringComparison.Ordinal);
+    public static bool IsTestAcquisition(JsonObject snapshot, string id) => IsRawResults(snapshot, id) ||
+        snapshot["tool"]!.GetValue<string>() == "hlx" && snapshot["arguments"]!.AsArray().Count > 2 &&
+        snapshot["arguments"]![1]!.GetValue<string>() == "test-runs" &&
+        snapshot["arguments"]![2]!.GetValue<string>() == BuildUrl(id);
+    public static JsonArray ResultRows(JsonNode data) => (data["results"] ?? data["value"])!.AsArray();
     public static string[] CompareArguments() =>
         ["api", "--method", "GET", "--paginate", "--slurp", $"repos/dotnet/sdk/compare/{Sha("2")}...{Sha("3")}?per_page=100"];
 
@@ -1580,14 +1633,13 @@ static class Fixtures
         {
             ok = true, complete = true, truncated = false, results = new[]
             {
-                new { id = 1, name = "Linux", state, totalTests = 1 + incompleteTests.GetValueOrDefault(), incompleteTests,
+                new { id = int.Parse(id, CultureInfo.InvariantCulture), name = "Linux", state, totalTests = 1 + incompleteTests.GetValueOrDefault(), incompleteTests,
                     failedTests = id == "3" ? 1 : 0, passedTests = id == "2" ? 1 : 0 }
             }
         });
-        Save(directory, "hlx", ["azdo", "test-results", BuildUrl(id), "1", "--all", "--outcomes",
-            "Passed,Failed,Error,Timeout,Aborted,Inconclusive,NotExecuted,NotApplicable,Blocked,Warning", "--json"], new
+        Save(directory, "az", ResultArguments(id), new
         {
-            ok = true, complete = true, truncated = false, results = new[]
+            count = 1, value = new[]
             {
                 new { id = 1, automatedTestName = "Example.Test", testCaseTitle = "Example.Test",
                     outcome = id == "3" ? "Failed" : "Passed", errorMessage = id == "3" ? Failure : "", stackTrace = "" }
@@ -1708,6 +1760,10 @@ static class Fixtures
             {
                 JsonNode data = JsonNode.Parse(snapshot["stdout"]!.GetValue<string>())!;
                 mutate(data);
+                if (snapshot["tool"]!.GetValue<string>() == "az" && data["value"] is JsonArray values)
+                {
+                    data["count"] = values.Count;
+                }
                 snapshot["stdout"] = data.ToJsonString(Json);
                 Write(snapshot, file);
             }
@@ -1750,7 +1806,7 @@ static class Fixtures
             }) ?? throw new InvalidOperationException("Could not start the inherited-pipe fixture child.");
             File.WriteAllText(Path.Combine(replay, $"inherited-{pipe}.pid"), holder.Id.ToString(CultureInfo.InvariantCulture));
         }
-        string tool = arguments[0] == "api" ? "gh" : "hlx";
+        string tool = arguments[0] switch { "api" => "gh", "rest" => "az", _ => "hlx" };
         string path = Path.Combine(replay, Key(tool, arguments) + ".json");
         if (!File.Exists(path))
         {

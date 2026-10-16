@@ -40,6 +40,7 @@ static class CiEvidence
                       --timeout-seconds N          Per acquisition (1-3600; default 120)
                       --gh-path PATH               gh executable (default gh)
                       --hlx-path PATH              hlx 0.11.x executable (default hlx)
+                      --az-path PATH               Azure CLI executable (default az)
                       --replay-directory PATH      Recorded snapshots; no service access
                     """);
                 return args.Length == 0 ? 1 : 0;
@@ -86,7 +87,7 @@ sealed class Options
         string[] allowed = args[0] switch
         {
             "collect" => ["pull-request", "build", "baseline-build", "output-directory", "history-limit", "lookback-days",
-                "test-result-limit", "timeout-seconds", "gh-path", "hlx-path", "replay-directory"],
+                "test-result-limit", "timeout-seconds", "gh-path", "hlx-path", "az-path", "replay-directory"],
             "compare" => ["evidence-path", "output-directory"],
             _ => throw new ArgumentException("Use collect or compare. See --help.")
         };
@@ -191,7 +192,7 @@ sealed record Acquisition(string Description, string Snapshot, int ExitCode, boo
     });
 }
 
-sealed class Reader(string snapshots, string? replayDirectory, string ghPath, string hlxPath, int timeoutSeconds)
+sealed class Reader(string snapshots, string? replayDirectory, string ghPath, string hlxPath, int timeoutSeconds, string azPath = "az")
 {
     private Dictionary<string, string>? _replayIndex;
 
@@ -244,6 +245,11 @@ sealed class Reader(string snapshots, string? replayDirectory, string ghPath, st
         bool supported = arguments.Length > 0 && (tool switch
         {
             "gh" => arguments[0] is "api" && method,
+            "az" => arguments is ["rest", "--method", "GET", "--url", string url, "--resource",
+                "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"] &&
+                Uri.TryCreate(url, UriKind.Absolute, out Uri? uri) && uri.Scheme == "https" &&
+                uri.Host == "dev.azure.com" && uri.UserInfo.Length == 0 &&
+                Regex.IsMatch(uri.AbsolutePath, @"^/[^/]+/[^/]+/_apis/"),
             "hlx" => arguments[0] is "--version" or "status" or "files" or "logs" ||
                 arguments[0] == "azdo" && arguments.Length > 1 &&
                 arguments[1] is "build" or "builds" or "changes" or "timeline" or "test-runs" or "test-results" or "artifacts" or "log",
@@ -273,12 +279,36 @@ sealed class Reader(string snapshots, string? replayDirectory, string ghPath, st
         }
         else
         {
-            ProcessStartInfo start = new(tool == "gh" ? ghPath : hlxPath)
+            ProcessStartInfo start = new(tool switch { "gh" => ghPath, "az" => azPath, _ => hlxPath })
             {
                 UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true
             };
+            if (tool == "az" && OperatingSystem.IsWindows())
+            {
+                string? launcher = Path.IsPathRooted(azPath) ? azPath :
+                    (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator)
+                        .SelectMany(p => new[] { Path.Combine(p, azPath + ".exe"), Path.Combine(p, azPath + ".cmd") })
+                        .FirstOrDefault(File.Exists);
+                if (launcher is not null && Path.GetExtension(launcher).Equals(".cmd", StringComparison.OrdinalIgnoreCase))
+                {
+                    string python = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(launcher)!, "..", "python.exe"));
+                    if (!File.Exists(python))
+                    {
+                        throw new InvalidDataException("Azure CLI launcher has no companion python.exe; supply --az-path to an executable.");
+                    }
+                    start.FileName = python;
+                    start.ArgumentList.Add("-IBm");
+                    start.ArgumentList.Add("azure.cli");
+                }
+            }
             start.Environment["GIT_TERMINAL_PROMPT"] = "0";
             start.Environment["GCM_INTERACTIVE"] = "never";
+            if (tool == "az")
+            {
+                start.Environment["PYTHONIOENCODING"] = "utf-8";
+                start.StandardOutputEncoding = Encoding.UTF8;
+                start.StandardErrorEncoding = Encoding.UTF8;
+            }
             foreach (string argument in arguments)
             {
                 start.ArgumentList.Add(argument);
@@ -407,7 +437,8 @@ static class Comparison
         {
             yield return $"Passing test results omitted for build {build.Text("id")}; no complete result coverage is supported.";
         }
-        ILookup<string, JsonObject> results = build.Rows("observations").Objects().Where(o => o.Text("kind") == "test")
+        ILookup<string, JsonObject> results = build.Rows("observations").Objects()
+            .Where(o => o.Text("kind") is "test" or "test-group" && o["parentResultId"] is null)
             .ToLookup(o => o.Text("id").Split(':', 3) is ["test", string runId, _] ? runId : "", StringComparer.Ordinal);
         foreach (JsonObject run in (build["testRuns"] is null ? new JsonArray() : build.Rows("testRuns")).Objects())
         {
@@ -447,10 +478,14 @@ static class Comparison
     private static IEnumerable<string> ScenarioIdentityLimitations(JsonNode observation)
     {
         string name = observation.Text("name");
-        if (string.IsNullOrWhiteSpace(name) || observation.Text("kind") == "test" &&
+        if (string.IsNullOrWhiteSpace(name) || observation.Text("kind") is "test" or "test-group" &&
             name.Split(" | ", StringSplitOptions.None).All(string.IsNullOrWhiteSpace))
         {
             yield return "Missing scenario name";
+        }
+        if (observation.Text("kind") is "test" or "test-group" && !observation.Flag("hierarchyVerified"))
+        {
+            yield return "Missing test hierarchy provenance";
         }
         string lane = observation.Text("lane");
         if (string.IsNullOrWhiteSpace(lane) || observation.Text("kind") is "job" or "task" &&
@@ -742,7 +777,8 @@ sealed class Collector
         _lookbackDays = options.Number("lookback-days", 7, 365);
         _testResultLimit = options.Number("test-result-limit", 100000, 1000000);
         _reader = new(Path.Combine(_outputDirectory, "snapshots"), options["replay-directory"],
-            options["gh-path"] ?? "gh", options["hlx-path"] ?? "hlx", options.Number("timeout-seconds", 120, 3600));
+            options["gh-path"] ?? "gh", options["hlx-path"] ?? "hlx", options.Number("timeout-seconds", 120, 3600),
+            options["az-path"] ?? "az");
         _dossier = JsonData.Object(new
         {
             schemaVersion = 1, mode = options["pull-request"] is null ? "build" : "pr", repository = "dotnet/sdk",
@@ -804,6 +840,40 @@ sealed class Collector
             entries.AddRange(JsonData.Rows(property.Length > 0 ? page?[property] : page));
         }
         return JsonData.Array(entries);
+    }
+
+    private async Task<JsonArray> AzureRowsAsync(JsonObject record, string path, string query)
+    {
+        JsonArray entries = [];
+        HashSet<string> ids = new(StringComparer.Ordinal);
+        const int PageSize = 200;
+        while (true)
+        {
+            string endpoint = $"https://dev.azure.com/{Uri.EscapeDataString(record.Text("organization"))}/" +
+                $"{Uri.EscapeDataString(record.Text("project"))}/_apis/{path}?api-version=7.1&{query}" +
+                $"&$skip={entries.Count}&$top={PageSize}";
+            Acquisition response = await ReadAsync("az", ["rest", "--method", "GET", "--url", endpoint,
+                "--resource", "499b84ac-1321-427f-aa17-267ca6975798", "--output", "json", "--only-show-errors"]);
+            if (!response.Complete || response.Data?["value"] is not JsonArray page ||
+                response.Data["count"] is null || response.Data.Number("count") != page.Count || page.Count > PageSize)
+            {
+                Gap(record, $"Incomplete raw Azure list for {path}; inspect acquisition snapshots.");
+                return entries;
+            }
+            foreach (JsonObject row in page.Objects())
+            {
+                entries.Add(row.DeepClone());
+                if (row.Text("id").Length == 0 || !ids.Add(row.Text("id")))
+                {
+                    Gap(record, $"Raw Azure list for {path} has duplicate result IDs or a missing ID.");
+                    return entries;
+                }
+            }
+            if (page.Count < PageSize)
+            {
+                return entries;
+            }
+        }
     }
 
     private async Task<JsonArray> ChecksAsync(string sha)
@@ -993,27 +1063,12 @@ sealed class Collector
             FindHelix(run.Text("name"), helixJobs);
             string outcomes = fullResults ? "Passed,Failed,Error,Timeout,Aborted,Inconclusive,NotExecuted,NotApplicable,Blocked,Warning"
                 : "Failed,Error,Timeout,Aborted,Inconclusive,Blocked,Warning";
-            Acquisition results = await ReadAsync("hlx", ["azdo", "test-results", url, run.Text("id"), "--all", "--outcomes", outcomes, "--json"], list: true);
-            if (!results.Complete)
+            JsonArray results = await AzureRowsAsync(record, $"test/Runs/{run.Text("id")}/results",
+                $"detailsToInclude=SubResults&outcomes={outcomes}");
+            foreach (JsonObject test in results.Objects())
             {
-                record["complete"] = false;
-            }
-            foreach (JsonObject test in (results.Data?["results"] as JsonArray ?? []).Objects())
-            {
-                string outcome = Outcome(test.Text("outcome"));
-                if (outcome == "Unknown")
-                {
-                    record["complete"] = false;
-                }
-                record.Rows("observations").Add(JsonData.Object(new
-                {
-                    id = $"test:{run.Text("id")}:{test.Text("id")}", kind = "test",
-                    name = $"{test.Text("automatedTestName")} | {test.Text("testCaseTitle")}",
-                    lane = Regex.Replace(run.Text("name"), @"(?i)\[HelixJob:[0-9a-f-]+\]", "[HelixJob]").Trim(),
-                    outcome, mechanism = string.Join('\n', new[] { test.Text("errorMessage"), test.Text("stackTrace") }.Where(s => s.Length > 0)),
-                    url = $"{url}&view=ms.vss-test-web.build-test-results-tab&runId={run.Text("id")}&resultId={test.Text("id")}",
-                    contextOnly = test.Text("testCaseTitle").EndsWith(" Work Item", StringComparison.OrdinalIgnoreCase)
-                }));
+                AddTestResult(record, run, test, $"test:{run.Text("id")}:{test.Text("id")}",
+                    $"{test.Text("automatedTestName")} | {test.Text("testCaseTitle")}", null);
             }
         }
         foreach (string gap in Comparison.TestResultCoverageGaps(record))
@@ -1040,6 +1095,37 @@ sealed class Collector
         if (Comparison.MissingFailureEvidence(record))
         {
             Gap(record, $"Missing failure evidence for build {record.Text("id")}; investigate pipeline validation/startup diagnostics.");
+        }
+    }
+
+    private void AddTestResult(JsonObject record, JsonObject run, JsonObject test, string id, string name, string? parentResultId)
+    {
+        JsonArray children = test["subResults"] as JsonArray ?? [];
+        bool group = children.Count > 0 || test.Text("resultGroupType").Length > 0 &&
+            !test.Text("resultGroupType").Equals("none", StringComparison.OrdinalIgnoreCase);
+        string outcome = Outcome(test.Text("outcome"));
+        if (outcome == "Unknown")
+        {
+            record["complete"] = false;
+        }
+        record.Rows("observations").Add(JsonData.Object(new
+        {
+            id, kind = group ? "test-group" : "test", name, parentResultId, hierarchyVerified = true,
+            resultGroupType = test["resultGroupType"],
+            lane = Regex.Replace(run.Text("name"), @"(?i)\[HelixJob:[0-9a-f-]+\]", "[HelixJob]").Trim(),
+            outcome, mechanism = string.Join('\n', new[] { test.Text("errorMessage"), test.Text("stackTrace") }.Where(s => s.Length > 0)),
+            url = $"{record.Text("url")}&view=ms.vss-test-web.build-test-results-tab&runId={run.Text("id")}&resultId={id.Split(':')[2].Split('/')[0]}",
+            contextOnly = group || test.Text("testCaseTitle").EndsWith(" Work Item", StringComparison.OrdinalIgnoreCase)
+        }));
+        if (group && children.Count == 0)
+        {
+            Gap(record, $"Unverified test hierarchy for {id}: grouped result has no acquired children.");
+        }
+        foreach (JsonObject child in children.Objects())
+        {
+            AddTestResult(record, run, child, $"{id}/{child.Text("id")}",
+                string.IsNullOrWhiteSpace(child.Text("displayName")) || name.Split(" | ").All(string.IsNullOrWhiteSpace)
+                    ? "" : $"{name} > {child.Text("displayName")}", id);
         }
     }
 

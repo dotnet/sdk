@@ -53,6 +53,17 @@ explicitly without echoing their contents or saving the unsafe metadata snapshot
 
 The [collector](../scripts/CiEvidence.cs) also retains `testRuns` metadata, including
 producer state and counters.
+Test results are acquired through authenticated `az rest` GET requests with
+`detailsToInclude=SubResults` and explicit 200-result pagination. The raw
+[Azure result contract](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/list?view=azure-devops-rest-7.1)
+retains `resultGroupType` and recursive `subResults`, unlike hlx's typed projection.
+Aggregate results use `kind: test-group` and remain context. Child observations
+include their display-name hierarchy and `parentResultId`; an aggregate pass
+cannot stand in for an unexecuted parameterized case. Missing children of grouped
+results remain explicit hierarchy gaps. Run counters reconcile top-level results
+only, not their additional child observations.
+Raw result observations set `hierarchyVerified: true`. Older projected results
+without hierarchy provenance remain readable but cannot establish case-level controls.
 A run must report `Completed` and zero `incompleteTests` to establish complete run
 coverage. Non-completed runs and missing state/counters remain explicit gaps, even
 when the build has completed; already acquired individual results remain available.
