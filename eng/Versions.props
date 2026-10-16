@@ -59,7 +59,7 @@
     <MicrosoftWindowsCsWin32PackageVersion>0.3.264</MicrosoftWindowsCsWin32PackageVersion>
     <!-- When updating MicrosoftVisualStudioSolutionPersistenceVersion make sure to sync with dotnet/msbuild, dotnet/source-build-externals and NuGet/NuGet.Client -->
     <MicrosoftVisualStudioSolutionPersistenceVersion>1.0.52</MicrosoftVisualStudioSolutionPersistenceVersion>
-    <AzureMonitorOpenTelemetryExporterPackageVersion>1.9.0</AzureMonitorOpenTelemetryExporterPackageVersion>
+    <AzureMonitorOpenTelemetryExporterPackageVersion>1.10.0</AzureMonitorOpenTelemetryExporterPackageVersion>
     <OpenTelemetryDotnetPackageVersion>1.18.0</OpenTelemetryDotnetPackageVersion>
     <OpenTelemetryDotnetContribPackageVersion>1.15.1</OpenTelemetryDotnetContribPackageVersion>
     <OpenTelemetryInstrumentationHttpPackageVersion>1.16.0</OpenTelemetryInstrumentationHttpPackageVersion>
@@ -79,20 +79,21 @@
   <PropertyGroup>
     <!-- These are minimum versions used for netfx-targeted components that run in Visual Studio because in those cases,
          Visual Studio is providing those assemblies, and we should work with whichever version it ships. -->
-    <MicrosoftBclAsyncInterfacesToolsetPackageVersion>9.0.0</MicrosoftBclAsyncInterfacesToolsetPackageVersion>
+    <MicrosoftBclAsyncInterfacesToolsetPackageVersion>10.0.10</MicrosoftBclAsyncInterfacesToolsetPackageVersion>
     <MicrosoftDeploymentDotNetReleasesToolsetPackageVersion>2.0.0-preview.1.24427.4</MicrosoftDeploymentDotNetReleasesToolsetPackageVersion>
-    <MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>9.0.0</MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>
-    <MicrosoftExtensionsDependencyInjectionAbstractionsToolsetPackageVersion>9.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsToolsetPackageVersion>
-    <SystemBuffersToolsetPackageVersion>4.5.1</SystemBuffersToolsetPackageVersion>
-    <SystemCollectionsImmutableToolsetPackageVersion>9.0.11</SystemCollectionsImmutableToolsetPackageVersion>
-    <SystemMemoryToolsetPackageVersion>4.5.5</SystemMemoryToolsetPackageVersion>
-    <SystemReflectionMetadataLoadContextToolsetPackageVersion>9.0.0</SystemReflectionMetadataLoadContextToolsetPackageVersion>
-    <SystemReflectionMetadataToolsetPackageVersion>9.0.0</SystemReflectionMetadataToolsetPackageVersion>
-    <SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>9.0.0</SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>
-    <SystemTextEncodingCodePagesToolsetPackageVersion>8.0.0</SystemTextEncodingCodePagesToolsetPackageVersion>
-    <SystemTextJsonToolsetPackageVersion>9.0.0</SystemTextJsonToolsetPackageVersion>
-    <SystemThreadingTasksExtensionsToolsetPackageVersion>4.5.4</SystemThreadingTasksExtensionsToolsetPackageVersion>
-    <SystemResourcesExtensionsToolsetPackageVersion>8.0.0</SystemResourcesExtensionsToolsetPackageVersion>
+    <MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>10.0.10</MicrosoftExtensionsLoggingAbstractionsToolsetPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionAbstractionsToolsetPackageVersion>10.0.10</MicrosoftExtensionsDependencyInjectionAbstractionsToolsetPackageVersion>
+    <SystemBuffersToolsetPackageVersion>4.6.1</SystemBuffersToolsetPackageVersion>
+    <SystemCollectionsImmutableToolsetPackageVersion>10.0.10</SystemCollectionsImmutableToolsetPackageVersion>
+    <SystemMemoryToolsetPackageVersion>4.6.3</SystemMemoryToolsetPackageVersion>
+    <SystemReflectionMetadataLoadContextToolsetPackageVersion>10.0.10</SystemReflectionMetadataLoadContextToolsetPackageVersion>
+    <SystemReflectionMetadataToolsetPackageVersion>10.0.10</SystemReflectionMetadataToolsetPackageVersion>
+    <SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>10.0.10</SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>
+    <SystemTextEncodingCodePagesToolsetPackageVersion>10.0.10</SystemTextEncodingCodePagesToolsetPackageVersion>
+    <SystemTextJsonToolsetPackageVersion>10.0.10</SystemTextJsonToolsetPackageVersion>
+    <SystemThreadingTasksExtensionsToolsetPackageVersion>4.6.3</SystemThreadingTasksExtensionsToolsetPackageVersion>
+    <SystemResourcesExtensionsToolsetPackageVersion>10.0.10</SystemResourcesExtensionsToolsetPackageVersion>
+    <MicrosoftVisualStudioThreadingToolsetPackageVersion>18.7.23</MicrosoftVisualStudioThreadingToolsetPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>
