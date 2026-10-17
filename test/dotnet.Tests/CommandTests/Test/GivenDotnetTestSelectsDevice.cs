@@ -149,6 +149,63 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ItPreservesLiteralDeviceIds(bool explicitDevice)
+    {
+        const string DeviceId = "\"device (" + TestConstants.GB18030 + ")\";InjectedProperty=true,OtherProperty=value%3B";
+        const string EscapedDeviceId = "%22device %28" + TestConstants.GB18030 + "%29%22%3bInjectedProperty=true%2COtherProperty=value%253B";
+
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: explicitDevice.ToString())
+            .WithSource();
+        string projectPath = Path.Combine(testInstance.Path, "DotnetTestDevices.csproj");
+        string projectContents = File.ReadAllText(projectPath).Replace(
+            "</Project>",
+            $"""
+              <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+                <ItemGroup>
+                  <Devices Include="{EscapedDeviceId}" />
+                </ItemGroup>
+              </Target>
+            </Project>
+            """);
+
+        foreach (string target in new[] { "CoreCompile", "DeployToDevice", "ComputeRunArguments" })
+        {
+            projectContents = projectContents.Replace(
+                "</Project>",
+                $"""
+                  <Target Name="_ValidateDeviceFor{target}" BeforeTargets="{target}">
+                    <Error Condition="'$(InjectedProperty)' != '' Or '$(Device)' != '{EscapedDeviceId}'"
+                           Text="Device ID was not preserved as a literal property value." />
+                  </Target>
+                </Project>
+                """);
+        }
+
+        File.WriteAllText(projectPath, projectContents);
+
+        var args = new List<string> { "--framework", ToolsetInfo.CurrentTargetFramework, "-bl" };
+        if (explicitDevice)
+        {
+            args.AddRange(["--device", DeviceId]);
+        }
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(args.ToArray())
+            .Should().Pass();
+
+        AssertTargetInBinlog(Path.Combine(testInstance.Path, "msbuild.binlog"), "_ValidateDeviceForCoreCompile",
+            targets => targets.Should().ContainSingle());
+        foreach (string target in new[] { "DeployToDevice", "ComputeRunArguments" })
+        {
+            AssertTargetInBinlog(Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"), $"_ValidateDeviceFor{target}",
+                targets => targets.Should().ContainSingle());
+        }
+    }
+
+    [TestMethod]
     public void ItPromptsForTargetFrameworkWhenDeviceIsSpecifiedWithoutFramework_InNonInteractiveMode()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")

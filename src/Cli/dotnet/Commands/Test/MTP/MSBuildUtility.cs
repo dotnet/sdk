@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Immutable;
@@ -203,7 +204,7 @@ internal static class MSBuildUtility
 
             if (device is not null)
             {
-                perTfmArgs = perTfmArgs.Append($"-p:Device={device}");
+                perTfmArgs = perTfmArgs.Append($"-p:Device={MSBuildPropertyEscaping.Escape(device)}");
             }
 
             if (!string.IsNullOrEmpty(rid))
