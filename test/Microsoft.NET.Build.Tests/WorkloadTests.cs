@@ -83,6 +83,46 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
+        public void It_should_get_required_workloads_from_a_transitive_incompatible_project_reference()
+        {
+            var mainProject = new TestProject()
+            {
+                Name = "MainProject",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            var intermediateProject = new TestProject()
+            {
+                Name = "IntermediateProject",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+
+            var workloadProject = new TestProject()
+            {
+                Name = "WorkloadProject",
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-missingworkloadtestplatform"
+            };
+
+            mainProject.ReferencedProjects.Add(intermediateProject);
+            intermediateProject.ReferencedProjects.Add(workloadProject);
+
+            var testAsset = TestAssetsManager.CreateTestProject(mainProject);
+            var getValuesCommand = new GetValuesCommand(testAsset, "_ResolvedSuggestedWorkload", GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "_GetRequiredWorkloads",
+                ShouldRestore = false
+            };
+
+            getValuesCommand.Execute("/p:SkipResolvePackageAssets=true")
+                .Should()
+                .Pass();
+
+            getValuesCommand.GetValues()
+                .Should()
+                .BeEquivalentTo("microsoft-net-sdk-missingtestworkload");
+        }
+
+        [TestMethod]
         public void It_should_fail_to_restore_without_workload_when_multitargeted()
         {
             var testProject = new TestProject()
