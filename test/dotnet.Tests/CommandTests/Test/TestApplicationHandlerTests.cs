@@ -436,6 +436,52 @@ public class TestApplicationHandlerTests : IDisposable
         reporter.HasHandshakeFailure.Should().BeFalse();
     }
 
+    [TestMethod]
+    public void OnTestProcessExited_WhenSuccessfulTestMapCollectionSuppressesReporting_DoesNotReportFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            collectTestMap: true);
+
+        handler.OnTestProcessExited(exitCode: 0, outputData: string.Empty, errorData: string.Empty);
+
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void OnTestProcessExited_WhenTestMapCollectionFailsWithoutHandshake_ReportsFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            collectTestMap: true);
+
+        handler.OnTestProcessExited(exitCode: 1, outputData: string.Empty, errorData: string.Empty);
+
+        reporter.HasHandshakeFailure.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void OnTestProcessExited_WhenTestMapCollectionReceivesOnlyControllerHandshake_ReportsFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            collectTestMap: true);
+
+        handler.OnHandshakeReceived(
+            BuildHandshake(
+                executionMode: HandshakeMessageExecutionModes.Run,
+                hostType: "TestHostController",
+                includeInstanceId: false),
+            gotSupportedVersion: true).Should().BeTrue();
+
+        handler.OnTestProcessExited(exitCode: 0, outputData: string.Empty, errorData: string.Empty);
+
+        reporter.HasHandshakeFailure.Should().BeTrue();
+    }
+
     /// <summary>
     /// Related to https://github.com/dotnet/sdk/issues/55549. Output already streamed to the terminal is
     /// reported as nothing left to show (<c>ProcessOutputCollector.GetOutputToReport</c> returns empty),
@@ -546,7 +592,8 @@ public class TestApplicationHandlerTests : IDisposable
         bool isDiscovery,
         bool showAssembly = false,
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
-        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null)
+        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
+        bool collectTestMap = false)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -580,7 +627,10 @@ public class TestApplicationHandlerTests : IDisposable
             IsHelp: isHelp,
             IsDiscovery: isDiscovery,
             ListTestsFormat: TestListFormat.Text,
-            IsArtifactPostProcessing: artifactPostProcessingInvocation is not null);
+            IsArtifactPostProcessing: artifactPostProcessingInvocation is not null)
+        {
+            CollectTestMap = collectTestMap,
+        };
 
         return (
             new TestApplicationHandler(
