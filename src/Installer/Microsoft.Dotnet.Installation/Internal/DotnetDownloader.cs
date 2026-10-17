@@ -178,15 +178,26 @@ internal class DotnetDownloader : IArchiveDownloader
     public ResolvedDownload ResolveDotnetupDownload(string rid)
         => ResolveDotnetupDownload("daily", rid);
 
-    public ResolvedDownload ResolveDotnetupDownload(string channel, string rid)
+    /// <param name="channel">The release channel to resolve.</param>
+    /// <param name="rid">The runtime identifier of the dotnetup build.</param>
+    /// <param name="replacementSignatureEnforced">
+    /// <c>true</c> when the caller verifies a Microsoft-rooted Authenticode signature on the downloaded
+    /// executable before using it; the unsigned-download policy then does not apply.
+    /// </param>
+    public ResolvedDownload ResolveDotnetupDownload(string channel, string rid, bool replacementSignatureEnforced = false)
     {
-        ThrowIfUnsignedDownloadBlocked("dotnetup", channel);
+        if (!replacementSignatureEnforced)
+        {
+            ThrowIfUnsignedDownloadBlocked("dotnetup", channel);
+        }
+
         using var resolver = new DailyChannelResolver(_releaseManifest, _httpClient);
         ResolvedDotnetupArtifact resolved = resolver.ResolveDotnetupArtifact(channel, rid);
         var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(resolved.Version, rid);
         string hash = TryGetHashFromUrl(location.ChecksumUrl, resolved.Version, "dotnetup", requirePinnedUri: true)
             ?? throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, $"No checksum is published for dotnetup {resolved.Version} ({rid}).");
-        return new ResolvedDownload(resolved.ArchiveUri, hash, rid, resolved.Version, IsUnsigned: true, IsDotnetup: true);
+        return new ResolvedDownload(resolved.ArchiveUri, hash, rid, resolved.Version,
+            IsUnsigned: !replacementSignatureEnforced, IsDotnetup: true);
     }
 
     /// <summary>
@@ -204,6 +215,14 @@ internal class DotnetDownloader : IArchiveDownloader
         ReleaseVersion resolvedVersion,
         string destinationBasePath,
         IProgress<DownloadProgress>? progress = null)
+        => DownloadVerifiedArtifact(installRequest, resolvedVersion, destinationBasePath, progress).Path;
+
+    /// <inheritdoc/>
+    public VerifiedDownload DownloadVerifiedArtifact(
+        DotnetInstallRequest installRequest,
+        ReleaseVersion resolvedVersion,
+        string destinationBasePath,
+        IProgress<DownloadProgress>? progress = null)
     {
         var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
         string extension = GetExtensionFromUrl(downloadUrl);
@@ -211,7 +230,8 @@ internal class DotnetDownloader : IArchiveDownloader
             new Uri(downloadUrl), expectedHash,
             DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture), resolvedVersion,
             IsUnsigned: downloadUrl.StartsWith(BlobFeedUrlBuilder.ArchiveBaseUrl + "/", StringComparison.Ordinal));
-        return DownloadWithVerification(download, destinationBasePath + extension, progress);
+        string path = DownloadWithVerification(download, destinationBasePath + extension, progress);
+        return new VerifiedDownload(path, expectedHash, download.IsUnsigned);
     }
 
     /// <summary>
@@ -225,7 +245,7 @@ internal class DotnetDownloader : IArchiveDownloader
         {
             throw new DotnetInstallException(DotnetInstallErrorCode.ArchiveHashMissing, "Cannot verify a download without its expected hash.");
         }
-        if (download.IsUnsigned || download.IsDotnetup)
+        if (download.IsUnsigned)
         {
             ThrowIfUnsignedDownloadBlocked(download.IsDotnetup ? "dotnetup" : ".NET", download.Version.ToString());
         }
@@ -303,11 +323,7 @@ internal class DotnetDownloader : IArchiveDownloader
             case FindReleaseFileStatus.NoUserInstallableArtifact:
                 throw new DotnetInstallException(
                     DotnetInstallErrorCode.NoUserInstallableArtifact,
-                    string.Format(
-                        System.Globalization.CultureInfo.CurrentCulture,
-                        Strings.NoUserInstallableArtifact,
-                        installRequest.Component,
-                        resolvedVersion),
+                    GetNoUserInstallableArtifactMessage(installRequest, resolvedVersion),
                     version: resolvedVersion.ToString(),
                     component: installRequest.Component.ToString());
 
@@ -335,6 +351,20 @@ internal class DotnetDownloader : IArchiveDownloader
             default:
                 throw new InvalidOperationException($"Unexpected {nameof(FindReleaseFileStatus)}: {result.Status}");
         }
+    }
+
+    private static string GetNoUserInstallableArtifactMessage(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+    {
+        if (installRequest.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
+        {
+            return $".NET {installRequest.Component} {resolvedVersion} has no Windows installer for {installRequest.InstallRoot.Architecture}. Choose a different version.";
+        }
+
+        return string.Format(
+            System.Globalization.CultureInfo.CurrentCulture,
+            Strings.NoUserInstallableArtifact,
+            installRequest.Component,
+            resolvedVersion);
     }
 
     private static (string DownloadUrl, string ExpectedHash) BuildEntryFromReleaseFile(
@@ -417,23 +447,14 @@ internal class DotnetDownloader : IArchiveDownloader
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var locationsChecked = new List<string>();
 
-        // Prefer tar.gz, fall back to zip if unavailable (older .NET versions may not publish tar.gz for Windows)
-        var tarLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".tar.gz");
-        locationsChecked.Add(tarLocation.ChecksumUrl);
-        string? hash = TryGetHashFromUrl(tarLocation.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
-        if (hash != null)
+        foreach (string extension in GetBlobFeedExtensions(installRequest))
         {
-            return (tarLocation.ArchiveUrl, hash);
-        }
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            var zipLocation = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, ".zip");
-            locationsChecked.Add(zipLocation.ChecksumUrl);
-            hash = TryGetHashFromUrl(zipLocation.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
+            var location = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, extension);
+            locationsChecked.Add(location.ChecksumUrl);
+            string? hash = TryGetHashFromUrl(location.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
             if (hash != null)
             {
-                return (zipLocation.ArchiveUrl, hash);
+                return (location.ArchiveUrl, hash);
             }
         }
 
@@ -442,6 +463,26 @@ internal class DotnetDownloader : IArchiveDownloader
             $"Version {resolvedVersion} for {installRequest.Component} was not found in the release manifest or blob feed (checked: {string.Join(", ", locationsChecked)})",
             version: resolvedVersion.ToString(),
             component: installRequest.Component.ToString());
+    }
+
+    /// <summary>
+    /// The blob feed file extensions to probe, in order of preference. Installer bundle requests
+    /// only accept the .exe bundle. Archive requests prefer tar.gz and fall back to zip on Windows
+    /// (older .NET versions may not publish tar.gz for Windows).
+    /// </summary>
+    private static IEnumerable<string> GetBlobFeedExtensions(DotnetInstallRequest installRequest)
+    {
+        if (installRequest.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle)
+        {
+            yield return ".exe";
+            yield break;
+        }
+
+        yield return ".tar.gz";
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            yield return ".zip";
+        }
     }
 
     /// <summary>
@@ -657,6 +698,16 @@ internal class DotnetDownloader : IArchiveDownloader
     private static void VerifyFileHash(string filePath, string expectedHash, bool allowAlternateHashes)
         => VerifyHash(ComputeFileHash(filePath), expectedHash, allowAlternateHashes);
 
+    /// <summary>
+    /// Returns whether <paramref name="actualHash"/> is accepted for a .NET artifact whose expected hash is
+    /// <paramref name="expectedHash"/>, using the same rules <see cref="DownloadVerifiedArtifact"/> applies.
+    /// </summary>
+    internal static bool IsAcceptedArtifactHash(string actualHash, string expectedHash)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(expectedHash);
+        return IsAcceptedHash(actualHash, expectedHash, allowAlternateHashes: true);
+    }
+
     private static void VerifyHash(string actualHash, string expectedHash, bool allowAlternateHashes)
     {
         if (string.IsNullOrEmpty(expectedHash))
@@ -664,14 +715,7 @@ internal class DotnetDownloader : IArchiveDownloader
             throw new ArgumentException("Expected hash cannot be null or empty", nameof(expectedHash));
         }
 
-        if (string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        // Check if the actual hash is a known acceptable alternate for this expected hash
-        if (allowAlternateHashes && s_knownAlternateHashes.TryGetValue(expectedHash, out var alternate) &&
-            string.Equals(actualHash, alternate, StringComparison.OrdinalIgnoreCase))
+        if (IsAcceptedHash(actualHash, expectedHash, allowAlternateHashes))
         {
             return;
         }
@@ -679,5 +723,17 @@ internal class DotnetDownloader : IArchiveDownloader
         throw new DotnetInstallException(
                        DotnetInstallErrorCode.HashMismatch,
                        $"File hash mismatch. Expected: {expectedHash}, Actual: {actualHash}");
+    }
+
+    private static bool IsAcceptedHash(string actualHash, string expectedHash, bool allowAlternateHashes)
+    {
+        if (string.Equals(actualHash, expectedHash, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Check if the actual hash is a known acceptable alternate for this expected hash
+        return allowAlternateHashes && s_knownAlternateHashes.TryGetValue(expectedHash, out var alternate) &&
+            string.Equals(actualHash, alternate, StringComparison.OrdinalIgnoreCase);
     }
 }

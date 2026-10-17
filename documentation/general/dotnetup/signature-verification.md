@@ -463,6 +463,13 @@ the policy with the platform-appropriate switch:
 
   Clear the policy by deleting the value (or setting it to `0`).
 
+  Enabling dotnetup `admin` mode also sets this value to `1`, and leaving
+  `admin` mode leaves it unchanged. In `admin` mode, the value controls
+  whether unsigned daily `.exe` installers may run; see
+  [dotnetup admin mode](designs/dotnetup-admin-mode.md). The `AdminMode`
+  value under the same key selects `admin` mode and uses the same `0`/`1`
+  structure.
+
 - **Linux / macOS** — create the sentinel file
   `/etc/dotnet/dnup-block-unsigned-downloads` (any content; existence is
   what matters). Example:
@@ -478,6 +485,9 @@ When the policy is in effect, attempts to install from the daily channel
 (or any version that is not present in the signed releases manifest)
 fail with a clear `UnsignedDownloadBlockedByPolicy` message directing
 the user to choose a released version or escalate to their administrator.
+`dotnetup self update` is exempt only when the installed `dotnetup` is
+Authenticode-signed (Windows), because the replacement must then carry a
+Microsoft-rooted Authenticode signature before it is installed.
 
 The check is centralized in
 `src/Installer/Microsoft.Dotnet.Installation/Internal/UnsignedSourcePolicy.cs`.

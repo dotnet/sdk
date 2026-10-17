@@ -1,11 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.Versioning;
 using Microsoft.Deployment.DotNet.Releases;
-#if NET
-using Microsoft.Win32;
-#endif
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
@@ -27,10 +23,10 @@ internal static class UnsignedSourcePolicy
     /// <c>HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup!BlockUnsignedDownloads</c>
     /// enforces the policy.
     /// </summary>
-    internal const string WindowsPolicyKey = @"SOFTWARE\Policies\Microsoft\dotnet\Dotnetup";
+    internal const string WindowsPolicyKey = DotnetupPolicy.WindowsPolicyKey;
 
     /// <summary>The DWORD value name under <see cref="WindowsPolicyKey"/>.</summary>
-    internal const string WindowsPolicyValueName = "BlockUnsignedDownloads";
+    internal const string WindowsPolicyValueName = DotnetupPolicy.BlockUnsignedDownloadsValueName;
 
     /// <summary>
     /// Sentinel file checked on Linux/macOS. When this file exists the policy is enforced;
@@ -81,7 +77,7 @@ internal static class UnsignedSourcePolicy
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            return IsWindowsPolicyEnabled();
+            return DotnetupPolicy.IsUnsignedDownloadBlockedByRegistry();
         }
 
         try
@@ -94,23 +90,5 @@ internal static class UnsignedSourcePolicy
             // promote a permissive default into a hard block.
             return false;
         }
-    }
-
-    [SupportedOSPlatform("windows")]
-    private static bool IsWindowsPolicyEnabled()
-    {
-#if NET
-        try
-        {
-            using RegistryKey? key = Registry.LocalMachine.OpenSubKey(WindowsPolicyKey);
-            return ((int?)key?.GetValue(WindowsPolicyValueName) ?? 0) != 0;
-        }
-        catch
-        {
-            return false;
-        }
-#else
-        return false;
-#endif
     }
 }

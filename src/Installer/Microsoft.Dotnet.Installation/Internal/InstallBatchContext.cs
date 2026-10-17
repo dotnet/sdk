@@ -16,4 +16,16 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// Minimum width for the version column in progress rows — typically the length of the
 /// longest resolved version in the batch — so mixed short/long version rows align vertically.
 /// </param>
-internal sealed record InstallBatchContext(IProgressReporter Reporter, int VersionDisplayWidth);
+internal sealed record InstallBatchContext(IProgressReporter Reporter, int VersionDisplayWidth)
+{
+    private int _cancellationRequested;
+
+    /// <summary>
+    /// True once the user asked to cancel the batch while an install could not be interrupted. Installs that
+    /// have not started committing are skipped; the running one finishes and reports its real result.
+    /// </summary>
+    public bool IsCancellationRequested => Volatile.Read(ref _cancellationRequested) != 0;
+
+    /// <summary>Records that the user asked to cancel the batch. Safe to call from any thread.</summary>
+    public void RequestCancellation() => Interlocked.Exchange(ref _cancellationRequested, 1);
+}

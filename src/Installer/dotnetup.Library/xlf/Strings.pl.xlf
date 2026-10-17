@@ -2,6 +2,131 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../Strings.resx">
     <body>
+      <trans-unit id="AccessModeAdminDescription">
+        <source>Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.</source>
+        <target state="new">Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeActive">
+        <source>Admin mode is active on this machine, so no changes were made.</source>
+        <target state="new">Admin mode is active on this machine, so no changes were made.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeAlreadyDisabled">
+        <source>Admin mode is already disabled.</source>
+        <target state="new">Admin mode is already disabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeAlreadyEnabled">
+        <source>Admin mode is already enabled.</source>
+        <target state="new">Admin mode is already enabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeAlreadyEnabledNoChanges">
+        <source>Admin mode is already enabled, so no changes were made.</source>
+        <target state="new">Admin mode is already enabled, so no changes were made.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeArgumentDisplayName">
+        <source>The argument '&lt;{0}&gt;'</source>
+        <target state="new">The argument '&lt;{0}&gt;'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeChangeCancelled">
+        <source>Elevation was cancelled. Admin mode was not changed.</source>
+        <target state="new">Elevation was cancelled. Admin mode was not changed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeCommandNotSupported">
+        <source>'{0}' is not available in admin mode. Run 'dotnetup init --mode &lt;mode&gt;' or 'dotnetup env set &lt;mode&gt;' to leave admin mode.</source>
+        <target state="new">'{0}' is not available in admin mode. Run 'dotnetup init --mode &lt;mode&gt;' or 'dotnetup env set &lt;mode&gt;' to leave admin mode.</target>
+        <note>{0} is the command name. {Locked="dotnetup init --mode"}{Locked="dotnetup env set"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeDisableFailed">
+        <source>Failed to disable admin mode: {0}</source>
+        <target state="new">Failed to disable admin mode: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeDisablePreview">
+        <source>Admin mode would be disabled for all users on this computer before setup.</source>
+        <target state="new">Admin mode would be disabled for all users on this computer before setup.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeDisabled">
+        <source>Admin mode is disabled.</source>
+        <target state="new">Admin mode is disabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeDisablingNotice">
+        <source>Disabling admin mode changes a machine-wide policy that affects all users on this computer.</source>
+        <target state="new">Disabling admin mode changes a machine-wide policy that affects all users on this computer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeElevationNotice">
+        <source>Windows will ask for administrator permission.</source>
+        <target state="new">Windows will ask for administrator permission.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeEnableFailed">
+        <source>Failed to enable admin mode: {0}</source>
+        <target state="new">Failed to enable admin mode: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeEnablePreview">
+        <source>Admin mode would be enabled for all users on this computer.</source>
+        <target state="new">Admin mode would be enabled for all users on this computer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeEnabled">
+        <source>Admin mode is enabled.</source>
+        <target state="new">Admin mode is enabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeEnablingNotice">
+        <source>Enabling admin mode changes a machine-wide policy that affects all users on this computer.</source>
+        <target state="new">Enabling admin mode changes a machine-wide policy that affects all users on this computer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeInstallNextSteps">
+        <source>Next, install the .NET SDK with 'dotnetup sdk install &lt;version&gt; --untracked'.</source>
+        <target state="new">Next, install the .NET SDK with 'dotnetup sdk install &lt;version&gt; --untracked'.</target>
+        <note>{Locked="dotnetup sdk install"}{Locked="--untracked"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeLeaveInstructions">
+        <source>To leave admin mode, run 'dotnetup init --mode &lt;mode&gt;' or 'dotnetup env set &lt;mode&gt;' with 'none', 'shell', or 'everywhere'.</source>
+        <target state="new">To leave admin mode, run 'dotnetup init --mode &lt;mode&gt;' or 'dotnetup env set &lt;mode&gt;' with 'none', 'shell', or 'everywhere'.</target>
+        <note>{Locked="dotnetup init --mode"}{Locked="dotnetup env set"}{Locked="none"}{Locked="shell"}{Locked="everywhere"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeNotDisabled">
+        <source>Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</source>
+        <target state="new">Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeNotEnabled">
+        <source>Admin mode was not enabled. The machine policy did not change, which can happen when it is managed by Group Policy.</source>
+        <target state="new">Admin mode was not enabled. The machine policy did not change, which can happen when it is managed by Group Policy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeOptionDisplayName">
+        <source>The option '{0}'</source>
+        <target state="new">The option '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModePreservesUserEnvironment">
+        <source>Your existing shell profiles, user settings, PATH entries, and DOTNET_ROOT are left unchanged. While admin mode is active, dotnetup env script can add dotnetup to PATH but does not activate user-level .NET. Existing environment settings may still take precedence; restart open terminals and review any remaining PATH or DOTNET_ROOT settings if needed.</source>
+        <target state="new">Your existing shell profiles, user settings, PATH entries, and DOTNET_ROOT are left unchanged. While admin mode is active, dotnetup env script can add dotnetup to PATH but does not activate user-level .NET. Existing environment settings may still take precedence; restart open terminals and review any remaining PATH or DOTNET_ROOT settings if needed.</target>
+        <note>{Locked="PATH"}{Locked="DOTNET_ROOT"}{Locked="dotnetup env script"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeSymbolNotSupported">
+        <source>{0} is not available for '{1}' in admin mode.</source>
+        <target state="new">{0} is not available for '{1}' in admin mode.</target>
+        <note>{0} describes an option or argument; {1} is the command name.</note>
+      </trans-unit>
+      <trans-unit id="AdminModeWindowsOnly">
+        <source>Admin mode is only supported on Windows.</source>
+        <target state="new">Admin mode is only supported on Windows.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDone">
         <source>Done.</source>
         <target state="new">Done.</target>
@@ -60,6 +185,31 @@
       <trans-unit id="DotnetCommandInstallFirst">
         <source>Run 'dotnetup install' to install a .NET SDK first.</source>
         <target state="new">Run 'dotnetup install' to install a .NET SDK first.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathCommandDescription">
+        <source>Modifies the machine-wide system PATH (requires elevated privileges)</source>
+        <target state="new">Modifies the machine-wide system PATH (requires elevated privileges)</target>
+        <note>{Locked="PATH"}</note>
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathDotnetDirDescription">
+        <source>The dotnet directory to insert into or remove from the system PATH. Required for 'insertdotnet' and 'removedotnet' because the elevated process may run under a different account and cannot recompute the invoking user's directory.</source>
+        <target state="new">The dotnet directory to insert into or remove from the system PATH. Required for 'insertdotnet' and 'removedotnet' because the elevated process may run under a different account and cannot recompute the invoking user's directory.</target>
+        <note>{Locked="PATH"}{Locked="insertdotnet"}{Locked="removedotnet"}</note>
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathDotnetDirRequired">
+        <source>The '{0}' operation requires the --dotnet-dir option.</source>
+        <target state="new">The '{0}' operation requires the --dotnet-dir option.</target>
+        <note>{Locked="--dotnet-dir"}</note>
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathOperationDescription">
+        <source>The operation to perform: 'insertdotnet', 'removedotnet', 'enableadminmode', or 'disableadminmode'</source>
+        <target state="new">The operation to perform: 'insertdotnet', 'removedotnet', 'enableadminmode', or 'disableadminmode'</target>
+        <note>{Locked="insertdotnet"}{Locked="removedotnet"}{Locked="enableadminmode"}{Locked="disableadminmode"}</note>
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathOutputFileDescription">
+        <source>A file where any output that should be displayed to the user should be written.</source>
+        <target state="new">A file where any output that should be displayed to the user should be written.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvApplyToTerminalPrompt">
@@ -386,15 +536,45 @@ Or open a new terminal.</target>
         <target state="new">Display dotnetup information.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitAdminModeInstallDescription">
+        <source>Installs .NET with the Windows installer into the shared system folder. Requires elevation.</source>
+        <target state="new">Installs .NET with the Windows installer into the shared system folder. Requires elevation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitAdminModeOptionDescription">
+        <source>'admin' only switches this machine to admin mode and does not install .NET.</source>
+        <target state="new">'admin' only switches this machine to admin mode and does not install .NET.</target>
+        <note>{Locked="admin"}</note>
+      </trans-unit>
+      <trans-unit id="InitAdminModeSelectionDescription">
+        <source>Changes a machine-wide setting for all users. Choosing it only switches the mode; install .NET afterwards with 'dotnetup sdk install &lt;version&gt; --untracked'.</source>
+        <target state="new">Changes a machine-wide setting for all users. Choosing it only switches the mode; install .NET afterwards with 'dotnetup sdk install &lt;version&gt; --untracked'.</target>
+        <note>{Locked="dotnetup sdk install"}{Locked="--untracked"}</note>
+      </trans-unit>
       <trans-unit id="InitCommandDescription">
         <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
         <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitModeOptionDescription">
+        <source>The access mode to set up: {0}.</source>
+        <target state="new">The access mode to set up: {0}.</target>
+        <note>{0} lists supported command-line mode tokens.</note>
+      </trans-unit>
+      <trans-unit id="InstallCancelledBeforeStart">
+        <source>Installation was cancelled before {0} {1} was installed.</source>
+        <target state="new">Installation was cancelled before {0} {1} was installed.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the component version.</note>
+      </trans-unit>
       <trans-unit id="InstallSpecSource">
         <source>(source: {0})</source>
         <target state="new">(source: {0})</target>
         <note>{0} is an install-source identifier or a global.json path.</note>
+      </trans-unit>
+      <trans-unit id="InstallValidationFailed">
+        <source>Installation validation failed: {0}</source>
+        <target state="new">Installation validation failed: {0}</target>
+        <note>{0} is the reason the installation validation failed.</note>
       </trans-unit>
       <trans-unit id="ListCommandDescription">
         <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
@@ -710,6 +890,11 @@ Or open a new terminal.</target>
         <source>Use {0} {1} to target these specs.</source>
         <target state="new">Use {0} {1} to target these specs.</target>
         <note>{0} is the source option name; {1} is the install-source value that selects every source.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerPostInstallVerificationFailed">
+        <source>The Windows installer reported success, but the installation could not be verified: {0}</source>
+        <target state="new">The Windows installer reported success, but the installation could not be verified: {0}</target>
+        <note>{0} is the reason the installation could not be verified.</note>
       </trans-unit>
     </body>
   </file>

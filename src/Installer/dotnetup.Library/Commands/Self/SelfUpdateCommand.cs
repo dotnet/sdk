@@ -31,6 +31,9 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
     /// <inheritdoc/>
     protected override bool CanRunDuringSelfUpdate => true;
 
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
         if (_updateNotifications is bool enabled)
@@ -49,7 +52,8 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
                 ? Strings.SelfUpdateWaitingForUpdate
                 : Strings.SelfUpdateWaitingForCommand));
         var workflow = new SelfUpdateWorkflow(invocation.Paths,
-            () => downloader.ResolveDotnetupDownload(channel, rid),
+            () => downloader.ResolveDotnetupDownload(channel, rid,
+                replacementSignatureEnforced: SelfUpdateSignature.RequiresSignedReplacement(invocation.Paths.InstalledPath)),
             (release, destination) =>
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));

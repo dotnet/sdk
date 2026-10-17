@@ -236,8 +236,8 @@ public class InitFormRendererTests
     [TestMethod]
     public void ExpandedAccessMode_ShowsChoiceHelpInlineWhenConstrained()
     {
-        // Windows needs more rows to reach the same compression level because it also shows Everywhere.
-        int height = OperatingSystem.IsWindows() ? 12 : 9;
+        // Windows needs more rows to reach the same compression level because it also shows Everywhere and Admin.
+        int height = OperatingSystem.IsWindows() ? 14 : 9;
         InitFormModel model = CreateExpandedAccessMode(out InitFormState state);
 
         string output = RenderForm(model, state, width: 80, height, out int renderedHeight);
@@ -253,7 +253,7 @@ public class InitFormRendererTests
     [TestMethod]
     public void ExpandedAccessMode_HidesDerivedChangesWhenMoreConstrained()
     {
-        int height = OperatingSystem.IsWindows() ? 9 : 7;
+        int height = OperatingSystem.IsWindows() ? 10 : 7;
         InitFormModel model = CreateExpandedAccessMode(out InitFormState state);
 
         string output = RenderForm(model, state, width: 80, height, out int renderedHeight);
@@ -267,7 +267,7 @@ public class InitFormRendererTests
     [TestMethod]
     public void ExpandedAccessMode_HidesFieldDescriptionWhenMoreConstrained()
     {
-        int height = OperatingSystem.IsWindows() ? 8 : 6;
+        int height = OperatingSystem.IsWindows() ? 10 : 6;
         InitFormModel model = CreateExpandedAccessMode(out InitFormState state);
 
         string output = RenderForm(model, state, width: 80, height, out int renderedHeight);

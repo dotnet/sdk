@@ -21,13 +21,20 @@ internal class InstallWorkflow
 {
     private readonly InstallCommand _command;
     private readonly InstallPathResolver _installPathResolver;
+    private readonly AdminInstallRootResolver _adminInstallRootResolver;
 
     private readonly Lazy<DotnetInstallRootConfiguration?> _currentInstallRoot;
 
     public InstallWorkflow(InstallCommand command)
+        : this(command, new AdminInstallRootResolver())
+    {
+    }
+
+    internal InstallWorkflow(InstallCommand command, AdminInstallRootResolver adminInstallRootResolver)
     {
         _command = command;
         _installPathResolver = new InstallPathResolver(command.DotnetEnvironment);
+        _adminInstallRootResolver = adminInstallRootResolver;
         _currentInstallRoot = new Lazy<DotnetInstallRootConfiguration?>(
             command.DotnetEnvironment.GetCurrentPathConfiguration);
     }
@@ -122,12 +129,36 @@ internal class InstallWorkflow
     /// Generates resolved install requests for the given component specifications.
     /// Handles path resolution, global.json channel inference (for SDK when no channel specified),
     /// install path validation, and version resolution via the channel version resolver.
+    /// In admin mode, requests target the shared system location and use the Windows installer bundle;
+    /// global.json still selects the channel but its sdk paths are ignored.
     /// </summary>
     public List<ResolvedInstallRequest> GenerateInstallRequests(
         MinimalInstallSpec[] componentSpecs)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
+        var target = AccessModeResolver.Resolve().IsAdmin
+            ? ResolveAdminInstallTarget()
+            : ResolveUserInstallTarget(globalJson);
+
+        var requests = new List<ResolvedInstallRequest>();
+        foreach (var spec in componentSpecs)
+        {
+            var resolved = ResolveSpec(spec, target, globalJson);
+            requests.Add(resolved);
+        }
+
+        return requests;
+    }
+
+    /// <summary>Where install requests are directed and how they are installed.</summary>
+    private sealed record InstallTarget(
+        DotnetInstallRoot InstallRoot,
+        InstallPathResolver.InstallPathResolutionResult PathResolution,
+        bool IsAdmin);
+
+    private InstallTarget ResolveUserInstallTarget(GlobalJsonInfo? globalJson)
+    {
         var pathResolution = _installPathResolver.Resolve(
             _command.InstallPath,
             globalJson);
@@ -138,14 +169,27 @@ internal class InstallWorkflow
             pathResolution.ResolvedInstallPath,
             InstallerUtilities.GetDefaultInstallArchitecture());
 
-        var requests = new List<ResolvedInstallRequest>();
-        foreach (var spec in componentSpecs)
+        return new InstallTarget(installRoot, pathResolution, IsAdmin: false);
+    }
+
+    /// <summary>
+    /// In admin mode the Windows installer bundle owns the destination, so the install root is always the
+    /// shared Program Files location; explicit paths and global.json sdk paths do not apply. The installs are
+    /// not tracked, so the path is not validated against the dotnetup manifest.
+    /// </summary>
+    private InstallTarget ResolveAdminInstallTarget()
+    {
+        if (!_command.Untracked)
         {
-            var resolved = ResolveSpec(spec, installRoot, globalJson, pathResolution);
-            requests.Add(resolved);
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.AdminModeRequiresUntracked,
+                "dotnetup is in admin mode, which installs .NET system-wide with the official Windows installers and does not track those installations. " +
+                "Run the command again with --untracked.");
         }
 
-        return requests;
+        var installRoot = _adminInstallRootResolver.Resolve(InstallerUtilities.GetDefaultInstallArchitecture());
+        var pathResolution = new InstallPathResolver.InstallPathResolutionResult(installRoot.Path, InstallPathFromGlobalJson: null, PathSource.Default);
+        return new InstallTarget(installRoot, pathResolution, IsAdmin: true);
     }
 
     internal static bool ShouldRunFirstUseOnboarding(bool interactive, string? installPath, bool migrateFromSystem = false)
@@ -153,7 +197,7 @@ internal class InstallWorkflow
         return !migrateFromSystem &&
             interactive &&
             installPath is null &&
-            DotnetupConfig.ReadAccessMode() is null;
+            AccessModeResolver.Resolve().Mode is null;
     }
 
     internal static bool ShouldPromptForStarterChannel(bool runOnboarding, MinimalInstallSpec[] componentSpecs)
@@ -171,9 +215,8 @@ internal class InstallWorkflow
     /// </summary>
     private ResolvedInstallRequest ResolveSpec(
         MinimalInstallSpec spec,
-        DotnetInstallRoot installRoot,
-        GlobalJsonInfo? globalJson,
-        InstallPathResolver.InstallPathResolutionResult pathResolution)
+        InstallTarget target,
+        GlobalJsonInfo? globalJson)
     {
         var component = spec.Component;
         var explicitChannel = spec.VersionOrChannel;
@@ -193,7 +236,7 @@ internal class InstallWorkflow
         }
 
         var request = new DotnetInstallRequest(
-            installRoot,
+            target.InstallRoot,
             new UpdateChannel(channel),
             component,
             new InstallRequestOptions
@@ -203,7 +246,8 @@ internal class InstallWorkflow
                 InstallSource = isFromGlobalJson ? InstallRequestSource.GlobalJson : InstallRequestSource.Explicit,
                 GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
                 Untracked = _command.Untracked,
-                Verbosity = _command.Verbosity
+                Verbosity = _command.Verbosity,
+                InstallMechanism = target.IsAdmin ? InstallMechanism.WindowsInstallerBundle : InstallMechanism.Archive,
             });
 
         var resolvedVersion = _command.ChannelVersionResolver.GetLatestVersionForChannel(request.Channel, request.Component, request.InstallRoot.Architecture);
@@ -220,7 +264,7 @@ internal class InstallWorkflow
         RecordInstallTelemetry(
             component, explicitChannel,
             _command.InstallPath, globalJson,
-            pathResolution, channel, resolved);
+            target.PathResolution, channel, resolved);
 
         return resolved;
     }

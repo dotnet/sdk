@@ -3,6 +3,8 @@
 
 using System.CommandLine;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -48,4 +50,16 @@ internal abstract class InstallCommand : CommandBase
 
         DotnetEnvironment = new DotnetEnvironmentManager();
     }
+
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) =>
+        command is RootCommand
+            ? AdminModeSupport.Unsupported
+            : AdminModeSupport.Allow(
+                CommonOptions.UntrackedOption,
+                CommonOptions.InteractiveOption,
+                CommonOptions.NoProgressOption,
+                CommonOptions.VerbosityOption,
+                SdkInstallCommandParser.ChannelArguments,
+                RuntimeInstallCommandParser.ComponentSpecsArgument);
 }

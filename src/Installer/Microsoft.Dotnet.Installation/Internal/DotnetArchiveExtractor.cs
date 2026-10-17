@@ -6,7 +6,7 @@ using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
-internal class DotnetArchiveExtractor : IDisposable
+internal class DotnetArchiveExtractor : IInstallArtifact
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;

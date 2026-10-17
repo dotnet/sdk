@@ -41,6 +41,14 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.DotnetupVerificationFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.DotnetupRollbackFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.OperationCancelled => ErrorCategory.User,
+            DotnetInstallErrorCode.AdminModeCommandNotSupported => ErrorCategory.User,
+            DotnetInstallErrorCode.AdminModeSymbolNotSupported => ErrorCategory.User,
+            DotnetInstallErrorCode.AdminModeRequiresUntracked => ErrorCategory.User,
+            DotnetInstallErrorCode.AdminModeChangeFailed => ErrorCategory.User,
+            DotnetInstallErrorCode.InstallerBusy => ErrorCategory.User,
+            DotnetInstallErrorCode.InstallerFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.InstallerPostInstallVerificationFailed => ErrorCategory.Product,
+            DotnetInstallErrorCode.WrongInstallerFileExtension => ErrorCategory.Product,
 
             // Product errors - issues we can take action on
             DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,

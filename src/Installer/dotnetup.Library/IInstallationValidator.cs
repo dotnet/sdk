@@ -8,4 +8,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 internal interface IInstallationValidator
 {
     bool Validate(DotnetInstall install);
+
+    /// <summary>
+    /// Validates a .NET installation and describes why validation failed.
+    /// </summary>
+    bool Validate(DotnetInstall install, out string? failureReason)
+    {
+        bool isValid = Validate(install);
+        failureReason = isValid ? null : $"{install.Component} {install.Version} was not found at '{install.InstallRoot.Path}'.";
+        return isValid;
+    }
 }
