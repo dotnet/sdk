@@ -205,9 +205,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="DeduplicatedItems" ItemName="DeduplicatedCompileItems" />
     </CheckForDuplicateItems>
 
+    <!-- The same file can be embedded more than once with different logical names, so LogicalName is used to tell those items apart -->
     <CheckForDuplicateItems
       Items="@(EmbeddedResource)"
       ItemName="EmbeddedResource"
+      DistinguishingMetadataName="LogicalName"
       DefaultItemsEnabled="$(EnableDefaultItems)"
       DefaultItemsOfThisTypeEnabled="$(EnableDefaultEmbeddedResourceItems)"
       PropertyNameToDisableDefaultItems="EnableDefaultEmbeddedResourceItems"
