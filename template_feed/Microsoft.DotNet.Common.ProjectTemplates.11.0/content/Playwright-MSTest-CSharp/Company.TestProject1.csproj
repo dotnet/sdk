@@ -12,6 +12,14 @@
 <!--#if (TestRunner == "VSTest")-->
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
+<!--#if (CoverageTool == "coverlet")-->
+<!--#if (HostIdentifier != "dotnetcli" && HostIdentifier != "dotnetcli-preview")-->
+
+  <ItemGroup>
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+  </ItemGroup>
+<!--#endif-->
+<!--#endif-->
 <!--#else-->
     <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
   </PropertyGroup>
@@ -33,6 +41,16 @@
     <OutputType>Exe</OutputType>
 <!--#endif-->
   </PropertyGroup>
+<!--#if (HostIdentifier != "dotnetcli" && HostIdentifier != "dotnetcli-preview")-->
+
+  <ItemGroup>
+<!--#if (CoverageTool == "coverlet")-->
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+<!--#endif-->
+    <PackageReference Include="Microsoft.Playwright.MSTest.v4" Version="1.55.0" />
+    <PackageReference Include="MSTest" Version="4.4.0" />
+  </ItemGroup>
+<!--#endif-->
 
 <!--#if (csharpFeature_ImplicitUsings)-->
   <ItemGroup>

@@ -1,13 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Xml;
-using System.Xml.Linq;
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.Utils;
+using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
@@ -82,7 +83,7 @@ internal class DotnetAddPostActionProcessor(
         bool success = true;
         foreach (string projectFile in projectsToProcess)
         {
-            success &= AddReference(action, projectFile, outputBasePath, creationEffects, environment.Host.FileSystem);
+            success &= AddReference(action, projectFile, outputBasePath, creationEffects);
 
             if (!success)
             {
@@ -113,7 +114,7 @@ internal class DotnetAddPostActionProcessor(
         return foundFiles ?? [];
     }
 
-    private bool AddReference(IPostAction actionConfig, string projectFile, string outputBasePath, ICreationEffects creationEffects, IPhysicalFileSystem fileSystem)
+    private bool AddReference(IPostAction actionConfig, string projectFile, string outputBasePath, ICreationEffects creationEffects)
     {
         if (actionConfig.Args == null || !actionConfig.Args.TryGetValue("reference", out string? referenceToAdd))
         {
@@ -143,8 +144,8 @@ internal class DotnetAddPostActionProcessor(
             // A repository using central package management already owns the version of this
             // package. Passing the template's version would rewrite the existing PackageVersion
             // entry and change it for every project in that repository, so the template version
-            // is only supplied when the central file has no entry for the package yet.
-            if (!string.IsNullOrWhiteSpace(version) && HasCentralPackageVersion(fileSystem, projectFile, referenceToAdd))
+            // is only supplied when the evaluated project has no active entry for the package yet.
+            if (!string.IsNullOrWhiteSpace(version) && HasCentralPackageVersion(projectFile, referenceToAdd))
             {
                 version = null;
             }
@@ -170,70 +171,29 @@ internal class DotnetAddPostActionProcessor(
         }
     }
 
-    internal static bool HasCentralPackageVersion(IPhysicalFileSystem fileSystem, string projectFile, string packageName)
+    internal static bool HasCentralPackageVersion(string projectFile, string packageName)
     {
+        if (!File.Exists(projectFile))
+        {
+            return false;
+        }
+
         try
         {
-            string? directory = Path.GetDirectoryName(Path.GetFullPath(projectFile));
-            while (!string.IsNullOrEmpty(directory))
-            {
-                string candidate = Path.Combine(directory, "Directory.Packages.props");
-                if (fileSystem.FileExists(candidate))
-                {
-                    // NuGet imports the nearest Directory.Packages.props, so the search stops here
-                    // whether or not this one declares the package.
-                    return ContainsPackageVersion(fileSystem, candidate, packageName);
-                }
+            // Read the evaluated project rather than Directory.Packages.props itself, so a central
+            // file that imports its parent and PackageVersion items conditioned on the target
+            // framework resolve to the entries NuGet will actually use.
+            using var projectCollection = new ProjectCollection();
+            MSBuildProject project = projectCollection.LoadProject(projectFile);
 
-                directory = Path.GetDirectoryName(directory);
-            }
+            return string.Equals(project.GetPropertyValue("ManagePackageVersionsCentrally"), "true", StringComparison.OrdinalIgnoreCase)
+                && project.GetItems("PackageVersion").Any(item => string.Equals(item.EvaluatedInclude, packageName, StringComparison.OrdinalIgnoreCase));
         }
-        catch (ArgumentException)
+        catch (InvalidProjectFileException)
         {
-            // An unusable project path is handled by the caller; fall through to the default.
+            // A project that does not evaluate keeps the previous behaviour: the template version is passed.
+            return false;
         }
-        catch (IOException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-
-        return false;
-    }
-
-    private static bool ContainsPackageVersion(IPhysicalFileSystem fileSystem, string propsFile, string packageName)
-    {
-        try
-        {
-            XDocument document = XDocument.Parse(fileSystem.ReadAllText(propsFile));
-            foreach (XElement element in document.Descendants())
-            {
-                if (!string.Equals(element.Name.LocalName, "PackageVersion", StringComparison.Ordinal))
-                {
-                    continue;
-                }
-
-                string? declared = (string?)element.Attribute("Include") ?? (string?)element.Attribute("Update");
-                if (string.Equals(declared, packageName, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-        }
-        catch (XmlException)
-        {
-            // A central file we cannot parse is treated as declaring nothing, which keeps the
-            // previous behaviour rather than silently dropping the version.
-        }
-        catch (IOException)
-        {
-        }
-        catch (UnauthorizedAccessException)
-        {
-        }
-
-        return false;
     }
 
     private bool AddPackageReference(string projectPath, string packageName, string? version, bool noRestore)

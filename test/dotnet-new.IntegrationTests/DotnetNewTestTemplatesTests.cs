@@ -5,6 +5,11 @@ using System.Collections.Immutable;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
+using Microsoft.TemplateEngine.Abstractions;
+using Microsoft.TemplateEngine.Edge;
+using Microsoft.TemplateEngine.Edge.Settings;
+using Microsoft.TemplateEngine.Edge.Template;
+using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -450,6 +455,102 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
+        public void TestProjectTemplate_WithCentralVersionInheritedFromAParentFile_KeepsTheParentVersion()
+        {
+            string testProjectName = GenerateTestProjectName();
+            string repositoryRoot = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents.
+            Directory.CreateDirectory(Path.Combine(repositoryRoot, ".git"));
+
+            // The parent pins NUnit and the nearest Directory.Packages.props only imports it, as the
+            // file from `dotnet new packagesprops --inherit` does. Passing the template version here
+            // would rewrite the parent's 4.5.0 for every project in the repository.
+            string parentPackagesProps = Path.Combine(repositoryRoot, "Directory.Packages.props");
+            File.WriteAllText(
+                parentPackagesProps,
+                """
+                <Project>
+                  <PropertyGroup>
+                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <PackageVersion Include="NUnit" Version="4.5.0" />
+                  </ItemGroup>
+                </Project>
+                """);
+            string outputDirectory = Directory.CreateDirectory(Path.Combine(repositoryRoot, "src")).FullName;
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "Directory.Packages.props"),
+                """
+                <Project>
+                  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Packages.props', '$(MSBuildThisFileDirectory)../'))"
+                          Condition="$([MSBuild]::GetPathOfFileAbove('Directory.Packages.props', '$(MSBuildThisFileDirectory)../')) != ''" />
+                </Project>
+                """);
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, $"nunit -n {testProjectName} -o {outputDirectory}")
+                .WithCustomHive(repositoryRoot).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            File.ReadAllText(parentPackagesProps).Should().Contain("<PackageVersion Include=\"NUnit\" Version=\"4.5.0\" />");
+            string csproj = File.ReadAllText(Path.Combine(outputDirectory, $"{testProjectName}.csproj"));
+            csproj.Should().Contain("Include=\"NUnit\"");
+            csproj.Should().NotContain("Include=\"NUnit\" Version=");
+
+            DeleteDirectoryWithRetry(repositoryRoot);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
+        public void TestProjectTemplate_WithCentralVersionForAnotherFramework_PassesTheTemplateVersion()
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            // The only NUnit entry does not apply to the generated project's framework. Omitting the
+            // template version here makes NuGet write Version="*" and the restore fail with NU1011.
+            File.WriteAllText(
+                Path.Combine(outputDirectory, "Directory.Packages.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <PackageVersion Include="NUnit" Version="4.5.0" Condition="'$(TargetFramework)' == 'net472'" />
+                  </ItemGroup>
+                </Project>
+                """);
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, $"nunit -n {testProjectName} -o {outputDirectory}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdOutContaining("NU1011")
+                .And.NotHaveStdErrContaining("NU1011");
+
+            string csproj = File.ReadAllText(Path.Combine(outputDirectory, $"{testProjectName}.csproj"));
+            csproj.Should().Contain("Include=\"NUnit\"");
+            csproj.Should().NotContain("Version=\"*\"");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
         public void TestProjectTemplate_WithAnotherProjectInOutputDirectory_StillAddsPackageReferences()
         {
             string testProjectName = GenerateTestProjectName();
@@ -535,6 +636,67 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             DeleteDirectoryWithRetry(outputDirectory);
             DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
+        [DataRow("nunit", "C#", "NUnit", "")]
+        [DataRow("nunit", "F#", "NUnit", "")]
+        [DataRow("nunit", "VB", "NUnit", "")]
+        [DataRow("nunit-playwright", "C#", "Microsoft.Playwright.NUnit", "")]
+        [DataRow("mstest", "C#", "MSTest", "")]
+        [DataRow("mstest", "C#", "coverlet.collector", "UseMSTestSdk=true;TestRunner=VSTest;CoverageTool=coverlet")]
+        [DataRow("mstest", "F#", "MSTest", "")]
+        [DataRow("mstest", "VB", "MSTest", "")]
+        [DataRow("mstest-playwright", "C#", "Microsoft.Playwright.MSTest.v4", "")]
+        [DataRow("xunit", "C#", "xunit", "")]
+        [DataRow("xunit", "F#", "xunit.v3.mtp-v2", "XUnitVersion=v3;TestRunner=Microsoft.Testing.Platform")]
+        [DataRow("xunit", "VB", "xunit.v3.mtp-off", "XUnitVersion=v3;TestRunner=VSTest")]
+        public async Task TestProjectTemplate_KeepsInlinePackageReferencesOnHostsWithoutTheAddPackagePostAction(string shortName, string language, string package, string parameters)
+        {
+            // Only dotnet new runs the add-package post-action. Any other host, such as Visual
+            // Studio ("vs"), must keep getting the package references inline in the project.
+            Guid addReferenceActionId = new("B17581D1-C5C9-4489-8F0A-004BE667B814");
+            Dictionary<string, string?> inputParameters = parameters
+                .Split(';', StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Split('='))
+                .ToDictionary(p => p[0], p => (string?)p[1]);
+
+            foreach (string hostIdentifier in new[] { "vs", "dotnetcli" })
+            {
+                var host = new DefaultTemplateEngineHost(
+                    hostIdentifier,
+                    "1.0.0",
+                    builtIns:
+                    [
+                        .. TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents,
+                        .. TemplateEngine.Edge.Components.AllComponents,
+                        .. BuiltInTemplatePackagesProviderFactory.GetComponents(Path.Combine(RepoTemplatePackages, "Microsoft.DotNet.Common.ProjectTemplates.11.0", "content")),
+                    ]);
+                var settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
+                ITemplateInfo template = (await new TemplatePackageManager(settings).GetTemplatesAsync(TestContext.CancellationToken))
+                    .Single(t => t.ShortNameList.Contains(shortName) && t.TagsCollection.TryGetValue("language", out string? lang) && lang == language);
+
+                string outputDirectory = CreateTemporaryFolder(folderName: hostIdentifier);
+                ITemplateCreationResult result = await new TemplateCreator(settings).InstantiateAsync(template, "TestProject", null, outputDirectory, inputParameters, cancellationToken: TestContext.CancellationToken);
+                result.Status.Should().Be(CreationResultStatus.Success, result.ErrorMessage);
+
+                string projectFile = File.ReadAllText(Directory.GetFiles(outputDirectory, "TestProject.*proj").Single());
+                bool addedByPostAction = result.CreationResult!.PostActions.Any(a =>
+                    a.ActionId == addReferenceActionId && a.Args.TryGetValue("reference", out string? reference) && reference == package);
+
+                if (hostIdentifier == "vs")
+                {
+                    projectFile.Should().MatchRegex($"<PackageReference Include=\"{Regex.Escape(package)}\" Version=\"[^\"]+\" />");
+                    addedByPostAction.Should().BeFalse();
+                }
+                else
+                {
+                    projectFile.Should().NotContain($"<PackageReference Include=\"{package}\"");
+                    addedByPostAction.Should().BeTrue();
+                }
+
+                DeleteDirectoryWithRetry(outputDirectory);
+            }
         }
 
         private void AddItemToFsproj(string itemName, string outputDirectory, string projectName)
