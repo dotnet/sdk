@@ -11,25 +11,19 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [TestClass]
 public class DotnetupPolicyTests
 {
-    private AdminModeTestEnvironment _environment = null!;
-    private FakeDotnetupPolicyStore _store => _environment.Store;
+    private readonly FakeDotnetupPolicyStore _store = new();
+    private DotnetupPolicy _policy = null!;
 
     [TestInitialize]
     public void Initialize()
     {
-        _environment = new AdminModeTestEnvironment();
-    }
-
-    [TestCleanup]
-    public void Cleanup()
-    {
-        _environment.Dispose();
+        _policy = new DotnetupPolicy(_store);
     }
 
     [TestMethod]
     public void EnableAdminMode_WritesAdminModeAndBlockUnsignedDownloads()
     {
-        DotnetupPolicy.EnableAdminMode();
+        _policy.EnableAdminMode();
 
         _store.Writes.Should().ContainSingle().Which.Should().BeEquivalentTo(new Dictionary<string, bool>
         {
@@ -43,7 +37,7 @@ public class DotnetupPolicyTests
     {
         _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
-        DotnetupPolicy.DisableAdminMode();
+        _policy.DisableAdminMode();
 
         _store.Writes.Should().ContainSingle().Which.Should().BeEquivalentTo(new Dictionary<string, bool>
         {
@@ -55,11 +49,11 @@ public class DotnetupPolicyTests
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void IsAdminModeEnabled_ReadsStoreOnWindows()
     {
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeFalse();
+        _policy.IsAdminModeEnabled().Should().BeFalse();
 
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
 
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _policy.IsAdminModeEnabled().Should().BeTrue();
     }
 
     [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
@@ -67,17 +61,26 @@ public class DotnetupPolicyTests
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
 
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeFalse();
+        _policy.IsAdminModeEnabled().Should().BeFalse();
     }
 
     [TestMethod]
-    public void IsUnsignedDownloadBlockedByRegistry_ReadsStore()
+    public void IsUnsignedDownloadBlocked_ReadsStore()
     {
-        DotnetupPolicy.IsUnsignedDownloadBlockedByRegistry().Should().BeFalse();
+        _policy.IsUnsignedDownloadBlocked().Should().BeFalse();
 
         _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
-        DotnetupPolicy.IsUnsignedDownloadBlockedByRegistry().Should().BeTrue();
+        _policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void IsUnsignedDownloadBlocked_IsSetByEnableAdminModeAndKeptByDisable()
+    {
+        _policy.EnableAdminMode();
+        _policy.DisableAdminMode();
+
+        _policy.IsUnsignedDownloadBlocked().Should().BeTrue();
     }
 
     [TestMethod]
@@ -87,25 +90,28 @@ public class DotnetupPolicyTests
         UnsignedSourcePolicy.WindowsPolicyValueName.Should().Be(DotnetupPolicy.BlockUnsignedDownloadsValueName);
     }
 
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void UnsignedSourcePolicy_ReadsDotnetupPolicyStoreOnWindows()
+    [TestMethod]
+    public void UnixPolicyStore_BlocksUnsignedDownloadsOnlyWhileSentinelFileExists()
     {
-        UnsignedSourcePolicy.IsUnsignedDownloadBlocked().Should().BeFalse();
+        using var files = new TestEnvironment();
+        string sentinel = Path.Combine(files.TempRoot, "dnup-block-unsigned-downloads");
+        var policy = new DotnetupPolicy(new UnixPolicyStore(sentinel));
 
-        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
+        policy.IsUnsignedDownloadBlocked().Should().BeFalse();
 
-        UnsignedSourcePolicy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        File.WriteAllText(sentinel, "ignored");
+
+        policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        policy.IsAdminModeEnabled().Should().BeFalse();
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
-    public void UnsignedSourcePolicy_OverrideForTestingWins(bool overrideValue)
+    public void UnixPolicyStore_RejectsWrites()
     {
-        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = !overrideValue;
-        UnsignedSourcePolicy.OverrideForTesting = () => overrideValue;
+        var policy = new DotnetupPolicy(new UnixPolicyStore(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"))));
 
-        UnsignedSourcePolicy.IsUnsignedDownloadBlocked().Should().Be(overrideValue);
+        Action act = policy.EnableAdminMode;
+
+        act.Should().Throw<PlatformNotSupportedException>();
     }
-
 }

@@ -18,18 +18,24 @@ internal class DotnetDownloader : IArchiveDownloader
     private readonly HttpClient _httpClient;
     private readonly ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
+    private readonly DotnetupPolicy _policy;
 
     public DotnetDownloader()
         : this(ReleaseManifest.Default)
     {
     }
 
-    public DotnetDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null)
+    /// <param name="releaseManifest">The release manifest used to resolve signed downloads.</param>
+    /// <param name="httpClient">The HTTP client to use; defaults to the shared process-wide client.</param>
+    /// <param name="cacheDirectory">The download cache directory; defaults to the per-user cache.</param>
+    /// <param name="policy">The machine policy that may block unsigned downloads; defaults to the machine policy.</param>
+    public DotnetDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null, DotnetupPolicy? policy = null)
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
         _downloadCache = new DownloadCache(cacheDirectory);
         // The HttpClient is either the shared process-wide singleton or supplied by the caller; we never own it.
         _httpClient = httpClient ?? DefaultHttpClient.Instance;
+        _policy = policy ?? new DotnetupPolicy();
     }
 
     /// <summary>
@@ -489,9 +495,9 @@ internal class DotnetDownloader : IArchiveDownloader
     /// Downloads and parses a .sha512 hash file. Returns null if the URL 404s
     /// (the version is not published to the blob feed). Throws for any other error.
     /// </summary>
-    private static void ThrowIfUnsignedDownloadBlocked(string component, string version)
+    private void ThrowIfUnsignedDownloadBlocked(string component, string version)
     {
-        if (UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
+        if (_policy.IsUnsignedDownloadBlocked())
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy,

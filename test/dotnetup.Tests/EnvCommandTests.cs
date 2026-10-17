@@ -27,12 +27,13 @@ public class EnvCommandTests : IDisposable
     private readonly AdminModeTestEnvironment _environment = new();
     private string _tempDir => _environment.TempRoot;
     private FakeDotnetupPolicyStore _store => _environment.Store;
-    private readonly FakeAdminModeElevator _elevator = new();
+    private readonly FakeAdminModeElevator _elevator;
     private readonly MockDotnetInstallManager _env;
     private readonly FakeEnvironmentStateInspector _inspector = new();
 
     public EnvCommandTests()
     {
+        _elevator = _environment.CreateElevator();
         _env = new MockDotnetInstallManager(defaultInstallPath: Path.Combine(_tempDir, "dotnet"));
     }
 
@@ -48,7 +49,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set", "none", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -66,7 +67,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set", "none", "--dotnetup-on-path", "false"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -84,7 +85,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set", "--dotnetup-on-path", "false", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -108,7 +109,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set", "everywhere"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -125,7 +126,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
 
         // Nothing to apply → DotnetInstallException → exit code 1.
         exitCode.Should().Be(1);
@@ -141,7 +142,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "set"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
 
         // A config exists but is unreadable → DotnetInstallException → exit code 1.
         exitCode.Should().Be(1);
@@ -157,7 +158,7 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         _elevator.Operations.Should().Equal(AdminModeOperation.Enable);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
         AssertNoEnvironmentOrConfigChanges();
     }
 
@@ -183,16 +184,13 @@ public class EnvCommandTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void EnvSet_AdminCancelled_FailsWithoutChanges()
     {
-        var elevator = new FakeAdminModeElevator
-        {
-            Failure = new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"),
-        };
-        var switcher = new AdminModeSwitcher(elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
+        var elevator = _environment.CreateElevator(new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"));
+        var switcher = _environment.CreateSwitcher(elevator);
 
         int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "admin"]), _env, _inspector, switcher).Execute();
 
         exitCode.Should().NotBe(0);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeFalse();
+        _environment.Policy.IsAdminModeEnabled().Should().BeFalse();
         AssertNoEnvironmentOrConfigChanges();
     }
 
@@ -207,7 +205,7 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         _elevator.Operations.Should().Equal(AdminModeOperation.Disable);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeFalse();
+        _environment.Policy.IsAdminModeEnabled().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
     }
 
@@ -215,17 +213,14 @@ public class EnvCommandTests : IDisposable
     public void EnvSet_ShellWhileAdminCancelled_AppliesNothing()
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        var elevator = new FakeAdminModeElevator
-        {
-            Failure = new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"),
-        };
-        var switcher = new AdminModeSwitcher(elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
+        var elevator = _environment.CreateElevator(new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"));
+        var switcher = _environment.CreateSwitcher(elevator);
 
         int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "shell", "--shell", "bash"]), _env, _inspector, switcher).Execute();
 
         exitCode.Should().NotBe(0);
         elevator.Operations.Should().Equal(AdminModeOperation.Disable);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
         AssertNoEnvironmentOrConfigChanges();
     }
 
@@ -240,7 +235,7 @@ public class EnvCommandTests : IDisposable
         exitCode.Should().Be(0);
         _elevator.Operations.Should().BeEmpty();
         _store.Writes.Should().BeEmpty();
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
     }
@@ -257,8 +252,7 @@ public class EnvCommandTests : IDisposable
         _store.Writes.Should().BeEmpty();
     }
 
-    private AdminModeSwitcher CreateSwitcher()
-        => new(_elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
+    private AdminModeSwitcher CreateSwitcher() => _environment.CreateSwitcher(_elevator);
 
     private void AssertNoEnvironmentOrConfigChanges()
     {
@@ -279,7 +273,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "clear", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvClearCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvClearCommand(parseResult, _env, _inspector, _environment.Policy).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -296,7 +290,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "show"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvShowCommand(parseResult, _env, _inspector, _environment.Policy).Execute();
 
         exitCode.Should().Be(0);
     }
@@ -307,7 +301,7 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
-        int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvShowCommand(parseResult, _env, _inspector, _environment.Policy).Execute();
 
         exitCode.Should().Be(0);
     }
@@ -318,7 +312,7 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
-        int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
+        int exitCode = new EnvShowCommand(parseResult, _env, _inspector, _environment.Policy).Execute();
 
         exitCode.Should().Be(0);
     }

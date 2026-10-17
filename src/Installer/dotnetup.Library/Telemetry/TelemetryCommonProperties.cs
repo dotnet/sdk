@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Cli.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
@@ -41,7 +42,9 @@ internal static class TelemetryCommonProperties
     /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.
     /// </summary>
-    public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId)
+    /// <param name="sessionId">The telemetry session ID.</param>
+    /// <param name="policy">The machine policy used to resolve the access mode; defaults to the machine policy.</param>
+    public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId, DotnetupPolicy? policy = null)
     {
         var attributes = new Dictionary<string, object>
         {
@@ -61,7 +64,7 @@ internal static class TelemetryCommonProperties
             ["dev.build"] = s_isDevBuild.Value
         };
 
-        AddAccessModeAttributes(attributes);
+        AddAccessModeAttributes(attributes, policy);
 
         // Mirror the .NET CLI's DOTNET_CLI_TELEMETRY_PROFILE (same env var
         // the SDK's TelemetryCommonProperties stamps as "Telemetry Profile").
@@ -81,18 +84,18 @@ internal static class TelemetryCommonProperties
         return attributes;
     }
 
-    private static void AddAccessModeAttributes(Dictionary<string, object> attributes)
+    private static void AddAccessModeAttributes(Dictionary<string, object> attributes, DotnetupPolicy? policy)
     {
-        var effective = ResolveAccessModeSafely();
+        var effective = ResolveAccessModeSafely(policy);
         attributes[TelemetryTagNames.AccessMode] = GetAccessModeTelemetryValue(effective.Mode);
         attributes[TelemetryTagNames.AccessModeSource] = GetAccessModeSourceTelemetryValue(effective.Source);
     }
 
-    private static EffectiveAccessMode ResolveAccessModeSafely()
+    private static EffectiveAccessMode ResolveAccessModeSafely(DotnetupPolicy? policy)
     {
         try
         {
-            return AccessModeResolver.Resolve() ?? EffectiveAccessMode.Unset;
+            return new AccessModeResolver(policy).Resolve() ?? EffectiveAccessMode.Unset;
         }
         catch
         {

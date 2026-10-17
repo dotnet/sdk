@@ -30,7 +30,7 @@ public class AccessModeResolverTests
     [TestMethod]
     public void Resolve_ReturnsUnset_WhenNoPolicyAndNoConfig()
     {
-        AccessModeResolver.Resolve().Should().Be(EffectiveAccessMode.Unset);
+        Resolve().Should().Be(EffectiveAccessMode.Unset);
     }
 
     [TestMethod]
@@ -38,7 +38,7 @@ public class AccessModeResolverTests
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
 
-        var result = AccessModeResolver.Resolve();
+        var result = Resolve();
 
         result.Should().Be(new EffectiveAccessMode(DotnetAccessMode.Shell, AccessModeSource.UserConfig));
         result.IsAdmin.Should().BeFalse();
@@ -50,7 +50,7 @@ public class AccessModeResolverTests
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Everywhere });
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
 
-        var result = AccessModeResolver.Resolve();
+        var result = Resolve();
 
         result.Should().Be(new EffectiveAccessMode(DotnetAccessMode.Admin, AccessModeSource.Policy));
         result.IsAdmin.Should().BeTrue();
@@ -61,7 +61,7 @@ public class AccessModeResolverTests
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
 
-        AccessModeResolver.Resolve().Should().Be(EffectiveAccessMode.Unset);
+        Resolve().Should().Be(EffectiveAccessMode.Unset);
     }
 
     [TestMethod]
@@ -69,7 +69,7 @@ public class AccessModeResolverTests
     {
         File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": "admin" }""");
 
-        AccessModeResolver.Resolve().Should().Be(EffectiveAccessMode.Unset);
+        Resolve().Should().Be(EffectiveAccessMode.Unset);
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public class AccessModeResolverTests
         Console.SetOut(output);
         try
         {
-            AccessModeResolver.Resolve().Should().Be(EffectiveAccessMode.Unset);
+            Resolve().Should().Be(EffectiveAccessMode.Unset);
         }
         finally
         {
@@ -91,4 +91,5 @@ public class AccessModeResolverTests
         output.ToString().Should().BeEmpty();
     }
 
+    private EffectiveAccessMode Resolve() => new AccessModeResolver(_environment.Policy).Resolve();
 }

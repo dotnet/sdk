@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Globalization;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -17,7 +18,8 @@ internal class EnvScriptCommand : CommandBase
     private readonly bool _dotnetup;
     private readonly bool _dotnetupOnly;
 
-    public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result, "env script")
+    public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, DotnetupPolicy? policy = null)
+        : base(result, "env script", policy)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _shellProvider = result.GetValue(EnvScriptCommandParser.ShellOption);

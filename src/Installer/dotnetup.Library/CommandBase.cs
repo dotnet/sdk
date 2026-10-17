@@ -25,10 +25,26 @@ public abstract class CommandBase
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult, string commandName)
+        : this(parseResult, commandName, policy: null)
+    {
+    }
+
+    /// <param name="parseResult">The parsed command line.</param>
+    /// <param name="commandName">The command name used for telemetry.</param>
+    /// <param name="policy">The machine policy; defaults to the machine policy for the current platform.</param>
+    private protected CommandBase(ParseResult parseResult, string commandName, DotnetupPolicy? policy)
     {
         ParseResult = parseResult;
         _commandName = commandName;
+        Policy = policy ?? new DotnetupPolicy();
+        AccessModeResolver = new AccessModeResolver(Policy);
     }
+
+    /// <summary>The machine policy this command reads.</summary>
+    internal DotnetupPolicy Policy { get; }
+
+    /// <summary>Resolves the effective access mode from <see cref="Policy"/> and the user config.</summary>
+    internal AccessModeResolver AccessModeResolver { get; }
 
     /// <summary>
     /// Gets whether this command can skip <see cref="SelfUpdateInvocation.EnterCommand(bool)"/>'s
@@ -58,7 +74,7 @@ public abstract class CommandBase
             RecordOptionUsage();
             // Start before the command's work so a background refresh can finish while it runs.
             var updateNotifier = ShowsUpdateNotification
-                ? SelfUpdateNotifier.Start(CommonOptions.IsInteractive(ParseResult))
+                ? SelfUpdateNotifier.Start(CommonOptions.IsInteractive(ParseResult), Policy)
                 : null;
             // Default success exit code; ExecuteCore can overwrite via
             // SetExitCode() (e.g. DotnetCommand forwarding a child process

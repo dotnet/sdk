@@ -34,8 +34,8 @@ internal abstract class InstallCommand : CommandBase
     public IDotnetEnvironmentManager DotnetEnvironment { get; }
     public ChannelVersionResolver ChannelVersionResolver => _channelVersionResolver.Value;
 
-    protected InstallCommand(ParseResult parseResult, string commandName)
-        : base(parseResult, commandName)
+    protected InstallCommand(ParseResult parseResult, string commandName, DotnetupPolicy? policy = null)
+        : base(parseResult, commandName, policy)
     {
         InstallPath = parseResult.GetValue(CommonOptions.InstallPathOption);
         ManifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);

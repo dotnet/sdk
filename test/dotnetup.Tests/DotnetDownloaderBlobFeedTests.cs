@@ -16,6 +16,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
 using Spectre.Console;
@@ -29,18 +30,17 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// not list the requested version (e.g. daily/preview builds).
 /// </summary>
 [TestClass]
-public class DotnetDownloaderBlobFeedTests : IDisposable
+public class DotnetDownloaderBlobFeedTests
 {
     private readonly ITestOutputHelper _log;
+    private readonly FakeDotnetupPolicyStore _policyStore = new();
+    private readonly DotnetupPolicy _policy;
 
     public DotnetDownloaderBlobFeedTests(TestContext testContext)
     {
         _log = new TestContextOutputHelper(testContext);
-        // Defensive: clear any IT-policy override leaked from an earlier test.
-        UnsignedSourcePolicy.OverrideForTesting = null;
+        _policy = new DotnetupPolicy(_policyStore);
     }
-
-    public void Dispose() => UnsignedSourcePolicy.OverrideForTesting = null;
 
     private const string DotnetupVersion = "0.1.0-preview.1.26359.118";
     private const string DotnetupUrl = "https://ci.dot.net/public/dotnetup/" + DotnetupVersion + "/dotnetup-win-x64.exe";
@@ -78,12 +78,10 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             },
         };
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"), policy: _policy);
         var originalConsole = AnsiConsole.Console;
-        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
         try
         {
-            UnsignedSourcePolicy.OverrideForTesting = () => false;
             AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings
             {
                 Ansi = AnsiSupport.No,
@@ -110,7 +108,6 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         finally
         {
             AnsiConsole.Console = originalConsole;
-            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
         }
     }
 
@@ -142,12 +139,10 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             },
         };
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"), policy: _policy);
         var originalConsole = AnsiConsole.Console;
-        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
         try
         {
-            UnsignedSourcePolicy.OverrideForTesting = () => false;
             AnsiConsole.Console = CreateConsole(output);
             AnsiConsole.Profile.Width = int.MaxValue;
             using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, installedVersion);
@@ -163,7 +158,6 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         finally
         {
             AnsiConsole.Console = originalConsole;
-            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
         }
     }
 
@@ -199,13 +193,11 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             [location.ChecksumUrl] = (HttpStatusCode.OK, new string('0', 128)),
         }, history, new() { [channelUrl] = location.ArchiveUrl });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"));
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(files.Paths.DirectoryPath, "cache"), policy: _policy);
         var originalConsole = AnsiConsole.Console;
         var originalError = Console.Error;
-        var originalPolicy = UnsignedSourcePolicy.OverrideForTesting;
         try
         {
-            UnsignedSourcePolicy.OverrideForTesting = () => false;
             AnsiConsole.Console = CreateConsole(stdout);
             Console.SetError(stderr);
             using var invocation = new SelfUpdateInvocation(files.Paths.InstalledPath, installedVersion);
@@ -235,7 +227,6 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         {
             AnsiConsole.Console = originalConsole;
             Console.SetError(originalError);
-            UnsignedSourcePolicy.OverrideForTesting = originalPolicy;
         }
     }
 
@@ -256,7 +247,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         using var handler = new RecordingHandler(responses, history, redirects);
         using var http = new HttpClient(handler);
         string cacheDirectory = Path.Combine(testEnv.TempRoot, "cache");
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory, policy: _policy);
         var download = downloader.ResolveDotnetupDownload("win-x64");
         redirects[DotnetupDailyUrl] = DotnetupUrl.Replace(DotnetupVersion, "0.1.0-preview.2", StringComparison.Ordinal);
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
@@ -298,7 +289,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             [checksumUrl] = (HttpStatusCode.OK, $"{hash}  dotnetup-{rid}{extension}\n"),
         }, history, new() { [dailyUrl] = url });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ThrowingReleaseManifest(DotnetInstallErrorCode.ManifestFetchFailed), http, testEnv.TempRoot);
+        var downloader = new DotnetDownloader(new ThrowingReleaseManifest(DotnetInstallErrorCode.ManifestFetchFailed), http, testEnv.TempRoot, policy: _policy);
 
         ResolvedDownload download = downloader.ResolveDotnetupDownload(rid);
 
@@ -337,7 +328,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             [DotnetupChecksumUrl] = (status, content),
         }, history, new() { [DotnetupDailyUrl] = DotnetupUrl });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot, policy: _policy);
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.ResolveDotnetupDownload("win-x64"));
 
@@ -362,7 +353,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             [metadataUrl] = metadataUrl.Replace(DotnetupVersion, "0.1.0-preview.2", StringComparison.Ordinal),
         });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot, policy: _policy);
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.ResolveDotnetupDownload("win-x64"));
 
@@ -375,8 +366,8 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var (handler, history) = BuildHandler(new());
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot, policy: _policy);
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.ResolveDotnetupDownload("win-x64"));
 
@@ -390,8 +381,8 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var (handler, history) = BuildHandler(new());
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot);
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot, policy: _policy);
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(
             () => downloader.ResolveDotnetupDownload("daily", "win-x64", replacementSignatureEnforced: false));
@@ -414,9 +405,9 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             [DotnetupUrl] = (HttpStatusCode.OK, content),
         }, history, new() { [DotnetupDailyUrl] = DotnetupUrl });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"));
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"), policy: _policy);
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
         var download = downloader.ResolveDotnetupDownload("daily", "win-x64", replacementSignatureEnforced: true);
         downloader.DownloadWithVerification(download, destination).Should().Be(destination);
@@ -439,11 +430,11 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         new DownloadCache(cacheDirectory).AddToCache(DotnetupUrl, seed);
         var (handler, history) = BuildHandler(new());
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory, policy: _policy);
         var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64",
             new ReleaseVersion(DotnetupVersion), IsUnsigned: true, IsDotnetup: true);
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() => downloader.DownloadWithVerification(download, destination));
 
@@ -464,7 +455,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         var history = new List<string>();
         using var handler = new RecordingHandler(new() { [DotnetupUrl] = (HttpStatusCode.OK, content) }, history, new() { [DotnetupUrl] = redirectUrl });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"));
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"), policy: _policy);
         var download = new ResolvedDownload(new Uri(DotnetupUrl), hash, "win-x64",
             new ReleaseVersion(DotnetupVersion), IsUnsigned: true, IsDotnetup: true);
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
@@ -491,7 +482,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         new DownloadCache(cacheDirectory).AddToCache(url, seed);
         var (handler, history) = BuildHandler(new() { [url] = (HttpStatusCode.OK, content) });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory, policy: _policy);
         var download = new ResolvedDownload(new Uri(url), expectedHash, "win-x64", new ReleaseVersion("0.1.0-preview.1"));
         string destination = Path.Combine(testEnv.TempRoot, "nested", "dotnetup.exe.new");
 
@@ -511,7 +502,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         string cacheDirectory = Path.Combine(testEnv.TempRoot, "cache");
         var (handler, _) = BuildHandler(new() { [url] = (HttpStatusCode.OK, "corrupt") });
         using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, cacheDirectory, policy: _policy);
         var download = new ResolvedDownload(new Uri(url), new string('a', 128), "win-x64", new ReleaseVersion("0.1.0-preview.1"));
         string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
 
@@ -740,7 +731,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         var (handler, history) = BuildHandler(new());
         using var http = new HttpClient(handler);
         var cacheDir = Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
-        var downloader = new DotnetDownloader(new FixtureReleaseManifest(windowsDesktop), http, cacheDir);
+        var downloader = new DotnetDownloader(new FixtureReleaseManifest(windowsDesktop), http, cacheDir, policy: _policy);
 
         string destinationBase = Path.Combine(cacheDir, "windowsdesktop-runtime");
 
@@ -913,7 +904,6 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     [TestMethod]
     public void DownloadVerifiedArtifact_BlobFeedBundle_ReportsUnsignedSourceAndVerifiedHash()
     {
-        UnsignedSourcePolicy.OverrideForTesting = () => false;
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         const string version = "10.0.100-preview.4.25216.37";
         const string content = "unsigned installer bytes";
@@ -927,7 +917,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
         });
         using var http = new HttpClient(handler);
         var manifest = new ThrowingReleaseManifest(DotnetInstallErrorCode.VersionNotFound);
-        var downloader = new DotnetDownloader(manifest, http, Path.Combine(testEnv.TempRoot, "cache"));
+        var downloader = new DotnetDownloader(manifest, http, Path.Combine(testEnv.TempRoot, "cache"), policy: _policy);
         string destinationBase = Path.Combine(testEnv.TempRoot, "bundle");
 
         VerifiedDownload download = downloader.DownloadVerifiedArtifact(BuildBundleRequest(version, InstallComponent.SDK), new ReleaseVersion(version), destinationBase);
@@ -991,7 +981,7 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
     [TestMethod]
     public void ResolveManifestEntry_BlockedByPolicy_ThrowsClearError()
     {
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
 
         const string version = "10.0.100-preview.4.25216.37";
         var (handler, history) = BuildHandler(new());
@@ -1071,12 +1061,12 @@ public class DotnetDownloaderBlobFeedTests : IDisposable
             new InstallRequestOptions { Untracked = true, InstallMechanism = InstallMechanism.WindowsInstallerBundle });
     }
 
-    private static DotnetDownloader CreateDownloader(HttpClient http, DotnetInstallErrorCode manifestThrows)
+    private DotnetDownloader CreateDownloader(HttpClient http, DotnetInstallErrorCode manifestThrows)
     {
         var manifest = new ThrowingReleaseManifest(manifestThrows);
         // Use a per-test cache directory so we don't pollute the user cache.
         var cacheDir = Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
-        return new DotnetDownloader(manifest, http, cacheDir);
+        return new DotnetDownloader(manifest, http, cacheDir, policy: _policy);
     }
 
     private static (string DownloadUrl, string ExpectedHash) InvokeResolveManifestEntry(

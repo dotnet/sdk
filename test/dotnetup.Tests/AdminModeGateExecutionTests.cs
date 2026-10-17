@@ -13,104 +13,102 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
 /// Verifies that <see cref="CommandBase.Execute"/> applies the admin mode gate before running the command.
-/// These tests replace the process-wide access mode, so they must not run in parallel with other tests.
+/// Admin mode comes from an in-memory machine policy passed to each command; the user config lives in a
+/// temporary data directory, which is process-wide, so these tests must not run in parallel with other tests.
 /// </summary>
 [TestClass]
 [DoNotParallelize]
 public class AdminModeGateExecutionTests
 {
-    private Func<EffectiveAccessMode>? _originalOverride;
+    private AdminModeTestEnvironment _environment = null!;
 
     [TestInitialize]
     public void Initialize()
     {
-        _originalOverride = AccessModeResolver.OverrideForTesting;
+        _environment = new AdminModeTestEnvironment();
     }
 
     [TestCleanup]
     public void Cleanup()
     {
-        AccessModeResolver.OverrideForTesting = _originalOverride;
+        _environment.Dispose();
     }
 
-    [TestMethod]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void Execute_InAdminMode_BlocksUnsupportedBuiltInCommand()
     {
-        UseAccessMode(DotnetAccessMode.Admin);
+        EnableAdminModePolicy();
 
-        new ListCommand(Parser.Parse(["list"])).Execute().Should().Be(1);
+        new ListCommand(Parser.Parse(["list"]), _environment.Policy).Execute().Should().Be(1);
     }
 
-    [TestMethod]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void Execute_InAdminMode_RejectsUnsupportedCommandBeforeExecuteCore()
     {
-        UseAccessMode(DotnetAccessMode.Admin);
-        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported);
+        EnableAdminModePolicy();
+        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, _environment.Policy);
 
         command.Execute().Should().Be(1);
         command.Executed.Should().BeFalse();
     }
 
-    [TestMethod]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void Execute_InAdminMode_RejectsDisallowedSymbolBeforeExecuteCore()
     {
-        UseAccessMode(DotnetAccessMode.Admin);
-        var command = new ProbeCommand(Parser.Parse(["list", "--format", "json"]), AdminModeSupport.Allow());
+        EnableAdminModePolicy();
+        var command = new ProbeCommand(Parser.Parse(["list", "--format", "json"]), AdminModeSupport.Allow(), _environment.Policy);
 
         command.Execute().Should().Be(1);
         command.Executed.Should().BeFalse();
     }
 
-    [TestMethod]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void Execute_InAdminMode_RunsSupportedCommand()
     {
-        UseAccessMode(DotnetAccessMode.Admin);
-        var command = new ProbeCommand(Parser.Parse(["list", "--format", "json"]), AdminModeSupport.AnySymbol);
+        EnableAdminModePolicy();
+        var command = new ProbeCommand(Parser.Parse(["list", "--format", "json"]), AdminModeSupport.AnySymbol, _environment.Policy);
 
         command.Execute().Should().Be(0);
         command.Executed.Should().BeTrue();
     }
 
-    [TestMethod]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     [DataRow(new[] { "env", "script", "--shell", "pwsh", "--dotnet" })]
     [DataRow(new[] { "print-env-script", "--shell", "pwsh", "--dotnetup-only" })]
     public void Execute_InAdminMode_AllowsExistingShellProfileCommands(string[] arguments)
     {
-        using var environment = new TestEnvironment();
-        DotnetupPaths.SetTestDataDirectoryOverride(environment.TempRoot);
-        UseAccessMode(DotnetAccessMode.Admin);
-        try
-        {
-            var parseResult = Parser.Parse(arguments);
-            parseResult.Errors.Should().BeEmpty();
-            new EnvScriptCommand(parseResult).Execute().Should().Be(0);
-        }
-        finally
-        {
-            DotnetupPaths.ClearTestDataDirectoryOverride();
-        }
+        EnableAdminModePolicy();
+        var parseResult = Parser.Parse(arguments);
+        parseResult.Errors.Should().BeEmpty();
+
+        new EnvScriptCommand(parseResult, policy: _environment.Policy).Execute().Should().Be(0);
     }
 
     [TestMethod]
     public void Execute_OutsideAdminMode_RunsUnsupportedCommand()
     {
-        UseAccessMode(DotnetAccessMode.Shell);
-        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported);
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
+        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, _environment.Policy);
 
         command.Execute().Should().Be(0);
         command.Executed.Should().BeTrue();
     }
 
-    private static void UseAccessMode(DotnetAccessMode mode)
+    [TestMethod]
+    public void Execute_AdminModeRecordedInUserConfig_DoesNotGateCommands()
     {
-        var accessMode = new EffectiveAccessMode(
-            mode,
-            mode == DotnetAccessMode.Admin ? AccessModeSource.Policy : AccessModeSource.UserConfig);
-        AccessModeResolver.OverrideForTesting = () => accessMode;
+        // Only the machine policy can select admin mode; a user config that records it is ignored.
+        File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": "admin" }""");
+        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, _environment.Policy);
+
+        command.Execute().Should().Be(0);
+        command.Executed.Should().BeTrue();
     }
 
-    private sealed class ProbeCommand(ParseResult parseResult, AdminModeSupport support)
-        : CommandBase(parseResult, "probe")
+    private void EnableAdminModePolicy() => _environment.Store.Values[DotnetupPolicy.AdminModeValueName] = true;
+
+    private sealed class ProbeCommand(ParseResult parseResult, AdminModeSupport support, DotnetupPolicy policy)
+        : CommandBase(parseResult, "probe", policy)
     {
         public bool Executed { get; private set; }
 

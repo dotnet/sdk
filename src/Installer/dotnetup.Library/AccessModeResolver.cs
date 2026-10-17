@@ -30,21 +30,23 @@ internal sealed record EffectiveAccessMode(DotnetAccessMode? Mode, AccessModeSou
 /// Resolves the effective access mode. The Windows machine policy enables admin mode and takes
 /// precedence over the per-user config, which can never select admin mode.
 /// </summary>
-internal static class AccessModeResolver
+internal sealed class AccessModeResolver
 {
-    /// <summary>When non-null, replaces resolution. Tests must reset it to <c>null</c>.</summary>
-    internal static Func<EffectiveAccessMode>? OverrideForTesting { get; set; }
+    private readonly DotnetupPolicy _policy;
 
-    /// <summary>Resolves the effective access mode. Never throws and never writes output.</summary>
-    public static EffectiveAccessMode Resolve()
+    /// <param name="policy">The machine policy; defaults to the machine policy for the current platform.</param>
+    public AccessModeResolver(DotnetupPolicy? policy = null)
     {
-        var overrideFn = OverrideForTesting;
-        if (overrideFn is not null)
-        {
-            return overrideFn();
-        }
+        _policy = policy ?? new DotnetupPolicy();
+    }
 
-        if (OperatingSystem.IsWindows() && DotnetupPolicy.IsAdminModeEnabled())
+    /// <summary>
+    /// Resolves the effective access mode. Writes no output, and throws only if the policy store
+    /// does (the machine stores report unreadable values as unset).
+    /// </summary>
+    public EffectiveAccessMode Resolve()
+    {
+        if (OperatingSystem.IsWindows() && _policy.IsAdminModeEnabled())
         {
             return new EffectiveAccessMode(DotnetAccessMode.Admin, AccessModeSource.Policy);
         }

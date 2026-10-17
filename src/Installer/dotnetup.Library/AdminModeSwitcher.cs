@@ -64,24 +64,49 @@ internal sealed class AdminModeSwitcher
     private readonly Func<bool> _isPrivilegedProcess;
     private readonly IAnsiConsole _console;
 
+    /// <param name="policy">The machine policy to change; defaults to the machine policy for the current platform.</param>
+    /// <param name="elevator">Runs the change elevated when this process is not privileged.</param>
+    /// <param name="isPrivilegedProcess">Whether this process can write the policy directly.</param>
+    /// <param name="console">Receives the notices printed around the change.</param>
     public AdminModeSwitcher(
+        DotnetupPolicy? policy = null,
         IAdminModeElevator? elevator = null,
         Func<bool>? isPrivilegedProcess = null,
         IAnsiConsole? console = null)
     {
+        Policy = policy ?? new DotnetupPolicy();
         _elevator = elevator ?? new WindowsAdminModeElevator();
         _isPrivilegedProcess = isPrivilegedProcess ?? (() => Environment.IsPrivilegedProcess);
         _console = console ?? SpectreAnsiConsole.Console;
     }
 
-    /// <summary>True when the effective access mode is admin mode.</summary>
-    public static bool IsAdminModeActive() => AccessModeResolver.Resolve().IsAdmin;
+    /// <summary>The machine policy this switcher reads and changes.</summary>
+    internal DotnetupPolicy Policy { get; }
+
+    /// <summary>True when the machine policy enables admin mode.</summary>
+    public bool IsAdminModeActive() => Policy.IsAdminModeEnabled();
 
     /// <summary>Enables admin mode. Returns false when it was already enabled.</summary>
     public bool Enable() => Switch(AdminModeOperation.Enable);
 
     /// <summary>Disables admin mode. Returns false when it was already disabled.</summary>
     public bool Disable() => Switch(AdminModeOperation.Disable);
+
+    /// <summary>
+    /// Writes <paramref name="operation"/> to <paramref name="policy"/>. Requires administrator
+    /// privileges for the machine policy; used directly when privileged and by the elevated child.
+    /// </summary>
+    internal static void ApplyPolicyChange(DotnetupPolicy policy, AdminModeOperation operation)
+    {
+        if (operation == AdminModeOperation.Enable)
+        {
+            policy.EnableAdminMode();
+        }
+        else
+        {
+            policy.DisableAdminMode();
+        }
+    }
 
     private bool Switch(AdminModeOperation operation)
     {
@@ -93,7 +118,7 @@ internal sealed class AdminModeSwitcher
         }
 
         bool enable = operation == AdminModeOperation.Enable;
-        if (DotnetupPolicy.IsAdminModeEnabled() == enable)
+        if (Policy.IsAdminModeEnabled() == enable)
         {
             _console.MarkupLine(DotnetupTheme.Dim(enable ? Strings.AdminModeAlreadyEnabled : Strings.AdminModeAlreadyDisabled));
             return false;
@@ -130,7 +155,7 @@ internal sealed class AdminModeSwitcher
         {
             if (privileged)
             {
-                WritePolicy(operation);
+                ApplyPolicyChange(Policy, operation);
             }
             else
             {
@@ -157,23 +182,11 @@ internal sealed class AdminModeSwitcher
         }
     }
 
-    private static void WritePolicy(AdminModeOperation operation)
-    {
-        if (operation == AdminModeOperation.Enable)
-        {
-            DotnetupPolicy.EnableAdminMode();
-        }
-        else
-        {
-            DotnetupPolicy.DisableAdminMode();
-        }
-    }
-
     // Re-read the policy: Group Policy or a restrictive ACL can leave the value unchanged even
     // though the elevated write reported success.
-    private static void VerifyChange(bool enable)
+    private void VerifyChange(bool enable)
     {
-        if (DotnetupPolicy.IsAdminModeEnabled() != enable)
+        if (Policy.IsAdminModeEnabled() != enable)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeChangeFailed,

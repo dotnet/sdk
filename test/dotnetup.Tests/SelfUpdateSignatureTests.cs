@@ -6,6 +6,7 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
 
@@ -56,16 +57,10 @@ public class SelfUpdateSignatureTests
     {
         using var files = new SelfUpdateTestFiles();
         var installed = CopySignedHost(files, "installed.exe");
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
-        try
-        {
-            Assert.IsTrue(SelfUpdateSignature.RequiresSignedReplacement(installed));
-            Assert.IsFalse(SelfUpdateNotifier.IsSelfUpdateBlockedByPolicy(installed));
-        }
-        finally
-        {
-            UnsignedSourcePolicy.OverrideForTesting = null;
-        }
+        var policy = CreatePolicy(blocksUnsignedDownloads: true);
+
+        Assert.IsTrue(SelfUpdateSignature.RequiresSignedReplacement(installed));
+        Assert.IsFalse(SelfUpdateNotifier.IsSelfUpdateBlockedByPolicy(policy, installed));
     }
 
     [TestMethod]
@@ -74,16 +69,17 @@ public class SelfUpdateSignatureTests
     public void UnsignedInstallationDoesNotRequireSignedReplacementAndFollowsUnsignedPolicy(bool policyBlocks)
     {
         using var files = new SelfUpdateTestFiles();
-        UnsignedSourcePolicy.OverrideForTesting = () => policyBlocks;
-        try
-        {
-            Assert.IsFalse(SelfUpdateSignature.RequiresSignedReplacement(files.Paths.InstalledPath));
-            Assert.AreEqual(policyBlocks, SelfUpdateNotifier.IsSelfUpdateBlockedByPolicy(files.Paths.InstalledPath));
-        }
-        finally
-        {
-            UnsignedSourcePolicy.OverrideForTesting = null;
-        }
+        var policy = CreatePolicy(policyBlocks);
+
+        Assert.IsFalse(SelfUpdateSignature.RequiresSignedReplacement(files.Paths.InstalledPath));
+        Assert.AreEqual(policyBlocks, SelfUpdateNotifier.IsSelfUpdateBlockedByPolicy(policy, files.Paths.InstalledPath));
+    }
+
+    private static DotnetupPolicy CreatePolicy(bool blocksUnsignedDownloads)
+    {
+        var store = new FakeDotnetupPolicyStore();
+        store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = blocksUnsignedDownloads;
+        return new DotnetupPolicy(store);
     }
 
     [SupportedOSPlatform("windows")]

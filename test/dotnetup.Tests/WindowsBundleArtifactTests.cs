@@ -27,15 +27,10 @@ public class WindowsBundleArtifactTests : IDisposable
     private const string StableChannel = "10.0.100";
     private readonly LazyProgressReporter _reporter = new(new NullProgressTarget());
     private readonly List<WindowsBundleArtifact> _artifacts = [];
-
-    public WindowsBundleArtifactTests()
-    {
-        UnsignedSourcePolicy.OverrideForTesting = null;
-    }
+    private readonly FakeDotnetupPolicyStore _policyStore = new();
 
     public void Dispose()
     {
-        UnsignedSourcePolicy.OverrideForTesting = null;
         foreach (var artifact in _artifacts)
         {
             artifact.Dispose();
@@ -88,7 +83,6 @@ public class WindowsBundleArtifactTests : IDisposable
     [TestMethod]
     public void Commit_SignatureFailureOnSignedSource_ThrowsAndDoesNotRunInstaller()
     {
-        UnsignedSourcePolicy.OverrideForTesting = () => false;
         var runner = new FakeRunner(exitCode: 0);
         var artifact = CreateArtifact(StableChannel, verifier: FakeVerifier.Untrusted, runner: runner);
         artifact.Prepare();
@@ -105,7 +99,6 @@ public class WindowsBundleArtifactTests : IDisposable
     [DataRow("10.0.100-preview.4.25216.37")]
     public void Commit_SignatureFailureOnSignedSourceForPrereleaseChannel_ThrowsAndDoesNotRunInstaller(string channel)
     {
-        UnsignedSourcePolicy.OverrideForTesting = () => false;
         var runner = new FakeRunner(exitCode: 0);
         var artifact = CreateArtifact(channel, downloader: CreateDownloader(isUnsigned: false), verifier: FakeVerifier.Untrusted, runner: runner);
         artifact.Prepare();
@@ -122,7 +115,6 @@ public class WindowsBundleArtifactTests : IDisposable
     [DataRow(StableChannel)]
     public void Commit_UnsignedSourceAllowedByPolicy_RunsInstaller(string channel)
     {
-        UnsignedSourcePolicy.OverrideForTesting = () => false;
         var runner = new FakeRunner(exitCode: 0);
         var artifact = CreateArtifact(channel, downloader: CreateDownloader(isUnsigned: true), verifier: FakeVerifier.Untrusted, runner: runner);
         artifact.Prepare();
@@ -135,7 +127,7 @@ public class WindowsBundleArtifactTests : IDisposable
     [TestMethod]
     public void Commit_UnsignedSourceBlockedByPolicy_ThrowsAndDoesNotRunInstaller()
     {
-        UnsignedSourcePolicy.OverrideForTesting = () => true;
+        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
         var runner = new FakeRunner(exitCode: 0);
         var artifact = CreateArtifact("daily", downloader: CreateDownloader(isUnsigned: true), verifier: FakeVerifier.Untrusted, runner: runner);
         artifact.Prepare();
@@ -483,7 +475,8 @@ public class WindowsBundleArtifactTests : IDisposable
             verifier ?? FakeVerifier.Trusted,
             runner ?? new FakeRunner(exitCode: 0),
             notices ?? TextWriter.Null,
-            isPrivilegedProcess: isPrivilegedProcess);
+            isPrivilegedProcess: isPrivilegedProcess,
+            policy: new DotnetupPolicy(_policyStore));
         _artifacts.Add(artifact);
         return artifact;
     }

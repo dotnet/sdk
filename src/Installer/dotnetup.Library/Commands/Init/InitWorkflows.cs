@@ -53,7 +53,7 @@ internal class InitWorkflows
             return [];
         }
 
-        if (requestedAccessMode is null && AdminModeSwitcher.IsAdminModeActive())
+        if (requestedAccessMode is null && AdminSwitcher.IsAdminModeActive())
         {
             AdminModeMessages.WriteAdminModeActive(SpectreAnsiConsole.Console);
             return [];
@@ -147,7 +147,7 @@ internal class InitWorkflows
             return [];
         }
 
-        bool leaveAdminMode = AdminModeSwitcher.IsAdminModeActive();
+        bool leaveAdminMode = AdminSwitcher.IsAdminModeActive();
         if (command.DryRun)
         {
             PrintDryRunPreview(defaults, formSelection);
@@ -176,7 +176,7 @@ internal class InitWorkflows
     /// </summary>
     private void SelectAdminMode(bool dryRun)
     {
-        if (AdminModeSwitcher.IsAdminModeActive())
+        if (AdminSwitcher.IsAdminModeActive())
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.AdminModeAlreadyEnabledNoChanges));
             return;

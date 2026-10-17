@@ -49,7 +49,7 @@ internal class InstallWorkflow
     /// </summary>
     public void Execute(MinimalInstallSpec[] componentSpecs)
     {
-        bool runOnboarding = ShouldRunFirstUseOnboarding(_command.Interactive, _command.InstallPath, _command.MigrateFromSystem)
+        bool runOnboarding = ShouldRunFirstUseOnboarding(_command.AccessModeResolver.Resolve(), _command.Interactive, _command.InstallPath, _command.MigrateFromSystem)
             && !InitWorkflows.HasLocalSdkPathGlobalJson();
         bool promptForStarterChannel = ShouldPromptForStarterChannel(runOnboarding, componentSpecs);
         List<ResolvedInstallRequest> requests;
@@ -59,7 +59,7 @@ internal class InstallWorkflow
             // Pre-resolve the user's requests unless we still need to prompt for a starter channel
             // (in which case the walkthrough generates them after the prompt).
             var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs);
-            var workflows = new InitWorkflows(_command.DotnetEnvironment);
+            var workflows = new InitWorkflows(_command.DotnetEnvironment, new AdminModeSwitcher(_command.Policy));
             requests = workflows.InitWalkthrough(_command, initialRequests);
         }
         else
@@ -137,7 +137,7 @@ internal class InstallWorkflow
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
-        var target = AccessModeResolver.Resolve().IsAdmin
+        var target = _command.AccessModeResolver.Resolve().IsAdmin
             ? ResolveAdminInstallTarget()
             : ResolveUserInstallTarget(globalJson);
 
@@ -192,12 +192,12 @@ internal class InstallWorkflow
         return new InstallTarget(installRoot, pathResolution, IsAdmin: true);
     }
 
-    internal static bool ShouldRunFirstUseOnboarding(bool interactive, string? installPath, bool migrateFromSystem = false)
+    internal static bool ShouldRunFirstUseOnboarding(EffectiveAccessMode accessMode, bool interactive, string? installPath, bool migrateFromSystem = false)
     {
         return !migrateFromSystem &&
             interactive &&
             installPath is null &&
-            AccessModeResolver.Resolve().Mode is null;
+            accessMode.Mode is null;
     }
 
     internal static bool ShouldPromptForStarterChannel(bool runOnboarding, MinimalInstallSpec[] componentSpecs)

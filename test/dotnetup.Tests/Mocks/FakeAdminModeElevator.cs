@@ -6,7 +6,11 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 
-internal sealed class FakeAdminModeElevator : IAdminModeElevator
+/// <summary>
+/// Stands in for the elevated <c>dotnetup elevatedsystempath</c> child process: instead of prompting
+/// for UAC, it applies the operation to <paramref name="policy"/> with the same code the child runs.
+/// </summary>
+internal sealed class FakeAdminModeElevator(DotnetupPolicy policy) : IAdminModeElevator
 {
     public List<AdminModeOperation> Operations { get; } = [];
 
@@ -22,18 +26,9 @@ internal sealed class FakeAdminModeElevator : IAdminModeElevator
             throw Failure;
         }
 
-        if (!AppliesChange)
+        if (AppliesChange)
         {
-            return;
-        }
-
-        if (operation == AdminModeOperation.Enable)
-        {
-            DotnetupPolicy.EnableAdminMode();
-        }
-        else
-        {
-            DotnetupPolicy.DisableAdminMode();
+            AdminModeSwitcher.ApplyPolicyChange(policy, operation);
         }
     }
 }

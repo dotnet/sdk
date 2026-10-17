@@ -26,6 +26,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     private readonly ExtractorProgressTracker _progress;
     private readonly InstallBatchContext _batchContext;
     private readonly TextWriter _notices;
+    private readonly DotnetupPolicy _policy;
     private VerifiedDownload? _download;
 
     // Denies write and delete access from the moment the bundle is verified until this artifact is
@@ -41,10 +42,12 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         IBundleProcessRunner? processRunner = null,
         TextWriter? notices = null,
         ReleaseManifest? releaseManifest = null,
-        bool? isPrivilegedProcess = null)
+        bool? isPrivilegedProcess = null,
+        DotnetupPolicy? policy = null)
     {
         _request = request;
         _version = version;
+        _policy = policy ?? new DotnetupPolicy();
         _signatureVerifier = signatureVerifier ?? CreateDefaultSignatureVerifier();
         _processRunner = processRunner ?? new BundleProcessRunner();
         _notices = notices ?? Console.Error;
@@ -58,7 +61,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         // without elevation, and serving from it would hard-link a user-writable file into the secure directory.
         _downloader = downloader ?? new DotnetDownloader(
             releaseManifest ?? ReleaseManifest.Default,
-            cacheDirectory: UsesSecureScratchDirectory ? Path.Combine(ScratchDirectory, "downloadcache") : null);
+            cacheDirectory: UsesSecureScratchDirectory ? Path.Combine(ScratchDirectory, "downloadcache") : null,
+            policy: _policy);
     }
 
     /// <summary>
@@ -231,8 +235,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     /// download and the user was warned up front, so they may run unless IT policy blocks unsigned downloads.
     /// Installers resolved from the signed releases manifest must always pass Authenticode, whatever the channel.
     /// </summary>
-    private static bool IsUnsignedSourceAllowed(VerifiedDownload download) =>
-        download.IsUnsigned && !UnsignedSourcePolicy.IsUnsignedDownloadBlocked();
+    private bool IsUnsignedSourceAllowed(VerifiedDownload download) =>
+        download.IsUnsigned && !_policy.IsUnsignedDownloadBlocked();
 
     private int RunInstaller(string bundlePath)
     {

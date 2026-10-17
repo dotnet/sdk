@@ -25,11 +25,12 @@ public class AdminModeCommandTests : IDisposable
     private readonly AdminModeTestEnvironment _environment = new();
     private string _tempDir => _environment.TempRoot;
     private FakeDotnetupPolicyStore _store => _environment.Store;
-    private readonly FakeAdminModeElevator _elevator = new();
+    private readonly FakeAdminModeElevator _elevator;
     private readonly MockDotnetInstallManager _env;
 
     public AdminModeCommandTests()
     {
+        _elevator = _environment.CreateElevator();
         _env = new MockDotnetInstallManager(defaultInstallPath: Path.Combine(_tempDir, "dotnet"), existingSystemInstalls: []);
     }
 
@@ -87,13 +88,13 @@ public class AdminModeCommandTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void Init_ModeAdmin_OnlySwitchesMode()
     {
-        var command = new InitCommand(Parser.Parse(["init", "--mode", "admin", "--interactive", "false"]));
+        var command = new InitCommand(Parser.Parse(["init", "--mode", "admin", "--interactive", "false"]), _environment.Policy);
 
         List<ResolvedInstallRequest> requests = CreateInitWorkflows().RunInit(command, DotnetAccessMode.Admin);
 
         requests.Should().BeEmpty();
         _elevator.Operations.Should().Equal(AdminModeOperation.Enable);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
         AssertNoEnvironmentOrConfigChanges();
     }
 
@@ -101,7 +102,7 @@ public class AdminModeCommandTests : IDisposable
     public void Init_WithoutModeWhileAdmin_MakesNoChanges()
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        var command = new InitCommand(Parser.Parse(["init", "--interactive", "false"]));
+        var command = new InitCommand(Parser.Parse(["init", "--interactive", "false"]), _environment.Policy);
 
         List<ResolvedInstallRequest> requests = CreateInitWorkflows().RunInit(command, requestedAccessMode: null);
 
@@ -120,7 +121,7 @@ public class AdminModeCommandTests : IDisposable
         // A global.json pinning a local SDK path makes the walkthrough stop without changes.
         Directory.CreateDirectory(Path.Combine(_tempDir, ".dotnet"));
         File.WriteAllText(Path.Combine(_tempDir, "global.json"), """{ "sdk": { "paths": [".dotnet"] } }""");
-        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell", "--interactive", "false"]));
+        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell", "--interactive", "false"]), _environment.Policy);
 
         List<ResolvedInstallRequest> requests = RunFromTempDirectory(
             () => CreateInitWorkflows().RunInit(command, DotnetAccessMode.Shell));
@@ -128,7 +129,7 @@ public class AdminModeCommandTests : IDisposable
         requests.Should().BeEmpty();
         _elevator.Operations.Should().BeEmpty();
         _store.Writes.Should().BeEmpty();
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
         AssertNoEnvironmentOrConfigChanges();
     }
 
@@ -137,14 +138,14 @@ public class AdminModeCommandTests : IDisposable
     public void Init_ModeShellWhileAdmin_FormExitLeavesAdminModeOn()
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell"]));
+        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell"]), _environment.Policy);
         var workflows = new InitWorkflows(_env, CreateSwitcher()) { FormSelectionOverride = (_, _) => null };
 
         RunFromTempDirectory(() => workflows.RunInit(command, DotnetAccessMode.Shell)).Should().BeEmpty();
 
         _elevator.Operations.Should().BeEmpty();
         _store.Writes.Should().BeEmpty();
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
         DotnetupConfig.Exists().Should().BeFalse();
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
@@ -155,7 +156,7 @@ public class AdminModeCommandTests : IDisposable
     public void Init_FormSelectsAdminWhileAdmin_MakesNoChanges()
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell"]));
+        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell"]), _environment.Policy);
         var workflows = new InitWorkflows(_env, CreateSwitcher())
         {
             FormSelectionOverride = (_, defaults) => new InitFormSelection(null, DotnetAccessMode.Admin, defaults.MigrateSystemInstalls),
@@ -174,12 +175,9 @@ public class AdminModeCommandTests : IDisposable
     public void Init_ModeShellWhileAdmin_DisablesAdminBeforeApplyingSetup()
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        var elevator = new FakeAdminModeElevator
-        {
-            Failure = new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"),
-        };
-        var switcher = new AdminModeSwitcher(elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
-        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell", "--interactive", "false"]));
+        var elevator = _environment.CreateElevator(new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"));
+        var switcher = _environment.CreateSwitcher(elevator);
+        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell", "--interactive", "false"]), _environment.Policy);
         var workflows = new InitWorkflows(_env, switcher);
 
         // Declining elevation stops setup, which shows the disable precedes every setup change.
@@ -188,7 +186,7 @@ public class AdminModeCommandTests : IDisposable
 
         exception.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeChangeFailed);
         elevator.Operations.Should().Equal(AdminModeOperation.Disable);
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
         DotnetupConfig.Exists().Should().BeFalse();
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
@@ -199,14 +197,14 @@ public class AdminModeCommandTests : IDisposable
     public void Init_ModeShellWhileAdminDryRun_DoesNotDisable()
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell", "--dry-run", "--interactive", "false"]));
+        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell", "--dry-run", "--interactive", "false"]), _environment.Policy);
         var workflows = new InitWorkflows(_env, CreateSwitcher());
 
         workflows.RunInit(command, DotnetAccessMode.Shell).Should().BeEmpty();
 
         _elevator.Operations.Should().BeEmpty();
         _store.Writes.Should().BeEmpty();
-        DotnetupPolicy.IsAdminModeEnabled().Should().BeTrue();
+        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
         DotnetupConfig.Exists().Should().BeFalse();
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
     }
@@ -214,7 +212,7 @@ public class AdminModeCommandTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void Init_ModeAdminDryRun_DoesNotSwitch()
     {
-        var command = new InitCommand(Parser.Parse(["init", "--mode", "admin", "--dry-run"]));
+        var command = new InitCommand(Parser.Parse(["init", "--mode", "admin", "--dry-run"]), _environment.Policy);
 
         CreateInitWorkflows().RunInit(command, DotnetAccessMode.Admin).Should().BeEmpty();
 
@@ -222,8 +220,7 @@ public class AdminModeCommandTests : IDisposable
         _store.Writes.Should().BeEmpty();
     }
 
-    private AdminModeSwitcher CreateSwitcher()
-        => new(_elevator, () => false, AdminModeSwitcherTests.CreateConsole(new StringWriter()));
+    private AdminModeSwitcher CreateSwitcher() => _environment.CreateSwitcher(_elevator);
 
     private InitWorkflows CreateInitWorkflows() => new(_env, CreateSwitcher());
 

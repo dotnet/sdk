@@ -6,6 +6,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Microsoft.DotNet.Tools.Dotnetup.Tests;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using UrlSanitizer = Microsoft.Dotnet.Installation.Internal.UrlSanitizer;
 
@@ -124,7 +125,7 @@ public class TelemetryCommonPropertiesTests
             DotnetupConfig.Write(new DotnetupConfigData { AccessMode = configuredMode });
         }
 
-        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
+        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session", environment.Policy)
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         Assert.AreEqual(expectedMode, attributes[TelemetryTagNames.AccessMode]);
@@ -132,12 +133,14 @@ public class TelemetryCommonPropertiesTests
     }
 
     [TestMethod]
-    public void GetCommonAttributes_ResolverThrows_TagsAccessModeAsUnset()
+    [OSCondition(OperatingSystems.Windows)]
+    public void GetCommonAttributes_PolicyReadThrows_TagsAccessModeAsUnset()
     {
         using var environment = new AdminModeTestEnvironment();
-        AccessModeResolver.OverrideForTesting = () => throw new InvalidOperationException("boom");
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
+        var policy = new DotnetupPolicy(new FakeDotnetupPolicyStore { ReadFailure = new InvalidOperationException("boom") });
 
-        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
+        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session", policy)
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         Assert.AreEqual("unset", attributes[TelemetryTagNames.AccessMode]);

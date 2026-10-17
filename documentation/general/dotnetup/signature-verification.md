@@ -489,7 +489,11 @@ the user to choose a released version or escalate to their administrator.
 Authenticode-signed (Windows), because the replacement must then carry a
 Microsoft-rooted Authenticode signature before it is installed.
 
-The check is centralized in
+The policy is read through `DotnetupPolicy.IsUnsignedDownloadBlocked`
+(`src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetupPolicy.cs`), whose
+platform store reads the registry value (`WindowsRegistryPolicyStore`) or the
+sentinel file (`UnixPolicyStore`). The channel predicate and the policy constants
+live in
 `src/Installer/Microsoft.Dotnet.Installation/Internal/UnsignedSourcePolicy.cs`.
 The warning is emitted from `InstallExecutor.ExecuteInstalls` and
 `UpdateWorkflow.InstallVersion` before any progress UI is created; the policy block check

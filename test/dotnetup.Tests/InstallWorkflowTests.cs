@@ -10,6 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -23,6 +24,8 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class InstallWorkflowTests : IDisposable
 {
     private readonly string _tempDir;
+    private readonly FakeDotnetupPolicyStore _policyStore = new();
+    private readonly DotnetupPolicy _policy;
 
     public InstallWorkflowTests()
     {
@@ -30,12 +33,11 @@ public class InstallWorkflowTests : IDisposable
         Directory.CreateDirectory(_tempDir);
 
         DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
-        AccessModeResolver.OverrideForTesting = null;
+        _policy = new DotnetupPolicy(_policyStore);
     }
 
     public void Dispose()
     {
-        AccessModeResolver.OverrideForTesting = null;
         DotnetupPaths.ClearTestDataDirectoryOverride();
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
     }
@@ -82,7 +84,7 @@ public class InstallWorkflowTests : IDisposable
     [TestMethod]
     public void ShouldRunFirstUseOnboarding_ReturnsTrue_ForInteractiveInstallWithoutConfig()
     {
-        InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: true, installPath: null)
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: null)
             .Should().BeTrue();
     }
 
@@ -91,28 +93,28 @@ public class InstallWorkflowTests : IDisposable
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
 
-        InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: true, installPath: null)
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: null)
             .Should().BeFalse();
     }
 
     [TestMethod]
     public void ShouldRunFirstUseOnboarding_ReturnsFalse_ForExplicitInstallPath()
     {
-        InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: true, installPath: @"C:\custom\dotnet")
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: @"C:\custom\dotnet")
             .Should().BeFalse();
     }
 
     [TestMethod]
     public void ShouldRunFirstUseOnboarding_ReturnsFalse_ForNonInteractiveInstall()
     {
-        InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: false, installPath: null)
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: false, installPath: null)
             .Should().BeFalse();
     }
 
     [TestMethod]
     public void ShouldRunFirstUseOnboarding_ReturnsFalse_WhenMigrateFromSystemWasRequested()
     {
-        InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: true, installPath: null, migrateFromSystem: true)
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: null, migrateFromSystem: true)
             .Should().BeFalse();
     }
 
@@ -147,11 +149,12 @@ public class InstallWorkflowTests : IDisposable
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void ShouldRunFirstUseOnboarding_ReturnsFalse_InAdminMode()
     {
         UseAdminMode();
 
-        InstallWorkflow.ShouldRunFirstUseOnboarding(interactive: true, installPath: null)
+        InstallWorkflow.ShouldRunFirstUseOnboarding(ResolveAccessMode(), interactive: true, installPath: null)
             .Should().BeFalse();
     }
 
@@ -166,7 +169,7 @@ public class InstallWorkflowTests : IDisposable
     public void GenerateInstallRequests_AdminModeWithoutUntracked_ThrowsAdminModeRequiresUntracked(string[] arguments)
     {
         UseAdminMode();
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments)));
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments), _policy));
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
             workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")]));
@@ -194,7 +197,7 @@ public class InstallWorkflowTests : IDisposable
     public void GenerateInstallRequests_AdminModeWithUntracked_TargetsSystemRootWithInstallerBundle()
     {
         UseAdminMode();
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100", "--untracked"])));
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100", "--untracked"]), _policy));
         var expectedRoot = new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture());
 
         // The admin root is under Program Files, which ValidateInstallPath would reject with AdminPathBlocked.
@@ -225,7 +228,7 @@ public class InstallWorkflowTests : IDisposable
               }
             }
             """);
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "--untracked"])));
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "--untracked"]), _policy));
         var expectedRoot = new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture());
 
         string originalDirectory = Environment.CurrentDirectory;
@@ -246,8 +249,9 @@ public class InstallWorkflowTests : IDisposable
         resolved.Request.InstallRoot.Should().Be(expectedRoot);
     }
 
-    private static void UseAdminMode() =>
-        AccessModeResolver.OverrideForTesting = () => new EffectiveAccessMode(DotnetAccessMode.Admin, AccessModeSource.Policy);
+    private void UseAdminMode() => _policyStore.Values[DotnetupPolicy.AdminModeValueName] = true;
+
+    private EffectiveAccessMode ResolveAccessMode() => new AccessModeResolver(_policy).Resolve();
 
     #endregion
 }

@@ -14,7 +14,7 @@ internal class ElevatedSystemPathCommand : CommandBase
     private readonly string _outputFile;
     private readonly string? _dotnetDir;
 
-    public ElevatedSystemPathCommand(ParseResult result) : base(result, "elevatedsystempath")
+    public ElevatedSystemPathCommand(ParseResult result, DotnetupPolicy? policy = null) : base(result, "elevatedsystempath", policy)
     {
         _operation = result.GetValue(ElevatedSystemPathCommandParser.OperationArgument)!;
         _outputFile = result.GetValue(ElevatedSystemPathCommandParser.OutputFile)!;
@@ -79,23 +79,15 @@ internal class ElevatedSystemPathCommand : CommandBase
         {
             ElevatedSystemPathCommandParser.InsertDotnetOperation => InsertDotnet(_dotnetDir!),
             ElevatedSystemPathCommandParser.RemoveDotnetOperation => RemoveDotnet(_dotnetDir!),
-            ElevatedSystemPathCommandParser.EnableAdminModeOperation => ChangeAdminMode(enable: true),
-            ElevatedSystemPathCommandParser.DisableAdminModeOperation => ChangeAdminMode(enable: false),
+            ElevatedSystemPathCommandParser.EnableAdminModeOperation => ChangeAdminMode(AdminModeOperation.Enable),
+            ElevatedSystemPathCommandParser.DisableAdminModeOperation => ChangeAdminMode(AdminModeOperation.Disable),
             _ => throw new InvalidOperationException($"Unknown operation: {operation}")
         };
     }
 
-    private static int ChangeAdminMode(bool enable)
+    private int ChangeAdminMode(AdminModeOperation operation)
     {
-        if (enable)
-        {
-            DotnetupPolicy.EnableAdminMode();
-        }
-        else
-        {
-            DotnetupPolicy.DisableAdminMode();
-        }
-
+        AdminModeSwitcher.ApplyPolicyChange(Policy, operation);
         return 0;
     }
 

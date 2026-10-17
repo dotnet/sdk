@@ -17,11 +17,15 @@ internal class EnvSetCommand : CommandBase
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
+    /// <remarks>
+    /// The policy of <paramref name="adminModeSwitcher"/> is also the policy this command reads. Without a
+    /// switcher, the command uses the machine policy.
+    /// </remarks>
     public EnvSetCommand(
         ParseResult result,
         IDotnetEnvironmentManager? dotnetEnvironment = null,
         IEnvironmentStateInspector? inspector = null,
-        AdminModeSwitcher? adminModeSwitcher = null) : base(result, "env set")
+        AdminModeSwitcher? adminModeSwitcher = null) : base(result, "env set", adminModeSwitcher?.Policy)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
@@ -82,7 +86,7 @@ internal class EnvSetCommand : CommandBase
         // still active here, the user explicitly requested a non-admin mode. Disable admin mode first
         // (elevating if needed) before writing any user-level settings. Disable throws if elevation is
         // declined or the change fails, so nothing below is applied in that case.
-        if (AdminModeSwitcher.IsAdminModeActive())
+        if (AdminSwitcher.IsAdminModeActive())
         {
             AdminSwitcher.Disable();
         }
@@ -91,7 +95,7 @@ internal class EnvSetCommand : CommandBase
     }
 
     [AllowNull]
-    private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher();
+    private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher(Policy);
 
     /// <summary>
     /// Routes admin mode before anything else changes: <c>env set admin</c> only enables admin
@@ -106,7 +110,7 @@ internal class EnvSetCommand : CommandBase
             return true;
         }
 
-        if (_modeArg is null && AdminModeSwitcher.IsAdminModeActive())
+        if (_modeArg is null && AdminSwitcher.IsAdminModeActive())
         {
             AdminModeMessages.WriteAdminModeActive(SpectreAnsiConsole.Console);
             return true;
