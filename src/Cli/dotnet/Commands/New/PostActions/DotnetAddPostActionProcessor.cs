@@ -181,17 +181,16 @@ internal class DotnetAddPostActionProcessor(
 
         try
         {
-            // Read the evaluated project rather than Directory.Packages.props itself. NuGet's restore
-            // collects central versions from an evaluation with TargetFramework set, and
-            // Directory.Packages.props is imported before the project sets it, so Choose/When blocks
-            // and imports conditioned on the framework only resolve in that per-framework evaluation.
+            // Read the evaluated project rather than Directory.Packages.props itself, and evaluate it
+            // the way NuGet's restore does (NuGet.targets, _GenerateProjectRestoreGraphAllFrameworks
+            // and _GenerateProjectRestoreGraphCurrentProject): a project without TargetFrameworks is
+            // read from its own evaluation, a multi-targeting one once per framework with
+            // TargetFramework as a global property.
             using var projectCollection = new ProjectCollection();
             MSBuildProject outerProject = projectCollection.LoadProject(projectFile);
 
-            string targetFramework = outerProject.GetPropertyValue("TargetFramework");
-            string[] targetFrameworks = string.IsNullOrEmpty(targetFramework)
-                ? outerProject.GetPropertyValue("TargetFrameworks").Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                : [targetFramework];
+            string[] targetFrameworks = outerProject.GetPropertyValue("TargetFrameworks")
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
             if (targetFrameworks.Length == 0)
             {
                 return DeclaresCentralPackageVersion(outerProject, packageName);

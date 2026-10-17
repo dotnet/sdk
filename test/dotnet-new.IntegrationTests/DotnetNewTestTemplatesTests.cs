@@ -544,12 +544,61 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             string csproj = File.ReadAllText(Path.Combine(outputDirectory, $"{testProjectName}.csproj"));
             csproj.Should().Contain("Include=\"NUnit\"");
-            csproj.Should().NotContain("Version=\"*\"");
 
             // The framework-specific entry stays as it was and the template version gets its own entry.
             string packagesProps = File.ReadAllText(Path.Combine(outputDirectory, "Directory.Packages.props"));
             packagesProps.Should().Contain("<PackageVersion Include=\"NUnit\" Version=\"4.5.0\" Condition=\"'$(TargetFramework)' == 'net472'\" />");
-            packagesProps.Should().Contain("<PackageVersion Include=\"NUnit\" Version=\"4.6.1\" />");
+            packagesProps.Should().MatchRegex("<PackageVersion Include=\"NUnit\" Version=\"[^\"*]+\" />");
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
+        public void TestProjectTemplate_WithCentralVersionChosenForTheFramework_PassesTheTemplateVersionAndRestores()
+        {
+            string testProjectName = GenerateTestProjectName();
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+
+            // Prevent the global.json post action from walking up the directory parents.
+            Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
+
+            // A Choose/When on TargetFramework is resolved before a single-target project sets it, so
+            // restore never sees this entry. Omitting the template version makes NuGet write an
+            // unconditioned Version="*" and every restore under this file fail with NU1011.
+            string packagesPropsPath = Path.Combine(outputDirectory, "Directory.Packages.props");
+            File.WriteAllText(
+                packagesPropsPath,
+                """
+                <Project>
+                  <PropertyGroup>
+                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                  </PropertyGroup>
+                  <Choose>
+                    <When Condition="'$(TargetFramework)' != ''">
+                      <ItemGroup>
+                        <PackageVersion Include="NUnit" Version="4.5.0" />
+                      </ItemGroup>
+                    </When>
+                  </Choose>
+                </Project>
+                """);
+
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, $"nunit -n {testProjectName} -o {outputDirectory}")
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.NotHaveStdOutContaining("NU1011")
+                .And.NotHaveStdErrContaining("NU1011");
+
+            // The pin inside Choose stays and the template version gets its own entry next to it.
+            string packagesProps = File.ReadAllText(packagesPropsPath);
+            packagesProps.Should().NotContain("Version=\"*\"");
+            Regex.Matches(packagesProps, "<PackageVersion Include=\"NUnit\" Version=\"[^\"*]+\" />").Count.Should().Be(2);
 
             DeleteDirectoryWithRetry(outputDirectory);
             DeleteDirectoryWithRetry(workingDirectory);

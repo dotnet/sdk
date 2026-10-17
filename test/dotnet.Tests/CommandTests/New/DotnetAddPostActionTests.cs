@@ -394,37 +394,61 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.IsNull(version);
         }
 
+        // Choose/When blocks and Import conditions are resolved while properties are evaluated,
+        // before the project sets TargetFramework. NuGet's restore reads a single-target project
+        // from that same evaluation, so it never sees these entries there and the template
+        // version has to be passed; a multi-targeting project is restored per framework, with
+        // TargetFramework set, and does see them.
+        private const string ChooseOnTargetFramework = """
+            <Project>
+              <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
+              <Choose>
+                <When Condition="'$(TargetFramework)' != ''">
+                  <ItemGroup><PackageVersion Include="NUnit" Version="4.5.0" /></ItemGroup>
+                </When>
+              </Choose>
+            </Project>
+            """;
+
+        private const string ImportOnTargetFramework = """
+            <Project>
+              <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
+              <Import Project="pins.props" Condition="'$(TargetFramework)' != ''" />
+            </Project>
+            """;
+
+        private const string NUnitPins = """<Project><ItemGroup><PackageVersion Include="NUnit" Version="4.5.0" /></ItemGroup></Project>""";
+
+        private const string MultiTargetFrameworks = $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};netstandard2.0</TargetFrameworks>";
+
         [TestMethod]
-        public void AddPackageRefKeepsACentralPackageVersionChosenForTheProjectFramework()
+        public void AddPackageRefUsesTheTemplateVersionWhenASingleTargetProjectOnlyChoosesTheEntryForItsFramework()
         {
-            // Choose/When is resolved while properties are evaluated, before the project sets
-            // TargetFramework, so only an evaluation with TargetFramework set sees this entry.
-            string? version = AddNUnitUnderCentralPackageManagement($"""
-                <Project>
-                  <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
-                  <Choose>
-                    <When Condition="'$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'">
-                      <ItemGroup><PackageVersion Include="NUnit" Version="4.5.0" /></ItemGroup>
-                    </When>
-                  </Choose>
-                </Project>
-                """);
+            string? version = AddNUnitUnderCentralPackageManagement(ChooseOnTargetFramework);
+
+            Assert.AreEqual("4.6.1", version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefUsesTheTemplateVersionWhenASingleTargetProjectOnlyImportsTheEntryForItsFramework()
+        {
+            string? version = AddNUnitUnderCentralPackageManagement(ImportOnTargetFramework, pinsProps: NUnitPins);
+
+            Assert.AreEqual("4.6.1", version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsACentralPackageVersionChosenForEveryFrameworkOfAMultiTargetProject()
+        {
+            string? version = AddNUnitUnderCentralPackageManagement(ChooseOnTargetFramework, targetFrameworkProperty: MultiTargetFrameworks);
 
             Assert.IsNull(version);
         }
 
         [TestMethod]
-        public void AddPackageRefKeepsACentralPackageVersionImportedForTheProjectFramework()
+        public void AddPackageRefKeepsACentralPackageVersionImportedForEveryFrameworkOfAMultiTargetProject()
         {
-            // Import conditions are also resolved before the project sets TargetFramework.
-            string? version = AddNUnitUnderCentralPackageManagement(
-                $"""
-                <Project>
-                  <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
-                  <Import Project="pins.props" Condition="'$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'" />
-                </Project>
-                """,
-                pinsProps: """<Project><ItemGroup><PackageVersion Include="NUnit" Version="4.5.0" /></ItemGroup></Project>""");
+            string? version = AddNUnitUnderCentralPackageManagement(ImportOnTargetFramework, pinsProps: NUnitPins, targetFrameworkProperty: MultiTargetFrameworks);
 
             Assert.IsNull(version);
         }
