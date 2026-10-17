@@ -1,0 +1,46 @@
+# Repository-maintained replacement for the generated agentic-auto-upgrade.yml.
+# Keep auto_upgrade disabled in aw.json so gh aw compile does not regenerate it.
+# GH_AW_GITHUB_TOKEN must allow pushing workflow changes and creating pull requests.
+#
+name: Agentic Auto-Upgrade
+
+on:
+  schedule:
+    - cron: "54 21 * * 0"  # Weekly (auto-upgrade)
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  auto-upgrade:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install latest stable gh-aw
+        uses: github/gh-aw-actions/setup-cli@924af5fdc64061cfbf66fb584c8b07e2ac230c60 # v0.89.21
+        with:
+          version: latest
+
+      - name: Upgrade workflows and create pull request
+        env:
+          GH_TOKEN: ${{ secrets.GH_AW_GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "$GH_TOKEN" ]; then
+            echo "::error::GH_AW_GITHUB_TOKEN is required to push workflow changes and create pull requests."
+            exit 1
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          gh auth setup-git
+          gh aw upgrade --create-pull-request --yes
