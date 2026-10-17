@@ -168,8 +168,7 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
                 }
                 catch (Exception e)
                 {
-                    Logger.Log(LogEvents.UpdateBatchFailedWithError, batchId, e.Message);
-                    Logger.Log(LogEvents.UpdateBatchExceptionStackTrace, batchId, e.StackTrace ?? "");
+                    Logger.Log(LogEvents.UpdateBatchFailedWithError, batchId, e.ToString());
                     completionSource.SetResult(false);
                 }
             }, applyOperationCancellationToken);
