@@ -71,6 +71,11 @@ internal static class EnvironmentVariables
     public static string? BrowserPath => Environment.GetEnvironmentVariable("DOTNET_WATCH_BROWSER_PATH");
 
     /// <summary>
+    /// Startup hooks inherited by dotnet-watch. The application launched by `dotnet run` would inherit them as well.
+    /// </summary>
+    public static string? DotNetStartupHooks => Environment.GetEnvironmentVariable(Names.DotNetStartupHooks);
+
+    /// <summary>
     /// Port for WebSocket hot reload communication. Used for projects with the HotReloadWebSockets capability.
     /// Mobile workloads (Android, iOS) add this capability. Defaults to 0 (auto-assign) if not specified.
     /// </summary>
