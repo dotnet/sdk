@@ -224,6 +224,8 @@ public class PreferQuotedFileBasedProgramDirectiveTests
     [DataRow("#:package Package@1.0.0 ExcludeAssets=runtime PrivateAssets=all")]
     [DataRow("#:project ../Lib Private=false")]
     [DataRow("#:ref ../lib.cs Aliases=lib")]
+    [DataRow("#:include data.json CopyToOutputDirectory=PreserveNewest Note=value Empty=")]
+    [DataRow("#:include \"data file.json\" CopyToOutputDirectory = PreserveNewest Note=\"two words\"")]
     public async Task NewForm_NoDiagnosticAsync(string directive)
     {
         await new VerifyCS.Test
