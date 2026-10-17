@@ -20,21 +20,26 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         public override FixCategory Category => FixCategory.Whitespace;
 
         internal override async Task<SourceText> FormatFileAsync(
-            Document document,
+            TextDocument document,
             SourceText sourceText,
-            OptionSet optionSet,
             AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            if (document is not Document sourceDocument)
+            {
+                return sourceText;
+            }
+
+            var optionSet = await sourceDocument.GetOptionsAsync(cancellationToken);
             if (formatOptions.SaveFormattedFiles)
             {
-                return await GetFormattedDocument(document, optionSet, cancellationToken);
+                return await GetFormattedDocument(sourceDocument, optionSet, cancellationToken);
             }
             else
             {
-                return await GetFormattedDocumentWithDetailedChanges(document, sourceText, optionSet, cancellationToken);
+                return await GetFormattedDocumentWithDetailedChanges(sourceDocument, sourceText, optionSet, cancellationToken);
             }
         }
 
