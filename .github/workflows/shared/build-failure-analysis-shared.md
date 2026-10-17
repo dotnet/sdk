@@ -30,7 +30,14 @@
 description: "Shared body for build-failure-analysis workflows"
 
 # Threat detection inherits this model. Preserve the agent/default overrides.
-model: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'gpt-5.6-sol' }}
+# The compatible default avoids OpenAI Responses rejecting ctc_call edit-tool IDs.
+model: ${{ vars.GH_AW_MODEL_AGENT_COPILOT || vars.GH_AW_DEFAULT_MODEL_COPILOT || 'claude-sonnet-5' }}
+
+jobs:
+  detection:
+    # v0.89.21 concludes a skipped detector as agent_failure when its binary was
+    # not installed. Do not start that job unless there is something to inspect.
+    if: needs.agent.outputs.output_types != '' || needs.agent.outputs.has_patch == 'true'
 
 network:
   allowed:
