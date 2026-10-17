@@ -173,6 +173,7 @@ internal class DotnetAddPostActionProcessor(
 
     internal static bool HasCentralPackageVersion(string projectFile, string packageName)
     {
+        // MSBuild evaluates from the real disk, so check there rather than through the host file system.
         if (!File.Exists(projectFile))
         {
             return false;
@@ -180,21 +181,37 @@ internal class DotnetAddPostActionProcessor(
 
         try
         {
-            // Read the evaluated project rather than Directory.Packages.props itself, so a central
-            // file that imports its parent and PackageVersion items conditioned on the target
-            // framework resolve to the entries NuGet will actually use.
+            // Read the evaluated project rather than Directory.Packages.props itself. NuGet's restore
+            // collects central versions from an evaluation with TargetFramework set, and
+            // Directory.Packages.props is imported before the project sets it, so Choose/When blocks
+            // and imports conditioned on the framework only resolve in that per-framework evaluation.
             using var projectCollection = new ProjectCollection();
-            MSBuildProject project = projectCollection.LoadProject(projectFile);
+            MSBuildProject outerProject = projectCollection.LoadProject(projectFile);
 
-            return string.Equals(project.GetPropertyValue("ManagePackageVersionsCentrally"), "true", StringComparison.OrdinalIgnoreCase)
-                && project.GetItems("PackageVersion").Any(item => string.Equals(item.EvaluatedInclude, packageName, StringComparison.OrdinalIgnoreCase));
+            string targetFramework = outerProject.GetPropertyValue("TargetFramework");
+            string[] targetFrameworks = string.IsNullOrEmpty(targetFramework)
+                ? outerProject.GetPropertyValue("TargetFrameworks").Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                : [targetFramework];
+            if (targetFrameworks.Length == 0)
+            {
+                return DeclaresCentralPackageVersion(outerProject, packageName);
+            }
+
+            // The template version is only dropped when every framework already has an entry.
+            return targetFrameworks.All(tfm => DeclaresCentralPackageVersion(
+                projectCollection.LoadProject(projectFile, new Dictionary<string, string> { ["TargetFramework"] = tfm }, toolsVersion: null),
+                packageName));
         }
-        catch (InvalidProjectFileException)
+        catch (Exception e) when (e is InvalidProjectFileException or IOException or UnauthorizedAccessException)
         {
             // A project that does not evaluate keeps the previous behaviour: the template version is passed.
             return false;
         }
     }
+
+    private static bool DeclaresCentralPackageVersion(MSBuildProject project, string packageName)
+        => string.Equals(project.GetPropertyValue("ManagePackageVersionsCentrally"), "true", StringComparison.OrdinalIgnoreCase)
+            && project.GetItems("PackageVersion").Any(item => string.Equals(item.EvaluatedInclude, packageName, StringComparison.OrdinalIgnoreCase));
 
     private bool AddPackageReference(string projectPath, string packageName, string? version, bool noRestore)
     {

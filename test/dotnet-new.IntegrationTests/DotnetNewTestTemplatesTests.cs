@@ -546,6 +546,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             csproj.Should().Contain("Include=\"NUnit\"");
             csproj.Should().NotContain("Version=\"*\"");
 
+            // The framework-specific entry stays as it was and the template version gets its own entry.
+            string packagesProps = File.ReadAllText(Path.Combine(outputDirectory, "Directory.Packages.props"));
+            packagesProps.Should().Contain("<PackageVersion Include=\"NUnit\" Version=\"4.5.0\" Condition=\"'$(TargetFramework)' == 'net472'\" />");
+            packagesProps.Should().Contain("<PackageVersion Include=\"NUnit\" Version=\"4.6.1\" />");
+
             DeleteDirectoryWithRetry(outputDirectory);
             DeleteDirectoryWithRetry(workingDirectory);
         }
@@ -661,7 +666,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Select(p => p.Split('='))
                 .ToDictionary(p => p[0], p => (string?)p[1]);
 
-            foreach (string hostIdentifier in new[] { "vs", "dotnetcli" })
+            foreach (string hostIdentifier in new[] { "vs", "dotnetcli", "dotnetcli-preview" })
             {
                 var host = new DefaultTemplateEngineHost(
                     hostIdentifier,
@@ -681,13 +686,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 result.Status.Should().Be(CreationResultStatus.Success, result.ErrorMessage);
 
                 string projectFile = File.ReadAllText(Directory.GetFiles(outputDirectory, "TestProject.*proj").Single());
-                bool addedByPostAction = result.CreationResult!.PostActions.Any(a =>
+                IReadOnlyList<IPostAction> postActions = result.CreationResult!.PostActions;
+                bool addedByPostAction = postActions.Any(a =>
                     a.ActionId == addReferenceActionId && a.Args.TryGetValue("reference", out string? reference) && reference == package);
 
                 if (hostIdentifier == "vs")
                 {
                     projectFile.Should().MatchRegex($"<PackageReference Include=\"{Regex.Escape(package)}\" Version=\"[^\"]+\" />");
-                    addedByPostAction.Should().BeFalse();
+                    postActions.Should().NotContain(a => a.ActionId == addReferenceActionId);
                 }
                 else
                 {

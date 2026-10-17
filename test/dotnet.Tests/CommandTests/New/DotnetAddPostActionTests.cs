@@ -394,6 +394,62 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.IsNull(version);
         }
 
+        [TestMethod]
+        public void AddPackageRefKeepsACentralPackageVersionChosenForTheProjectFramework()
+        {
+            // Choose/When is resolved while properties are evaluated, before the project sets
+            // TargetFramework, so only an evaluation with TargetFramework set sees this entry.
+            string? version = AddNUnitUnderCentralPackageManagement($"""
+                <Project>
+                  <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
+                  <Choose>
+                    <When Condition="'$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'">
+                      <ItemGroup><PackageVersion Include="NUnit" Version="4.5.0" /></ItemGroup>
+                    </When>
+                  </Choose>
+                </Project>
+                """);
+
+            Assert.IsNull(version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsACentralPackageVersionImportedForTheProjectFramework()
+        {
+            // Import conditions are also resolved before the project sets TargetFramework.
+            string? version = AddNUnitUnderCentralPackageManagement(
+                $"""
+                <Project>
+                  <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
+                  <Import Project="pins.props" Condition="'$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'" />
+                </Project>
+                """,
+                pinsProps: """<Project><ItemGroup><PackageVersion Include="NUnit" Version="4.5.0" /></ItemGroup></Project>""");
+
+            Assert.IsNull(version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefUsesTheTemplateVersionWhenOnlySomeFrameworksHaveACentralEntry()
+        {
+            // Omitting the version is only safe when every target framework resolves an entry.
+            string? version = AddNUnitUnderCentralPackageManagement(
+                CentralPackagesFile($"""<PackageVersion Include="NUnit" Version="4.5.0" Condition="'$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'" />"""),
+                targetFrameworkProperty: $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};netstandard2.0</TargetFrameworks>");
+
+            Assert.AreEqual("4.6.1", version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsACentralPackageVersionThatEveryFrameworkHas()
+        {
+            string? version = AddNUnitUnderCentralPackageManagement(
+                CentralPackagesFile("""<PackageVersion Include="NUnit" Version="4.5.0" />"""),
+                targetFrameworkProperty: $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};netstandard2.0</TargetFrameworks>");
+
+            Assert.IsNull(version);
+        }
+
         private static string CentralPackagesFile(string packageVersionItem) => $"""
             <Project>
               <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
@@ -406,7 +462,12 @@ namespace Microsoft.DotNet.Cli.New.Tests
         /// central version lookup evaluates the project with MSBuild, and returns the version
         /// that reached the callback.
         /// </summary>
-        private string? AddNUnitUnderCentralPackageManagement(string directoryPackagesProps, string? parentDirectoryPackagesProps = null, [CallerMemberName] string testName = "")
+        private string? AddNUnitUnderCentralPackageManagement(
+            string directoryPackagesProps,
+            string? parentDirectoryPackagesProps = null,
+            string? pinsProps = null,
+            string targetFrameworkProperty = $"<TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>",
+            [CallerMemberName] string testName = "")
         {
             string repositoryRoot = TestAssetsManager.CreateTestDirectory(testName).Path;
             string projectDirectory = repositoryRoot;
@@ -417,9 +478,14 @@ namespace Microsoft.DotNet.Cli.New.Tests
             }
 
             File.WriteAllText(Path.Combine(projectDirectory, "Directory.Packages.props"), directoryPackagesProps);
+            if (pinsProps is not null)
+            {
+                File.WriteAllText(Path.Combine(projectDirectory, "pins.props"), pinsProps);
+            }
+
             File.WriteAllText(Path.Combine(projectDirectory, "MyApp.csproj"), $"""
                 <Project Sdk="Microsoft.NET.Sdk">
-                  <PropertyGroup><TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework></PropertyGroup>
+                  <PropertyGroup>{targetFrameworkProperty}</PropertyGroup>
                 </Project>
                 """);
 
