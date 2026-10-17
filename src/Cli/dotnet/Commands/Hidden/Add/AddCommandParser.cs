@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
+using Microsoft.DotNet.Cli.Commands.Sdk.Add;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
@@ -16,5 +17,6 @@ internal static class AddCommandParser
 
         PackageCommandParser.ConfigureAddCommand(command.PackageCommand);
         command.ReferenceCommand.SetAction(parseResult => new ReferenceAddCommand(parseResult).Execute());
+        command.SdkCommand.SetAction(parseResult => new SdkAddCommand(parseResult).Execute());
     }
 }
