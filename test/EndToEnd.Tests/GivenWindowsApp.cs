@@ -18,8 +18,8 @@ namespace EndToEnd.Tests
         [DataRow("10.0.20348.0")]
         [DataRow("10.0.22000.0")]
         [DataRow("10.0.22621.0")]
-        // Skipped due to: https://github.com/dotnet/sdk/pull/42090/files#r1680016439
-        //[DataRow("10.0.26100.0")]
+        [DataRow("10.0.26100.0")]
+        [DataRow("10.0.28000.0")]
         [DataRow("10.0.22621.0", "34")]
         public void ItCanBuildAndRun(string targetPlatformVersion, string packageVersion = "")
         {
@@ -47,7 +47,7 @@ namespace EndToEnd.Tests
             else
             {
                 project.Root.Element(ns + "PropertyGroup")
-                    .Element(ns + "WindowsSdkPackageVersion").Value = targetPlatformVersion[..^1] + "39"; // Temporary until new projections flow to tests
+                    .Element(ns + "WindowsSdkPackageVersion").Remove();
             }
 
             project.Save(projectPath);
