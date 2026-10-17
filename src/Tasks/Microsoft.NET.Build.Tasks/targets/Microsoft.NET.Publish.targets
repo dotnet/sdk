@@ -722,6 +722,35 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="ResolvedAssets" ItemName="_ResolvedCopyLocalPublishAssets" />
     </ResolveCopyLocalAssets>
 
+    <!-- ResolveCopyLocalAssets reads the assets file again for store-layout and runtime-store publish.
+         Its output bypasses FilterRuntimeAssetsByRuntimeIdentifier in Microsoft.PackageDependencyResolution.targets.
+         Apply the same RID filter here, but leave assets without RuntimeIdentifier metadata unchanged.
+         RuntimePackAsset items are added below because their selection must remain independent of this package asset filter. -->
+    <ItemGroup Condition="'$(BundledRuntimeAssetRuntimeIdentifiers)' != '' and '$(RuntimeIdentifierGraphPath)' != '' and Exists('$(RuntimeIdentifierGraphPath)')">
+      <_RuntimeAssetsForPublishFilter Include="@(_ResolvedCopyLocalPublishAssets)"
+                                       Condition="'%(_ResolvedCopyLocalPublishAssets.RuntimeIdentifier)' != ''" />
+      <_RuntimeAssetFilterRids Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
+    </ItemGroup>
+
+    <!-- Skip selection when there are no RID assets to filter, including when the filter is disabled.
+         Otherwise, an empty RID batch would omit the task's required TargetRuntimeIdentifier parameter. -->
+    <SelectRuntimeIdentifierSpecificItems
+        Items="@(_RuntimeAssetsForPublishFilter)"
+        TargetRuntimeIdentifier="%(_RuntimeAssetFilterRids.Identity)"
+        RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
+        Condition="'@(_RuntimeAssetsForPublishFilter)' != ''">
+      <Output TaskParameter="SelectedItems" ItemName="_FilteredRuntimeAssetsForPublish" />
+    </SelectRuntimeIdentifierSpecificItems>
+
+    <!-- Replace only RID assets and deduplicate assets selected by multiple compatible filter RIDs.
+         Non-RID assets remain in the original list and must not be added again. -->
+    <ItemGroup Condition="'$(BundledRuntimeAssetRuntimeIdentifiers)' != '' and '$(RuntimeIdentifierGraphPath)' != '' and Exists('$(RuntimeIdentifierGraphPath)')">
+      <_ResolvedCopyLocalPublishAssets Remove="@(_RuntimeAssetsForPublishFilter)" />
+      <_ResolvedCopyLocalPublishAssets Include="@(_FilteredRuntimeAssetsForPublish->Distinct())" />
+      <_RuntimeAssetsForPublishFilter Remove="@(_RuntimeAssetsForPublishFilter)" />
+      <_FilteredRuntimeAssetsForPublish Remove="@(_FilteredRuntimeAssetsForPublish)" />
+      <_RuntimeAssetFilterRids Remove="@(_RuntimeAssetFilterRids)" />
+    </ItemGroup>
 
     <ItemGroup>
       <_ResolvedCopyLocalPublishAssets Include="@(RuntimePackAsset)"
@@ -1190,17 +1219,21 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_ComputeUseBuildDependencyFile"
-          DependsOnTargets="_ComputePackageReferencePublish;
+          DependsOnTargets="_ComputeBundledRuntimeAssetRuntimeIdentifiersMatchBuild;
+                            _ComputePackageReferencePublish;
                             _ParseTargetManifestFiles">
     <!-- Check to see whether we can re-use the .deps.json file from the build for publish, or whether we have to
-         generate a different one. -->
+         generate a different one.
+         _ComputeBundledRuntimeAssetRuntimeIdentifiersMatchBuild in Microsoft.NET.Sdk.targets checks the saved build filter.
+         A different publish filter requires a separate manifest, even when NoBuild=true. -->
     <PropertyGroup>
       <_TrimRuntimeAssets Condition="'$(PublishSingleFile)' == 'true' and '$(SelfContained)' == 'true'">true</_TrimRuntimeAssets>
       <_UseBuildDependencyFile Condition="'@(_ExcludeFromPublishPackageReference)' == '' and
                                           '@(RuntimeStorePackages)' == '' and
                                           '$(PreserveStoreLayout)' != 'true' and
                                           '$(PublishTrimmed)' != 'true' and
-                                          '$(_TrimRuntimeAssets)' != 'true'">true</_UseBuildDependencyFile>
+                                          '$(_TrimRuntimeAssets)' != 'true' and
+                                          '$(_BundledRuntimeAssetRuntimeIdentifiersMatchBuild)' == 'true'">true</_UseBuildDependencyFile>
     </PropertyGroup>
 
   </Target>
@@ -1373,6 +1406,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
+  <!-- GeneratePublishDependencyFile (below) uses this cache as a timestamp input for its GenerateDepsFile task.
+       These properties affect task parameters or the items supplied to that task.
+       BundledRuntimeAssetRuntimeIdentifiers changes RuntimeTargetsCopyLocalItems through
+       FilterRuntimeAssetsByRuntimeIdentifier in Microsoft.PackageDependencyResolution.targets.
+       GenerateDepsFile receives those items as ResolvedRuntimeTargetsFiles.
+       Include the filter so repeated NoBuild publishes regenerate deps when the filter changes or is cleared. -->
   <Target Name="_GeneratePublishDependencyFileInputCache"
           DependsOnTargets="_ComputeIntermediateDepsFilePath">
     <ItemGroup>
@@ -1392,6 +1431,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeFileVersionsInDependencyFile)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(RuntimeIdentifierGraphPath)" />
       <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(IncludeProjectsNotInAssetsFileInDepsFile)" />
+      <_GeneratePublishDependencyFilePropertyInputsCacheToHash Include="$(BundledRuntimeAssetRuntimeIdentifiers)" />
     </ItemGroup>
 
     <Hash ItemsToHash="@(_GeneratePublishDependencyFilePropertyInputsCacheToHash)">
