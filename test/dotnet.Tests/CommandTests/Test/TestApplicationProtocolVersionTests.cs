@@ -13,6 +13,8 @@ public class TestApplicationProtocolVersionTests
     [DataRow("1.0.0;1.1.0", "1.1.0")]
     [DataRow("1.0.0", "1.0.0")]
     [DataRow("1.1.0", "1.1.0")]
+    [DataRow("1.3.0;1.4.0", "1.4.0")]
+    [DataRow("1.5.0;1.0.0;1.4.0", "1.5.0")]
     [DataRow("2.0.0", "")]
     [DataRow("", "")]
     [DataRow(null, "")]

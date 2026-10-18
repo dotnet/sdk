@@ -16,6 +16,7 @@ internal static class CliConstants
     public const string DotNetTestHttpTransportValue = "http";
     public const string ArtifactPostProcessingToolName = "internal-merge-artifacts";
     public const string ArtifactPostProcessingManifestOptionKey = "--manifest";
+    public const string ComputeTestingPlatformRunArgumentsTarget = "ComputeTestingPlatformRunArguments";
 
     public const string SemiColon = ";";
 
@@ -102,6 +103,14 @@ internal static class HandshakeMessagePropertyNames
     internal const byte SupportedPostProcessorExtensionsLegacy = 15;
     internal const byte SupportedTruncatedRunPostProcessorKinds = 16;
     internal const byte SupportedTruncatedRunPostProcessorExtensionsLegacy = 17;
+    internal const byte RequiredPostProcessorKinds = 18;
+    internal const byte RequiredPostProcessingSupported = 19;
+    internal const byte ServerControlTransport = 20;
+    internal const byte FileArtifactTransfer = 21;
+    internal const byte FileArtifactTransferMaxChunkBytes = 22;
+    internal const byte FileArtifactTransferMaxFileBytes = 23;
+    internal const byte FileArtifactTransferMaxModuleBytes = 24;
+    internal const byte FileArtifactTransferMaxFileCount = 25;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -132,9 +141,9 @@ internal static class ProtocolConstants
     /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
     /// </summary>
     // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding; 1.3.0 adds DisplayMessage (serializer id 12) forwarding.
-    // NOTE: 1.4.0 (the reverse server-control pipe / server-initiated cancellation) is intentionally NOT advertised yet:
-    // it is a separate, larger feature that is out of scope here.
-    internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0";
+    // 1.4.0 adds server control; 1.5.0 adds chunked artifact transfer. Transport capabilities
+    // are negotiated separately so older peers retain their existing behavior.
+    internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0;1.4.0;1.5.0";
 }
 
 internal static class ServerControlKinds
@@ -155,6 +164,9 @@ internal static class ProjectProperties
     internal const string RunCommand = "RunCommand";
     internal const string RunArguments = "RunArguments";
     internal const string RunWorkingDirectory = "RunWorkingDirectory";
+    internal const string TestingPlatformRunCommand = "TestingPlatformRunCommand";
+    internal const string TestingPlatformRunArguments = "TestingPlatformRunArguments";
+    internal const string TestingPlatformRunWorkingDirectory = "TestingPlatformRunWorkingDirectory";
     internal const string AppDesignerFolder = "AppDesignerFolder";
     internal const string TestTfmsInParallel = "TestTfmsInParallel";
     internal const string BuildInParallel = "BuildInParallel";

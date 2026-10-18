@@ -22,6 +22,7 @@ are colocated under
 | Full repository build and suite | [Root instructions](../../AGENTS.md#build-and-test) and [Developer Guide](../../documentation/project-docs/developer-guide.md#running-tests) |
 | Helix publishing and partitioning | [`test/UnitTests.proj`](../../test/UnitTests.proj) |
 | Reproducing a Helix layout locally | [`repro-helix-failure.md`](../../documentation/project-docs/repro-helix-failure.md) |
+| Composed SDK/TestFX browser regression gate | [`RunBrowserTests.ps1`](../../eng/browser-testing/RunBrowserTests.ps1) and the [`run-tests` skill](../skills/run-tests/SKILL.md#composed-browser-validation) |
 
 ## Strategy
 
@@ -34,3 +35,6 @@ are colocated under
 - Reserve the full repository suite for broad validation; a whole-project local run is
   not equivalent to the complete suite.
 - Treat the Helix filesystem as a deployed test layout rather than a repository checkout.
+- Browser compatibility requires the real source-matched SDK and TestFX package set,
+  not merely green independent builds. The TestFX-owned case manifest defines required
+  execution; the shared runner rejects missing, skipped and inconclusive cases.

@@ -21,6 +21,7 @@ internal sealed class TestApplicationHandler
     private readonly TestApplicationSettings _testApplicationSettings;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
+    private readonly HashSet<string> _artifactTransferInstances = new(StringComparer.Ordinal);
 
     private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
     private bool _receivedTestHostHandshake;
@@ -188,8 +189,20 @@ internal sealed class TestApplicationHandler
                 handshakeMessage);
         }
 
+        if (hostType is HandshakeMessageHostTypes.TestHost or HandshakeMessageHostTypes.ArtifactPostProcessor &&
+            handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.InstanceId, out string? artifactInstanceId) &&
+            !string.IsNullOrWhiteSpace(artifactInstanceId))
+        {
+            _artifactTransferInstances.Add(artifactInstanceId);
+        }
+
         return true;
     }
+
+    internal bool CanReceiveArtifactTransfer(string? executionId, string? instanceId)
+        => !_options.IsHelp && !_handshakeRejected && _handshakeInfo.HasValue &&
+           _handshakeInfo.Value.ExecutionId == executionId &&
+           instanceId is not null && _artifactTransferInstances.Contains(instanceId);
 
     private bool IsExpectedExecutionMode(string reportedMode, out string expectedMode)
     {
