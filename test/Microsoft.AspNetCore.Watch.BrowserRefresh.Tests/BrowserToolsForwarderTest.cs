@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh;
 
@@ -191,6 +193,8 @@ public class BrowserToolsForwarderTest
         });
 
         await using var application = await StartForwarderAsync(GetAddress(provider));
+        var errorLogger = new ErrorLoggerProvider();
+        application.Services.GetRequiredService<ILoggerFactory>().AddProvider(errorLogger);
         var browserSockets = new List<ClientWebSocket>();
         Task? shutdown = null;
         try
@@ -213,6 +217,7 @@ public class BrowserToolsForwarderTest
             await providerDisconnected.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
             Assert.IsTrue(application.Lifetime.ApplicationStopped.IsCancellationRequested);
+            Assert.IsEmpty(errorLogger.Errors);
         }
         finally
         {
@@ -364,6 +369,24 @@ public class BrowserToolsForwarderTest
             .Addresses;
 
         return new Uri(addresses.Single());
+    }
+
+    private sealed class ErrorLoggerProvider : ILoggerProvider, ILogger
+    {
+        public ConcurrentQueue<string> Errors { get; } = new();
+
+        public ILogger CreateLogger(string categoryName) => this;
+        public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Error;
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public void Dispose() { }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (IsEnabled(logLevel))
+            {
+                Errors.Enqueue(formatter(state, exception));
+            }
+        }
     }
 
     private sealed class CloseReceivingWebSocket : WebSocket

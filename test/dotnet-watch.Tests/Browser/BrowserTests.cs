@@ -92,6 +92,7 @@ public class BrowserTests : DotNetWatchTestBase
 
         // Verify the browser connected to the refresh server.
         await App.WaitUntilOutputContains(MessageDescriptor.ConnectedToRefreshServer, "Browser #1");
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
 
         App.Process.ClearOutput();
 
@@ -124,6 +125,8 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"Reload"}
             """);
 
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
+
         // no other browser message sent:
         Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
 
@@ -147,6 +150,8 @@ public class BrowserTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains("""
             🧪 Received: {"type":"Reload"}
             """);
+
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
 
         // no other browser message sent:
         Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
