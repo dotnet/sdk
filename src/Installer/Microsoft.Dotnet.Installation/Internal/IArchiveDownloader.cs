@@ -28,7 +28,7 @@ internal interface IArchiveDownloader
 
     /// <summary>
     /// Downloads and verifies the artifact like <see cref="DownloadArchiveWithVerification"/>, and also returns the
-    /// expected hash the download was verified against and whether it came from the unsigned blob feed.
+    /// expected hash the download was verified against and whether unsigned-download policy applies.
     /// </summary>
     /// <param name="installRequest">The installation request containing component and install root info.</param>
     /// <param name="resolvedVersion">The resolved version to download.</param>
@@ -44,5 +44,8 @@ internal interface IArchiveDownloader
 /// <summary>A downloaded artifact and the facts its verification established.</summary>
 /// <param name="Path">Full path of the downloaded file, including the resolved file extension.</param>
 /// <param name="ExpectedHash">The SHA-512 hash the download was verified against.</param>
-/// <param name="IsUnsigned">True when the file came from the unsigned blob feed rather than the signed releases manifest.</param>
+/// <param name="IsUnsigned">
+/// True when the hash was obtained without authenticated release metadata, so unsigned-download policy applies.
+/// This does not describe the file's Authenticode signature; installer signature verification is separate.
+/// </param>
 internal sealed record VerifiedDownload(string Path, string ExpectedHash, bool IsUnsigned);

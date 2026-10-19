@@ -113,9 +113,11 @@
         <note />
       </trans-unit>
       <trans-unit id="AdminModePreservesUserEnvironment">
-        <source>Your existing shell profiles, user settings, PATH entries, and DOTNET_ROOT are left unchanged. While admin mode is active, dotnetup env script can add dotnetup to PATH but does not activate user-level .NET. Existing environment settings may still take precedence; restart open terminals and review any remaining PATH or DOTNET_ROOT settings if needed.</source>
-        <target state="new">Your existing shell profiles, user settings, PATH entries, and DOTNET_ROOT are left unchanged. While admin mode is active, dotnetup env script can add dotnetup to PATH but does not activate user-level .NET. Existing environment settings may still take precedence; restart open terminals and review any remaining PATH or DOTNET_ROOT settings if needed.</target>
-        <note>{Locked="PATH"}{Locked="DOTNET_ROOT"}{Locked="dotnetup env script"}</note>
+        <source>Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
+Restart open apps and terminals after installing .NET and review settings if needed.</source>
+        <target state="new">Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
+Restart open apps and terminals after installing .NET and review settings if needed.</target>
+        <note>{Locked="PATH"}{Locked="DOTNET_ROOT"}</note>
       </trans-unit>
       <trans-unit id="AdminModeSymbolNotSupported">
         <source>{0} is not available for '{1}' in admin mode.</source>

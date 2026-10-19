@@ -132,7 +132,7 @@ internal sealed class AdminModeSwitcher
         _console.MarkupLine(DotnetupTheme.Success(enable ? Strings.AdminModeEnabled : Strings.AdminModeDisabled));
         if (enable)
         {
-            _console.MarkupLine(DotnetupTheme.Notice(Strings.AdminModePreservesUserEnvironment.EscapeMarkup()));
+            _console.WriteLine(Strings.AdminModePreservesUserEnvironment);
         }
 
         return true;

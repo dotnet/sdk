@@ -623,8 +623,9 @@ Or open a new terminal.</value>
     <comment>{Locked="--dotnet-dir"}</comment>
   </data>
   <data name="AdminModePreservesUserEnvironment" xml:space="preserve">
-    <value>Your existing shell profiles, user settings, PATH entries, and DOTNET_ROOT are left unchanged. While admin mode is active, dotnetup env script can add dotnetup to PATH but does not activate user-level .NET. Existing environment settings may still take precedence; restart open terminals and review any remaining PATH or DOTNET_ROOT settings if needed.</value>
-    <comment>{Locked="PATH"}{Locked="DOTNET_ROOT"}{Locked="dotnetup env script"}</comment>
+    <value>Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
+Restart open apps and terminals after installing .NET and review settings if needed.</value>
+    <comment>{Locked="PATH"}{Locked="DOTNET_ROOT"}</comment>
   </data>
   <data name="WindowsInstallerSecureDownloadDirectoryCreationFailed" xml:space="preserve">
     <value>Could not create a secure download directory for {0}: {1}</value>

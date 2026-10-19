@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -8,6 +9,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Spectre.Console;
+using Strings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -43,8 +45,30 @@ public class AdminModeSwitcherTests
         elevator.Operations.Should().Equal(AdminModeOperation.Enable);
         _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
         _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName].Should().BeTrue();
-        _output.ToString().Should().Contain("affects all users").And.Contain("Admin mode is enabled.")
-            .And.Contain("left unchanged").And.Contain("does not activate user-level .NET").And.Contain("restart open terminals");
+        Regex.Replace(_output.ToString(), @"\s+", " ").Should().Contain("affects all users").And.Contain("Admin mode is enabled.")
+            .And.Contain("Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.")
+            .And.Contain("Restart open apps and terminals after installing .NET and review settings if needed.");
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void Enable_PreservationNoticeUsesDefaultColor()
+    {
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(_output),
+            Ansi = AnsiSupport.Yes,
+            ColorSystem = ColorSystemSupport.Standard,
+        });
+        console.Profile.Width = 200;
+        var switcher = new AdminModeSwitcher(_environment.Policy, _environment.CreateElevator(), () => false, console);
+
+        switcher.Enable();
+
+        string output = _output.ToString();
+        output.Should().Contain("\x1b[", "ANSI colors must be enabled to detect styled text");
+        output.Should().EndWith(Environment.NewLine
+            + Strings.AdminModePreservesUserEnvironment.ReplaceLineEndings(Environment.NewLine)
+            + Environment.NewLine);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
