@@ -4,7 +4,6 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.Versioning;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 using Microsoft.NET.TestFramework;
@@ -101,14 +100,13 @@ internal sealed class SelfUpdateTestFiles : IDisposable
         buildDirectory = ExecutablePathResolver.ResolveRealPath(Directory.CreateDirectory(buildDirectory).FullName)!;
         var output = Path.Combine(buildDirectory, "out");
         var assemblyName = "SelfUpdateProcess" + Guid.NewGuid().ToString("N");
-        var framework = new FrameworkName(typeof(SelfUpdateTestFiles).Assembly.GetCustomAttribute<TargetFrameworkAttribute>()!.FrameworkName);
         var startInfo = new ProcessStartInfo(dotnetPath) { UseShellExecute = false, WorkingDirectory = repoRoot };
         foreach (var argument in new[]
         {
             // The host is copied to the destination directory after publishing.
             "publish", Path.Combine(repoRoot!, "test", "TestAssets", "SelfUpdateProcess", "SelfUpdateProcess.csproj"),
             "--output", output,
-            "/p:CurrentTargetFramework=net" + framework.Version.ToString(2),
+            "/p:CurrentTargetFramework=" + TestAssetFramework.Current,
             "/p:AppHostRelativeDotNet=" + runtimePath,
             "/p:AssemblyName=" + assemblyName,
             "/p:Version=" + version,

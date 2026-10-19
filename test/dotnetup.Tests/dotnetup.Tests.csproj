@@ -18,6 +18,9 @@
     <AssemblyMetadata Include="RepoRoot" Value="$(MSBuildProjectDirectory)\..\.." />
     <!-- MSBuild properties are not exported to the test host; record this path only in the test assembly. -->
     <AssemblyMetadata Include="ArtifactsDir" Value="$(ArtifactsDir)" />
+    <!-- Dynamically published test assets must target a framework supported by the stage 0 SDK. -->
+    <AssemblyMetadata Include="TestAssetTargetFramework" Value="$(TargetingPackBaselineTargetFramework)"
+                      Condition="'$(TargetingPackBaselineTargetFramework)' != ''" />
   </ItemGroup>
 
   <ItemGroup>
