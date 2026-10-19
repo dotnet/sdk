@@ -7,7 +7,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 
-internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result, "runtime/install")
+internal class RuntimeInstallCommand(ParseResult result, DotnetupPolicy? policy = null) : InstallCommand(result, "runtime/install", policy)
 {
     private readonly string[] _componentSpecs = result.GetValue(RuntimeInstallCommandParser.ComponentSpecsArgument) ?? [];
     public override IReadOnlyCollection<InstallComponent> MigrationComponents =>

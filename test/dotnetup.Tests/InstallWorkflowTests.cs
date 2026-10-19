@@ -183,7 +183,7 @@ public class InstallWorkflowTests : IDisposable
     public void GenerateInstallRequests_AdminModeRuntimeInstallWithoutUntracked_ThrowsAdminModeRequiresUntracked()
     {
         UseAdminMode();
-        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"])));
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"]), _policy));
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
             workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")]));

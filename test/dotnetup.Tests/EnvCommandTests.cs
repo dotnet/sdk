@@ -103,6 +103,16 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Read().Should().BeNull();
     }
 
+    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void EnvSet_Admin_OnNonWindows_RejectedByParser()
+    {
+        var parseResult = Parser.Parse(["env", "set", "admin"]);
+
+        parseResult.Errors.Should().NotBeEmpty();
+        parseResult.Errors.Should().Contain(e => e.Message.Contains("Windows", StringComparison.Ordinal));
+        DotnetupConfig.Read().Should().BeNull();
+    }
+
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void EnvSet_Everywhere_FromNone_OnWindows_AppliesAndPersists()
     {

@@ -94,6 +94,16 @@ public class AdminModeGateExecutionTests
         command.Executed.Should().BeTrue();
     }
 
+    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void Execute_AdminPolicyOffWindows_DoesNotBlockUnsupportedCommand()
+    {
+        EnableAdminModePolicy();
+        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, _environment.Policy);
+
+        command.Execute().Should().Be(0);
+        command.Executed.Should().BeTrue();
+    }
+
     [TestMethod]
     public void Execute_AdminModeRecordedInUserConfig_DoesNotGateCommands()
     {
