@@ -22,17 +22,28 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required]
         public string AssetPath { get; set; }
 
+        public string DestinationFile { get; set; }
+
         public override bool Execute()
         {
-            DoRemoveAssetFromDepsPackages(DepsFile, SectionName, AssetPath);
+            DoRemoveAssetFromDepsPackages(DepsFile, SectionName, AssetPath, DestinationFile);
 
             return true;
         }
 
-        public static void DoRemoveAssetFromDepsPackages(string depsFile, string sectionName, string assetPath)
+        public static void DoRemoveAssetFromDepsPackages(string depsFile, string sectionName, string assetPath, string destinationFile = null)
         {
-            var deps = JsonNode.Parse(File.ReadAllText(depsFile));
+            string text = File.ReadAllText(depsFile);
+            var deps = JsonNode.Parse(text);
+            bool found = RemoveAssets(deps, sectionName, assetPath);
+            if (found || destinationFile != null)
+            {
+                PublishMutationUtilities.WriteFileIfDifferent(destinationFile ?? depsFile, found ? deps.ToJsonString(s_writeOptions) : text);
+            }
+        }
 
+        internal static bool RemoveAssets(JsonNode deps, string sectionName, string assetPath)
+        {
             bool found = false;
             foreach (var target in deps["targets"]!.AsObject())
             {
@@ -56,10 +67,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 }
             }
 
-            if (found)
-            {
-                File.WriteAllText(depsFile, deps.ToJsonString(s_writeOptions));
-            }
+            return found;
         }
     }
 }

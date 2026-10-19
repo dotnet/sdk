@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -12,38 +13,71 @@ namespace Microsoft.DotNet.Build.Tasks
     {
         private static readonly JsonSerializerOptions s_writeOptions = new() { WriteIndented = true };
 
-        public static void ChangeEntryPointLibraryName(string depsFile, string newName)
+        public static void ChangeEntryPointLibraryName(string depsFile, string newName, string destinationFile = null, bool removeResources = false)
         {
-            var deps = JsonNode.Parse(File.ReadAllText(depsFile));
+            string text = File.ReadAllText(depsFile);
+            var deps = JsonNode.Parse(text);
+            var targets = deps["targets"]!.AsObject();
+            var targetLibraries = targets.SelectMany(target => target.Value!.AsObject()).ToArray();
 
-            string version = null;
-            foreach (var target in deps["targets"]!.AsObject())
+            // Renaming moves the entry to the end of each object. On a repeated invocation,
+            // find that entry by its new name rather than renaming the next dependency.
+            var entryPoint = newName == null
+                ? targetLibraries.FirstOrDefault()
+                : targetLibraries.FirstOrDefault(library => library.Key.StartsWith(newName + '/', StringComparison.Ordinal));
+            if (entryPoint.Key == null)
             {
-                var targetObj = target.Value!.AsObject();
-                var targetLibrary = targetObj.FirstOrDefault();
-                if (targetLibrary.Key == null)
+                entryPoint = targetLibraries.FirstOrDefault();
+            }
+
+            bool changed = false;
+            if (entryPoint.Key != null)
+            {
+                string version = entryPoint.Key.Substring(entryPoint.Key.IndexOf('/') + 1);
+                string renamedKey = newName == null ? null : newName + '/' + version;
+                if (entryPoint.Key != renamedKey)
                 {
-                    continue;
-                }
-                version = targetLibrary.Key.Substring(targetLibrary.Key.IndexOf('/') + 1);
-                var targetLibraryValue = targetLibrary.Value;
-                targetObj.Remove(targetLibrary.Key);
-                if (newName != null)
-                {
-                    targetObj.Add(newName + '/' + version, targetLibraryValue);
+                    foreach (var target in targets)
+                    {
+                        var targetObj = target.Value!.AsObject();
+                        if (targetObj.TryGetPropertyValue(entryPoint.Key, out JsonNode value))
+                        {
+                            targetObj.Remove(entryPoint.Key);
+                            if (renamedKey != null)
+                            {
+                                targetObj.Add(renamedKey, value);
+                            }
+                        }
+                    }
+
+                    var libraries = deps["libraries"]!.AsObject();
+                    JsonNode library = libraries[entryPoint.Key];
+                    libraries.Remove(entryPoint.Key);
+                    if (renamedKey != null)
+                    {
+                        libraries.Add(renamedKey, library);
+                    }
+                    changed = true;
                 }
             }
-            if (version != null)
+
+            if (removeResources)
             {
-                var librariesObj = deps["libraries"]!.AsObject();
-                var library = librariesObj.First();
-                var libraryValue = library.Value;
-                librariesObj.Remove(library.Key);
-                if (newName != null)
-                {
-                    librariesObj.Add(newName + '/' + version, libraryValue);
-                }
-                File.WriteAllText(depsFile, deps.ToJsonString(s_writeOptions));
+                changed |= RemoveAssetFromDepsPackages.RemoveAssets(deps, "resources", "*");
+            }
+
+            if (changed || destinationFile != null)
+            {
+                WriteFileIfDifferent(destinationFile ?? depsFile, changed ? deps.ToJsonString(s_writeOptions) : text);
+            }
+        }
+
+        internal static void WriteFileIfDifferent(string path, string contents)
+        {
+            if (!File.Exists(path) ||
+                !File.ReadAllBytes(path).AsSpan().SequenceEqual(Encoding.UTF8.GetBytes(contents)))
+            {
+                IncrementalLayoutState.WriteFile(path, contents);
             }
         }
     }

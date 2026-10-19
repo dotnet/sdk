@@ -67,4 +67,5 @@ public class RemoveAssetFromDepsPackagesTests : SdkTest
         // File should not be rewritten when nothing was found
         File.ReadAllText(depsPath).Should().Be(originalContent);
     }
+
 }

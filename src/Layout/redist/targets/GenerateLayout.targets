@@ -1,5 +1,11 @@
 <Project>
 
+  <!-- Capture this import's own path during evaluation so edits to the target
+       implementation participate in the RID-chain freshness check below. -->
+  <PropertyGroup>
+    <_GenerateLayoutTargetsFile>$(MSBuildThisFileFullPath)</_GenerateLayoutTargetsFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsPackageVersion)]" />
   </ItemGroup>
@@ -19,14 +25,64 @@
           SkipUnchangedFiles="true" />
   </Target>
 
+  <!-- Preparation must run even when chain generation is up to date. Its dependencies
+       publish the graphs, and it checks property changes, missing output, and invalid
+       completion state before MSBuild evaluates the generation target's Inputs/Outputs. -->
+  <Target Name="_PrepareGenerateSdkRuntimeIdentifierChain"
+          DependsOnTargets="PublishRuntimeIdentifierGraphFiles">
+    <!-- Keep bookkeeping in the intermediate directory, outside the published SDK.
+         Normalize paths because CompleteIncrementalLayout requires absolute paths.
+         Graph timestamps alone cannot detect a RID-only edit or a package root/version
+         switch: a graph copied from another package can retain an older timestamp.
+         Destination and implementation paths also identify which mapping was processed. -->
+    <PropertyGroup>
+      <_SdkRuntimeIdentifierChainStatePrefix>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'incremental-layout', 'sdk-runtime-identifier-chain'))</_SdkRuntimeIdentifierChainStatePrefix>
+      <_SdkRuntimeIdentifierChainOutput>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(NETCoreSdkRuntimeIdentifierChainTargetFile)'))</_SdkRuntimeIdentifierChainOutput>
+      <_SdkRuntimeIdentifierChainInputs>RuntimeIdentifier=$(PortableProductMonikerRid);Graph=$(PortableRuntimeIdentifierGraphTargetFile);PackageRoot=$(NuGetPackageRoot);PackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);Output=$(_SdkRuntimeIdentifierChainOutput);TaskAssembly=$(SdkTasksAssembly);Targets=$(_GenerateLayoutTargetsFile)</_SdkRuntimeIdentifierChainInputs>
+    </PropertyGroup>
+
+    <!-- Record property and mapping changes as a timestamp input, following the other
+         incremental layout targets. Missing or different state is rewritten, making
+         generation stale; identical state must keep its timestamp so warm builds skip. -->
+    <WriteLinesToFile File="$(_SdkRuntimeIdentifierChainStatePrefix).inputs"
+                      Lines="$(_SdkRuntimeIdentifierChainInputs)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+    <ReadLinesFromFile File="$(_SdkRuntimeIdentifierChainStatePrefix).complete"
+                       Condition="Exists('$(_SdkRuntimeIdentifierChainStatePrefix).complete')">
+      <Output TaskParameter="Lines" PropertyName="_SdkRuntimeIdentifierChainCompletionValue" />
+    </ReadLinesFromFile>
+    <!-- A valid stamp does not prove that the published chain still exists: another
+         layout step or a partial clean may have removed it while leaving state in obj.
+         Invalidate completion for missing output or invalid marker contents so the
+         generation target repairs those cases even when all input timestamps are old. -->
+    <Delete Files="$(_SdkRuntimeIdentifierChainStatePrefix).complete"
+            Condition="!Exists('$(_SdkRuntimeIdentifierChainOutput)') or
+                       (Exists('$(_SdkRuntimeIdentifierChainStatePrefix).complete') and '$(_SdkRuntimeIdentifierChainCompletionValue)' != 'complete')" />
+  </Target>
+
+  <!-- Use processing completion, not the published chain, as the freshness output.
+       A newer graph may expand to identical chain bytes, which the task leaves untouched.
+       Checking input timestamps against that unchanged chain would regenerate forever.
+       Task-assembly and defining-target timestamps also invalidate completion when the
+       implementation changes without any graph or property changes. -->
   <Target Name="GenerateSdkRuntimeIdentifierChain"
-          DependsOnTargets="PublishRuntimeIdentifierGraphFiles"
-          Inputs="$(PortableRuntimeIdentifierGraphTargetFile)"
-          Outputs="$(NETCoreSdkRuntimeIdentifierChainTargetFile)">
+          DependsOnTargets="_PrepareGenerateSdkRuntimeIdentifierChain"
+          Inputs="$(PortableRuntimeIdentifierGraphTargetFile);$(SdkTasksAssembly);$(_GenerateLayoutTargetsFile);$(_SdkRuntimeIdentifierChainStatePrefix).inputs"
+          Outputs="$(_SdkRuntimeIdentifierChainStatePrefix).complete">
+    <!-- Changed input state, a newer graph, or an implementation edit can bring us here
+         with a previous stamp still present. Remove it before generation so a parsing
+         or write failure cannot leave an old success marker for partially updated output. -->
+    <Delete Files="$(_SdkRuntimeIdentifierChainStatePrefix).complete" />
     <GenerateSdkRuntimeIdentifierChain
       RuntimeIdentifier="$(PortableProductMonikerRid)"
       RuntimeIdentifierGraphPath="$(PortableRuntimeIdentifierGraphTargetFile)"
-      RuntimeIdentifierChainOutputPath="$(NETCoreSdkRuntimeIdentifierChainTargetFile)" />
+      RuntimeIdentifierChainOutputPath="$(_SdkRuntimeIdentifierChainOutput)" />
+    <!-- Verify the expected chain exists and atomically commit completion only after
+         generation succeeds. This advances processing freshness without touching an
+         unchanged published chain or making downstream consumers see a false change. -->
+    <CompleteIncrementalLayout ExpectedOutputs="$(_SdkRuntimeIdentifierChainOutput)"
+                               CompletionStampFile="$(_SdkRuntimeIdentifierChainStatePrefix).complete" />
   </Target>
 
   <Target Name="PublishVersionFile">
@@ -41,7 +97,7 @@
                       WriteOnlyWhenDifferent="true" />
   </Target>
 
-  <Target Name="PublishRoslyn">
+  <Target Name="_PublishRoslynFiles">
     <PropertyGroup>
       <RoslynPackagePath>$(NuGetPackageRoot)microsoft.net.compilers.toolset\$(MicrosoftNetCompilersToolsetVersion)\tasks\netcore\</RoslynPackagePath>
     </PropertyGroup>
@@ -53,13 +109,32 @@
       <!-- binfx folder contains full framework dlls that are needed only on Windows -->
       <RoslynFrameworkAssembly Include="$(RoslynPackagePath)binfx\**\*" Condition="'$(OS)' != 'Windows_NT'"/>
       <RoslynFile Include="$(RoslynPackagePath)**\*" Exclude="@(RoslynFrameworkAssembly)" />
+      <_RoslynRuntimeConfig Include="@(RoslynFile)"
+                            Exclude="$(RoslynPackagePath)**\testhost-*.runtimeconfig.json"
+                            Condition="'%(Extension)' == '.json' and $([System.String]::new('%(Filename)').EndsWith('.runtimeconfig'))" />
+      <_RoslynCopyFile Include="@(RoslynFile)" Exclude="@(_RoslynRuntimeConfig)" />
     </ItemGroup>
 
     <Error Condition="'@(RoslynFile)' == ''" Text="Something moved around in Roslyn package, adjust code here accordingly. TFM change?" />
-    <Copy SourceFiles="@(RoslynFile)"
-          DestinationFiles="@(RoslynFile->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
+    <Copy SourceFiles="@(_RoslynCopyFile)"
+          DestinationFiles="@(_RoslynCopyFile->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
 
+    <!-- Package runtimeconfigs target an older framework. Copying them verbatim and
+         retargeting in place would overwrite the finalized SDK files on every build,
+         because their sizes/timestamps no longer match the package originals.
+         Transform directly from the immutable package input and publish only changed
+         final bytes; leave payload enumeration and apphost generation independent. -->
+    <UpdateRuntimeConfig RuntimeConfigPaths="@(_RoslynRuntimeConfig)"
+                         DestinationPaths="@(_RoslynRuntimeConfig->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+                         Condition="'@(_RoslynRuntimeConfig)' != ''" />
+
+  </Target>
+
+  <Target Name="PublishRoslyn"
+          DependsOnTargets="_PublishRoslynFiles">
     <CreateAppHost AppHostSourcePath="$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)"
                    AppHostDestinationPath="%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
                    AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
@@ -163,11 +238,23 @@
                                  $(ArtifactsBinDir)dotnet-format/$(Configuration)/$(NetCurrent)/**/*.exe;
                                  $(ArtifactsBinDir)dotnet-format/$(Configuration)/$(NetCurrent)/**/*.json;
                                  $(ArtifactsBinDir)dotnet-format/$(Configuration)/$(NetCurrent)/**/*.config" />
+      <_DotnetFormatRuntimeConfig Include="@(DotnetFormatFile)"
+                                  Exclude="$(ArtifactsBinDir)dotnet-format/$(Configuration)/$(NetCurrent)/**/testhost-*.runtimeconfig.json"
+                                  Condition="'%(Extension)' == '.json' and $([System.String]::new('%(Filename)').EndsWith('.runtimeconfig'))" />
+      <_DotnetFormatCopyFile Include="@(DotnetFormatFile)" Exclude="@(_DotnetFormatRuntimeConfig)" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(DotnetFormatFile)"
-          DestinationFiles="@(DotnetFormatFile->'$(OutputPath)DotnetTools\dotnet-format\%(RecursiveDir)%(Filename)%(Extension)')"
+    <Copy SourceFiles="@(_DotnetFormatCopyFile)"
+          DestinationFiles="@(_DotnetFormatCopyFile->'$(OutputPath)DotnetTools\dotnet-format\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
+
+    <!-- BuildHost carries its own older runtimeconfig. Finalize it from the source,
+         rather than copying raw JSON over the version already pinned in the SDK. -->
+    <UpdateRuntimeConfig RuntimeConfigPaths="@(_DotnetFormatRuntimeConfig)"
+                         DestinationPaths="@(_DotnetFormatRuntimeConfig->'$(OutputPath)DotnetTools\dotnet-format\%(RecursiveDir)%(Filename)%(Extension)')"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+                         Condition="'@(_DotnetFormatRuntimeConfig)' != ''" />
   </Target>
 
   <Target Name="PublishMSBuildExtensions">
@@ -270,19 +357,60 @@
       <TestCliBitsToExclude Include="$(TestCliNuGetDirectory)System.Text.Json.dll" />
       <TestCliBits Include="$(TestCliNuGetDirectory)**/*"
                    Exclude="@(TestCliBitsToExclude)" />
+      <_TestCliRuntimeConfig Include="@(TestCliBits)"
+                             Exclude="$(TestCliNuGetDirectory)**/testhost-*.runtimeconfig.json"
+                             Condition="'%(Extension)' == '.json' and $([System.String]::new('%(Filename)').EndsWith('.runtimeconfig'))" />
+      <_TestCliCopyFile Include="@(TestCliBits)" Exclude="@(_TestCliRuntimeConfig)" />
     </ItemGroup>
 
     <Error Condition="'@(TestCliBits)' == ''" Text="Something moved around in Test CLI package, adjust code here accordingly. TFM change?" />
-    <Copy SourceFiles="@(TestCliBits)"
-          DestinationFiles="@(TestCliBits->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+    <Copy SourceFiles="@(_TestCliCopyFile)"
+          DestinationFiles="@(_TestCliCopyFile->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"/>
+
+    <!-- Keep testhost-* configs in the ordinary copy set: unlike SDK tools, testhosts
+         must retain their package framework selection. The other configs are pinned
+         before writing, so their raw package versions never replace finalized files. -->
+    <UpdateRuntimeConfig RuntimeConfigPaths="@(_TestCliRuntimeConfig)"
+                         DestinationPaths="@(_TestCliRuntimeConfig->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+                         Condition="'@(_TestCliRuntimeConfig)' != ''" />
   </Target>
 
   <Target Name="PublishFSharp">
+    <!-- Publish synthetic tool_fsc inputs outside the SDK. Deleting those inputs from
+         the publish destination used to make the child Publish recreate them on every
+         build, after which the finalizer recopied and mutated shipping JSON.
+         Retaining the child publish directory preserves its own incremental behavior
+         and gives fsc/fsi finalization stable, unmodified config/deps inputs. -->
+    <PropertyGroup>
+      <FSharpPublishDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'fsharp-publish'))</FSharpPublishDirectory>
+      <FSharpDirectory>$(OutputPath)/FSharp</FSharpDirectory>
+    </PropertyGroup>
+
     <MSBuild
       Targets="Publish"
       Projects="$(MSBuildProjectDirectory)\tools\tool_fsc.csproj"
-      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/FSharp" />
+      Properties="Configuration=$(Configuration);PublishDir=$(FSharpPublishDirectory)" />
+
+    <!-- The finalizer owns fsc/fsi config/deps files; never stage raw versions over
+         them. Synthetic tool assemblies and configs remain intermediate-only.
+         Copy the remaining child-published payload with the existing file semantics. -->
+    <ItemGroup>
+      <_FSharpPublishFile Include="$(FSharpPublishDirectory)**/*"
+                          Exclude="$(FSharpPublishDirectory)tool_fsc.dll;
+                                   $(FSharpPublishDirectory)tool_fsc.pdb;
+                                   $(FSharpPublishDirectory)tool_fsc.runtimeconfig.json;
+                                   $(FSharpPublishDirectory)tool_fsc.deps.json;
+                                   $(FSharpPublishDirectory)fsc.runtimeconfig.json;
+                                   $(FSharpPublishDirectory)fsc.deps.json;
+                                   $(FSharpPublishDirectory)fsi.runtimeconfig.json;
+                                   $(FSharpPublishDirectory)fsi.deps.json" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_FSharpPublishFile)"
+          DestinationFiles="@(_FSharpPublishFile->'$(FSharpDirectory)/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="PublishContainersSdk">
@@ -308,9 +436,9 @@
 
   <Target Name="GenerateCliRuntimeConfigurationFiles" DependsOnTargets="PublishTargetExtensions">
     <ItemGroup>
-      <BundledTools Include="MSBuild;
-                            dotnet;
-                            NuGet.CommandLine.XPlat" />
+      <BundledTools Include="MSBuild" RemoveResources="false" />
+      <BundledTools Include="dotnet" RemoveResources="true" />
+      <BundledTools Include="NuGet.CommandLine.XPlat" RemoveResources="false" />
 
       <BundledToolProjects Include="tool_msbuild;
                                     tool_nuget;
@@ -322,51 +450,56 @@
                                  SectionName="runtime"
                                  AssetPath="%(BundledToolProjects.Identity).dll" />
 
-    <Copy SourceFiles="$(OutputPath)$(TargetName).deps.json"
-          DestinationFiles="$(OutputPath)%(BundledTools.Identity).deps.json"
-          SkipUnchangedFiles="true" />
+    <!-- Finalize each tool's JSON from the common source, then compare the completed
+         result with its destination. Copy-then-rename cannot skip: renamed deps differ
+         from redist.deps.json even on warm builds. Strip dotnet resources here too,
+         rather than reintroducing them before the later cleanup sweep removes them. -->
+    <ChangeEntryPointLibraryName DepsFile="$(OutputPath)$(TargetName).deps.json"
+                                 DestinationFile="$(OutputPath)%(BundledTools.Identity).deps.json"
+                                 NewName="%(BundledTools.Identity).deps.json"
+                                 RemoveResources="%(BundledTools.RemoveResources)" />
 
-    <Copy SourceFiles="$(OutputPath)/$(TargetName).runtimeconfig.json"
-          DestinationFiles="$(OutputPath)/%(BundledTools.Identity).runtimeconfig.json"
-          SkipUnchangedFiles="true" />
+    <UpdateRuntimeConfig RuntimeConfigPaths="$(OutputPath)$(TargetName).runtimeconfig.json"
+                         DestinationPaths="$(OutputPath)%(BundledTools.Identity).runtimeconfig.json"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
 
     <Delete Files="$(OutputPath)/%(BundledToolProjects.Identity).dll;
                    $(OutputPath)/%(BundledToolProjects.Identity).pdb" />
-
-    <ChangeEntryPointLibraryName
-          DepsFile="$(OutputPath)/%(BundledTools.Identity).deps.json"
-          NewName="%(BundledTools.Identity).deps.json" />
   </Target>
 
   <Target Name="RemoveResourcesFromDotnetDeps">
+    <!-- Normal CLI finalization already excludes these resources before publishing.
+         Retain the separate cleanup entry point; its task leaves files untouched when
+         no matching section remains, so this sweep does not undo write stability. -->
     <RemoveAssetFromDepsPackages DepsFile="$(OutputPath)/dotnet.deps.json"
                SectionName="resources"
                AssetPath="*" />
   </Target>
 
-  <Target Name="MakeFscRunnableAndMoveToPublishDir" BeforeTargets="RemoveFilesAfterPublish">
+  <Target Name="MakeFscRunnableAndMoveToPublishDir"
+          DependsOnTargets="PublishFSharp"
+          BeforeTargets="RemoveFilesAfterPublish">
     <PropertyGroup>
       <FSharpDirectory>$(OutputPath)/FSharp</FSharpDirectory>
     </PropertyGroup>
 
     <ItemGroup>
-      <AssetsToRemoveFromDeps Include="tool_fsc.dll"
-                              SectionName="runtime"/>
+      <_FSharpTool Include="fsc;fsi" />
     </ItemGroup>
 
-    <RemoveAssetFromDepsPackages DepsFile="$(FSharpDirectory)/tool_fsc.deps.json"
-                                 SectionName="%(AssetsToRemoveFromDeps.SectionName)"
-                                 AssetPath="%(AssetsToRemoveFromDeps.Identity)" />
-
-    <!-- Deploy deps and runtime config for fsc.exe and fsi.exe.  Both apps have exactly the same dependencies so this is Ok -->
-    <Copy SourceFiles="$(FSharpDirectory)/tool_fsc.runtimeconfig.json;
-                       $(FSharpDirectory)/tool_fsc.deps.json;"
-          DestinationFiles="$(FSharpDirectory)/fsc.runtimeconfig.json;
-                            $(FSharpDirectory)/fsc.deps.json;"/>
-    <Copy SourceFiles="$(FSharpDirectory)/tool_fsc.runtimeconfig.json;
-                       $(FSharpDirectory)/tool_fsc.deps.json;"
-          DestinationFiles="$(FSharpDirectory)/fsi.runtimeconfig.json;
-                            $(FSharpDirectory)/fsi.deps.json;"/>
+    <!-- Both entry points have the same dependencies. Remove the synthetic assembly
+         only in each final result, leaving the child Publish's deps file untouched.
+         Neither this filtering nor framework pinning rewrites identical final bytes,
+         so a changed input that produces the same result needs no freshness stamp. -->
+    <RemoveAssetFromDepsPackages DepsFile="$(FSharpPublishDirectory)tool_fsc.deps.json"
+                                 DestinationFile="$(FSharpDirectory)/%(_FSharpTool.Identity).deps.json"
+                                 SectionName="runtime"
+                                 AssetPath="tool_fsc.dll" />
+    <UpdateRuntimeConfig RuntimeConfigPaths="$(FSharpPublishDirectory)tool_fsc.runtimeconfig.json"
+                         DestinationPaths="$(FSharpDirectory)/%(_FSharpTool.Identity).runtimeconfig.json"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
   </Target>
 
   <Target Name="RemoveFscFilesAfterPublish">
@@ -639,6 +772,9 @@
           Condition="'$(OSName)' == 'osx'" />
   </Target>
 
+  <!-- Keep this as a correctness sweep rather than a stamped JSON-only operation.
+       Other producers can introduce runtimeconfigs or legacy 15.0 files on any build;
+       a previous successful retarget must not hide newly staged files from repair. -->
   <Target Name="RetargetTools">
     <ItemGroup>
       <!-- Exclude testhost from retargeting: https://github.com/dotnet/sdk/issues/24769 -->
