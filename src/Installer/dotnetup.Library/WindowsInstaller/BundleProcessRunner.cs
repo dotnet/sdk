@@ -61,6 +61,10 @@ internal sealed class BundleProcessRunner : IBundleProcessRunner
     internal static void ReportCancellation(Action onCancelRequested)
     {
         onCancelRequested();
-        AnsiConsole.WriteLine("The .NET installer is still running and cannot be cancelled from dotnetup. Waiting for it to finish; no further installs will be started...");
+        // Overwrite the full progress row so shorter text does not leave parts of its bar behind.
+        AnsiConsole.Write(new Padder(new Text(Strings.WindowsInstallerCancellationRequested), new Padding(0))
+        {
+            Expand = AnsiConsole.Profile.Capabilities.Interactive,
+        });
     }
 }

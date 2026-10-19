@@ -15,6 +15,8 @@ internal class InitCommand(ParseResult result, DotnetupPolicy? policy = null) : 
 {
     private readonly DotnetAccessMode? _requestedAccessMode = result.GetValue(InitCommandParser.ModeOption);
 
+    public override bool UseGlobalJsonSdkPaths => _requestedAccessMode is null;
+
     /// <inheritdoc/>
     internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
 

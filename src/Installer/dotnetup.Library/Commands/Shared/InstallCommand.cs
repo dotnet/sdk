@@ -28,6 +28,7 @@ internal abstract class InstallCommand : CommandBase
     public bool DryRun { get; }
     public IEnvShellProvider? ShellProvider { get; }
     public bool MigrateFromSystem { get; }
+    public virtual bool UseGlobalJsonSdkPaths => true;
     public virtual bool UpdateGlobalJson => false;
     public virtual IReadOnlyCollection<InstallComponent> MigrationComponents => [];
 

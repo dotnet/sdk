@@ -35,13 +35,16 @@ public class InstallPathResolverTests
     /// even when they differ. This is the key behavior change being tested.
     /// </summary>
     [TestMethod]
-    public void Resolve_ExplicitPathOverridesGlobalJson()
+    [DataRow(true)]
+    [DataRow(false)]
+    public void Resolve_ExplicitPathOverridesGlobalJson(bool useGlobalJsonSdkPaths)
     {
         var globalJsonInfo = CreateGlobalJsonInfo(GlobalJsonPath);
 
         var result = _resolver.Resolve(
             explicitInstallPath: ExplicitPath,
-            globalJsonInfo: globalJsonInfo);
+            globalJsonInfo: globalJsonInfo,
+            useGlobalJsonSdkPaths: useGlobalJsonSdkPaths);
 
         output.WriteLine($"Result: {result?.ResolvedInstallPath ?? "(null)"}");
 
@@ -62,6 +65,22 @@ public class InstallPathResolverTests
         result.Should().NotBeNull();
         result!.ResolvedInstallPath.Should().Be(GlobalJsonPath);
         result.PathSource.Should().Be(PathSource.GlobalJson);
+    }
+
+    [TestMethod]
+    [DataRow(".dotnet")]
+    [DataRow("$host$")]
+    public void Resolve_IgnoresGlobalJsonSdkPaths_WhenDisabled(string sdkPath)
+    {
+        var globalJsonInfo = CreateGlobalJsonInfoWithPaths(sdkPath);
+
+        var result = _resolver.Resolve(
+            explicitInstallPath: null,
+            globalJsonInfo,
+            useGlobalJsonSdkPaths: false);
+
+        result.ResolvedInstallPath.Should().Be(new DotnetEnvironmentManager().GetDefaultDotnetInstallPath());
+        result.PathSource.Should().Be(PathSource.Default);
     }
 
     [TestMethod]

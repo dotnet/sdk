@@ -898,6 +898,11 @@ Or open a new terminal.</target>
         <target state="new">Another installation is already in progress (installer exit code {0}). Wait for it to finish, then run the command again.</target>
         <note>{0} is the numeric installer exit code.</note>
       </trans-unit>
+      <trans-unit id="WindowsInstallerCancellationRequested">
+        <source>Cannot cancel this installer. Waiting; skipping remaining installs.</source>
+        <target state="new">Cannot cancel this installer. Waiting; skipping remaining installs.</target>
+        <note>Shown after Ctrl+C while a Windows installer is running. Keep this notice short enough for an 80-column terminal.</note>
+      </trans-unit>
       <trans-unit id="WindowsInstallerCancelled">
         <source>The installation of {0} was cancelled (installer exit code {1}).</source>
         <target state="new">The installation of {0} was cancelled (installer exit code {1}).</target>

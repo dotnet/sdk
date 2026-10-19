@@ -143,7 +143,7 @@ Elevation reuses the existing hidden-command pattern used for the system `PATH` 
 
 Because `AdminMode` is machine-wide, selecting or leaving `admin` mode affects every user on the machine. `init` and `env set` state this before prompting for UAC.
 
-Leaving `admin` mode happens only right before the newly selected mode is applied. If `init` exits without changes (the user exits the form, or a local `global.json` sets `sdk.paths`), or runs as a dry run, `admin` mode stays enabled. Selecting `admin` mode while it is already active changes nothing and does not prompt.
+Leaving `admin` mode happens only right before the newly selected mode is applied. An explicit non-admin `--mode` runs the full setup even when a local `global.json` sets `sdk.paths`: those paths are ignored for setup, while the SDK version or channel is still respected. Setup uses the default dotnetup root unless `--install-path` is supplied. If the user exits the form or runs a dry run, `admin` mode stays enabled. Without an explicit mode, a local `sdk.paths` still skips onboarding. Selecting `admin` mode while it is already active changes nothing and does not prompt.
 
 #### Limitations
 
@@ -263,6 +263,8 @@ Before running an installer, `dotnetup` verifies its SHA-512 hash (from the sign
 The installer bundles request `asInvoker`, so `dotnetup` starts them without elevation using `/install /quiet /norestart`, and each bundle raises its own UAC prompt. `dotnetup` itself is never elevated to install. Installers run one at a time, so prompts never overlap.
 
 There is no timeout in the MVP. Ctrl+C does not stop a running installer; `dotnetup` waits for it to finish and reports its real result, then starts no further installers in the batch and reports each remaining install as cancelled (`OperationCancelled`).
+
+The [installer runner](../../../../src/Installer/dotnetup.Library/WindowsInstaller/BundleProcessRunner.cs) displays a short cancellation notice above the live progress rows. It overwrites the full width of each notice line so progress-bar fragments do not remain beside the message, including when a narrow terminal wraps it.
 
 https://github.com/dotnet/vscode-dotnet-runtime/blob/f54c68789e1bdfca13e8262045cb41ca6a32aa82/vscode-dotnet-runtime-library/src/Acquisition/WinMacGlobalInstaller.ts#L102 common exit codes are already wrapped into specific user-facing messages that can be translated into `dotnetup` `user` failures. The MVP maps them as follows:
 

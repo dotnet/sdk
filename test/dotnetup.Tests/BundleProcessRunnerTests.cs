@@ -13,12 +13,14 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class BundleProcessRunnerTests
 {
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
+    [DataRow(false, 80)]
+    [DataRow(true, 40)]
+    [DataRow(true, 80)]
+    [DataRow(true, 160)]
     [ResourceLock(WellKnownResources.Console)]
-    public void CancellationWarning_IsPreservedAboveProgress(bool interactive)
+    public void CancellationWarning_IsPreservedAboveProgress(bool interactive, int width)
     {
-        const string warning = "The .NET installer is still running and cannot be cancelled from dotnetup. Waiting for it to finish; no further installs will be started...";
+        const string warning = "Cannot cancel this installer. Waiting; skipping remaining installs.";
         const string description = "Installing .NET SDK";
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var originalConsole = AnsiConsole.Console;
@@ -29,27 +31,32 @@ public class BundleProcessRunnerTests
             Interactive = interactive ? InteractionSupport.Yes : InteractionSupport.No,
             Out = new AnsiConsoleOutput(output),
         });
-        console.Profile.Width = 200;
+        console.Profile.Width = width;
         bool cancellationRequested = false;
         try
         {
             AnsiConsole.Console = console;
-            console.Progress().AutoRefresh(false).Columns(new TaskDescriptionColumn()).Start(context =>
+            console.Progress().AutoRefresh(false).Columns(new TaskDescriptionColumn(), new ProgressBarColumn()).Start(context =>
             {
+                var downloaded = context.AddTask("Downloaded .NET SDK");
+                downloaded.Value = downloaded.MaxValue;
                 var task = context.AddTask(description);
                 context.Refresh();
+                int noticeStart = output.GetStringBuilder().Length;
 
                 BundleProcessRunner.ReportCancellation(() => cancellationRequested = true);
-                context.Refresh();
 
-                string rendered = ConsoleOutputNormalizer.StripAnsi(output.ToString());
-                rendered.Should().Contain(warning);
+                string notice = ConsoleOutputNormalizer.StripAnsi(output.ToString()[noticeStart..]);
                 if (interactive)
                 {
-                    rendered.Should().Contain(warning + Environment.NewLine + description,
-                        "the live renderer must print the warning above, not inside, the progress region");
+                    AssertNoticeClearsProgressRows(notice, warning, width);
+                }
+                else
+                {
+                    notice.Should().Be(warning + Environment.NewLine);
                 }
 
+                context.Refresh();
                 task.Value = task.MaxValue;
             });
             cancellationRequested.Should().BeTrue();
@@ -57,6 +64,22 @@ public class BundleProcessRunnerTests
         finally
         {
             AnsiConsole.Console = originalConsole;
+        }
+    }
+
+    private static void AssertNoticeClearsProgressRows(string rendered, string warning, int width)
+    {
+        string[] noticeLines = rendered.Split(Environment.NewLine)
+            .TakeWhile(line => !string.IsNullOrWhiteSpace(line))
+            .Select(line => line.TrimStart('\r'))
+            .ToArray();
+
+        string.Join(" ", noticeLines.Select(line => line.Trim())).Should().Be(warning);
+        noticeLines.Should().OnlyContain(line => line.Length == width,
+            "each notice line must overwrite the entire previous progress row");
+        if (width >= 80)
+        {
+            noticeLines.Should().ContainSingle("the warning should fit a standard terminal without wrapping");
         }
     }
 }

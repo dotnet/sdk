@@ -663,6 +663,10 @@ Restart open apps and terminals after installing .NET and review settings if nee
     <value>The installation of {0} was cancelled (installer exit code {1}).</value>
     <comment>{0} is the component display name and version. {1} is the numeric installer exit code.</comment>
   </data>
+  <data name="WindowsInstallerCancellationRequested" xml:space="preserve">
+    <value>Cannot cancel this installer. Waiting; skipping remaining installs.</value>
+    <comment>Shown after Ctrl+C while a Windows installer is running. Keep this notice short enough for an 80-column terminal.</comment>
+  </data>
   <data name="WindowsInstallerBusy" xml:space="preserve">
     <value>Another installation is already in progress (installer exit code {0}). Wait for it to finish, then run the command again.</value>
     <comment>{0} is the numeric installer exit code.</comment>

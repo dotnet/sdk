@@ -37,11 +37,13 @@ internal class InstallPathResolver
     /// </summary>
     /// <param name="explicitInstallPath">The install path explicitly provided by the user (e.g., --install-path option).</param>
     /// <param name="globalJsonInfo">Information from global.json, if available.</param>
+    /// <param name="useGlobalJsonSdkPaths">Whether sdk.paths can select the install root. Explicit mode setup ignores them.</param>
     /// <returns>The resolution result.</returns>
     /// <exception cref="DotnetInstallException">Thrown when the install path cannot be resolved.</exception>
     public InstallPathResolutionResult Resolve(
         string? explicitInstallPath,
-        GlobalJsonInfo? globalJsonInfo)
+        GlobalJsonInfo? globalJsonInfo,
+        bool useGlobalJsonSdkPaths = true)
     {
         string? installPathFromGlobalJson = globalJsonInfo?.GlobalJsonPath is not null
             ? globalJsonInfo.SdkPath
@@ -54,11 +56,11 @@ internal class InstallPathResolver
         {
             return new InstallPathResolutionResult(explicitInstallPath, installPathFromGlobalJson, PathSource.Explicit);
         }
-        else if (installPathFromGlobalJson is not null)
+        else if (useGlobalJsonSdkPaths && installPathFromGlobalJson is not null)
         {
             return new InstallPathResolutionResult(installPathFromGlobalJson, installPathFromGlobalJson, PathSource.GlobalJson);
         }
-        else if (globalJsonUsesDefaultHostLocation)
+        else if (useGlobalJsonSdkPaths && globalJsonUsesDefaultHostLocation)
         {
             // "$host$" tells us to use the default host location; global.json still drove the
             // decision, so this is reported as a global.json-sourced path.

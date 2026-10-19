@@ -114,30 +114,73 @@ public class AdminModeCommandTests : IDisposable
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
-    public void Init_ModeShellWhileAdmin_LocalSdkPathLeavesAdminModeOn()
+    [DataRow("none", DotnetAccessMode.None)]
+    [DataRow("shell", DotnetAccessMode.Shell)]
+    [DataRow("everywhere", DotnetAccessMode.Everywhere)]
+    internal void Init_ExplicitModeWhileAdmin_LocalSdkPathReachesElevation(string token, DotnetAccessMode mode)
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        WriteLocalSdkGlobalJson();
+        var elevator = _environment.CreateElevator(new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"));
+        var workflows = new InitWorkflows(_env, _environment.CreateSwitcher(elevator));
+        var command = new InitCommand(Parser.Parse(["init", "--mode", token, "--interactive", "false"]), _environment.Policy);
 
-        // A global.json pinning a local SDK path makes the walkthrough stop without changes.
-        Directory.CreateDirectory(Path.Combine(_tempDir, ".dotnet"));
-        File.WriteAllText(Path.Combine(_tempDir, "global.json"), """{ "sdk": { "paths": [".dotnet"] } }""");
-        var command = new InitCommand(Parser.Parse(["init", "--mode", "shell", "--interactive", "false"]), _environment.Policy);
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(
+            () => RunFromTempDirectory(() => workflows.RunInit(command, mode)));
 
-        List<ResolvedInstallRequest> requests = RunFromTempDirectory(
-            () => CreateInitWorkflows().RunInit(command, DotnetAccessMode.Shell));
-
-        requests.Should().BeEmpty();
-        _elevator.Operations.Should().BeEmpty();
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeChangeFailed);
+        elevator.Operations.Should().Equal(AdminModeOperation.Disable);
         _store.Writes.Should().BeEmpty();
         _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
-        AssertNoEnvironmentOrConfigChanges();
+        DotnetupConfig.Exists().Should().BeFalse();
+        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        _env.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
-    public void Init_ModeShellWhileAdmin_FormExitLeavesAdminModeOn()
+    [DataRow("none", DotnetAccessMode.None)]
+    [DataRow("shell", DotnetAccessMode.Shell)]
+    [DataRow("everywhere", DotnetAccessMode.Everywhere)]
+    internal void Init_ExplicitModeWhileAdmin_LocalSdkPathAppliesUserSetup(string token, DotnetAccessMode mode)
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        WriteLocalSdkGlobalJson();
+        var command = new InitCommand(Parser.Parse(["init", "--mode", token, "--shell", "pwsh"]), _environment.Policy);
+        var workflows = new InitWorkflows(_env, CreateSwitcher())
+        {
+            FormSelectionOverride = (_, defaults) =>
+            {
+                defaults.InstallRoot.Path.Should().Be(_env.GetDefaultDotnetInstallPath());
+                defaults.InstallRootGlobalJsonPath.Should().BeNull();
+                defaults.ChannelDisplay.ChannelLabel.Should().Be("9.0.100");
+                return new InitFormSelection(null, defaults.AccessMode, MigrateSystemInstalls: false);
+            },
+        };
+
+        RunFromTempDirectory(() => workflows.InitWalkthrough(command, requests: [], requestedAccessMode: mode))
+            .Should().BeEmpty();
+
+        _elevator.Operations.Should().Equal(AdminModeOperation.Disable);
+        _environment.Policy.IsAdminModeEnabled().Should().BeFalse();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(mode);
+        _env.LastDotnetRootForTerminalProfileModifications.Should().Be(_env.GetDefaultDotnetInstallPath());
+        _env.LastIncludeDotnetForTerminalProfileModifications.Should().Be(mode != DotnetAccessMode.None);
+        _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(mode == DotnetAccessMode.Everywhere ? 1 : 0);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Init_ModeShellWhileAdmin_FormExitLeavesAdminModeOn(bool hasLocalSdkPath)
+    {
+        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        if (hasLocalSdkPath)
+        {
+            WriteLocalSdkGlobalJson();
+        }
         var command = new InitCommand(Parser.Parse(["init", "--mode", "shell"]), _environment.Policy);
         var workflows = new InitWorkflows(_env, CreateSwitcher()) { FormSelectionOverride = (_, _) => null };
 
@@ -194,13 +237,20 @@ public class AdminModeCommandTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Init_ModeShellWhileAdminDryRun_DoesNotDisable()
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Init_ModeShellWhileAdminDryRun_DoesNotDisable(bool hasLocalSdkPath)
     {
         _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        if (hasLocalSdkPath)
+        {
+            WriteLocalSdkGlobalJson();
+        }
         var command = new InitCommand(Parser.Parse(["init", "--mode", "shell", "--dry-run", "--interactive", "false"]), _environment.Policy);
         var workflows = new InitWorkflows(_env, CreateSwitcher());
 
-        workflows.RunInit(command, DotnetAccessMode.Shell).Should().BeEmpty();
+        RunFromTempDirectory(() => workflows.RunInit(command, DotnetAccessMode.Shell)).Should().BeEmpty();
 
         _elevator.Operations.Should().BeEmpty();
         _store.Writes.Should().BeEmpty();
@@ -218,6 +268,13 @@ public class AdminModeCommandTests : IDisposable
 
         _elevator.Operations.Should().BeEmpty();
         _store.Writes.Should().BeEmpty();
+    }
+
+    private void WriteLocalSdkGlobalJson()
+    {
+        Directory.CreateDirectory(Path.Combine(_tempDir, ".dotnet"));
+        File.WriteAllText(Path.Combine(_tempDir, "global.json"),
+            """{ "sdk": { "version": "9.0.100", "rollForward": "disable", "paths": [".dotnet"] } }""");
     }
 
     private AdminModeSwitcher CreateSwitcher() => _environment.CreateSwitcher(_elevator);

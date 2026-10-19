@@ -36,7 +36,7 @@ internal static class InitDefaultsResolver
             ? new GlobalJsonInfo()
             : GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
         var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
-            command.InstallPath, globalJson);
+            command.InstallPath, globalJson, useGlobalJsonSdkPaths: command.UseGlobalJsonSdkPaths);
 
         if (preResolvedRequests is { Count: > 0 })
         {
