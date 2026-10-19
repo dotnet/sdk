@@ -153,8 +153,12 @@ jobs:
             BuildConfig: $(_BuildConfig)
 
       - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools') }}:
+        # Arcade's local strong-name signing invokes sn.exe even in dry-run mode.
         - script: eng/common/build.sh
-                    $(_CIBuild)
+                    --restore
+                    --build
+                    --pack
+                    --ci
                     --configuration $(_BuildConfig)
                     $(_OfficialBuildIdArgs)
                     $(_InternalRuntimeDownloadArgs)
