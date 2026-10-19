@@ -211,11 +211,41 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 </configuration>";
             fs.File.WriteAllText(configPath.Value, configContent);
 
-            Func<Task> downloadAction = () => _toolInstaller.DownloadPackageAsync(
+            Func<Task> downloadAction = () => _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(nugetConfig: configPath));
             (await downloadAction.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+        }
+
+        [TestMethod]
+        public async Task GivenPackageSourceMappingSourceNameWithDifferentCasingInstallSucceeds()
+        {
+            string testFeed = GetTestLocalFeedPath();
+            FilePath configPath = GenerateRandomNugetConfigFilePath();
+            FileSystemWrapper fs = new();
+
+            fs.Directory.CreateDirectory(configPath.GetDirectoryPath().Value);
+            string configContent = $@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key=""testfeed"" value=""{testFeed}"" />
+  </packageSources>
+  <packageSourceMapping>
+    <packageSource key=""TESTFEED"">
+      <package pattern=""{TestPackageId}*"" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>";
+            fs.File.WriteAllText(configPath.Value, configContent);
+
+            string packagePath = await _installer.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(nugetConfig: configPath));
+
+            File.Exists(packagePath).Should().BeTrue();
         }
 
         [TestMethod]

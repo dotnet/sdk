@@ -143,6 +143,8 @@ excluding any satellites the SDK already selected. See the
 for executable-level regression coverage. External satellite lookup is a
 separate change in [dotnet/sdk#56378](https://github.com/dotnet/sdk/pull/56378);
 this implementation retains the current embedded-resource model.
+UI culture is not an AOT eligibility condition; only behavior unavailable in
+the native closure triggers managed fallback.
 
 **External command path** — When the parsed command is not a built-in
 (`parseResult.RequiresManagedCommandResolution()`), it is either an external

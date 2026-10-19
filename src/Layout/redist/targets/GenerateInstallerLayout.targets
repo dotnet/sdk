@@ -58,21 +58,86 @@
     <Copy SourceFiles="@(SdkOutputFile)" DestinationFiles="@(SdkOutputFileDestination)" SkipUnchangedFiles="true" />
   </Target>
 
-  <Target Name="LayoutWorkloadUserLocalMarker"
-          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <WriteLinesToFile File="$(RedistInstallerLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
-                      Overwrite="true" />
+  <PropertyGroup>
+    <_InstallerLayoutTargetsFile>$(MSBuildThisFileFullPath)</_InstallerLayoutTargetsFile>
+    <_WorkloadMarkerStatePrefix>$(IntermediateOutputPath)incremental-layout\userlocal-$(ProductMonikerRid)</_WorkloadMarkerStatePrefix>
+    <_DnxShimStatePrefix>$(IntermediateOutputPath)incremental-layout\dnx-$(ProductMonikerRid)</_DnxShimStatePrefix>
+    <_IntermediateDnxShimStatePrefix>$(IntermediateOutputPath)incremental-layout\dnx-installer-$(ProductMonikerRid)</_IntermediateDnxShimStatePrefix>
+  </PropertyGroup>
+
+  <Target Name="_PrepareLayoutWorkloadUserLocalMarker">
+    <GetWorkloadUserLocalLayout LayoutRoot="$([MSBuild]::NormalizeDirectory('$(RedistInstallerLayoutPath)'))"
+                                FeatureBand="$(CliProductBandVersion)00"
+                                Enabled="$([MSBuild]::ValueOrDefault('$(DotNetBuildSourceOnly)', 'false'))">
+      <Output TaskParameter="ExpectedOutputs" ItemName="_ExpectedWorkloadMarker" />
+      <Output TaskParameter="StaleOutputs" ItemName="_StaleWorkloadMarker" />
+      <Output TaskParameter="OwnedDirectories" ItemName="_WorkloadMarkerDirectories" />
+      <Output TaskParameter="NeedsRepair" PropertyName="_WorkloadMarkerNeedsRepair" />
+    </GetWorkloadUserLocalLayout>
+    <ItemGroup>
+      <_MissingWorkloadMarker Include="@(_ExpectedWorkloadMarker)" Condition="!Exists('%(Identity)')" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_WorkloadMarkerStatePrefix).inputs"
+                      Lines="Root=$([MSBuild]::NormalizeDirectory('$(RedistInstallerLayoutPath)'));@(_ExpectedWorkloadMarker)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ReadLinesFromFile File="$(_WorkloadMarkerStatePrefix).complete" Condition="Exists('$(_WorkloadMarkerStatePrefix).complete')">
+      <Output TaskParameter="Lines" PropertyName="_WorkloadMarkerCompletionValue" />
+    </ReadLinesFromFile>
+    <Delete Files="$(_WorkloadMarkerStatePrefix).complete"
+            Condition="'@(_MissingWorkloadMarker)' != '' or '@(_StaleWorkloadMarker)' != '' or '$(_WorkloadMarkerNeedsRepair)' == 'true' or (Exists('$(_WorkloadMarkerStatePrefix).complete') and '$(_WorkloadMarkerCompletionValue)' != 'complete')" />
   </Target>
 
-  <Target Name="LayoutDnxShim">
+  <Target Name="LayoutWorkloadUserLocalMarker"
+          DependsOnTargets="_PrepareLayoutWorkloadUserLocalMarker"
+          Inputs="$(_WorkloadMarkerStatePrefix).inputs;$(_InstallerLayoutTargetsFile)"
+          Outputs="$(_WorkloadMarkerStatePrefix).complete">
+    <Delete Files="$(_WorkloadMarkerStatePrefix).complete" />
+    <Delete Files="@(_StaleWorkloadMarker)" />
+    <PruneEmptyLayoutDirectories Directories="@(_WorkloadMarkerDirectories)" />
+    <WriteLinesToFile File="%(_ExpectedWorkloadMarker.Identity)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true"
+                      Condition="'@(_ExpectedWorkloadMarker)' != ''" />
+    <CompleteIncrementalLayout ExpectedOutputs="@(_ExpectedWorkloadMarker)"
+                               CompletionStampFile="$([MSBuild]::NormalizePath('$(_WorkloadMarkerStatePrefix).complete'))" />
+  </Target>
+
+  <Target Name="_PrepareDnxShimSource">
     <ItemGroup>
       <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.cmd" />
       <DnxShimSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnx" />
     </ItemGroup>
-    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
+  </Target>
 
-    <!-- Mark script as executable -->
+  <Target Name="_PrepareLayoutDnxShim" DependsOnTargets="_PrepareDnxShimSource">
+    <GetDnxShimLayout LayoutRoot="$([MSBuild]::NormalizeDirectory('$(RedistInstallerLayoutPath)'))"
+                      SourceFiles="@(DnxShimSource->'%(FullPath)')">
+      <Output TaskParameter="ExpectedOutputs" ItemName="_ExpectedDnxShim" />
+      <Output TaskParameter="StaleOutputs" ItemName="_StaleDnxShim" />
+      <Output TaskParameter="PermissionsNeedRepair" PropertyName="_DnxShimPermissionsNeedRepair" />
+      <Output TaskParameter="ContentsNeedRepair" PropertyName="_DnxShimContentsNeedRepair" />
+    </GetDnxShimLayout>
+    <ItemGroup>
+      <_MissingDnxShim Include="@(_ExpectedDnxShim)" Condition="!Exists('%(Identity)')" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_DnxShimStatePrefix).inputs"
+                      Lines="Root=$([MSBuild]::NormalizeDirectory('$(RedistInstallerLayoutPath)'));@(DnxShimSource->'%(FullPath)');@(_ExpectedDnxShim)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ReadLinesFromFile File="$(_DnxShimStatePrefix).complete" Condition="Exists('$(_DnxShimStatePrefix).complete')">
+      <Output TaskParameter="Lines" PropertyName="_DnxShimCompletionValue" />
+    </ReadLinesFromFile>
+    <Delete Files="$(_DnxShimStatePrefix).complete"
+            Condition="'@(_MissingDnxShim)' != '' or '@(_StaleDnxShim)' != '' or '$(_DnxShimPermissionsNeedRepair)' == 'true' or '$(_DnxShimContentsNeedRepair)' == 'true' or (Exists('$(_DnxShimStatePrefix).complete') and '$(_DnxShimCompletionValue)' != 'complete')" />
+  </Target>
+
+  <Target Name="LayoutDnxShim" DependsOnTargets="_PrepareLayoutDnxShim"
+          Inputs="@(DnxShimSource);$(_DnxShimStatePrefix).inputs;$(_InstallerLayoutTargetsFile)"
+          Outputs="$(_DnxShimStatePrefix).complete">
+    <Delete Files="$(_DnxShimStatePrefix).complete" />
+    <Delete Files="@(_StaleDnxShim)" />
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFiles="@(_ExpectedDnxShim)" />
     <Exec Command="chmod 755 &quot;$(RedistInstallerLayoutPath)/dnx&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+    <CompleteIncrementalLayout ExpectedOutputs="@(_ExpectedDnxShim)"
+                               CompletionStampFile="$([MSBuild]::NormalizePath('$(_DnxShimStatePrefix).complete'))" />
   </Target>
 
   <!-- Replace files from the runtime packs with symbolic links to the corresponding shared framework files (and hostfxr) to reduce the size of the runtime pack directories. -->
@@ -106,13 +171,16 @@
     <DeduplicateAssembliesWithLinks Condition="'$(SkipBuildingInstallers)' != 'true'" LayoutDirectory="$(RedistInstallerLayoutPath)sdk\" UseHardLinks="$(_UseHardLinks)" />
   </Target>
 
-  <!-- Copy the sdk layout into a temporary folder so that it's nested under "sdk\$(Version)\" which is
-       necessary for the msi/pkg to install correctly and put the content under that sub path. -->
-  <Target Name="PrepareIntermediateSdkInstallerOutput" DependsOnTargets="GenerateInstallerLayout">
+  <Target Name="_PrepareIntermediateSdkInstallerOutputPath">
     <PropertyGroup>
       <IntermediateSdkInstallerOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'sdk-installer', '$(Configuration)'))</IntermediateSdkInstallerOutputPath>
     </PropertyGroup>
+  </Target>
 
+  <!-- Copy the sdk layout into a temporary folder so that it's nested under "sdk\$(Version)\" which is
+       necessary for the msi/pkg to install correctly and put the content under that sub path. -->
+  <Target Name="PrepareIntermediateSdkInstallerOutput"
+          DependsOnTargets="GenerateInstallerLayout;_PrepareIntermediateSdkInstallerOutputPath;LayoutIntermediateDnxShim">
     <!-- Create "SDK Internal" layout. -->
     <ItemGroup>
       <SdkOutputFile Include="$(InstallerOutputDirectory)**\*" />
@@ -121,15 +189,44 @@
     <CopyPreservingRelativeSymlinks
           SourceFiles="@(SdkOutputFile)"
           DestinationFiles="@(SdkOutputFile -> '$(IntermediateSdkInstallerOutputPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
 
-    <!-- Copy dnx script to root dotnet folder (which will map to DOTNETHOME).
-         Skipped on macOS and Windows: the sharedhost pkg/MSI (from dotnet/runtime) now
-         installs dnx at the same location, so shipping it here creates overlapping
-         component packages. LayoutDnxShim still emits it into the base redist layout
-         (tarball/zip). -->
-    <Copy SourceFiles="@(DnxShimSource)"
-          DestinationFolder="$(IntermediateSdkInstallerOutputPath)"
-          Condition="!$([MSBuild]::IsOSPlatform('OSX')) and !$([MSBuild]::IsOSPlatform('Windows'))" />
+  <Target Name="_PrepareLayoutIntermediateDnxShim"
+          DependsOnTargets="_PrepareIntermediateSdkInstallerOutputPath;_PrepareDnxShimSource">
+    <!-- The sharedhost MSI/pkg owns the root shim on Windows/macOS. -->
+    <ItemGroup>
+      <_IntermediateDnxShimSource Include="@(DnxShimSource)"
+                                 Condition="!$([MSBuild]::IsOSPlatform('OSX')) and !$([MSBuild]::IsOSPlatform('Windows'))" />
+    </ItemGroup>
+    <GetDnxShimLayout LayoutRoot="$(IntermediateSdkInstallerOutputPath)"
+                      SourceFiles="@(_IntermediateDnxShimSource->'%(FullPath)')">
+      <Output TaskParameter="ExpectedOutputs" ItemName="_ExpectedIntermediateDnxShim" />
+      <Output TaskParameter="StaleOutputs" ItemName="_StaleIntermediateDnxShim" />
+      <Output TaskParameter="PermissionsNeedRepair" PropertyName="_IntermediateDnxShimPermissionsNeedRepair" />
+      <Output TaskParameter="ContentsNeedRepair" PropertyName="_IntermediateDnxShimContentsNeedRepair" />
+    </GetDnxShimLayout>
+    <ItemGroup>
+      <_MissingIntermediateDnxShim Include="@(_ExpectedIntermediateDnxShim)" Condition="!Exists('%(Identity)')" />
+    </ItemGroup>
+    <WriteLinesToFile File="$(_IntermediateDnxShimStatePrefix).inputs"
+                      Lines="Root=$(IntermediateSdkInstallerOutputPath);@(_IntermediateDnxShimSource->'%(FullPath)');@(_ExpectedIntermediateDnxShim)"
+                      Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ReadLinesFromFile File="$(_IntermediateDnxShimStatePrefix).complete" Condition="Exists('$(_IntermediateDnxShimStatePrefix).complete')">
+      <Output TaskParameter="Lines" PropertyName="_IntermediateDnxShimCompletionValue" />
+    </ReadLinesFromFile>
+    <Delete Files="$(_IntermediateDnxShimStatePrefix).complete"
+            Condition="'@(_MissingIntermediateDnxShim)' != '' or '@(_StaleIntermediateDnxShim)' != '' or '$(_IntermediateDnxShimPermissionsNeedRepair)' == 'true' or '$(_IntermediateDnxShimContentsNeedRepair)' == 'true' or (Exists('$(_IntermediateDnxShimStatePrefix).complete') and '$(_IntermediateDnxShimCompletionValue)' != 'complete')" />
+  </Target>
+
+  <Target Name="LayoutIntermediateDnxShim" DependsOnTargets="_PrepareLayoutIntermediateDnxShim"
+          Inputs="@(_IntermediateDnxShimSource);$(_IntermediateDnxShimStatePrefix).inputs;$(_InstallerLayoutTargetsFile)"
+          Outputs="$(_IntermediateDnxShimStatePrefix).complete">
+    <Delete Files="$(_IntermediateDnxShimStatePrefix).complete" />
+    <Delete Files="@(_StaleIntermediateDnxShim)" />
+    <Copy SourceFiles="@(_IntermediateDnxShimSource)" DestinationFiles="@(_ExpectedIntermediateDnxShim)" />
+    <Exec Command="chmod 755 &quot;$(IntermediateSdkInstallerOutputPath)dnx&quot;" Condition="'@(_IntermediateDnxShimSource)' != ''" />
+    <CompleteIncrementalLayout ExpectedOutputs="@(_ExpectedIntermediateDnxShim)"
+                               CompletionStampFile="$([MSBuild]::NormalizePath('$(_IntermediateDnxShimStatePrefix).complete'))" />
   </Target>
 
 </Project>

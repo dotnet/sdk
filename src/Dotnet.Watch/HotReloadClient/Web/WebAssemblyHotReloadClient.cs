@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.HotReload;
 internal sealed class WebAssemblyHotReloadClient(
     ILogger logger,
     ILogger agentLogger,
-    AbstractBrowserRefreshServer browserRefreshServer,
+    BrowserRefreshServer browserRefreshServer,
     int baselineEpoch,
     ImmutableArray<string> projectHotReloadCapabilities,
     Version projectTargetFrameworkVersion,
@@ -119,7 +119,7 @@ internal sealed class WebAssemblyHotReloadClient(
 
         var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-        return QueueUpdateBatch(
+        return QueueUpdateBatchAsync(
             sendAndReceive: async batchId =>
             {
                 // When testing abstract away the browser and pretend all changes have been applied:
