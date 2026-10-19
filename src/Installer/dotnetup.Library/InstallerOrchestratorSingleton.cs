@@ -93,7 +93,7 @@ internal class InstallerOrchestratorSingleton
         using var readyQueue = new System.Collections.Concurrent.BlockingCollection<PreparedInstall>();
 
         var downloadTask = Task.Run(() => PrepareConcurrent(requests, batchContext, readyQueue, results, failures, fatalExceptions, installResultCollectionLock));
-        ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, batchContext, CommitPreparedInstall, results, failures, fatalExceptions, installResultCollectionLock);
+        ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, batchContext, prepared => CommitPreparedInstall(prepared), results, failures, fatalExceptions, installResultCollectionLock);
         downloadTask.Wait();
 
         // Fatal (non-DotnetInstallException) errors still abort the batch entirely.
@@ -356,11 +356,7 @@ internal class InstallerOrchestratorSingleton
     /// Creates the validator that checks whether an install exists. Archive installs validate the layout
     /// dotnetup extracted; installer bundle installs ask hostfxr, since the bundle owns the layout.
     /// </summary>
-    internal static IInstallationValidator CreateInstallationValidator(InstallMechanism mechanism) => mechanism switch
-    {
-        InstallMechanism.WindowsInstallerBundle => new HostFxrInstallationValidator(),
-        _ => new ArchiveInstallationValidator(),
-    };
+    internal static IInstallationValidator CreateInstallationValidator(InstallMechanism mechanism) => new InstallationValidator(mechanism);
 
     /// <summary>
     /// Commits a previously prepared installation: installs the artifact into the target directory
@@ -368,13 +364,13 @@ internal class InstallerOrchestratorSingleton
     /// </summary>
     /// <returns>The installation result.</returns>
 #pragma warning disable CA1822
-    public InstallResult CommitPreparedInstall(PreparedInstall prepared)
+    public InstallResult CommitPreparedInstall(PreparedInstall prepared, IInstallationValidator? installationValidator = null)
     {
         var manifest = prepared.Request.Options.Untracked ? null : new DotnetupSharedManifest(prepared.Request.Options.ManifestPath);
 
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            IInstallationValidator validator = CreateInstallationValidator(prepared.Request.Options.InstallMechanism);
+            IInstallationValidator validator = installationValidator ?? CreateInstallationValidator(prepared.Request.Options.InstallMechanism);
             if (manifest?.InstallAlreadyExists(prepared.Install) == true
                 || (prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
                     && validator.Validate(prepared.Install)))

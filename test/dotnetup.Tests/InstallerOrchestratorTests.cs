@@ -300,12 +300,12 @@ public class InstallerOrchestratorTests
     }
 
     [TestMethod]
-    public void CreateInstallationValidator_SelectsValidatorByMechanism()
+    public void CreateInstallationValidator_UsesSharedValidatorForBothMechanisms()
     {
         InstallerOrchestratorSingleton.CreateInstallationValidator(InstallMechanism.Archive)
-            .Should().BeOfType<ArchiveInstallationValidator>();
+            .Should().BeOfType<InstallationValidator>();
         InstallerOrchestratorSingleton.CreateInstallationValidator(InstallMechanism.WindowsInstallerBundle)
-            .Should().BeOfType<HostFxrInstallationValidator>();
+            .Should().BeOfType<InstallationValidator>();
     }
 
     [TestMethod]
@@ -358,12 +358,14 @@ public class InstallerOrchestratorTests
 
         var artifact = new FakeArtifact { OnCommit = InstallSdk };
         using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle,
+            root => HostFxrQueryProcess.GetInfo(root, DotnetupTestUtilities.GetDotnetupExecutablePath()));
 
-        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared, validator);
 
         result.WasAlreadyInstalled.Should().Be(alreadyInstalled);
         artifact.CommitCalls.Should().Be(alreadyInstalled ? 0 : 1);
-        new HostFxrInstallationValidator().Validate(install).Should().BeTrue();
+        validator.Validate(install).Should().BeTrue();
         File.Exists(testEnv.ManifestPath).Should().BeFalse();
     }
 

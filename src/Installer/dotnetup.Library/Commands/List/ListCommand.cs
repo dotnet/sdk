@@ -56,7 +56,7 @@ internal static class InstallationLister
             manifestData = manifest.ReadManifest();
         }
 
-        var validator = new ArchiveInstallationValidator();
+        var validator = new InstallationValidator();
 
         var roots = installPath is not null
             ? manifestData.DotnetRoots.Where(r => string.Equals(
@@ -75,7 +75,7 @@ internal static class InstallationLister
     private static (List<InstallSpecInfo> Specs, List<InstallationInfo> Installations) CollectRootData(
         DotnetRootEntry root,
         bool verify,
-        ArchiveInstallationValidator validator)
+        InstallationValidator validator)
     {
         var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
 

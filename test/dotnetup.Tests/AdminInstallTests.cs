@@ -61,12 +61,12 @@ public class AdminInstallRootResolverTests
 }
 
 [TestClass]
-public class HostFxrInstallationValidatorTests
+public class InstallationValidatorTests
 {
     [TestMethod]
     public void Validate_ReturnsFalse_WhenRootIsMissing()
     {
-        var validator = new HostFxrInstallationValidator(_ => throw new InvalidOperationException("must not be called"));
+        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new InvalidOperationException("must not be called"));
         var install = MakeInstall(Path.Combine(Path.GetTempPath(), "dotnetup-missing-" + Guid.NewGuid().ToString("N")));
 
         validator.Validate(install, out string? failure).Should().BeFalse();
@@ -77,7 +77,7 @@ public class HostFxrInstallationValidatorTests
     public void Validate_ReturnsFalse_WhenHostFxrIsMissing()
     {
         using var testEnv = new TestEnvironment();
-        var validator = new HostFxrInstallationValidator(_ => throw new InvalidOperationException("must not be called"));
+        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new InvalidOperationException("must not be called"));
 
         validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
         failure.Should().Contain("hostfxr");
@@ -92,7 +92,7 @@ public class HostFxrInstallationValidatorTests
         string directory = Path.Combine(testEnv.InstallPath, "host", "fxr", relativeDirectory);
         Directory.CreateDirectory(directory);
         File.WriteAllText(Path.Combine(directory, HostFxrLibraryName), string.Empty);
-        var validator = new HostFxrInstallationValidator(_ => throw new InvalidOperationException("must not be called"));
+        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new InvalidOperationException("must not be called"));
 
         validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
         failure.Should().Contain("hostfxr");
@@ -104,7 +104,7 @@ public class HostFxrInstallationValidatorTests
         using var testEnv = new TestEnvironment();
         StubHostFxr(testEnv.InstallPath);
         var install = MakeInstall(testEnv.InstallPath);
-        var validator = new HostFxrInstallationValidator(_ => HostReport(
+        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => HostReport(
             sdks: [new NetSdkInfo("10.0.100", Path.Combine(testEnv.InstallPath, "sdk", "10.0.100"))],
             runtimes: [new NetRuntimeInfo(InstallComponentExtensions.RuntimeFrameworkName, "10.0.100", Path.Combine(testEnv.InstallPath, "shared", InstallComponentExtensions.RuntimeFrameworkName))]));
 
@@ -121,7 +121,7 @@ public class HostFxrInstallationValidatorTests
         using var testEnv = new TestEnvironment();
         StubHostFxr(testEnv.InstallPath);
         var install = MakeInstall(testEnv.InstallPath);
-        var validator = new HostFxrInstallationValidator(_ => HostReport(
+        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => HostReport(
             sdks: [new NetSdkInfo("10.0.101", Path.Combine(testEnv.InstallPath, "sdk", "10.0.101"))]));
 
         validator.Validate(install, out string? failure).Should().BeFalse();
@@ -135,7 +135,7 @@ public class HostFxrInstallationValidatorTests
         StubHostFxr(testEnv.InstallPath);
         var install = MakeInstall(testEnv.InstallPath);
         string otherSdk = Path.Combine(testEnv.TempRoot, "other", "sdk", "10.0.100");
-        var validator = new HostFxrInstallationValidator(_ => HostReport(sdks: [new NetSdkInfo("10.0.100", otherSdk)]));
+        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => HostReport(sdks: [new NetSdkInfo("10.0.100", otherSdk)]));
 
         validator.Validate(install, out string? failure).Should().BeFalse();
         failure.Should().Contain(otherSdk);
@@ -146,7 +146,7 @@ public class HostFxrInstallationValidatorTests
     {
         using var testEnv = new TestEnvironment();
         StubHostFxr(testEnv.InstallPath);
-        var validator = new HostFxrInstallationValidator(_ => throw new DllNotFoundException("hostfxr"));
+        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new DllNotFoundException("hostfxr"));
 
         validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
         failure.Should().Contain("hostfxr");
@@ -157,34 +157,52 @@ public class HostFxrInstallationValidatorTests
     {
         using var testEnv = new TestEnvironment();
         StubHostFxr(testEnv.InstallPath);
+        File.Delete(InstallationValidator.GetMuxerPath(testEnv.InstallPath));
 
-        new HostFxrInstallationValidator().Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
+        new InstallationValidator(InstallMechanism.WindowsInstallerBundle).Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
         failure.Should().Contain("did not report");
     }
 
     [TestMethod]
-    public void ParseMuxerListOutput_ReadsSdksAndRuntimes_AndSkipsMalformedLines()
+    public void Validate_ArchiveRequiresComponentLayout()
     {
-        const string sdkOutput =
-            "10.0.100 [C:\\Program Files\\dotnet\\sdk]\r\n" +
-            "11.0.100-rc.2.26504.105 [C:\\Program Files\\dotnet\\sdk]\r\n" +
-            "not-a-version [x]\r\n" +
-            "10.0.200\r\n" +
-            "garbage\r\n";
-        const string runtimeOutput =
-            "Microsoft.AspNetCore.App 10.0.0 [C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App]\n" +
-            "Microsoft.NETCore.App 10.0.0 [C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App]\n" +
-            "Microsoft.NETCore.App not-a-version [C:\\x]\n" +
-            "Microsoft.NETCore.App 10.0.1\n";
+        using var testEnv = new TestEnvironment();
+        File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
+        var validator = new InstallationValidator(InstallMechanism.Archive, _ => throw new InvalidOperationException("must not be called"));
 
-        var environment = HostFxrInstallationValidator.ParseMuxerListOutput(sdkOutput, runtimeOutput);
+        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
+        failure.Should().Contain("Component layout validation failed");
+    }
 
-        environment.SdkInfo.Select(s => (s.Version.ToString(), s.Path)).Should().Equal(
-            ("10.0.100", Path.Combine("C:\\Program Files\\dotnet\\sdk", "10.0.100")),
-            ("11.0.100-rc.2.26504.105", Path.Combine("C:\\Program Files\\dotnet\\sdk", "11.0.100-rc.2.26504.105")));
-        environment.RuntimeInfo.Select(r => (r.Name, r.Version.ToString(), r.Path)).Should().Equal(
-            ("Microsoft.AspNetCore.App", "10.0.0", "C:\\Program Files\\dotnet\\shared\\Microsoft.AspNetCore.App"),
-            ("Microsoft.NETCore.App", "10.0.0", "C:\\Program Files\\dotnet\\shared\\Microsoft.NETCore.App"));
+    [TestMethod]
+    public void Validate_ArchivePreservesPlatformSpecificHostCheck()
+    {
+        using var testEnv = new TestEnvironment();
+        File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
+        string sdkPath = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
+        Directory.CreateDirectory(sdkPath);
+        File.WriteAllText(Path.Combine(sdkPath, "dotnet.dll"), string.Empty);
+        int queryCalls = 0;
+        var validator = new InstallationValidator(InstallMechanism.Archive, _ =>
+        {
+            queryCalls++;
+            return HostReport(sdks: [new NetSdkInfo("10.0.100", sdkPath)]);
+        });
+
+        validator.Validate(MakeInstall(testEnv.InstallPath)).Should().BeTrue();
+        queryCalls.Should().Be(OperatingSystem.IsWindows() ? 1 : 0);
+    }
+
+    [TestMethod]
+    public void Validate_ArchiveWindowsDesktopCanBeInstalledWithoutMuxer()
+    {
+        using var testEnv = new TestEnvironment();
+        string runtimePath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, InstallComponent.WindowsDesktop, "10.0.100")!;
+        Directory.CreateDirectory(runtimePath);
+        File.WriteAllText(Path.Combine(runtimePath, "WindowsBase.dll"), string.Empty);
+        var validator = new InstallationValidator(InstallMechanism.Archive, _ => throw new InvalidOperationException("must not be called"));
+
+        validator.Validate(MakeInstall(testEnv.InstallPath) with { Component = InstallComponent.WindowsDesktop }).Should().BeTrue();
     }
 
     private static string HostFxrLibraryName => OperatingSystem.IsWindows()
@@ -205,5 +223,6 @@ public class HostFxrInstallationValidatorTests
         string fxrDirectory = Path.Combine(root, "host", "fxr", Path.Combine(subdirectories));
         Directory.CreateDirectory(fxrDirectory);
         File.WriteAllText(Path.Combine(fxrDirectory, HostFxrLibraryName), string.Empty);
+        File.WriteAllText(InstallationValidator.GetMuxerPath(root), string.Empty);
     }
 }

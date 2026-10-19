@@ -180,7 +180,7 @@ internal class UpdateWorkflow
         if (alreadyInstalled)
         {
             var install = new DotnetInstall(installRoot, latestVersion, spec.Component);
-            ArchiveInstallationValidator validator = new();
+            InstallationValidator validator = new();
             if (!validator.Validate(install))
             {
                 var manifest = new DotnetupSharedManifest(manifestPath);

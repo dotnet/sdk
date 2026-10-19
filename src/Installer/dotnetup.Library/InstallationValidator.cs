@@ -7,8 +7,22 @@ using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-internal class ArchiveInstallationValidator : IInstallationValidator
+internal sealed class InstallationValidator : IInstallationValidator
 {
+    private readonly InstallMechanism _mechanism;
+    private readonly Func<string, NetEnvironmentInfo> _getEnvironmentInfo;
+
+    public InstallationValidator(InstallMechanism mechanism = InstallMechanism.Archive)
+        : this(mechanism, HostFxrQueryProcess.GetInfo)
+    {
+    }
+
+    internal InstallationValidator(InstallMechanism mechanism, Func<string, NetEnvironmentInfo> getEnvironmentInfo)
+    {
+        _mechanism = mechanism;
+        _getEnvironmentInfo = getEnvironmentInfo;
+    }
+
     private static readonly Dictionary<InstallComponent, string> s_runtimeMonikerByComponent = new()
     {
         [InstallComponent.Runtime] = InstallComponentExtensions.RuntimeFrameworkName,
@@ -16,7 +30,6 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         [InstallComponent.WindowsDesktop] = InstallComponentExtensions.WindowsDesktopFrameworkName
     };
 
-#pragma warning disable CA1822 // Validate methods implement IInstallationValidator and cannot be made static
     public bool Validate(DotnetInstall install)
     {
         return Validate(install, out _);
@@ -36,6 +49,11 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         {
             failureReason = "Install root path is null or empty.";
             return false;
+        }
+
+        if (_mechanism == InstallMechanism.WindowsInstallerBundle)
+        {
+            return ValidateBundle(install, installRoot, out failureReason);
         }
 
         string dotnetMuxerPath = GetMuxerPath(installRoot);
@@ -71,7 +89,57 @@ internal class ArchiveInstallationValidator : IInstallationValidator
 
         return true;
     }
-#pragma warning restore CA1822
+
+    private bool ValidateBundle(DotnetInstall install, string installRoot, out string? failureReason)
+    {
+        if (!Directory.Exists(installRoot))
+        {
+            failureReason = $"Install root '{installRoot}' does not exist.";
+            return false;
+        }
+
+        if (!HasHostFxr(installRoot))
+        {
+            failureReason = $"No hostfxr library was found under '{Path.Combine(installRoot, "host", "fxr")}'.";
+            return false;
+        }
+
+        try
+        {
+            var environmentInfo = File.Exists(GetMuxerPath(installRoot))
+                ? _getEnvironmentInfo(installRoot)
+                : new NetEnvironmentInfo();
+            return IsReportedByHost(environmentInfo, installRoot, install.Version, install.Component, out failureReason);
+        }
+        catch (Exception ex)
+        {
+            failureReason = $"hostfxr could not enumerate the installations at '{installRoot}': {ex.Message}";
+            return false;
+        }
+    }
+
+    private static bool HasHostFxr(string installRoot)
+    {
+        string hostFxrDirectory = Path.Combine(installRoot, "host", "fxr");
+        if (!Directory.Exists(hostFxrDirectory))
+        {
+            return false;
+        }
+
+        string libraryName = OperatingSystem.IsWindows()
+            ? "hostfxr.dll"
+            : OperatingSystem.IsMacOS() ? "libhostfxr.dylib" : "libhostfxr.so";
+
+        try
+        {
+            return Directory.EnumerateDirectories(hostFxrDirectory)
+                .Any(versionDirectory => File.Exists(Path.Combine(versionDirectory, libraryName)));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return false;
+        }
+    }
 
     private static bool ValidateComponentLayout(string installRoot, string resolvedVersion, InstallComponent component)
     {
@@ -84,7 +152,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
         return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
     }
 
-    private static bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component, out string? failureReason)
+    private bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component, out string? failureReason)
     {
         failureReason = null;
 
@@ -97,7 +165,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
 
         try
         {
-            return IsReportedByHost(HostFxrWrapper.getInfo(installRoot), installRoot, resolvedVersion, component, out failureReason);
+            return IsReportedByHost(_getEnvironmentInfo(installRoot), installRoot, resolvedVersion, component, out failureReason);
         }
         catch (Exception ex)
         {
@@ -134,8 +202,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
 
     /// <summary>
     /// Checks whether the SDKs and runtimes a host reports for an install root include the given component
-    /// version at its expected location in that root. The host's report may come from hostfxr loaded in
-    /// process or from the root's muxer run out of process.
+    /// version at its expected location in that root. Hostfxr is queried in a separate process.
     /// </summary>
     internal static bool IsReportedByHost(
         NetEnvironmentInfo environmentInfo,

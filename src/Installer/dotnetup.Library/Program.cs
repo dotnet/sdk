@@ -19,6 +19,11 @@ public class DotnetupProgram
 {
     public static int Main(string[] args)
     {
+        if (HostFxrQueryProcess.TryRun(args, out int queryExitCode))
+        {
+            return queryExitCode;
+        }
+
         // Force these loaded-image values to be cached before startup can rename or replace the executable;
         // self-update identity must continue to describe the image that launched this process.
         _ = DotnetupProcessInfo.ExecutablePath;

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -52,7 +53,7 @@ internal partial class HostFxrWrapper
     // lpFileName passed to LoadLibraryEx must be a full path.
     private const int LOAD_WITH_ALTERED_SEARCH_PATH = 0x8;
 
-    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
+    [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
     [UnmanagedCallConv(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvStdcall)])]
     private static partial IntPtr LoadLibraryExW(string lpFileName, IntPtr hFile, int dwFlags);
 
@@ -63,7 +64,10 @@ internal partial class HostFxrWrapper
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                LoadLibraryExW(hostFxrPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
+                if (LoadLibraryExW(hostFxrPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH) == IntPtr.Zero)
+                {
+                    throw new Win32Exception(Marshal.GetLastPInvokeError(), $"Could not load hostfxr from '{hostFxrPath}'.");
+                }
             }
 #if NETCOREAPP
             else
