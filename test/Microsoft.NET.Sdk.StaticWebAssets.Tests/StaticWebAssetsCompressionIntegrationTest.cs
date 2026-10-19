@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
@@ -220,20 +221,27 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
                 .WithProjectChanges((project, xml) =>
                 {
-                    if (!project.Contains("ClassLibrary"))
-                    {
-                        xml.Descendants("PropertyGroup")
-                            .First().Add(new XElement(propertyName, "Optimal"));
-                    }
+                    xml.Descendants("PropertyGroup")
+                        .First().Add(new XElement(propertyName, "Optimal"));
                 });
 
             var publish = CreatePublishCommand(ProjectDirectory, "AppWithP2PReference");
             var result = ExecuteCommand(publish, "-v:diag");
             result.Should().Pass();
 
-            // The task parameter is only logged for the publish-time BrotliCompress invocation
-            // because the build-time compression only applies to gzip by default.
-            result.StdOut.Should().Contain("CompressionLevel=Optimal");
+            var brotliTasks = Regex.Matches(
+                result.StdOut!,
+                @"Task ""BrotliCompress"".*?Done executing task ""BrotliCompress""",
+                RegexOptions.Singleline);
+
+            brotliTasks.Should().NotBeEmpty("publish should run the BrotliCompress task");
+            foreach (Match task in brotliTasks)
+            {
+                // The task parameter was bound and the level reached the tool's response file.
+                task.Value.Should().Contain("CompressionLevel=Optimal");
+                Regex.IsMatch(task.Value, @"^\s*-c\s*\r?\n\s*Optimal\s*$", RegexOptions.Multiline)
+                    .Should().BeTrue("the response file passed to the tool should contain '-c Optimal'");
+            }
         }
     }
 }
