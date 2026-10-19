@@ -152,7 +152,7 @@ internal sealed class WebAssemblyHotReloadClient(
     public override Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
         => Task.CompletedTask;
 
-    private readonly struct JsonApplyManagedCodeUpdatesRequest
+    internal readonly struct JsonApplyManagedCodeUpdatesRequest
     {
         public string Type => "ApplyManagedCodeUpdates";
         public string? SharedSecret { get; init; }

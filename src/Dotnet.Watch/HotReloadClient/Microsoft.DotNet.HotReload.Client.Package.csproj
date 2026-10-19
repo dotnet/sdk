@@ -11,6 +11,9 @@
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <LangVersion>preview</LangVersion>
 
+    <PublishAot Condition="'$(TargetFramework)' != '$(NetFrameworkToolCurrent)'">true</PublishAot>
+    <IsAotCompatible Condition="'$(TargetFramework)' != '$(NetFrameworkToolCurrent)'">true</IsAotCompatible>
+
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
