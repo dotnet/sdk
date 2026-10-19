@@ -86,7 +86,8 @@ Reload).
   Web apps, the same client-owned initializer also imports the configuration from
   `afterWebStarted`: per-page static SSR must connect to browser tools even when no
   WebAssembly component starts. Keep this Web-start activation independent of the runtime's
-  debug gate and preserve the single client-owned keypair. Blazor guarantees
+  debug gate and preserve the single client-owned keypair. Share the settings request across
+  Web-start and runtime callbacks so they agree on activation. Blazor guarantees
   every `onRuntimeConfigLoaded`
   callback runs before any `onRuntimeReady` callback and passes the same config object to
   all initializers, so pass *activation state* between initializer modules through that

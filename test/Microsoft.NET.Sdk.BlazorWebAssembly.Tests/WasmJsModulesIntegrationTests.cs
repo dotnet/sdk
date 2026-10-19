@@ -96,6 +96,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             initializerContent.Should().Contain("export async function afterWebStarted()");
             initializerContent.Should().Contain("export function afterWebAssemblyStarted()");
             initializerContent.Should().Contain("agent.pendingUpdates ??= [];");
+            initializerContent.Should().Contain("return hotReloadSettings ??= readHotReloadSettings();");
             initializerContent.Should().NotContain("window.Blazor._internal.applyHotReloadDeltas =");
             initializerContent.Should().NotContain("__RUNTIME_HOT_RELOAD_AGENT__");
             initializerContent.Should().NotContain("__SDK_HOT_RELOAD_AGENT__");
