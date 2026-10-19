@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 
@@ -40,8 +41,7 @@ internal sealed class BundleProcessRunner : IBundleProcessRunner
         void WaitForInstaller(object? sender, ConsoleCancelEventArgs e)
         {
             e.Cancel = true;
-            onCancelRequested();
-            Console.Error.WriteLine("The .NET installer is still running and cannot be cancelled from dotnetup. Waiting for it to finish; no further installs will be started...");
+            ReportCancellation(onCancelRequested);
         }
 
         Console.CancelKeyPress += WaitForInstaller;
@@ -56,5 +56,11 @@ internal sealed class BundleProcessRunner : IBundleProcessRunner
         {
             Console.CancelKeyPress -= WaitForInstaller;
         }
+    }
+
+    internal static void ReportCancellation(Action onCancelRequested)
+    {
+        onCancelRequested();
+        AnsiConsole.WriteLine("The .NET installer is still running and cannot be cancelled from dotnetup. Waiting for it to finish; no further installs will be started...");
     }
 }
