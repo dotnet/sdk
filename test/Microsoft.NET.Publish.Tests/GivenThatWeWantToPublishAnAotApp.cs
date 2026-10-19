@@ -1464,6 +1464,7 @@ public class NativeLibraryClass
             // Record properties before Publish since Build is skipped for AOT
             testProject.RecordPropertiesBeforeTarget("Publish");
             testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
@@ -1483,6 +1484,8 @@ public class NativeLibraryClass
             // The publish directory should contain the native AOT binary
             File.Exists(publishedExe).Should().BeTrue("the AOT-compiled native binary should exist in the publish directory");
             IsNativeImage(publishedExe).Should().BeTrue("the published binary should be a native image");
+            File.Exists(Path.Combine(publishDirectory, $"{testProject.Name}.xml"))
+                .Should().BeTrue("the generated XML documentation file should be published");
 
             // The output directory (parent of publish\) should only contain subdirectories.
             var outputDirectory = Path.GetDirectoryName(publishDirectory);
