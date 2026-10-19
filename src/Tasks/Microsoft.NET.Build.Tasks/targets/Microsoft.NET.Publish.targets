@@ -160,7 +160,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_BeforeOptimizedPublishTargets Condition="'$(_UseOptimizedPublish)' == 'true'">
       BuildOnlySettings;
       PrepareForBuild;
+      PreBuildEvent;
+      ResolveReferences;
       PrepareResources;
+      ResolveKeySource;
       Compile;
       CreateSatelliteAssemblies;
     </_BeforeOptimizedPublishTargets>
