@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
@@ -15,7 +16,6 @@ internal class EnvSetCommand : CommandBase
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
-    private readonly AdminModeSwitcher? _adminModeSwitcher;
 
     public EnvSetCommand(
         ParseResult result,
@@ -25,7 +25,7 @@ internal class EnvSetCommand : CommandBase
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
-        _adminModeSwitcher = adminModeSwitcher;
+        AdminSwitcher = adminModeSwitcher;
         _modeArg = result.GetValue(EnvSetCommandParser.ModeArgument);
         _dotnetupOnPathArg = result.GetValue(EnvSetCommandParser.DotnetupOnPathOption);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
@@ -90,7 +90,8 @@ internal class EnvSetCommand : CommandBase
         EnvSettingsWriter.ApplyAndPersist(targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector);
     }
 
-    private AdminModeSwitcher AdminSwitcher => _adminModeSwitcher ?? new AdminModeSwitcher();
+    [AllowNull]
+    private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher();
 
     /// <summary>
     /// Routes admin mode before anything else changes: <c>env set admin</c> only enables admin
