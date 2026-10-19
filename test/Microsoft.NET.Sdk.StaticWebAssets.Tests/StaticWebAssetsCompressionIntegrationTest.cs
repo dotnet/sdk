@@ -237,8 +237,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 @"Task ""BrotliCompress"".*?Done executing task ""BrotliCompress""",
                 RegexOptions.Singleline);
 
-            // The class library doesn't set the level, so only the app's task is expected to use Optimal.
-            // The level must be bound as a task parameter and reach the tool's response file.
             brotliTasks.Cast<Match>().Should().Contain(
                 task => task.Value.Contains("CompressionLevel=Optimal")
                     && Regex.IsMatch(task.Value, @"^\s*-c\s*\r?\n\s*Optimal\s*$", RegexOptions.Multiline),
