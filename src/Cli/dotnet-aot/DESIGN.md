@@ -129,6 +129,21 @@ Other built-in command shapes are wired with a fallback action that throws
 the bridge catches it (and any unexpected parse-time failure) and transparently
 falls through to the managed CLI.
 
+**Localization** — Before constructing the command tree or emitting localized
+diagnostics, the native entry point runs the same `UILanguageOverride.Setup`
+used by the managed CLI. `AutomaticEncodingRestorer` restores console encodings
+when the entry point returns, including after managed fallback. The current
+native CLI uses compiler-embedded satellite resources; the SDK's
+[publish targets](../../Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets)
+mark those publish assets with `AssetType=resources`. Until the bootstrap SDK
+includes that classification, [AotDependencies.props](AotDependencies.props)
+also supplies published reference satellites directly to the native compiler,
+excluding any satellites the SDK already selected. See the
+[localization validation guidance](../../../documentation/project-docs/Localization.md#validating-localization-regressions)
+for executable-level regression coverage. External satellite lookup is a
+separate change in [dotnet/sdk#56378](https://github.com/dotnet/sdk/pull/56378);
+this implementation retains the current embedded-resource model.
+
 **External command path** — When the parsed command is not a built-in
 (`parseResult.RequiresManagedCommandResolution()`), it is either an external
 tool (`dotnet ef`, a global or local tool, a command on the `PATH`, an app-base

@@ -26,6 +26,30 @@ Never manually update the xlf file even if a translation is wrong. Report a bug 
 External -- https://aka.ms/provide-feedback
 Internal -- https://aka.ms/icxLocFeedback
 
+### Validating localization regressions
+
+Test the assembled SDK with both `DOTNET_CLI_ENABLEAOT=true` and
+`DOTNET_CLI_ENABLEAOT=false`. Set `DOTNET_CLI_UI_LANGUAGE` on the child process,
+not the test process, and assert a known translated string rather than only
+comparing the two execution modes: both can silently fall back to English.
+Include regional cultures such as `de-DE` and `zh-CN` to exercise parent-culture
+fallback. See [the CLI help regression tests](../../test/dotnet-aot.Tests/GivenDotnetHelpIsLocalized.cs).
+
+The current native CLI uses compiler-embedded satellite resources. Having
+translated XLF files or loose satellite DLLs in the SDK is not sufficient:
+the native compiler must receive those satellites. The
+[publish targets](../../src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets)
+classify satellite publish items as `AssetType=resources`, including satellites
+from project and assembly references. Preserve that metadata when changing the
+publish pipeline. The [satellite publish tests](../../test/Microsoft.NET.Publish.Tests/GivenThatWeWantToFilterSatelliteAssemblies.cs)
+check direct and transitive project references, publish without rebuilding,
+and translated values and neutral fallback from a published native executable.
+
+External satellite lookup is a separate change in
+[dotnet/sdk#56378](https://github.com/dotnet/sdk/pull/56378).
+Tests must follow the loading model implemented in the product, rather than
+assume that the proposed external lookup is already available.
+
 ### Loc Updates
 These are triggered automatically by the loc system as new translations come in. We generally accept these unless we notice it removing translations.
 https://github.com/dotnet/sdk/pulls?q=is%3Apr+author%3Adotnet-bot+onelocbuild

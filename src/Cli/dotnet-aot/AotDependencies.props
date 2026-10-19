@@ -59,4 +59,19 @@
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
   </ItemGroup>
 
+  <!-- This repository's Microsoft.NET.Publish.targets now marks reference satellites with
+       AssetType=resources, but the bootstrap SDK used to build the CLI does not yet do so.
+       Supply published reference satellites explicitly until the bootstrap SDK includes that
+       change, excluding satellites it has already selected. -->
+  <Target Name="_IncludeBootstrapReferenceSatellites"
+          AfterTargets="_ComputeIlcCompileInputs"
+          Condition="'$(PublishAot)' == 'true'">
+    <JoinItems Left="@(ReferenceSatellitePaths)" Right="@(ResolvedFileToPublish)" RightMetadata="*">
+      <Output TaskParameter="JoinResult" ItemName="_BootstrapReferenceSatellites" />
+    </JoinItems>
+    <ItemGroup>
+      <IlcSatelliteAssembly Include="@(_BootstrapReferenceSatellites)" Exclude="@(IlcSatelliteAssembly)" />
+    </ItemGroup>
+  </Target>
+
 </Project>
