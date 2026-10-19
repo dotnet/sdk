@@ -106,6 +106,37 @@ public class SdkMetadataTests : SdkTest
         }
     }
 
+    [TestMethod]
+    public void RuntimeIdentifierChainRepairsOutputsAndRecoversFromFailedGeneration()
+    {
+        MetadataProject project = CreateProject();
+        project.Build(ChainTarget);
+        byte[] expected = File.ReadAllBytes(project.ChainFile);
+
+        File.Delete(project.ChainFile);
+        project.Build(ChainTarget).Tasks.Should().Contain(ChainTarget);
+        File.ReadAllBytes(project.ChainFile).Should().Equal(expected);
+        project.Build(ChainTarget).Tasks.Should().NotContain(ChainTarget);
+
+        File.WriteAllText(project.CompletionFile, "invalid");
+        project.Build(ChainTarget).Tasks.Should().Contain(ChainTarget);
+        File.ReadAllText(project.CompletionFile).Trim().Should().Be("complete");
+        project.Build(ChainTarget).Tasks.Should().NotContain(ChainTarget);
+
+        WriteNewer(project.GraphFile, "{", project.CompletionFile);
+        project.Build(ChainTarget, success: false).Tasks.Should().Contain(ChainTarget);
+        File.Exists(project.CompletionFile).Should().BeFalse();
+        File.ReadAllBytes(project.ChainFile).Should().Equal(expected);
+
+        WriteFile(project.GraphFile, Graph);
+        project.Build(ChainTarget).Tasks.Should().Contain(ChainTarget);
+        File.ReadAllBytes(project.ChainFile).Should().Equal(expected);
+        File.ReadAllText(project.CompletionFile).Trim().Should().Be("complete");
+        Dictionary<string, DateTime> recovered = Snapshot([project.ChainFile, .. project.StateFiles]);
+        project.Build(ChainTarget).Tasks.Should().NotContain(ChainTarget);
+        AssertTimestamps(recovered);
+    }
+
     private MetadataProject CreateProject() =>
         new(TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString("N")).Path);
 
