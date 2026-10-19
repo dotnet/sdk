@@ -21,6 +21,7 @@ const settingsRequestTimeoutMilliseconds = 5000;
 const configModulePath = '__CONFIG_MODULE__';
 
 let hotReloadEnabled = false;
+let hotReloadSettings;
 
 // A hosted app can render static SSR pages without starting WebAssembly.
 export async function afterWebStarted() {
@@ -117,7 +118,11 @@ function hotReloadAgentSignal() {
     return agent;
 }
 
-async function isHotReloadEnabled() {
+function isHotReloadEnabled() {
+    return hotReloadSettings ??= readHotReloadSettings();
+}
+
+async function readHotReloadSettings() {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), settingsRequestTimeoutMilliseconds);
 
