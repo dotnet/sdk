@@ -160,7 +160,7 @@ internal sealed class BrowserToolsForwarder : IDisposable
         {
             await Task.WhenAll(browserToProvider, providerToBrowser);
         }
-        catch (OperationCanceledException) when (_applicationStopping.IsCancellationRequested)
+        catch (Exception exception) when (_applicationStopping.IsCancellationRequested && exception is OperationCanceledException or WebSocketException)
         {
             _logger.LogDebug("Browser tools WebSocket forwarding canceled during application shutdown.");
         }
