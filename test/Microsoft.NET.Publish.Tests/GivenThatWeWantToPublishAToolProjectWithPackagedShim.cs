@@ -35,6 +35,7 @@ namespace Microsoft.NET.Publish.Tests
         [DataRow("no-build", true)]
         [DataRow("build-optimized", true)]
         [DataRow("optimized-custom-root", true)]
+        [DataRow("optimized-relative-root", true)]
         [DataRow("optimized", false)]
         public void NativeAot_publish_includes_explicitly_requested_shims(string mode, bool requestShims)
         {
@@ -54,6 +55,10 @@ namespace Microsoft.NET.Publish.Tests
             if (mode == "optimized-custom-root")
             {
                 testProject.AdditionalProperties["PackagedShimOutputRootDirectory"] = "$(MSBuildProjectDirectory)/custom-shims";
+            }
+            if (mode == "optimized-relative-root")
+            {
+                testProject.AdditionalProperties["PackagedShimOutputRootDirectory"] = "custom-shims";
             }
             if (requestShims)
             {

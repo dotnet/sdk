@@ -327,7 +327,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_ShimCreatedSentinelFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_ShimCreatedSentinelFile)))</_ShimCreatedSentinelFile>
     <PackagedShimOutputRootDirectory Condition=" '$(PackagedShimOutputRootDirectory)' == '' ">$(OutDir)</PackagedShimOutputRootDirectory>
     <!-- Publish can infer a different SelfContained value than Build; keep shim staging independent of it. -->
-    <_PackagedShimOutputDirectory>$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))</_PackagedShimOutputDirectory>
+    <_PackagedShimOutputDirectory>$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory), $(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))</_PackagedShimOutputDirectory>
   </PropertyGroup>
 
   <Target Name="GenerateShimsAssets"

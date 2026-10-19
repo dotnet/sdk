@@ -70,6 +70,8 @@ Generation, incremental-build discovery, and no-build discovery share the stagin
 `$(PackagedShimOutputRootDirectory)\shims\$(TargetFramework)\`. It does not depend on
 `SelfContained`, which can be inferred differently during build and publish. This allows
 both Build and optimized publish outputs to be reused by a subsequent no-build publish.
+Relative staging roots, including the default `$(OutDir)`, are resolved against the
+project directory rather than the MSBuild process working directory.
 
 ### PublishTrimmed (IL Trimming)
 
