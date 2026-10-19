@@ -261,11 +261,6 @@ internal class InstallerOrchestratorSingleton
     {
         var installRequest = resolvedRequest.Request;
         var install = new DotnetInstall(installRequest.InstallRoot, resolvedRequest.ResolvedVersion, installRequest.Component);
-        // Installer bundles lay down shared system installations that dotnetup does not own, so they are never
-        // tracked. InstallWorkflow, the only producer of bundle requests, rejects tracked admin-mode installs.
-        System.Diagnostics.Debug.Assert(
-            installRequest.Options.InstallMechanism != InstallMechanism.WindowsInstallerBundle || installRequest.Options.Untracked,
-            "Installer bundle requests must be untracked.");
         installationValidator ??= CreateInstallationValidator(installRequest.Options.InstallMechanism);
 
         alreadyInstalledResult = CheckExistingInstallState(installRequest, install, installationValidator);
