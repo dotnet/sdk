@@ -17,8 +17,8 @@ namespace Microsoft.DotNet.Build.Tasks
         {
             string text = File.ReadAllText(depsFile);
             var deps = JsonNode.Parse(text);
-            var targets = deps["targets"]!.AsObject();
-            var targetLibraries = targets.SelectMany(target => target.Value!.AsObject()).ToArray();
+            var targets = deps["targets"].AsObject();
+            var targetLibraries = targets.SelectMany(target => target.Value.AsObject()).ToArray();
 
             // Renaming moves the entry to the end of each object. On later runs, find the
             // entry under its new name instead of treating the next dependency as the
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 {
                     foreach (var target in targets)
                     {
-                        var targetObj = target.Value!.AsObject();
+                        var targetObj = target.Value.AsObject();
                         if (targetObj.TryGetPropertyValue(entryPoint.Key, out JsonNode value))
                         {
                             targetObj.Remove(entryPoint.Key);
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Build.Tasks
                         }
                     }
 
-                    var libraries = deps["libraries"]!.AsObject();
+                    var libraries = deps["libraries"].AsObject();
                     JsonNode library = libraries[entryPoint.Key];
                     libraries.Remove(entryPoint.Key);
                     if (renamedKey != null)

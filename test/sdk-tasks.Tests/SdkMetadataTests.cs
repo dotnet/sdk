@@ -140,7 +140,8 @@ public class SdkMetadataTests : SdkTest
 
     private static string WriteFile(string path, string contents)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)
+            ?? throw new ArgumentException("The file must have a parent directory.", nameof(path)));
         File.WriteAllText(path, contents);
         return path;
     }
@@ -162,7 +163,8 @@ public class SdkMetadataTests : SdkTest
         }
     }
 
-    private static string Escape(string value) => SecurityElement.Escape(value)!;
+    private static string Escape(string value) =>
+        SecurityElement.Escape(value) ?? throw new ArgumentNullException(nameof(value));
 
     private sealed record Observation(HashSet<string> Tasks);
 
@@ -190,7 +192,8 @@ public class SdkMetadataTests : SdkTest
                 File.Copy(source, Path.Combine(root, name));
             }
             string assembly = typeof(GenerateSdkRuntimeIdentifierChain).Assembly.Location;
-            string builtIn = Path.Combine(Path.GetDirectoryName(typeof(Project).Assembly.Location)!, "Microsoft.Build.Tasks.Core.dll");
+            string builtIn = Path.Combine(Path.GetDirectoryName(typeof(Project).Assembly.Location)
+                ?? throw new InvalidOperationException("The MSBuild assembly must have a parent directory."), "Microsoft.Build.Tasks.Core.dll");
             string usingTasks = string.Join(Environment.NewLine,
                 new[] { "GenerateSdkRuntimeIdentifierChain", "CompleteIncrementalLayout", "GetDependencyInfo", "GenerateDefaultRuntimeFrameworkVersion" }
                     .Select(name => $"<UsingTask TaskName=\"{name}\" AssemblyFile=\"{Escape(assembly)}\" />")

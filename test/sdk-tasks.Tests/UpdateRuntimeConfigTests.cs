@@ -152,11 +152,12 @@ public class UpdateRuntimeConfigTests : SdkTest
 
         task.MicrosoftNetCoreAppVersion = "9.1.0";
         task.Execute().Should().BeTrue();
-        JsonNode updated = JsonNode.Parse(File.ReadAllText(first))!;
-        updated["runtimeOptions"]!["framework"]!["version"]!.GetValue<string>().Should().Be("9.1.0");
-        updated["runtimeOptions"]!["rollForward"]!.GetValue<string>().Should().Be("Major");
-        updated["runtimeOptions"]!["configProperties"]!["Custom.Property"]!.GetValue<bool>().Should().BeTrue();
-        updated["custom"]!.GetValue<string>().Should().Be("preserved");
+        JsonNode? updated = JsonNode.Parse(File.ReadAllText(first));
+        Assert.IsNotNull(updated);
+        updated["runtimeOptions"]?["framework"]?["version"]?.GetValue<string>().Should().Be("9.1.0");
+        updated["runtimeOptions"]?["rollForward"]?.GetValue<string>().Should().Be("Major");
+        updated["runtimeOptions"]?["configProperties"]?["Custom.Property"]?.GetValue<bool>().Should().BeTrue();
+        updated["custom"]?.GetValue<string>().Should().Be("preserved");
         task.MicrosoftNetCoreAppVersion = "9.0.0";
         task.Execute().Should().BeTrue();
         File.ReadAllBytes(first).Should().Equal(expected);

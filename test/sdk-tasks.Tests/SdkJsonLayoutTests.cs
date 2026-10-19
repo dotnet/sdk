@@ -73,17 +73,27 @@ public class SdkJsonLayoutTests : SdkTest
         foreach (string tool in new[] { "MSBuild", "dotnet", "NuGet.CommandLine.XPlat" })
         {
             JsonNode deps = ReadJson(project.Output(tool + ".deps.json"));
-            deps["libraries"]!.AsObject().Select(pair => pair.Key).Should().Equal("Dependency/2.0.0", tool + ".deps.json/1.0.0");
-            deps["custom"]!.GetValue<string>().Should().Be("preserved");
-            foreach (JsonNode? target in deps["targets"]!.AsObject().Select(pair => pair.Value))
+            JsonNode? libraries = deps["libraries"];
+            Assert.IsNotNull(libraries);
+            libraries.AsObject().Select(pair => pair.Key).Should().Equal("Dependency/2.0.0", tool + ".deps.json/1.0.0");
+            deps["custom"]?.GetValue<string>().Should().Be("preserved");
+            JsonNode? targets = deps["targets"];
+            Assert.IsNotNull(targets);
+            foreach (JsonNode? target in targets.AsObject().Select(pair => pair.Value))
             {
-                target![tool + ".deps.json/1.0.0"]!["runtime"]!.AsObject().Should().BeEmpty();
-                target["Dependency/2.0.0"]!["runtime"]!["Helper.dll"]!["custom"]!.GetValue<string>().Should().Be("preserved");
-                target["Dependency/2.0.0"]!["runtimeTargets"]!.AsObject().Select(pair => pair.Key)
+                Assert.IsNotNull(target);
+                JsonNode? runtime = target[tool + ".deps.json/1.0.0"]?["runtime"];
+                Assert.IsNotNull(runtime);
+                runtime.AsObject().Should().BeEmpty();
+                target["Dependency/2.0.0"]?["runtime"]?["Helper.dll"]?["custom"]?.GetValue<string>().Should().Be("preserved");
+                JsonNode? runtimeTargets = target["Dependency/2.0.0"]?["runtimeTargets"];
+                Assert.IsNotNull(runtimeTargets);
+                runtimeTargets.AsObject().Select(pair => pair.Key)
                     .Should().Equal("runtimes/test/native/keep.so");
                 foreach (JsonNode? library in target.AsObject().Select(pair => pair.Value))
                 {
-                    (library!["resources"] != null).Should().Be(tool != "dotnet");
+                    Assert.IsNotNull(library);
+                    (library["resources"] != null).Should().Be(tool != "dotnet");
                 }
             }
         }
@@ -179,7 +189,12 @@ public class SdkJsonLayoutTests : SdkTest
     private JsonProject CreateProject() =>
         new(TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString("N")).Path);
 
-    private static JsonNode ReadJson(string path) => JsonNode.Parse(File.ReadAllText(path))!;
+    private static JsonNode ReadJson(string path)
+    {
+        JsonNode? node = JsonNode.Parse(File.ReadAllText(path));
+        Assert.IsNotNull(node);
+        return node;
+    }
 
     private static Dictionary<string, byte[]> Contents(IEnumerable<string> paths) =>
         paths.ToDictionary(path => path, File.ReadAllBytes);
@@ -205,12 +220,14 @@ public class SdkJsonLayoutTests : SdkTest
 
     private static string Write(string path, string contents)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        Directory.CreateDirectory(Path.GetDirectoryName(path)
+            ?? throw new ArgumentException("The file must have a parent directory.", nameof(path)));
         File.WriteAllText(path, contents);
         return path;
     }
 
-    private static string Escape(string value) => SecurityElement.Escape(value)!;
+    private static string Escape(string value) =>
+        SecurityElement.Escape(value) ?? throw new ArgumentNullException(nameof(value));
 
     private sealed class JsonProject
     {
@@ -237,7 +254,8 @@ public class SdkJsonLayoutTests : SdkTest
             Write(FSharpInput("tool_fsc.deps.json"), Deps.Replace("redist", "tool_fsc"));
 
             string assembly = typeof(UpdateRuntimeConfig).Assembly.Location;
-            string builtIn = Path.Combine(Path.GetDirectoryName(typeof(Project).Assembly.Location)!, "Microsoft.Build.Tasks.Core.dll");
+            string builtIn = Path.Combine(Path.GetDirectoryName(typeof(Project).Assembly.Location)
+                ?? throw new InvalidOperationException("The MSBuild assembly must have a parent directory."), "Microsoft.Build.Tasks.Core.dll");
             string usingTasks = string.Join(Environment.NewLine,
                 new[] { "ChangeEntryPointLibraryName", "RemoveAssetFromDepsPackages", "UpdateRuntimeConfig" }
                     .Select(name => $"<UsingTask TaskName=\"{name}\" AssemblyFile=\"{Escape(assembly)}\" />")
@@ -290,8 +308,13 @@ public class SdkJsonLayoutTests : SdkTest
 
         public void PrepareOutput(string directory)
         {
-            JsonNode deps = JsonNode.Parse(Deps)!;
-            deps["targets"]!.AsObject().Add("test/test-rid", deps["targets"]!["test"]!.DeepClone());
+            JsonNode? deps = JsonNode.Parse(Deps);
+            Assert.IsNotNull(deps);
+            JsonNode? targets = deps["targets"];
+            Assert.IsNotNull(targets);
+            JsonNode? target = targets["test"];
+            Assert.IsNotNull(target);
+            targets.AsObject().Add("test/test-rid", target.DeepClone());
             Write(Path.Combine(directory, "redist.deps.json"), deps.ToJsonString());
             Write(Path.Combine(directory, "redist.runtimeconfig.json"), RuntimeConfig);
             Write(Path.Combine(directory, "runtimes", "any", "native", "extension.targets"), "targets");

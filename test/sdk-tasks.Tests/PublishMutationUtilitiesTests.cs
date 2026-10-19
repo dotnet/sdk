@@ -79,19 +79,32 @@ public class PublishMutationUtilitiesTests : SdkTest
     {
         string directory = TestAssetsManager.CreateTestDirectory().Path;
         string path = Path.Combine(directory, "multiple.deps.json");
-        JsonNode deps = JsonNode.Parse(SampleDepsJson)!;
-        JsonObject target = deps["targets"]![".NETCoreApp,Version=v9.0"]!.AsObject();
+        JsonNode? deps = JsonNode.Parse(SampleDepsJson);
+        Assert.IsNotNull(deps);
+        JsonNode? targets = deps["targets"];
+        Assert.IsNotNull(targets);
+        JsonNode? targetNode = targets[".NETCoreApp,Version=v9.0"];
+        Assert.IsNotNull(targetNode);
+        JsonObject target = targetNode.AsObject();
         target.Add("Dependency/2.0.0", JsonNode.Parse("""{ "runtime": { "Dependency.dll": {} } }"""));
         target.Add("ReferencedProject/3.0.0", JsonNode.Parse("""{ "runtime": { "ReferencedProject.dll": {} } }"""));
+        JsonNode? dependency = target["Dependency/2.0.0"];
+        JsonNode? entryPoint = target["OldApp/1.0.0"];
+        JsonNode? referencedProject = target["ReferencedProject/3.0.0"];
+        Assert.IsNotNull(dependency);
+        Assert.IsNotNull(entryPoint);
+        Assert.IsNotNull(referencedProject);
         var ridTarget = new JsonObject
         {
-            ["Dependency/2.0.0"] = target["Dependency/2.0.0"]!.DeepClone(),
-            ["OldApp/1.0.0"] = target["OldApp/1.0.0"]!.DeepClone(),
-            ["ReferencedProject/3.0.0"] = target["ReferencedProject/3.0.0"]!.DeepClone()
+            ["Dependency/2.0.0"] = dependency.DeepClone(),
+            ["OldApp/1.0.0"] = entryPoint.DeepClone(),
+            ["ReferencedProject/3.0.0"] = referencedProject.DeepClone()
         };
-        deps["targets"]!.AsObject().Add(".NETCoreApp,Version=v9.0/test-rid", ridTarget);
-        deps["libraries"]!.AsObject().Add("Dependency/2.0.0", JsonNode.Parse("""{ "type": "package" }"""));
-        deps["libraries"]!.AsObject().Add("ReferencedProject/3.0.0", JsonNode.Parse("""{ "type": "project" }"""));
+        targets.AsObject().Add(".NETCoreApp,Version=v9.0/test-rid", ridTarget);
+        JsonNode? libraries = deps["libraries"];
+        Assert.IsNotNull(libraries);
+        libraries.AsObject().Add("Dependency/2.0.0", JsonNode.Parse("""{ "type": "package" }"""));
+        libraries.AsObject().Add("ReferencedProject/3.0.0", JsonNode.Parse("""{ "type": "project" }"""));
         File.WriteAllText(path, deps.ToJsonString());
 
         PublishMutationUtilities.ChangeEntryPointLibraryName(path, "NewApp");
@@ -104,13 +117,19 @@ public class PublishMutationUtilitiesTests : SdkTest
 
         File.ReadAllBytes(path).Should().Equal(expected);
         File.GetLastWriteTimeUtc(path).Should().Be(timestamp);
-        JsonNode result = JsonNode.Parse(File.ReadAllText(path))!;
-        foreach (JsonNode? value in result["targets"]!.AsObject().Select(pair => pair.Value))
+        JsonNode? result = JsonNode.Parse(File.ReadAllText(path));
+        Assert.IsNotNull(result);
+        JsonNode? resultTargets = result["targets"];
+        Assert.IsNotNull(resultTargets);
+        foreach (JsonNode? value in resultTargets.AsObject().Select(pair => pair.Value))
         {
-            value!.AsObject().Select(pair => pair.Key).Should().Equal(
+            Assert.IsNotNull(value);
+            value.AsObject().Select(pair => pair.Key).Should().Equal(
                 "Dependency/2.0.0", "ReferencedProject/3.0.0", "NewApp/1.0.0");
         }
-        result["libraries"]!.AsObject().Select(pair => pair.Key).Should().Equal(
+        JsonNode? resultLibraries = result["libraries"];
+        Assert.IsNotNull(resultLibraries);
+        resultLibraries.AsObject().Select(pair => pair.Key).Should().Equal(
             "Dependency/2.0.0", "ReferencedProject/3.0.0", "NewApp/1.0.0");
     }
 
