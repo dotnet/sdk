@@ -1385,11 +1385,12 @@ sealed class Collector
         HashSet<string> selected = _dossier.Rows("selectedBuildIds").Select(JsonData.Scalar).ToHashSet(StringComparer.Ordinal);
         var controls = _pendingGroups.Where(g => !selected.Contains(g.Build.Text("id")))
             .ToLookup(g => (g.Observation.Text("name"), g.Observation.Text("lane"),
-                g.Build.Text("organization"), g.Build.Text("project"), g.Build.Text("definitionId")));
+                g.Build.Text("organization"), g.Build.Text("definitionId")));
         var failures = _pendingGroups.Where(g => selected.Contains(g.Build.Text("id")) &&
                 g.Observation.Text("outcome") is "Failed" or "Unknown").ToArray();
         var matchedControls = failures.Select(g => controls[(g.Observation.Text("name"), g.Observation.Text("lane"),
-                g.Build.Text("organization"), g.Build.Text("project"), g.Build.Text("definitionId"))]
+                g.Build.Text("organization"), g.Build.Text("definitionId"))]
+                .Where(c => BuildIdentity.SameProject(g.Build, c.Build))
                 .OrderByDescending(c => JsonData.Time(c.Build)).ToArray()).ToArray();
         var ordered = failures.Concat(matchedControls.SelectMany(c => c.Take(1)))
             .Concat(matchedControls.SelectMany(c => c.Skip(1)))
