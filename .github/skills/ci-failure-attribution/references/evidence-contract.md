@@ -22,10 +22,18 @@ artifacts as sensitive and review them before sharing.
 | `history` | Explicit query bounds; a bounded history is not an exhaustive failure history. |
 | `issueSearches`, `buildAnalysis` | Search candidates and original check reports, not automatic matches or causal verdicts. |
 | `error` | Collection failure, when present; preserved as an offline comparison coverage gap. |
+| `collectionStage` | Last checkpoint/collection phase; a checkpoint is partial evidence, not a completed collection. |
+| `groupDetails` | Global detail acquisition/time budgets, candidate/requested/omitted counts, and measured phase time. |
 
 Each collected build stores semantic validation findings in `coverageGaps` and
 marks itself incomplete when any are present. Comparison reports those findings
 without recording them as failed acquisitions.
+`observationsComplete: false` explicitly identifies builds whose observations have
+not finished acquisition; successful build metadata alone cannot make them complete.
+The collector saves an atomic `evidence.json` checkpoint after build metadata,
+each top-level result run, each build's independent evidence, and before/after the
+bounded group-detail phase. Interrupted collection can therefore retain usable
+top-level evidence even before all hierarchy details or change windows exist.
 For older schema-version-1 dossiers without this field, offline comparison
 computes the same semantic coverage checks from the retained build data.
 
@@ -88,10 +96,20 @@ outcomes reconcile to `totalTests`, and every outcome is known, the collected
 results establish the observed failure count without fabricating the missing
 producer counter. Otherwise the missing counter remains an explicit coverage gap.
 Test results are acquired through authenticated `az rest` GET requests. Top-level
-results omit subresult details and use explicit 1000-result pagination; only
-grouped results make an additional single-result request for `SubResults` using
-the Azure Test Results API. This reduces serial page requests while
-retaining parameterized child results. The raw
+results omit subresult details and use explicit 1000-result pagination. All builds'
+top-level rows, counters, timelines, Helix observations, and artifact inventories
+are acquired before optional group details. Grouped results use single-result
+`SubResults` requests within a global `--group-detail-limit` (default 20, maximum
+1000) and `--group-detail-seconds` budget (default 120, maximum 3600). Failed or
+unknown groups in selected builds are paired with matching historical group
+candidates before unrelated passing groups. Matching here schedules acquisition;
+it does not establish control equivalence. The request limit counts logical
+acquisitions, each of which may retry once after an Azure timeout. The elapsed
+budget is checked between acquisitions; the in-flight request/retry is bounded
+by `--timeout-seconds` and may finish after the phase budget.
+Omitted groups retain their raw top-level outcomes and explicit hierarchy gaps,
+not invented child passes or complete case-level controls. This reduces serial
+page requests without unbounded group-detail fan-out. The raw
 [Azure list API](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/list?view=azure-devops-rest-7.1)
 allows up to 1000 rows without details, while the
 [single-result API](https://learn.microsoft.com/en-us/rest/api/azure/devops/test/results/get?view=azure-devops-rest-7.1)

@@ -118,6 +118,10 @@ sealed class Checks(string outputDirectory, string? filter)
         Dictionary<string, string>? environment = null, string? executable = null)
     {
         string output = NextDirectory();
+        if (environment?.ContainsKey("CI_EVIDENCE_TEST_CHECKPOINT_PATH") == true)
+        {
+            environment["CI_EVIDENCE_TEST_CHECKPOINT_PATH"] = Path.Combine(output, "evidence.json");
+        }
         List<string> arguments = [_assembly, "collect", "--build", "3", "--history-limit", "1", "--lookback-days", "2",
             "--output-directory", output, "--gh-path", executable ?? "never-executed", "--hlx-path", executable ?? "never-executed",
             "--az-path", executable ?? "never-executed"];
@@ -1295,6 +1299,94 @@ sealed class Checks(string outputDirectory, string? filter)
             Assert(Row(await CompareAsync(legacy))["mostRecentPassingExecution"] is null,
                 "An older projected parent with unknown hierarchy established a case-level passing control.");
         });
+        await CaseAsync("Group detail budgets prioritize failures and controls without starving independent evidence", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "bounded-group-details");
+            Fixtures.Collection(replay);
+            foreach (string id in new[] { "3", "2" })
+            {
+                Fixtures.TestRun(replay, id);
+                int total = id == "3" ? 1000 : 1;
+                Fixtures.Save(replay, "az", Fixtures.RunArguments(id), new
+                {
+                    id = int.Parse(id), name = "Linux", state = "Completed", incompleteTests = 0,
+                    totalTests = total, passedTests = id == "3" ? total - 1 : total, failedTests = id == "3" ? 1 : 0
+                });
+                Fixtures.Save(replay, "az", Fixtures.ResultArguments(id), new
+                {
+                    count = total,
+                    value = Enumerable.Range(1, total).Select(i => new
+                    {
+                        id = i, automatedTestName = i == total ? "Example.Test" : $"Passing{i}",
+                        testCaseTitle = i == total ? "Example.Test" : $"Passing{i}",
+                        outcome = id == "3" && i == total ? "Failed" : "Passed",
+                        errorMessage = "", resultGroupType = "dataDriven"
+                    }).ToArray()
+                });
+                if (total == 1000)
+                {
+                    Fixtures.Save(replay, "az", Fixtures.ResultArguments(id, skip: total),
+                        new { count = 0, value = new JsonArray() });
+                }
+                Fixtures.Save(replay, "az", Fixtures.GroupArguments(id, total.ToString()), new
+                {
+                    id = total,
+                    subResults = new[]
+                    {
+                        new
+                        {
+                            id = 1, displayName = "Case(1)", outcome = id == "3" ? "Failed" : "Passed",
+                            errorMessage = id == "3" ? "MSB4036: SDKExampleTask task was not found." : "",
+                            resultGroupType = "none"
+                        }
+                    }
+                });
+            }
+            JsonObject dossier = await CollectAsync(replay, ["--group-detail-limit", "2"], "Evidence is incomplete");
+            JsonNode[] details = dossier["acquisitions"]!.AsArray()
+                .Where(a => a!["description"]!.GetValue<string>().Contains("detailsToInclude=SubResults", StringComparison.Ordinal))
+                .Select(a => a!).ToArray();
+            JsonNode[] acquisitions = dossier["acquisitions"]!.AsArray().Select(a => a!).ToArray();
+            Assert(details.Length == 2 &&
+                details[0]["description"]!.GetValue<string>().Contains("/Runs/3/results/1000?", StringComparison.Ordinal) &&
+                details[1]["description"]!.GetValue<string>().Contains("/Runs/2/results/1?", StringComparison.Ordinal) &&
+                Array.IndexOf(acquisitions, details[0]) > Array.FindLastIndex(acquisitions, a =>
+                    a["description"]!.GetValue<string>().Contains("azdo artifacts", StringComparison.Ordinal)) &&
+                dossier["groupDetails"]!["omitted"]!.GetValue<int>() == 999 &&
+                Current(dossier)["testRuns"]![0]!["acquiredResultCounts"]!["total"]!.GetValue<int>() == 1000 &&
+                Previous(dossier)["observationsComplete"]!.GetValue<bool>(),
+                "Group fan-out exceeded its budget, missed the failed group/control, or blocked independent evidence.");
+            JsonObject comparison = await CompareAsync(dossier);
+            JsonNode child = comparison["comparisons"]!.AsArray().Single(r =>
+                r!["name"]!.GetValue<string>().EndsWith(" > Case(1)", StringComparison.Ordinal))!;
+            Assert(child["mostRecentPassingExecution"] is not null &&
+                comparison["coverageGaps"]!.AsArray().Count(g =>
+                    g!.GetValue<string>().Contains("Unverified test hierarchy", StringComparison.Ordinal)) == 999,
+                "An acquired case lost its control or omitted children stopped being explicit hierarchy gaps.");
+        });
+        await CaseAsync("Checkpoints preserve top-level evidence and mark unvisited builds incomplete", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "group-checkpoints");
+            Fixtures.Collection(replay);
+            Fixtures.TestRun(replay, "3");
+            Fixtures.Change(replay, s => Fixtures.IsRawResults(s, "3"),
+                data => Fixtures.ResultRows(data)[0]!["resultGroupType"] = "dataDriven");
+            JsonObject dossier = await CollectAsync(replay, expectedError: "Missing replay command");
+            Assert(Current(dossier)["testRuns"]![0]!["acquiredResultCounts"]!["total"]!.GetValue<int>() == 1 &&
+                dossier["builds"]!.AsArray().All(b => b!["observationsComplete"]!.GetValue<bool>()) &&
+                dossier["acquisitions"]!.AsArray().Count(a =>
+                    a!["description"]!.GetValue<string>().Contains("azdo artifacts", StringComparison.Ordinal)) == 2,
+                "A detail acquisition failure lost top-level counts or prevented unrelated build/artifact evidence.");
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "hlx" &&
+                s["arguments"]!.AsArray().Any(a => a!.GetValue<string>() == "timeline"), data =>
+                data["records"] = new JsonArray(42));
+            dossier = await CollectAsync(replay, expectedError: "Expected a JSON object array entry.");
+            Assert(dossier["builds"]!.AsArray().All(b => !b!["complete"]!.GetValue<bool>() &&
+                    !b["observationsComplete"]!.GetValue<bool>()) &&
+                (await CompareAsync(dossier))["coverageGaps"]!.AsArray().Any(g =>
+                    g!.GetValue<string>().Contains("Observation collection unfinished", StringComparison.Ordinal)),
+                "Metadata-only builds appeared complete after checkpoint recovery.");
+        });
         await CaseAsync("Raw result acquisition retains every official Azure outcome without inventing passes", async () =>
         {
             string replay = Path.Combine(outputDirectory, "all-result-outcomes");
@@ -1421,6 +1513,10 @@ sealed class Checks(string outputDirectory, string? filter)
                 new[] { "pr", "comment", "1" },
                 new[] { "collect", "--build", "3", "--output-directory", NextDirectory(), "--method", "POST" },
                 new[] { "collect", "--build", "3", "--output-directory", NextDirectory(), "--history-limit", "0" },
+                new[] { "collect", "--build", "3", "--output-directory", NextDirectory(), "--group-detail-limit", "0" },
+                new[] { "collect", "--build", "3", "--output-directory", NextDirectory(), "--group-detail-limit", "1001" },
+                new[] { "collect", "--build", "3", "--output-directory", NextDirectory(), "--group-detail-seconds", "0" },
+                new[] { "collect", "--build", "3", "--output-directory", NextDirectory(), "--group-detail-seconds", "3601" },
                 new[] { "collect", "--build", "3", "--output-directory", NextDirectory(), "--build", "2" }
             })
             {
@@ -1899,6 +1995,44 @@ sealed class Checks(string outputDirectory, string? filter)
                     "A timed-out Azure GET was not retried once or prevented later independent artifact acquisition.");
             }
         });
+        await CaseAsync("Group detail elapsed budget stops between requests and retains omitted hierarchy gaps", async () =>
+        {
+            string replay = Path.Combine(outputDirectory, "group-time-budget");
+            Fixtures.Collection(replay);
+            foreach (string id in new[] { "3", "2" })
+            {
+                Fixtures.TestRun(replay, id);
+                Fixtures.Change(replay, s => Fixtures.IsRawResults(s, id), data =>
+                    Fixtures.ResultRows(data)[0]!["resultGroupType"] = "dataDriven");
+                Fixtures.Save(replay, "az", Fixtures.GroupArguments(id, "1"), new
+                {
+                    id = 1, subResults = new[]
+                    {
+                        new
+                        {
+                            id = 10, displayName = "Case(1)", outcome = id == "3" ? "Failed" : "Passed",
+                            errorMessage = "MSB4036: SDKExampleTask task was not found.", resultGroupType = "none"
+                        }
+                    }
+                });
+            }
+            Dictionary<string, string> environment = new()
+            {
+                ["CI_EVIDENCE_TEST_REPLAY"] = replay, ["CI_EVIDENCE_TEST_GROUP_DELAY"] = "1",
+                ["CI_EVIDENCE_TEST_CHECKPOINT_PATH"] = "auto"
+            };
+            JsonObject dossier = await CollectAsync(replay, ["--group-detail-seconds", "1"], "Evidence is incomplete",
+                environment, Environment.ProcessPath!);
+            Assert(dossier["groupDetails"]!["requested"]!.GetValue<int>() == 1 &&
+                dossier["groupDetails"]!["omitted"]!.GetValue<int>() == 1 &&
+                dossier["builds"]!.AsArray().All(b => b!["observationsComplete"]!.GetValue<bool>()) &&
+                dossier["acquisitions"]!.AsArray().Single(a =>
+                    a!["description"]!.GetValue<string>().Contains("detailsToInclude=SubResults", StringComparison.Ordinal))!
+                    ["complete"]!.GetValue<bool>() &&
+                (await CompareAsync(dossier))["coverageGaps"]!.AsArray().Any(g =>
+                    g!.GetValue<string>().Contains("Unverified test hierarchy for test:2:1", StringComparison.Ordinal)),
+                "The elapsed budget did not bound detail fan-out or omitted parameterized controls appeared complete.");
+        });
         await CaseAsync("Acquisition deadlines bound inherited stdout and stderr after the producer exits", async () =>
         {
             string replay = Path.Combine(outputDirectory, "inherited-pipe-replay");
@@ -2332,6 +2466,22 @@ static class Fixtures
             File.WriteAllText(Path.Combine(replay, $"inherited-{pipe}.pid"), holder.Id.ToString(CultureInfo.InvariantCulture));
         }
         string? timeoutMatch = Environment.GetEnvironmentVariable("CI_EVIDENCE_TEST_TIMEOUT_AZ_CONTAINS");
+        if (tool == "az" && Environment.GetEnvironmentVariable("CI_EVIDENCE_TEST_GROUP_DELAY") is not null &&
+            arguments.Any(a => a.Contains("detailsToInclude=SubResults", StringComparison.Ordinal)))
+        {
+            if (Environment.GetEnvironmentVariable("CI_EVIDENCE_TEST_CHECKPOINT_PATH") is string checkpointPath)
+            {
+                JsonObject checkpoint = Read(checkpointPath);
+                if (checkpoint["collectionStage"]!.GetValue<string>() != "before-group-details" ||
+                    checkpoint["builds"]!.AsArray().Any(b => !b!["observationsComplete"]!.GetValue<bool>() ||
+                        b["complete"]!.GetValue<bool>()))
+                {
+                    Console.Error.WriteLine("The pre-detail checkpoint was absent or incorrectly complete.");
+                    return 1;
+                }
+            }
+            await Task.Delay(TimeSpan.FromMilliseconds(1500));
+        }
         if (tool == "az" && timeoutMatch is not null &&
             arguments.Contains(timeoutMatch, StringComparer.Ordinal) == false &&
             arguments.Any(a => a.Contains(timeoutMatch, StringComparison.Ordinal)))

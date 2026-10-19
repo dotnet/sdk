@@ -37,6 +37,8 @@ static class CiEvidence
                       --history-limit N            Candidate builds per pipeline/ref (1-100; default 20)
                       --lookback-days N            History window (1-365; default 7)
                       --test-result-limit N        Estimated results per build (1-1000000; default 100000)
+                      --group-detail-limit N       Group-detail acquisitions per collection (1-1000; default 20)
+                      --group-detail-seconds N     Group-detail phase budget (1-3600; default 120)
                       --timeout-seconds N          Per acquisition (1-3600; default 120)
                       --gh-path PATH               gh executable (default gh)
                       --hlx-path PATH              hlx 0.11.x executable (default hlx)
@@ -87,7 +89,8 @@ sealed class Options
         string[] allowed = args[0] switch
         {
             "collect" => ["pull-request", "build", "baseline-build", "output-directory", "history-limit", "lookback-days",
-                "test-result-limit", "timeout-seconds", "gh-path", "hlx-path", "az-path", "replay-directory"],
+                "test-result-limit", "group-detail-limit", "group-detail-seconds", "timeout-seconds",
+                "gh-path", "hlx-path", "az-path", "replay-directory"],
             "compare" => ["evidence-path", "output-directory"],
             _ => throw new ArgumentException("Use collect or compare. See --help.")
         };
@@ -540,9 +543,21 @@ static class Comparison
         }
     }
 
+    private static IEnumerable<string> TestHierarchyGaps(JsonNode build)
+    {
+        HashSet<string> parents = build.Rows("observations").Objects()
+            .Select(o => o.Text("parentResultId")).Where(id => id.Length > 0).ToHashSet(StringComparer.Ordinal);
+        return build.Rows("observations").Objects()
+            .Where(o => o.Text("kind") == "test-group" && !parents.Contains(o.Text("id")))
+            .Select(o => $"Unverified test hierarchy for {o.Text("id")}: grouped result has no acquired children.");
+    }
+
     public static IEnumerable<string> CoverageGaps(JsonNode build) =>
         IncompleteTestRuns(build).Concat(TestResultCoverageGaps(build))
-            .Concat(ScenarioIdentityGaps(build));
+            .Concat(ScenarioIdentityGaps(build))
+            .Concat(TestHierarchyGaps(build))
+            .Concat(build["observationsComplete"] is JsonValue && !build.Flag("observationsComplete")
+                ? new[] { $"Observation collection unfinished for build {build.Text("id")}." } : []);
 
     private static (string Kind, string Name, string Lane) ScenarioKey(JsonNode observation) =>
         (observation.Text("kind"), observation.Text("name"), observation.Text("lane"));
@@ -839,10 +854,13 @@ sealed class Collector
     private readonly int _historyLimit;
     private readonly int _lookbackDays;
     private readonly int _testResultLimit;
+    private readonly int _groupDetailLimit;
+    private readonly int _groupDetailSeconds;
     private readonly Reader _reader;
     private readonly JsonObject _dossier;
     private readonly Dictionary<string, JsonObject> _byId = new(StringComparer.Ordinal);
     private readonly Dictionary<string, Acquisition> _cache = new(StringComparer.Ordinal);
+    private readonly List<(JsonObject Build, JsonObject Run, JsonObject Test, JsonObject Observation)> _pendingGroups = [];
 
     public Collector(Options options)
     {
@@ -851,6 +869,8 @@ sealed class Collector
         _historyLimit = options.Number("history-limit", 20, 100);
         _lookbackDays = options.Number("lookback-days", 7, 365);
         _testResultLimit = options.Number("test-result-limit", 100000, 1000000);
+        _groupDetailLimit = options.Number("group-detail-limit", 20, 1000);
+        _groupDetailSeconds = options.Number("group-detail-seconds", 120, 3600);
         _reader = new(Path.Combine(_outputDirectory, "snapshots"), options["replay-directory"],
             options["gh-path"] ?? "gh", options["hlx-path"] ?? "hlx", options.Number("timeout-seconds", 120, 3600),
             options["az-path"] ?? "az");
@@ -918,6 +938,25 @@ sealed class Collector
     {
         record["complete"] = false;
         _dossier.Rows("acquisitions").Add(JsonData.Object(new { description, ok, complete = false }));
+    }
+
+    private void Checkpoint(string stage)
+    {
+        _dossier["collectionStage"] = stage;
+        JsonObject checkpoint = (JsonObject)_dossier.DeepClone();
+        foreach (JsonObject build in checkpoint.Rows("builds").Objects())
+        {
+            JsonArray gaps = new(Comparison.CoverageGaps(build).Select(g => (JsonNode?)JsonValue.Create(g)).ToArray());
+            build["coverageGaps"] = gaps;
+            if (gaps.Count > 0)
+            {
+                build["complete"] = false;
+            }
+        }
+        string path = Path.Combine(_outputDirectory, "evidence.json");
+        string temporary = path + ".tmp";
+        JsonData.Write(checkpoint, temporary);
+        File.Move(temporary, path, overwrite: true);
     }
 
     private async Task<JsonArray> PagesAsync(string endpoint, string property = "")
@@ -1063,7 +1102,7 @@ sealed class Collector
             queuedAt = detail["queueTime"], status = detail["status"], result = detail["result"],
             parameters = JsonData.BuildParameters(detail["parameters"]), templateParameters = (JsonNode?)null,
             resources = (JsonNode?)null, complete = detail.Text("status") == "completed",
-            observations = new JsonArray(), artifacts = new JsonArray(), testRuns = new JsonArray()
+            observations = new JsonArray(), observationsComplete = false, artifacts = new JsonArray(), testRuns = new JsonArray()
         });
         _byId.Add(identity.Id, record);
         _dossier.Rows("builds").Add(record);
@@ -1265,29 +1304,14 @@ sealed class Collector
                 query.TrimStart('&'));
             foreach (JsonObject test in results.Objects())
             {
-                if (test.Text("resultGroupType").Length > 0 &&
-                    !test.Text("resultGroupType").Equals("none", StringComparison.OrdinalIgnoreCase))
-                {
-                    Acquisition detail = await AzureAsync(record,
-                        $"test/Runs/{run.Text("id")}/results/{test.Text("id")}",
-                        "detailsToInclude=SubResults");
-                    JsonObject? detailedResult = detail.Data as JsonObject;
-                    if (detailedResult?["value"] is JsonObject value)
-                    {
-                        detailedResult = value;
-                    }
-                    if (detail.Complete && detailedResult?.Text("id") == test.Text("id") &&
-                        detailedResult["subResults"] is JsonArray subResults)
-                    {
-                        test["subResults"] = subResults.DeepClone();
-                    }
-                    else
-                    {
-                        Gap(record, $"Unable to acquire subresults for grouped test {run.Text("id")}:{test.Text("id")}.");
-                    }
-                }
-                AddTestResult(record, run, test, $"test:{run.Text("id")}:{test.Text("id")}",
+                JsonObject observation = AddTestResult(record, run, test, $"test:{run.Text("id")}:{test.Text("id")}",
                     $"{test.Text("automatedTestName")} | {test.Text("testCaseTitle")}", null);
+                if (test.Text("resultGroupType").Length > 0 &&
+                    !test.Text("resultGroupType").Equals("none", StringComparison.OrdinalIgnoreCase) &&
+                    test["subResults"] is not JsonArray { Count: > 0 })
+                {
+                    _pendingGroups.Add((record, run, test, observation));
+                }
             }
             JsonObject[] runResults = record.Rows("observations").Objects()
                 .Where(o => o.Text("kind") is "test" or "test-group" &&
@@ -1303,6 +1327,7 @@ sealed class Collector
                 skipped = runResults.LongCount(o => o.Text("outcome") == "Skipped"),
                 unknown = runResults.LongCount(o => o.Text("outcome") == "Unknown")
             });
+            Checkpoint("top-level-results");
         }
         Acquisition artifacts = await ReadAsync("hlx", ["azdo", "artifacts", url, "--all", "--json"], list: true);
         if (artifacts.Complete)
@@ -1317,19 +1342,78 @@ sealed class Collector
         {
             await HelixAsync(record, job, contexts);
         }
-        JsonArray coverageGaps = new(Comparison.CoverageGaps(record).Select(g => (JsonNode?)JsonValue.Create(g)).ToArray());
-        record["coverageGaps"] = coverageGaps;
-        if (coverageGaps.Count > 0)
-        {
-            record["complete"] = false;
-        }
+        record["observationsComplete"] = true;
         if (Comparison.MissingFailureEvidence(record))
         {
             Gap(record, $"Missing failure evidence for build {record.Text("id")}; investigate pipeline validation/startup diagnostics.");
         }
     }
 
-    private void AddTestResult(JsonObject record, JsonObject run, JsonObject test, string id, string name, string? parentResultId)
+    private async Task GroupDetailsAsync()
+    {
+        HashSet<string> selected = _dossier.Rows("selectedBuildIds").Select(JsonData.Scalar).ToHashSet(StringComparer.Ordinal);
+        var controls = _pendingGroups.Where(g => !selected.Contains(g.Build.Text("id")))
+            .ToLookup(g => (g.Observation.Text("name"), g.Observation.Text("lane"),
+                g.Build.Text("organization"), g.Build.Text("project"), g.Build.Text("definitionId")));
+        var failures = _pendingGroups.Where(g => selected.Contains(g.Build.Text("id")) &&
+                g.Observation.Text("outcome") is "Failed" or "Unknown").ToArray();
+        var matchedControls = failures.Select(g => controls[(g.Observation.Text("name"), g.Observation.Text("lane"),
+                g.Build.Text("organization"), g.Build.Text("project"), g.Build.Text("definitionId"))]
+                .OrderByDescending(c => JsonData.Time(c.Build)).ToArray()).ToArray();
+        var ordered = failures.Concat(matchedControls.SelectMany(c => c.Take(1)))
+            .Concat(matchedControls.SelectMany(c => c.Skip(1)))
+            .Concat(_pendingGroups.OrderBy(g => g.Observation.Text("outcome") == "Passed" ? 1 : 0))
+            .Distinct();
+        Stopwatch elapsed = Stopwatch.StartNew();
+        int requested = 0;
+        foreach (var group in ordered)
+        {
+            if (requested >= _groupDetailLimit || elapsed.Elapsed.TotalSeconds >= _groupDetailSeconds)
+            {
+                break;
+            }
+            requested++;
+            Acquisition detail = await AzureAsync(group.Build,
+                $"test/Runs/{group.Run.Text("id")}/results/{group.Test.Text("id")}", "detailsToInclude=SubResults");
+            JsonObject? result = detail.Data as JsonObject;
+            if (detail.Complete && result?.Text("id") == group.Test.Text("id") &&
+                result["subResults"] is JsonArray { Count: > 0 } children)
+            {
+                foreach (JsonObject child in children.Objects())
+                {
+                    AddTestResult(group.Build, group.Run, child, $"{group.Observation.Text("id")}/{child.Text("id")}",
+                        string.IsNullOrWhiteSpace(child.Text("displayName")) ||
+                        group.Observation.Text("name").Split(" | ").All(string.IsNullOrWhiteSpace)
+                            ? "" : $"{group.Observation.Text("name")} > {child.Text("displayName")}", group.Observation.Text("id"));
+                }
+            }
+            else
+            {
+                Gap(group.Build, $"Unable to acquire subresults for grouped test {group.Run.Text("id")}:{group.Test.Text("id")}.");
+            }
+        }
+        _dossier["groupDetails"] = JsonData.Object(new
+        {
+            limit = _groupDetailLimit, seconds = _groupDetailSeconds, candidates = _pendingGroups.Count,
+            requested, omitted = _pendingGroups.Count - requested, elapsedSeconds = elapsed.Elapsed.TotalSeconds
+        });
+        if (requested < _pendingGroups.Count)
+        {
+            Console.Error.WriteLine($"WARNING: Group-detail budget reached; {_pendingGroups.Count - requested} groups omitted. " +
+                "Their hierarchy gaps remain explicit; increase the budget only for a specific missing comparison.");
+        }
+        foreach (JsonObject build in _byId.Values)
+        {
+            JsonArray gaps = new(Comparison.CoverageGaps(build).Select(g => (JsonNode?)JsonValue.Create(g)).ToArray());
+            build["coverageGaps"] = gaps;
+            if (gaps.Count > 0)
+            {
+                build["complete"] = false;
+            }
+        }
+    }
+
+    private JsonObject AddTestResult(JsonObject record, JsonObject run, JsonObject test, string id, string name, string? parentResultId)
     {
         JsonArray children = test["subResults"] as JsonArray ?? [];
         bool group = children.Count > 0 || test.Text("resultGroupType").Length > 0 &&
@@ -1339,7 +1423,7 @@ sealed class Collector
         {
             record["complete"] = false;
         }
-        record.Rows("observations").Add(JsonData.Object(new
+        JsonObject observation = JsonData.Object(new
         {
             id, kind = group ? "test-group" : "test", name, parentResultId, hierarchyVerified = true,
             resultGroupType = test["resultGroupType"],
@@ -1351,17 +1435,15 @@ sealed class Collector
             mechanism = string.Join('\n', new[] { test.Text("errorMessage"), test.Text("stackTrace") }.Where(s => s.Length > 0)),
             url = $"{record.Text("url")}&view=ms.vss-test-web.build-test-results-tab&runId={run.Text("id")}&resultId={id.Split(':')[2].Split('/')[0]}",
             contextOnly = group || test.Text("testCaseTitle").EndsWith(" Work Item", StringComparison.OrdinalIgnoreCase)
-        }));
-        if (group && children.Count == 0)
-        {
-            Gap(record, $"Unverified test hierarchy for {id}: grouped result has no acquired children.");
-        }
+        });
+        record.Rows("observations").Add(observation);
         foreach (JsonObject child in children.Objects())
         {
             AddTestResult(record, run, child, $"{id}/{child.Text("id")}",
                 string.IsNullOrWhiteSpace(child.Text("displayName")) || name.Split(" | ").All(string.IsNullOrWhiteSpace)
                     ? "" : $"{name} > {child.Text("displayName")}", id);
         }
+        return observation;
     }
 
     private async Task HelixAsync(JsonObject record, string job, HashSet<string> contexts)
@@ -1518,6 +1600,7 @@ sealed class Collector
         try
         {
             await CollectCoreAsync();
+            _dossier["collectionStage"] = "finished";
             JsonData.Write(_dossier, evidencePath);
             Console.WriteLine(evidencePath);
             if (_dossier.Rows("acquisitions").Any(a => !a.Flag("complete")) ||
@@ -1535,7 +1618,7 @@ sealed class Collector
             {
                 record["complete"] = false;
             }
-            JsonData.Write(_dossier, evidencePath);
+            Checkpoint("failed");
             throw;
         }
     }
@@ -1635,10 +1718,15 @@ sealed class Collector
             }
         }
         JsonObject? explicitBaseline = _options["baseline-build"] is string baselineValue ? await BuildAsync(BuildIdentity.Resolve(baselineValue)) : null;
+        Checkpoint("build-metadata");
         foreach (JsonObject record in _byId.Values)
         {
             await ObservationsAsync(record);
+            Checkpoint("observations");
         }
+        Checkpoint("before-group-details");
+        await GroupDetailsAsync();
+        Checkpoint("group-details");
         foreach (JsonObject check in _dossier.Rows("checks").Objects())
         {
             if (check.Text("coverage") != "skipped" &&
