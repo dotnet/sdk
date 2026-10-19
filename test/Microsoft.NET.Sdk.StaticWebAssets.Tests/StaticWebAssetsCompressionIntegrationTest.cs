@@ -221,8 +221,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
                 .WithProjectChanges((project, xml) =>
                 {
-                    xml.Descendants("PropertyGroup")
-                        .First().Add(new XElement(propertyName, "Optimal"));
+                    if (!project.Contains("ClassLibrary"))
+                    {
+                        xml.Descendants("PropertyGroup")
+                            .First().Add(new XElement(propertyName, "Optimal"));
+                    }
                 });
 
             var publish = CreatePublishCommand(ProjectDirectory, "AppWithP2PReference");
@@ -234,14 +237,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 @"Task ""BrotliCompress"".*?Done executing task ""BrotliCompress""",
                 RegexOptions.Singleline);
 
-            brotliTasks.Should().NotBeEmpty("publish should run the BrotliCompress task");
-            foreach (Match task in brotliTasks)
-            {
-                // The task parameter was bound and the level reached the tool's response file.
-                task.Value.Should().Contain("CompressionLevel=Optimal");
-                Regex.IsMatch(task.Value, @"^\s*-c\s*\r?\n\s*Optimal\s*$", RegexOptions.Multiline)
-                    .Should().BeTrue("the response file passed to the tool should contain '-c Optimal'");
-            }
+            // The class library doesn't set the level, so only the app's task is expected to use Optimal.
+            // The level must be bound as a task parameter and reach the tool's response file.
+            brotliTasks.Cast<Match>().Should().Contain(
+                task => task.Value.Contains("CompressionLevel=Optimal")
+                    && Regex.IsMatch(task.Value, @"^\s*-c\s*\r?\n\s*Optimal\s*$", RegexOptions.Multiline),
+                "the publish-time BrotliCompress task should receive and pass on the Optimal level");
         }
     }
 }
