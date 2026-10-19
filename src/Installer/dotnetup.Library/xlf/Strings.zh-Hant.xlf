@@ -891,10 +891,70 @@ Or open a new terminal.</target>
         <target state="new">Use {0} {1} to target these specs.</target>
         <note>{0} is the source option name; {1} is the install-source value that selects every source.</note>
       </trans-unit>
+      <trans-unit id="WindowsInstallerBusy">
+        <source>Another installation is already in progress (installer exit code {0}). Wait for it to finish, then run the command again.</source>
+        <target state="new">Another installation is already in progress (installer exit code {0}). Wait for it to finish, then run the command again.</target>
+        <note>{0} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerCancelled">
+        <source>The installation of {0} was cancelled (installer exit code {1}).</source>
+        <target state="new">The installation of {0} was cancelled (installer exit code {1}).</target>
+        <note>{0} is the component display name and version. {1} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerDownloadFailed">
+        <source>Failed to download the .NET installer for version {0}: {1}</source>
+        <target state="new">Failed to download the .NET installer for version {0}: {1}</target>
+        <note>{0} is the component version. {1} is the download error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerElevationRequired">
+        <source>The installer for {0} requires administrator privileges but could not elevate (installer exit code {1}). Run the command from an account that can approve the administrator (UAC) prompt.</source>
+        <target state="new">The installer for {0} requires administrator privileges but could not elevate (installer exit code {1}). Run the command from an account that can approve the administrator (UAC) prompt.</target>
+        <note>{Locked="UAC"} {0} is the component display name and version. {1} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerFailed">
+        <source>The installer for {0} failed with exit code {1} (0x{2:X8}).</source>
+        <target state="new">The installer for {0} failed with exit code {1} (0x{2:X8}).</target>
+        <note>{0} is the component display name and version. {1} and {2} are the decimal and hexadecimal forms of the installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerHashMismatch">
+        <source>The downloaded installer for {0} does not match its expected hash; it may have been modified after it was downloaded. Run the command again.</source>
+        <target state="new">The downloaded installer for {0} does not match its expected hash; it may have been modified after it was downloaded. Run the command again.</target>
+        <note>{0} is the component display name and version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerOpenFailed">
+        <source>Could not open the downloaded installer for {0}: {1}</source>
+        <target state="new">Could not open the downloaded installer for {0}: {1}</target>
+        <note>{0} is the component display name and version. {1} is the operating system error.</note>
+      </trans-unit>
       <trans-unit id="WindowsInstallerPostInstallVerificationFailed">
         <source>The Windows installer reported success, but the installation could not be verified: {0}</source>
         <target state="new">The Windows installer reported success, but the installation could not be verified: {0}</target>
         <note>{0} is the reason the installation could not be verified.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerProcessStartFailed">
+        <source>Could not start the installer for {0}: {1}</source>
+        <target state="new">Could not start the installer for {0}: {1}</target>
+        <note>{0} is the component display name and version. {1} is the operating system error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerRestartRequired">
+        <source>A restart is required to finish installing {0}. dotnetup will not restart your computer; restart it when convenient.</source>
+        <target state="new">A restart is required to finish installing {0}. dotnetup will not restart your computer; restart it when convenient.</target>
+        <note>{Locked="dotnetup"} {0} is the component display name and version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerSecureDownloadDirectoryCreationFailed">
+        <source>Could not create a secure download directory for {0}: {1}</source>
+        <target state="new">Could not create a secure download directory for {0}: {1}</target>
+        <note>{0} is the component display name and version. {1} is the operating system error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerSignatureVerificationFailed">
+        <source>The installer for {0} failed Authenticode signature verification: {1}</source>
+        <target state="new">The installer for {0} failed Authenticode signature verification: {1}</target>
+        <note>{Locked="Authenticode"} {0} is the component display name and version. {1} is the signature verification error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerWrongFileExtension">
+        <source>Expected a Windows installer (.exe) for {0}, but the download resolved to '{1}'.</source>
+        <target state="new">Expected a Windows installer (.exe) for {0}, but the download resolved to '{1}'.</target>
+        <note>{Locked=".exe"} {0} is the component display name and version. {1} is the downloaded file name.</note>
       </trans-unit>
     </body>
   </file>

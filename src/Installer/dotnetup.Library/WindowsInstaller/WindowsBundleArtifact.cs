@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
@@ -153,7 +154,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         {
             throw CreateException(
                 DotnetInstallErrorCode.InstallerFailed,
-                $"Could not create a secure download directory for {Describe()}: {ex.Message}",
+                Format(Strings.WindowsInstallerSecureDownloadDirectoryCreationFailed, Describe(), ex.Message),
                 ex);
         }
     }
@@ -172,7 +173,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         {
             throw CreateException(
                 DotnetInstallErrorCode.DownloadFailed,
-                $"Failed to download the .NET installer for version {_version}: {ex.Message}",
+                Format(Strings.WindowsInstallerDownloadFailed, _version, ex.Message),
                 ex);
         }
     }
@@ -187,7 +188,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         {
             throw CreateException(
                 DotnetInstallErrorCode.InstallerFailed,
-                $"Could not open the downloaded installer for {Describe()}: {ex.Message}",
+                Format(Strings.WindowsInstallerOpenFailed, Describe(), ex.Message),
                 ex);
         }
     }
@@ -198,7 +199,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         {
             throw CreateException(
                 DotnetInstallErrorCode.WrongInstallerFileExtension,
-                $"Expected a Windows installer (.exe) for {Describe()}, but the download resolved to '{Path.GetFileName(bundlePath)}'.");
+                Format(Strings.WindowsInstallerWrongFileExtension, Describe(), Path.GetFileName(bundlePath)));
         }
     }
 
@@ -213,7 +214,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         {
             throw CreateException(
                 DotnetInstallErrorCode.HashMismatch,
-                $"The downloaded installer for {Describe()} does not match its expected hash; it may have been modified after it was downloaded. Run the command again.");
+                Format(Strings.WindowsInstallerHashMismatch, Describe()));
         }
     }
 
@@ -227,7 +228,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
 
         throw CreateException(
             DotnetInstallErrorCode.SignatureVerificationFailed,
-            $"The installer for {Describe()} failed Authenticode signature verification: {result.FailureReason}");
+            Format(Strings.WindowsInstallerSignatureVerificationFailed, Describe(), result.FailureReason));
     }
 
     /// <summary>
@@ -248,7 +249,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         {
             throw CreateException(
                 DotnetInstallErrorCode.ProcessStartFailed,
-                $"Could not start the installer for {Describe()}: {ex.Message}",
+                Format(Strings.WindowsInstallerProcessStartFailed, Describe(), ex.Message),
                 ex);
         }
     }
@@ -263,7 +264,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
 
         if (outcome == BundleExitOutcome.SuccessRestartRequired)
         {
-            _notices.WriteLine($"A restart is required to finish installing {Describe()}. dotnetup will not restart your computer; restart it when convenient.");
+            _notices.WriteLine(Format(Strings.WindowsInstallerRestartRequired, Describe()));
             return;
         }
 
@@ -274,19 +275,22 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     {
         BundleExitOutcome.Cancelled => CreateException(
             DotnetInstallErrorCode.OperationCancelled,
-            $"The installation of {Describe()} was cancelled (installer exit code {exitCode})."),
+            Format(Strings.WindowsInstallerCancelled, Describe(), exitCode)),
         BundleExitOutcome.Busy => CreateException(
             DotnetInstallErrorCode.InstallerBusy,
-            $"Another installation is already in progress (installer exit code {exitCode}). Wait for it to finish, then run the command again."),
+            Format(Strings.WindowsInstallerBusy, exitCode)),
         BundleExitOutcome.ElevationRequired => CreateException(
             DotnetInstallErrorCode.InstallerFailed,
-            $"The installer for {Describe()} requires administrator privileges but could not elevate (installer exit code {exitCode}). Run the command from an account that can approve the administrator (UAC) prompt."),
+            Format(Strings.WindowsInstallerElevationRequired, Describe(), exitCode)),
         _ => CreateException(
             DotnetInstallErrorCode.InstallerFailed,
-            $"The installer for {Describe()} failed with exit code {exitCode} (0x{exitCode:X8})."),
+            Format(Strings.WindowsInstallerFailed, Describe(), exitCode, exitCode)),
     };
 
     private string Describe() => $"{_request.Component.GetDisplayName()} {_version}";
+
+    private static string Format(string format, params object?[] args) =>
+        string.Format(CultureInfo.CurrentCulture, format, args);
 
     private DotnetInstallException CreateException(DotnetInstallErrorCode errorCode, string message, Exception? innerException = null) =>
         innerException is null
