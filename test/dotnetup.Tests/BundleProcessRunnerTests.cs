@@ -13,25 +13,38 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class BundleProcessRunnerTests
 {
     [TestMethod]
-    [DataRow(false, 80)]
-    [DataRow(true, 40)]
-    [DataRow(true, 80)]
-    [DataRow(true, 160)]
+    [DataRow(false, 80, false)]
+    [DataRow(false, 80, true)]
+    [DataRow(true, 40, false)]
+    [DataRow(true, 40, true)]
+    [DataRow(true, 80, false)]
+    [DataRow(true, 80, true)]
+    [DataRow(true, 160, false)]
+    [DataRow(true, 160, true)]
     [ResourceLock(WellKnownResources.Console)]
-    public void CancellationWarning_IsPreservedAboveProgress(bool interactive, int width)
+    public void CancellationWarning_IsPreservedAboveProgress(bool interactive, int width, bool azurePipelines)
     {
         const string warning = "Cannot cancel this installer. Waiting; skipping remaining installs.";
         const string description = "Installing .NET SDK";
         using var output = new StringWriter(CultureInfo.InvariantCulture);
         var originalConsole = AnsiConsole.Console;
+        var environmentVariables = new Dictionary<string, string>();
+        if (azurePipelines)
+        {
+            environmentVariables["TF_BUILD"] = "True";
+        }
         var console = AnsiConsole.Create(new AnsiConsoleSettings
         {
             Ansi = interactive ? AnsiSupport.Yes : AnsiSupport.No,
             ColorSystem = ColorSystemSupport.NoColors,
             Interactive = interactive ? InteractionSupport.Yes : InteractionSupport.No,
+            Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false },
+            EnvironmentVariables = environmentVariables,
             Out = new AnsiConsoleOutput(output),
         });
         console.Profile.Width = width;
+        console.Profile.Capabilities.Interactive.Should().Be(interactive);
+        console.Profile.Capabilities.Ansi.Should().Be(interactive);
         bool cancellationRequested = false;
         try
         {

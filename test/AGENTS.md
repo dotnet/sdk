@@ -68,6 +68,13 @@ Guidance for changes under `test/`.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
+- **Control Spectre console capabilities in rendering tests.** Set
+  `Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false }` when a test
+  explicitly selects interactive or ANSI output. Spectre's
+  [Azure Pipelines enricher](https://github.com/spectreconsole/spectre.console/blob/0.54.0/src/Spectre.Console/Enrichment/CI/AzurePipelinesEnricher.cs)
+  overrides those settings when `TF_BUILD` is present. Inject `EnvironmentVariables`
+  into the test console to cover CI profiles without changing process-wide state;
+  see [BundleProcessRunnerTests](dotnetup.Tests/BundleProcessRunnerTests.cs).
 - **Use MSTest's built-in combinatorial data support.** Import
   `Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial` for
   `[CombinatorialData]`, `[CombinatorialValues]`, and `[CombinatorialRange]`; do not add
