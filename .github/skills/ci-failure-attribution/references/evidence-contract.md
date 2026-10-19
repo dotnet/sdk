@@ -1,7 +1,21 @@
 # Evidence contract
 
 The C# file-based apps use the repository-selected .NET SDK; they have no package
-dependencies and do not require PowerShell. All JSON outputs use `schemaVersion: 1`.
+dependencies and do not require PowerShell. Build them with an invocation-specific
+`--artifacts-path` and both `-p:ImportDirectoryBuildProps=false` and
+`-p:ImportDirectoryBuildTargets=false`, as shown in [the skill](../SKILL.md).
+File-app [default properties](../../../../src/Cli/Microsoft.DotNet.FileBasedPrograms/VirtualProjectBuilder.cs)
+still enable nullable analysis and implicit usings without repository imports.
+Repository imports otherwise override the SDK's binary/intermediate locations;
+`--output` alone isolates only binaries. Verify physical `bin` and `obj` outputs
+under the requested artifacts path, not merely a successful command exit.
+Set process-scoped `TEMP`, `TMP`, and `XDG_DATA_HOME` to an invocation-local directory
+as well: file-app build markers use the OS temporary/local-data location independently
+of MSBuild paths. Both `dotnet run` and `dotnet build` write these source-keyed markers,
+even with `--no-cache`; simultaneous builds otherwise contend on `build-success.cache`.
+The harness likewise isolates its child collector build's intermediate and temporary
+paths and checks that compiled and restore outputs exist under the requested root.
+All JSON outputs use `schemaVersion: 1`.
 Unknown fields remain `null` or explicit gaps; they are not replaced by successful
 empty results. Paths supplied to the scripts are local invocation artifacts.
 The scripts do not redact credentials. Snapshots, logs, errors, diffs, and reports
@@ -285,7 +299,10 @@ try {
     }
     $env:AZDO_TOKEN = $token
     $token = $null
-    dotnet "$skill\scripts\CiEvidence.cs" -- collect --build $buildUrl `
+    # Use the invocation-local compiler environment from the skill's collection example.
+    dotnet run --file "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts `
+        -p:ImportDirectoryBuildProps=false -p:ImportDirectoryBuildTargets=false `
+        -- collect --build $buildUrl `
         --hlx-path $hlx --output-directory $evidence
 } finally {
     $env:AZDO_TOKEN = $previousToken

@@ -140,11 +140,21 @@ sealed class Checks(string outputDirectory, string? filter)
     {
         Directory.CreateDirectory(outputDirectory);
         string binaryDirectory = Path.Combine(outputDirectory, "bin");
+        string appArtifacts = Path.Combine(outputDirectory, "collector-app-artifacts");
+        string compilerTemp = Path.Combine(appArtifacts, "temp");
+        Directory.CreateDirectory(compilerTemp);
         (int code, string output, string error) = await ProcessAsync(_dotnet,
-            ["build", _source, "--output", binaryDirectory, "--nologo", "--verbosity", "quiet"]);
+            ["build", _source, "--output", binaryDirectory, "--artifacts-path", appArtifacts,
+                "-p:ImportDirectoryBuildProps=false", "-p:ImportDirectoryBuildTargets=false", "--nologo", "--verbosity", "quiet"],
+            new() { ["TEMP"] = compilerTemp, ["TMP"] = compilerTemp, ["XDG_DATA_HOME"] = compilerTemp });
         Assert(code == 0, $"Evidence app did not build: {output}\n{error}");
         _assembly = Path.Combine(binaryDirectory, "CiEvidence.dll");
         Assert(File.Exists(_assembly), "Built evidence assembly missing.");
+        string intermediateDirectory = Path.Combine(appArtifacts, "obj");
+        Assert(Directory.Exists(intermediateDirectory) &&
+            Directory.EnumerateFiles(intermediateDirectory, "CiEvidence.dll", SearchOption.AllDirectories).Any() &&
+            Directory.EnumerateFiles(intermediateDirectory, "project.assets.json", SearchOption.AllDirectories).Any(),
+            "Evidence app compiler and restore intermediates were not isolated under the invocation artifacts.");
 
         await CaseAsync("Preserve expected/actual values, codes, versions, endpoints and meaningful paths", async () =>
         {

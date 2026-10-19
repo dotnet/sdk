@@ -52,25 +52,37 @@ directory. The C# file-based app needs no packages or PowerShell runtime.
 Paths below use PowerShell shell syntax; do not write evidence into the repository.
 The scripts do not redact credentials from collected evidence or output. Treat
 artifacts as sensitive and review them before sharing.
+Run each example in a dedicated PowerShell process: the temporary environment
+settings below affect only that process and its children. If reusing an interactive
+process, save and restore `TEMP`, `TMP`, and `XDG_DATA_HOME` with `try`/`finally`.
 
 ```powershell
 $skill = '.github\skills\ci-failure-attribution'
 $appArtifacts = Join-Path $evidence 'app-artifacts'
-dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts -- collect --pull-request 12345 --output-directory $evidence
+$isolatedBuild = @('-p:ImportDirectoryBuildProps=false', '-p:ImportDirectoryBuildTargets=false')
+$env:TEMP = $env:TMP = $env:XDG_DATA_HOME = Join-Path $appArtifacts 'temp'
+New-Item -ItemType Directory -Force $env:TEMP | Out-Null
+dotnet run --file "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts @isolatedBuild -- collect --pull-request 12345 --output-directory $evidence
 
 # Exact historical validation:
-dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts -- collect --pull-request 12345 --build $buildUrl --output-directory $evidence
+dotnet run --file "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts @isolatedBuild -- collect --pull-request 12345 --build $buildUrl --output-directory $evidence
 
 # Standalone triggered, rolling, or scheduled build:
-dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts -- collect --build $buildUrl --output-directory $evidence
+dotnet run --file "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts @isolatedBuild -- collect --build $buildUrl --output-directory $evidence
 
 # Explicit standalone change boundary:
-dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts -- collect --build $buildUrl --baseline-build $baselineUrl --output-directory $evidence
+dotnet run --file "$skill\scripts\CiEvidence.cs" --artifacts-path $appArtifacts @isolatedBuild -- collect --build $buildUrl --baseline-build $baselineUrl --output-directory $evidence
 ```
 
-Use a different `--artifacts-path` for each invocation, especially when multiple
-investigators run concurrently; the file-based app compiler otherwise shares its
-default temporary output location.
+The collect examples are alternatives. Use a different `--artifacts-path` for each
+invocation, especially when investigators run concurrently. Both import-disabling
+properties are required: repository build imports can override binary and
+intermediate paths even when `--artifacts-path` is accepted. These dependency-free
+apps do not need those imports. The SDK also writes source-keyed file-app cache
+markers outside MSBuild's output paths; `TEMP`/`TMP` (Windows) and `XDG_DATA_HOME`
+(Linux/macOS) isolate those markers. `--no-cache` and `dotnet build` do not prevent
+marker writes. Confirm the requested directory contains `bin`, `obj`, and
+`temp/dotnet/runfile` outputs; flag acceptance alone does not prove isolation.
 
 Defaults bound history to 20 builds per pipeline/ref within seven days. Increase
 `--history-limit`/`--lookback-days` only for a specific missing comparison and record
@@ -83,6 +95,16 @@ recorded as incomplete, and independent evidence collection continues where poss
 Pass `--gh-path`/`--hlx-path`/`--az-path` when using local tools. Raw Azure REST
 results fetch top-level rows in 1000-result pages and request subresults only for
 grouped results; hlx's typed result projection omits parameterized subresults.
+All builds' top-level results, timelines, Helix observations, and artifact inventories
+are acquired before grouped-result detail requests. The global detail phase is bounded
+by `--group-detail-limit` (default 20, maximum 1000 requests) and
+`--group-detail-seconds` (default 120, maximum 3600 seconds). The time budget is checked
+between requests; an active acquisition still uses its producer timeout and one retry.
+Selected failed/unknown groups and matching historical group controls take priority;
+other groups are visited only within the remaining budget. Omitted children remain
+explicit hierarchy gaps, never implied passing cases. Checkpoints before this phase
+preserve a partial dossier, and unvisited builds remain incomplete.
+
 The adapter validates hlx 0.11.x
 envelopes and stops on incompatible output; do not quietly substitute an older
 tool or manual collection. If a prerequisite is missing, follow the environment's
@@ -113,7 +135,10 @@ Run the offline `compare` command in [CiEvidence.cs](scripts/CiEvidence.cs):
 
 ```powershell
 $compareArtifacts = Join-Path $comparison 'app-artifacts'
-dotnet run "$skill\scripts\CiEvidence.cs" --artifacts-path $compareArtifacts -- compare `
+$isolatedBuild = @('-p:ImportDirectoryBuildProps=false', '-p:ImportDirectoryBuildTargets=false')
+$env:TEMP = $env:TMP = $env:XDG_DATA_HOME = Join-Path $compareArtifacts 'temp'
+New-Item -ItemType Directory -Force $env:TEMP | Out-Null
+dotnet run --file "$skill\scripts\CiEvidence.cs" --artifacts-path $compareArtifacts @isolatedBuild -- compare `
   --evidence-path "$evidence\evidence.json" --output-directory $comparison
 ```
 
@@ -224,12 +249,19 @@ and the repository [skill validator](../ValidateSkill.cs):
 
 ```powershell
 $testAppArtifacts = Join-Path $testArtifacts 'app-artifacts'
-dotnet run "$skill\tests\TestCiEvidence.cs" --artifacts-path $testAppArtifacts -- --output-directory $testArtifacts
-dotnet run .github\skills\ValidateSkill.cs --artifacts-path (Join-Path $testArtifacts 'validator-artifacts') -- $skill
+$isolatedBuild = @('-p:ImportDirectoryBuildProps=false', '-p:ImportDirectoryBuildTargets=false')
+$env:TEMP = $env:TMP = $env:XDG_DATA_HOME = Join-Path $testAppArtifacts 'temp'
+New-Item -ItemType Directory -Force $env:TEMP | Out-Null
+dotnet run --file "$skill\tests\TestCiEvidence.cs" --artifacts-path $testAppArtifacts @isolatedBuild -- --output-directory $testArtifacts
+
+$validatorArtifacts = Join-Path $testArtifacts 'validator-artifacts'
+$env:TEMP = $env:TMP = $env:XDG_DATA_HOME = Join-Path $validatorArtifacts 'temp'
+New-Item -ItemType Directory -Force $env:TEMP | Out-Null
+dotnet run --file .github\skills\ValidateSkill.cs --artifacts-path $validatorArtifacts @isolatedBuild -- $skill
 ```
 
-The checks build the app once in the artifact directory, exercise its real command
-entry points, and emit all five frozen agent scenarios. Agent evaluation prompts
+The checks build the app once with invocation-local binary and intermediate
+outputs, exercise its real command entry points, and emit all five frozen agent scenarios. Agent evaluation prompts
 are in [evals.json](evals/evals.json); keep test results in session artifacts.
 Use `--filter NAME_SUBSTRING` to run focused checks; an unmatched filter fails
 instead of reporting a successful zero-check run.
