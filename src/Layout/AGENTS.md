@@ -58,6 +58,17 @@ under `IntermediateOutputPath/fsharp-publish`; only real compiler payload and fi
 sweep, including legacy `15.0` relocation and the testhost runtimeconfig exclusion.
 Coverage is in [`SdkJsonLayoutTests`](../../test/sdk-tasks.Tests/SdkJsonLayoutTests.cs).
 
+Apphosts embed only their managed binary's file name, so `_GenerateRoslynAppHosts` and
+`_GenerateMSBuildAppHost` regenerate (and, on macOS, re-sign) each host only when it is
+missing or older than the apphost template, its entitlements, or
+`GenerateLayout.targets`; a failed generation or signing removes the host so the next
+build repairs it. `PublishRoslyn` and `CreateMSBuildAppHost` keep their public names; the
+optional Windows type-library copy lives outside the skippable generation target. Layout
+copy producers use `SkipUnchangedFiles`, including the Containers imports, while the
+Containers child `Publish` still runs. Coverage is in
+[`SdkAppHostLayoutTests`](../../test/sdk-tasks.Tests/SdkAppHostLayoutTests.cs); the
+entitlements are declared in `test/UnitTests.proj` for Helix.
+
 ### Workload manifest layout ownership
 
 [`LayoutManifests`](redist/targets/BundledManifests.targets) may only delete the

@@ -213,7 +213,7 @@
       <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\BundledManifests.targets">
         <DestinationFolder>Layout/</DestinationFolder>
       </TestExecutionDirectoryFiles>
-      <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\GenerateLayout.targets;$(RepoRoot)src\Layout\redist\targets\GenerateBundledVersions.targets">
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\GenerateLayout.targets;$(RepoRoot)src\Layout\redist\targets\GenerateBundledVersions.targets;$(RepoRoot)src\Layout\redist\msbuild-entitlements.plist;$(RepoRoot)src\Layout\redist\roslyn-entitlements.plist">
         <DestinationFolder>Layout/</DestinationFolder>
       </TestExecutionDirectoryFiles>
       <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\GenerateInstallerLayout.targets;$(RepoRoot)src\Layout\redist\dnx;$(RepoRoot)src\Layout\redist\dnx.cmd">

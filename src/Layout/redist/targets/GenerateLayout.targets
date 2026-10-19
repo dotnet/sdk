@@ -133,25 +133,79 @@
 
   </Target>
 
-  <Target Name="PublishRoslyn"
-          DependsOnTargets="_PublishRoslynFiles">
-    <CreateAppHost AppHostSourcePath="$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)"
-                   AppHostDestinationPath="%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
-                   AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
-                   IntermediateAssembly="%(_RoslynAppHost.FullPath)"
-                   EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
+  <!-- An apphost embeds only its managed binary's file name, so a host is stale only when
+       it is missing or older than the template, entitlements, or this implementation.
+       Evaluate each host separately: regenerating (and, on macOS, re-signing) a settled
+       host would change bytes that downstream layout steps consume. -->
+  <Target Name="_GenerateRoslynAppHosts" DependsOnTargets="_PublishRoslynFiles">
+    <PropertyGroup>
+      <_AppHostTemplatePath>$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)</_AppHostTemplatePath>
+      <_RoslynEntitlements>$(MSBuildProjectDirectory)/roslyn-entitlements.plist</_RoslynEntitlements>
+      <_RoslynAppHostInputTicks>$([System.IO.File]::GetLastWriteTime('$(_AppHostTemplatePath)').Ticks)</_RoslynAppHostInputTicks>
+      <_RoslynAppHostInputTicks Condition="$([System.IO.File]::GetLastWriteTime('$(_GenerateLayoutTargetsFile)').Ticks) &gt; $(_RoslynAppHostInputTicks)">$([System.IO.File]::GetLastWriteTime('$(_GenerateLayoutTargetsFile)').Ticks)</_RoslynAppHostInputTicks>
+      <_RoslynAppHostInputTicks Condition="$(SharedFrameworkRid.StartsWith('osx')) and $([System.IO.File]::GetLastWriteTime('$(_RoslynEntitlements)').Ticks) &gt; $(_RoslynAppHostInputTicks)">$([System.IO.File]::GetLastWriteTime('$(_RoslynEntitlements)').Ticks)</_RoslynAppHostInputTicks>
+    </PropertyGroup>
 
-    <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
-          Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
+    <ItemGroup>
+      <_StaleRoslynAppHost Include="@(_RoslynAppHost)"
+                           Condition="!Exists('%(RootDir)%(Directory)%(Filename)$(ExeExtension)') or
+                                      $([System.IO.File]::GetLastWriteTime('%(RootDir)%(Directory)%(Filename)$(ExeExtension)').Ticks) &lt; $(_RoslynAppHostInputTicks)" />
+    </ItemGroup>
+
+    <CreateAppHost AppHostSourcePath="$(_AppHostTemplatePath)"
+                   AppHostDestinationPath="%(_StaleRoslynAppHost.RootDir)%(_StaleRoslynAppHost.Directory)%(_StaleRoslynAppHost.Filename)$(ExeExtension)"
+                   AppBinaryName="%(_StaleRoslynAppHost.Filename)%(_StaleRoslynAppHost.Extension)"
+                   IntermediateAssembly="%(_StaleRoslynAppHost.FullPath)"
+                   EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))"
+                   Condition="'@(_StaleRoslynAppHost)' != ''" />
+
+    <Exec Command="codesign --sign - --force --entitlements '$(_RoslynEntitlements)' %(_StaleRoslynAppHost.RootDir)%(_StaleRoslynAppHost.Directory)%(_StaleRoslynAppHost.Filename)$(ExeExtension)"
+          Condition="'@(_StaleRoslynAppHost)' != '' and $(SharedFrameworkRid.StartsWith('osx'))" />
+
+    <!-- Remove an unsigned or partial host so the next build repairs it. -->
+    <OnError ExecuteTargets="_DeleteStaleRoslynAppHosts" />
   </Target>
 
-  <Target Name="CreateMSBuildAppHost">
-    <CreateAppHost AppHostSourcePath="$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)"
-                   AppHostDestinationPath="%(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)$(ExeExtension)"
-                   AppBinaryName="%(_MSBuildAppHost.Filename)%(_MSBuildAppHost.Extension)"
-                   IntermediateAssembly="%(_MSBuildAppHost.FullPath)"
-                   EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
+  <Target Name="_DeleteStaleRoslynAppHosts">
+    <Delete Files="@(_StaleRoslynAppHost->'%(RootDir)%(Directory)%(Filename)$(ExeExtension)')" />
+  </Target>
 
+  <Target Name="PublishRoslyn"
+          DependsOnTargets="_PublishRoslynFiles;_GenerateRoslynAppHosts" />
+
+  <Target Name="_GenerateMSBuildAppHost">
+    <PropertyGroup>
+      <_AppHostTemplatePath>$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)</_AppHostTemplatePath>
+      <_MSBuildEntitlements>$(MSBuildProjectDirectory)/msbuild-entitlements.plist</_MSBuildEntitlements>
+      <_MSBuildAppHostInputTicks>$([System.IO.File]::GetLastWriteTime('$(_AppHostTemplatePath)').Ticks)</_MSBuildAppHostInputTicks>
+      <_MSBuildAppHostInputTicks Condition="$([System.IO.File]::GetLastWriteTime('$(_GenerateLayoutTargetsFile)').Ticks) &gt; $(_MSBuildAppHostInputTicks)">$([System.IO.File]::GetLastWriteTime('$(_GenerateLayoutTargetsFile)').Ticks)</_MSBuildAppHostInputTicks>
+      <_MSBuildAppHostInputTicks Condition="$(SharedFrameworkRid.StartsWith('osx')) and $([System.IO.File]::GetLastWriteTime('$(_MSBuildEntitlements)').Ticks) &gt; $(_MSBuildAppHostInputTicks)">$([System.IO.File]::GetLastWriteTime('$(_MSBuildEntitlements)').Ticks)</_MSBuildAppHostInputTicks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_StaleMSBuildAppHost Include="@(_MSBuildAppHost)"
+                            Condition="!Exists('%(RootDir)%(Directory)%(Filename)$(ExeExtension)') or
+                                       $([System.IO.File]::GetLastWriteTime('%(RootDir)%(Directory)%(Filename)$(ExeExtension)').Ticks) &lt; $(_MSBuildAppHostInputTicks)" />
+    </ItemGroup>
+
+    <CreateAppHost AppHostSourcePath="$(_AppHostTemplatePath)"
+                   AppHostDestinationPath="%(_StaleMSBuildAppHost.RootDir)%(_StaleMSBuildAppHost.Directory)%(_StaleMSBuildAppHost.Filename)$(ExeExtension)"
+                   AppBinaryName="%(_StaleMSBuildAppHost.Filename)%(_StaleMSBuildAppHost.Extension)"
+                   IntermediateAssembly="%(_StaleMSBuildAppHost.FullPath)"
+                   EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))"
+                   Condition="'@(_StaleMSBuildAppHost)' != ''" />
+
+    <Exec Command="codesign --sign - --force --entitlements '$(_MSBuildEntitlements)' %(_StaleMSBuildAppHost.RootDir)%(_StaleMSBuildAppHost.Directory)%(_StaleMSBuildAppHost.Filename)$(ExeExtension)"
+          Condition="'@(_StaleMSBuildAppHost)' != '' and $(SharedFrameworkRid.StartsWith('osx'))" />
+
+    <OnError ExecuteTargets="_DeleteStaleMSBuildAppHosts" />
+  </Target>
+
+  <Target Name="_DeleteStaleMSBuildAppHosts">
+    <Delete Files="@(_StaleMSBuildAppHost->'%(RootDir)%(Directory)%(Filename)$(ExeExtension)')" />
+  </Target>
+
+  <Target Name="CreateMSBuildAppHost" DependsOnTargets="_GenerateMSBuildAppHost">
     <!-- Copy the COM type library next to the apphost on Windows (needed for ITaskHost marshaling).
          The .tlb is generated by the MSBuild build (CreateTypeLib target) and included in the
          Microsoft.Build.Framework NuGet package under tools/net472/. -->
@@ -419,7 +473,7 @@
       <BuildFiles Include="$(RepoRoot)/src/Containers/packaging/build/Microsoft.NET.Build.Containers.targets" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(OutputPath)/Containers/build" />
+    <Copy SourceFiles="@(BuildFiles)" DestinationFolder="$(OutputPath)/Containers/build" SkipUnchangedFiles="true" />
 
     <MSBuild
       Targets="Publish"
