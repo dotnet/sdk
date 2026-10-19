@@ -210,5 +210,30 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 }
             }
         }
+
+        [TestMethod]
+        [DataRow("BrotliCompressionLevel")]
+        [DataRow("_BlazorBrotliCompressionLevel")]
+        public void Publish_PassesBrotliCompressionLevel_ToBrotliCompressTask(string propertyName)
+        {
+            var testAsset = "RazorAppWithP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((project, xml) =>
+                {
+                    if (!project.Contains("ClassLibrary"))
+                    {
+                        xml.Descendants("PropertyGroup")
+                            .First().Add(new XElement(propertyName, "Optimal"));
+                    }
+                });
+
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithP2PReference");
+            var result = ExecuteCommand(publish, "-v:diag");
+            result.Should().Pass();
+
+            // The task parameter is only logged for the publish-time BrotliCompress invocation
+            // because the build-time compression only applies to gzip by default.
+            result.StdOut.Should().Contain("CompressionLevel=Optimal");
+        }
     }
 }
