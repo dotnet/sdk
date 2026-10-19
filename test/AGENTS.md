@@ -16,6 +16,13 @@ Guidance for changes under `test/`.
   `BinLogArgument(...)` for binlog paths collected by Helix. It also initializes the
   SDK/MSBuild environment before in-process MSBuild APIs such as `ProjectCollection`
   cache toolset paths.
+  **Exception: standalone `dotnetup.Tests` classes must not inherit `SdkTest`.**
+  The [dotnetup pipeline](../eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml)
+  builds dotnetup without the SDK redist, which `SdkTest` requires at construction.
+  Use [DotnetupTestUtilities](dotnetup.Tests/Utilities/DotnetupTestUtilities.cs) for
+  the executable under test and
+  [SelfUpdateTestFiles.DotnetHostPath](dotnetup.Tests/Utilities/SelfUpdateTestFiles.cs)
+  when a test needs the bootstrap host.
 - **Use `SdkTestContext.Current` for paths** — never hardcode paths or manually discover
   locations at runtime (e.g. walking up directories):
 

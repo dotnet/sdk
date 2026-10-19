@@ -12,7 +12,7 @@ using Microsoft.NET.TestFramework;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class HostFxrQueryProcessTests : SdkTest
+public class HostFxrQueryProcessTests
 {
     [TestMethod]
     [DataRow("{}")]
