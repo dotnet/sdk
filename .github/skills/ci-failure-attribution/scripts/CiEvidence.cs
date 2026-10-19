@@ -354,7 +354,7 @@ sealed class Reader(string snapshots, string? replayDirectory, string ghPath, st
                     JsonObject inputs = [];
                     foreach (string key in new[]
                     {
-                        "id", "sourceVersion", "sourceBranch", "repository", "definition", "queueTime",
+                        "id", "sourceVersion", "sourceBranch", "repository", "definition", "project", "queueTime",
                         "status", "result", "reason", "triggerInfo", "pipeline", "parameters",
                         "templateParameters", "resources"
                     })
@@ -578,7 +578,7 @@ static class Comparison
                 limitations.Add($"Missing {key}");
                 knownIdentity = false;
             }
-            else if (build.Text(key) != other.Text(key))
+            else if (key == "project" ? !BuildIdentity.SameProject(build, other) : build.Text(key) != other.Text(key))
             {
                 differences.Add($"Different {key}");
             }
@@ -820,6 +820,28 @@ static class Comparison
 
 sealed record BuildIdentity(string Id, string Organization, string Project, string Url)
 {
+    private static bool HasProjectMapping(JsonNode build) =>
+        Guid.TryParse(build.Text("projectId"), out _) && !string.IsNullOrWhiteSpace(build.Text("projectName")) &&
+        (SameProjectValue(build.Text("project"), build.Text("projectId")) ||
+            SameProjectValue(build.Text("project"), build.Text("projectName")));
+
+    private static bool SameProjectValue(string first, string second) =>
+        !string.IsNullOrWhiteSpace(first) && !string.IsNullOrWhiteSpace(second) &&
+        string.Equals(first, second, StringComparison.OrdinalIgnoreCase);
+
+    public static bool MatchesProject(JsonNode build, string project) =>
+        SameProjectValue(build.Text("project"), project) ||
+        HasProjectMapping(build) && (SameProjectValue(build.Text("projectId"), project) ||
+            SameProjectValue(build.Text("projectName"), project));
+
+    public static bool SameProject(JsonNode first, JsonNode second) =>
+        HasProjectMapping(first) && HasProjectMapping(second)
+            ? SameProjectValue(first.Text("projectId"), second.Text("projectId"))
+            : MatchesProject(first, second.Text("project")) || MatchesProject(second, first.Text("project"));
+
+    public bool Matches(JsonNode build) =>
+        build.Text("id") == Id && build.Text("organization") == Organization && MatchesProject(build, Project);
+
     public static BuildIdentity Resolve(string value)
     {
         if (Regex.IsMatch(value, @"^\d+$"))
@@ -1075,7 +1097,7 @@ sealed class Collector
     {
         if (_byId.TryGetValue(identity.Id, out JsonObject? existing))
         {
-            if (existing.Text("organization") != identity.Organization || existing.Text("project") != identity.Project)
+            if (!identity.Matches(existing))
             {
                 throw new InvalidDataException($"Build ID {identity.Id} occurs in different projects; collect these contexts in separate invocations.");
             }
@@ -1092,10 +1114,19 @@ sealed class Collector
             throw new InvalidDataException("Expected a full tested GitHub source SHA.");
         }
         string definitionId = detail["definition"].Text("id");
+        JsonNode? project = detail["project"] ?? detail["definition"]?["project"];
+        if (project is not null &&
+            (!Guid.TryParse(project.Text("id"), out _) || string.IsNullOrWhiteSpace(project.Text("name")) ||
+                !string.Equals(identity.Project, project.Text("id"), StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(identity.Project, project.Text("name"), StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new InvalidDataException($"Azure project metadata does not identify the requested project for build {identity.Id}.");
+        }
         JsonObject record = JsonData.Object(new
         {
             id = identity.Id, url = identity.Url, repository = "dotnet/sdk", organization = identity.Organization,
-            project = identity.Project, definitionId, definitionName = detail["definition"]?["name"],
+            project = identity.Project, projectId = project?["id"], projectName = project?["name"],
+            definitionId, definitionName = detail["definition"]?["name"],
             branch = detail["sourceBranch"], commit = detail["sourceVersion"],
             prHeadSha = detail["triggerInfo"]?["pr.sourceSha"], prNumber = detail["triggerInfo"]?["pr.number"],
             targetSha = (JsonNode?)null, targetBranchHint = (JsonNode?)null, reason = detail["reason"],
@@ -1667,6 +1698,10 @@ sealed class Collector
         foreach (BuildIdentity identity in selected)
         {
             JsonObject record = await BuildAsync(identity);
+            if (_dossier.Rows("selectedBuildIds").Any(id => JsonData.Scalar(id) == identity.Id))
+            {
+                continue;
+            }
             if (number is not null && (record.Text("branch") != $"refs/pull/{number}/merge" || record.Text("prNumber") != number ||
                 _options["build"] is null && record.Text("prHeadSha") != _dossier["pr"]!["head"].Text("sha")))
             {
@@ -1717,6 +1752,7 @@ sealed class Collector
                 }
             }
         }
+        selected = selected.DistinctBy(b => b.Id, StringComparer.Ordinal).ToList();
         JsonObject? explicitBaseline = _options["baseline-build"] is string baselineValue ? await BuildAsync(BuildIdentity.Resolve(baselineValue)) : null;
         Checkpoint("build-metadata");
         foreach (JsonObject record in _byId.Values)
@@ -1731,7 +1767,7 @@ sealed class Collector
         {
             if (check.Text("coverage") != "skipped" &&
                 BuildIdentity.TryResolveUrl(check.Text("url"), out BuildIdentity? checkBuild) &&
-                selected.Any(b => b.Id == checkBuild.Id && b.Organization == checkBuild.Organization && b.Project == checkBuild.Project) &&
+                selected.Any(b => b.Id == checkBuild.Id && checkBuild.Matches(_byId[b.Id])) &&
                 check.Text("status") is "completed" or "success" or "failure" or "error")
             {
                 check["coverage"] = "assessed";

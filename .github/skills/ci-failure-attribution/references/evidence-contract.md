@@ -55,6 +55,15 @@ The [collector](../scripts/CiEvidence.cs) marks a completed check assessed only 
 its supported Azure build URL matches a selected organization, project, and build
 ID. A numeric ID match alone is insufficient. Unsupported URLs and uncollected
 build contexts remain unassessed, including when an explicit build is selected.
+Azure project-name/GUID aliases are matched only using the name/ID mapping returned
+by the raw Build GET (`project` or `definition.project`). Builds retain this mapping
+as `projectName` and `projectId`, while `project` preserves the requested URL context.
+The requested project must match that metadata. Check coverage, discovered-build
+reuse, and offline control comparison accept the verified aliases within the same
+organization; different authoritative project IDs remain different even when names
+match. When neither compared build supplies a verified mapping, older evidence
+requires matching project strings rather than inferring aliases. Alias URLs for the same selected
+build do not create duplicate selected IDs or change windows.
 
 Timeline acquisition explicitly requests `--filter all --json`, not the producer's
 default failure-only view, so successful job/task executions remain available as

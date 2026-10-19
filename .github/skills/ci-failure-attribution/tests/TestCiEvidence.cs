@@ -1747,6 +1747,114 @@ sealed class Checks(string outputDirectory, string? filter)
                     "An uncollected check disappeared from coverage.");
             }
         });
+        await CaseAsync("Project aliases assess checks and reuse discovered builds using authoritative metadata", async () =>
+        {
+            const string projectId = "cbb18261-c48f-4abb-8651-8cdcb5474649";
+            string replay = Path.Combine(outputDirectory, "project-alias-checks");
+            Fixtures.Collection(replay, pr: true);
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal),
+                data => data["definition"]!["project"] = new JsonObject { ["id"] = projectId, ["name"] = "public" });
+            Fixtures.AddCheck(replay, "Project GUID alias",
+                $"https://dev.azure.com/dnceng-public/{projectId}/_build/results?buildId=3");
+            Fixtures.AddCheck(replay, "Other project",
+                "https://dev.azure.com/dnceng-public/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa/_build/results?buildId=3");
+            Fixtures.AddCheck(replay, "Other organization",
+                $"https://dev.azure.com/dnceng/{projectId}/_build/results?buildId=3");
+            JsonObject dossier = await CollectAsync(replay, ["--pull-request", "12"]);
+            Assert(dossier["checks"]!.AsArray().All(c => c!["coverage"]!.GetValue<string>() ==
+                (c["name"]!.GetValue<string>() is "azure-pipelines" or "Project GUID alias" ? "assessed" : "unassessed")),
+                "Project aliases lost exact-build coverage or crossed a project/organization boundary.");
+            Assert(Current(dossier)["projectId"]!.GetValue<string>() == projectId &&
+                Current(dossier)["projectName"]!.GetValue<string>() == "public",
+                "Authoritative project mapping was not retained.");
+
+            string output = NextDirectory();
+            // Discovery sees both aliases for one build; the first collected mapping must identify the second.
+            Fixtures.Collection(replay, pr: true);
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal),
+                data => data["definition"]!["project"] = new JsonObject { ["id"] = projectId, ["name"] = "public" });
+            Fixtures.AddCheck(replay, "Project GUID alias",
+                $"https://dev.azure.com/dnceng-public/{projectId}/_build/results?buildId=3");
+            (int code, string _, string error) = await ProcessAsync(_dotnet,
+                [_assembly, "collect", "--pull-request", "12", "--history-limit", "1", "--lookback-days", "2",
+                    "--output-directory", output, "--replay-directory", replay, "--gh-path", "never-executed", "--hlx-path", "never-executed"]);
+            Assert(code == 0, $"Alias discovery failed: {error}");
+            dossier = Fixtures.Read(Path.Combine(output, "evidence.json"));
+            Assert(dossier["selectedBuildIds"]!.AsArray().Count == 1 &&
+                dossier["changeWindows"]!.AsArray().Count == 1 &&
+                dossier["checks"]!.AsArray().All(c => c!["coverage"]!.GetValue<string>() == "assessed"),
+                "Alias discovery duplicated a selected build/window or lost check coverage.");
+
+            string collisionReplay = Path.Combine(outputDirectory, "project-alias-collision");
+            Fixtures.Collection(collisionReplay);
+            await CollectAsync(collisionReplay, ["--baseline-build",
+                "https://dev.azure.com/dnceng-public/another-project/_build/results?buildId=3"],
+                expectedError: "occurs in different projects");
+
+            // Also exercise a GUID-selected build with name-based checks and top-level project metadata.
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/", StringComparison.Ordinal), data =>
+            {
+                data["project"] = data["definition"]!["project"]!.DeepClone();
+                data["definition"]!.AsObject().Remove("project");
+            });
+            foreach (string snapshotPath in Directory.GetFiles(replay, "*.json"))
+            {
+                JsonObject snapshot = Fixtures.Read(snapshotPath);
+                string[] arguments = snapshot["arguments"]!.AsArray().Select(a => a!.GetValue<string>()
+                    .Replace("/dnceng-public/public/", $"/dnceng-public/{projectId}/", StringComparison.Ordinal))
+                    .Select(a => a == "public" ? projectId : a).ToArray();
+                Fixtures.Save(replay, snapshot["tool"]!.GetValue<string>(), arguments,
+                    snapshot["stdout"]!.GetValue<string>(), text: true);
+            }
+            output = NextDirectory();
+            (code, _, error) = await ProcessAsync(_dotnet,
+                [_assembly, "collect", "--pull-request", "12", "--build",
+                    $"https://dev.azure.com/dnceng-public/{projectId}/_build/results?buildId=3",
+                    "--history-limit", "1", "--lookback-days", "2", "--output-directory", output,
+                    "--replay-directory", replay, "--gh-path", "never-executed", "--hlx-path", "never-executed"]);
+            Assert(code == 0, $"GUID-selected alias collection failed: {error}");
+            dossier = Fixtures.Read(Path.Combine(output, "evidence.json"));
+            Assert(Current(dossier)["project"]!.GetValue<string>() == projectId &&
+                Current(dossier)["projectName"]!.GetValue<string>() == "public" &&
+                dossier["checks"]!.AsArray().All(c => c!["coverage"]!.GetValue<string>() == "assessed"),
+                "A GUID-selected build lost its top-level project mapping or name-based check coverage.");
+
+            Fixtures.Change(replay, s => s["tool"]!.GetValue<string>() == "az" &&
+                s["arguments"]![4]!.GetValue<string>().Contains("/build/builds/3?", StringComparison.Ordinal),
+                data => data["project"]!["name"] = "another-project");
+            await CollectAsync(replay, ["--pull-request", "12"],
+                expectedError: "Azure project metadata does not identify the requested project");
+        });
+        await CaseAsync("Project aliases compare controls without equating different authoritative project IDs", async () =>
+        {
+            const string projectId = "cbb18261-c48f-4abb-8651-8cdcb5474649";
+            foreach (bool selectedUsesGuid in new[] { true, false })
+            {
+                JsonObject fixture = Fixtures.New("existing-flake");
+                JsonNode mapped = selectedUsesGuid ? Current(fixture) : Previous(fixture);
+                mapped["projectId"] = projectId;
+                mapped["projectName"] = "public";
+                mapped["project"] = projectId;
+                JsonNode row = Row(await CompareAsync(fixture));
+                Assert(row["matchingOccurrences"]!.GetValue<int>() == 1 &&
+                    row["controls"]![0]!["eligible"]!.GetValue<bool>(),
+                    "An authoritative project alias could not establish a control.");
+                JsonNode other = selectedUsesGuid ? Previous(fixture) : Current(fixture);
+                other["projectId"] = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
+                other["projectName"] = "public";
+                row = Row(await CompareAsync(fixture));
+                Assert(row["matchingOccurrences"]!.GetValue<int>() == 0 &&
+                    !row["controls"]![0]!["eligible"]!.GetValue<bool>(),
+                    "The same project name overrode different authoritative project IDs.");
+            }
+            JsonObject unknown = Fixtures.New("existing-flake");
+            Current(unknown)["project"] = projectId;
+            Assert(Row(await CompareAsync(unknown))["matchingOccurrences"]!.GetValue<int>() == 0,
+                "A project alias was inferred without authoritative metadata.");
+        });
         await CaseAsync("Current PR discovery retains unsupported checks without selecting their build IDs", async () =>
         {
             string replay = Path.Combine(outputDirectory, "unsupported-check-replay");
