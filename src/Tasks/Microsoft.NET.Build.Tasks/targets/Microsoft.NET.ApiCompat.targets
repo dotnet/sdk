@@ -11,7 +11,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 <Project>
   <PropertyGroup Condition="'$(UseApiCompatPackage)' != 'true'">
-    <DotNetApiCompatTaskAssembly>$(MSBuildThisFileDirectory)..\tools\net11.0\Microsoft.DotNet.ApiCompat.Task.dll</DotNetApiCompatTaskAssembly>
+    <DotNetApiCompatTaskAssembly>$(MSBuildThisFileDirectory)..\tools\net12.0\Microsoft.DotNet.ApiCompat.Task.dll</DotNetApiCompatTaskAssembly>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(EnablePackageValidation)' == 'true' and
