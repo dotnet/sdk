@@ -21,6 +21,14 @@ namespace Microsoft.NET.TestFramework.Commands
         public bool DisableOutputAndErrorRedirection { get; set; }
 
         /// <summary>
+        /// When true, skips scenario binlog capture for this command even when it is enabled
+        /// through <see cref="ScenarioBinlogCapture.DirectoryEnvironmentVariable"/>.
+        /// </summary>
+        public bool DisableScenarioBinlogCapture { get; set; }
+
+        internal bool SupportsScenarioBinlogCapture { get; set; }
+
+        /// <summary>
         /// When true, streams all stdout/stderr lines to test output in real-time,
         /// regardless of exit code. Useful for tests that need to diagnose output
         /// from commands that succeed but produce unexpected results.
@@ -182,6 +190,9 @@ namespace Microsoft.NET.TestFramework.Commands
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
             var spec = CreateCommandSpec(args);
+            ScenarioBinlogCapture? scenarioBinlogCapture = SupportsScenarioBinlogCapture && !DisableScenarioBinlogCapture
+                ? ScenarioBinlogCapture.Begin(spec, Log, GetType().Name)
+                : null;
 
             var command = spec
                 .ToCommand(_doNotEscapeArguments);
@@ -268,7 +279,11 @@ namespace Microsoft.NET.TestFramework.Commands
                 }
             }
 
-            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            if (scenarioBinlogCapture is not null)
+            {
+                scenarioBinlogCapture.Complete(result.ExitCode);
+            }
+            else if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
             {
                 var workingDir = spec.WorkingDirectory ?? Environment.CurrentDirectory;
                 var binlogFiles = Directory.GetFiles(workingDir, "*.binlog");

@@ -48,6 +48,7 @@ public class RunTestsScriptTests : SdkTest
         Assert.Contains("--framework", result.StdOut);
         Assert.Contains("--repeat", result.StdOut);
         Assert.Contains("--skip-redist-check", result.StdOut);
+        Assert.Contains("--scenario-binlogs", result.StdOut);
         Assert.DoesNotContain("--no-build", result.StdOut);
     }
 
@@ -94,12 +95,14 @@ public class RunTestsScriptTests : SdkTest
             "test/Microsoft.DotNet.Cli.Utils.Tests/Microsoft.DotNet.Cli.Utils.Tests.csproj",
             "--filter",
             "FullyQualifiedName~ArgumentEscaperTests.EscapesArgumentsForProcessStart",
-            "--skip-redist-check");
+            "--skip-redist-check",
+            "--scenario-binlogs");
 
         Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
-        Assert.Contains($"Framework: {ToolsetInfo.CurrentTargetFramework}", result.StdOut);
+        Assert.Contains($"Framework: {ToolsetInfo.SdkTargetFramework}", result.StdOut);
         Assert.Contains("TRX: artifacts", result.StdOut);
         Assert.Contains("Binlog: artifacts", result.StdOut);
+        Assert.Contains("Scenario binlogs: artifacts", result.StdOut);
     }
 
     [TestMethod]
@@ -128,7 +131,7 @@ public class RunTestsScriptTests : SdkTest
         ScriptResult result = await RunWorkloadManifestReaderTests();
 
         Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
-        Assert.Contains($"Framework: {ToolsetInfo.CurrentTargetFramework}", result.StdOut);
+        Assert.Contains($"Framework: {ToolsetInfo.SdkTargetFramework}", result.StdOut);
     }
 
     [TestMethod]
@@ -147,16 +150,17 @@ public class RunTestsScriptTests : SdkTest
     [TestMethod]
     public async Task InvalidFrameworkReturnsAProjectSpecificErrorAndPortableRerun()
     {
-        ScriptResult result = await RunWorkloadManifestReaderTests("net999.0");
+        ScriptResult result = await RunWorkloadManifestReaderTests("net999.0", scenarioBinlogs: true);
 
         Assert.AreNotEqual(0, result.ExitCode);
         Assert.Contains("Target framework 'net999.0' is not listed in TargetFrameworks", result.StdErr);
         Assert.Contains("Rerun:", result.StdErr);
         Assert.Contains(Path.Combine("scripts", "RunTests.cs"), result.StdErr);
         Assert.DoesNotContain(_repoRoot, result.StdErr);
+        Assert.Contains("--scenario-binlogs", result.StdErr);
     }
 
-    private Task<ScriptResult> RunWorkloadManifestReaderTests(string? framework = null)
+    private Task<ScriptResult> RunWorkloadManifestReaderTests(string? framework = null, bool scenarioBinlogs = false)
     {
         var arguments = new List<string>
         {
@@ -170,6 +174,10 @@ public class RunTestsScriptTests : SdkTest
         {
             arguments.Add("--framework");
             arguments.Add(framework);
+        }
+        if (scenarioBinlogs)
+        {
+            arguments.Add("--scenario-binlogs");
         }
 
         return RunScript([.. arguments]);

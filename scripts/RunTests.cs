@@ -50,6 +50,10 @@ Option<bool> skipRedistCheckOption = new("--skip-redist-check")
 {
     Description = "Allow tests that do not exercise the assembled SDK to run without a redist layout."
 };
+Option<bool> scenarioBinlogsOption = new("--scenario-binlogs")
+{
+    Description = "Capture binlogs for supported build commands launched by tests."
+};
 Option<int> repeatOption = new("--repeat")
 {
     Arity = ArgumentArity.ExactlyOne,
@@ -69,6 +73,7 @@ rootCommand.Options.Add(filterOption);
 rootCommand.Options.Add(configurationOption);
 rootCommand.Options.Add(frameworkOption);
 rootCommand.Options.Add(skipRedistCheckOption);
+rootCommand.Options.Add(scenarioBinlogsOption);
 rootCommand.Options.Add(repeatOption);
 
 rootCommand.SetAction((parseResult, cancellationToken) => RunAsync(
@@ -77,6 +82,7 @@ rootCommand.SetAction((parseResult, cancellationToken) => RunAsync(
     parseResult.GetValue(configurationOption)!,
     parseResult.GetValue(frameworkOption),
     parseResult.GetValue(skipRedistCheckOption),
+    parseResult.GetValue(scenarioBinlogsOption),
     parseResult.GetValue(repeatOption),
     cancellationToken));
 
@@ -90,6 +96,7 @@ static async Task<int> RunAsync(
     string configuration,
     string? framework,
     bool skipRedistCheck,
+    bool scenarioBinlogs,
     int repeat,
     CancellationToken cancellationToken)
 {
@@ -161,6 +168,19 @@ static async Task<int> RunAsync(
         $"{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Environment.ProcessId}");
     Directory.CreateDirectory(runDirectory);
 
+    string? inheritedScenarioBinlogDirectory = scenarioBinlogs
+        ? null
+        : Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_SCENARIO_BINLOG_DIRECTORY");
+    if (!string.IsNullOrWhiteSpace(inheritedScenarioBinlogDirectory)
+        && !Path.IsPathFullyQualified(inheritedScenarioBinlogDirectory))
+    {
+        return Fail(
+            $"DOTNET_SDK_TEST_SCENARIO_BINLOG_DIRECTORY must be an absolute path. "
+            + $"Value: '{inheritedScenarioBinlogDirectory}'.");
+    }
+    bool rerunWithScenarioBinlogs = scenarioBinlogs
+        || !string.IsNullOrWhiteSpace(inheritedScenarioBinlogDirectory);
+
     var trxPath = Path.Combine(runDirectory, "test-results.trx");
     var binlogPath = Path.Combine(runDirectory, "build.binlog");
     var rerunCommand = GetRerunCommand(
@@ -170,7 +190,8 @@ static async Task<int> RunAsync(
         configuration,
         framework,
         filter,
-        skipRedistCheck);
+        skipRedistCheck,
+        rerunWithScenarioBinlogs);
 
     // Query evaluated MSBuild properties instead of guessing from project text, which may be
     // supplied by imports.
@@ -195,7 +216,8 @@ static async Task<int> RunAsync(
         configuration,
         framework,
         filter,
-        skipRedistCheck);
+        skipRedistCheck,
+        rerunWithScenarioBinlogs);
 
     if (!projectProperties.UsesMSTestSdk)
     {
@@ -275,6 +297,9 @@ static async Task<int> RunAsync(
             projectProperties,
             iterationDirectory,
             filter);
+        string? scenarioBinlogDirectory = scenarioBinlogs
+            ? Path.GetFullPath(Path.Combine(iterationDirectory, "scenario-binlogs"))
+            : inheritedScenarioBinlogDirectory;
 
         if (repeat > 1)
         {
@@ -289,7 +314,8 @@ static async Task<int> RunAsync(
             invocation.Executable,
             invocation.Arguments,
             repoRoot,
-            cancellationToken);
+            cancellationToken,
+            scenarioBinlogDirectory);
         stopwatch.Stop();
         durations.Add(stopwatch.Elapsed);
 
@@ -298,7 +324,8 @@ static async Task<int> RunAsync(
             repoRoot,
             iterationTrxPath,
             binlogPath,
-            rerunCommand);
+            rerunCommand,
+            scenarioBinlogDirectory);
         if (aggregateExitCode == 0 && reportedExitCode != 0)
         {
             aggregateExitCode = reportedExitCode;
@@ -398,13 +425,14 @@ static int ReportTestResult(
     string repoRoot,
     string trxPath,
     string binlogPath,
-    string rerunCommand)
+    string rerunCommand,
+    string? scenarioBinlogDirectory)
 {
     Console.WriteLine();
     if (exitCode == 0)
     {
         Console.WriteLine("Tests passed.");
-        PrintArtifacts(repoRoot, trxPath, binlogPath);
+        PrintArtifacts(repoRoot, trxPath, binlogPath, scenarioBinlogDirectory);
         return 0;
     }
 
@@ -418,7 +446,7 @@ static int ReportTestResult(
         Console.Error.WriteLine("No TRX was produced; the failure occurred before test results were written.");
     }
 
-    PrintArtifacts(repoRoot, trxPath, binlogPath);
+    PrintArtifacts(repoRoot, trxPath, binlogPath, scenarioBinlogDirectory);
     Console.Error.WriteLine($"Rerun: {rerunCommand}");
     return exitCode;
 }
@@ -616,13 +644,18 @@ static async Task<int> RunProcess(
     string executable,
     IEnumerable<string> arguments,
     string workingDirectory,
-    CancellationToken cancellationToken)
+    CancellationToken cancellationToken,
+    string? scenarioBinlogDirectory = null)
 {
     // Do not redirect output here. The runner promises detailed live diagnostics, and inheriting
     // stdout/stderr preserves test-host formatting and avoids buffering large build logs in memory.
-    var exitStatus = await Process.RunAsync(
-        CreateProcessStartInfo(executable, arguments, workingDirectory),
-        cancellationToken);
+    var startInfo = CreateProcessStartInfo(executable, arguments, workingDirectory);
+    if (!string.IsNullOrWhiteSpace(scenarioBinlogDirectory))
+    {
+        startInfo.Environment["DOTNET_SDK_TEST_SCENARIO_BINLOG_DIRECTORY"] = scenarioBinlogDirectory;
+    }
+
+    var exitStatus = await Process.RunAsync(startInfo, cancellationToken);
     return exitStatus.ExitCode;
 }
 
@@ -636,6 +669,7 @@ static ProcessStartInfo CreateProcessStartInfo(
         WorkingDirectory = workingDirectory,
         UseShellExecute = false
     };
+    startInfo.Environment.Remove("DOTNET_SDK_TEST_SCENARIO_BINLOG_DIRECTORY");
 
     // ArgumentList delegates platform-specific escaping to ProcessStartInfo. Building one command
     // string would be fragile for filters, spaces, quotes, and Windows paths.
@@ -694,7 +728,7 @@ static void PrintFailedTests(string trxPath)
     }
 }
 
-static void PrintArtifacts(string repoRoot, string trxPath, string binlogPath)
+static void PrintArtifacts(string repoRoot, string trxPath, string binlogPath, string? scenarioBinlogDirectory = null)
 {
     // Relative paths are easier to copy into a follow-up command and do not leak machine-specific
     // checkout locations into logs or agent responses.
@@ -707,6 +741,23 @@ static void PrintArtifacts(string repoRoot, string trxPath, string binlogPath)
         File.Exists(binlogPath)
             ? $"  Binlog: {Path.GetRelativePath(repoRoot, binlogPath)}"
             : "  Binlog: not produced");
+    if (!string.IsNullOrWhiteSpace(scenarioBinlogDirectory))
+    {
+        int scenarioBinlogCount = 0;
+        if (Directory.Exists(scenarioBinlogDirectory))
+        {
+            scenarioBinlogCount += Directory.GetFiles(scenarioBinlogDirectory, "*.binlog").Length;
+            string authoredDirectory = Path.Combine(scenarioBinlogDirectory, "authored");
+            if (Directory.Exists(authoredDirectory))
+            {
+                scenarioBinlogCount += Directory.GetFiles(authoredDirectory, "*.binlog").Length;
+            }
+        }
+
+        Console.WriteLine(
+            $"  Scenario binlogs: {Path.GetRelativePath(repoRoot, scenarioBinlogDirectory)} "
+            + $"({scenarioBinlogCount} binlog file(s))");
+    }
 }
 
 static string GetRerunCommand(
@@ -716,7 +767,8 @@ static string GetRerunCommand(
     string configuration,
     string? framework,
     string? filter,
-    bool skipRedistCheck)
+    bool skipRedistCheck,
+    bool scenarioBinlogs)
 {
     var arguments = new List<string>
     {
@@ -735,6 +787,10 @@ static string GetRerunCommand(
     if (skipRedistCheck)
     {
         arguments.Add("--skip-redist-check");
+    }
+    if (scenarioBinlogs)
+    {
+        arguments.Add("--scenario-binlogs");
     }
     if (!string.IsNullOrWhiteSpace(filter))
     {

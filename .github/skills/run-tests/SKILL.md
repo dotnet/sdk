@@ -139,3 +139,20 @@ It only requests a TRX when the project enables the TRX report extension. It pri
 run directory and exact command before execution. At completion it prints the retained
 TRX/binlog paths; on failure it also prints failed test names when a TRX is available and
 the rerun command.
+
+Pass `--scenario-binlogs` to additionally capture binlogs from `MSBuildCommand` and
+`DotnetBuildCommand` instances used inside the tests. The runner gives each test-run
+iteration its own scenario-binlog directory and reports the directory and number of logs
+produced; this is separate from the test-project build binlog. Without the runner option,
+set `DOTNET_SDK_TEST_SCENARIO_BINLOG_DIRECTORY` to an absolute path to opt in when using
+another launcher. The runner option overrides that inherited value, and removes it from
+its own property-evaluation and build processes.
+
+Scenario capture preserves explicitly configured binary-logger destinations and archives
+each changed log under the diagnostic directory, so repeated commands do not overwrite the
+retained copy. Supported wrappers copy retained logs to Helix when
+`HELIX_WORKITEM_UPLOAD_ROOT` is set. Commands can opt out with
+`DisableScenarioBinlogCapture`. A missing log is reported but does not fail the test;
+invalid configuration or failure to retain or upload a produced log does. If response
+files may configure a logger, capture is skipped and reported rather than attempting to
+expand those files.

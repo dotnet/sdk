@@ -80,6 +80,14 @@ multiple builds in one process. Refresh the environment and trace context for ea
 
 ## Running tests
 
+For focused test runs, use the repository's [`run-tests` skill](../../.github/skills/run-tests/SKILL.md),
+which invokes `scripts/RunTests.cs` and retains the test-project build binlog. Add
+`--scenario-binlogs` to also capture build binlogs from supported `MSBuildCommand` and
+`DotnetBuildCommand` processes launched by the tests. These scenario logs are stored in a
+separate directory for each test-run iteration and included in Helix uploads. Alternatively,
+set `DOTNET_SDK_TEST_SCENARIO_BINLOG_DIRECTORY` to an absolute path to enable capture for
+other launchers that use these wrappers.
+
 ### Windows
 
 Run the following command from the root of the repository to run all the .NET Core CLI tests:
