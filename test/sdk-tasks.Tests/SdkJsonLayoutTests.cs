@@ -70,6 +70,39 @@ public class SdkJsonLayoutTests : SdkTest
         JsonProject project = CreateProject();
         project.Build();
 
+        foreach (string path in new[]
+        {
+            project.Output("Roslyn", "bincore", "csc.runtimeconfig.json"),
+            project.Output("DotnetTools", "dotnet-format", "BuildHost-netcore", "BuildHost.runtimeconfig.json"),
+            project.Output("vstest.console.runtimeconfig.json")
+        })
+        {
+            JsonNode config = ReadJson(path);
+            JsonNode? frameworks = config["runtimeOptions"]?["frameworks"];
+            Assert.IsNotNull(frameworks);
+            var versions = new Dictionary<string, string>();
+            foreach (JsonNode? framework in frameworks.AsArray())
+            {
+                Assert.IsNotNull(framework);
+                string? name = framework["name"]?.GetValue<string>();
+                string? version = framework["version"]?.GetValue<string>();
+                Assert.IsNotNull(name);
+                Assert.IsNotNull(version);
+                versions.Add(name, version);
+            }
+            versions.Should().BeEquivalentTo(new Dictionary<string, string>
+            {
+                ["Microsoft.NETCore.App"] = "9.0.0",
+                ["Microsoft.AspNetCore.App"] = "8.0.0",
+                ["Microsoft.WindowsDesktop.App"] = "3.0.0"
+            });
+            config["runtimeOptions"]?["rollForward"]?.GetValue<string>().Should().Be("Major");
+            config["runtimeOptions"]?["configProperties"]?["Custom.Property"]?.GetValue<string>().Should().Be("preserved");
+            config["custom"]?.GetValue<string>().Should().Be("preserved");
+        }
+        File.ReadAllBytes(project.Output("testhost-latest.runtimeconfig.json"))
+            .Should().Equal(File.ReadAllBytes(project.TestHostInput));
+
         foreach (string tool in new[] { "MSBuild", "dotnet", "NuGet.CommandLine.XPlat" })
         {
             JsonNode deps = ReadJson(project.Output(tool + ".deps.json"));
@@ -258,7 +291,7 @@ public class SdkJsonLayoutTests : SdkTest
             Write(Path.Combine(roslyn, "csc.runtimeconfig.json"), RuntimeConfig);
             Write(Path.Combine(testCli, "vstest.console.runtimeconfig.json"), RuntimeConfig);
             Write(Path.Combine(format, "BuildHost-netcore", "BuildHost.runtimeconfig.json"), RuntimeConfig);
-            Write(Path.Combine(testCli, "testhost-latest.runtimeconfig.json"), RuntimeConfig);
+            TestHostInput = Write(Path.Combine(testCli, "testhost-latest.runtimeconfig.json"), RuntimeConfig);
             Write(FSharpInput("tool_fsc.dll"), "synthetic");
             Write(FSharpInput("tool_fsc.pdb"), "symbols");
             Write(FSharpInput("payload.dll"), "payload");
@@ -312,6 +345,7 @@ public class SdkJsonLayoutTests : SdkTest
         }
 
         public string Root { get; }
+        public string TestHostInput { get; }
         public string OutputDirectory => Path.Combine(Root, "out");
         public string[] JsonFiles => Directory.GetFiles(OutputDirectory, "*.json", SearchOption.AllDirectories);
         public string Output(params string[] parts) => Path.Combine([OutputDirectory, .. parts]);
