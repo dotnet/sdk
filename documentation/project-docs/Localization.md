@@ -33,7 +33,16 @@ Test the assembled SDK with both `DOTNET_CLI_ENABLEAOT=true` and
 not the test process, and assert a known translated string rather than only
 comparing the two execution modes: both can silently fall back to English.
 Include regional cultures such as `de-DE` and `zh-CN` to exercise parent-culture
-fallback. See [the CLI help regression tests](../../test/dotnet-aot.Tests/GivenDotnetHelpIsLocalized.cs).
+fallback. See [the CLI help regression tests](../../test/dotnet-aot.Tests/AotIntegrationTests.Localization.cs).
+
+Run native localization checks through the native test harness, which selects
+the freshly published library with `DOTNET_AOT_LIBRARY_DIR` and the `dn` host
+with `DOTNET_AOT_TEST_DN_PATH`. Both runners build a matching managed CLI and
+expose its directory as `DOTNET_AOT_TEST_MANAGED_CLI_DIRECTORY` for parity checks.
+The fixture passes that directory directly to the host; it must not depend on
+redist discovery or the working directory's `global.json`. Do not initialize
+`SdkTestContext` in the standalone native test suite: it changes process-wide
+MSBuild paths used by other native integration tests.
 
 The current native CLI uses compiler-embedded satellite resources. Having
 translated XLF files or loose satellite DLLs in the SDK is not sufficient:
