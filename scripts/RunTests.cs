@@ -746,11 +746,11 @@ static void PrintArtifacts(string repoRoot, string trxPath, string binlogPath, s
         int testBinlogCount = 0;
         if (Directory.Exists(testBinlogDirectory))
         {
-            testBinlogCount += Directory.GetFiles(testBinlogDirectory, "*.binlog").Length;
+            testBinlogCount += Directory.EnumerateFiles(testBinlogDirectory, "*.binlog").Count();
             string authoredDirectory = Path.Combine(testBinlogDirectory, "authored");
             if (Directory.Exists(authoredDirectory))
             {
-                testBinlogCount += Directory.GetFiles(authoredDirectory, "*.binlog").Length;
+                testBinlogCount += Directory.EnumerateFiles(authoredDirectory, "*.binlog").Count();
             }
         }
 
