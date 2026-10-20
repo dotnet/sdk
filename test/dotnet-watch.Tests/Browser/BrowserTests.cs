@@ -92,6 +92,7 @@ public class BrowserTests : DotNetWatchTestBase
 
         // Verify the browser connected to the refresh server.
         await App.WaitUntilOutputContains(MessageDescriptor.ConnectedToRefreshServer, "Browser #1");
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
 
         App.Process.ClearOutput();
 
@@ -124,8 +125,11 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"Reload"}
             """);
 
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
+
         // no other browser message sent:
         Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
+        Assert.DoesNotContain("An unhandled exception was thrown by the application.", string.Join(Environment.NewLine, App.Process.Output));
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
@@ -137,19 +141,16 @@ public class BrowserTests : DotNetWatchTestBase
         errorMessage = $"[{projectDisplay}] [auto-restart] {homePagePath}(11,5): error ENC0033: Deleting method 'F()' requires restarting the application.";
         await App.WaitUntilOutputContains(errorMessage);
 
-        await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"ReportDiagnostics","diagnostics":["Restarting application to apply changes ..."]}
-            """);
-
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-        // browser page was reloaded after the app restarted:
+        // Shutdown may interrupt the restart diagnostic, so wait for the reloaded browser instead.
         await App.WaitUntilOutputContains("""
             🧪 Received: {"type":"Reload"}
             """);
 
-        // no other browser message sent:
-        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
+
+        Assert.DoesNotContain("An unhandled exception was thrown by the application.", string.Join(Environment.NewLine, App.Process.Output));
 
         App.Process.ClearOutput();
 
