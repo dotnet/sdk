@@ -38,25 +38,49 @@ Two families of targets:
 
 ### SDK staging incrementality
 
-The metadata producers in
+The targets below manage their own incremental state. When you change these targets,
+preserve the behavior. Do not create, delete, or publish the state files by hand.
+
+#### Metadata generation
+
+The targets in
 [`GenerateBundledVersions.targets`](redist/targets/GenerateBundledVersions.targets)
-also populate properties and items needed by consumers; preserve that preparation even
-when content-stable writes leave generated files untouched.
+write a metadata file only when its content changes. The targets still run because they
+also initialize properties and items that later targets consume.
 
-RID-chain generation in [`GenerateLayout.targets`](redist/targets/GenerateLayout.targets)
-tracks its RID, package mapping, and implementation inputs. Its completion stamp records
-successful processing separately from the published chain's timestamp, because a changed
-graph can produce identical bytes. Remove completion before mutation and write it only
-after generation succeeds. Coverage is in
-[`SdkMetadataTests`](../../test/sdk-tasks.Tests/SdkMetadataTests.cs).
+#### Runtime identifier chain
 
-JSON finalization compares completed results before replacing published files. Finalize
-package runtimeconfigs directly from their original sources rather than copying raw JSON
-over retargeted destinations. F# child publishing retains unmodified `tool_fsc` inputs
-under `IntermediateOutputPath/fsharp-publish`; only real compiler payload and finalized
-`fsc`/`fsi` config/deps files belong in the SDK. `RetargetTools` remains a correctness
-sweep, including legacy `15.0` relocation and the testhost runtimeconfig exclusion.
-Coverage is in [`SdkJsonLayoutTests`](../../test/sdk-tasks.Tests/SdkJsonLayoutTests.cs).
+`GenerateSdkRuntimeIdentifierChain` writes `NETCoreSdkRuntimeIdentifierChain.txt`. The
+file starts with the input runtime identifier (RID), then lists each fallback RID from
+`PortableRuntimeIdentifierGraph.json`. In this section, the RID graph means that fallback
+data. It does not mean the MSBuild target graph.
+
+The target stores its state under
+`$(IntermediateOutputPath)/incremental-layout/sdk-runtime-identifier-chain.*`. The
+`.inputs` file records the RID, package mapping, output path, and implementation files.
+The `.complete` file records successful processing of those inputs. The target deletes
+`.complete` before generation and recreates it after the output exists.
+
+The completion file is separate from the chain file because an update to the RID graph
+can produce the same chain content. In that case, the target records processing of the
+new graph without changing the chain file. Preserve this sequence when editing the target.
+[`SdkMetadataTests`](../../test/sdk-tasks.Tests/SdkMetadataTests.cs) covers this behavior.
+
+#### JSON finalization
+
+The JSON-producing targets read an original source file, apply all changes, and replace
+the destination only when the final content differs. Preserve that source-to-final flow.
+Do not add a raw copy that can overwrite an SDK file after finalization.
+
+`PublishFSharp` publishes the child project under
+`IntermediateOutputPath/fsharp-publish`. The layout targets copy the compiler payload
+from that directory and create the final `fsc` and `fsi` `.runtimeconfig.json` and
+`.deps.json` files in the SDK.
+
+`RetargetTools` runs as a repair pass without an incremental stamp. It moves legacy
+`15.0` files and excludes testhost runtime config files. Other targets can stage files
+after an earlier pass, so `RetargetTools` must inspect the layout each time it runs.
+[`SdkJsonLayoutTests`](../../test/sdk-tasks.Tests/SdkJsonLayoutTests.cs) covers this behavior.
 
 ### Workload manifest layout ownership
 

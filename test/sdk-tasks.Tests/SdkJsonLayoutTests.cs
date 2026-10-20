@@ -10,12 +10,7 @@ using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
-/// <summary>
-/// Exercises production SDK JSON producers and finalizers together, including package
-/// copying, tool-specific deps filtering, F# publishing, and runtime framework pinning.
-/// </summary>
-[TestClass]
-// In-process MSBuild saves/restores process-wide state used by other layout tests.
+// In-process MSBuild changes process-wide state that other layout tests use.
 [DoNotParallelize]
 public class SdkJsonLayoutTests : SdkTest
 {

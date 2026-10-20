@@ -20,8 +20,9 @@ namespace Microsoft.DotNet.Build.Tasks
             var targets = deps["targets"]!.AsObject();
             var targetLibraries = targets.SelectMany(target => target.Value!.AsObject()).ToArray();
 
-            // Renaming moves the entry to the end of each object. On a repeated invocation,
-            // find that entry by its new name rather than renaming the next dependency.
+            // Renaming moves the entry to the end of each object. On later runs, find the
+            // entry under its new name instead of treating the next dependency as the
+            // entry point.
             var entryPoint = newName == null
                 ? targetLibraries.FirstOrDefault()
                 : targetLibraries.FirstOrDefault(library => library.Key.StartsWith(newName + '/', StringComparison.Ordinal));

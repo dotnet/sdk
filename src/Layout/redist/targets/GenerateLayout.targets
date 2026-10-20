@@ -1,7 +1,6 @@
 <Project>
 
-  <!-- Capture this import's own path during evaluation so edits to the target
-       implementation participate in the RID-chain freshness check below. -->
+  <!-- Track this targets file so implementation changes invalidate RID-chain generation. -->
   <PropertyGroup>
     <_GenerateLayoutTargetsFile>$(MSBuildThisFileFullPath)</_GenerateLayoutTargetsFile>
   </PropertyGroup>
@@ -25,25 +24,22 @@
           SkipUnchangedFiles="true" />
   </Target>
 
-  <!-- Preparation must run even when chain generation is up to date. Its dependencies
-       publish the graphs, and it checks property changes, missing output, and invalid
-       completion state before MSBuild evaluates the generation target's Inputs/Outputs. -->
+  <!-- Run preparation on every build. It publishes the graphs and invalidates stale
+       completion before MSBuild checks the generation target's inputs and outputs. -->
   <Target Name="_PrepareGenerateSdkRuntimeIdentifierChain"
           DependsOnTargets="PublishRuntimeIdentifierGraphFiles">
-    <!-- Keep bookkeeping in the intermediate directory, outside the published SDK.
-         Normalize paths because CompleteIncrementalLayout requires absolute paths.
-         Graph timestamps alone cannot detect a RID-only edit or a package root/version
-         switch: a graph copied from another package can retain an older timestamp.
-         Destination and implementation paths also identify which mapping was processed. -->
+    <!-- Store incremental state under obj, outside the SDK output.
+         CompleteIncrementalLayout requires absolute paths. Track the RID and package
+         mapping because a graph from another package can retain an old timestamp.
+         Track the output and implementation paths because changing either requires generation. -->
     <PropertyGroup>
       <_SdkRuntimeIdentifierChainStatePrefix>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'incremental-layout', 'sdk-runtime-identifier-chain'))</_SdkRuntimeIdentifierChainStatePrefix>
       <_SdkRuntimeIdentifierChainOutput>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(NETCoreSdkRuntimeIdentifierChainTargetFile)'))</_SdkRuntimeIdentifierChainOutput>
       <_SdkRuntimeIdentifierChainInputs>RuntimeIdentifier=$(PortableProductMonikerRid);Graph=$(PortableRuntimeIdentifierGraphTargetFile);PackageRoot=$(NuGetPackageRoot);PackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);Output=$(_SdkRuntimeIdentifierChainOutput);TaskAssembly=$(SdkTasksAssembly);Targets=$(_GenerateLayoutTargetsFile)</_SdkRuntimeIdentifierChainInputs>
     </PropertyGroup>
 
-    <!-- Record property and mapping changes as a timestamp input, following the other
-         incremental layout targets. Missing or different state is rewritten, making
-         generation stale; identical state must keep its timestamp so warm builds skip. -->
+    <!-- Rewrite the input fingerprint only when it changes. Its timestamp invalidates
+         generation after property or mapping changes without invalidating warm builds. -->
     <WriteLinesToFile File="$(_SdkRuntimeIdentifierChainStatePrefix).inputs"
                       Lines="$(_SdkRuntimeIdentifierChainInputs)"
                       Overwrite="true"
@@ -52,35 +48,30 @@
                        Condition="Exists('$(_SdkRuntimeIdentifierChainStatePrefix).complete')">
       <Output TaskParameter="Lines" PropertyName="_SdkRuntimeIdentifierChainCompletionValue" />
     </ReadLinesFromFile>
-    <!-- A valid stamp does not prove that the published chain still exists: another
-         layout step or a partial clean may have removed it while leaving state in obj.
-         Invalidate completion for missing output or invalid marker contents so the
-         generation target repairs those cases even when all input timestamps are old. -->
+    <!-- Delete completion when the output does not exist or the marker contains an
+         invalid value. A partial clean can remove the chain without removing state
+         under obj. -->
     <Delete Files="$(_SdkRuntimeIdentifierChainStatePrefix).complete"
             Condition="!Exists('$(_SdkRuntimeIdentifierChainOutput)') or
                        (Exists('$(_SdkRuntimeIdentifierChainStatePrefix).complete') and '$(_SdkRuntimeIdentifierChainCompletionValue)' != 'complete')" />
   </Target>
 
-  <!-- Use processing completion, not the published chain, as the freshness output.
-       A newer graph may expand to identical chain bytes, which the task leaves untouched.
-       Checking input timestamps against that unchanged chain would regenerate forever.
-       Task-assembly and defining-target timestamps also invalidate completion when the
-       implementation changes without any graph or property changes. -->
+  <!-- Use the completion stamp as the target output. An update to the graph can produce
+       the same chain bytes, so the chain timestamp could make every build regenerate it.
+       The task assembly and targets file timestamps also track implementation changes. -->
   <Target Name="GenerateSdkRuntimeIdentifierChain"
           DependsOnTargets="_PrepareGenerateSdkRuntimeIdentifierChain"
           Inputs="$(PortableRuntimeIdentifierGraphTargetFile);$(SdkTasksAssembly);$(_GenerateLayoutTargetsFile);$(_SdkRuntimeIdentifierChainStatePrefix).inputs"
           Outputs="$(_SdkRuntimeIdentifierChainStatePrefix).complete">
-    <!-- Changed input state, a newer graph, or an implementation edit can bring us here
-         with a previous stamp still present. Remove it before generation so a parsing
-         or write failure cannot leave an old success marker for partially updated output. -->
+    <!-- Delete the old stamp before generation. A parse or write failure must not leave
+         a successful completion marker. -->
     <Delete Files="$(_SdkRuntimeIdentifierChainStatePrefix).complete" />
     <GenerateSdkRuntimeIdentifierChain
       RuntimeIdentifier="$(PortableProductMonikerRid)"
       RuntimeIdentifierGraphPath="$(PortableRuntimeIdentifierGraphTargetFile)"
       RuntimeIdentifierChainOutputPath="$(_SdkRuntimeIdentifierChainOutput)" />
-    <!-- Verify the expected chain exists and atomically commit completion only after
-         generation succeeds. This advances processing freshness without touching an
-         unchanged published chain or making downstream consumers see a false change. -->
+    <!-- Write completion only after the chain exists. The stamp can advance without
+         touching a chain file whose content remains the same. -->
     <CompleteIncrementalLayout ExpectedOutputs="$(_SdkRuntimeIdentifierChainOutput)"
                                CompletionStampFile="$(_SdkRuntimeIdentifierChainStatePrefix).complete" />
   </Target>
@@ -120,11 +111,8 @@
           DestinationFiles="@(_RoslynCopyFile->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
 
-    <!-- Package runtimeconfigs target an older framework. Copying them verbatim and
-         retargeting in place would overwrite the finalized SDK files on every build,
-         because their sizes/timestamps no longer match the package originals.
-         Transform directly from the immutable package input and publish only changed
-         final bytes; leave payload enumeration and apphost generation independent. -->
+    <!-- Finalize package runtime config files directly from package inputs. Copying raw
+         files before retargeting would overwrite stable SDK outputs on every build. -->
     <UpdateRuntimeConfig RuntimeConfigPaths="@(_RoslynRuntimeConfig)"
                          DestinationPaths="@(_RoslynRuntimeConfig->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
                          MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
@@ -248,8 +236,8 @@
           DestinationFiles="@(_DotnetFormatCopyFile->'$(OutputPath)DotnetTools\dotnet-format\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
 
-    <!-- BuildHost carries its own older runtimeconfig. Finalize it from the source,
-         rather than copying raw JSON over the version already pinned in the SDK. -->
+    <!-- Finalize BuildHost runtime config files from source so package JSON cannot
+         overwrite framework versions that the SDK already pins. -->
     <UpdateRuntimeConfig RuntimeConfigPaths="@(_DotnetFormatRuntimeConfig)"
                          DestinationPaths="@(_DotnetFormatRuntimeConfig->'$(OutputPath)DotnetTools\dotnet-format\%(RecursiveDir)%(Filename)%(Extension)')"
                          MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"

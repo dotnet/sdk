@@ -10,12 +10,7 @@ using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
-/// <summary>
-/// Verifies metadata write stability, RID-chain invalidation, and recovery by invoking
-/// the production SDK layout targets with isolated package inputs and output directories.
-/// </summary>
-[TestClass]
-// In-process MSBuild saves/restores process-wide state shared with other layout tests.
+// In-process MSBuild changes process-wide state that other layout tests use.
 [DoNotParallelize]
 public class SdkMetadataTests : SdkTest
 {
