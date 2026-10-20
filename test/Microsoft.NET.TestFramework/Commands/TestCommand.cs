@@ -21,12 +21,12 @@ namespace Microsoft.NET.TestFramework.Commands
         public bool DisableOutputAndErrorRedirection { get; set; }
 
         /// <summary>
-        /// When true, skips scenario binlog capture for this command even when it is enabled
-        /// through <see cref="ScenarioBinlogCapture.DirectoryEnvironmentVariable"/>.
+        /// When true, skips test binlog capture for this command even when it is enabled
+        /// through <see cref="TestBinlogCapture.DirectoryEnvironmentVariable"/>.
         /// </summary>
-        public bool DisableScenarioBinlogCapture { get; set; }
+        public bool DisableTestBinlogCapture { get; set; }
 
-        internal bool SupportsScenarioBinlogCapture { get; set; }
+        internal bool SupportsTestBinlogCapture { get; set; }
 
         /// <summary>
         /// When true, streams all stdout/stderr lines to test output in real-time,
@@ -190,8 +190,8 @@ namespace Microsoft.NET.TestFramework.Commands
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
             var spec = CreateCommandSpec(args);
-            ScenarioBinlogCapture? scenarioBinlogCapture = SupportsScenarioBinlogCapture && !DisableScenarioBinlogCapture
-                ? ScenarioBinlogCapture.Begin(spec, Log, GetType().Name)
+            TestBinlogCapture? testBinlogCapture = SupportsTestBinlogCapture && !DisableTestBinlogCapture
+                ? TestBinlogCapture.Begin(spec, Log, GetType().Name)
                 : null;
 
             var command = spec
@@ -279,9 +279,9 @@ namespace Microsoft.NET.TestFramework.Commands
                 }
             }
 
-            if (scenarioBinlogCapture is not null)
+            if (testBinlogCapture is not null)
             {
-                scenarioBinlogCapture.Complete(result.ExitCode);
+                testBinlogCapture.Complete(result.ExitCode);
             }
             else if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
             {

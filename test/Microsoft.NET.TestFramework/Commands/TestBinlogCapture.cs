@@ -6,38 +6,34 @@ using System.Security.Cryptography;
 
 namespace Microsoft.NET.TestFramework.Commands
 {
-    internal sealed class ScenarioBinlogCapture
+    internal sealed class TestBinlogCapture
     {
-        internal const string DirectoryEnvironmentVariable = "DOTNET_SDK_TEST_SCENARIO_BINLOG_DIRECTORY";
+        // Capture is opt-in; existing test commands keep their default logging behavior.
+        internal const string DirectoryEnvironmentVariable = "DOTNET_SDK_TEST_BINLOG_DIRECTORY";
 
         private readonly string _diagnosticDirectory;
-        private readonly string? _helixUploadRoot;
         private readonly List<BinlogFile> _binlogs;
         private readonly ITestOutputHelper _log;
-        private readonly string _attemptId;
         private readonly bool _isSkipped;
 
-        private ScenarioBinlogCapture(
+        private TestBinlogCapture(
             string diagnosticDirectory,
-            string? helixUploadRoot,
             List<BinlogFile> binlogs,
             ITestOutputHelper log,
-            string attemptId,
             bool isSkipped = false)
         {
             _diagnosticDirectory = diagnosticDirectory;
-            _helixUploadRoot = helixUploadRoot;
             _binlogs = binlogs;
             _log = log;
-            _attemptId = attemptId;
             _isSkipped = isSkipped;
         }
 
-        public static ScenarioBinlogCapture? Begin(
+        public static TestBinlogCapture? Begin(
             SdkCommandSpec commandSpec,
             ITestOutputHelper log,
             string commandName)
         {
+            // Match the child process: removal takes precedence over supplied or inherited values.
             if (commandSpec.EnvironmentToRemove.Contains(DirectoryEnvironmentVariable))
             {
                 return null;
@@ -58,6 +54,7 @@ namespace Microsoft.NET.TestFramework.Commands
                     $"{DirectoryEnvironmentVariable} must be an absolute path. Value: '{diagnosticDirectory}'.");
             }
 
+            // Reject an unusable destination before launching the build.
             try
             {
                 Directory.CreateDirectory(diagnosticDirectory);
@@ -65,39 +62,33 @@ namespace Microsoft.NET.TestFramework.Commands
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
             {
                 throw new InvalidOperationException(
-                    $"Could not create scenario binlog directory '{diagnosticDirectory}'.",
+                    $"Could not create test binlog directory '{diagnosticDirectory}'.",
                     exception);
             }
 
             string workingDirectory = Path.GetFullPath(commandSpec.WorkingDirectory ?? Environment.CurrentDirectory);
             using Process currentProcess = Process.GetCurrentProcess();
             string attemptId = $"{DateTime.UtcNow:yyyyMMdd-HHmmss}-{currentProcess.Id}-{Guid.NewGuid():N}";
-            string? uploadRoot = commandSpec.EnvironmentToRemove.Contains("HELIX_WORKITEM_UPLOAD_ROOT")
-                ? null
-                : commandSpec.Environment.TryGetValue("HELIX_WORKITEM_UPLOAD_ROOT", out string? commandUploadRoot)
-                    ? commandUploadRoot
-                    : Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT");
-
             if (HasUnresolvedResponseFile(commandSpec.Arguments, workingDirectory, commandSpec.FileName))
             {
                 log.WriteLine(
-                    $"Scenario binlog capture skipped for {commandName} attempt {attemptId}: "
+                    $"Test binlog capture skipped for {commandName} attempt {attemptId}: "
                     + "response-file arguments may configure a binary logger.");
-                return new ScenarioBinlogCapture(
+                // A non-null capture prevents TestCommand from falling back to broad legacy collection.
+                return new TestBinlogCapture(
                     diagnosticDirectory,
-                    uploadRoot,
                     [],
                     log,
-                    attemptId,
                     isSkipped: true);
             }
 
             List<LoggerDestination> destinations = ParseLoggerDestinations(commandSpec.Arguments, attemptId);
             if (destinations.Count == 0)
             {
+                // Add a logger only when the test has not supplied one.
                 string binlogPath = Path.Combine(
                     diagnosticDirectory,
-                    $"{SanitizeFileName(commandName)}-{attemptId}.binlog");
+                    $"{Guid.NewGuid():N}.binlog");
                 commandSpec.Arguments.Add($"/bl:{binlogPath}");
                 destinations.Add(new LoggerDestination(binlogPath, true, false));
             }
@@ -106,29 +97,28 @@ namespace Microsoft.NET.TestFramework.Commands
             foreach (LoggerDestination destination in destinations)
             {
                 string destinationPath = ResolveFullPath(destination.Path, workingDirectory);
+                // A failed launch may leave an older log at the same path.
                 string? originalHash = GetExistingFileHash(destinationPath);
                 string? importsZipPath = destination.IncludesProjectImportsZip
-                    ? destinationPath + ".ProjectImports.zip"
+                    ? Path.ChangeExtension(destinationPath, ".ProjectImports.zip")
                     : null;
-                string? originalImportsZipHash = importsZipPath is null ? null : GetExistingFileHash(importsZipPath);
 
                 binlogs.Add(new BinlogFile(
                     destinationPath,
                     destination.IsHarnessDestination,
                     originalHash,
-                    importsZipPath,
-                    originalImportsZipHash));
+                    importsZipPath));
             }
 
             log.WriteLine(
-                $"Scenario binlog capture: command={commandName}; attempt={attemptId}; "
+                $"Test binlog capture: command={commandName}; attempt={attemptId}; "
                 + $"workingDirectory='{workingDirectory}'; directory='{diagnosticDirectory}'.");
             foreach (BinlogFile binlog in binlogs)
             {
-                log.WriteLine($"Scenario binlog destination: '{binlog.Path}'.");
+                log.WriteLine($"Test binlog destination: '{binlog.Path}'.");
             }
 
-            return new ScenarioBinlogCapture(diagnosticDirectory, uploadRoot, binlogs, log, attemptId);
+            return new TestBinlogCapture(diagnosticDirectory, binlogs, log);
         }
 
         public void Complete(int exitCode)
@@ -138,72 +128,42 @@ namespace Microsoft.NET.TestFramework.Commands
                 return;
             }
 
-            var retainedFiles = new List<string>();
+            bool retainedBinlog = false;
 
             foreach (BinlogFile binlog in _binlogs)
             {
-                if (FileHasChanged(binlog.Path, binlog.OriginalHash))
+                if (!FileHasChanged(binlog.Path, binlog.OriginalHash))
                 {
-                    if (!binlog.IsHarnessDestination)
-                    {
-                        string archivePath = CreateArchivePath(binlog.Path, "binlog");
-                        CopyRequired(binlog.Path, archivePath, exitCode);
-                        retainedFiles.Add(archivePath);
-                        _log.WriteLine($"Scenario binlog archived: '{archivePath}'.");
-                    }
-                    else
-                    {
-                        retainedFiles.Add(binlog.Path);
-                        _log.WriteLine($"Scenario binlog retained: '{binlog.Path}'.");
-                    }
+                    continue;
                 }
 
-                if (binlog.ImportsZipPath is not null
-                    && FileHasChanged(binlog.ImportsZipPath, binlog.OriginalImportsZipHash))
+                string retainedPath = binlog.Path;
+                if (!binlog.IsHarnessDestination)
                 {
-                    if (!binlog.IsHarnessDestination)
-                    {
-                        string archivePath = CreateArchivePath(binlog.ImportsZipPath, "imports");
-                        CopyRequired(binlog.ImportsZipPath, archivePath, exitCode);
-                        retainedFiles.Add(archivePath);
-                        _log.WriteLine($"Scenario binlog companion archived: '{archivePath}'.");
-                    }
+                    // Keep the test's file in place; short unique names also avoid archive collisions.
+                    retainedPath = Path.Combine(_diagnosticDirectory, "authored", $"{Guid.NewGuid():N}.binlog");
+                    CopyRequired(binlog.Path, retainedPath, exitCode);
+                    _log.WriteLine($"Test binlog archived: '{binlog.Path}' -> '{retainedPath}'.");
+                }
+                else
+                {
+                    _log.WriteLine($"Test binlog retained: '{retainedPath}'.");
+                }
+                retainedBinlog = true;
+
+                if (binlog.ImportsZipPath is not null && File.Exists(binlog.ImportsZipPath))
+                {
+                    // Imports may be unchanged across builds, but each retained binlog still needs its companion.
+                    string retainedImportsPath = Path.ChangeExtension(retainedPath, ".ProjectImports.zip");
+                    CopyRequired(binlog.ImportsZipPath, retainedImportsPath, exitCode);
+                    _log.WriteLine($"Test binlog companion archived: '{binlog.ImportsZipPath}' -> '{retainedImportsPath}'.");
                 }
             }
 
-            if (retainedFiles.Count == 0)
+            if (!retainedBinlog)
             {
-                _log.WriteLine("Scenario binlog capture produced no new binlog; existing files were left untouched.");
-                return;
+                _log.WriteLine("Test binlog capture produced no new binlog; existing files were left untouched.");
             }
-
-            if (!string.IsNullOrWhiteSpace(_helixUploadRoot))
-            {
-                foreach (string sourcePath in retainedFiles.Where(path => IsWithinDirectory(path, _diagnosticDirectory))
-                    .Distinct(StringComparer.OrdinalIgnoreCase))
-                {
-                    if (IsWithinDirectory(sourcePath, _helixUploadRoot))
-                    {
-                        _log.WriteLine($"Scenario binlog is already under the Helix upload root: '{sourcePath}'.");
-                        continue;
-                    }
-
-                    string uploadDirectory = Path.Combine(_helixUploadRoot, "scenario-binlogs");
-                    string destinationPath = Path.Combine(
-                        uploadDirectory,
-                        $"{_attemptId}-{Path.GetFileName(sourcePath)}");
-                    CopyRequired(sourcePath, destinationPath, exitCode);
-                    _log.WriteLine($"Scenario binlog uploaded: '{destinationPath}'.");
-                }
-            }
-        }
-
-        private string CreateArchivePath(string sourcePath, string category)
-        {
-            string archiveDirectory = Path.Combine(_diagnosticDirectory, "authored");
-            return Path.Combine(
-                archiveDirectory,
-                $"{SanitizeFileName(category)}-{_attemptId}-{Guid.NewGuid():N}-{Path.GetFileName(sourcePath)}");
         }
 
         private void CopyRequired(string sourcePath, string destinationPath, int buildExitCode)
@@ -221,7 +181,7 @@ namespace Microsoft.NET.TestFramework.Commands
             catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or ArgumentException or NotSupportedException)
             {
                 throw new InvalidOperationException(
-                    $"The build command exited with code {buildExitCode}, but scenario binlog retention failed. "
+                    $"The build command exited with code {buildExitCode}, but test binlog retention failed. "
                     + $"Could not copy '{sourcePath}' to '{destinationPath}'.",
                     exception);
             }
@@ -229,6 +189,8 @@ namespace Microsoft.NET.TestFramework.Commands
 
         private static bool IsFullyQualifiedPath(string path)
         {
+            // Path.IsPathFullyQualified is unavailable on .NET Framework.
+            // On Windows, rooted paths such as "\logs" and "C:logs" still depend on the current directory.
             if (Path.DirectorySeparatorChar != '\\')
             {
                 return Path.IsPathRooted(path);
@@ -254,8 +216,8 @@ namespace Microsoft.NET.TestFramework.Commands
             var responseFilePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
                 Path.Combine(workingDirectory, "MSBuild.rsp"),
-                Path.Combine(workingDirectory, "Directory.Build.rsp"),
             };
+            AddDirectoryResponseFiles(workingDirectory, responseFilePaths);
 
             if (!string.IsNullOrWhiteSpace(executablePath))
             {
@@ -265,6 +227,7 @@ namespace Microsoft.NET.TestFramework.Commands
                     responseFilePaths.Add(Path.Combine(executableDirectory, "MSBuild.rsp"));
                     if (Path.GetFileNameWithoutExtension(executablePath).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
                     {
+                        // The host selects the SDK, so conservatively check each installed SDK's response file.
                         string sdkDirectory = Path.Combine(executableDirectory, "sdk");
                         if (Directory.Exists(sdkDirectory))
                         {
@@ -288,12 +251,21 @@ namespace Microsoft.NET.TestFramework.Commands
                     string? projectDirectory = Path.GetDirectoryName(ResolveFullPath(candidate, workingDirectory));
                     if (!string.IsNullOrEmpty(projectDirectory))
                     {
-                        responseFilePaths.Add(Path.Combine(projectDirectory, "Directory.Build.rsp"));
+                        AddDirectoryResponseFiles(projectDirectory, responseFilePaths);
                     }
                 }
             }
 
             return responseFilePaths.Any(File.Exists);
+        }
+
+        private static void AddDirectoryResponseFiles(string directory, HashSet<string> responseFilePaths)
+        {
+            // MSBuild can discover Directory.Build.rsp above the working or project directory.
+            for (DirectoryInfo? current = new DirectoryInfo(directory); current is not null; current = current.Parent)
+            {
+                responseFilePaths.Add(Path.Combine(current.FullName, "Directory.Build.rsp"));
+            }
         }
 
         private static List<LoggerDestination> ParseLoggerDestinations(
@@ -308,6 +280,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 {
                     if (parameters is not null && parameters.IndexOf("{}", StringComparison.Ordinal) >= 0)
                     {
+                        // Expand before launch so the build and capture agree on the output path.
                         arguments[parameterArgumentIndex] = arguments[parameterArgumentIndex].Replace("{}", attemptId);
                         parameters = parameters.Replace("{}", attemptId);
                     }
@@ -349,6 +322,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 }
             }
 
+            // BinaryLogger can also be supplied through the general logger option.
             foreach (string option in new[] { "--logger", "/logger", "-logger" })
             {
                 if (argument.Equals(option, StringComparison.OrdinalIgnoreCase))
@@ -412,6 +386,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 }
             }
 
+            // A bare /bl uses MSBuild's default filename.
             path ??= "msbuild.binlog";
             return new LoggerDestination(path, false, projectImportsZip);
         }
@@ -424,6 +399,7 @@ namespace Microsoft.NET.TestFramework.Commands
             }
 
             using var stream = File.OpenRead(path);
+            // Timestamps and lengths alone can miss an overwritten log.
             using var sha256 = SHA256.Create();
             return Convert.ToBase64String(sha256.ComputeHash(stream));
         }
@@ -439,29 +415,6 @@ namespace Microsoft.NET.TestFramework.Commands
             return !string.Equals(originalHash, currentHash, StringComparison.Ordinal);
         }
 
-        private static bool IsWithinDirectory(string path, string directory)
-        {
-            string fullPath = Path.GetFullPath(path);
-            string fullDirectory = Path.GetFullPath(directory)
-                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
-                + Path.DirectorySeparatorChar;
-            return fullPath.StartsWith(fullDirectory, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(
-                    fullPath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
-                    fullDirectory.TrimEnd(Path.DirectorySeparatorChar),
-                    StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static string SanitizeFileName(string value)
-        {
-            foreach (char invalidCharacter in Path.GetInvalidFileNameChars())
-            {
-                value = value.Replace(invalidCharacter, '-');
-            }
-
-            return value;
-        }
-
         private static string ResolveFullPath(string path, string basePath) =>
             Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(basePath, path));
 
@@ -471,20 +424,17 @@ namespace Microsoft.NET.TestFramework.Commands
             public bool IsHarnessDestination { get; }
             public string? OriginalHash { get; }
             public string? ImportsZipPath { get; }
-            public string? OriginalImportsZipHash { get; }
 
             public BinlogFile(
                 string path,
                 bool isHarnessDestination,
                 string? originalHash,
-                string? importsZipPath,
-                string? originalImportsZipHash)
+                string? importsZipPath)
             {
                 Path = path;
                 IsHarnessDestination = isHarnessDestination;
                 OriginalHash = originalHash;
                 ImportsZipPath = importsZipPath;
-                OriginalImportsZipHash = originalImportsZipHash;
             }
         }
 

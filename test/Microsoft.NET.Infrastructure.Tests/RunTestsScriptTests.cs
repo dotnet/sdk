@@ -48,7 +48,7 @@ public class RunTestsScriptTests : SdkTest
         Assert.Contains("--framework", result.StdOut);
         Assert.Contains("--repeat", result.StdOut);
         Assert.Contains("--skip-redist-check", result.StdOut);
-        Assert.Contains("--scenario-binlogs", result.StdOut);
+        Assert.Contains("--test-binlogs", result.StdOut);
         Assert.DoesNotContain("--no-build", result.StdOut);
     }
 
@@ -96,13 +96,13 @@ public class RunTestsScriptTests : SdkTest
             "--filter",
             "FullyQualifiedName~ArgumentEscaperTests.EscapesArgumentsForProcessStart",
             "--skip-redist-check",
-            "--scenario-binlogs");
+            "--test-binlogs");
 
         Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
         Assert.Contains($"Framework: {ToolsetInfo.SdkTargetFramework}", result.StdOut);
         Assert.Contains("TRX: artifacts", result.StdOut);
         Assert.Contains("Binlog: artifacts", result.StdOut);
-        Assert.Contains("Scenario binlogs: artifacts", result.StdOut);
+        Assert.Contains("Test binlogs: artifacts", result.StdOut);
     }
 
     [TestMethod]
@@ -150,17 +150,17 @@ public class RunTestsScriptTests : SdkTest
     [TestMethod]
     public async Task InvalidFrameworkReturnsAProjectSpecificErrorAndPortableRerun()
     {
-        ScriptResult result = await RunWorkloadManifestReaderTests("net999.0", scenarioBinlogs: true);
+        ScriptResult result = await RunWorkloadManifestReaderTests("net999.0", testBinlogs: true);
 
         Assert.AreNotEqual(0, result.ExitCode);
         Assert.Contains("Target framework 'net999.0' is not listed in TargetFrameworks", result.StdErr);
         Assert.Contains("Rerun:", result.StdErr);
         Assert.Contains(Path.Combine("scripts", "RunTests.cs"), result.StdErr);
         Assert.DoesNotContain(_repoRoot, result.StdErr);
-        Assert.Contains("--scenario-binlogs", result.StdErr);
+        Assert.Contains("--test-binlogs", result.StdErr);
     }
 
-    private Task<ScriptResult> RunWorkloadManifestReaderTests(string? framework = null, bool scenarioBinlogs = false)
+    private Task<ScriptResult> RunWorkloadManifestReaderTests(string? framework = null, bool testBinlogs = false)
     {
         var arguments = new List<string>
         {
@@ -175,9 +175,9 @@ public class RunTestsScriptTests : SdkTest
             arguments.Add("--framework");
             arguments.Add(framework);
         }
-        if (scenarioBinlogs)
+        if (testBinlogs)
         {
-            arguments.Add("--scenario-binlogs");
+            arguments.Add("--test-binlogs");
         }
 
         return RunScript([.. arguments]);
