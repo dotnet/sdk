@@ -26,7 +26,7 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task, IMultiThreadabl
     {
         var assets = StaticWebAsset.ToAssetDictionary(Assets, TaskEnvironment);
 
-        var result = CandidateEndpoints;
+        var result = new List<ITaskItem>(CandidateEndpoints.Length);
 
         var routeSegments = new List<PathTokenizer.Segment>();
         var basePathSegments = new List<PathTokenizer.Segment>();
@@ -65,17 +65,17 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task, IMultiThreadabl
 
                     Log.LogMessage(MessageImportance.Low, "Adding endpoint {0} for asset {1} with updated route {2}.", candidateEndpoint.Route, candidateEndpoint.AssetFile, candidateEndpoint.Route);
 
-                    result[i] = candidateEndpoint.ToTaskItem();
                 }
+
+                result.Add(candidateEndpoint.ToTaskItem());
             }
             else
             {
                 Log.LogMessage(MessageImportance.Low, "Skipping endpoint {0} because the asset {1} was not found.", candidateEndpoint.Route, candidateEndpoint.AssetFile);
-                result[i] = null;
             }
         }
 
-        Endpoints = result;
+        Endpoints = result.ToArray();
 
         return true;
     }
