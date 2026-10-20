@@ -372,7 +372,8 @@
          JSON. The intermediate directory also gives fsc and fsi stable source files. -->
     <PropertyGroup>
       <FSharpPublishDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'fsharp-publish'))</FSharpPublishDirectory>
-      <FSharpDirectory>$(OutputPath)/FSharp</FSharpDirectory>
+      <FSharpDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(OutputPath)', 'FSharp'))</FSharpDirectory>
+      <_FSharpLayoutFileList>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'fsharp-layout.files'))</_FSharpLayoutFileList>
     </PropertyGroup>
 
     <MSBuild
@@ -392,10 +393,28 @@
                                    $(FSharpPublishDirectory)fsc.deps.json;
                                    $(FSharpPublishDirectory)fsi.runtimeconfig.json;
                                    $(FSharpPublishDirectory)fsi.deps.json" />
+      <_CurrentFSharpLayoutFile Include="@(_FSharpPublishFile->'$(FSharpDirectory)%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
+    <ReadLinesFromFile File="$(_FSharpLayoutFileList)"
+                       Condition="Exists('$(_FSharpLayoutFileList)')">
+      <Output TaskParameter="Lines" ItemName="_PriorFSharpLayoutFile" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <_StaleFSharpLayoutFile Include="@(_PriorFSharpLayoutFile)" Exclude="@(_CurrentFSharpLayoutFile)" />
+    </ItemGroup>
+    <!-- Child Publish cleans only its intermediate directory. Remove prior copy
+         outputs that disappeared, without treating unrelated shipping files as owned. -->
+    <FindUnderPath Path="$(FSharpDirectory)" Files="@(_StaleFSharpLayoutFile)">
+      <Output TaskParameter="InPath" ItemName="_OwnedStaleFSharpLayoutFile" />
+    </FindUnderPath>
+    <Delete Files="@(_OwnedStaleFSharpLayoutFile)" />
     <Copy SourceFiles="@(_FSharpPublishFile)"
-          DestinationFiles="@(_FSharpPublishFile->'$(FSharpDirectory)/%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(_CurrentFSharpLayoutFile)"
           SkipUnchangedFiles="true" />
+    <WriteLinesToFile File="$(_FSharpLayoutFileList)"
+                      Lines="@(_CurrentFSharpLayoutFile)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
   </Target>
 
   <Target Name="PublishContainersSdk">

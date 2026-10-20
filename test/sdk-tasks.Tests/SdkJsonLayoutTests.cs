@@ -165,19 +165,31 @@ public class SdkJsonLayoutTests : SdkTest
     public void FSharpRetainsRawInputsWithoutShippingSyntheticFiles()
     {
         JsonProject project = CreateProject();
+        string oldPackage = Path.Combine("library-packs", "FSharp.Core.1.0.0.nupkg");
+        string newPackage = Path.Combine("library-packs", "FSharp.Core.2.0.0.nupkg");
+        Write(project.FSharpInput(oldPackage), "old package");
         project.Build();
+        File.ReadAllText(project.Output("FSharp", oldPackage)).Should().Be("old package");
         byte[] raw = File.ReadAllBytes(project.FSharpInput("tool_fsc.deps.json"));
         File.ReadAllBytes(project.FSharpPublished("tool_fsc.deps.json")).Should().Equal(raw);
         File.ReadAllText(project.FSharpPublished("tool_fsc.deps.json")).Should().Contain("tool_fsc.dll");
         File.ReadAllText(project.Output("FSharp", "fsc.deps.json")).Should().NotContain("tool_fsc.dll");
         File.ReadAllBytes(project.Output("FSharp", "fsc.deps.json")).Should().Equal(File.ReadAllBytes(project.Output("FSharp", "fsi.deps.json")));
         File.ReadAllBytes(project.Output("FSharp", "fsc.runtimeconfig.json")).Should().Equal(File.ReadAllBytes(project.Output("FSharp", "fsi.runtimeconfig.json")));
+        Dictionary<string, DateTime> finalized = Snapshot(project.JsonFiles);
         foreach (string suffix in new[] { ".dll", ".pdb", ".deps.json", ".runtimeconfig.json" })
         {
             Write(project.Output("FSharp", "tool_fsc" + suffix), "stale");
         }
         string unowned = Write(project.Output("FSharp", "unowned.txt"), "preserved");
+        File.Delete(project.FSharpInput(oldPackage));
+        // Model the child Publish's cleanup of files removed from its inputs.
+        File.Delete(project.FSharpPublished(oldPackage));
+        Write(project.FSharpInput(newPackage), "new package");
         project.Build();
+        File.Exists(project.Output("FSharp", oldPackage)).Should().BeFalse();
+        File.ReadAllText(project.Output("FSharp", newPackage)).Should().Be("new package");
+        AssertTimestamps(finalized);
         foreach (string suffix in new[] { ".dll", ".pdb", ".deps.json", ".runtimeconfig.json" })
         {
             File.Exists(project.Output("FSharp", "tool_fsc" + suffix)).Should().BeFalse();
@@ -259,7 +271,7 @@ public class SdkJsonLayoutTests : SdkTest
             string usingTasks = string.Join(Environment.NewLine,
                 new[] { "ChangeEntryPointLibraryName", "RemoveAssetFromDepsPackages", "UpdateRuntimeConfig" }
                     .Select(name => $"<UsingTask TaskName=\"{name}\" AssemblyFile=\"{Escape(assembly)}\" />")
-                    .Concat(new[] { "Copy", "Delete", "Move", "RemoveDir", "MSBuild" }
+                    .Concat(new[] { "Copy", "Delete", "Move", "RemoveDir", "MSBuild", "ReadLinesFromFile", "WriteLinesToFile", "FindUnderPath" }
                         .Select(name => $"<UsingTask TaskName=\"Microsoft.Build.Tasks.{name}\" AssemblyFile=\"{Escape(builtIn)}\" />")));
             string source = LayoutFiles.GetPath("GenerateLayout.targets",
                 Path.Combine("src", "Layout", "redist", "targets", "GenerateLayout.targets"));
