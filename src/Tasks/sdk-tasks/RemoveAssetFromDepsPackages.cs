@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Build.Tasks
             string text = File.ReadAllText(depsFile);
             var deps = JsonNode.Parse(text);
             bool found = RemoveAssets(deps, sectionName, assetPath);
-            if (found || destinationFile != null)
+            if (found || destinationFile is not null)
             {
                 PublishMutationUtilities.WriteFileIfDifferent(destinationFile ?? depsFile, found ? deps.ToJsonString(s_writeOptions) : text);
             }

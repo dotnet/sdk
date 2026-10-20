@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            if (DestinationPaths != null && DestinationPaths.Length != RuntimeConfigPaths.Length)
+            if (DestinationPaths is not null && DestinationPaths.Length != RuntimeConfigPaths.Length)
             {
                 Log.LogError("Runtime configuration source and destination counts must match.");
                 return false;
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Build.Tasks
             for (int index = 0; index < RuntimeConfigPaths.Length; index++)
             {
                 string source = RuntimeConfigPaths[index].ItemSpec;
-                UpdateFile(source, DestinationPaths == null ? source : DestinationPaths[index].ItemSpec);
+                UpdateFile(source, DestinationPaths is null ? source : DestinationPaths[index].ItemSpec);
             }
 
             return true;

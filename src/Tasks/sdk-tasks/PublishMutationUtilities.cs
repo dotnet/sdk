@@ -20,22 +20,21 @@ namespace Microsoft.DotNet.Build.Tasks
             var targets = deps["targets"].AsObject();
             var targetLibraries = targets.SelectMany(target => target.Value.AsObject()).ToArray();
 
-            // Renaming moves the entry to the end of each object. On later runs, find the
-            // entry under its new name instead of treating the next dependency as the
-            // entry point.
-            var entryPoint = newName == null
+            // Renaming moves the entry to the end of each object. On a repeated invocation,
+            // find that entry by its new name rather than renaming the next dependency.
+            var entryPoint = newName is null
                 ? targetLibraries.FirstOrDefault()
                 : targetLibraries.FirstOrDefault(library => library.Key.StartsWith(newName + '/', StringComparison.Ordinal));
-            if (entryPoint.Key == null)
+            if (entryPoint.Key is null)
             {
                 entryPoint = targetLibraries.FirstOrDefault();
             }
 
             bool changed = false;
-            if (entryPoint.Key != null)
+            if (entryPoint.Key is not null)
             {
                 string version = entryPoint.Key.Substring(entryPoint.Key.IndexOf('/') + 1);
-                string renamedKey = newName == null ? null : newName + '/' + version;
+                string renamedKey = newName is null ? null : newName + '/' + version;
                 if (entryPoint.Key != renamedKey)
                 {
                     foreach (var target in targets)
@@ -44,7 +43,7 @@ namespace Microsoft.DotNet.Build.Tasks
                         if (targetObj.TryGetPropertyValue(entryPoint.Key, out JsonNode value))
                         {
                             targetObj.Remove(entryPoint.Key);
-                            if (renamedKey != null)
+                            if (renamedKey is not null)
                             {
                                 targetObj.Add(renamedKey, value);
                             }
@@ -54,7 +53,7 @@ namespace Microsoft.DotNet.Build.Tasks
                     var libraries = deps["libraries"].AsObject();
                     JsonNode library = libraries[entryPoint.Key];
                     libraries.Remove(entryPoint.Key);
-                    if (renamedKey != null)
+                    if (renamedKey is not null)
                     {
                         libraries.Add(renamedKey, library);
                     }
@@ -67,7 +66,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 changed |= RemoveAssetFromDepsPackages.RemoveAssets(deps, "resources", "*");
             }
 
-            if (changed || destinationFile != null)
+            if (changed || destinationFile is not null)
             {
                 WriteFileIfDifferent(destinationFile ?? depsFile, changed ? deps.ToJsonString(s_writeOptions) : text);
             }

@@ -126,7 +126,7 @@ public class SdkJsonLayoutTests : SdkTest
                 foreach (JsonNode? library in target.AsObject().Select(pair => pair.Value))
                 {
                     Assert.IsNotNull(library);
-                    (library["resources"] != null).Should().Be(tool != "dotnet");
+                    (library["resources"] is not null).Should().Be(tool != "dotnet");
                 }
             }
         }
