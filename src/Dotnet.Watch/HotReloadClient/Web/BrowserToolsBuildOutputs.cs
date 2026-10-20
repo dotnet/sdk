@@ -13,8 +13,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
-/// The build outputs the Static Web Assets SDK produces for the <c>dotnet watch</c> browser tools,
-/// and the only channel between the build and <c>dotnet watch</c> for them.
+/// The build-owned key outputs shared by the browser tools and mobile Hot Reload transports.
 ///
 /// The direction of this channel is deliberate. The browser authenticates the provider with a key
 /// the application pins at build time, so the key has to be created by the build; a key that the
@@ -23,7 +22,8 @@ namespace Microsoft.DotNet.HotReload;
 /// the key pair, and the watcher reads it back per project instance.
 ///
 /// The paths are derived from evaluated MSBuild properties, rather than by searching the file system.
-/// They must stay in sync with Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets.
+/// They must stay in sync with Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets and
+/// _GenerateHotReloadWebSocketKey in Microsoft.NET.Sdk.targets.
 /// </summary>
 internal sealed class BrowserToolsBuildOutputs
 {
@@ -43,10 +43,10 @@ internal sealed class BrowserToolsBuildOutputs
     private readonly string _publicKeyPath;
     private readonly string _privateKeyPath;
 
-    private BrowserToolsBuildOutputs(string directory)
+    public BrowserToolsBuildOutputs(string directory, string publicKeyFileName, string privateKeyFileName)
     {
-        _publicKeyPath = Path.Combine(directory, PublicKeyFileName);
-        _privateKeyPath = Path.Combine(directory, PrivateKeyFileName);
+        _publicKeyPath = Path.Combine(directory, publicKeyFileName);
+        _privateKeyPath = Path.Combine(directory, privateKeyFileName);
     }
 
     /// <summary>
@@ -76,7 +76,7 @@ internal sealed class BrowserToolsBuildOutputs
             return null;
         }
 
-        return new BrowserToolsBuildOutputs(Path.Combine(intermediateOutputDirectory, DirectoryName));
+        return new BrowserToolsBuildOutputs(Path.Combine(intermediateOutputDirectory, DirectoryName), PublicKeyFileName, PrivateKeyFileName);
     }
 
     /// <summary>
@@ -85,7 +85,7 @@ internal sealed class BrowserToolsBuildOutputs
     /// paths cannot drift from what the build wrote.
     /// </summary>
     internal static BrowserToolsBuildOutputs CreateForTesting(string directory)
-        => new(directory);
+        => new(directory, PublicKeyFileName, PrivateKeyFileName);
 
     /// <summary>
     /// Creates the provider's session key from the private half the build produced, after checking

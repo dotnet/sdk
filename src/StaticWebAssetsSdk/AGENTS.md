@@ -27,7 +27,8 @@ client must be an application static asset: the browser authenticates the watch 
 with a build-pinned public key, so the provider must not be the source of the executable
 code, nor of the key. This target therefore also generates the keypair (via
 `EnsureHotReloadBrowserToolsKey`) into `obj/<config>/<tfm>/HotReload/` and embeds only
-the public half in the generated configuration module. The existing
+the public half in the generated configuration module. Key handling is shared with the
+mobile SDK task through [`HotReloadKeyPair`](../Common/HotReloadKeyPair.cs). The existing
 `EnableHotReloadInRuntimeConfigDevFile` property controls generation and defaults to
 `true` for Debug builds; there is no browser-tools-specific watch-to-MSBuild property.
 The generated initializer checks the provider-owned
