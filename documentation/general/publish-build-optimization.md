@@ -45,10 +45,36 @@ Key insight: All post-processing steps read from `@(IntermediateAssembly)` (obj)
 
 Target chain for optimized AOT publish:
 ```
-BuildOnlySettings → PrepareForBuild → PrepareResources → Compile → CreateSatelliteAssemblies
+_CheckForInvalidConfigurationAndPlatform → BuildOnlySettings → PrepareForBuild → PreBuildEvent → ResolveReferences → PrepareResources → ResolveKeySource → Compile → CreateSatelliteAssemblies
 ```
 
-Where `Compile` includes `ResolveReferences → ResolveProjectReferences → CoreCompile`.
+`ResolveReferences` builds project references before resource preparation, and `Compile`
+includes `CoreCompile`.
+The optimized path retains the configuration/platform validation target and its SDK
+hooks, including runtime identifier/platform compatibility and apphost/hosting checks.
+`NoBuild=true` continues to use the separate no-build publish path.
+
+After compilation and additional optimized-build targets, `IncrementalClean` records
+the current intermediate outputs and removes tracked outputs that are no longer produced.
+This also removes obsolete managed build-directory outputs from an earlier full build.
+If the optimized build fails, `_CleanRecordFileWrites` preserves prior and newly generated
+file tracking without deleting stale outputs. A subsequent `dotnet clean` can remove the
+tracked compiler outputs, including intermediate DLL, PDB, and generated XML documentation.
+This retains build cleanup bookkeeping; it does not add tracking for every native compiler
+or publish artifact.
+
+For tool projects (`PackAsTool=true`) with explicit `PackAsToolShimRuntimeIdentifiers`,
+the PackTool SDK adds `GenerateShimsAssets` to the optimized-build extension point.
+Shims are generated before incremental cleanup and publish file collection, so requested
+`publish\shims\<rid>\` assets are preserved without copying the managed deployment to
+the build directory. Projects without requested shims do not add this step, and no-build
+publish continues to locate and reuse shims from a previous build rather than generate them.
+Generation, incremental-build discovery, and no-build discovery share the staging directory
+`$(PackagedShimOutputRootDirectory)\shims\$(TargetFramework)\`. It does not depend on
+`SelfContained`, which can be inferred differently during build and publish. This allows
+both Build and optimized publish outputs to be reused by a subsequent no-build publish.
+Relative staging roots, including the default `$(OutDir)`, are resolved against the
+project directory rather than the MSBuild process working directory.
 
 ### PublishTrimmed (IL Trimming)
 
@@ -106,13 +132,13 @@ When explicitly enabled with `UseOptimizedPublish=true`, publish runs only `Comp
   `BeforeTargets="Build"` / `AfterTargets="Build"`, they will not run.
   - **Workaround**: Attach your targets to `BeforeTargets="Publish"` / `AfterTargets="Publish"`,
     or to `BeforeTargets="Compile"` / `AfterTargets="Compile"` instead.
-- **PreBuildEvent / PostBuildEvent**: These will not execute during AOT publish (consistent
-  with `--no-build` behavior).
+- **PreBuildEvent / PostBuildEvent**: `PreBuildEvent` still executes when the optimization
+  is enabled; `PostBuildEvent` is skipped. Both are skipped with `--no-build`.
 - **Third-party NuGet Build hooks**: Targets from NuGet packages that hook into `Build` will be
   skipped (consistent with `--no-build` behavior).
 - **Output directory**: `bin\<config>\<tfm>\<rid>\` will no longer contain managed apphost,
   DLLs, deps.json, runtimeconfig.json, or runtime pack files. Only `native\` and `publish\`
-  subdirectories will be present.
+  subdirectories will be present, along with `shims\` for explicitly requested tool shims.
 
 ### Opt-In
 
