@@ -356,9 +356,9 @@
           DestinationFiles="@(_TestCliCopyFile->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"/>
 
-    <!-- Keep testhost-* configs in the ordinary copy set: unlike SDK tools, testhosts
-         must retain their package framework selection. The other configs are pinned
-         before writing, so their raw package versions never replace finalized files. -->
+    <!-- Copy testhost runtime config files without modification because testhost keeps
+         its package framework selection. Finalize all other runtime config files before
+         publishing. -->
     <UpdateRuntimeConfig RuntimeConfigPaths="@(_TestCliRuntimeConfig)"
                          DestinationPaths="@(_TestCliRuntimeConfig->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
                          MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
@@ -367,11 +367,9 @@
   </Target>
 
   <Target Name="PublishFSharp">
-    <!-- Publish synthetic tool_fsc inputs outside the SDK. Deleting those inputs from
-         the publish destination used to make the child Publish recreate them on every
-         build, after which the finalizer recopied and mutated shipping JSON.
-         Retaining the child publish directory preserves its own incremental behavior
-         and gives fsc/fsi finalization stable, unmodified config/deps inputs. -->
+    <!-- Publish tool_fsc under the intermediate directory. Publishing directly into the
+         SDK makes each build recreate synthetic files after cleanup and rewrite shipping
+         JSON. The intermediate directory also gives fsc and fsi stable source files. -->
     <PropertyGroup>
       <FSharpPublishDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'fsharp-publish'))</FSharpPublishDirectory>
       <FSharpDirectory>$(OutputPath)/FSharp</FSharpDirectory>
@@ -382,9 +380,8 @@
       Projects="$(MSBuildProjectDirectory)\tools\tool_fsc.csproj"
       Properties="Configuration=$(Configuration);PublishDir=$(FSharpPublishDirectory)" />
 
-    <!-- The finalizer owns fsc/fsi config/deps files; never stage raw versions over
-         them. Synthetic tool assemblies and configs remain intermediate-only.
-         Copy the remaining child-published payload with the existing file semantics. -->
+    <!-- The finalizer writes the fsc and fsi config and deps files. Keep raw synthetic
+         files under the intermediate directory, and copy only the compiler payload. -->
     <ItemGroup>
       <_FSharpPublishFile Include="$(FSharpPublishDirectory)**/*"
                           Exclude="$(FSharpPublishDirectory)tool_fsc.dll;
@@ -438,10 +435,9 @@
                                  SectionName="runtime"
                                  AssetPath="%(BundledToolProjects.Identity).dll" />
 
-    <!-- Finalize each tool's JSON from the common source, then compare the completed
-         result with its destination. Copy-then-rename cannot skip: renamed deps differ
-         from redist.deps.json even on warm builds. Strip dotnet resources here too,
-         rather than reintroducing them before the later cleanup sweep removes them. -->
+    <!-- Build each tool's deps JSON from the common source, then compare the final content
+         with the destination. Copying before renaming always changes redist.deps.json.
+         Remove dotnet resources here so the later cleanup does not rewrite the file. -->
     <ChangeEntryPointLibraryName DepsFile="$(OutputPath)$(TargetName).deps.json"
                                  DestinationFile="$(OutputPath)%(BundledTools.Identity).deps.json"
                                  NewName="%(BundledTools.Identity).deps.json"
@@ -457,9 +453,9 @@
   </Target>
 
   <Target Name="RemoveResourcesFromDotnetDeps">
-    <!-- Normal CLI finalization already excludes these resources before publishing.
-         Retain the separate cleanup entry point; its task leaves files untouched when
-         no matching section remains, so this sweep does not undo write stability. -->
+    <!-- Keep this cleanup entry point for direct callers. Normal finalization already
+         removes dotnet resources, and this task does not rewrite a file when its content
+         stays the same. -->
     <RemoveAssetFromDepsPackages DepsFile="$(OutputPath)/dotnet.deps.json"
                SectionName="resources"
                AssetPath="*" />
@@ -476,10 +472,9 @@
       <_FSharpTool Include="fsc;fsi" />
     </ItemGroup>
 
-    <!-- Both entry points have the same dependencies. Remove the synthetic assembly
-         only in each final result, leaving the child Publish's deps file untouched.
-         Neither this filtering nor framework pinning rewrites identical final bytes,
-         so a changed input that produces the same result needs no freshness stamp. -->
+    <!-- fsc and fsi share dependencies. Build each final deps file from the source that
+         child publish leaves intact, remove the synthetic assembly, and pin the
+         frameworks. Content-stable writes do not need a separate freshness stamp. -->
     <RemoveAssetFromDepsPackages DepsFile="$(FSharpPublishDirectory)tool_fsc.deps.json"
                                  DestinationFile="$(FSharpDirectory)/%(_FSharpTool.Identity).deps.json"
                                  SectionName="runtime"
@@ -760,9 +755,8 @@
           Condition="'$(OSName)' == 'osx'" />
   </Target>
 
-  <!-- Keep this as a correctness sweep rather than a stamped JSON-only operation.
-       Other producers can introduce runtimeconfigs or legacy 15.0 files on any build;
-       a previous successful retarget must not hide newly staged files from repair. -->
+  <!-- Keep RetargetTools as a repair pass without an incremental stamp. Other targets
+       can add runtime config files or legacy 15.0 files after a previous run. -->
   <Target Name="RetargetTools">
     <ItemGroup>
       <!-- Exclude testhost from retargeting: https://github.com/dotnet/sdk/issues/24769 -->
