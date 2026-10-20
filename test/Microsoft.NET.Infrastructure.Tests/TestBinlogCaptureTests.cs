@@ -82,6 +82,58 @@ public sealed class TestBinlogCaptureTests : SdkTest
     }
 
     [TestMethod]
+    public void FrameworkRestoreAndBuildKeepSeparateExpandedBinlogs()
+    {
+        TestAsset testAsset = TestAssetsManager.CopyTestAsset("MSBuildTestApp").WithSource();
+        TestDirectory diagnosticDirectory = TestAssetsManager.CreateTestDirectory();
+        string binlogTemplate = Path.Combine(testAsset.Path, "framework-{}.binlog");
+        var command = new DotnetBuildCommand(Log, testAsset.Path)
+            .WithEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY", diagnosticDirectory.Path);
+
+        CommandResult result = command.Execute("--framework", "net11.0", $"/bl:{binlogTemplate}");
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        string[] authoredBinlogs = Directory.GetFiles(testAsset.Path, "framework-*.binlog");
+        Assert.HasCount(2, authoredBinlogs);
+        string[] archivedBinlogs = Directory.GetFiles(
+            Path.Combine(diagnosticDirectory.Path, "authored"),
+            "*.binlog");
+        Assert.HasCount(2, archivedBinlogs);
+        foreach (string binlog in authoredBinlogs.Concat(archivedBinlogs))
+        {
+            AssertReadableBinlog(binlog);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("/bl:authored.binlog;OmitInitialInfo")]
+    [DataRow("/l:Microsoft.Build.Logging.BinaryLogger,Microsoft.Build;LogFile=authored.binlog")]
+    [DataRow("-l:Microsoft.Build.Logging.BinaryLogger,Microsoft.Build;LogFile=authored.binlog")]
+    public void SupportedLoggerOptionsArePreservedAndArchived(string loggerArgument)
+    {
+        TestDirectory projectDirectory = TestAssetsManager.CreateTestDirectory(identifier: "project");
+        TestDirectory diagnosticDirectory = TestAssetsManager.CreateTestDirectory(identifier: "diagnostics");
+        File.WriteAllText(
+            Path.Combine(projectDirectory.Path, "fixture.proj"),
+            """<Project><Target Name="Build" /></Project>""");
+        var command = new MSBuildCommand(Log, "Build", projectDirectory.Path)
+        {
+            ShouldRestore = false,
+            WorkingDirectory = projectDirectory.Path
+        };
+        command.WithEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY", diagnosticDirectory.Path);
+
+        CommandResult result = command.Execute(loggerArgument);
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        AssertReadableBinlog(Path.Combine(projectDirectory.Path, "authored.binlog"));
+        string archivedBinlog = Directory.GetFiles(
+            Path.Combine(diagnosticDirectory.Path, "authored"),
+            "*.binlog").Single();
+        AssertReadableBinlog(archivedBinlog);
+    }
+
+    [TestMethod]
     public void FailedBuildStillProducesReadableTestBinlog()
     {
         TestAsset testAsset = TestAssetsManager.CopyTestAsset("MSBuildTestApp").WithSource();
@@ -168,9 +220,13 @@ public sealed class TestBinlogCaptureTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void AncestorResponseFileSkipsCaptureWithoutOverridingItsLogger(bool useProjectWorkingDirectory)
+    [DataRow(".proj", false)]
+    [DataRow(".vbproj", false)]
+    [DataRow(".fsproj", false)]
+    [DataRow(".proj", true)]
+    public void AncestorResponseFileSkipsCaptureWithoutOverridingItsLogger(
+        string projectExtension,
+        bool useProjectWorkingDirectory)
     {
         TestDirectory root = TestAssetsManager.CreateTestDirectory(identifier: useProjectWorkingDirectory.ToString());
         string projectParent = Path.Combine(root.Path, "project-parent");
@@ -180,7 +236,7 @@ public sealed class TestBinlogCaptureTests : SdkTest
             Path.Combine(projectParent, "Directory.Build.rsp"),
             "/bl:ancestor.binlog;ProjectImports=None");
         File.WriteAllText(
-            Path.Combine(projectDirectory, "fixture.proj"),
+            Path.Combine(projectDirectory, $"fixture{projectExtension}"),
             """<Project><Target Name="Build" /></Project>""");
         string diagnosticDirectory = Path.Combine(root.Path, "diagnostics");
         string uploadRoot = Path.Combine(root.Path, "upload");
@@ -200,6 +256,70 @@ public sealed class TestBinlogCaptureTests : SdkTest
         AssertReadableBinlog(Path.Combine(command.WorkingDirectory, "ancestor.binlog"));
         Assert.IsEmpty(Directory.GetFiles(diagnosticDirectory, "*", SearchOption.AllDirectories));
         Assert.IsFalse(Directory.Exists(uploadRoot));
+    }
+
+    [TestMethod]
+    public void DirectoryBuildResponseFileSkipsCaptureForDotnetBuildDirectoryArgument()
+    {
+        TestDirectory root = TestAssetsManager.CreateTestDirectory(identifier: "root");
+        string projectParent = Path.Combine(root.Path, "project-parent");
+        string projectDirectory = Path.Combine(projectParent, "nested");
+        Directory.CreateDirectory(projectDirectory);
+        File.WriteAllText(
+            Path.Combine(projectParent, "Directory.Build.rsp"),
+            "/bl:ancestor.binlog;ProjectImports=None");
+        File.WriteAllText(
+            Path.Combine(projectDirectory, "fixture.csproj"),
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+        string diagnosticDirectory = Path.Combine(root.Path, "diagnostics");
+        var command = new DotnetBuildCommand(Log, projectDirectory)
+        {
+            WorkingDirectory = root.Path
+        };
+        command.WithEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY", diagnosticDirectory);
+
+        CommandResult result = command.Execute();
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        Assert.IsTrue(File.Exists(Path.Combine(root.Path, "ancestor.binlog")));
+        Assert.IsEmpty(Directory.GetFiles(diagnosticDirectory, "*", SearchOption.AllDirectories));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Linux)]
+    public void CaseDistinctAncestorResponseFileIsNotDeduplicated()
+    {
+        TestDirectory root = TestAssetsManager.CreateTestDirectory(identifier: "root");
+        string workingDirectory = Path.Combine(root.Path, "Work");
+        string projectParent = Path.Combine(root.Path, "work");
+        string projectDirectory = Path.Combine(projectParent, "nested");
+        Directory.CreateDirectory(workingDirectory);
+        Directory.CreateDirectory(projectDirectory);
+        File.WriteAllText(
+            Path.Combine(projectParent, "Directory.Build.rsp"),
+            "/bl:project.binlog;ProjectImports=None");
+        File.WriteAllText(
+            Path.Combine(projectDirectory, "fixture.proj"),
+            """<Project><Target Name="Build" /></Project>""");
+        string diagnosticDirectory = Path.Combine(root.Path, "diagnostics");
+        var command = new MSBuildCommand(Log, "Build", projectDirectory)
+        {
+            ShouldRestore = false,
+            WorkingDirectory = workingDirectory
+        };
+        command.WithEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY", diagnosticDirectory);
+
+        CommandResult result = command.Execute();
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        Assert.IsTrue(File.Exists(Path.Combine(projectDirectory, "project.binlog")));
+        Assert.IsEmpty(Directory.GetFiles(diagnosticDirectory, "*.binlog"));
     }
 
     [TestMethod]
@@ -235,6 +355,80 @@ public sealed class TestBinlogCaptureTests : SdkTest
         Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
         Assert.IsFalse(Directory.Exists(Path.Combine(testAsset.Path, "relative-test-binlogs")));
         Assert.IsEmpty(Directory.GetFiles(testAsset.Path, "*.binlog"));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void WindowsEnvironmentOverrideMatchesVariableNameCaseInsensitively()
+    {
+        TestAsset testAsset = TestAssetsManager.CopyTestAsset("MSBuildTestApp").WithSource();
+        TestDirectory diagnosticDirectory = TestAssetsManager.CreateTestDirectory();
+        var command = new DotnetBuildCommand(Log, testAsset.Path)
+            .WithEnvironmentVariable(
+                "dotnet_sdk_test_binlog_directory",
+                diagnosticDirectory.Path);
+
+        CommandResult result = command.Execute();
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        Assert.HasCount(1, Directory.GetFiles(diagnosticDirectory.Path, "*.binlog"));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void WindowsEnvironmentRemovalMatchesVariableNameCaseInsensitively()
+    {
+        TestAsset testAsset = TestAssetsManager.CopyTestAsset("MSBuildTestApp").WithSource();
+        TestDirectory diagnosticDirectory = TestAssetsManager.CreateTestDirectory();
+        var command = new DotnetBuildCommand(Log, testAsset.Path)
+            .WithEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY", diagnosticDirectory.Path);
+        command.EnvironmentToRemove.Add("dotnet_sdk_test_binlog_directory");
+
+        CommandResult result = command.Execute();
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        Assert.IsEmpty(Directory.GetFiles(diagnosticDirectory.Path, "*.binlog"));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void RootRelativeBinlogUsesTheBuildWorkingDirectoryDrive()
+    {
+        string currentDrive = Path.GetPathRoot(Environment.CurrentDirectory)!;
+        DriveInfo? otherDrive = DriveInfo.GetDrives()
+            .FirstOrDefault(drive => drive.IsReady
+                && !drive.RootDirectory.FullName.Equals(currentDrive, StringComparison.OrdinalIgnoreCase));
+        if (otherDrive is null)
+        {
+            Assert.Inconclusive("No second drive is available to verify root-relative paths.");
+            return;
+        }
+
+        TestDirectory? projectDirectory = TryCreateTestDirectoryOnDrive(otherDrive.RootDirectory.FullName);
+        if (projectDirectory is null)
+        {
+            Assert.Inconclusive($"The test account cannot create directories on {otherDrive.RootDirectory.FullName}.");
+            return;
+        }
+
+        File.WriteAllText(
+            Path.Combine(projectDirectory.Path, "fixture.proj"),
+            """<Project><Target Name="Build" /></Project>""");
+        TestDirectory diagnosticDirectory = TestAssetsManager.CreateTestDirectory();
+        string relativeToDrive = Path.GetRelativePath(otherDrive.RootDirectory.FullName, projectDirectory.Path);
+        string rootRelativeBinlog = Path.Combine("\\", relativeToDrive, "authored.binlog");
+        var command = new MSBuildCommand(Log, "Build", projectDirectory.Path)
+        {
+            ShouldRestore = false,
+            WorkingDirectory = projectDirectory.Path
+        };
+        command.WithEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY", diagnosticDirectory.Path);
+
+        CommandResult result = command.Execute($"/bl:{rootRelativeBinlog}");
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        AssertReadableBinlog(Path.Combine(projectDirectory.Path, "authored.binlog"));
+        Assert.HasCount(1, Directory.GetFiles(Path.Combine(diagnosticDirectory.Path, "authored"), "*.binlog"));
     }
 
     [TestMethod]
@@ -315,5 +509,17 @@ public sealed class TestBinlogCaptureTests : SdkTest
             return reader.ReadToEnd().Contains("TEST-IMPORTED-CONTENT", StringComparison.Ordinal);
         });
         Assert.IsTrue(foundContent, $"Project-import archive omitted the imported targets: {path}");
+    }
+
+    private TestDirectory? TryCreateTestDirectoryOnDrive(string driveRoot)
+    {
+        try
+        {
+            return TestAssetsManager.CreateTestDirectory(baseDirectory: driveRoot);
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return null;
+        }
     }
 }

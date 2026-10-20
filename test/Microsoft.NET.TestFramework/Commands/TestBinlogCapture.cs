@@ -14,18 +14,15 @@ namespace Microsoft.NET.TestFramework.Commands
         private readonly string _diagnosticDirectory;
         private readonly List<BinlogFile> _binlogs;
         private readonly ITestOutputHelper _log;
-        private readonly bool _isSkipped;
 
         private TestBinlogCapture(
             string diagnosticDirectory,
             List<BinlogFile> binlogs,
-            ITestOutputHelper log,
-            bool isSkipped = false)
+            ITestOutputHelper log)
         {
             _diagnosticDirectory = diagnosticDirectory;
             _binlogs = binlogs;
             _log = log;
-            _isSkipped = isSkipped;
         }
 
         public static TestBinlogCapture? Begin(
@@ -33,15 +30,32 @@ namespace Microsoft.NET.TestFramework.Commands
             ITestOutputHelper log,
             string commandName)
         {
-            // Match the child process: removal takes precedence over supplied or inherited values.
-            if (commandSpec.EnvironmentToRemove.Contains(DirectoryEnvironmentVariable))
+            StringComparer environmentComparer = Path.DirectorySeparatorChar == '\\'
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
+            if (commandSpec.EnvironmentToRemove.Any(
+                name => environmentComparer.Equals(name, DirectoryEnvironmentVariable)))
             {
                 return null;
             }
 
-            string? diagnosticDirectory = commandSpec.Environment.TryGetValue(DirectoryEnvironmentVariable, out string? commandDirectory)
-                ? commandDirectory
-                : Environment.GetEnvironmentVariable(DirectoryEnvironmentVariable);
+            string? diagnosticDirectory = null;
+            bool hasCommandOverride = false;
+            foreach (KeyValuePair<string, string?> environmentVariable in commandSpec.Environment)
+            {
+                string name = environmentVariable.Key;
+                string? value = environmentVariable.Value;
+                if (environmentComparer.Equals(name, DirectoryEnvironmentVariable))
+                {
+                    diagnosticDirectory = value;
+                    hasCommandOverride = true;
+                }
+            }
+
+            if (!hasCommandOverride)
+            {
+                diagnosticDirectory = Environment.GetEnvironmentVariable(DirectoryEnvironmentVariable);
+            }
 
             if (string.IsNullOrWhiteSpace(diagnosticDirectory))
             {
@@ -78,8 +92,7 @@ namespace Microsoft.NET.TestFramework.Commands
                 return new TestBinlogCapture(
                     diagnosticDirectory,
                     [],
-                    log,
-                    isSkipped: true);
+                    log);
             }
 
             List<LoggerDestination> destinations = ParseLoggerDestinations(commandSpec.Arguments, attemptId);
@@ -98,16 +111,15 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 string destinationPath = ResolveFullPath(destination.Path, workingDirectory);
                 // A failed launch may leave an older log at the same path.
-                string? originalHash = GetExistingFileHash(destinationPath);
-                string? importsZipPath = destination.IncludesProjectImportsZip
-                    ? Path.ChangeExtension(destinationPath, ".ProjectImports.zip")
-                    : null;
+                bool isWildcard = destinationPath.Contains("{}", StringComparison.Ordinal);
+                string? originalHash = isWildcard ? null : GetExistingFileHash(destinationPath);
 
                 binlogs.Add(new BinlogFile(
                     destinationPath,
                     destination.IsHarnessDestination,
                     originalHash,
-                    importsZipPath));
+                    destination.IncludesProjectImportsZip,
+                    isWildcard));
             }
 
             log.WriteLine(
@@ -123,7 +135,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public void Complete(int exitCode)
         {
-            if (_isSkipped)
+            if (_binlogs.Count == 0)
             {
                 return;
             }
@@ -132,31 +144,37 @@ namespace Microsoft.NET.TestFramework.Commands
 
             foreach (BinlogFile binlog in _binlogs)
             {
-                if (!FileHasChanged(binlog.Path, binlog.OriginalHash))
-                {
-                    continue;
-                }
+                IEnumerable<string> producedPaths = GetProducedBinlogPaths(binlog);
 
-                string retainedPath = binlog.Path;
-                if (!binlog.IsHarnessDestination)
+                foreach (string binlogPath in producedPaths)
                 {
-                    // Keep the test's file in place; short unique names also avoid archive collisions.
-                    retainedPath = Path.Combine(_diagnosticDirectory, "authored", $"{Guid.NewGuid():N}.binlog");
-                    CopyRequired(binlog.Path, retainedPath, exitCode);
-                    _log.WriteLine($"Test binlog archived: '{binlog.Path}' -> '{retainedPath}'.");
-                }
-                else
-                {
-                    _log.WriteLine($"Test binlog retained: '{retainedPath}'.");
-                }
-                retainedBinlog = true;
+                    if (!binlog.IsWildcard && !FileHasChanged(binlogPath, binlog.OriginalHash))
+                    {
+                        continue;
+                    }
 
-                if (binlog.ImportsZipPath is not null && File.Exists(binlog.ImportsZipPath))
-                {
-                    // Imports may be unchanged across builds, but each retained binlog still needs its companion.
-                    string retainedImportsPath = Path.ChangeExtension(retainedPath, ".ProjectImports.zip");
-                    CopyRequired(binlog.ImportsZipPath, retainedImportsPath, exitCode);
-                    _log.WriteLine($"Test binlog companion archived: '{binlog.ImportsZipPath}' -> '{retainedImportsPath}'.");
+                    string retainedPath = binlogPath;
+                    if (!binlog.IsHarnessDestination)
+                    {
+                        // Keep the test's file in place; short unique names also avoid archive collisions.
+                        retainedPath = Path.Combine(_diagnosticDirectory, "authored", $"{Guid.NewGuid():N}.binlog");
+                        CopyRequired(binlogPath, retainedPath, exitCode);
+                        _log.WriteLine($"Test binlog archived: '{binlogPath}' -> '{retainedPath}'.");
+                    }
+                    else
+                    {
+                        _log.WriteLine($"Test binlog retained: '{retainedPath}'.");
+                    }
+                    retainedBinlog = true;
+
+                    string importsZipPath = Path.ChangeExtension(binlogPath, ".ProjectImports.zip");
+                    if (binlog.IncludesProjectImportsZip && File.Exists(importsZipPath))
+                    {
+                        // Imports may be unchanged across builds, but each retained binlog still needs its companion.
+                        string retainedImportsPath = Path.ChangeExtension(retainedPath, ".ProjectImports.zip");
+                        CopyRequired(importsZipPath, retainedImportsPath, exitCode);
+                        _log.WriteLine($"Test binlog companion archived: '{importsZipPath}' -> '{retainedImportsPath}'.");
+                    }
                 }
             }
 
@@ -196,7 +214,9 @@ namespace Microsoft.NET.TestFramework.Commands
                 return Path.IsPathRooted(path);
             }
 
-            return path.StartsWith(@"\\", StringComparison.Ordinal)
+            return (path.Length >= 2
+                && (path[0] == '\\' || path[0] == '/')
+                && (path[1] == '\\' || path[1] == '/'))
                 || (path.Length >= 3
                     && char.IsLetter(path[0])
                     && path[1] == ':'
@@ -213,18 +233,28 @@ namespace Microsoft.NET.TestFramework.Commands
                 return true;
             }
 
-            var responseFilePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            StringComparer pathComparer = Path.DirectorySeparatorChar == '\\'
+                ? StringComparer.OrdinalIgnoreCase
+                : StringComparer.Ordinal;
+            var checkedResponseFilePaths = new HashSet<string>(pathComparer);
+            if (HasResponseFile(Path.Combine(workingDirectory, "MSBuild.rsp"), checkedResponseFilePaths)
+                || HasDirectoryResponseFile(workingDirectory, checkedResponseFilePaths))
             {
-                Path.Combine(workingDirectory, "MSBuild.rsp"),
-            };
-            AddDirectoryResponseFiles(workingDirectory, responseFilePaths);
+                return true;
+            }
 
             if (!string.IsNullOrWhiteSpace(executablePath))
             {
                 string? executableDirectory = Path.GetDirectoryName(executablePath);
                 if (!string.IsNullOrEmpty(executableDirectory))
                 {
-                    responseFilePaths.Add(Path.Combine(executableDirectory, "MSBuild.rsp"));
+                    if (HasResponseFile(
+                        Path.Combine(executableDirectory, "MSBuild.rsp"),
+                        checkedResponseFilePaths))
+                    {
+                        return true;
+                    }
+
                     if (Path.GetFileNameWithoutExtension(executablePath).Equals("dotnet", StringComparison.OrdinalIgnoreCase))
                     {
                         // The host selects the SDK, so conservatively check each installed SDK's response file.
@@ -233,7 +263,12 @@ namespace Microsoft.NET.TestFramework.Commands
                         {
                             foreach (string sdkVersionDirectory in Directory.GetDirectories(sdkDirectory))
                             {
-                                responseFilePaths.Add(Path.Combine(sdkVersionDirectory, "MSBuild.rsp"));
+                                if (HasResponseFile(
+                                    Path.Combine(sdkVersionDirectory, "MSBuild.rsp"),
+                                    checkedResponseFilePaths))
+                                {
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -243,29 +278,63 @@ namespace Microsoft.NET.TestFramework.Commands
             foreach (string argument in arguments)
             {
                 string candidate = argument.Trim('"');
-                if (candidate.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase)
-                    || candidate.EndsWith(".sln", StringComparison.OrdinalIgnoreCase)
-                    || candidate.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase)
-                    || candidate.EndsWith(".proj", StringComparison.OrdinalIgnoreCase))
+                string candidatePath = ResolveFullPath(candidate, workingDirectory);
+                string extension = Path.GetExtension(candidatePath);
+                if (Directory.Exists(candidatePath)
+                    || extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
+                    || extension.Equals(".sln", StringComparison.OrdinalIgnoreCase)
+                    || extension.Equals(".slnx", StringComparison.OrdinalIgnoreCase))
                 {
-                    string? projectDirectory = Path.GetDirectoryName(ResolveFullPath(candidate, workingDirectory));
+                    string? projectDirectory = Directory.Exists(candidatePath)
+                        ? candidatePath
+                        : Path.GetDirectoryName(candidatePath);
                     if (!string.IsNullOrEmpty(projectDirectory))
                     {
-                        AddDirectoryResponseFiles(projectDirectory, responseFilePaths);
+                        if (HasDirectoryResponseFile(projectDirectory, checkedResponseFilePaths))
+                        {
+                            return true;
+                        }
                     }
                 }
             }
 
-            return responseFilePaths.Any(File.Exists);
+            return false;
         }
 
-        private static void AddDirectoryResponseFiles(string directory, HashSet<string> responseFilePaths)
+        private static IEnumerable<string> GetProducedBinlogPaths(BinlogFile binlog)
+        {
+            if (!binlog.IsWildcard)
+            {
+                return [binlog.Path];
+            }
+
+            string? directory = Path.GetDirectoryName(binlog.Path);
+            if (string.IsNullOrEmpty(directory) || !Directory.Exists(directory))
+            {
+                return [];
+            }
+
+            string searchPattern = Path.GetFileName(binlog.Path).Replace("{}", "*");
+            return Directory.EnumerateFiles(directory, searchPattern);
+        }
+
+        private static bool HasDirectoryResponseFile(string directory, HashSet<string> checkedPaths)
         {
             // MSBuild can discover Directory.Build.rsp above the working or project directory.
             for (DirectoryInfo? current = new DirectoryInfo(directory); current is not null; current = current.Parent)
             {
-                responseFilePaths.Add(Path.Combine(current.FullName, "Directory.Build.rsp"));
+                if (HasResponseFile(Path.Combine(current.FullName, "Directory.Build.rsp"), checkedPaths))
+                {
+                    return true;
+                }
             }
+
+            return false;
+        }
+
+        private static bool HasResponseFile(string path, HashSet<string> checkedPaths)
+        {
+            return checkedPaths.Add(path) && File.Exists(path);
         }
 
         private static List<LoggerDestination> ParseLoggerDestinations(
@@ -280,9 +349,10 @@ namespace Microsoft.NET.TestFramework.Commands
                 {
                     if (parameters is not null && parameters.IndexOf("{}", StringComparison.Ordinal) >= 0)
                     {
-                        // Expand before launch so the build and capture agree on the output path.
-                        arguments[parameterArgumentIndex] = arguments[parameterArgumentIndex].Replace("{}", attemptId);
-                        parameters = parameters.Replace("{}", attemptId);
+                        // Keep MSBuild's per-process suffix while separating retries.
+                        string attemptPattern = $"{attemptId}-{{}}";
+                        arguments[parameterArgumentIndex] = arguments[parameterArgumentIndex].Replace("{}", attemptPattern);
+                        parameters = parameters.Replace("{}", attemptPattern);
                     }
 
                     destinations.Add(ParseDestination(parameters));
@@ -323,7 +393,7 @@ namespace Microsoft.NET.TestFramework.Commands
             }
 
             // BinaryLogger can also be supplied through the general logger option.
-            foreach (string option in new[] { "--logger", "/logger", "-logger" })
+            foreach (string option in new[] { "--logger", "/logger", "-logger", "/l", "-l" })
             {
                 if (argument.Equals(option, StringComparison.OrdinalIgnoreCase))
                 {
@@ -375,6 +445,10 @@ namespace Microsoft.NET.TestFramework.Commands
                     {
                         projectImportsZip = true;
                     }
+                    else if (trimmedParameter.Equals("OmitInitialInfo", StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
                     else if (trimmedParameter.StartsWith("LogFile=", StringComparison.OrdinalIgnoreCase))
                     {
                         path = trimmedParameter["LogFile=".Length..].Trim('"');
@@ -398,6 +472,11 @@ namespace Microsoft.NET.TestFramework.Commands
                 return null;
             }
 
+            return GetFileHash(path);
+        }
+
+        private static string GetFileHash(string path)
+        {
             using var stream = File.OpenRead(path);
             // Timestamps and lengths alone can miss an overwritten log.
             using var sha256 = SHA256.Create();
@@ -411,30 +490,43 @@ namespace Microsoft.NET.TestFramework.Commands
                 return false;
             }
 
-            string? currentHash = GetExistingFileHash(path);
-            return !string.Equals(originalHash, currentHash, StringComparison.Ordinal);
+            return originalHash is null
+                || !string.Equals(originalHash, GetFileHash(path), StringComparison.Ordinal);
         }
 
-        private static string ResolveFullPath(string path, string basePath) =>
-            Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(basePath, path));
+        private static string ResolveFullPath(string path, string basePath)
+        {
+            if (Path.DirectorySeparatorChar == '\\'
+                && path.Length > 0
+                && (path[0] == '\\' || path[0] == '/')
+                && (path.Length == 1 || (path[1] != '\\' && path[1] != '/')))
+            {
+                return Path.GetFullPath(Path.Combine(Path.GetPathRoot(basePath)!, path.TrimStart('\\', '/')));
+            }
+
+            return Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(basePath, path));
+        }
 
         private sealed class BinlogFile
         {
             public string Path { get; }
             public bool IsHarnessDestination { get; }
             public string? OriginalHash { get; }
-            public string? ImportsZipPath { get; }
+            public bool IncludesProjectImportsZip { get; }
+            public bool IsWildcard { get; }
 
             public BinlogFile(
                 string path,
                 bool isHarnessDestination,
                 string? originalHash,
-                string? importsZipPath)
+                bool includesProjectImportsZip,
+                bool isWildcard)
             {
                 Path = path;
                 IsHarnessDestination = isHarnessDestination;
                 OriginalHash = originalHash;
-                ImportsZipPath = importsZipPath;
+                IncludesProjectImportsZip = includesProjectImportsZip;
+                IsWildcard = isWildcard;
             }
         }
 
