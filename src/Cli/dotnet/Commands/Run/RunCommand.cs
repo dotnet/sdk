@@ -293,8 +293,9 @@ public class RunCommand
         // If user specified --device on command line, add it to global properties and MSBuildArgs
         if (!string.IsNullOrWhiteSpace(Device))
         {
-            globalProperties["Device"] = Device;
-            var properties = new Dictionary<string, string> { { "Device", Device } };
+            string escapedDevice = MSBuildPropertyEscaping.Escape(Device);
+            globalProperties["Device"] = escapedDevice;
+            var properties = new Dictionary<string, string> { { "Device", escapedDevice } };
             selector.InvalidateGlobalProperties(properties);
             var additionalProperties = new ReadOnlyDictionary<string, string>(properties);
             MSBuildArgs = MSBuildArgs.CloneWithAdditionalProperties(additionalProperties);
@@ -344,7 +345,7 @@ public class RunCommand
             // If a device was selected (either by user or by prompt), apply it to MSBuildArgs
             if (selectedDevice is not null)
             {
-                var properties = new Dictionary<string, string> { { "Device", selectedDevice } };
+                var properties = new Dictionary<string, string> { { "Device", MSBuildPropertyEscaping.Escape(selectedDevice) } };
 
                 // If the device provided a RuntimeIdentifier, add it too
                 if (!string.IsNullOrEmpty(runtimeIdentifier))
@@ -551,7 +552,10 @@ public class RunCommand
                 buildResult = new RestoringCommand(
                     buildArgs,
                     NoRestore || _restoreDoneForDeviceSelection,
-                    advertiseWorkloadUpdates: false
+                    msbuildPath: null,
+                    userProfileDir: null,
+                    advertiseWorkloadUpdates: false,
+                    CommandServices.CreateDefault()
                 ).Execute();
             }
             finally
@@ -584,7 +588,8 @@ public class RunCommand
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: args)
+            msbuildArgs: args,
+            services: CommandServices.CreateDefault())
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
@@ -761,7 +766,8 @@ public class RunCommand
             if (!LoggerUtility.HasNoConsoleLoggerArgument(buildArgs.OtherMSBuildArgs))
             {
                 loggersForBuild.Add(CommonRunHelpers.GetConsoleLogger(
-                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
+                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs]),
+                    CommandServices.CreateDefault()
                 ));
             }
 

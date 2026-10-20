@@ -41,25 +41,18 @@ network:
 # artifact, downloaded by the agent job to `/tmp/binlogs`, and mounted
 # read-only into this container at `/data/binlogs` by the gh-aw MCP gateway.
 #
-# Older locks did not pin this image by digest because gh-aw v0.82.9 rejected
-# digest-qualified `container` values.
 # This container is handed the binlogs of an unmerged, possibly external PR and
-# its output is what the agent reports back, so "whatever this tag points at
-# today" is a supply-chain decision made by whoever last pushed the tag — and
-# the tag does move: it resolved to sha256:9f1e2c3e8281... from 2026-07-16
-# until 2026-08-03, when it became
-# sha256:ee7b7e5c6e162f3f0061822aa7183260626f1a1e986d04ba9915ab197a37932c.
-# That version validated `container` against
-# `^[a-zA-Z0-9][a-zA-Z0-9/:_.-]*$`, which has no `@`, so
-# `image@sha256:...` was rejected at compile time. gh-aw v0.89.21 accepts a
-# digest-qualified source value but does not resolve a digest for this custom
-# MCR image automatically, so the digest is pinned explicitly below.
+# its output is what the agent reports back. The resolved digest is stored in
+# `.github/aw/actions-lock.json`; gh-aw uses that pin in the generated workflow
+# manifest and preloads the immutable image. Keep the source value tag-qualified:
+# MCP Gateway v0.4.25 rejects digest-qualified `container` values at runtime
+# even though the compiler accepts them.
 # Refresh/inspect the current digest with:
 #   docker buildx imagetools inspect \
 #     mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-binlog-mcp-amd64
 mcp-servers:
   binlog-mcp:
-    container: "mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-binlog-mcp-amd64@sha256:95afa9e51653d4ec64bb45d3d3d4d496e650fd6b3b7a305f58592a8f01127225"
+    container: "mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-binlog-mcp-amd64"
     mounts:
       - "/tmp/binlogs:/data/binlogs:ro"
     allowed: ["*"]

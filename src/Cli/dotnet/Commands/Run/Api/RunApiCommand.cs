@@ -109,7 +109,10 @@ internal abstract class RunApiInput
         {
             var msbuildArgs = MSBuildArgs.FromVerbosity(VerbosityOptions.quiet);
             var buildCommand = new VirtualProjectBuildingCommand(
-                EntryPointFileFullPath, msbuildArgs, artifactsPath: ArtifactsPath);
+                EntryPointFileFullPath,
+                msbuildArgs,
+                CommandServices.CreateDefault(),
+                artifactsPath: ArtifactsPath);
 
             buildCommand.MarkArtifactsFolderUsed();
 

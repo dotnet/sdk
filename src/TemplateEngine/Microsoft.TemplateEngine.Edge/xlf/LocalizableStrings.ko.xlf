@@ -227,6 +227,11 @@
         <target state="translated">패키지 {0}의 콘텐츠를 읽지 못했습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetInstaller_Error_PackageSourceMappingMatchNotFound">
+        <source>Package source mapping is enabled, but no source was found for package {0}.</source>
+        <target state="new">Package source mapping is enabled, but no source was found for package {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
         <target state="translated">파일 {0}이(가) 이미 있습니다.</target>

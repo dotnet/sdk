@@ -13,7 +13,7 @@ src/StaticWebAssetsSdk/
 │   ├── Utils/                      # Utilities (PathTokenizer, OSPath, etc.)
 │   └── *.cs                        # Task implementations
 ├── Targets/                        # MSBuild targets (.targets files)
-│   └── DotNetWatch/                # dotnet-watch browser tools client and config template
+│   └── HotReload/                  # Hot Reload browser tools client and config template
 └── Sdk/                            # SDK props and targets
 
 test/Microsoft.NET.Sdk.StaticWebAssets.Tests/
@@ -21,12 +21,12 @@ test/Microsoft.NET.Sdk.StaticWebAssets.Tests/
 └── *.cs                            # Integration tests
 ```
 
-`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets` is shared by the Web and
+`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets` is shared by the Web and
 WebAssembly SDKs. It exists here, rather than in `dotnet watch`, because the browser tools
 client must be an application static asset: the browser authenticates the watch provider
 with a build-pinned public key, so the provider must not be the source of the executable
 code, nor of the key. This target therefore also generates the keypair (via
-`EnsureDotNetWatchBrowserToolsKey`) into `obj/<config>/<tfm>/dotnet-watch/` and embeds only
+`EnsureHotReloadBrowserToolsKey`) into `obj/<config>/<tfm>/HotReload/` and embeds only
 the public half in the generated configuration module. The existing
 `EnableHotReloadInRuntimeConfigDevFile` property controls generation and defaults to
 `true` for Debug builds; there is no browser-tools-specific watch-to-MSBuild property.

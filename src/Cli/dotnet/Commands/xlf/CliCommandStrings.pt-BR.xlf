@@ -3332,6 +3332,16 @@ Ele tem diversas estruturas como destino. Especifique que estrutura executar usa
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCommandDeviceSelectionFailed">
+        <source>Device selection failed for project '{0}'.</source>
+        <target state="new">Device selection failed for project '{0}'.</target>
+        <note>{0} is the project file path.</note>
+      </trans-unit>
+      <trans-unit id="TestCommandDeviceSelectionFailedForTargetFramework">
+        <source>Device selection failed for project '{0}' (target framework '{1}').</source>
+        <target state="new">Device selection failed for project '{0}' (target framework '{1}').</target>
+        <note>{0} is the project file path and {1} is the target framework.</note>
+      </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
         <target state="translated">Especificar um diretório para "dotnet test" deve ser por meio de "--project" ou "--solution".</target>

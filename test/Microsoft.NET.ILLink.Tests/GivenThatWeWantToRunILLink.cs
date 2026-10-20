@@ -1037,6 +1037,18 @@ namespace Microsoft.NET.ILLink.Tests
     {
         public static string UnusedFrameworkAssembly = "System.IO";
 
+        // Current ILLink packs write the incremental-build semaphore next to the "linked" directory
+        // (linked.semaphore); older packs, still used for older target frameworks, write it inside
+        // that directory (linked/Link.semaphore).
+        public static string[] GetLinkSemaphoreCandidates(string intermediateLinkDir) =>
+        [
+            intermediateLinkDir.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + ".semaphore",
+            Path.Combine(intermediateLinkDir, "Link.semaphore"),
+        ];
+
+        public static string FindLinkSemaphore(string intermediateLinkDir) =>
+            GetLinkSemaphoreCandidates(intermediateLinkDir).FirstOrDefault(File.Exists);
+
         public static bool DoesImageHaveMethod(string path, string methodNameToCheck)
         {
             using (FileStream fs = new(path, FileMode.Open, FileAccess.Read))

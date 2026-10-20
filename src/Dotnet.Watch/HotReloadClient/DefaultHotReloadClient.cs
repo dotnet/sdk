@@ -170,9 +170,11 @@ internal sealed class DefaultHotReloadClient(
         }
     }
 
+#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
     [MemberNotNull(nameof(_connectedAgentTask))]
     private Task<HotReloadAgentInfo> GetAgentConnectedTask()
         => _connectedAgentTask ?? throw new InvalidOperationException();
+#pragma warning restore VSTHRD200
 
     [MemberNotNull(nameof(_connectedAgentTask))]
     private void RequireReadyForUpdates()
@@ -247,7 +249,7 @@ internal sealed class DefaultHotReloadClient(
         var request = new ManagedCodeUpdateRequest(ToRuntimeUpdates(applicableUpdates), ResponseLoggingLevel);
 
         // Only cancel apply operation when the process exits:
-        var updateCompletionTask = QueueUpdateBatchRequest(request, applyOperationCancellationToken);
+        var updateCompletionTask = QueueUpdateBatchRequestAsync(request, applyOperationCancellationToken);
 
         return CompleteApplyOperationAsync();
 
@@ -296,7 +298,7 @@ internal sealed class DefaultHotReloadClient(
             Logger.LogDebug("Sending static file update request for asset '{Url}'.", update.RelativePath);
 
             // Only cancel apply operation when the process exits:
-            return QueueUpdateBatchRequest(request, processExitedCancellationToken);
+            return QueueUpdateBatchRequestAsync(request, processExitedCancellationToken);
         });
 
         return CompleteApplyOperationAsync();
@@ -308,10 +310,10 @@ internal sealed class DefaultHotReloadClient(
         }
     }
 
-    private Task<bool> QueueUpdateBatchRequest<TRequest>(TRequest request, CancellationToken applyOperationCancellationToken)
+    private Task<bool> QueueUpdateBatchRequestAsync<TRequest>(TRequest request, CancellationToken applyOperationCancellationToken)
         where TRequest : IUpdateRequest
     {
-        return QueueUpdateBatch(
+        return QueueUpdateBatchAsync(
             sendAndReceive: async batchId =>
             {
                 await transport.WriteAsync((byte)request.Type, request.WriteAsync, applyOperationCancellationToken);
