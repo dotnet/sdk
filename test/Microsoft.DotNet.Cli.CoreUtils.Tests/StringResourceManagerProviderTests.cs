@@ -6,8 +6,8 @@ using System.Reflection;
 namespace Microsoft.DotNet.Cli.CoreUtils.Tests;
 
 [TestClass]
-// Provider selection is process-wide state, so these tests cannot safely overlap other provider tests.
-[DoNotParallelize]
+// Provider selection is process-wide state; the lock serializes any test that registers or resets it.
+[ResourceLock(ResourceTestUtilities.ProviderSelectionResource)]
 public sealed class StringResourceManagerProviderTests
 {
     private static readonly Assembly s_assembly = ResourceTestUtilities.TestAssembly;

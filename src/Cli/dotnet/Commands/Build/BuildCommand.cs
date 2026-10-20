@@ -11,13 +11,13 @@ namespace Microsoft.DotNet.Cli.Commands.Build;
 
 public static class BuildCommand
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices services)
     {
         var parseResult = Parser.Parse(["dotnet", "build", .. args]);
-        return FromParseResult(parseResult, msbuildPath);
+        return FromParseResult(parseResult, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices services)
     {
         var definition = (BuildCommandDefinition)parseResult.CommandResult.Command;
 
@@ -34,7 +34,8 @@ public static class BuildCommand
             definition.SlnOrProjectOrFileArgument,
             createVirtualCommand: (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                msbuildArgs: msbuildArgs)
+                msbuildArgs: msbuildArgs,
+                services: services)
             {
                 NoRestore = noRestore,
                 NoCache = true,
@@ -42,7 +43,10 @@ public static class BuildCommand
             createPhysicalCommand: (msbuildArgs, msbuildPath) => new RestoringCommand(
                 msbuildArgs: msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
                 noRestore: noRestore,
-                msbuildPath: msbuildPath
+                msbuildPath: msbuildPath,
+                userProfileDir: null,
+                advertiseWorkloadUpdates: null,
+                services: services
             ),
             optionsToUseWhenParsingMSBuildFlags:
             [
@@ -61,6 +65,6 @@ public static class BuildCommand
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
     }
 }

@@ -552,7 +552,10 @@ public class RunCommand
                 buildResult = new RestoringCommand(
                     buildArgs,
                     NoRestore || _restoreDoneForDeviceSelection,
-                    advertiseWorkloadUpdates: false
+                    msbuildPath: null,
+                    userProfileDir: null,
+                    advertiseWorkloadUpdates: false,
+                    CommandServices.CreateDefault()
                 ).Execute();
             }
             finally
@@ -585,7 +588,8 @@ public class RunCommand
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: args)
+            msbuildArgs: args,
+            services: CommandServices.CreateDefault())
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
@@ -762,7 +766,8 @@ public class RunCommand
             if (!LoggerUtility.HasNoConsoleLoggerArgument(buildArgs.OtherMSBuildArgs))
             {
                 loggersForBuild.Add(CommonRunHelpers.GetConsoleLogger(
-                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs])
+                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs]),
+                    CommandServices.CreateDefault()
                 ));
             }
 

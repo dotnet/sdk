@@ -152,6 +152,13 @@ Reload).
   members are .NET 7+ while the
   assembly targets `net6.0`, so they are reached through cached reflection. Do not widen this
   into a blanket status mapping and do not swallow genuine transport failures.
+- **Browser-tools forwarding must observe application shutdown.**
+  [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs) links
+  `RequestAborted` with `IHostApplicationLifetime.ApplicationStopping` for both WebSocket
+  pumps. Kestrel waits for upgraded requests during
+  graceful shutdown before aborting them, so `RequestAborted` alone can keep the application
+  alive past watch's process-cleanup deadline. Expected shutdown cancellation disposes both
+  sockets without logging an application error.
 - **Server hosting startup is intentionally thin.**
   [`HostingStartup.cs`](Web.Middleware/HostingStartup.cs) registers only the MVC/Razor
   TagHelper component and the reserved forwarder for the modern path. The BrowserRefresh
