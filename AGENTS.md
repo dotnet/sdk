@@ -172,7 +172,8 @@ Never hardcode the current TFM in a project. See
 2. Use the [`ci-failure-attribution` skill](.github/skills/ci-failure-attribution/SKILL.md)
    when distinguishing failures introduced by a PR or newly tested commits from
    pre-existing failures or infrastructure. It also supports triggered, rolling,
-   and scheduled builds, using read-only scripted collection and comparison.
+   and scheduled builds, using read-only, agent-directed investigation with MCP
+   tools and focused provider API calls.
 3. Use the `ci-analysis` skill (if available) for deeper build/test investigation.
 
 ## Keeping AI context and docs in sync

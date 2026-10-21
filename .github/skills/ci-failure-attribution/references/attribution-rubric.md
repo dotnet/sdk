@@ -18,6 +18,34 @@ equivalent conditions or prove a flake is unrelated.
 failed before new commits in build C, that mechanism predates B-to-C. An older
 passing A may bound an A-to-B regression; it does not implicate the C batch.
 
+## Evidence sufficiency and sampling
+
+Distinguish three claims: the mechanism predates the changes, intermittent
+outcomes were observed, and the changes did not contribute to or exacerbate it.
+Evidence for either of the first two does not establish the third.
+
+- One verified comparable no-PR failure can establish pre-existence of that
+  mechanism, not absence of PR contribution.
+- One explicit pass and failure under materially equivalent conditions can
+  establish observed intermittency, not a stable flake rate or unrelatedness.
+  One passing control also cannot rule out a PR-introduced intermittent defect.
+- Before a broader "unrelated to the PR" conclusion, seek additional independent
+  comparable executions and mechanism-level source/input evidence. Inspect both
+  supporting and contrary outcomes rather than stopping at the first match.
+  Repeated report pointers to the same execution are not independent evidence.
+- To assess a frequency change, inspect comparable executed passes and failures
+  on both sides, record the sample sizes and selection limits, and account for
+  material input differences. Failure-only history and a few selected runs cannot
+  establish an unchanged rate. Do not invent a universal minimum or infer absence
+  of an effect merely because a small sample shows no clear difference.
+
+Choose further samples to resolve a stated uncertainty, not to satisfy a quota.
+If retention, time, or comparability prevents a sufficient comparison, report
+"pre-existence demonstrated; PR exacerbation unassessed" or "observed
+intermittency; PR contribution unresolved" as appropriate. Confidence applies
+to the specific supported claim: High confidence in pre-existence is not High
+confidence that the PR is unrelated.
+
 ## Qualitative confidence
 
 Use **High/Medium/Low only**, accompanied by evidence and limitations. Do not
@@ -43,8 +71,8 @@ one well-understood failure does not excuse other unexplained failures.
 Verify repository, organization/project, pipeline and actual job/scenario, OS/RID,
 configuration, queue, test selection/shard, resolved dependencies/toolchain,
 pipeline parameters/resources, and tested revisions. Different build reasons may
-select different jobs/test modes even in the same pipeline; see the SDK
-[CI definition](../../../../.vsts-ci.yml).
+select different jobs/test modes even in the same pipeline. Inspect the relevant
+pipeline definition at the tested revision rather than assuming equivalent jobs.
 
 For PRs, establish the tested PR head, merge tree, and historical target SHA.
 Compare against the actual tested baseline, not today's branch head. If source
@@ -53,7 +81,8 @@ and target moved together, neither is automatically responsible.
 For standalone builds, verify the preceding candidate scenario execution and the
 last actual passing control separately. Honor explicit baselines only after
 comparability and ancestry checks. Do not use build finish order to infer ancestry.
-The collector's candidate limitations require investigation, not automatic trust.
+A candidate run is not a verified control until its execution and material input
+differences have been inspected.
 
 Rolling builds may contain many commits. Diff the tested range and trace a specific
 change to the failure before naming an introducing commit. Otherwise retain the
