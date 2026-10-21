@@ -16,7 +16,7 @@ filters can vary by version.
 | Which Helix job/work item failed, and why? | `azdo_helix_jobs`, `helix_status`, `helix_work_item`, then focused `helix_logs`, `helix_search`, or file retrieval. |
 | Is there an existing diagnostic artifact? | `azdo_artifacts`, `azdo_test_attachments`, or `helix_files`/`helix_find_files`; download only the relevant existing file. |
 | Did this exact scenario fail without these changes? | Bounded `azdo_builds` discovery by actual pipeline/ref/time, then inspect the named execution in a chosen candidate. |
-| Does an existing known-issue report cover this failure? | Original source-provider Build Analysis check report for KBE classifications; `azdo_build_analysis` only extracts issue URL pointers from build tags/timeline. Inspect the original report and linked issue for the exact mechanism. |
+| Does an existing known-issue report cover this failure? | Original source-provider Build Analysis check report for known build error (KBE) classifications; `azdo_build_analysis` only extracts issue URL pointers from build tags/timeline. Inspect the original report and linked issue for the exact mechanism. |
 | What source/input changed? | Source-provider commit/diff/file APIs at tested SHAs; raw Azure Build/Run metadata when projected inputs are insufficient. |
 
 Helix MCP handles Azure DevOps and Helix, not every CI provider. For GitHub Actions
@@ -51,11 +51,12 @@ When unresolved, retain the gap rather than creating an introduction interval.
   explicitly when comparing a passing case. Missing results, skipped cases,
   aggregate counts, and a green build do not prove a named execution passed.
 - `azdo_helix_jobs` and monitor-derived plans identify candidates, not necessarily
-  every failed work item. Before claiming complete Helix coverage, discover all
-  submitted jobs (`azdo_helix_jobs` with `filter=all`) and reconcile their completed
-  `helix_status` failure inventories with the monitor summaries. Include failures
-  with no completed test result, such as watchdog-aborted hangs; preserve any
-  status, pagination, or completion gaps.
+  every failed work item. `filter=all` returns all jobs discovered by that tool;
+  it does not prove every submitted job was discovered. Compare available
+  completed `helix_status` failure inventories with monitor summaries, including
+  failures with no completed test result such as watchdog-aborted hangs. Preserve
+  any discovery, status, pagination, or completion gaps instead of claiming
+  complete Helix coverage.
 - Grouped Azure results can hide parameterized children. Preserve the case
   parameters and parent relationship. If the MCP projection omits children,
   request the relevant raw result with `detailsToInclude=SubResults` or inspect
@@ -70,12 +71,12 @@ When unresolved, retain the gap rather than creating an introduction interval.
   completion state against acquired results. For targeted investigation, report
   the named outcomes inspected rather than implying complete run coverage.
 - Typed summaries may omit repository details, trigger metadata, parameters,
-  resolved resources, or missing counters. Use raw Build/Run metadata for fields
-  needed to establish comparability. Missing is not zero or a known empty object.
-- `azdo_build_analysis` is not the original Build Analysis KBE report. Its
-  `knownIssues=[]` or `unmatchedFailures` fields do not establish that Build
-  Analysis found no match. Follow issue pointers as leads and inspect the original
-  check report before attributing a classification to Build Analysis.
+  resolved resources, or counters. Use raw Build/Run metadata for fields needed
+  to establish comparability. An omitted field is not zero or a known empty object.
+- `azdo_build_analysis` is not the original Build Analysis known-build-error
+  report. Its `knownIssues=[]` or `unmatchedFailures` fields do not establish
+  that Build Analysis found no match. Follow issue pointers as leads and inspect
+  the original check report before attributing a classification to Build Analysis.
 
 ## Focused API fallback
 
@@ -99,11 +100,11 @@ endpoints; normalize only proven transport decoration or volatile identifiers.
 
 Azure source windows can use [Git diffs](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/diffs/get?view=azure-devops-rest-7.1)
 and [commit lists](https://learn.microsoft.com/en-us/rest/api/azure/devops/git/commits/get-commits?view=azure-devops-rest-7.1).
-Verify exact base/head and ancestry. With commit-list comparison criteria,
-`itemVersion` identifies the baseline and `compareVersion` starts the history walk
-at the tested head. Reconcile returned commits with the expected interval before
-claiming a complete range. Changed-file metadata is not a textual patch or source
-inspection. Non-ancestor comparisons do not establish linear introduction.
+Verify exact base/head and ancestry. For commit-list comparisons, follow the API's
+documented `itemVersion` and `compareVersion` semantics, then reconcile returned
+commits with the expected interval before claiming a complete range. Changed-file
+metadata is not a textual patch or source inspection. Non-ancestor comparisons do
+not establish linear introduction.
 
 Use existing authorization. Do not print, save, or pass tokens in command
 arguments, modify global credentials/PATH, or install tooling without applicable

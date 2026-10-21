@@ -10,9 +10,10 @@ description: >-
   Read-only; does not rerun, fix, post, or approve a merge.
 license: MIT
 compatibility: >-
-  Authenticated read access to the relevant CI and source services. Prefer Helix
-  MCP for Azure DevOps/Helix; use available provider tools or CLI/API calls for
-  other services and capability gaps. No bundled collector or .NET runtime required.
+  Live retrieval requires authenticated read access to the relevant CI and source
+  services; supplied evidence can be assessed without it. Prefer Helix MCP for
+  Azure DevOps/Helix; use available provider tools or CLI/API calls for other
+  services and capability gaps.
 ---
 
 # CI failure attribution
@@ -60,8 +61,8 @@ Azure Repos or VMR sources, not an inferred public mirror.
 
 Inventory relevant checks and failed/canceled jobs or tests. Distinguish assessed,
 skipped, pending, unsupported, and otherwise unassessed coverage. An exact-build
-investigation does not imply that every PR check was assessed. A successful
-inventory is not a successful execution of every scenario.
+investigation does not imply that every PR check was assessed. Listing a scenario
+does not show that it ran or establish its outcome.
 
 ## Investigate one mechanism at a time
 
@@ -129,15 +130,15 @@ Honor user time/scope limits and state what remains unassessed.
 When further sampling is needed for a broader conclusion but unavailable or
 outside scope, narrow the conclusion rather than treating one control as enough.
 
-Do not repeatedly retrieve successful evidence because a later request failed.
+Do not discard or repeat successful retrievals just because a later request fails.
 Authentication errors, missing artifacts, omitted cases, pagination caps, and
 truncated logs remain explicit limitations. Do not declare retry-only or
 all-unrelated while any relevant failure or check remains unexplained.
 
 Compose with `ci-analysis`, `helix-investigation`, `pipeline-investigation`,
 `binlog-failure-analysis`, `ci-crash-dump`, `source-build-investigation`, or
-`known-issue-history` only when their evidence is needed. Analyze existing
-artifacts and suppress their posting/reproduction steps.
+`known-issue-history` only when their evidence is needed. Use these skills to
+analyze existing artifacts; do not post findings or reproduce failures.
 Keep private evidence within authorized services; do not send private diagnostic
 terms, source, or identifiers to public issue search.
 

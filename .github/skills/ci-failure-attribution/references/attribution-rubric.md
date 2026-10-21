@@ -29,10 +29,11 @@ Evidence for either of the first two does not establish the third.
 - One explicit pass and failure under materially equivalent conditions can
   establish observed intermittency, not a stable flake rate or unrelatedness.
   One passing control also cannot rule out a PR-introduced intermittent defect.
-- Before a broader "unrelated to the PR" conclusion, seek additional independent
-  comparable executions and mechanism-level source/input evidence. Inspect both
-  supporting and contrary outcomes rather than stopping at the first match.
-  Repeated report pointers to the same execution are not independent evidence.
+- If mechanism-level source/input evidence leaves a broader "unrelated to the PR"
+  conclusion uncertain, seek additional independent comparable executions.
+  Inspect supporting and contrary outcomes rather than stopping at the first
+  match. Repeated report pointers to the same execution are not independent
+  evidence.
 - To assess a frequency change, inspect comparable executed passes and failures
   on both sides, record the sample sizes and selection limits, and account for
   material input differences. Failure-only history and a few selected runs cannot
@@ -63,15 +64,17 @@ cause. For example, the watchdog clearly terminated a hung host, but its reason
 for hanging may remain unknown. State both instead of attaching High confidence
 to an unsupported product/infrastructure diagnosis.
 
-Evidence coverage is a separate concern. Complete collection is not proof, and
-one well-understood failure does not excuse other unexplained failures.
+Evidence coverage is separate from causation: collecting all available evidence
+does not itself establish a cause, and understanding one failure does not explain
+other failures.
 
 ## Comparability and change windows
 
-Verify repository, organization/project, pipeline and actual job/scenario, OS/RID,
-configuration, queue, test selection/shard, resolved dependencies/toolchain,
-pipeline parameters/resources, and tested revisions. Different build reasons may
-select different jobs/test modes even in the same pipeline. Inspect the relevant
+Verify the dimensions relevant to the failure mechanism: repository,
+organization/project, pipeline and actual job/scenario, OS/RID, configuration,
+queue, test selection/shard, resolved dependencies/toolchain, pipeline
+parameters/resources, and tested revisions. Different build reasons may select
+different jobs/test modes even in the same pipeline. Inspect the relevant
 pipeline definition at the tested revision rather than assuming equivalent jobs.
 
 For PRs, establish the tested PR head, merge tree, and historical target SHA.
@@ -98,8 +101,9 @@ state, and latent source defects. An empty source diff does not prove infrastruc
   Inspect mechanism, chronology, branch/configuration, and potential exacerbation.
 - Build Analysis must cover the exact build. An overridden green check can retain
   unmatched failures. A partial report cannot establish zero matches.
-- An absent branch Build Analysis report is a coverage gap/not-applicable state,
-  not proof the branch has no known problems.
+- An absent branch Build Analysis report is not proof the branch has no known
+  problems. Mark it not applicable when no report is expected; otherwise report
+  the missing report as a coverage gap.
 - Never infer a pass from missing failed results, test-run summary counts, a skip,
   or overall build success without verified scenario execution.
 - Synthetic "Work Item" results, exit codes, and assembly names are not named
@@ -111,10 +115,11 @@ state, and latent source defects. An empty source diff does not prove infrastruc
   failures. A feed HTTP 401/403, DNS failure for a package source, expired
   credential, package vulnerability rejection, or invalid external service
   configuration is not by itself evidence that Azure/Helix infrastructure failed.
-  Attribute it to the PR only when changed source/configuration causally explains
-  the request or credential; call it pre-existing only when comparable evidence
-  shows the same failure before the stated window. Otherwise use Inconclusive and
-  name the next check (for example, verify feed availability and credential scope).
+  Attribute it to a PR or new commit only when changed source/configuration
+  causally explains the request or credential; call it pre-existing only when
+  comparable evidence shows the same failure before the stated window. Otherwise
+  use Inconclusive and name the next check (for example, verify feed availability
+  and credential scope).
 - Use External infrastructure for provider-side service outages, agent/queue
   failures, or transport incidents only when logs, service status, or comparable
   executions support that mechanism and changed configuration has been considered.
