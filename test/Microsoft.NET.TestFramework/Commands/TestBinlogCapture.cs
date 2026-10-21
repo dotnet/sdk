@@ -257,7 +257,16 @@ namespace Microsoft.NET.TestFramework.Commands
             foreach (string argument in arguments)
             {
                 string candidate = argument.Trim('"');
-                string candidatePath = TestPathUtility.ResolveFullPath(candidate, workingDirectory);
+                string candidatePath;
+                try
+                {
+                    candidatePath = TestPathUtility.ResolveFullPath(candidate, workingDirectory);
+                }
+                catch (Exception exception) when (exception is ArgumentException or NotSupportedException or PathTooLongException)
+                {
+                    continue;
+                }
+
                 string extension = Path.GetExtension(candidatePath);
                 if (Directory.Exists(candidatePath)
                     || extension.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
