@@ -140,22 +140,5 @@ run directory and exact command before execution. At completion it prints the re
 TRX/binlog paths; on failure it also prints failed test names when a TRX is available and
 the rerun command.
 
-Pass `--test-binlogs` to additionally capture binlogs from `MSBuildCommand` and
-`DotnetBuildCommand` instances used inside the tests. The runner gives each test-run
-iteration its own test-binlog directory and reports the directory and number of logs
-produced; this is separate from the test-project build binlog. Without the runner option,
-set `DOTNET_SDK_TEST_BINLOG_DIRECTORY` to an absolute path to opt in when using
-another launcher. The runner option overrides that inherited value, and removes it from
-its own property-evaluation and build processes.
-
-Test binlog capture preserves explicitly configured binary-logger destinations and archives
-each changed log under the diagnostic directory, so repeated commands do not overwrite the
-retained copy. Retained logs use compact unique names; `ProjectImports=ZipFile` companions
-share their binlog's basename in the archive directory. The test output maps authored paths
-to their retained copies. Capture adds local retention only, not Helix uploads.
-Commands can opt out with
-`DisableTestBinlogCapture`. A missing log is reported but does not fail the test;
-invalid configuration or failure to retain a produced log does. If response
-files may configure a logger, capture is skipped and reported rather than attempting to
-expand those files. This includes `Directory.Build.rsp` files in ancestors of the working
-or explicit project directory.
+Pass `--test-binlogs` to capture logs from `MSBuildCommand` and `DotnetBuildCommand`.
+The runner writes them to a `test-binlogs` subdirectory under the run directory.

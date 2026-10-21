@@ -35,7 +35,7 @@ Guidance for changes under `test/`.
   test-run iteration. Keep capture opt-in; a command that must not participate can set
   `DisableTestBinlogCapture = true`. Explicit logger destinations remain in place,
   with changed logs archived for retention. See the [run-tests skill](../.github/skills/run-tests/SKILL.md)
-  for local retention and response-file behavior. Capture does not add Helix uploads.
+  for local retention and response-file behavior.
 - **Test asset placement.** Put test inputs (projects, packages, workloads, etc.) in
   `test/TestAssets/`. They are automatically deployed to Helix via `test/UnitTests.proj`.
 - **Audit before raising parallelism.** New MSTest projects are repo-defaulted to `None`

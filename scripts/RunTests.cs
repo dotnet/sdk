@@ -168,19 +168,6 @@ static async Task<int> RunAsync(
         $"{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Environment.ProcessId}");
     Directory.CreateDirectory(runDirectory);
 
-    string? inheritedTestBinlogDirectory = testBinlogs
-        ? null
-        : Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_BINLOG_DIRECTORY");
-    if (!string.IsNullOrWhiteSpace(inheritedTestBinlogDirectory)
-        && !Path.IsPathFullyQualified(inheritedTestBinlogDirectory))
-    {
-        return Fail(
-            $"DOTNET_SDK_TEST_BINLOG_DIRECTORY must be an absolute path. "
-            + $"Value: '{inheritedTestBinlogDirectory}'.");
-    }
-    bool rerunWithTestBinlogs = testBinlogs
-        || !string.IsNullOrWhiteSpace(inheritedTestBinlogDirectory);
-
     var trxPath = Path.Combine(runDirectory, "test-results.trx");
     var binlogPath = Path.Combine(runDirectory, "build.binlog");
     var rerunCommand = GetRerunCommand(
@@ -191,7 +178,7 @@ static async Task<int> RunAsync(
         framework,
         filter,
         skipRedistCheck,
-        rerunWithTestBinlogs);
+        testBinlogs);
 
     // Query evaluated MSBuild properties instead of guessing from project text, which may be
     // supplied by imports.
@@ -217,7 +204,7 @@ static async Task<int> RunAsync(
         framework,
         filter,
         skipRedistCheck,
-        rerunWithTestBinlogs);
+        testBinlogs);
 
     if (!projectProperties.UsesMSTestSdk)
     {
@@ -299,7 +286,7 @@ static async Task<int> RunAsync(
             filter);
         string? testBinlogDirectory = testBinlogs
             ? Path.GetFullPath(Path.Combine(iterationDirectory, "test-binlogs"))
-            : inheritedTestBinlogDirectory;
+            : null;
 
         if (repeat > 1)
         {
@@ -746,12 +733,10 @@ static void PrintArtifacts(string repoRoot, string trxPath, string binlogPath, s
         int testBinlogCount = 0;
         if (Directory.Exists(testBinlogDirectory))
         {
-            testBinlogCount += Directory.EnumerateFiles(testBinlogDirectory, "*.binlog").Count();
-            string authoredDirectory = Path.Combine(testBinlogDirectory, "authored");
-            if (Directory.Exists(authoredDirectory))
-            {
-                testBinlogCount += Directory.EnumerateFiles(authoredDirectory, "*.binlog").Count();
-            }
+            testBinlogCount = Directory.EnumerateFiles(
+                testBinlogDirectory,
+                "*.binlog",
+                SearchOption.AllDirectories).Count();
         }
 
         Console.WriteLine(

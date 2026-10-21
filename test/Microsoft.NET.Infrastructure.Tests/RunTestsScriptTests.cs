@@ -106,6 +106,23 @@ public class RunTestsScriptTests : SdkTest
     }
 
     [TestMethod]
+    public async Task IgnoresInheritedTestBinlogDirectory()
+    {
+        ScriptResult result = await RunScript(
+            [
+                "--project",
+                "test/Microsoft.DotNet.Cli.Utils.Tests/Microsoft.DotNet.Cli.Utils.Tests.csproj",
+                "--filter",
+                "FullyQualifiedName~ArgumentEscaperTests.EscapesArgumentsForProcessStart",
+                "--skip-redist-check"
+            ],
+            testBinlogDirectory: "not-an-absolute-path");
+
+        Assert.AreEqual(0, result.ExitCode, result.StdOut + result.StdErr);
+        Assert.DoesNotContain("Test binlogs:", result.StdOut);
+    }
+
+    [TestMethod]
     public async Task RepeatBuildsOnceAndRunsEachIteration()
     {
         ScriptResult result = await RunScript(
@@ -183,7 +200,12 @@ public class RunTestsScriptTests : SdkTest
         return RunScript([.. arguments]);
     }
 
-    private async Task<ScriptResult> RunScript(params string[] arguments)
+    private Task<ScriptResult> RunScript(params string[] arguments) =>
+        RunScript(arguments, testBinlogDirectory: null);
+
+    private async Task<ScriptResult> RunScript(
+        string[] arguments,
+        string? testBinlogDirectory)
     {
         var startInfo = new ProcessStartInfo(_dotnetPath)
         {
@@ -201,6 +223,10 @@ public class RunTestsScriptTests : SdkTest
         startInfo.Environment.Remove("MSBUILD_EXE_PATH");
         startInfo.Environment.Remove("MSBuildSDKsPath");
         startInfo.Environment.Remove("MSBuildExtensionsPath");
+        if (testBinlogDirectory is not null)
+        {
+            startInfo.Environment["DOTNET_SDK_TEST_BINLOG_DIRECTORY"] = testBinlogDirectory;
+        }
 
         var output = await Process.RunAndCaptureTextAsync(startInfo);
         return new ScriptResult(
