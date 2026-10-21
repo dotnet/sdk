@@ -5,11 +5,11 @@ using Microsoft.Build.Execution;
 
 namespace Microsoft.DotNet.Watch;
 
-internal readonly struct BuildResult<T>(IReadOnlyDictionary<string, TargetResult> targetResults, ProjectInstance projectInstance, T data)
+internal readonly struct BuildResult<T>(bool isSuccess, IReadOnlyDictionary<string, TargetResult> targetResults, ProjectInstance projectInstance, T data)
 {
     public IReadOnlyDictionary<string, TargetResult> TargetResults { get; } = targetResults;
     public ProjectInstance ProjectInstance { get; } = projectInstance;
     public T Data { get; } = data;
 
-    public bool IsSuccess => TargetResults.Count > 0;
+    public bool IsSuccess { get; } = isSuccess;
 }
