@@ -335,6 +335,40 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [Fact]
+        public void GivenManagedManifestInstallRollbackItPreservesBaselineManifest()
+        {
+            var (dotnetRoot, installer, _, _) = GetTestInstaller(manifestDownload: true);
+            var featureBand = new SdkFeatureBand("6.0.100");
+            var manifestId = new ManifestId("test-manifest-1");
+            var baselineManifestPath = Path.Combine(dotnetRoot, "sdk-manifests", featureBand.ToString(), manifestId.ToString(), "1.0.0", "WorkloadManifest.json");
+            var updatedManifestDirectory = Path.Combine(dotnetRoot, "sdk-manifests", featureBand.ToString(), manifestId.ToString(), "2.0.0");
+
+            Directory.CreateDirectory(Path.GetDirectoryName(baselineManifestPath));
+            File.WriteAllText(baselineManifestPath, """
+                {
+                  "version": "1.0.0",
+                  "workloads": {},
+                  "packs": {}
+                }
+                """);
+
+            var manifestUpdate = new ManifestVersionUpdate(manifestId, new ManifestVersion("2.0.0"), featureBand.ToString());
+
+            Assert.Throws<InvalidOperationException>(() =>
+                CliTransaction.RunNew(context =>
+                {
+                    installer.InstallWorkloadManifest(manifestUpdate, context);
+                    throw new InvalidOperationException("Fail after installing the manifest.");
+                }));
+
+            File.Exists(baselineManifestPath).Should().BeTrue();
+            Directory.Exists(updatedManifestDirectory).Should().BeFalse();
+
+            var manifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetRoot, featureBand.ToString(), userProfileDir: null, globalJsonPath: null);
+            manifestProvider.GetManifests().Single().ManifestVersion.Should().Be("1.0.0");
+        }
+
+        [Fact]
         public void GivenManagedInstallItCanGetDownloads()
         {
             var (dotnetRoot, installer, nugetInstaller, _) = GetTestInstaller();
