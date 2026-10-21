@@ -168,6 +168,12 @@ When identifying files in test output, inspect the filename or asset metadata ra
 than searching the entire path for an extension. Temporary directory names can contain
 strings such as `.br` or `.gz`, even when the asset itself is uncompressed.
 
+For process-output assertions, process exit does not imply that stdout and stderr
+callbacks have finished. Complete the output channel only after both streams reach EOF
+and drain queued lines before reporting missing output. Prefer deterministic tests that
+hold an output callback past process exit over sleeps or retries; see
+[the output-drain regression tests](../../test/dotnet-watch.Tests/TestUtilities/AwaitableProcessTests.cs).
+
 ## Run tests in Visual Studio
 
 Use developer command prompt for Visual Studio or put devenv on you PATH

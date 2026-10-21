@@ -176,6 +176,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInfoHelper.cs" Link="Commands\Workload\WorkloadInfoHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\InstallStateContents.cs" Link="Commands\Workload\InstallStateContents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\TrustedMachinePath.cs" Link="Installer\Windows\TrustedMachinePath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\List\InstalledWorkloadsCollection.cs" Link="Commands\Workload\List\InstalledWorkloadsCollection.cs" />
   </ItemGroup>
 
