@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.NET.TestFramework.Utilities;
 using static Microsoft.DotNet.Cli.Utils.ExponentialRetry;
 
 namespace Microsoft.NET.TestFramework.Commands
@@ -210,7 +211,9 @@ namespace Microsoft.NET.TestFramework.Commands
                 var binlogFiles = Directory.GetFiles(spec.WorkingDirectory ?? Environment.CurrentDirectory, "*.binlog");
                 foreach (string binlogFile in binlogFiles)
                 {
-                    File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
+                    var destination = Path.Combine(uploadRoot, Path.GetFileName(binlogFile));
+                    // Binlog upload is diagnostic-only; copy failures will not fail the test.
+                    FileUtility.TryCopyFile(binlogFile, destination, Log);
                 }
             }
 

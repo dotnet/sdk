@@ -125,8 +125,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // After executing dotnet new and before cleaning up
             RecordPackages(outputDirectory);
 
-            Directory.Delete(outputDirectory, true);
-            Directory.Delete(workingDirectory, true);
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
 
         }
 
@@ -162,8 +162,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // After executing dotnet new and before cleaning up
             RecordPackages(outputDirectory);
 
-            Directory.Delete(outputDirectory, true);
-            Directory.Delete(workingDirectory, true);
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
         }
 
         [Theory]
@@ -216,8 +216,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // After executing dotnet new and before cleaning up
             RecordPackages(outputDirectory);
 
-            Directory.Delete(outputDirectory, true);
-            Directory.Delete(workingDirectory, true);
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
         }
 
         private void AddItemToFsproj(string itemName, string outputDirectory, string projectName)
@@ -227,6 +227,29 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             lines.Insert(lines.IndexOf("  <ItemGroup>") + 1, $@"    <Compile Include=""{itemName}.fs""/>");
             File.WriteAllLines(fsproj, lines);
+        }
+
+        /// <summary>
+        /// Retries Directory.Delete to handle transient file locks after dotnet test exits.
+        /// </summary>
+        private static void DeleteDirectoryWithRetry(string path, int maxRetries = 10)
+        {
+            for (int i = 0; i < maxRetries; i++)
+            {
+                try
+                {
+                    Directory.Delete(path, true);
+                    return;
+                }
+                catch (UnauthorizedAccessException) when (i < maxRetries - 1)
+                {
+                    Thread.Sleep(100 * (i + 1));
+                }
+                catch (IOException) when (i < maxRetries - 1)
+                {
+                    Thread.Sleep(100 * (i + 1));
+                }
+            }
         }
 
         private void RecordPackages(string projectDirectory)
