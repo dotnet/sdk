@@ -95,12 +95,14 @@ none of them. Apps that disable `StaticWebAssetsEnabled`, `JSModulesEnabled` or
 property defaults to `true` for Debug builds and is the only build-time generation gate;
 `dotnet watch` does not inject a browser-tools-specific MSBuild property. When generated,
 the initializer first fetches
-`/_framework/dotnet-browser-tools/hot-reload-settings.json` with `Cache-Control: no-store`
+`/_framework/dotnet-browser-tools/hot-reload-settings.json` with `cache: 'no-store'`
 semantics and imports the configuration module only when the response contains
-`{ "hotReload": true }`. The watch provider owns that enabled response; the ASP.NET Core
-runtime/host owns the disabled fallback for non-watch launches. The SDK and `dotnet watch`
-do not emit that fallback. Watch does not activate the client by mutating an application
-file.
+`{ "hotReload": true }`. The watch provider owns that enabled response. For targets
+earlier than .NET 11, the SDK emits a constant `{ "hotReload": false }` fallback at the
+same stable route as a build-only, publish-excluded static asset. The early
+hosting-startup forwarder or Gateway proxy order -1000 makes the live provider take
+precedence. Newer targets retain the runtime/host's Development-only disabled fallback.
+Watch does not activate the client by mutating an application file.
 
 For hosted WebAssembly applications, the browser-facing client project owns the key,
 initializer and configuration assets. The launching server consumes those referenced

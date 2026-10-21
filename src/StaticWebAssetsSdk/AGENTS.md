@@ -30,9 +30,18 @@ code, nor of the key. This target therefore also generates the keypair (via
 the public half in the generated configuration module. The existing
 `EnableHotReloadInRuntimeConfigDevFile` property controls generation and defaults to
 `true` for Debug builds; there is no browser-tools-specific watch-to-MSBuild property.
-The generated initializer checks the provider-owned
-`/_framework/dotnet-browser-tools/hot-reload-settings.json` response before importing the
-configuration; this response is not a generated file or Static Web Asset.
+The generated initializer fetches
+`/_framework/dotnet-browser-tools/hot-reload-settings.json` with `cache: 'no-store'`
+and imports the configuration only when the response contains `{ "hotReload": true }`.
+
+For target frameworks earlier than .NET 11, the SDK generates a constant
+`{ "hotReload": false }` fallback as a build-only Static Web Asset at that stable,
+unfingerprinted route. The active watch provider takes precedence through the
+hosting-startup forwarder or the Gateway proxy's order of -1000. Watch never rewrites
+the generated fallback. Projects targeting .NET 11 or later continue to rely on their
+host's Development-only disabled endpoint, so this compatibility fallback does not
+change their non-Development behavior.
+
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must
 never reach publish output. Its generated watch initializer also initializes the SDK Hot
