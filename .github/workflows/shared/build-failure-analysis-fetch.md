@@ -999,7 +999,7 @@ jobs:
 
       - name: Upload analysis artifact
         if: steps.fetch.outputs.binlog-found == 'true'
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: build-failure-analysis-data
           path: /tmp/binlogs

@@ -109,7 +109,7 @@ jobs:
             core.setOutput('run_id', checkpoint?.workflow_run?.id ?? '');
       - name: Restore durable state checkpoint
         if: hashFiles('.ci-quality-monitor/state.json') == '' && steps.find-state-checkpoint.outputs.run_id != ''
-        uses: actions/download-artifact@v8.0.1
+        uses: actions/download-artifact@v8.0.2
         with:
           name: ci-quality-state
           path: .ci-quality-monitor
@@ -153,7 +153,7 @@ jobs:
           node .github/ci-quality-monitor/collect-ci-evidence.mjs "${args[@]}"
       - name: Upload durable state checkpoint
         if: hashFiles('.ci-quality-monitor/state.json') != ''
-        uses: actions/upload-artifact@v7.0.1
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: ci-quality-state
           path: .ci-quality-monitor/state.json

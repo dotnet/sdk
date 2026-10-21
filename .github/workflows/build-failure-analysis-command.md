@@ -108,7 +108,7 @@ engine:
 # having been retrieved, so the agent never runs without something to analyse.
 steps:
   - name: Download analysis artifact
-    uses: actions/download-artifact@v8.0.1
+    uses: actions/download-artifact@v8.0.2
     with:
       name: build-failure-analysis-data
       path: /tmp/binlogs
