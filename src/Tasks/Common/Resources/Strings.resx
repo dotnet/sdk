@@ -1062,5 +1062,21 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1246: The crossgen2 pack is not available for the target framework.</value>
     <comment>{StrBegins="NETSDK1246: "}</comment>
   </data>
-  <!-- The latest message added is Crossgen2UnsupportedTargetFramework. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="OpenHarmonyCodesignFailedToEnumerate" xml:space="preserve">
+    <value>NETSDK1247: Failed to enumerate '{0}' while signing OpenHarmony outputs: {1}</value>
+    <comment>{StrBegins="NETSDK1247: "}</comment>
+  </data>
+  <data name="OpenHarmonyCodesignFailedToSign" xml:space="preserve">
+    <value>NETSDK1248: Failed to sign '{0}': {1}</value>
+    <comment>{StrBegins="NETSDK1248: "}</comment>
+  </data>
+  <data name="OpenHarmonyCodesignRetainedForeignSignature" xml:space="preserve">
+    <value>NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. Run 'dotnet selfsign --force' to replace it with a self-signature.</value>
+    <comment>{StrBegins="NETSDK1249: "}</comment>
+  </data>
+  <data name="OpenHarmonyCodesignSkippedSymbolicLink" xml:space="preserve">
+    <value>NETSDK1250: Skipping symbolic link '{0}' while signing OpenHarmony outputs: signing never follows links outside the output tree.</value>
+    <comment>{StrBegins="NETSDK1250: "}</comment>
+  </data>
+  <!-- The latest message added is OpenHarmonyCodesignSkippedSymbolicLink. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>
