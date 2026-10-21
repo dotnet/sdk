@@ -11,6 +11,7 @@ using Microsoft.DotNet.Build.Tasks;
 namespace Microsoft.CoreSdkTasks.Tests;
 
 // In-process MSBuild changes process-wide state that other layout tests use.
+[TestClass]
 [DoNotParallelize]
 public class SdkJsonLayoutTests : SdkTest
 {
