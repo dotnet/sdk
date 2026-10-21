@@ -13,6 +13,9 @@
       }
     }
   },
+  "enabledPlugins": {
+    "dotnet-helix@dotnet-arcade-skills": true
+  },
   "companyAnnouncements": [
     "Run `/plugin install dotnet-dnceng@dotnet-arcade-skills` to install useful plugins for investigating Helix and Azure Pipelines runs."
   ]
