@@ -27,10 +27,21 @@ public static class TestPathUtility
     }
 
     /// <summary>
-    /// Resolves a path against a base directory, including Windows root-relative paths.
+    /// Resolves a path against a base directory, including Windows root-relative and same-drive relative paths.
     /// </summary>
     public static string ResolveFullPath(string path, string basePath)
     {
+        if (Path.DirectorySeparatorChar == '\\'
+            && path.Length >= 2
+            && char.IsLetter(path[0])
+            && path[1] == ':'
+            && (path.Length == 2 || (path[2] != '\\' && path[2] != '/'))
+            && Path.GetPathRoot(basePath) is { Length: >= 2 } baseRoot
+            && char.ToUpperInvariant(path[0]) == char.ToUpperInvariant(baseRoot[0]))
+        {
+            return Path.GetFullPath(Path.Combine(basePath, path[2..]));
+        }
+
         if (Path.DirectorySeparatorChar == '\\'
             && path.Length > 0
             && (path[0] == '\\' || path[0] == '/')
