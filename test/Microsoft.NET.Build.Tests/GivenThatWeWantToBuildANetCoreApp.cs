@@ -1073,7 +1073,8 @@ class Program
             // Reference the package, add it to restore sources, and use a test-specific packages folder
             testProject.PackageReferences.Add(package);
             testProject.AdditionalProperties["RestoreAdditionalProjectSources"] = Path.GetDirectoryName(package.NupkgPath);
-            testProject.AdditionalProperties["RestorePackagesPath"] = @"$(MSBuildProjectDirectory)\packages";
+            testProject.AdditionalProperties["RestorePackagesPath"] =
+                Path.Combine(TestContext.Current.TestExecutionDirectory, "no-framework-packages");
 
             // Disable implicit framework references and don't add any framework references.
             // This mimics the scenario of building runtime framework libraries. Since they are part of the

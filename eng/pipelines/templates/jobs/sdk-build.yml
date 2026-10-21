@@ -76,7 +76,7 @@ jobs:
     - ${{ if eq(parameters.populateInternalRuntimeVariables, true) }}:
       - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-sources.yml
         parameters:
-          legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+          legacyCredential: $(System.AccessToken)
       - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/steps/enable-internal-runtimes.yml
 
     - ${{ if eq(parameters.downloadManifestMsiPackages, true) }}:
