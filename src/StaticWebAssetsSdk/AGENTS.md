@@ -34,13 +34,13 @@ The generated initializer fetches
 `/_framework/dotnet-browser-tools/hot-reload-settings.json` with `cache: 'no-store'`
 and imports the configuration only when the response contains `{ "hotReload": true }`.
 
-For target frameworks earlier than .NET 11, the SDK generates a constant
-`{ "hotReload": false }` fallback as a build-only Static Web Asset at that stable,
-unfingerprinted route. The active watch provider takes precedence through the
-hosting-startup forwarder or the Gateway proxy's order of -1000. Watch never rewrites
-the generated fallback. Projects targeting .NET 11 or later continue to rely on their
-host's Development-only disabled endpoint, so this compatibility fallback does not
-change their non-Development behavior.
+For apps targeting .NET 10 or earlier, the SDK copies
+[`hot-reload-settings.json`](Targets/HotReload/hot-reload-settings.json) into the
+intermediate output and serves it at that URL. The file always contains
+`{ "hotReload": false }`, has no fingerprinted URL, and is not published. Under
+`dotnet watch`, the forwarder or Gateway proxy handles the request before static assets.
+Apps targeting .NET 11 or later use the host's settings endpoint, which is available
+only in Development.
 
 Hosted WebAssembly's client owns these outputs; its server consumes the referenced assets
 rather than generating a competing route and keypair. The assets are build only and must

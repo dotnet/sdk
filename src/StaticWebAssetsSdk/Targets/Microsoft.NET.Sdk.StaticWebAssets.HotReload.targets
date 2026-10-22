@@ -223,12 +223,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_HotReloadBrowserToolsSettingsFallbackFile>$(_HotReloadBrowserToolsIntermediatePath)hot-reload-settings.json</_HotReloadBrowserToolsSettingsFallbackFile>
     </PropertyGroup>
 
-    <WriteLinesToFile
+    <Copy
       Condition="'$(_HotReloadBrowserToolsSettingsFallbackFile)' != ''"
-      File="$(_HotReloadBrowserToolsSettingsFallbackFile)"
-      Lines="{ &quot;hotReload&quot;: false }"
-      Overwrite="true"
-      WriteOnlyWhenDifferent="true" />
+      SourceFiles="$(MSBuildThisFileDirectory)HotReload\hot-reload-settings.json"
+      DestinationFiles="$(_HotReloadBrowserToolsSettingsFallbackFile)"
+      SkipUnchangedFiles="true" />
 
     <ItemGroup Condition="'$(_HotReloadBrowserToolsSettingsFallbackFile)' != ''">
       <_HotReloadBrowserToolsSettingsFallback Include="$(_HotReloadBrowserToolsSettingsFallbackFile)">

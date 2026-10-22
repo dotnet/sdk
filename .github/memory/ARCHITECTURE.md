@@ -97,12 +97,12 @@ property defaults to `true` for Debug builds and is the only build-time generati
 the initializer first fetches
 `/_framework/dotnet-browser-tools/hot-reload-settings.json` with `cache: 'no-store'`
 semantics and imports the configuration module only when the response contains
-`{ "hotReload": true }`. The watch provider owns that enabled response. For targets
-earlier than .NET 11, the SDK emits a constant `{ "hotReload": false }` fallback at the
-same stable route as a build-only, publish-excluded static asset. The early
-hosting-startup forwarder or Gateway proxy order -1000 makes the live provider take
-precedence. Newer targets retain the runtime/host's Development-only disabled fallback.
-Watch does not activate the client by mutating an application file.
+`{ "hotReload": true }`. Without watch, apps targeting .NET 10 or earlier read a
+checked-in JSON file copied by the SDK. It always reports `{ "hotReload": false }`
+and is excluded from publish output. Newer apps use the host's settings endpoint,
+which is available only in Development. See the
+[Static Web Assets guidance](../../src/StaticWebAssetsSdk/AGENTS.md) for file handling
+and request precedence.
 
 For hosted WebAssembly applications, the browser-facing client project owns the key,
 initializer and configuration assets. The launching server consumes those referenced

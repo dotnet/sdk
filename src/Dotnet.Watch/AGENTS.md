@@ -57,13 +57,13 @@ Reload).
   When present, the initializer fetches the provider-owned
   `/_framework/dotnet-browser-tools/hot-reload-settings.json` route and starts the client
   only for `{ "hotReload": true }`; the provider's response is non-executable, contains
-  no key material, and is served with `Cache-Control: no-store`. The ASP.NET Core
-  disabled fallback for non-watch launches is supplied by a constant, build-only SDK
-  static asset for targets earlier than .NET 11 and by the runtime/host for newer
-  targets. The forwarder runs before static assets, and the Gateway provider proxy keeps
-  order -1000 so the live response wins. Watch never activates the client by mutating an
-  application file. Hosted WebAssembly uses the client as the browser-tools project even
-  though the server remains the launching project.
+  no key material, and is served with `Cache-Control: no-store`. Without watch, apps
+  targeting .NET 10 or earlier read a JSON file that the SDK adds to the build. It
+  always reports `{ "hotReload": false }`. Newer apps use the host's settings endpoint.
+  The forwarder runs before static assets. Keep the Gateway proxy's order at -1000 so
+  watch handles the request instead of the file. Watch never changes the file. Hosted
+  WebAssembly uses the client as the browser-tools project even though the server
+  launches the app.
   See
   [`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets).
   Never move executable browser-tools code back into the provider, never let the private
