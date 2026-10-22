@@ -17,7 +17,13 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 public class TestCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
-    string? msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
+    string? msbuildPath = null) : RestoringCommand(
+        msbuildArgs,
+        noRestore,
+        msbuildPath,
+        userProfileDir: null,
+        advertiseWorkloadUpdates: null,
+        CommandServices.CreateDefault())
 {
     public static int Run(ParseResult parseResult)
     {

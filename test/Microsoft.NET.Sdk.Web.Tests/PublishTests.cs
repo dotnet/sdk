@@ -113,7 +113,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
             responseFileContents.Should().Contain("--feature:Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported=false");
             responseFileContents.Should().Contain("--feature:System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault=false");
             responseFileContents.Should().Contain("--feature:System.Diagnostics.Tracing.EventSource.IsSupported=true");
-            responseFileContents.Should().Contain("--runtimeknob:System.GC.DynamicAdaptationMode=1");
+            responseFileContents.Should().NotContain(line => line.StartsWith("--runtimeknob:System.GC.DynamicAdaptationMode=", StringComparison.Ordinal));
             File.Exists(Path.Combine(outputDirectory, "web.config")).Should().BeFalse();
         }
 

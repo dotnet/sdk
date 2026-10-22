@@ -31,9 +31,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ParserOptionActions.cs" Link="ParserOptionActions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandServices.cs" Link="CommandServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandInvocation.cs" Link="CommandInvocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\AutomaticEncodingRestorer.cs" Link="AutomaticEncodingRestorer.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
@@ -174,6 +176,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInfoHelper.cs" Link="Commands\Workload\WorkloadInfoHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\InstallStateContents.cs" Link="Commands\Workload\InstallStateContents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\TrustedMachinePath.cs" Link="Installer\Windows\TrustedMachinePath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\List\InstalledWorkloadsCollection.cs" Link="Commands\Workload\List\InstalledWorkloadsCollection.cs" />
   </ItemGroup>
 
