@@ -906,11 +906,6 @@ Or open a new terminal.</target>
         <target state="new">You must restart your computer to finish installing {0}. dotnetup will not restart it automatically.</target>
         <note>{Locked="dotnetup"} {0} is the component display name and version.</note>
       </trans-unit>
-      <trans-unit id="WindowsInstallerSecureDownloadDirectoryCreationFailed">
-        <source>Could not create a secure download directory for {0}: {1}</source>
-        <target state="new">Could not create a secure download directory for {0}: {1}</target>
-        <note>{0} is the component display name and version. {1} is the operating system error.</note>
-      </trans-unit>
       <trans-unit id="WindowsInstallerSignatureVerificationFailed">
         <source>The installer for {0} failed Authenticode signature verification: {1}</source>
         <target state="new">The installer for {0} failed Authenticode signature verification: {1}</target>

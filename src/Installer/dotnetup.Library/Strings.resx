@@ -595,10 +595,6 @@ Or open a new terminal.</value>
     <value>The '{0}' operation requires the --dotnet-dir option.</value>
     <comment>{Locked="--dotnet-dir"}</comment>
   </data>
-  <data name="WindowsInstallerSecureDownloadDirectoryCreationFailed" xml:space="preserve">
-    <value>Could not create a secure download directory for {0}: {1}</value>
-    <comment>{0} is the component display name and version. {1} is the operating system error.</comment>
-  </data>
   <data name="WindowsInstallerDownloadFailed" xml:space="preserve">
     <value>Failed to download the .NET installer for version {0}: {1}</value>
     <comment>{0} is the component version. {1} is the download error.</comment>

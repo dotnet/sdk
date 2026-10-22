@@ -103,7 +103,7 @@ Rollout for other commands will be integrated later, such as:
 
 ### MVP Telemetry
 
-`admin` mode telemetry should not be part of the queries in the kusto ADX dashboard. `admin` installers have lower install success rates, which we don't want to distract from `dotnetup`. The ADX dashboard must be able to differentiate via a flag across all telemetry whether it is in `admin` mode or not - likely `mode` can be part of all auto-ingested telemetry properties, though it may also be `unknown` before `init`.
+`admin` mode telemetry is separated from the normal queries in the Kusto ADX dashboard because admin installers have different success characteristics. The dashboard access-mode selector defaults to non-admin telemetry and can instead select admin telemetry. Rows created before access-mode telemetry was added are treated as non-admin.
 
 ### Mode Storage
 

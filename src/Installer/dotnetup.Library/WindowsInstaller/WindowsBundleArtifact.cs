@@ -43,7 +43,6 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         IBundleProcessRunner? processRunner = null,
         TextWriter? notices = null,
         ReleaseManifest? releaseManifest = null,
-        bool? isPrivilegedProcess = null,
         DotnetupPolicy? policy = null)
     {
         _request = request;
@@ -55,28 +54,17 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         _batchContext = batchContext;
         _progress = new ExtractorProgressTracker(batchContext.Reporter, request.Component, version.ToString(), batchContext.VersionDisplayWidth);
 
-        UsesSecureScratchDirectory = OperatingSystem.IsWindows() && (isPrivilegedProcess ?? Environment.IsPrivilegedProcess);
-        ScratchDirectory = CreateScratchDirectory();
-
-        // An elevated run keeps its cache inside the admin-only scratch directory. The per-user cache is writable
-        // without elevation, and serving from it would hard-link a user-writable file into the secure directory.
+        ScratchDirectory = Directory.CreateTempSubdirectory().FullName;
         _downloader = downloader ?? new DotnetDownloader(
             releaseManifest ?? ReleaseManifest.Default,
-            cacheDirectory: UsesSecureScratchDirectory ? Path.Combine(ScratchDirectory, "downloadcache") : null,
             policy: _policy);
     }
 
     /// <summary>
-    /// Download directory for the bundle. Exposed for testing. Without elevation it is a new directory under the
-    /// per-user temp directory: other users cannot reach it, but it inherits the user's profile ACL, so any process
-    /// running as the same user can write to it. In an elevated process it is created by
-    /// <see cref="SecureScratchDirectory"/>, so only SYSTEM and Administrators can modify it. In both cases the lock
-    /// taken in <see cref="Prepare"/> protects the bundle itself.
+    /// Download directory for the bundle. Exposed for testing. The lock taken in <see cref="Prepare"/> protects the
+    /// bundle itself until installation finishes.
     /// </summary>
     internal string ScratchDirectory { get; }
-
-    /// <summary>Whether <see cref="ScratchDirectory"/> is admin-only. Exposed for testing.</summary>
-    internal bool UsesSecureScratchDirectory { get; }
 
     /// <summary>The downloaded bundle path once <see cref="Prepare"/> has completed. Exposed for testing.</summary>
     internal string? BundlePath => _download?.Path;
@@ -140,26 +128,6 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600)
             ? new AuthenticodeInstallerSignatureVerifier()
             : UnsupportedPlatformInstallerSignatureVerifier.Instance;
-
-    private string CreateScratchDirectory()
-    {
-        if (!UsesSecureScratchDirectory || !OperatingSystem.IsWindows())
-        {
-            return Directory.CreateTempSubdirectory().FullName;
-        }
-
-        try
-        {
-            return SecureScratchDirectory.Create();
-        }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or InvalidOperationException)
-        {
-            throw CreateException(
-                DotnetInstallErrorCode.InstallerFailed,
-                Format(Strings.WindowsInstallerSecureDownloadDirectoryCreationFailed, Describe(), ex.Message),
-                ex);
-        }
-    }
 
     private VerifiedDownload Download(string basePath, IProgress<DownloadProgress>? reporter)
     {
