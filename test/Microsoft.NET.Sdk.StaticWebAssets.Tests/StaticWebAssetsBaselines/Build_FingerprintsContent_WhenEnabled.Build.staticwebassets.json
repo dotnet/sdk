@@ -89,18 +89,18 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js",
+      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "AssetGroups": "",
@@ -108,23 +108,23 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js",
+      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "AssetGroups": "",
@@ -132,23 +132,23 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js",
+      "RelatedAsset": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "AssetGroups": "",
@@ -156,7 +156,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -281,12 +281,12 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\",
+      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config#[.{fingerprint}]?.js",
+      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config#[.{fingerprint}]?.js",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -300,17 +300,17 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\",
+      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools#[.{fingerprint}]?.js",
+      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools#[.{fingerprint}]?.js",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -324,17 +324,17 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\",
+      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\",
       "BasePath": "/",
-      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload#[.{fingerprint}]!.lib.module.js",
+      "RelativePath": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch#[.{fingerprint}]!.lib.module.js",
       "AssetKind": "Build",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -348,7 +348,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "Never",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js",
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -1147,8 +1147,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1188,8 +1188,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.__fingerprint__.lib.module.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.__fingerprint__.lib.module.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1232,13 +1232,13 @@
         },
         {
           "Name": "label",
-          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js.gz"
+          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js.gz"
         }
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1296,8 +1296,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.__fingerprint__.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.__fingerprint__.lib.module.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1350,7 +1350,7 @@
         },
         {
           "Name": "label",
-          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js"
+          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js"
         },
         {
           "Name": "original-resource",
@@ -1363,8 +1363,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1404,8 +1404,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.__fingerprint__.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.__fingerprint__.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1448,13 +1448,13 @@
         },
         {
           "Name": "label",
-          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js.gz"
+          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js.gz"
         }
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1504,8 +1504,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.__fingerprint__.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.__fingerprint__.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools#[.{fingerprint=__fingerprint__}]?.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1554,7 +1554,7 @@
         },
         {
           "Name": "label",
-          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js"
+          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js"
         },
         {
           "Name": "original-resource",
@@ -1563,8 +1563,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1604,8 +1604,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.__fingerprint__.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.__fingerprint__.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1648,13 +1648,13 @@
         },
         {
           "Name": "label",
-          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js.gz"
+          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js.gz"
         }
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1704,8 +1704,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.__fingerprint__.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.__fingerprint__.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config#[.{fingerprint=__fingerprint__}]?.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1754,7 +1754,7 @@
         },
         {
           "Name": "label",
-          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js"
+          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js"
         },
         {
           "Name": "original-resource",
@@ -2763,8 +2763,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2800,8 +2800,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.__fingerprint__.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.__fingerprint__.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2840,13 +2840,13 @@
         },
         {
           "Name": "label",
-          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js"
+          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js"
         }
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2882,8 +2882,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.__fingerprint__.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.__fingerprint__.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2922,13 +2922,13 @@
         },
         {
           "Name": "label",
-          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js"
+          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.js"
         }
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2972,8 +2972,8 @@
       ]
     },
     {
-      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.__fingerprint__.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\HotReload\\Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js",
+      "Route": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.__fingerprint__.lib.module.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\dotnet-watch\\Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3016,7 +3016,7 @@
         },
         {
           "Name": "label",
-          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js"
+          "Value": "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.lib.module.js"
         },
         {
           "Name": "script-type",

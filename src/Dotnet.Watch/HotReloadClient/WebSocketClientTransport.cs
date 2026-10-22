@@ -208,7 +208,6 @@ internal sealed class WebSocketClientTransport : ClientTransport
             var buffer = ArrayPool<byte>.Shared.Rent(4096);
             try
             {
-#pragma warning disable VSTHRD103 // Write, Dispose synchronously blocks. https://github.com/microsoft/vs-threading/issues/1699
                 var stream = new MemoryStream();
                 WebSocketReceiveResult result;
                 do
@@ -219,7 +218,6 @@ internal sealed class WebSocketClientTransport : ClientTransport
                         stream.Dispose();
                         return null;
                     }
-
                     stream.Write(buffer, 0, result.Count);
                 }
                 while (!result.EndOfMessage);
@@ -227,9 +225,8 @@ internal sealed class WebSocketClientTransport : ClientTransport
                 stream.Position = 0;
 
                 // Read the response type byte from the message
-                var type = (ResponseType)stream.ReadByte();
+                var type = (ResponseType)await stream.ReadByteAsync(cancellationToken);
                 return new ClientTransportResponse(type, stream, disposeStream: true);
-#pragma warning restore VSTHRD103
             }
             finally
             {

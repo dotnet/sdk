@@ -3,7 +3,6 @@
 
 #nullable enable
 
-using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 
@@ -12,13 +11,12 @@ namespace Microsoft.DotNet.HotReload;
 internal readonly struct WebSocketConfig(int port, int? securePort, string? hostName, ImmutableArray<string> additionalAllowedOrigins)
 {
     /// <summary>
-    /// 0 to auto-assign. Only applicable to Kestrel server, .NET Framework server does not support auto-assigned ports.
+    /// 0 to auto-assign.
     /// </summary>
     public int Port => port;
 
     /// <summary>
-    /// 0 to auto-assign (only applicable to Kestrel server, .NET Framework server does not support auto-assigned ports),
-    /// null to disable HTTPS/WSS.
+    /// 0 to auto-assign, null to disable HTTPS/WSS.
     /// </summary>
     public int? SecurePort => securePort;
 
@@ -59,23 +57,4 @@ internal readonly struct WebSocketConfig(int port, int? securePort, string? host
 
     public WebSocketConfig WithHostName(string? value)
         => new(port, securePort, value, additionalAllowedOrigins);
-
-    /// <summary>
-    /// Converts an HTTP(S) URL to a WebSocket URL and replaces 127.0.0.1 with localhost.
-    /// </summary>
-    internal static string GetWebSocketUrl(string httpUrl)
-    {
-        var uri = new Uri(httpUrl, UriKind.Absolute);
-        var builder = new UriBuilder(uri)
-        {
-            Scheme = uri.Scheme == "https" ? "wss" : "ws"
-        };
-
-        if (builder.Host == "127.0.0.1")
-        {
-            builder.Host = "localhost";
-        }
-
-        return builder.Uri.ToString().TrimEnd('/');
-    }
 }

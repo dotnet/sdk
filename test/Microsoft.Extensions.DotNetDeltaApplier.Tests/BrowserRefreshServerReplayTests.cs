@@ -26,7 +26,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task UpdateProducedBeforeConnect_IsReplayedAndNotSentLive()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
         var moduleId = Guid.NewGuid();
 
         await SendAsync(server, epoch: 0, Batch(moduleId));
@@ -47,7 +47,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task UpdateProducedAfterConnect_IsSentLiveAndNotReplayed()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
 
         using var socket = new TestWebSocket();
         var connection = server.Connect(socket);
@@ -66,7 +66,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task RetainedUpdates_PreserveOrder()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
         var first = Guid.NewGuid();
         var second = Guid.NewGuid();
 
@@ -86,7 +86,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task ResetUpdates_ClearsRetainedUpdatesAndClosesConnections()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
 
         using var socket = new TestWebSocket();
         var connection = server.Connect(socket);
@@ -113,7 +113,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task StaleEpochUpdate_IsDropped()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
         var epoch = server.ResetUpdates();
 
         Assert.IsTrue(await SendAsync(server, epoch - 1, Batch(Guid.NewGuid())));
@@ -132,7 +132,7 @@ public class BrowserRefreshServerReplayTests
     [TestMethod]
     public async Task ClosedConnection_IsNotSentLiveButUpdateIsStillRetained()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
 
         using var socket = new TestWebSocket();
         server.Connect(socket);

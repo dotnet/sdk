@@ -39,7 +39,7 @@ internal record class InProcTestWatcher(
             }
             finally
             {
-                await Context.DisposeAsync();
+                Context.Dispose();
             }
         }, ShutdownSource.Token);
     }

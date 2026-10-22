@@ -66,7 +66,7 @@
                    IntermediateAssembly="%(_RoslynAppHost.FullPath)"
                    EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
 
-    <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
+    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier '%(_RoslynAppHost.SigningIdentifier)' --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' &quot;%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)&quot;"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
   </Target>
 
@@ -88,7 +88,7 @@
           SkipUnchangedFiles="true"
           Condition="$(SharedFrameworkRid.StartsWith('win')) AND Exists('$(_FrameworkTlbPath)')" />
 
-    <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/msbuild-entitlements.plist' %(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)$(ExeExtension)"
+    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier '%(_MSBuildAppHost.SigningIdentifier)' --entitlements '$(MSBuildProjectDirectory)/msbuild-entitlements.plist' &quot;%(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)$(ExeExtension)&quot;"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
   </Target>
 
@@ -252,11 +252,15 @@
   </Target>
 
   <Target Name="PublishTestCli">
+    <ItemGroup>
+      <_TestCliEntryPoint Include="$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/net*/vstest.console.dll" />
+    </ItemGroup>
+
+    <Error Condition="'@(_TestCliEntryPoint->Count())' != '1'"
+           Text="Expected exactly one vstest.console.dll under '$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/net*'; found @(_TestCliEntryPoint->Count())." />
+
     <PropertyGroup>
-      <TestCliNuGetDirectoryTargetFramework>net10.0</TestCliNuGetDirectoryTargetFramework>
-      <!-- NetTFMUpdate: Restore $(NetCurrent) when the source-built VSTest CLI targets net12.0. -->
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">net11.0</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectory>$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
+      <TestCliNuGetDirectory>@(_TestCliEntryPoint->'%(RootDir)%(Directory)')</TestCliNuGetDirectory>
     </PropertyGroup>
 
     <ItemGroup>

@@ -123,24 +123,6 @@ namespace Microsoft.DotNet.Tests
         }
 
         [TestMethod]
-        public void ItShowsLocalizedFirstRunMessages()
-        {
-            var dotnetFirstTime = new DotNetFirstTime();
-            var result = dotnetFirstTime.Setup(Log, TestAssetsManager)
-                .WithEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true")
-                .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "de-DE")
-                .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false")
-                .WithEnvironmentVariable("DOTNET_NOLOGO", "false")
-                .Execute("new", "--debug:ephemeral-hive");
-
-            result.Should().Pass();
-            result.StdErr
-                .Should()
-                .ContainVisuallySameFragment("Willkommen bei .NET")
-                .And.ContainVisuallySameFragment("Telemetrie");
-        }
-
-        [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
         public void FirstRunExperienceMessagesShouldGoToStdErr()
         {

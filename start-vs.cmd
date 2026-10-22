@@ -1,10 +1,7 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
 :: This command launches a Visual Studio solution with environment variables required to use a local version of the .NET Core SDK.
-
-set "SOLUTION=%~1"
-if not defined SOLUTION set "SOLUTION=%~dp0sdk.slnx"
 
 :: This tells .NET Core to use the same dotnet.exe that build scripts use
 set DOTNET_ROOT=%~dp0.dotnet
@@ -25,15 +22,15 @@ set "DEVENV=%DevEnvDir%devenv.exe"
 
 if exist "%DEVENV%" (
     :: Fully qualified works
-    set "COMMAND=start "" /B "%ComSpec%" /S /C ""%DEVENV%" "%SOLUTION%"""
+    set "COMMAND=start "" /B "%ComSpec%" /S /C ""%DEVENV%" "%~dp0sdk.slnx"""
 ) else (
     where devenv.exe /Q
-    if not errorlevel 1 (
+    if !errorlevel! equ 0 (
         :: On the PATH, use that.
-        set "COMMAND=start "" /B "%ComSpec%" /S /C "devenv.exe "%SOLUTION%"""
+        set "COMMAND=start "" /B "%ComSpec%" /S /C "devenv.exe "%~dp0sdk.slnx"""
     ) else (
         :: Can't find devenv.exe, let file associations take care of it
-        set "COMMAND=start "" /B "%SOLUTION%""
+        set "COMMAND=start /B .\sdk.slnx"
     )
 )
 

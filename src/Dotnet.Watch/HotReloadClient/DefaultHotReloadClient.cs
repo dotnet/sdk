@@ -137,11 +137,9 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
         }
     }
 
-#pragma warning disable VSTHRD200 // Use "Async" suffix for async methods
     [MemberNotNull(nameof(_capabilitiesTask))]
     private Task<ImmutableArray<string>> GetCapabilitiesTask()
         => _capabilitiesTask ?? throw new InvalidOperationException();
-#pragma warning restore VSTHRD200
 
     [MemberNotNull(nameof(_capabilitiesTask))]
     private void RequireReadyForUpdates()
@@ -216,7 +214,7 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
         var request = new ManagedCodeUpdateRequest(ToRuntimeUpdates(applicableUpdates), ResponseLoggingLevel);
 
         // Only cancel apply operation when the process exits:
-        var updateCompletionTask = QueueUpdateBatchRequestAsync(request, applyOperationCancellationToken);
+        var updateCompletionTask = QueueUpdateBatchRequest(request, applyOperationCancellationToken);
 
         return CompleteApplyOperationAsync();
 
@@ -265,7 +263,7 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
             Logger.LogDebug("Sending static file update request for asset '{Url}'.", update.RelativePath);
 
             // Only cancel apply operation when the process exits:
-            return QueueUpdateBatchRequestAsync(request, processExitedCancellationToken);
+            return QueueUpdateBatchRequest(request, processExitedCancellationToken);
         });
 
         return CompleteApplyOperationAsync();
@@ -277,10 +275,10 @@ internal sealed class DefaultHotReloadClient(ILogger logger, ILogger agentLogger
         }
     }
 
-    private Task<bool> QueueUpdateBatchRequestAsync<TRequest>(TRequest request, CancellationToken applyOperationCancellationToken)
+    private Task<bool> QueueUpdateBatchRequest<TRequest>(TRequest request, CancellationToken applyOperationCancellationToken)
         where TRequest : IUpdateRequest
     {
-        return QueueUpdateBatchAsync(
+        return QueueUpdateBatch(
             sendAndReceive: async batchId =>
             {
                 await transport.WriteAsync((byte)request.Type, request.WriteAsync, applyOperationCancellationToken);

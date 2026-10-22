@@ -14,10 +14,11 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task ClearCache_Get_ReturnsNoContentAndClearSiteData()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
+        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
-            server,
+            router,
             HttpMethods.Get,
             BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClearCachePath);
 
@@ -32,10 +33,11 @@ public class BrowserToolsEndpointRouterTests
     [DataRow("HEAD")]
     public async Task KnownEndpoint_NonGetMethod_ReturnsMethodNotAllowed(string method)
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
+        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
-            server,
+            router,
             method,
             BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClearCachePath);
 
@@ -55,10 +57,11 @@ public class BrowserToolsEndpointRouterTests
     [DataRow("/unknown")]
     public async Task RemovedOrUnknownGet_ReturnsNotFound(string route)
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
+        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
-            server,
+            router,
             HttpMethods.Get,
             BrowserToolsProtocol.RoutePrefix + route);
 
@@ -68,10 +71,11 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_NonWebSocketRequest_ReturnsBadRequest()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
+        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
-            server, 
+            router,
             HttpMethods.Get,
             BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath);
 
@@ -81,7 +85,7 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_WebSocketWithoutSharedSecret_IsRejectedBeforeAcceptance()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
         var context = await ConnectAsync(server, subProtocol: null);
 
         AssertResponse(context, StatusCodes.Status400BadRequest);
@@ -92,7 +96,7 @@ public class BrowserToolsEndpointRouterTests
     [DataRow("AAAA")]
     public async Task Connect_WebSocketWithMalformedSharedSecret_IsRejectedBeforeAcceptance(string subProtocol)
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
         var context = await ConnectAsync(server, subProtocol);
 
         AssertResponse(context, StatusCodes.Status400BadRequest);
@@ -101,8 +105,8 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_KeyLoadingFailure_IsReportedBeforeAcceptance()
     {
-        await using var server = new TestBrowserRefreshServer(
-            static () => null);
+        using var server = new TestBrowserRefreshServer(
+            static () => throw new InvalidOperationException("Unable to read key."));
 
         var context = await ConnectAsync(server, "ciphertext");
 
@@ -117,7 +121,7 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_WebSocketWithForeignKey_IsRejectedBeforeAcceptance()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
         using var foreignKey = new SharedSecretProvider();
 
         var context = await ConnectAsync(server, EncryptSecret(foreignKey));
@@ -132,7 +136,7 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_WebSocketWithMatchingKey_ReachesAcceptance()
     {
-        await using var server = new TestBrowserRefreshServer();
+        using var server = new TestBrowserRefreshServer();
         var feature = new TestWebSocketFeature();
 
         // The test feature refuses to complete the upgrade, so reaching it is the observable signal
@@ -155,9 +159,9 @@ public class BrowserToolsEndpointRouterTests
         string? subProtocol,
         TestWebSocketFeature? feature = null)
     {
+        var router = new BrowserToolsEndpointRouter(server);
         var context = new DefaultHttpContext();
         context.Features.Set<IHttpWebSocketFeature>(feature ?? new TestWebSocketFeature());
-        context.Request.Headers.Origin = "http://localhost";
         context.Request.Method = HttpMethods.Get;
         context.Request.Path = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath;
         context.Response.Body = new MemoryStream();
@@ -167,26 +171,21 @@ public class BrowserToolsEndpointRouterTests
             context.Request.Headers.SecWebSocketProtocol = subProtocol;
         }
 
-        var config = new WebSocketConfig(port: 0, securePort: 0, hostName: null, additionalAllowedOrigins: []);
-            
-        await server.HandleRequestAsync(config, context);
+        await router.HandleAsync(context);
         return context;
     }
 
     private static async Task<(DefaultHttpContext Context, byte[] Body)> InvokeAsync(
-        TestBrowserRefreshServer server,
+        BrowserToolsEndpointRouter router,
         string method,
         string path)
     {
         var context = new DefaultHttpContext();
-        context.Request.Headers.Origin = "http://localhost";
         context.Request.Method = method;
         context.Request.Path = path;
         context.Response.Body = new MemoryStream();
 
-        var config = new WebSocketConfig(port: 0, securePort: 0, hostName: null, additionalAllowedOrigins: []);
-
-        await server.HandleRequestAsync(config, context);
+        await router.HandleAsync(context);
 
         context.Response.Body.Position = 0;
         return (context, ((MemoryStream)context.Response.Body).ToArray());
