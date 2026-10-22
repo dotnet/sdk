@@ -86,16 +86,16 @@ internal static class TelemetryCommonProperties
 
     private static void AddAccessModeAttributes(Dictionary<string, object> attributes, DotnetupPolicy? policy)
     {
-        var effective = ResolveAccessModeSafely(policy);
+        var effective = ResolveAccessModeSafely();
         attributes[TelemetryTagNames.AccessMode] = GetAccessModeTelemetryValue(effective.Mode);
         attributes[TelemetryTagNames.AccessModeSource] = GetAccessModeSourceTelemetryValue(effective.Source);
     }
 
-    private static EffectiveAccessMode ResolveAccessModeSafely(DotnetupPolicy? policy)
+    private static EffectiveAccessMode ResolveAccessModeSafely()
     {
         try
         {
-            return new AccessModeResolver(policy).Resolve() ?? EffectiveAccessMode.Unset;
+            return AccessModeResolver.Resolve();
         }
         catch
         {
@@ -117,7 +117,7 @@ internal static class TelemetryCommonProperties
     internal static string GetAccessModeSourceTelemetryValue(AccessModeSource source) => source switch
     {
         AccessModeSource.UserConfig => "user_config",
-        AccessModeSource.Policy => "policy",
+
         _ => "unset",
     };
 

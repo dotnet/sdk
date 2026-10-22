@@ -159,7 +159,7 @@ public class EnvCommandTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void EnvSet_Admin_EnablesAdminModeOnly()
+    public void EnvSet_Admin_PersistsModeAndBlocksUnsignedDownloads()
     {
         var parseResult = Parser.Parse(["env", "set", "admin"]);
         parseResult.Errors.Should().BeEmpty();
@@ -168,27 +168,20 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         _elevator.Operations.Should().Equal(AdminModeOperation.Enable);
-        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
-        AssertNoEnvironmentOrConfigChanges();
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        _env.LastDotnetupOnUserPathEnabled.Should().BeTrue();
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void EnvSet_Admin_PreservesExistingUserConfigurationAndProfile()
+    public void EnvSet_Admin_ReplacesUserDotnetConfiguration()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false });
-        string originalConfig = File.ReadAllText(DotnetupPaths.ConfigPath);
-        string profile = Path.Combine(_tempDir, "profile.ps1");
-        const string originalProfile = "dotnetup env script --shell pwsh --dotnet | Invoke-Expression";
-        File.WriteAllText(profile, originalProfile);
-
         int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "admin"]), _env, _inspector, CreateSwitcher()).Execute();
 
         exitCode.Should().Be(0);
-        File.ReadAllText(DotnetupPaths.ConfigPath).Should().Be(originalConfig);
-        File.ReadAllText(profile).Should().Be(originalProfile);
-        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
-        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
-        _env.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.Read()!.DotnetupOnPath.Should().BeFalse();
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
@@ -200,14 +193,15 @@ public class EnvCommandTests : IDisposable
         int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "admin"]), _env, _inspector, switcher).Execute();
 
         exitCode.Should().NotBe(0);
-        _environment.Policy.IsAdminModeEnabled().Should().BeFalse();
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         AssertNoEnvironmentOrConfigChanges();
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void EnvSet_ShellWhileAdmin_DisablesThenApplies()
     {
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin, DotnetupOnPath = true });
+        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
         var parseResult = Parser.Parse(["env", "set", "shell", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
 
@@ -215,14 +209,15 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().Be(0);
         _elevator.Operations.Should().Equal(AdminModeOperation.Disable);
-        _environment.Policy.IsAdminModeEnabled().Should().BeFalse();
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void EnvSet_ShellWhileAdminCancelled_AppliesNothing()
     {
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin, DotnetupOnPath = true });
+        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
         var elevator = _environment.CreateElevator(new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"));
         var switcher = _environment.CreateSwitcher(elevator);
 
@@ -230,23 +225,21 @@ public class EnvCommandTests : IDisposable
 
         exitCode.Should().NotBe(0);
         elevator.Operations.Should().Equal(AdminModeOperation.Disable);
-        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
-        AssertNoEnvironmentOrConfigChanges();
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void EnvSet_WithoutModeWhileAdmin_MakesNoChanges()
+    public void EnvSet_WithoutModeWhileAdmin_ResynchronizesAdminMode()
     {
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin, DotnetupOnPath = true });
 
         int exitCode = new EnvSetCommand(Parser.Parse(["env", "set"]), _env, _inspector, CreateSwitcher()).Execute();
 
         exitCode.Should().Be(0);
-        _elevator.Operations.Should().BeEmpty();
-        _store.Writes.Should().BeEmpty();
-        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
-        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        _elevator.Operations.Should().Equal(AdminModeOperation.Enable);
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
     }
 

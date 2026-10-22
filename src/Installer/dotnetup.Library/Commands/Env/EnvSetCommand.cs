@@ -5,7 +5,6 @@ using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
@@ -40,10 +39,6 @@ internal class EnvSetCommand : CommandBase
 
     protected override void ExecuteCore()
     {
-        if (HandleAdminMode())
-        {
-            return;
-        }
         DotnetupConfigData? previous = DotnetupConfig.Read();
 
         // Resolve the dotnet-access mode: explicit argument wins, otherwise re-apply the
@@ -82,11 +77,13 @@ internal class EnvSetCommand : CommandBase
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.
         bool targetDotnetupOnPath = _dotnetupOnPathArg ?? previous?.DotnetupOnPath ?? true;
 
-        // HandleAdminMode already handled 'env set admin' and the no-mode case, so if admin mode is
-        // still active here, the user explicitly requested a non-admin mode. Disable admin mode first
-        // (elevating if needed) before writing any user-level settings. Disable throws if elevation is
-        // declined or the change fails, so nothing below is applied in that case.
-        if (AdminSwitcher.IsAdminModeActive())
+        // Keep the machine-wide unsigned-download policy synchronized with transitions into and out
+        // of admin mode. The access mode itself remains a per-user setting.
+        if (targetEnv == DotnetAccessMode.Admin)
+        {
+            AdminSwitcher.Enable();
+        }
+        else if (previous?.AccessMode == DotnetAccessMode.Admin)
         {
             AdminSwitcher.Disable();
         }
@@ -97,25 +94,4 @@ internal class EnvSetCommand : CommandBase
     [AllowNull]
     private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher(Policy);
 
-    /// <summary>
-    /// Routes admin mode before anything else changes: <c>env set admin</c> only enables admin
-    /// mode, and no mode while in admin mode changes nothing. Another explicit mode leaves admin
-    /// mode right before it is applied. Returns true when the command is fully handled.
-    /// </summary>
-    private bool HandleAdminMode()
-    {
-        if (_modeArg == DotnetAccessMode.Admin)
-        {
-            AdminSwitcher.Enable();
-            return true;
-        }
-
-        if (_modeArg is null && AdminSwitcher.IsAdminModeActive())
-        {
-            AdminModeMessages.WriteAdminModeActive(SpectreAnsiConsole.Console);
-            return true;
-        }
-
-        return false;
-    }
 }

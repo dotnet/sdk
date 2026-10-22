@@ -29,9 +29,7 @@ internal enum DotnetAccessMode
 
     /// <summary>
     /// Windows-only. Installs are managed through the Windows installer in the shared system folder
-    /// alongside other tools. Enabled only by the machine policy (see
-    /// <see cref="Microsoft.Dotnet.Installation.Internal.DotnetupPolicy"/>); it is never persisted to
-    /// or honored from the per-user config, and dotnetup does no PATH or DOTNET_ROOT wiring for it.
+    /// alongside other tools. dotnetup does no user-level dotnet PATH or DOTNET_ROOT wiring for it.
     /// </summary>
     Admin = 4,
 }
@@ -47,7 +45,7 @@ internal class DotnetupConfigData
     /// <summary>
     /// The persisted dotnet-access choice, serialized as <c>accessMode</c> via the
     /// <see cref="DotnetAccessModeJsonConverter"/> (lowercase <c>none</c> / <c>shell</c> /
-    /// <c>everywhere</c>). <c>null</c> when the user has not completed setup; a config that only
+    /// <c>everywhere</c> / <c>admin</c>). <c>null</c> when the user has not completed setup; a config that only
     /// stores other settings (such as <see cref="UpdateNotifications"/>) must not look onboarded.
     /// </summary>
     [JsonPropertyName("accessMode")]
@@ -119,7 +117,6 @@ internal static class DotnetupConfig
     public static void Write(DotnetupConfigData config)
     {
         ArgumentNullException.ThrowIfNull(config);
-        ThrowIfAdmin(config.ConfiguredAccessMode, nameof(config));
         DotnetupPaths.EnsureDataDirectoryExists();
         var json = JsonSerializer.Serialize(config, DotnetupConfigJsonContext.Default.DotnetupConfigData);
         File.WriteAllText(DotnetupPaths.ConfigPath, json);
@@ -130,7 +127,6 @@ internal static class DotnetupConfig
     /// </summary>
     public static DotnetupConfigData WriteAccessSettings(DotnetAccessMode accessMode, bool dotnetupOnPath)
     {
-        ThrowIfAdmin(accessMode, nameof(accessMode));
         var config = new DotnetupConfigData
         {
             AccessMode = accessMode,
@@ -196,16 +192,6 @@ internal static class DotnetupConfig
         _ => false,
     };
 
-    private static void ThrowIfAdmin(DotnetAccessMode? accessMode, string paramName)
-    {
-        if (accessMode == DotnetAccessMode.Admin)
-        {
-            throw new ArgumentException(
-                "Admin mode is controlled by machine policy and cannot be stored in the dotnetup config.",
-                paramName);
-        }
-    }
-
     private enum ConfigFileState
     {
         Missing,
@@ -234,12 +220,6 @@ internal static class DotnetupConfig
 
             config = JsonSerializer.Deserialize(text, DotnetupConfigJsonContext.Default.DotnetupConfigData)
                 ?? throw new JsonException("The config file is empty.");
-
-            // Admin mode is only enabled by machine policy, so a hand-edited value is treated as unset.
-            if (config.ConfiguredAccessMode == DotnetAccessMode.Admin)
-            {
-                config.ConfiguredAccessMode = null;
-            }
 
             return ConfigFileState.Loaded;
         }

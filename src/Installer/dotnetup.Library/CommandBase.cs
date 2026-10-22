@@ -37,14 +37,10 @@ public abstract class CommandBase
         ParseResult = parseResult;
         _commandName = commandName;
         Policy = policy ?? new DotnetupPolicy();
-        AccessModeResolver = new AccessModeResolver(Policy);
     }
 
     /// <summary>The machine policy this command reads.</summary>
     internal DotnetupPolicy Policy { get; }
-
-    /// <summary>Resolves the effective access mode from <see cref="Policy"/> and the user config.</summary>
-    internal AccessModeResolver AccessModeResolver { get; }
 
     /// <summary>
     /// Gets whether this command can skip <see cref="SelfUpdateInvocation.EnterCommand(bool)"/>'s

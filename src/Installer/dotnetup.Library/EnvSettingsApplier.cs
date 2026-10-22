@@ -41,11 +41,6 @@ internal static class EnvSettingsApplier
     {
         ArgumentException.ThrowIfNullOrEmpty(dotnetRoot);
 
-        if (targetEnv == DotnetAccessMode.Admin)
-        {
-            throw new InvalidOperationException("Admin mode is applied through the admin mode switcher.");
-        }
-
         if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(targetEnv))
         {
             throw new PlatformNotSupportedException(
@@ -53,6 +48,7 @@ internal static class EnvSettingsApplier
         }
 
         // Windows user-scope dotnet env vars (PATH + DOTNET_ROOT) are wired only by Everywhere mode.
+        // Admin mode removes those user-level overrides so the installer-managed system dotnet wins.
         bool nowWritesDotnetEnvVars = targetEnv == DotnetAccessMode.Everywhere;
 
         // The managed profile block wires dotnet for Shell/Everywhere, and dotnetup when dotnetupOnPath.

@@ -14,8 +14,6 @@ internal enum AccessModeSource
     /// <summary>The access mode recorded in the per-user dotnetup config.</summary>
     UserConfig,
 
-    /// <summary>The machine policy (admin mode).</summary>
-    Policy,
 }
 
 /// <summary>The access mode dotnetup operates under, and its source.</summary>
@@ -27,32 +25,18 @@ internal sealed record EffectiveAccessMode(DotnetAccessMode? Mode, AccessModeSou
 }
 
 /// <summary>
-/// Resolves the effective access mode. The Windows machine policy enables admin mode and takes
-/// precedence over the per-user config, which can never select admin mode.
+/// Resolves the effective access mode from the per-user dotnetup config.
 /// </summary>
-internal sealed class AccessModeResolver
+internal static class AccessModeResolver
 {
-    private readonly DotnetupPolicy _policy;
-
-    /// <param name="policy">The machine policy; defaults to the machine policy for the current platform.</param>
-    public AccessModeResolver(DotnetupPolicy? policy = null)
-    {
-        _policy = policy ?? new DotnetupPolicy();
-    }
-
     /// <summary>
     /// Resolves the effective access mode. Writes no output, and throws only if the policy store
     /// does (the machine stores report unreadable values as unset).
     /// </summary>
-    public EffectiveAccessMode Resolve()
+    public static EffectiveAccessMode Resolve()
     {
-        if (OperatingSystem.IsWindows() && _policy.IsAdminModeEnabled())
-        {
-            return new EffectiveAccessMode(DotnetAccessMode.Admin, AccessModeSource.Policy);
-        }
-
         DotnetAccessMode? configured = TryReadUserConfigAccessMode();
-        return configured is DotnetAccessMode mode && mode != DotnetAccessMode.Admin
+        return configured is DotnetAccessMode mode
             ? new EffectiveAccessMode(mode, AccessModeSource.UserConfig)
             : EffectiveAccessMode.Unset;
     }

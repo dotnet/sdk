@@ -103,7 +103,7 @@ public class TelemetryCommonPropertiesTests
     }
 
     [TestMethod]
-    [DataRow(DotnetAccessMode.Admin, "admin", "policy")]
+    [DataRow(DotnetAccessMode.Admin, "admin", "user_config")]
     [DataRow(DotnetAccessMode.Shell, "shell", "user_config")]
     [DataRow(DotnetAccessMode.None, "none", "user_config")]
     [DataRow(DotnetAccessMode.Everywhere, "everywhere", "user_config")]
@@ -116,11 +116,7 @@ public class TelemetryCommonPropertiesTests
         }
 
         using var environment = new AdminModeTestEnvironment();
-        if (mode == DotnetAccessMode.Admin)
-        {
-            environment.Store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        }
-        else if (mode is DotnetAccessMode configuredMode)
+        if (mode is DotnetAccessMode configuredMode)
         {
             DotnetupConfig.Write(new DotnetupConfigData { AccessMode = configuredMode });
         }

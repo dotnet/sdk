@@ -2,74 +2,40 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
-using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class AccessModeResolverTests
+[DoNotParallelize]
+public class AccessModeResolverTests : IDisposable
 {
-    private AdminModeTestEnvironment _environment = null!;
-    private FakeDotnetupPolicyStore _store => _environment.Store;
+    private readonly AdminModeTestEnvironment _environment = new();
 
-    [TestInitialize]
-    public void Initialize()
-    {
-        _environment = new AdminModeTestEnvironment();
-    }
+    public void Dispose() => _environment.Dispose();
 
-    [TestCleanup]
-    public void Cleanup()
+    [TestMethod]
+    public void Resolve_ReturnsUnset_WhenNoConfig()
     {
-        _environment.Dispose();
+        AccessModeResolver.Resolve().Should().Be(EffectiveAccessMode.Unset);
     }
 
     [TestMethod]
-    public void Resolve_ReturnsUnset_WhenNoPolicyAndNoConfig()
+    [DataRow(DotnetAccessMode.None)]
+    [DataRow(DotnetAccessMode.Shell)]
+    [DataRow(DotnetAccessMode.Everywhere)]
+    [DataRow(DotnetAccessMode.Admin)]
+    internal void Resolve_ReturnsUserConfigMode(DotnetAccessMode mode)
     {
-        Resolve().Should().Be(EffectiveAccessMode.Unset);
-    }
+        if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(mode))
+        {
+            Assert.Inconclusive($"{mode} is not supported on this platform.");
+        }
 
-    [TestMethod]
-    public void Resolve_ReturnsUserConfigMode_WhenPolicyDisabled()
-    {
-        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = mode });
 
-        var result = Resolve();
-
-        result.Should().Be(new EffectiveAccessMode(DotnetAccessMode.Shell, AccessModeSource.UserConfig));
-        result.IsAdmin.Should().BeFalse();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Resolve_PolicyWinsOverUserConfig()
-    {
-        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Everywhere });
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-
-        var result = Resolve();
-
-        result.Should().Be(new EffectiveAccessMode(DotnetAccessMode.Admin, AccessModeSource.Policy));
-        result.IsAdmin.Should().BeTrue();
-    }
-
-    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    public void Resolve_IgnoresPolicyOffWindows()
-    {
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-
-        Resolve().Should().Be(EffectiveAccessMode.Unset);
-    }
-
-    [TestMethod]
-    public void Resolve_ReturnsUnset_WhenUserConfigRecordsAdmin()
-    {
-        File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": "admin" }""");
-
-        Resolve().Should().Be(EffectiveAccessMode.Unset);
+        AccessModeResolver.Resolve().Should().Be(new EffectiveAccessMode(mode, AccessModeSource.UserConfig));
     }
 
     [TestMethod]
@@ -81,7 +47,7 @@ public class AccessModeResolverTests
         Console.SetOut(output);
         try
         {
-            Resolve().Should().Be(EffectiveAccessMode.Unset);
+            AccessModeResolver.Resolve().Should().Be(EffectiveAccessMode.Unset);
         }
         finally
         {
@@ -90,6 +56,4 @@ public class AccessModeResolverTests
 
         output.ToString().Should().BeEmpty();
     }
-
-    private EffectiveAccessMode Resolve() => new AccessModeResolver(_environment.Policy).Resolve();
 }

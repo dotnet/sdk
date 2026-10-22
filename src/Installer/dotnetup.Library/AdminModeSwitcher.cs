@@ -54,9 +54,7 @@ internal sealed class WindowsAdminModeElevator : IAdminModeElevator
 }
 
 /// <summary>
-/// Switches the machine into or out of admin mode by setting the <c>AdminMode</c> policy value.
-/// The policy change happens before any other state change, so a declined or failed elevation
-/// leaves the machine and the user's configuration untouched.
+/// Updates the unsigned-download policy when the user enters or leaves admin mode.
 /// </summary>
 internal sealed class AdminModeSwitcher
 {
@@ -83,13 +81,10 @@ internal sealed class AdminModeSwitcher
     /// <summary>The machine policy this switcher reads and changes.</summary>
     internal DotnetupPolicy Policy { get; }
 
-    /// <summary>True when the machine policy enables admin mode.</summary>
-    public bool IsAdminModeActive() => Policy.IsAdminModeEnabled();
-
-    /// <summary>Enables admin mode. Returns false when it was already enabled.</summary>
+    /// <summary>Blocks unsigned downloads for admin mode. Returns false when already blocked.</summary>
     public bool Enable() => Switch(AdminModeOperation.Enable);
 
-    /// <summary>Disables admin mode. Returns false when it was already disabled.</summary>
+    /// <summary>Allows unsigned downloads after leaving admin mode. Returns false when already allowed.</summary>
     public bool Disable() => Switch(AdminModeOperation.Disable);
 
     /// <summary>
@@ -100,11 +95,11 @@ internal sealed class AdminModeSwitcher
     {
         if (operation == AdminModeOperation.Enable)
         {
-            policy.EnableAdminMode();
+            policy.BlockUnsignedDownloads();
         }
         else
         {
-            policy.DisableAdminMode();
+            policy.AllowUnsignedDownloads();
         }
     }
 
@@ -118,9 +113,9 @@ internal sealed class AdminModeSwitcher
         }
 
         bool enable = operation == AdminModeOperation.Enable;
-        if (Policy.IsAdminModeEnabled() == enable)
+        if (Policy.IsUnsignedDownloadBlocked() == enable)
         {
-            _console.MarkupLine(DotnetupTheme.Dim(enable ? Strings.AdminModeAlreadyEnabled : Strings.AdminModeAlreadyDisabled));
+            _console.MarkupLine(DotnetupTheme.Dim(enable ? Strings.AdminModeUnsignedDownloadsAlreadyBlocked : Strings.AdminModeUnsignedDownloadsAlreadyAllowed));
             return false;
         }
 
@@ -129,18 +124,14 @@ internal sealed class AdminModeSwitcher
         ApplyChange(operation, privileged);
         VerifyChange(enable);
 
-        _console.MarkupLine(DotnetupTheme.Success(enable ? Strings.AdminModeEnabled : Strings.AdminModeDisabled));
-        if (enable)
-        {
-            _console.WriteLine(Strings.AdminModePreservesUserEnvironment);
-        }
+        _console.MarkupLine(DotnetupTheme.Success(enable ? Strings.AdminModeUnsignedDownloadsBlocked : Strings.AdminModeUnsignedDownloadsAllowed));
 
         return true;
     }
 
     private void WriteMachineWideNotice(bool enable, bool privileged)
     {
-        string notice = enable ? Strings.AdminModeEnablingNotice : Strings.AdminModeDisablingNotice;
+        string notice = enable ? Strings.AdminModeBlockingUnsignedDownloadsNotice : Strings.AdminModeAllowingUnsignedDownloadsNotice;
         if (!privileged)
         {
             notice += " " + Strings.AdminModeElevationNotice;
@@ -186,11 +177,11 @@ internal sealed class AdminModeSwitcher
     // though the elevated write reported success.
     private void VerifyChange(bool enable)
     {
-        if (Policy.IsAdminModeEnabled() != enable)
+        if (Policy.IsUnsignedDownloadBlocked() != enable)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeChangeFailed,
-                enable ? Strings.AdminModeNotEnabled : Strings.AdminModeNotDisabled);
+                enable ? Strings.AdminModeUnsignedDownloadsNotBlocked : Strings.AdminModeUnsignedDownloadsNotAllowed);
         }
     }
 
@@ -203,21 +194,4 @@ internal sealed class AdminModeSwitcher
             or SecurityException
             or PlatformNotSupportedException;
 
-}
-
-/// <summary>Guidance printed around admin mode switches.</summary>
-internal static class AdminModeMessages
-{
-    /// <summary>Printed when a command that would change the access mode runs in admin mode without a mode.</summary>
-    public static void WriteAdminModeActive(IAnsiConsole console)
-    {
-        console.MarkupLine(DotnetupTheme.Notice(Strings.AdminModeActive));
-        console.MarkupLine(DotnetupTheme.Dim(Strings.AdminModeLeaveInstructions.EscapeMarkup()));
-    }
-
-    /// <summary>Printed after switching into admin mode through <c>init</c>.</summary>
-    public static void WriteNextSteps(IAnsiConsole console)
-    {
-        console.MarkupLine(DotnetupTheme.Dim(Strings.AdminModeInstallNextSteps.EscapeMarkup()));
-    }
 }

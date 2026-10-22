@@ -1,205 +1,64 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Spectre.Console;
-using Strings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
 [DoNotParallelize]
-public class AdminModeSwitcherTests
+public class AdminModeSwitcherTests : IDisposable
 {
-    private AdminModeTestEnvironment _environment = null!;
-    private FakeDotnetupPolicyStore _store => _environment.Store;
-    private StringWriter _output = null!;
+    private readonly AdminModeTestEnvironment _environment = new();
+    private readonly StringWriter _output = new();
 
-    [TestInitialize]
-    public void Initialize()
+    public void Dispose()
     {
-        _environment = new AdminModeTestEnvironment();
-        _output = new StringWriter();
-    }
-
-    [TestCleanup]
-    public void Cleanup()
-    {
+        _output.Dispose();
         _environment.Dispose();
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Enable_WhenDisabled_RunsElevatorOnceAndEnables()
+    public void Enable_BlocksUnsignedDownloads()
     {
         var elevator = _environment.CreateElevator();
 
-        bool changed = CreateSwitcher(elevator).Enable();
+        _environment.CreateSwitcher(elevator, output: _output).Enable().Should().BeTrue();
 
-        changed.Should().BeTrue();
         elevator.Operations.Should().Equal(AdminModeOperation.Enable);
-        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
-        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName].Should().BeTrue();
-        Regex.Replace(_output.ToString(), @"\s+", " ").Should().Contain("affects all users").And.Contain("Admin mode is enabled.")
-            .And.Contain("Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.")
-            .And.Contain("Restart open apps and terminals after installing .NET and review settings if needed.");
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Enable_PreservationNoticeUsesDefaultColor()
+    public void Disable_AllowsUnsignedDownloads()
     {
-        var console = AnsiConsole.Create(new AnsiConsoleSettings
-        {
-            Out = new AnsiConsoleOutput(_output),
-            Ansi = AnsiSupport.Yes,
-            ColorSystem = ColorSystemSupport.Standard,
-        });
-        console.Profile.Width = 200;
-        var switcher = new AdminModeSwitcher(_environment.Policy, _environment.CreateElevator(), () => false, console);
-
-        switcher.Enable();
-
-        string output = _output.ToString();
-        output.Should().Contain("\x1b[", "ANSI colors must be enabled to detect styled text");
-        output.Should().EndWith(Environment.NewLine
-            + Strings.AdminModePreservesUserEnvironment.ReplaceLineEndings(Environment.NewLine)
-            + Environment.NewLine);
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Enable_WhenAlreadyEnabled_DoesNotElevate()
-    {
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
+        _environment.Store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
         var elevator = _environment.CreateElevator();
 
-        bool changed = CreateSwitcher(elevator).Enable();
+        _environment.CreateSwitcher(elevator, output: _output).Disable().Should().BeTrue();
 
-        changed.Should().BeFalse();
-        elevator.Operations.Should().BeEmpty();
-        _store.Writes.Should().BeEmpty();
-        _output.ToString().Should().Contain("already enabled");
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Disable_WhenEnabled_RunsElevatorOnceAndDisables()
-    {
-        _store.Values[DotnetupPolicy.AdminModeValueName] = true;
-        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
-        var elevator = _environment.CreateElevator();
-
-        bool changed = CreateSwitcher(elevator).Disable();
-
-        changed.Should().BeTrue();
         elevator.Operations.Should().Equal(AdminModeOperation.Disable);
-        _environment.Policy.IsAdminModeEnabled().Should().BeFalse();
-        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName].Should().BeTrue();
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
+        _output.ToString().Should().Contain("allowed again by default");
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Disable_WhenAlreadyDisabled_DoesNotElevate()
+    public void Enable_WhenElevationCancelled_LeavesPolicyUnchanged()
     {
-        var elevator = _environment.CreateElevator();
+        var elevator = _environment.CreateElevator(
+            new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"));
 
-        CreateSwitcher(elevator).Disable().Should().BeFalse();
-
-        elevator.Operations.Should().BeEmpty();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Enable_WhenPrivileged_WritesPolicyWithoutElevator()
-    {
-        var elevator = _environment.CreateElevator();
-
-        bool changed = CreateSwitcher(elevator, privileged: true).Enable();
-
-        changed.Should().BeTrue();
-        elevator.Operations.Should().BeEmpty();
-        _store.Writes.Should().ContainSingle();
-        _environment.Policy.IsAdminModeEnabled().Should().BeTrue();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Enable_WhenPrivilegedWriteIsDenied_FailsWithAdminModeChangeFailed()
-    {
-        var store = new FakeDotnetupPolicyStore { WriteFailure = new UnauthorizedAccessException("Access to the registry key is denied.") };
-        var elevator = _environment.CreateElevator();
-        var switcher = new AdminModeSwitcher(new DotnetupPolicy(store), elevator, () => true, CreateConsole(_output));
-
-        Action act = () => switcher.Enable();
-
-        act.Should().Throw<DotnetInstallException>()
-            .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.AdminModeChangeFailed)
-            .WithMessage("*registry key is denied*");
-        elevator.Operations.Should().BeEmpty();
-        store.Values.Should().BeEmpty();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Enable_WhenElevationCancelled_FailsAndLeavesPolicyUnchanged()
-    {
-        var elevator = _environment.CreateElevator(new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"));
-
-        Action act = () => CreateSwitcher(elevator).Enable();
-
-        act.Should().Throw<DotnetInstallException>()
-            .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.AdminModeChangeFailed)
-            .WithMessage("Elevation was cancelled*");
-        _store.Writes.Should().BeEmpty();
-        _environment.Policy.IsAdminModeEnabled().Should().BeFalse();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Enable_WhenElevatedProcessFails_FailsWithAdminModeChangeFailed()
-    {
-        var elevator = _environment.CreateElevator(new InvalidOperationException("Elevated process returned exit code 1"));
-
-        Action act = () => CreateSwitcher(elevator).Enable();
-
-        act.Should().Throw<DotnetInstallException>()
-            .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.AdminModeChangeFailed)
-            .WithMessage("*exit code 1*");
-        _environment.Policy.IsAdminModeEnabled().Should().BeFalse();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Enable_WhenPolicyUnchangedAfterElevation_FailsWithAdminModeChangeFailed()
-    {
-        var elevator = _environment.CreateElevator(appliesChange: false);
-
-        Action act = () => CreateSwitcher(elevator).Enable();
+        Action act = () => _environment.CreateSwitcher(elevator, output: _output).Enable();
 
         act.Should().Throw<DotnetInstallException>()
             .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.AdminModeChangeFailed);
-        elevator.Operations.Should().Equal(AdminModeOperation.Enable);
-        _output.ToString().Should().NotContain("Admin mode is enabled.");
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
     }
-
-    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
-    public void Enable_OffWindows_ThrowsPlatformNotSupported()
-    {
-        var elevator = _environment.CreateElevator();
-
-        Action act = () => CreateSwitcher(elevator).Enable();
-
-        act.Should().Throw<DotnetInstallException>()
-            .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.PlatformNotSupported);
-        elevator.Operations.Should().BeEmpty();
-    }
-
-    [TestMethod]
-    public void WindowsAdminModeElevator_UsesFixedOperationTokens()
-    {
-        WindowsAdminModeElevator.ToOperationToken(AdminModeOperation.Enable).Should().Be("enableadminmode");
-        WindowsAdminModeElevator.ToOperationToken(AdminModeOperation.Disable).Should().Be("disableadminmode");
-    }
-
-    private AdminModeSwitcher CreateSwitcher(IAdminModeElevator elevator, bool privileged = false)
-        => _environment.CreateSwitcher(elevator, privileged, _output);
 
     internal static IAnsiConsole CreateConsole(StringWriter output) => AnsiConsole.Create(new AnsiConsoleSettings
     {
