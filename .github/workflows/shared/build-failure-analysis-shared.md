@@ -13,19 +13,20 @@
 #     are separate (different triggers and different security scopes).
 #   - `permissions:` — imports are validated against the caller, not merged
 #     into it, so each main workflow must re-declare its own.
-#   - `engine:` / `environment:` / `timeout-minutes:` / `steps:` — not in
+#   - `engine:` / `sandbox:` / `environment:` / `timeout-minutes:` / `steps:` — not in
 #     gh-aw's importable field set; the engine identifier in particular is
 #     always inherited from the importing workflow.
 #
-# Editing any block below changes BOTH workflows. Use the v0.89.21 compiler
-# and matching setup runtime. This includes the connection-reset retries when
+# Editing any block below changes BOTH workflows. Use the v0.89.22 compiler
+# and matching setup runtime so threat detection preserves sandbox.agent.images
+# (github/gh-aw#63014). This includes the connection-reset retries when
 # installing Copilot and AWF (dotnet/sdk#56224; github/gh-aw#53112 and
 # github/gh-aw#53154). Regenerate both locks with:
 # gh aw compile build-failure-analysis build-failure-analysis-command
 #   --strict --approve --no-check-update --schedule-seed dotnet/sdk
-#   --action-mode action --action-tag v0.89.21
+#   --action-mode action --action-tag 2fbab69bfca02bebd76cd0fc43f2d12acfed994f
 #   --validate --actionlint
-# The compiler resolves the action tag to immutable setup-action pins.
+# The setup action SHA above is the immutable v0.89.22 release commit.
 
 description: "Shared body for build-failure-analysis workflows"
 

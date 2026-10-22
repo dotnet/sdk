@@ -1169,13 +1169,12 @@ internal partial class MicrosoftTestingPlatformTestCommand
             noAnsi = true;
         }
 
-        // TODO: Replace this with proper CI detection that we already have in telemetry. https://github.com/microsoft/testfx/issues/5533#issuecomment-2838893327
-        bool inCI = string.Equals(Environment.GetEnvironmentVariable("TF_BUILD"), "true", StringComparison.OrdinalIgnoreCase) || string.Equals(Environment.GetEnvironmentVariable("GITHUB_ACTIONS"), "true", StringComparison.OrdinalIgnoreCase);
+        bool inCI = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
 
         AnsiMode ansiMode = AnsiMode.AnsiIfPossible;
         // In LLM environments, prefer simple text output so that LLM can parse it easily.
         // Note that NoAnsi also implies no progress.
-        if (noAnsi || new LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
+        if (noAnsi || new LLMEnvironmentDetectorForTelemetry(environmentProvider: null).IsLLMEnvironment())
         {
             // User explicitly specified --no-ansi.
             // We should respect that.
@@ -1495,7 +1494,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // Add Device to MSBuild args so the build and evaluation see it
         return buildOptions with
         {
-            MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:Device={buildOptions.Device}"]
+            MSBuildArgs = [.. buildOptions.MSBuildArgs, $"-p:Device={MSBuildPropertyEscaping.Escape(buildOptions.Device!)}"]
         };
     }
 

@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 throw new ArgumentException($"{nameof(downloadPath)} cannot be null or empty", nameof(downloadPath));
             }
 
-            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(additionalSources?.ToArray() ?? []);
+            IEnumerable<PackageSource> packagesSources = LoadNuGetSources(identifier, additionalSources?.ToArray() ?? []);
 
             if (!force)
             {
@@ -211,7 +211,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             FloatRange floatRange = new FloatRange(previewVersionInstalled ? NuGetVersionFloatBehavior.AbsoluteLatest : NuGetVersionFloatBehavior.Major);
 
             string[] additionalSources = string.IsNullOrWhiteSpace(additionalSource) ? [] : new[] { additionalSource! };
-            IEnumerable<PackageSource> packageSources = LoadNuGetSources(additionalSources);
+            IEnumerable<PackageSource> packageSources = LoadNuGetSources(identifier, additionalSources);
             var (_, package) = await GetLatestVersionInternalAsync(identifier, packageSources, floatRange, cancellationToken).ConfigureAwait(false);
             bool isLatestVersion = currentVersion != null && currentVersion >= package.Identity.Version;
 
@@ -439,32 +439,25 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
             return (searchResult.Owners ?? string.Empty, searchResult.PrefixReserved);
         }
 
-        private IEnumerable<PackageSource> LoadNuGetSources(IEnumerable<string> additionalSources)
+        internal IEnumerable<PackageSource> LoadNuGetSources(string packageIdentifier, IEnumerable<string> additionalSources, ISettings? settings = null)
         {
-            IEnumerable<PackageSource> defaultSources;
+            IReadOnlyList<PackageSource> defaultSources;
             string currentDirectory = string.Empty;
             try
             {
-                currentDirectory = Directory.GetCurrentDirectory();
-                ISettings settings = global::NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory);
+                if (settings == null)
+                {
+                    currentDirectory = Directory.GetCurrentDirectory();
+                    settings = global::NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory);
+                }
                 PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
-                defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+                defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
             }
             catch (Exception ex)
             {
                 _nugetLogger.LogError(string.Format(LocalizableStrings.NuGetApiPackageManager_Error_FailedToLoadSources, currentDirectory));
                 _nugetLogger.LogDebug($"Details: {ex}.");
                 throw new InvalidNuGetSourceException($"Failed to load NuGet sources configured for the folder {currentDirectory}", ex);
-            }
-
-            if (!additionalSources.Any())
-            {
-                if (!defaultSources.Any())
-                {
-                    _nugetLogger.LogError(LocalizableStrings.NuGetApiPackageManager_Error_NoSources);
-                    throw new InvalidNuGetSourceException("No NuGet sources are defined or enabled");
-                }
-                return defaultSources;
             }
 
             List<PackageSource> customSources = new List<PackageSource>();
@@ -488,9 +481,28 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 customSources.Add(packageSource);
             }
 
+            IReadOnlyList<PackageSource> enabledSources = defaultSources;
+            PackageSourceMapping packageSourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            if (packageSourceMapping.IsEnabled)
+            {
+                var mappedSourceNames = new HashSet<string>(
+                    packageSourceMapping.GetConfiguredPackageSources(packageIdentifier) ?? Enumerable.Empty<string>(),
+                    StringComparer.OrdinalIgnoreCase);
+                defaultSources = defaultSources
+                    .Where(source => mappedSourceNames.Contains(source.Name))
+                    .ToList();
+            }
+
             IEnumerable<PackageSource> retrievedSources = customSources.Concat(defaultSources);
             if (!retrievedSources.Any())
             {
+                if (packageSourceMapping.IsEnabled)
+                {
+                    throw new PackageNotFoundException(
+                        packageIdentifier,
+                        enabledSources.Select(source => source.Source),
+                        packageSourceMappingMatchNotFound: true);
+                }
                 _nugetLogger.LogError(LocalizableStrings.NuGetApiPackageManager_Error_NoSources);
                 throw new InvalidNuGetSourceException("No NuGet sources are defined or enabled");
             }

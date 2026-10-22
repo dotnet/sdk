@@ -25,10 +25,12 @@
   <UsingTask TaskName="GenerateSdkRuntimeIdentifierChain" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetCurrentRuntimeInformation" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetDependencyInfo" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="GetDnxShimLayout" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetLinuxNativeInstallerDependencyVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetRuntimePackRids" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetWorkloadManifestLayout" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="GetWorkloadSetFeatureBand" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
+  <UsingTask TaskName="GetWorkloadUserLocalLayout" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="OverrideAndCreateBundledNETCoreAppPackageVersion" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="ProcessRuntimeAnalyzerVersions" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />
   <UsingTask TaskName="PrepareIncrementalLayout" AssemblyFile="$(SdkTasksAssembly)" TaskFactory="TaskHostFactory" Runtime="NET" />

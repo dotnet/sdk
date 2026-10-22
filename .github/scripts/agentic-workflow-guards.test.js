@@ -201,3 +201,31 @@ test("both compiled analyzers retain normal detection for outputs and patches", 
         assert.match(job, /environment: copilot-pat-pool/);
     }
 });
+
+test("compiled analyzers preserve pinned sandbox images in the agent and detector", () =>
+{
+    for (const name of ["build-failure-analysis", "build-failure-analysis-command"])
+    {
+        const source = readWorkflow(`${name}.md`);
+        const sandbox = source.match(/^sandbox:\r?\n(?<body>[\s\S]*?)(?=^\S)/m);
+        assert.ok(sandbox, `${name}: missing sandbox configuration`);
+        const version = sandbox.groups.body.match(/version: "(v[\d.]+)"/)?.[1];
+        assert.ok(version, `${name}: missing pinned firewall version`);
+        const images = [...sandbox.groups.body.matchAll(/^\s+(?:agent|apiProxy|cliProxy|squid): "(ghcr\.io\/github\/gh-aw-firewall\/[^"]+@sha256:[a-f0-9]{64})"/gm)];
+        assert.equal(images.length, 4, `${name}: all firewall images must be digest-pinned`);
+
+        const compiled = readWorkflow(`${name}.lock.yml`);
+        for (const jobName of ["agent", "detection"])
+        {
+            const job = getJob(compiled, jobName);
+            assert.ok(job.includes(`install_awf_binary.sh" ${version} --rootless`),
+                `${name}: ${jobName} must use the pinned firewall version`);
+            const config = job.split(/\r?\n/).find((line) => line.includes("printf") && line.includes("awf-config.json"));
+            assert.ok(config, `${name}: ${jobName} missing firewall configuration`);
+            for (const [, image] of images)
+            {
+                assert.ok(config.includes(image), `${name}: ${jobName} dropped pinned image ${image}`);
+            }
+        }
+    }
+});

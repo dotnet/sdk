@@ -3332,6 +3332,16 @@ Il progetto è destinato a più framework. Specificare il framework da eseguire 
         <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestCommandDeviceSelectionFailed">
+        <source>Device selection failed for project '{0}'.</source>
+        <target state="new">Device selection failed for project '{0}'.</target>
+        <note>{0} is the project file path.</note>
+      </trans-unit>
+      <trans-unit id="TestCommandDeviceSelectionFailedForTargetFramework">
+        <source>Device selection failed for project '{0}' (target framework '{1}').</source>
+        <target state="new">Device selection failed for project '{0}' (target framework '{1}').</target>
+        <note>{0} is the project file path and {1} is the target framework.</note>
+      </trans-unit>
       <trans-unit id="TestCommandUseDirectoryWithSwitch">
         <source>Specifying a directory for 'dotnet test' should be via '--project' or '--solution'.</source>
         <target state="translated">La specifica di una directory per 'dotnet test' deve avvenire tramite '--project' o '-solution'.</target>

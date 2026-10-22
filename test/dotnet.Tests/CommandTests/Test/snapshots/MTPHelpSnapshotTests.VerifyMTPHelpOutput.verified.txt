@@ -59,6 +59,8 @@ Platform Options:
                                   Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
                                   'on' forces ANSI escape codes (including cursor movement) even when stdout is redirected; pair it with --progress off if you only want colors.
                                   When both --ansi and --no-ansi are provided, --ansi wins.
+  --coverage-threshold-branch     Specifies the minimum overall branch coverage percentage, from 0 to 100. Requires non-empty coverage data from a compatible collector.
+  --coverage-threshold-line       Specifies the minimum overall line coverage percentage, from 0 to 100. Requires non-empty coverage data from a compatible collector.
   --debug                         Allows to pause execution in order to attach to the process for debug purposes.
   --diagnostic                    Enable the diagnostic logging. The default log level is 'Trace'.
                                   The file will be written in the output directory with the name log_[yyMMddHHmmssfff].diag.
