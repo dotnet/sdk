@@ -24,8 +24,17 @@ internal class ListCommand : CommandBase
         _installPath = parseResult.GetValue(CommonOptions.InstallPathOption);
     }
 
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
+        if (AccessModeResolver.Resolve().IsAdmin)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.AdminModeCommandNotSupported,
+                Strings.AdminModeListNotSupported);
+        }
+
         var listData = InstallationLister.GetListData(verify: !_skipVerification, manifestPath: _manifestPath, installPath: _installPath);
 
         if (_format == OutputFormat.Json)

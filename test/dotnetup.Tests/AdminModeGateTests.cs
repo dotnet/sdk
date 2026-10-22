@@ -9,7 +9,8 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedSystemPath;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Self;
@@ -20,7 +21,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [TestClass]
 public class AdminModeGateTests
 {
-    private static readonly EffectiveAccessMode s_admin = new(DotnetAccessMode.Admin, AccessModeSource.Policy);
+    private static readonly EffectiveAccessMode s_admin = new(DotnetAccessMode.Admin, AccessModeSource.UserConfig);
 
     [TestMethod]
     [DataRow(null)]
@@ -51,7 +52,7 @@ public class AdminModeGateTests
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeCommandNotSupported);
         ex.Message.Should().Contain($"'{parseResult.CommandResult.Command.Name}'")
-            .And.Contain("dotnetup init --mode <mode>");
+            .And.Contain("dotnetup env set <mode>");
         ex.Message.Should().NotContain("only");
     }
 
@@ -146,9 +147,11 @@ public class AdminModeGateTests
         declaringTypes.Should().BeEquivalentTo(new[]
         {
             typeof(InstallCommand),
-            typeof(InitCommand),
             typeof(EnvSetCommand),
+            typeof(EnvShowCommand),
             typeof(EnvScriptCommand),
+            typeof(InfoCommand),
+            typeof(ListCommand),
             typeof(SelfUpdateCommand),
             typeof(ElevatedSystemPathCommand),
         });

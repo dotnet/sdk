@@ -24,6 +24,8 @@ internal class EnvShowCommand : CommandBase
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
 
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
         DotnetupConfigData? config = DotnetupConfig.Read();
