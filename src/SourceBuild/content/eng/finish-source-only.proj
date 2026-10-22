@@ -65,7 +65,7 @@
           Outputs="$(UnifiedSymbolsTarball)">
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(UnifiedSymbolsTarball)'))" />
-    <Exec Command="tar --numeric-owner -czf $(UnifiedSymbolsTarball) *"
+    <Exec Command="tar --numeric-owner --owner=2001 --group=2001 -czf $(UnifiedSymbolsTarball) *"
           WorkingDirectory="$(IntermediateSymbolsRootDir)" />
 
     <Message Importance="High" Text="Packaged all symbols in '$(UnifiedSymbolsTarball)'" />
@@ -87,7 +87,7 @@
                             SdkSymbolsLayoutPath="$(IntermediateSdkSymbolsLayout)"
                             FailOnMissingPDBs="false" />
 
-    <Exec Command="tar --numeric-owner -czf $(SdkSymbolsTarball) *"
+    <Exec Command="tar --numeric-owner --owner=2001 --group=2001 -czf $(SdkSymbolsTarball) *"
           WorkingDirectory="$(IntermediateSdkSymbolsLayout)" />
 
     <Message Importance="High" Text="Packaged sdk symbols in '$(SdkSymbolsTarball)'" />
@@ -191,7 +191,7 @@
     </PropertyGroup>
 
     <MakeDir Directories="$([System.IO.Path]::GetDirectoryName('$(PrebuiltsTarball)'))" />
-    <Exec Command="tar --numeric-owner -zcf $(PrebuiltsTarball) -C $(PrebuiltsTarballWorkingDir) ." />
+    <Exec Command="tar --numeric-owner --owner=2001 --group=2001 -zcf $(PrebuiltsTarball) -C $(PrebuiltsTarballWorkingDir) ." />
 
     <Message Text="Tarball '$(PrebuiltsTarball)' was successfully created from '$(PrebuiltsTarballWorkingDir)'" Importance="High" />
   </Target>
@@ -270,7 +270,7 @@
                                VersionPropsFlowType="AllPackages"
                                OutputPath="$(AllPackageVersionsPropsName)" />
 
-    <Exec Command="tar --numeric-owner -czhf $(SourceBuiltTarballName) $([System.IO.Path]::GetFileName('$(SourceBuiltVersionName)')) *"
+    <Exec Command="tar --numeric-owner --owner=2001 --group=2001 -czhf $(SourceBuiltTarballName) $([System.IO.Path]::GetFileName('$(SourceBuiltVersionName)')) *"
           WorkingDirectory="$(SourceBuiltLayoutDir)" />
 
     <Message Importance="High" Text="Packaged source-built artifacts to $(SourceBuiltTarballName)" />
