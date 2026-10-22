@@ -16,6 +16,10 @@
       ($(RidGraphOverridePortableJson) -> PortableRuntimeIdentifierGraph.json). The legacy
       runtime.json is frozen upstream, so it always comes from the package below; the package
       is still restored for its other assets.
+
+      The openharmony RIDs are in the runtime RID graph (dotnet/runtime#132953); the override
+      exists only until Microsoft.NETCore.Platforms flows a version that contains them, and it
+      must then be deleted together with eng/PortableRuntimeIdentifierGraph.openharmony.json.
     -->
     <PropertyGroup>
       <PortableRuntimeJsonSourceFile Condition="'$(RidGraphOverridePortableJson)' != ''">$(RidGraphOverridePortableJson)</PortableRuntimeJsonSourceFile>
