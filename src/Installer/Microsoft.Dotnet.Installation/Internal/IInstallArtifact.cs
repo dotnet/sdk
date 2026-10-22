@@ -15,6 +15,11 @@ internal interface IInstallArtifact : IDisposable
     /// <summary>Installs the prepared artifact. <see cref="Prepare"/> must have completed first.</summary>
     void Commit();
 
+    /// <summary>
+    /// Whether the installed payload should be validated after <see cref="Commit"/> returns.
+    /// </summary>
+    bool RequiresPostInstallValidation { get; }
+
     /// <summary>The subcomponents laid down by the last <see cref="Commit"/> call, for manifest tracking.</summary>
     IReadOnlyList<string> ExtractedSubcomponents { get; }
 }

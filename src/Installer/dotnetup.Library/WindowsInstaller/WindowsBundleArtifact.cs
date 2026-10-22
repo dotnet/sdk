@@ -81,6 +81,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     /// <summary>The downloaded bundle path once <see cref="Prepare"/> has completed. Exposed for testing.</summary>
     internal string? BundlePath => _download?.Path;
 
+    public bool RequiresPostInstallValidation { get; private set; } = true;
+
     public IReadOnlyList<string> ExtractedSubcomponents => [];
 
     public void Prepare()
@@ -265,6 +267,13 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         if (outcome == BundleExitOutcome.SuccessRestartRequired)
         {
             _notices.WriteLine(Format(Strings.WindowsInstallerRestartRequired, Describe()));
+            return;
+        }
+
+        if (outcome == BundleExitOutcome.SuccessRestartInitiated)
+        {
+            RequiresPostInstallValidation = false;
+            _notices.WriteLine(Format(Strings.WindowsInstallerRestartInitiated, Describe()));
             return;
         }
 

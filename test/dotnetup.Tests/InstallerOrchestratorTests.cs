@@ -386,6 +386,21 @@ public class InstallerOrchestratorTests
     }
 
     [TestMethod]
+    public void CommitPreparedInstall_ArtifactThatInitiatedRestart_SkipsPostInstallVerification()
+    {
+        using var testEnv = new TestEnvironment();
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var artifact = new FakeArtifact { RequiresPostInstallValidation = false };
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
+
+        result.WasAlreadyInstalled.Should().BeFalse();
+        artifact.CommitCalls.Should().Be(1);
+    }
+
+    [TestMethod]
     public void CommitPreparedInstall_ArchiveValidationFailure_StillThrowsInstallFailed()
     {
         using var testEnv = new TestEnvironment();
@@ -486,6 +501,8 @@ public class InstallerOrchestratorTests
         public bool Disposed { get; private set; }
 
         public Action? OnCommit { get; init; }
+
+        public bool RequiresPostInstallValidation { get; init; } = true;
 
         public IReadOnlyList<string> ExtractedSubcomponents => [];
 

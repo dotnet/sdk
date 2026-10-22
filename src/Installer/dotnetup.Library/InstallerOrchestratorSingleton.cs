@@ -380,7 +380,8 @@ internal class InstallerOrchestratorSingleton
 
             prepared.Artifact.Commit();
 
-            if (!validator.Validate(prepared.Install, out string? validationFailure))
+            if (prepared.Artifact.RequiresPostInstallValidation
+                && !validator.Validate(prepared.Install, out string? validationFailure))
             {
                 throw CreatePostInstallValidationException(prepared, validationFailure);
             }

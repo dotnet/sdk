@@ -25,6 +25,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
     /// </summary>
     public IReadOnlyList<string> ExtractedSubcomponents => [.. _extractedSubcomponents];
 
+    public bool RequiresPostInstallValidation => true;
+
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
         ReleaseVersion resolvedVersion,

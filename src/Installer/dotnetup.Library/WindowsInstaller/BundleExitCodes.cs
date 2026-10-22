@@ -8,6 +8,7 @@ internal enum BundleExitOutcome
 {
     Success,
     SuccessRestartRequired,
+    SuccessRestartInitiated,
     Cancelled,
     Busy,
     ElevationRequired,
@@ -28,7 +29,8 @@ internal static class BundleExitCodes
     public static BundleExitOutcome Classify(int exitCode) => exitCode switch
     {
         Success => BundleExitOutcome.Success,
-        RebootRequired or RebootInitiated => BundleExitOutcome.SuccessRestartRequired,
+        RebootRequired => BundleExitOutcome.SuccessRestartRequired,
+        RebootInitiated => BundleExitOutcome.SuccessRestartInitiated,
         UserExit or Cancelled => BundleExitOutcome.Cancelled,
         InstallInProgress => BundleExitOutcome.Busy,
         ElevationRequired => BundleExitOutcome.ElevationRequired,

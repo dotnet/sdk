@@ -301,10 +301,10 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow(0, false)]
-    [DataRow(3010, true)]
-    [DataRow(1641, true)]
-    public void Commit_SuccessExitCodes_Succeed(int exitCode, bool restartRequired)
+    [DataRow(0, null)]
+    [DataRow(3010, "must restart")]
+    [DataRow(1641, "restart has been initiated")]
+    public void Commit_SuccessExitCodes_Succeed(int exitCode, string? expectedNotice)
     {
         using var notices = new StringWriter(CultureInfo.InvariantCulture);
         var artifact = CreateArtifact(StableChannel, runner: new FakeRunner(exitCode), notices: notices);
@@ -312,14 +312,16 @@ public class WindowsBundleArtifactTests : IDisposable
 
         artifact.Commit();
 
-        if (restartRequired)
+        if (expectedNotice is not null)
         {
-            notices.ToString().Should().Contain("restart is required");
+            notices.ToString().Should().Contain(expectedNotice);
         }
         else
         {
             notices.ToString().Should().BeEmpty();
         }
+
+        artifact.RequiresPostInstallValidation.Should().Be(exitCode != BundleExitCodes.RebootInitiated);
     }
 
     [TestMethod]
@@ -420,7 +422,7 @@ public class WindowsBundleArtifactTests : IDisposable
     [TestMethod]
     [DataRow(0, BundleExitOutcome.Success)]
     [DataRow(3010, BundleExitOutcome.SuccessRestartRequired)]
-    [DataRow(1641, BundleExitOutcome.SuccessRestartRequired)]
+    [DataRow(1641, BundleExitOutcome.SuccessRestartInitiated)]
     [DataRow(1602, BundleExitOutcome.Cancelled)]
     [DataRow(1223, BundleExitOutcome.Cancelled)]
     [DataRow(1618, BundleExitOutcome.Busy)]
