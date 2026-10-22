@@ -1214,8 +1214,8 @@ Para instalar essas cargas de trabalho, execute o seguinte comando: dotnet workl
         <note>{StrBegins="NETSDK1248: "}</note>
       </trans-unit>
       <trans-unit id="OpenHarmonyCodesignRetainedForeignSignature">
-        <source>NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. If the existing signature is not valid for the target device, re-sign the file with the OpenHarmony signing tool.</source>
-        <target state="new">NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. If the existing signature is not valid for the target device, re-sign the file with the OpenHarmony signing tool.</target>
+        <source>NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. Run 'dotnet selfsign --force' to replace it with a self-signature.</source>
+        <target state="new">NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. Run 'dotnet selfsign --force' to replace it with a self-signature.</target>
         <note>{StrBegins="NETSDK1249: "}</note>
       </trans-unit>
       <trans-unit id="OpenHarmonyCodesignSkippedSymbolicLink">

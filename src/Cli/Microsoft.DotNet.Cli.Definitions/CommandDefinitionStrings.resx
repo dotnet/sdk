@@ -1563,4 +1563,16 @@ If command is specified without the argument, it lists all the template packages
   <data name="SDKSchemaCommandDefinition" xml:space="preserve">
     <value>Display the command schema as JSON.</value>
   </data>
+  <data name="SelfSignAppFullName" xml:space="preserve">
+    <value>Sign OpenHarmony ELF files in place.</value>
+  </data>
+  <data name="SelfSignPathsArgumentName" xml:space="preserve">
+    <value>PATHS</value>
+  </data>
+  <data name="SelfSignPathsArgumentDescription" xml:space="preserve">
+    <value>One or more files or directories to sign.</value>
+  </data>
+  <data name="SelfSignForceOptionDescription" xml:space="preserve">
+    <value>Replace an existing .codesign section created by another signer.</value>
+  </data>
 </root>
