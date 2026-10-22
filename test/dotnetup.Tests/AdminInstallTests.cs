@@ -160,7 +160,7 @@ public class InstallationValidatorTests
         File.Delete(InstallationValidator.GetMuxerPath(testEnv.InstallPath));
 
         new InstallationValidator(InstallMechanism.WindowsInstallerBundle).Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
-        failure.Should().Contain("did not report");
+        failure.Should().Contain("Muxer not found");
     }
 
     [TestMethod]
@@ -203,6 +203,111 @@ public class InstallationValidatorTests
         var validator = new InstallationValidator(InstallMechanism.Archive, _ => throw new InvalidOperationException("must not be called"));
 
         validator.Validate(MakeInstall(testEnv.InstallPath) with { Component = InstallComponent.WindowsDesktop }).Should().BeTrue();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(InstallMechanism.Archive, InstallComponent.SDK)]
+    [DataRow(InstallMechanism.Archive, InstallComponent.Runtime)]
+    [DataRow(InstallMechanism.Archive, InstallComponent.ASPNETCore)]
+    [DataRow(InstallMechanism.Archive, InstallComponent.WindowsDesktop)]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.SDK)]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.Runtime)]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.ASPNETCore)]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.WindowsDesktop)]
+    public void Validate_UnavailableEnvironmentInfoRequiresInstalledComponent(InstallMechanism mechanism, InstallComponent component)
+    {
+        using var testEnv = new TestEnvironment();
+        StubHostFxr(testEnv.InstallPath);
+        string componentPath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, component, "10.0.100")!;
+        Directory.CreateDirectory(componentPath);
+        File.WriteAllText(Path.Combine(componentPath, "payload"), string.Empty);
+        var validator = new InstallationValidator(mechanism, _ => throw new HostFxrEnvironmentInfoUnavailableException());
+
+        validator.Validate(MakeInstall(testEnv.InstallPath) with { Component = component }, out string? failure).Should().BeTrue();
+        failure.Should().BeNull();
+    }
+
+    [TestMethod]
+    [DataRow("missing-component")]
+    [DataRow("empty-component")]
+    [DataRow("wrong-version")]
+    [DataRow("wrong-component")]
+    [DataRow("wrong-root")]
+    [DataRow("missing-muxer")]
+    [DataRow("missing-hostfxr")]
+    public void Validate_UnavailableEnvironmentInfoDoesNotBypassMissingEvidence(string scenario)
+    {
+        using var testEnv = new TestEnvironment();
+        StubHostFxr(testEnv.InstallPath);
+        if (scenario != "missing-component")
+        {
+            string root = scenario == "wrong-root" ? Path.Combine(testEnv.TempRoot, "other") : testEnv.InstallPath;
+            string version = scenario == "wrong-version" ? "10.0.101" : "10.0.100";
+            InstallComponent component = scenario == "wrong-component" ? InstallComponent.Runtime : InstallComponent.SDK;
+            string componentPath = InstallationValidator.GetComponentDirectory(root, component, version)!;
+            Directory.CreateDirectory(componentPath);
+            if (scenario != "empty-component")
+            {
+                File.WriteAllText(Path.Combine(componentPath, "payload"), string.Empty);
+            }
+        }
+        if (scenario == "missing-muxer")
+        {
+            File.Delete(InstallationValidator.GetMuxerPath(testEnv.InstallPath));
+        }
+        if (scenario == "missing-hostfxr")
+        {
+            Directory.Delete(Path.Combine(testEnv.InstallPath, "host"), recursive: true);
+        }
+        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new HostFxrEnvironmentInfoUnavailableException());
+
+        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
+        failure.Should().NotBeNullOrEmpty();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(InstallMechanism.Archive, "dll")]
+    [DataRow(InstallMechanism.Archive, "export")]
+    [DataRow(InstallMechanism.Archive, "query")]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, "dll")]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, "export")]
+    [DataRow(InstallMechanism.WindowsInstallerBundle, "query")]
+    public void Validate_OtherHostQueryFailuresDoNotUseLayoutFallback(InstallMechanism mechanism, string failureType)
+    {
+        using var testEnv = new TestEnvironment();
+        StubHostFxr(testEnv.InstallPath);
+        string sdkPath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, InstallComponent.SDK, "10.0.100")!;
+        Directory.CreateDirectory(sdkPath);
+        File.WriteAllText(Path.Combine(sdkPath, "dotnet.dll"), string.Empty);
+        Exception exception = failureType switch
+        {
+            "dll" => new DllNotFoundException("hostfxr"),
+            "export" => new EntryPointNotFoundException("another hostfxr export"),
+            _ => new InvalidOperationException("hostfxr query failed"),
+        };
+        var validator = new InstallationValidator(mechanism, _ => throw exception);
+
+        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
+        failure.Should().Contain(exception.Message);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(InstallMechanism.Archive)]
+    [DataRow(InstallMechanism.WindowsInstallerBundle)]
+    public void Validate_AvailableEnvironmentInfoStillRequiresHostReport(InstallMechanism mechanism)
+    {
+        using var testEnv = new TestEnvironment();
+        StubHostFxr(testEnv.InstallPath);
+        string sdkPath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, InstallComponent.SDK, "10.0.100")!;
+        Directory.CreateDirectory(sdkPath);
+        File.WriteAllText(Path.Combine(sdkPath, "dotnet.dll"), string.Empty);
+        var validator = new InstallationValidator(mechanism, _ => HostReport());
+
+        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
+        failure.Should().Contain("did not report SDK");
     }
 
     private static string HostFxrLibraryName => OperatingSystem.IsWindows()

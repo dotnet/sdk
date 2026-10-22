@@ -185,6 +185,25 @@ public class EnvCommandTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EnvSet_Admin_FromShell_EnablesPolicyWithoutApplyingUserEnvironment()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false });
+        var parseResult = Parser.Parse(["env", "set", "admin", "--shell", "bash"]);
+        parseResult.Errors.Should().BeEmpty();
+
+        int exitCode = new EnvSetCommand(parseResult, _env, _inspector, CreateSwitcher()).Execute();
+
+        exitCode.Should().Be(0);
+        _elevator.Operations.Should().Equal(AdminModeOperation.Enable);
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.Read()!.DotnetupOnPath.Should().BeFalse();
+        _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        _env.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void EnvSet_AdminCancelled_FailsWithoutChanges()
     {
         var elevator = _environment.CreateElevator(new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled"));

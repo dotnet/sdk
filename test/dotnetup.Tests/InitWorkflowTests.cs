@@ -228,7 +228,8 @@ public class InitWorkflowTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void PrepareAccessModeForInstall_Admin_PersistsModeAndBlocksUnsignedDownloads()
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void InitWalkthrough_Admin_PersistsModeWithoutApplyingUserEnvironment()
     {
         var policyStore = new FakeDotnetupPolicyStore();
         var policy = new DotnetupPolicy(policyStore);
@@ -238,32 +239,80 @@ public class InitWorkflowTests : IDisposable
             elevator,
             () => false,
             AdminModeSwitcherTests.CreateConsole(new StringWriter()));
-        var environment = new MockDotnetInstallManager(defaultInstallPath: _tempDir);
-        var workflows = new InitWorkflows(environment, switcher, new FakeEnvironmentStateInspector());
+        var environment = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: []);
+        var workflows = new InitWorkflows(environment, switcher)
+        {
+            FormSelectionOverride = (_, _) => new InitFormSelection(
+                Channel: null,
+                AccessMode: DotnetAccessMode.Admin,
+                MigrateSystemInstalls: false),
+        };
         var command = new InitCommand(Parser.Parse(["init"]), policy);
         var previous = new DotnetupConfigData
         {
             AccessMode = DotnetAccessMode.Everywhere,
             DotnetupOnPath = false,
         };
-        var installRoot = new DotnetInstallRoot(
-            _tempDir,
-            InstallerUtilities.GetDefaultInstallArchitecture());
+        DotnetupConfig.Write(previous);
 
-        bool prepared = workflows.PrepareAccessModeForInstall(
-            command,
-            DotnetAccessMode.Admin,
-            installRoot,
-            previous);
+        List<ResolvedInstallRequest> requests = RunFromTempDirectory(
+            () => workflows.InitWalkthrough(command, requests: []));
 
-        prepared.Should().BeTrue();
+        requests.Should().BeEmpty();
+        elevator.Operations.Should().Equal(AdminModeOperation.Enable);
         policy.IsUnsignedDownloadBlocked().Should().BeTrue();
         DotnetupConfig.Read().Should().BeEquivalentTo(new DotnetupConfigData
         {
             AccessMode = DotnetAccessMode.Admin,
             DotnetupOnPath = false,
         });
-        environment.GetExistingSystemInstallsCallCount.Should().Be(0);
+        environment.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        environment.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        environment.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void ResolveExecutionPlan_AdminInitWithoutUntracked_CreatesUntrackedSystemRequest()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });
+        var policyStore = new FakeDotnetupPolicyStore();
+        var policy = new DotnetupPolicy(policyStore);
+        var parseResult = Parser.Parse(["init"]);
+        parseResult.Errors.Should().BeEmpty();
+        var command = new InitCommand(parseResult, policy);
+        command.Untracked.Should().BeFalse();
+        var installRoot = new DotnetInstallRoot(
+            _tempDir,
+            InstallerUtilities.GetDefaultInstallArchitecture());
+        var request = new ResolvedInstallRequest(
+            new DotnetInstallRequest(
+                installRoot,
+                new UpdateChannel("9.0.100"),
+                InstallComponent.SDK,
+                new InstallRequestOptions()),
+            new ReleaseVersion("9.0.100"));
+        var defaults = new InitFormDefaults(
+            installRoot,
+            DotnetAccessMode.Admin,
+            MigrateSystemInstalls: false,
+            Migrations: [],
+            new DefaultChannelDisplay("9.0.100", GlobalJsonPath: null),
+            [new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")],
+            ShellProvider: null,
+            InstallRootGlobalJsonPath: null);
+
+        InitExecutionPlan plan = InitWorkflows.ResolveExecutionPlan(
+            command,
+            [request],
+            defaults,
+            new InitFormSelection("9.0.100", DotnetAccessMode.Admin, MigrateSystemInstalls: false));
+
+        plan.InstallRequests.Should().ContainSingle();
+        DotnetInstallRequest resolved = plan.InstallRequests[0].Request;
+        resolved.Options.Untracked.Should().BeTrue();
+        resolved.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+        resolved.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(installRoot.Architecture));
+        plan.Migrations.Should().BeEmpty();
     }
 
     // The no-shell isolation fallback (which reads the SHELL environment variable) is covered
