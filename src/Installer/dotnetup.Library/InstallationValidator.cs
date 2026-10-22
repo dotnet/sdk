@@ -104,12 +104,20 @@ internal sealed class InstallationValidator : IInstallationValidator
             return false;
         }
 
+        if (!File.Exists(GetMuxerPath(installRoot)))
+        {
+            failureReason = $"Muxer not found at '{GetMuxerPath(installRoot)}'.";
+            return false;
+        }
+
         try
         {
-            var environmentInfo = File.Exists(GetMuxerPath(installRoot))
-                ? _getEnvironmentInfo(installRoot)
-                : new NetEnvironmentInfo();
+            var environmentInfo = _getEnvironmentInfo(installRoot);
             return IsReportedByHost(environmentInfo, installRoot, install.Version, install.Component, out failureReason);
+        }
+        catch (HostFxrEnvironmentInfoUnavailableException)
+        {
+            return ValidateWithoutEnvironmentInfo(installRoot, install.Version, install.Component, out failureReason);
         }
         catch (Exception ex)
         {
@@ -133,6 +141,7 @@ internal sealed class InstallationValidator : IInstallationValidator
         try
         {
             return Directory.EnumerateDirectories(hostFxrDirectory)
+                .Where(directory => ReleaseVersion.TryParse(Path.GetFileName(directory), out _))
                 .Any(versionDirectory => File.Exists(Path.Combine(versionDirectory, libraryName)));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -167,11 +176,30 @@ internal sealed class InstallationValidator : IInstallationValidator
         {
             return IsReportedByHost(_getEnvironmentInfo(installRoot), installRoot, resolvedVersion, component, out failureReason);
         }
+        catch (HostFxrEnvironmentInfoUnavailableException)
+        {
+            return ValidateWithoutEnvironmentInfo(installRoot, resolvedVersion, component, out failureReason);
+        }
         catch (Exception ex)
         {
             failureReason = $"HostFxr threw an exception: {ex}";
             return false;
         }
+    }
+
+    private static bool ValidateWithoutEnvironmentInfo(
+        string installRoot, ReleaseVersion version, InstallComponent component, out string? failureReason)
+    {
+        if (HasHostFxr(installRoot) &&
+            File.Exists(GetMuxerPath(installRoot)) &&
+            ValidateComponentLayout(installRoot, version.ToString(), component))
+        {
+            failureReason = null;
+            return true;
+        }
+
+        failureReason = $"hostfxr_get_dotnet_environment_info is unavailable and the muxer or non-empty component directory for {component} {version} is missing at '{installRoot}'.";
+        return false;
     }
 
     /// <summary>Gets the path of the <c>dotnet</c> muxer in an install root.</summary>

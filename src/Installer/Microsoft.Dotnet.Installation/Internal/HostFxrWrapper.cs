@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.ComponentModel;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.Dotnet.Installation.Internal;
@@ -16,8 +17,14 @@ internal partial class HostFxrWrapper
         }
         PreloadHostFxrLibrary(installRoot);
 
-        var bundleProvider = new NETBundlesNativeWrapper();
-        return bundleProvider.GetDotnetEnvironmentInfo(installRoot); // Could we use get_available_sdks instead to improve perf?
+        var info = new NetEnvironmentInfo();
+        StatusCode status = Interop.hostfxr_get_dotnet_environment_info(installRoot, default, info.Initialize, default);
+        if (status != StatusCode.Success)
+        {
+            throw new InvalidOperationException($"hostfxr_get_dotnet_environment_info failed with status 0x{(uint)status:X8}.");
+        }
+
+        return info;
     }
 
     public static IEnumerable<DotnetInstall> getInstalls(string installRoot)
@@ -26,9 +33,15 @@ internal partial class HostFxrWrapper
         {
             return Enumerable.Empty<DotnetInstall>();
         }
-        PreloadHostFxrLibrary(installRoot);
-
-        var environmentInfo = getInfo(installRoot);
+        NetEnvironmentInfo environmentInfo;
+        try
+        {
+            environmentInfo = getInfo(installRoot);
+        }
+        catch (HostFxrEnvironmentInfoUnavailableException) when (HasInstallationLayout(installRoot))
+        {
+            return [];
+        }
         var installs = new List<DotnetInstall>();
         foreach (var sdk in environmentInfo.SdkInfo.ToList())
         {
@@ -59,22 +72,27 @@ internal partial class HostFxrWrapper
 
     private static void PreloadHostFxrLibrary(string dotnetExeDirectory)
     {
-        string? hostFxrPath = FindHostFxrLibrary(dotnetExeDirectory);
-        if (hostFxrPath != null)
+        string hostFxrPath = FindHostFxrLibrary(dotnetExeDirectory)
+            ?? throw new DllNotFoundException($"No hostfxr library was found under '{Path.Combine(dotnetExeDirectory, "host", "fxr")}'.");
+        IntPtr handle;
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            handle = LoadLibraryExW(hostFxrPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH);
+            if (handle == IntPtr.Zero)
             {
-                if (LoadLibraryExW(hostFxrPath, IntPtr.Zero, LOAD_WITH_ALTERED_SEARCH_PATH) == IntPtr.Zero)
-                {
-                    throw new Win32Exception(Marshal.GetLastPInvokeError(), $"Could not load hostfxr from '{hostFxrPath}'.");
-                }
+                throw new Win32Exception(Marshal.GetLastPInvokeError(), $"Could not load hostfxr from '{hostFxrPath}'.");
             }
-#if NETCOREAPP
-            else
-            {
-                AppContext.SetData("HOSTFXR_PATH", hostFxrPath);
-            }
-#endif
+        }
+        else
+        {
+            AppContext.SetData("HOSTFXR_PATH", hostFxrPath);
+            handle = NativeLibrary.Load(hostFxrPath);
+        }
+
+        if (!NativeLibrary.TryGetExport(handle, "hostfxr_get_dotnet_environment_info", out _))
+        {
+            NativeLibrary.Free(handle);
+            throw new HostFxrEnvironmentInfoUnavailableException();
         }
     }
 
@@ -92,8 +110,34 @@ internal partial class HostFxrWrapper
                 ? "libhostfxr.dylib"
                 : "libhostfxr.so";
 
-        return Directory.EnumerateFiles(hostFxrDirectory, libraryName, SearchOption.AllDirectories)
+        return Directory.EnumerateDirectories(hostFxrDirectory)
+            .Where(directory => ReleaseVersion.TryParse(Path.GetFileName(directory), out _))
+            .Select(directory => Path.Combine(directory, libraryName))
+            .Where(File.Exists)
             .OrderByDescending(File.GetLastWriteTimeUtc)
             .FirstOrDefault();
     }
+
+    private static bool HasInstallationLayout(string installRoot)
+    {
+        if (!File.Exists(Path.Combine(installRoot, OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet")))
+        {
+            return false;
+        }
+
+        string[] componentDirectories =
+        [
+            Path.Combine(installRoot, "sdk"),
+            Path.Combine(installRoot, "shared", InstallComponentExtensions.RuntimeFrameworkName),
+            Path.Combine(installRoot, "shared", InstallComponentExtensions.AspNetCoreFrameworkName),
+            Path.Combine(installRoot, "shared", InstallComponentExtensions.WindowsDesktopFrameworkName),
+        ];
+        return componentDirectories.Where(Directory.Exists).Any(directory =>
+            Directory.EnumerateDirectories(directory).Any(versionDirectory =>
+                ReleaseVersion.TryParse(Path.GetFileName(versionDirectory), out _) &&
+                Directory.EnumerateFileSystemEntries(versionDirectory).Any()));
+    }
 }
+
+internal sealed class HostFxrEnvironmentInfoUnavailableException()
+    : Exception("The loaded hostfxr does not export hostfxr_get_dotnet_environment_info.");

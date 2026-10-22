@@ -13,6 +13,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 internal static class HostFxrQueryProcess
 {
     internal const string Command = "--internal-query-hostfxr";
+    internal const int EnvironmentInfoUnavailableExitCode = 2;
 
     public static NetEnvironmentInfo GetInfo(string installRoot) =>
         GetInfo(installRoot, DotnetupProcessInfo.ExecutablePath
@@ -41,6 +42,11 @@ internal static class HostFxrQueryProcess
                 info.SdkInfo.Select(sdk => new HostFxrSdkInfo(sdk.Version.ToString(), sdk.Path)).ToArray(),
                 info.RuntimeInfo.Select(runtime => new HostFxrRuntimeInfo(runtime.Name, runtime.Version.ToString(), runtime.Path)).ToArray());
             JsonSerializer.Serialize(Console.OpenStandardOutput(), result, HostFxrQueryJsonContext.Default.HostFxrQueryResult);
+        }
+        catch (HostFxrEnvironmentInfoUnavailableException ex)
+        {
+            Console.Error.WriteLine(ex.Message);
+            exitCode = EnvironmentInfoUnavailableExitCode;
         }
         catch (Exception ex)
         {
@@ -77,6 +83,11 @@ internal static class HostFxrQueryProcess
         {
             await Task.WhenAll(process.WaitForExitAsync(cancellation.Token), stdout, stderr)
                 .WaitAsync(cancellation.Token).ConfigureAwait(false);
+            if (process.ExitCode == EnvironmentInfoUnavailableExitCode)
+            {
+                throw new HostFxrEnvironmentInfoUnavailableException();
+            }
+
             if (process.ExitCode != 0)
             {
                 throw new InvalidOperationException($"Hostfxr query exited with code {process.ExitCode}: {await stderr.ConfigureAwait(false)}");
