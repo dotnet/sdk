@@ -1213,13 +1213,13 @@ To install these workloads, run the following command: dotnet workload restore</
         <note>{StrBegins="NETSDK1248: "}</note>
       </trans-unit>
       <trans-unit id="OpenHarmonyCodesignRetainedForeignSignature">
-        <source>NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. Run 'dotnet selfsign --force' to replace it with a self-signature.</source>
-        <target state="new">NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. Run 'dotnet selfsign --force' to replace it with a self-signature.</target>
+        <source>NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. If the existing signature is not valid for the target device, re-sign the file with the OpenHarmony signing tool.</source>
+        <target state="new">NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. If the existing signature is not valid for the target device, re-sign the file with the OpenHarmony signing tool.</target>
         <note>{StrBegins="NETSDK1249: "}</note>
       </trans-unit>
       <trans-unit id="OpenHarmonyCodesignSkippedSymbolicLink">
-        <source>NETSDK1250: Skipping symbolic link '{0}' while signing OpenHarmony outputs: signing never follows links outside the output tree.</source>
-        <target state="new">NETSDK1250: Skipping symbolic link '{0}' while signing OpenHarmony outputs: signing never follows links outside the output tree.</target>
+        <source>NETSDK1250: Skipping symbolic link '{0}' while signing OpenHarmony outputs: signing never follows symbolic links.</source>
+        <target state="new">NETSDK1250: Skipping symbolic link '{0}' while signing OpenHarmony outputs: signing never follows symbolic links.</target>
         <note>{StrBegins="NETSDK1250: "}</note>
       </trans-unit>
     </body>

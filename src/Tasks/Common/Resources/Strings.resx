@@ -1071,11 +1071,11 @@ You may need to build the project on another operating system or architecture, o
     <comment>{StrBegins="NETSDK1248: "}</comment>
   </data>
   <data name="OpenHarmonyCodesignRetainedForeignSignature" xml:space="preserve">
-    <value>NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. Run 'dotnet selfsign --force' to replace it with a self-signature.</value>
+    <value>NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. If the existing signature is not valid for the target device, re-sign the file with the OpenHarmony signing tool.</value>
     <comment>{StrBegins="NETSDK1249: "}</comment>
   </data>
   <data name="OpenHarmonyCodesignSkippedSymbolicLink" xml:space="preserve">
-    <value>NETSDK1250: Skipping symbolic link '{0}' while signing OpenHarmony outputs: signing never follows links outside the output tree.</value>
+    <value>NETSDK1250: Skipping symbolic link '{0}' while signing OpenHarmony outputs: signing never follows symbolic links.</value>
     <comment>{StrBegins="NETSDK1250: "}</comment>
   </data>
   <!-- The latest message added is OpenHarmonyCodesignSkippedSymbolicLink. Please update this value with each PR to catch parallel PRs both adding a new message -->
