@@ -41,6 +41,8 @@
   -->
   <PropertyGroup>
     <NativeAotSupported Condition="'$(OSName)' == 'openharmony'">false</NativeAotSupported>
+    <!-- The OpenHarmony SDK ships no workloads; the layout validates that the manifest list is non-empty for every other platform. -->
+    <SkipWorkloadManifestValidation Condition="'$(OSName)' == 'openharmony'">true</SkipWorkloadManifestValidation>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -129,14 +131,11 @@
 
   <!-- These aliases need to live outside of Versions.props as VMR / source-build overwrites some of the version properties for live builds. -->
   <PropertyGroup>
-    <!-- Runtime and Apphost pack versions are the same for all RIDs. We flow the x64 version above and create aliases without the winx64 here for clarity elsewhere.
-         The '== ''' guards let the official (non-source-build) build override just the Host/Runtime pack versions via /p: on the command line for a
-         locally-built runtime (e.g. an unofficial openharmony RID whose packs only exist at a dev version), without also retargeting the shared
-         Microsoft.NETCore.App.Ref / ILLink / Crossgen2 companion packages that must stay at the flowed version. -->
-    <MicrosoftNETCoreAppHostPackageVersion Condition="'$(MicrosoftNETCoreAppHostPackageVersion)' == ''">$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppHostPackageVersion>
-    <MicrosoftNETCoreAppRuntimePackageVersion Condition="'$(MicrosoftNETCoreAppRuntimePackageVersion)' == ''">$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
-    <MicrosoftAspNetCoreAppRuntimePackageVersion Condition="'$(MicrosoftAspNetCoreAppRuntimePackageVersion)' == ''">$(MicrosoftAspNetCoreAppRefPackageVersion)</MicrosoftAspNetCoreAppRuntimePackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimePackageVersion Condition="'$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' == ''">$(MicrosoftWindowsDesktopAppRefPackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
+    <!-- Runtime and Apphost pack versions are the same for all RIDs. We flow the x64 version above and create aliases without the winx64 here for clarity elsewhere. -->
+    <MicrosoftNETCoreAppHostPackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppHostPackageVersion>
+    <MicrosoftNETCoreAppRuntimePackageVersion>$(MicrosoftNETCoreAppRefPackageVersion)</MicrosoftNETCoreAppRuntimePackageVersion>
+    <MicrosoftAspNetCoreAppRuntimePackageVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</MicrosoftAspNetCoreAppRuntimePackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimePackageVersion>$(MicrosoftWindowsDesktopAppRefPackageVersion)</MicrosoftWindowsDesktopAppRuntimePackageVersion>
 
     <HostFxrVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</HostFxrVersion>
     <SharedHostVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedHostVersion>
