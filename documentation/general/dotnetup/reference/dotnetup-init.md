@@ -28,8 +28,10 @@ system-managed installations. For descriptions of the access modes, see
 
 Run this command again to reconfigure dotnetup.
 
-Admin mode is selected separately with `dotnetup env set admin`; it is not part
-of the onboarding flow. For details, see
+On Windows, the interactive form can select admin mode. The migration prompt is
+hidden for that selection, and the normal setup flow installs the selected SDK
+through the shared system installer. Admin mode can also be selected separately
+with `dotnetup env set admin`. For details, see
 [dotnetup admin mode](../designs/dotnetup-admin-mode.md).
 
 ## Options
@@ -51,5 +53,4 @@ of the onboarding flow. For details, see
 dotnetup init
 dotnetup init --shell bash
 dotnetup init --install-path .\.dotnet
-dotnetup init --interactive false --mode admin
 ```

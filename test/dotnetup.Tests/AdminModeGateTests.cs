@@ -10,6 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedSystemPath;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Info;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
@@ -151,6 +152,7 @@ public class AdminModeGateTests
             typeof(EnvShowCommand),
             typeof(EnvScriptCommand),
             typeof(InfoCommand),
+            typeof(InitCommand),
             typeof(ListCommand),
             typeof(SelfUpdateCommand),
             typeof(ElevatedSystemPathCommand),

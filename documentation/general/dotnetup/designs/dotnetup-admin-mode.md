@@ -109,6 +109,11 @@ Rollout for other commands will be integrated later, such as:
 
 `admin`, like the other access modes, is stored in the current user's existing `dotnetup` configuration. Different users can select different access modes. This setting does not grant administrative privileges: the official installer still requests administrator approval when it performs a machine-wide installation.
 
+On Windows, `admin` can be selected from the interactive `dotnetup init` form or with
+`dotnetup env set admin`. The init form hides migration for this selection, applies the
+mode before resolving install requests, and then continues through the normal setup
+experience using the shared system installer. There is no `init --mode` option.
+
 #### Registry Values (Windows only)
 
 The `BlockUnsignedDownloads` `REG_DWORD` value under `HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup` controls whether unsigned downloads are allowed. A nonzero value blocks them; `0`, a missing value, or an unreadable value allows them. It is read from the native registry view, so WOW64 redirection does not split it.

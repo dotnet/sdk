@@ -107,9 +107,11 @@ internal static class InitDefaultsResolver
     /// </summary>
     public static List<ResolvedInstallRequest> ResolveDefaultRequests(
         InstallCommand command,
-        List<ResolvedInstallRequest>? requests)
+        List<ResolvedInstallRequest>? requests,
+        bool adminSelectedInSetup = false)
     {
-        return requests ?? GenerateSdkInstallRequests(command, channel: null);
+        return requests ?? GenerateInstallRequests(
+            command, [new MinimalInstallSpec(InstallComponent.SDK, null)], adminSelectedInSetup);
     }
 
     /// <summary>
@@ -126,10 +128,11 @@ internal static class InitDefaultsResolver
     /// </summary>
     public static List<ResolvedInstallRequest> GenerateInstallRequests(
         InstallCommand command,
-        MinimalInstallSpec[] componentSpecs)
+        MinimalInstallSpec[] componentSpecs,
+        bool adminSelectedInSetup = false)
     {
         var workflow = new InstallWorkflow(command);
-        return workflow.GenerateInstallRequests(componentSpecs);
+        return workflow.GenerateInstallRequests(componentSpecs, adminSelectedInSetup);
     }
 
     /// <summary>

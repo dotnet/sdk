@@ -54,7 +54,10 @@ internal sealed class WindowsAdminModeElevator : IAdminModeElevator
 }
 
 /// <summary>
-/// Updates the unsigned-download policy when the user enters or leaves admin mode.
+/// Applies the machine-wide side of entering or leaving admin mode: the <c>BlockUnsignedDownloads</c>
+/// policy value. The access mode itself is stored in the per-user dotnetup config by the caller.
+/// The policy change happens before any other state change, so a declined or failed elevation
+/// leaves the machine and the user's configuration untouched.
 /// </summary>
 internal sealed class AdminModeSwitcher
 {
@@ -81,10 +84,16 @@ internal sealed class AdminModeSwitcher
     /// <summary>The machine policy this switcher reads and changes.</summary>
     internal DotnetupPolicy Policy { get; }
 
-    /// <summary>Blocks unsigned downloads for admin mode. Returns false when already blocked.</summary>
+    /// <summary>
+    /// Enables admin mode's unsigned-download block, elevating only when the policy is not already
+    /// set. Returns false when the policy was already set.
+    /// </summary>
     public bool Enable() => Switch(AdminModeOperation.Enable);
 
-    /// <summary>Allows unsigned downloads after leaving admin mode. Returns false when already allowed.</summary>
+    /// <summary>
+    /// Clears admin mode's unsigned-download block, elevating only when the policy is set. Returns
+    /// false when the policy was already clear.
+    /// </summary>
     public bool Disable() => Switch(AdminModeOperation.Disable);
 
     /// <summary>
@@ -113,25 +122,35 @@ internal sealed class AdminModeSwitcher
         }
 
         bool enable = operation == AdminModeOperation.Enable;
-        if (Policy.IsUnsignedDownloadBlocked() == enable)
+        bool changed = Policy.IsUnsignedDownloadBlocked() != enable;
+        if (changed)
         {
-            _console.MarkupLine(DotnetupTheme.Dim(enable ? Strings.AdminModeUnsignedDownloadsAlreadyBlocked : Strings.AdminModeUnsignedDownloadsAlreadyAllowed));
-            return false;
+            bool privileged = _isPrivilegedProcess();
+            WriteMachineWideNotice(enable, privileged);
+            ApplyChange(operation, privileged);
+            VerifyChange(enable);
         }
 
-        bool privileged = _isPrivilegedProcess();
-        WriteMachineWideNotice(enable, privileged);
-        ApplyChange(operation, privileged);
-        VerifyChange(enable);
+        if (enable)
+        {
+            _console.MarkupLine(DotnetupTheme.Success(Strings.AdminModeEnabled));
+            _console.WriteLine(Strings.AdminModePreservesUserEnvironment);
+        }
+        else
+        {
+            _console.MarkupLine(DotnetupTheme.Success(Strings.AdminModeDisabled));
+            if (changed)
+            {
+                _console.WriteLine(Strings.AdminModeUnsignedDownloadsAllowed);
+            }
+        }
 
-        _console.MarkupLine(DotnetupTheme.Success(enable ? Strings.AdminModeUnsignedDownloadsBlocked : Strings.AdminModeUnsignedDownloadsAllowed));
-
-        return true;
+        return changed;
     }
 
     private void WriteMachineWideNotice(bool enable, bool privileged)
     {
-        string notice = enable ? Strings.AdminModeBlockingUnsignedDownloadsNotice : Strings.AdminModeAllowingUnsignedDownloadsNotice;
+        string notice = enable ? Strings.AdminModeEnablingNotice : Strings.AdminModeDisablingNotice;
         if (!privileged)
         {
             notice += " " + Strings.AdminModeElevationNotice;
@@ -181,7 +200,7 @@ internal sealed class AdminModeSwitcher
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeChangeFailed,
-                enable ? Strings.AdminModeUnsignedDownloadsNotBlocked : Strings.AdminModeUnsignedDownloadsNotAllowed);
+                enable ? Strings.AdminModeNotEnabled : Strings.AdminModeNotDisabled);
         }
     }
 

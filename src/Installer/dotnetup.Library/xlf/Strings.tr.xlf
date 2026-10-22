@@ -7,19 +7,14 @@
         <target state="new">Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AdminModeAllowingUnsignedDownloadsNotice">
-        <source>Leaving admin mode allows unsigned executable downloads by default for all users on this computer.</source>
-        <target state="new">Leaving admin mode allows unsigned executable downloads by default for all users on this computer.</target>
+      <trans-unit id="AdminModeAlreadyEnabled">
+        <source>Admin mode is already enabled.</source>
+        <target state="new">Admin mode is already enabled.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdminModeArgumentDisplayName">
         <source>The argument '&lt;{0}&gt;'</source>
         <target state="new">The argument '&lt;{0}&gt;'</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdminModeBlockingUnsignedDownloadsNotice">
-        <source>Entering admin mode blocks unsigned executable downloads for all users on this computer.</source>
-        <target state="new">Entering admin mode blocks unsigned executable downloads for all users on this computer.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdminModeChangeCancelled">
@@ -37,6 +32,16 @@
         <target state="new">Failed to disable admin mode: {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="AdminModeDisabled">
+        <source>Admin mode is disabled.</source>
+        <target state="new">Admin mode is disabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeDisablingNotice">
+        <source>Disabling admin mode changes a machine-wide policy that affects all users on this computer.</source>
+        <target state="new">Disabling admin mode changes a machine-wide policy that affects all users on this computer.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AdminModeElevationNotice">
         <source>Windows will ask for administrator permission.</source>
         <target state="new">Windows will ask for administrator permission.</target>
@@ -45,6 +50,16 @@
       <trans-unit id="AdminModeEnableFailed">
         <source>Failed to enable admin mode: {0}</source>
         <target state="new">Failed to enable admin mode: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeEnabled">
+        <source>Admin mode is enabled.</source>
+        <target state="new">Admin mode is enabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeEnablingNotice">
+        <source>Enabling admin mode changes a machine-wide policy that affects all users on this computer.</source>
+        <target state="new">Enabling admin mode changes a machine-wide policy that affects all users on this computer.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdminModeInfoInstallationsNotShown">
@@ -57,10 +72,27 @@
         <target state="new">The list command is not yet supported in admin mode. Use 'dotnet --list-sdks', 'dotnet --list-runtimes', or 'dotnet --info' to view system installations.</target>
         <note>{Locked="dotnetup"} {Locked="dotnet --list-sdks"} {Locked="dotnet --list-runtimes"} {Locked="dotnet --info"}</note>
       </trans-unit>
+      <trans-unit id="AdminModeNotDisabled">
+        <source>Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</source>
+        <target state="new">Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeNotEnabled">
+        <source>Admin mode was not enabled. The machine policy did not change, which can happen when it is managed by Group Policy.</source>
+        <target state="new">Admin mode was not enabled. The machine policy did not change, which can happen when it is managed by Group Policy.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AdminModeOptionDisplayName">
         <source>The option '{0}'</source>
         <target state="new">The option '{0}'</target>
         <note />
+      </trans-unit>
+      <trans-unit id="AdminModePreservesUserEnvironment">
+        <source>Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
+Restart open apps and terminals after installing .NET and review settings if needed.</source>
+        <target state="new">Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
+Restart open apps and terminals after installing .NET and review settings if needed.</target>
+        <note>{Locked="PATH"}{Locked="DOTNET_ROOT"}</note>
       </trans-unit>
       <trans-unit id="AdminModeSymbolNotSupported">
         <source>{0} is not available for '{1}' in admin mode.</source>
@@ -70,31 +102,6 @@
       <trans-unit id="AdminModeUnsignedDownloadsAllowed">
         <source>Unsigned executables will be allowed again by default.</source>
         <target state="new">Unsigned executables will be allowed again by default.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdminModeUnsignedDownloadsAlreadyAllowed">
-        <source>Unsigned executable downloads are already allowed.</source>
-        <target state="new">Unsigned executable downloads are already allowed.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdminModeUnsignedDownloadsAlreadyBlocked">
-        <source>Unsigned executable downloads are already blocked.</source>
-        <target state="new">Unsigned executable downloads are already blocked.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdminModeUnsignedDownloadsBlocked">
-        <source>Unsigned executable downloads are blocked while admin mode is active.</source>
-        <target state="new">Unsigned executable downloads are blocked while admin mode is active.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdminModeUnsignedDownloadsNotAllowed">
-        <source>Admin mode was not disabled because the unsigned-download policy did not change, which can happen when it is managed by Group Policy.</source>
-        <target state="new">Admin mode was not disabled because the unsigned-download policy did not change, which can happen when it is managed by Group Policy.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdminModeUnsignedDownloadsNotBlocked">
-        <source>Admin mode was not enabled because the unsigned-download policy did not change, which can happen when it is managed by Group Policy.</source>
-        <target state="new">Admin mode was not enabled because the unsigned-download policy did not change, which can happen when it is managed by Group Policy.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdminModeWindowsOnly">
@@ -510,6 +517,16 @@ Or open a new terminal.</target>
         <source>Display dotnetup information.</source>
         <target state="new">Display dotnetup information.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InitAdminModeInstallDescription">
+        <source>Installs .NET with the Windows installer into the shared system folder. Requires elevation.</source>
+        <target state="new">Installs .NET with the Windows installer into the shared system folder. Requires elevation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitAdminModeSelectionDescription">
+        <source>Changes a machine-wide setting for all users. Existing profiles, PATH entries, and DOTNET_ROOT are left unchanged.</source>
+        <target state="new">Changes a machine-wide setting for all users. Existing profiles, PATH entries, and DOTNET_ROOT are left unchanged.</target>
+        <note>{Locked="PATH"}{Locked="DOTNET_ROOT"}</note>
       </trans-unit>
       <trans-unit id="InitCommandDescription">
         <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>

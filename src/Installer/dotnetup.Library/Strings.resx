@@ -537,23 +537,23 @@ Or open a new terminal.</value>
   <data name="AdminModeWindowsOnly" xml:space="preserve">
     <value>Admin mode is only supported on Windows.</value>
   </data>
-  <data name="AdminModeUnsignedDownloadsAlreadyBlocked" xml:space="preserve">
-    <value>Unsigned executable downloads are already blocked.</value>
+  <data name="AdminModeAlreadyEnabled" xml:space="preserve">
+    <value>Admin mode is already enabled.</value>
   </data>
-  <data name="AdminModeUnsignedDownloadsAlreadyAllowed" xml:space="preserve">
-    <value>Unsigned executable downloads are already allowed.</value>
+  <data name="AdminModeEnabled" xml:space="preserve">
+    <value>Admin mode is enabled.</value>
   </data>
-  <data name="AdminModeUnsignedDownloadsBlocked" xml:space="preserve">
-    <value>Unsigned executable downloads are blocked while admin mode is active.</value>
+  <data name="AdminModeDisabled" xml:space="preserve">
+    <value>Admin mode is disabled.</value>
   </data>
   <data name="AdminModeUnsignedDownloadsAllowed" xml:space="preserve">
     <value>Unsigned executables will be allowed again by default.</value>
   </data>
-  <data name="AdminModeBlockingUnsignedDownloadsNotice" xml:space="preserve">
-    <value>Entering admin mode blocks unsigned executable downloads for all users on this computer.</value>
+  <data name="AdminModeEnablingNotice" xml:space="preserve">
+    <value>Enabling admin mode changes a machine-wide policy that affects all users on this computer.</value>
   </data>
-  <data name="AdminModeAllowingUnsignedDownloadsNotice" xml:space="preserve">
-    <value>Leaving admin mode allows unsigned executable downloads by default for all users on this computer.</value>
+  <data name="AdminModeDisablingNotice" xml:space="preserve">
+    <value>Disabling admin mode changes a machine-wide policy that affects all users on this computer.</value>
   </data>
   <data name="AdminModeElevationNotice" xml:space="preserve">
     <value>Windows will ask for administrator permission.</value>
@@ -567,11 +567,23 @@ Or open a new terminal.</value>
   <data name="AdminModeDisableFailed" xml:space="preserve">
     <value>Failed to disable admin mode: {0}</value>
   </data>
-  <data name="AdminModeUnsignedDownloadsNotBlocked" xml:space="preserve">
-    <value>Admin mode was not enabled because the unsigned-download policy did not change, which can happen when it is managed by Group Policy.</value>
+  <data name="AdminModeNotEnabled" xml:space="preserve">
+    <value>Admin mode was not enabled. The machine policy did not change, which can happen when it is managed by Group Policy.</value>
   </data>
-  <data name="AdminModeUnsignedDownloadsNotAllowed" xml:space="preserve">
-    <value>Admin mode was not disabled because the unsigned-download policy did not change, which can happen when it is managed by Group Policy.</value>
+  <data name="AdminModeNotDisabled" xml:space="preserve">
+    <value>Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</value>
+  </data>
+  <data name="AdminModePreservesUserEnvironment" xml:space="preserve">
+    <value>Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
+Restart open apps and terminals after installing .NET and review settings if needed.</value>
+    <comment>{Locked="PATH"}{Locked="DOTNET_ROOT"}</comment>
+  </data>
+  <data name="InitAdminModeInstallDescription" xml:space="preserve">
+    <value>Installs .NET with the Windows installer into the shared system folder. Requires elevation.</value>
+  </data>
+  <data name="InitAdminModeSelectionDescription" xml:space="preserve">
+    <value>Changes a machine-wide setting for all users. Existing profiles, PATH entries, and DOTNET_ROOT are left unchanged.</value>
+    <comment>{Locked="PATH"}{Locked="DOTNET_ROOT"}</comment>
   </data>
   <data name="AccessModeAdminDescription" xml:space="preserve">
     <value>Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.</value>

@@ -59,7 +59,7 @@ internal class InstallWorkflow
             // Pre-resolve the user's requests unless we still need to prompt for a starter channel
             // (in which case the walkthrough generates them after the prompt).
             var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs);
-            var workflows = new InitWorkflows(_command.DotnetEnvironment);
+            var workflows = new InitWorkflows(_command.DotnetEnvironment, new AdminModeSwitcher(_command.Policy));
             requests = workflows.InitWalkthrough(_command, initialRequests);
         }
         else
@@ -130,15 +130,18 @@ internal class InstallWorkflow
     /// Handles path resolution, global.json channel inference (for SDK when no channel specified),
     /// install path validation, and version resolution via the channel version resolver.
     /// In admin mode, requests target the shared system location and use the Windows installer bundle;
-    /// global.json still selects the channel but its sdk paths are ignored.
+    /// global.json still selects the channel but its sdk paths are ignored. Admin mode requires
+    /// <c>--untracked</c> unless <paramref name="adminSelectedInSetup"/> is set, which the setup form
+    /// passes after the user selects admin mode there: those installs are untracked by definition.
     /// </summary>
     public List<ResolvedInstallRequest> GenerateInstallRequests(
-        MinimalInstallSpec[] componentSpecs)
+        MinimalInstallSpec[] componentSpecs,
+        bool adminSelectedInSetup = false)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         var target = AccessModeResolver.Resolve().IsAdmin
-            ? ResolveAdminInstallTarget()
+            ? ResolveAdminInstallTarget(adminSelectedInSetup)
             : ResolveUserInstallTarget(globalJson);
 
         var requests = new List<ResolvedInstallRequest>();
@@ -178,9 +181,9 @@ internal class InstallWorkflow
     /// shared Program Files location; explicit paths and global.json sdk paths do not apply. The installs are
     /// not tracked, so the path is not validated against the dotnetup manifest.
     /// </summary>
-    private InstallTarget ResolveAdminInstallTarget()
+    private InstallTarget ResolveAdminInstallTarget(bool adminSelectedInSetup)
     {
-        if (!_command.Untracked)
+        if (!_command.Untracked && !adminSelectedInSetup)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeRequiresUntracked,
@@ -246,7 +249,7 @@ internal class InstallWorkflow
                 RequireMuxerUpdate = _command.RequireMuxerUpdate,
                 InstallSource = isFromGlobalJson ? InstallRequestSource.GlobalJson : InstallRequestSource.Explicit,
                 GlobalJsonPath = (isFromGlobalJson || _command.UpdateGlobalJson) ? globalJson?.GlobalJsonPath : null,
-                Untracked = _command.Untracked,
+                Untracked = _command.Untracked || target.IsAdmin,
                 Verbosity = _command.Verbosity,
                 InstallMechanism = target.IsAdmin ? InstallMechanism.WindowsInstallerBundle : InstallMechanism.Archive,
             });

@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
@@ -77,13 +78,15 @@ internal class EnvSetCommand : CommandBase
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.
         bool targetDotnetupOnPath = _dotnetupOnPathArg ?? previous?.DotnetupOnPath ?? true;
 
-        // Keep the machine-wide unsigned-download policy synchronized with transitions into and out
-        // of admin mode. The access mode itself remains a per-user setting.
         if (targetEnv == DotnetAccessMode.Admin)
         {
-            AdminSwitcher.Enable();
+            EnterAdminMode(previous);
+            return;
         }
-        else if (previous?.AccessMode == DotnetAccessMode.Admin)
+
+        // Leaving admin mode clears its machine-wide policy first (elevating if needed). Disable throws
+        // if elevation is declined or the change fails, so no user-level settings are applied then.
+        if (previous?.AccessMode == DotnetAccessMode.Admin)
         {
             AdminSwitcher.Disable();
         }
@@ -94,4 +97,21 @@ internal class EnvSetCommand : CommandBase
     [AllowNull]
     private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher(Policy);
 
+    /// <summary>
+    /// Enters admin mode: sets the machine-wide policy (elevating if needed), then records admin as
+    /// the user's access mode. The user's existing profiles, PATH entries, and DOTNET_ROOT are left
+    /// unchanged. Selecting admin mode while it is already active changes nothing unless the policy
+    /// has drifted.
+    /// </summary>
+    private void EnterAdminMode(DotnetupConfigData? previous)
+    {
+        if (previous?.AccessMode == DotnetAccessMode.Admin && AdminSwitcher.Policy.IsUnsignedDownloadBlocked())
+        {
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.AdminModeAlreadyEnabled));
+            return;
+        }
+
+        AdminSwitcher.Enable();
+        DotnetupConfig.WriteAccessSettings(DotnetAccessMode.Admin, previous?.DotnetupOnPath ?? true);
+    }
 }

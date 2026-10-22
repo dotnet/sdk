@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation.Internal;
@@ -21,7 +22,14 @@ internal class InitWorkflows
 {
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
 
-    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment) => _dotnetEnvironment = dotnetEnvironment;
+    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment, AdminModeSwitcher? adminModeSwitcher = null)
+    {
+        _dotnetEnvironment = dotnetEnvironment;
+        AdminSwitcher = adminModeSwitcher;
+    }
+
+    [AllowNull]
+    private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher();
 
     /// <summary>
     /// Replaces the interactive form (or the non-interactive defaults) in tests. Returns the
@@ -82,8 +90,8 @@ internal class InitWorkflows
     }
 
     /// <summary>
-    /// Applies the user's accepted selection by previewing a dry run or installing and configuring
-    /// the selected setup.
+    /// Applies the user's accepted selection: previews a dry run, or switches into or out of admin
+    /// mode when the selection changes it and then installs and configures the selected setup.
     /// </summary>
     private List<ResolvedInstallRequest> ApplySelection(
         InstallCommand command,
@@ -98,8 +106,36 @@ internal class InitWorkflows
             return [];
         }
 
+        SwitchAdminModeIfChanged(formSelection.AccessMode, previousConfig);
         InitExecutionPlan plan = ResolveExecutionPlan(command, requests, defaults, formSelection);
         return ExecutePlan(command, plan, defaults.InstallRoot, previousConfig);
+    }
+
+    /// <summary>
+    /// Enters or leaves admin mode before the plan is resolved, because install requests target the
+    /// shared system installer only in admin mode. The machine policy changes first, so a declined
+    /// elevation leaves the configuration untouched; the new mode is then recorded so request
+    /// resolution uses it. Selecting admin mode while it is already active changes nothing.
+    /// </summary>
+    private void SwitchAdminModeIfChanged(DotnetAccessMode selected, DotnetupConfigData? previousConfig)
+    {
+        bool wasAdmin = previousConfig?.AccessMode == DotnetAccessMode.Admin;
+        bool isAdmin = selected == DotnetAccessMode.Admin;
+        if (wasAdmin == isAdmin)
+        {
+            return;
+        }
+
+        if (isAdmin)
+        {
+            AdminSwitcher.Enable();
+        }
+        else
+        {
+            AdminSwitcher.Disable();
+        }
+
+        SaveConfig(selected, InitDefaultsResolver.GetDefaultDotnetupOnPath(previousConfig));
     }
 
     /// <summary>
@@ -137,27 +173,37 @@ internal class InitWorkflows
     /// <summary>
     /// Turns the user's <see cref="InitFormSelection"/> into an <see cref="InitExecutionPlan"/>,
     /// resolving concrete install requests only now (this may resolve versions / hit the network),
-    /// which is why dry-run stops before this step.
+    /// which is why dry-run stops before this step. Selecting admin mode re-resolves any
+    /// pre-resolved requests so they target the shared system installer, and never migrates.
     /// </summary>
-    private static InitExecutionPlan ResolveExecutionPlan(
+    internal static InitExecutionPlan ResolveExecutionPlan(
         InstallCommand command,
         List<ResolvedInstallRequest>? requests,
         InitFormDefaults defaults,
         InitFormSelection formSelection)
     {
+        bool admin = formSelection.AccessMode == DotnetAccessMode.Admin;
         List<ResolvedInstallRequest> installRequests;
-        if (!SelectedChannelDiffersFromDefault(formSelection.Channel, defaults.ChannelDisplay.ChannelLabel))
-        {
-            installRequests = InitDefaultsResolver.ResolveDefaultRequests(command, requests);
-        }
-        else
+        if (SelectedChannelDiffersFromDefault(formSelection.Channel, defaults.ChannelDisplay.ChannelLabel))
         {
             installRequests = InitDefaultsResolver.GenerateInstallRequests(
                 command,
-                BuildChangedChannelSpecs(requests, formSelection.Channel));
+                BuildChangedChannelSpecs(requests, formSelection.Channel),
+                admin);
+        }
+        else if (admin && requests is { Count: > 0 })
+        {
+            installRequests = InitDefaultsResolver.GenerateInstallRequests(
+                command,
+                [.. requests.Select(request => new MinimalInstallSpec(request.Request.Component, request.Request.Channel.Name))],
+                admin);
+        }
+        else
+        {
+            installRequests = InitDefaultsResolver.ResolveDefaultRequests(command, requests, admin);
         }
 
-        List<MigrationWorkflow.MigrationSelection> migrations = formSelection.MigrateSystemInstalls
+        List<MigrationWorkflow.MigrationSelection> migrations = !admin && formSelection.MigrateSystemInstalls
             ? MigrationWorkflow.FilterMigrationSelections(defaults.Migrations, installRequests)
             : [];
         return new InitExecutionPlan(installRequests, formSelection.AccessMode, migrations);
@@ -197,7 +243,10 @@ internal class InitWorkflows
         PrintPreviewLine("SDK channel", channelText, accent);
         PrintPreviewLine("Access mode", formSelection.AccessMode.ToString(), accent);
         PrintPreviewLine("Migrate system installs", migrateText, accent);
-        PrintPreviewLine("Installs in", defaults.InstallRoot.Path, accent);
+        string installPath = formSelection.AccessMode == DotnetAccessMode.Admin
+            ? new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()).Path
+            : defaults.InstallRoot.Path;
+        PrintPreviewLine("Installs in", installPath, accent);
     }
 
     private static void PrintPreviewLine(string label, string value, string accent)
@@ -268,22 +317,26 @@ internal class InitWorkflows
             installFailure = ExceptionDispatchInfo.Capture(ex);
         }
 
-        DisplayEnvironmentSetupProgress(SpectreAnsiConsole.Console);
-
         // Save config and apply configuration(s) regardless of partial install failure, so the
         // user's choice persists and the successful installs are usable (PATH / shell profile).
+        // Admin mode leaves the user's existing profiles, PATH entries, and DOTNET_ROOT unchanged.
         bool dotnetupOnPath = InitDefaultsResolver.GetDefaultDotnetupOnPath(previousConfig);
         SaveConfig(accessMode, dotnetupOnPath);
 
-        ObservedEnvironmentState observed = new EnvironmentStateInspector(_dotnetEnvironment)
-            .Inspect(command.ShellProvider ?? ShellDetection.GetCurrentShellProvider());
-        EnvSettingsApplier.Apply(
-            accessMode,
-            dotnetupOnPath,
-            observed,
-            _dotnetEnvironment,
-            installRoot.Path,
-            command.ShellProvider);
+        if (accessMode != DotnetAccessMode.Admin)
+        {
+            DisplayEnvironmentSetupProgress(SpectreAnsiConsole.Console);
+
+            ObservedEnvironmentState observed = new EnvironmentStateInspector(_dotnetEnvironment)
+                .Inspect(command.ShellProvider ?? ShellDetection.GetCurrentShellProvider());
+            EnvSettingsApplier.Apply(
+                accessMode,
+                dotnetupOnPath,
+                observed,
+                _dotnetEnvironment,
+                installRoot.Path,
+                command.ShellProvider);
+        }
 
         // One or more installs failed; surface the error after configuration was applied.
         installFailure?.Throw();
@@ -508,6 +561,24 @@ internal class InitWorkflows
     /// </summary>
     private static void SaveConfig(DotnetAccessMode accessMode, bool dotnetupOnPath)
         => DotnetupConfig.WriteAccessSettings(accessMode, dotnetupOnPath);
+
+    private void ApplyAccessSettings(
+        InstallCommand command,
+        DotnetAccessMode accessMode,
+        bool dotnetupOnPath,
+        string installRoot)
+    {
+        IEnvShellProvider? shellProvider = command.ShellProvider ?? ShellDetection.GetCurrentShellProvider();
+        ObservedEnvironmentState observed = _environmentInspector.Inspect(shellProvider);
+        EnvSettingsApplier.Apply(
+            accessMode,
+            dotnetupOnPath,
+            observed,
+            _dotnetEnvironment,
+            installRoot,
+            shellProvider);
+        SaveConfig(accessMode, dotnetupOnPath);
+    }
 
     private static void DisplaySetupResult(DotnetAccessMode accessMode, DotnetAccessMode? previousAccessMode)
     {
