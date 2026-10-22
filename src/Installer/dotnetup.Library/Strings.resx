@@ -513,8 +513,16 @@ Or open a new terminal.</value>
     <comment>{Locked="--dotnetup-only"}{Locked="--dotnet"}{Locked="--dotnetup"}</comment>
   </data>
   <data name="AdminModeCommandNotSupported" xml:space="preserve">
-    <value>'{0}' is not available in admin mode. Run 'dotnetup init --mode &lt;mode&gt;' or 'dotnetup env set &lt;mode&gt;' to leave admin mode.</value>
-    <comment>{0} is the command name. {Locked="dotnetup init --mode"}{Locked="dotnetup env set"}</comment>
+    <value>'{0}' is not available in admin mode. Run 'dotnetup env set &lt;mode&gt;' to leave admin mode.</value>
+    <comment>{0} is the command name. {Locked="dotnetup env set"}</comment>
+  </data>
+  <data name="AdminModeListNotSupported" xml:space="preserve">
+    <value>The list command is not yet supported in admin mode. Use 'dotnet --list-sdks', 'dotnet --list-runtimes', or 'dotnet --info' to view system installations.</value>
+    <comment>{Locked="dotnetup"} {Locked="dotnet --list-sdks"} {Locked="dotnet --list-runtimes"} {Locked="dotnet --info"}</comment>
+  </data>
+  <data name="AdminModeInfoInstallationsNotShown" xml:space="preserve">
+    <value>System installations are not yet listed by dotnetup in admin mode. Use 'dotnet --info' to view them.</value>
+    <comment>{Locked="dotnetup"} {Locked="dotnet --info"}</comment>
   </data>
   <data name="AdminModeSymbolNotSupported" xml:space="preserve">
     <value>{0} is not available for '{1}' in admin mode.</value>
@@ -529,23 +537,23 @@ Or open a new terminal.</value>
   <data name="AdminModeWindowsOnly" xml:space="preserve">
     <value>Admin mode is only supported on Windows.</value>
   </data>
-  <data name="AdminModeAlreadyEnabled" xml:space="preserve">
-    <value>Admin mode is already enabled.</value>
+  <data name="AdminModeUnsignedDownloadsAlreadyBlocked" xml:space="preserve">
+    <value>Unsigned executable downloads are already blocked.</value>
   </data>
-  <data name="AdminModeAlreadyDisabled" xml:space="preserve">
-    <value>Admin mode is already disabled.</value>
+  <data name="AdminModeUnsignedDownloadsAlreadyAllowed" xml:space="preserve">
+    <value>Unsigned executable downloads are already allowed.</value>
   </data>
-  <data name="AdminModeEnabled" xml:space="preserve">
-    <value>Admin mode is enabled.</value>
+  <data name="AdminModeUnsignedDownloadsBlocked" xml:space="preserve">
+    <value>Unsigned executable downloads are blocked while admin mode is active.</value>
   </data>
-  <data name="AdminModeDisabled" xml:space="preserve">
-    <value>Admin mode is disabled.</value>
+  <data name="AdminModeUnsignedDownloadsAllowed" xml:space="preserve">
+    <value>Unsigned executables will be allowed again by default.</value>
   </data>
-  <data name="AdminModeEnablingNotice" xml:space="preserve">
-    <value>Enabling admin mode changes a machine-wide policy that affects all users on this computer.</value>
+  <data name="AdminModeBlockingUnsignedDownloadsNotice" xml:space="preserve">
+    <value>Entering admin mode blocks unsigned executable downloads for all users on this computer.</value>
   </data>
-  <data name="AdminModeDisablingNotice" xml:space="preserve">
-    <value>Disabling admin mode changes a machine-wide policy that affects all users on this computer.</value>
+  <data name="AdminModeAllowingUnsignedDownloadsNotice" xml:space="preserve">
+    <value>Leaving admin mode allows unsigned executable downloads by default for all users on this computer.</value>
   </data>
   <data name="AdminModeElevationNotice" xml:space="preserve">
     <value>Windows will ask for administrator permission.</value>
@@ -559,49 +567,14 @@ Or open a new terminal.</value>
   <data name="AdminModeDisableFailed" xml:space="preserve">
     <value>Failed to disable admin mode: {0}</value>
   </data>
-  <data name="AdminModeNotEnabled" xml:space="preserve">
-    <value>Admin mode was not enabled. The machine policy did not change, which can happen when it is managed by Group Policy.</value>
+  <data name="AdminModeUnsignedDownloadsNotBlocked" xml:space="preserve">
+    <value>Admin mode was not enabled because the unsigned-download policy did not change, which can happen when it is managed by Group Policy.</value>
   </data>
-  <data name="AdminModeNotDisabled" xml:space="preserve">
-    <value>Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</value>
-  </data>
-  <data name="AdminModeActive" xml:space="preserve">
-    <value>Admin mode is active on this machine, so no changes were made.</value>
-  </data>
-  <data name="AdminModeLeaveInstructions" xml:space="preserve">
-    <value>To leave admin mode, run 'dotnetup init --mode &lt;mode&gt;' or 'dotnetup env set &lt;mode&gt;' with 'none', 'shell', or 'everywhere'.</value>
-    <comment>{Locked="dotnetup init --mode"}{Locked="dotnetup env set"}{Locked="none"}{Locked="shell"}{Locked="everywhere"}</comment>
-  </data>
-  <data name="AdminModeInstallNextSteps" xml:space="preserve">
-    <value>Next, install the .NET SDK with 'dotnetup sdk install &lt;version&gt; --untracked'.</value>
-    <comment>{Locked="dotnetup sdk install"}{Locked="--untracked"}</comment>
-  </data>
-  <data name="AdminModeEnablePreview" xml:space="preserve">
-    <value>Admin mode would be enabled for all users on this computer.</value>
-  </data>
-  <data name="AdminModeDisablePreview" xml:space="preserve">
-    <value>Admin mode would be disabled for all users on this computer before setup.</value>
-  </data>
-  <data name="AdminModeAlreadyEnabledNoChanges" xml:space="preserve">
-    <value>Admin mode is already enabled, so no changes were made.</value>
-  </data>
-  <data name="InitAdminModeInstallDescription" xml:space="preserve">
-    <value>Installs .NET with the Windows installer into the shared system folder. Requires elevation.</value>
-  </data>
-  <data name="InitAdminModeSelectionDescription" xml:space="preserve">
-    <value>Changes a machine-wide setting for all users. Choosing it only switches the mode; install .NET afterwards with 'dotnetup sdk install &lt;version&gt; --untracked'.</value>
-    <comment>{Locked="dotnetup sdk install"}{Locked="--untracked"}</comment>
+  <data name="AdminModeUnsignedDownloadsNotAllowed" xml:space="preserve">
+    <value>Admin mode was not disabled because the unsigned-download policy did not change, which can happen when it is managed by Group Policy.</value>
   </data>
   <data name="AccessModeAdminDescription" xml:space="preserve">
     <value>Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.</value>
-  </data>
-  <data name="InitModeOptionDescription" xml:space="preserve">
-    <value>The access mode to set up: {0}.</value>
-    <comment>{0} lists supported command-line mode tokens.</comment>
-  </data>
-  <data name="InitAdminModeOptionDescription" xml:space="preserve">
-    <value>'admin' only switches this machine to admin mode and does not install .NET.</value>
-    <comment>{Locked="admin"}</comment>
   </data>
   <data name="ElevatedSystemPathOperationDescription" xml:space="preserve">
     <value>The operation to perform: 'insertdotnet', 'removedotnet', 'enableadminmode', or 'disableadminmode'</value>
@@ -621,11 +594,6 @@ Or open a new terminal.</value>
   <data name="ElevatedSystemPathDotnetDirRequired" xml:space="preserve">
     <value>The '{0}' operation requires the --dotnet-dir option.</value>
     <comment>{Locked="--dotnet-dir"}</comment>
-  </data>
-  <data name="AdminModePreservesUserEnvironment" xml:space="preserve">
-    <value>Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
-Restart open apps and terminals after installing .NET and review settings if needed.</value>
-    <comment>{Locked="PATH"}{Locked="DOTNET_ROOT"}</comment>
   </data>
   <data name="WindowsInstallerSecureDownloadDirectoryCreationFailed" xml:space="preserve">
     <value>Could not create a secure download directory for {0}: {1}</value>
@@ -656,8 +624,12 @@ Restart open apps and terminals after installing .NET and review settings if nee
     <comment>{0} is the component display name and version. {1} is the operating system error.</comment>
   </data>
   <data name="WindowsInstallerRestartRequired" xml:space="preserve">
-    <value>A restart is required to finish installing {0}. dotnetup will not restart your computer; restart it when convenient.</value>
+    <value>You must restart your computer to finish installing {0}. dotnetup will not restart it automatically.</value>
     <comment>{Locked="dotnetup"} {0} is the component display name and version.</comment>
+  </data>
+  <data name="WindowsInstallerRestartInitiated" xml:space="preserve">
+    <value>A restart has been initiated and is required to finish installing {0}.</value>
+    <comment>{0} is the component display name and version.</comment>
   </data>
   <data name="WindowsInstallerCancelled" xml:space="preserve">
     <value>The installation of {0} was cancelled (installer exit code {1}).</value>
