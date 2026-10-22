@@ -154,13 +154,6 @@ internal sealed class InitFormModel
                 return lines;
             }
 
-            case DotnetAccessMode.Admin:
-                return
-                [
-                    new DetailLine(Strings.InitAdminModeInstallDescription),
-                    new DetailLine(Strings.InitAdminModeSelectionDescription),
-                ];
-
             default:
                 return [];
         }
@@ -328,8 +321,6 @@ internal sealed class InitFormModel
         {
             modes.Add(DotnetAccessMode.Everywhere);
             choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Everywhere), AccessModeDescription(DotnetAccessMode.Everywhere)));
-            modes.Add(DotnetAccessMode.Admin);
-            choices.Add(new FieldChoice(AccessModeTitle(DotnetAccessMode.Admin), AccessModeDescription(DotnetAccessMode.Admin)));
         }
 
         int defaultIndex = Math.Max(0, modes.IndexOf(recommended));
@@ -351,7 +342,6 @@ internal sealed class InitFormModel
         DotnetAccessMode.None => "Run .NET with 'dotnetup dotnet'. dotnet isn't added to your PATH, so your existing installs are unaffected.",
         DotnetAccessMode.Shell => "Configure your shell profile so shell sessions use dotnetup's .NET installs.",
         DotnetAccessMode.Everywhere => "Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation).",
-        DotnetAccessMode.Admin => Strings.AccessModeAdminDescription,
         _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
     };
 

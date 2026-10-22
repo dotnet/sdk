@@ -250,50 +250,9 @@ public class InstallWorkflowTests : IDisposable
         resolved.Request.InstallRoot.Should().Be(expectedRoot);
     }
 
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    [ResourceLock(WellKnownResources.CurrentDirectory)]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
-    [DataRow("none")]
-    [DataRow("shell")]
-    [DataRow("everywhere")]
-    public void GenerateInstallRequests_InitExplicitMode_IgnoresLocalPathButKeepsPinnedVersion(string mode)
-    {
-        string userRoot = Path.Combine(_tempDir, "user-dotnet");
-        string localRoot = Path.Combine(_tempDir, ".dotnet");
-        File.WriteAllText(Path.Combine(_tempDir, "global.json"),
-            """{ "sdk": { "version": "9.0.100", "rollForward": "disable", "paths": [".dotnet"] } }""");
-        string originalDirectory = Environment.CurrentDirectory;
-        string? originalDefaultRoot = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH");
-        try
-        {
-            Environment.CurrentDirectory = _tempDir;
-            Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH", userRoot);
-            var command = new InitCommand(Parser.Parse(["init", "--mode", mode]), _policy);
+    private void UseAdminMode() => DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });
 
-            var requests = new InstallWorkflow(command)
-                .GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, null)]);
-
-            var resolved = requests.Should().ContainSingle().Subject;
-            resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
-            resolved.Request.InstallRoot.Path.Should().Be(userRoot);
-            resolved.Request.Options.InstallSource.Should().Be(InstallRequestSource.GlobalJson);
-            resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
-
-            var installCommand = new SdkInstallCommand(Parser.Parse(["sdk", "install"]), _policy);
-            var localRequests = new InstallWorkflow(installCommand)
-                .GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, null)]);
-            localRequests.Should().ContainSingle().Subject.Request.InstallRoot.Path.Should().Be(localRoot);
-        }
-        finally
-        {
-            Environment.CurrentDirectory = originalDirectory;
-            Environment.SetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH", originalDefaultRoot);
-        }
-    }
-
-    private void UseAdminMode() => _policyStore.Values[DotnetupPolicy.AdminModeValueName] = true;
-
-    private EffectiveAccessMode ResolveAccessMode() => new AccessModeResolver(_policy).Resolve();
+    private EffectiveAccessMode ResolveAccessMode() => AccessModeResolver.Resolve();
 
     #endregion
 }

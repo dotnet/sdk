@@ -49,7 +49,7 @@ internal class InstallWorkflow
     /// </summary>
     public void Execute(MinimalInstallSpec[] componentSpecs)
     {
-        bool runOnboarding = ShouldRunFirstUseOnboarding(_command.AccessModeResolver.Resolve(), _command.Interactive, _command.InstallPath, _command.MigrateFromSystem)
+        bool runOnboarding = ShouldRunFirstUseOnboarding(AccessModeResolver.Resolve(), _command.Interactive, _command.InstallPath, _command.MigrateFromSystem)
             && !InitWorkflows.HasLocalSdkPathGlobalJson();
         bool promptForStarterChannel = ShouldPromptForStarterChannel(runOnboarding, componentSpecs);
         List<ResolvedInstallRequest> requests;
@@ -59,7 +59,7 @@ internal class InstallWorkflow
             // Pre-resolve the user's requests unless we still need to prompt for a starter channel
             // (in which case the walkthrough generates them after the prompt).
             var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs);
-            var workflows = new InitWorkflows(_command.DotnetEnvironment, new AdminModeSwitcher(_command.Policy));
+            var workflows = new InitWorkflows(_command.DotnetEnvironment);
             requests = workflows.InitWalkthrough(_command, initialRequests);
         }
         else
@@ -137,7 +137,7 @@ internal class InstallWorkflow
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
-        var target = _command.AccessModeResolver.Resolve().IsAdmin
+        var target = AccessModeResolver.Resolve().IsAdmin
             ? ResolveAdminInstallTarget()
             : ResolveUserInstallTarget(globalJson);
 
