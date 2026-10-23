@@ -1202,6 +1202,26 @@ Aby zainstalować te pakiety robocze, uruchom następujące polecenie: dotnet wo
         <target state="new">NETSDK1242: Building {0} projects with the Mono runtime is not supported in .NET 11.0 and later. Use the CoreCLR runtime or target .NET 10.0.</target>
         <note>{StrBegins="NETSDK1242: "}</note>
       </trans-unit>
+      <trans-unit id="OpenHarmonyCodesignFailedToEnumerate">
+        <source>NETSDK1247: Failed to enumerate '{0}' while signing OpenHarmony outputs: {1}</source>
+        <target state="new">NETSDK1247: Failed to enumerate '{0}' while signing OpenHarmony outputs: {1}</target>
+        <note>{StrBegins="NETSDK1247: "}</note>
+      </trans-unit>
+      <trans-unit id="OpenHarmonyCodesignFailedToSign">
+        <source>NETSDK1248: Failed to sign '{0}': {1}</source>
+        <target state="new">NETSDK1248: Failed to sign '{0}': {1}</target>
+        <note>{StrBegins="NETSDK1248: "}</note>
+      </trans-unit>
+      <trans-unit id="OpenHarmonyCodesignRetainedForeignSignature">
+        <source>NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. Run 'dotnet selfsign --force' to replace it with a self-signature.</source>
+        <target state="new">NETSDK1249: '{0}' carries a .codesign section that this signer did not create; it was left untouched. Run 'dotnet selfsign --force' to replace it with a self-signature.</target>
+        <note>{StrBegins="NETSDK1249: "}</note>
+      </trans-unit>
+      <trans-unit id="OpenHarmonyCodesignSkippedSymbolicLink">
+        <source>NETSDK1250: Skipping symbolic link '{0}' while signing OpenHarmony outputs: signing never follows symbolic links.</source>
+        <target state="new">NETSDK1250: Skipping symbolic link '{0}' while signing OpenHarmony outputs: signing never follows symbolic links.</target>
+        <note>{StrBegins="NETSDK1250: "}</note>
+      </trans-unit>
     </body>
   </file>
 </xliff>
