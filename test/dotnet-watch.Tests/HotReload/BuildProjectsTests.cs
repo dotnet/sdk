@@ -180,6 +180,128 @@ public class BuildProjects
             $"restore {project} -p A=1 -consoleLoggerParameters:NoSummary",
             $"build {project} -p A=1 --framework {ToolsetInfo.CurrentTargetFramework} -p:Device={EscapedDeviceId} --no-restore"
         ], context.BuildInvocations);
+
+        Assert.IsNotNull(result.ProjectGraph);
+        var projectNode = result.ProjectGraph.TryGetProjectNode(project, ToolsetInfo.CurrentTargetFramework);
+        Assert.IsNotNull(projectNode);
+        Assert.AreEqual(DeviceId, projectNode.ProjectInstance.GetPropertyValue("Device"));
+        Assert.AreEqual("", projectNode.ProjectInstance.GetPropertyValue("InjectedProperty"));
+    }
+
+    [TestMethod]
+    [DataRow("ios-arm64")]
+    [DataRow("iossimulator-arm64")]
+    public async Task SingleProject_DeviceRuntimeIdentifierDeterminesIntermediateOutputPath(string defaultRuntimeIdentifier)
+    {
+        const string DeviceId = "test-iphone";
+        const string DeviceRuntimeIdentifier = "ios-arm64";
+        var targetFramework = ToolsetInfo.CurrentTargetFramework;
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [defaultRuntimeIdentifier]);
+        var project = Path.Combine(dir.Path, "Project.csproj");
+
+        // Model the Apple workload's default simulator RID without requiring a mobile SDK.
+        File.WriteAllText(project, $"""
+        <Project>
+          <PropertyGroup>
+            <TargetFramework>{targetFramework}</TargetFramework>
+            <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">{defaultRuntimeIdentifier}</RuntimeIdentifier>
+            <IntermediateOutputPath>obj\Debug\$(TargetFramework)\$(RuntimeIdentifier)\</IntermediateOutputPath>
+          </PropertyGroup>
+          <ItemGroup>
+            <ProjectCapability Include="HotReloadWebSockets" />
+          </ItemGroup>
+          <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+            <ItemGroup>
+              <Devices Include="{DeviceId}" RuntimeIdentifier="{DeviceRuntimeIdentifier}" />
+            </ItemGroup>
+          </Target>
+        </Project>
+        """);
+
+        using var context = CreateContext([project]);
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(project, entryPointFilePath: null)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.ProjectOptions with { TargetFramework = targetFramework },
+            frameworkSelector: null,
+            deviceSelector: (_, _) => throw new AssertFailedException("A single device should be selected automatically"),
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(DeviceId, result.SelectedDevice);
+        Assert.AreEqual(DeviceRuntimeIdentifier, result.SelectedDeviceRuntimeIdentifier);
+        AssertEx.SequenceEqual(
+        [
+            $"restore {project} -p A=1 -consoleLoggerParameters:NoSummary",
+            $"restore {project} -p A=1 -p:Device={DeviceId} --runtime {DeviceRuntimeIdentifier} -consoleLoggerParameters:NoSummary",
+            $"build {project} -p A=1 --framework {targetFramework} -p:Device={DeviceId} --runtime {DeviceRuntimeIdentifier} --no-restore"
+        ], context.BuildInvocations);
+
+        Assert.IsNotNull(result.ProjectGraph);
+        var projectNode = result.ProjectGraph.TryGetProjectNode(project, targetFramework);
+        Assert.IsNotNull(projectNode);
+        var watcherKeyPath = Path.Combine(projectNode.ProjectInstance.GetIntermediateOutputDirectory()!, "HotReload", "websocket-key.private.json");
+        var buildKeyPath = Path.Combine(dir.Path, "obj", "Debug", targetFramework, DeviceRuntimeIdentifier, "HotReload", "websocket-key.private.json");
+
+        Assert.AreEqual(buildKeyPath, watcherKeyPath,
+            "Watch must read the key from the same RID-specific directory used by the selected device's build.");
+    }
+
+    [TestMethod]
+    public async Task SingleProject_PreselectedDevice()
+    {
+        const string DeviceId = "test-iphone";
+        const string DeviceRuntimeIdentifier = "ios-arm64";
+        var targetFramework = ToolsetInfo.CurrentTargetFramework;
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project = Path.Combine(dir.Path, "Project.csproj");
+        File.WriteAllText(project, $"""
+        <Project>
+          <PropertyGroup>
+            <TargetFramework>{targetFramework}</TargetFramework>
+            <RuntimeIdentifier Condition="'$(RuntimeIdentifier)' == ''">iossimulator-arm64</RuntimeIdentifier>
+          </PropertyGroup>
+        </Project>
+        """);
+
+        using var context = CreateContext([project]);
+        var options = TestOptions.ProjectOptions with
+        {
+            Device = DeviceId,
+            DeviceRuntimeIdentifier = DeviceRuntimeIdentifier
+        };
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(project, entryPointFilePath: null)],
+            context.FileWatcher,
+            mainProjectOptions: options,
+            frameworkSelector: (_, _) => throw new AssertFailedException("A single framework should be selected automatically"),
+            deviceSelector: (_, _) => throw new AssertFailedException("The device is already selected"),
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(targetFramework, result.MainProjectTargetFramework);
+        Assert.IsNotNull(result.ProjectGraph);
+        var instance = result.ProjectGraph.Graph.GraphRoots.Single().ProjectInstance;
+        Assert.AreEqual(DeviceId, instance.GetPropertyValue("Device"));
+        Assert.AreEqual(DeviceRuntimeIdentifier, instance.GetPropertyValue("RuntimeIdentifier"));
+
+        var rebuildResult = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(project, entryPointFilePath: null)],
+            context.FileWatcher,
+            mainProjectOptions: options with { TargetFramework = targetFramework },
+            frameworkSelector: null,
+            deviceSelector: null,
+            CancellationToken.None);
+
+        Assert.IsTrue(rebuildResult.Success);
+        Assert.AreEqual(DeviceId, rebuildResult.SelectedDevice);
+        Assert.AreEqual(DeviceRuntimeIdentifier, rebuildResult.SelectedDeviceRuntimeIdentifier);
+        AssertEx.SequenceEqual(
+        [
+            $"restore {project} -p A=1 -p:Device={DeviceId} --runtime {DeviceRuntimeIdentifier} -consoleLoggerParameters:NoSummary",
+            $"build {project} -p A=1 --framework {targetFramework} -p:Device={DeviceId} --runtime {DeviceRuntimeIdentifier} --no-restore",
+            $"build {project} -p A=1 --framework {targetFramework} -p:Device={DeviceId} --runtime {DeviceRuntimeIdentifier}"
+        ], context.BuildInvocations);
     }
 
     [TestMethod]

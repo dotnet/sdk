@@ -3,6 +3,7 @@
 
 extern alias MSTestFramework;
 
+using System.Collections.Immutable;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 
@@ -34,6 +35,50 @@ public class ProjectGraphFactoryTests
 
         var root = graph.Graph.GraphRoots.Single();
         Assert.AreEqual(projectPath, root.ProjectInstance.FullPath);
+    }
+
+    [TestMethod]
+    public void AdditionalBuildProperties_ApplyToEachLoad()
+    {
+        var dir = TestAssetManager.CreateTestDirectory().Path;
+        var projectPath = Path.Combine(dir, "Project.csproj");
+        File.WriteAllText(projectPath, $"""
+            <Project>
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <IntermediateOutputPath>obj\$(Configuration)\$(TargetFramework)\$(RuntimeIdentifier)\</IntermediateOutputPath>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var projectRepr = new ProjectRepresentation(projectPath, entryPointFilePath: null);
+        var factory = new ProjectGraphFactory(
+            [projectRepr],
+            buildProperties: ImmutableDictionary<string, string>.Empty
+                .Add("Configuration", "Debug")
+                .Add("RuntimeIdentifier", "iossimulator-arm64"),
+            _testLogger,
+            TestOptions.GlobalOptions,
+            TestOptions.GetEnvironmentOptions());
+        var deviceProperties = ImmutableDictionary<string, string>.Empty
+            .Add("Device", "test-iphone")
+            .Add("RuntimeIdentifier", "ios-arm64");
+
+        var graph = factory.TryLoadProjectGraph(
+            projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None, deviceProperties);
+        Assert.IsNotNull(graph);
+        var instance = graph.Graph.GraphRoots.Single().ProjectInstance;
+        Assert.AreEqual("test-iphone", instance.GetPropertyValue("Device"));
+        Assert.AreEqual("ios-arm64", instance.GetPropertyValue("RuntimeIdentifier"));
+        Assert.AreEqual(
+            Path.Combine(dir, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "ios-arm64"),
+            Path.TrimEndingDirectorySeparator(instance.GetIntermediateOutputDirectory()!));
+
+        var defaultGraph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
+        Assert.IsNotNull(defaultGraph);
+        var defaultInstance = defaultGraph.Graph.GraphRoots.Single().ProjectInstance;
+        Assert.AreEqual("", defaultInstance.GetPropertyValue("Device"));
+        Assert.AreEqual("iossimulator-arm64", defaultInstance.GetPropertyValue("RuntimeIdentifier"));
     }
 
     [TestMethod]
