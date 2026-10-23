@@ -39,7 +39,7 @@ public class TelemetryE2ETests
     /// </summary>
     private static Dictionary<string, string> GetTelemetryEnvVars(string dataDir) => new(s_telemetryEnvVars)
     {
-        ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = dataDir,
+        ["DOTNET_DOTNETUP_DATA_DIR"] = dataDir,
     };
 
     [TestMethod]
@@ -337,7 +337,7 @@ public class TelemetryE2ETests
             {
                 ["DOTNETUP_TELEMETRY_DEBUG"] = "1",
                 ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1",
-                ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = tempDir,
+                ["DOTNET_DOTNETUP_DATA_DIR"] = tempDir,
             };
 
             (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(

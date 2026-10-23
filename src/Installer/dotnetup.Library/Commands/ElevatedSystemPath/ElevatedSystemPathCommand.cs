@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Globalization;
 using System.Runtime.Versioning;
+using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.ElevatedSystemPath;
 
@@ -12,12 +14,15 @@ internal class ElevatedSystemPathCommand : CommandBase
     private readonly string _outputFile;
     private readonly string? _dotnetDir;
 
-    public ElevatedSystemPathCommand(ParseResult result) : base(result, "elevatedsystempath")
+    public ElevatedSystemPathCommand(ParseResult result, DotnetupPolicy? policy = null) : base(result, "elevatedsystempath", policy)
     {
         _operation = result.GetValue(ElevatedSystemPathCommandParser.OperationArgument)!;
         _outputFile = result.GetValue(ElevatedSystemPathCommandParser.OutputFile)!;
         _dotnetDir = result.GetValue(ElevatedSystemPathCommandParser.DotnetDir);
     }
+
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
 
     private void Log(string message)
     {
@@ -48,12 +53,7 @@ internal class ElevatedSystemPathCommand : CommandBase
             // Forward the helper's 0/1 exit code so the parent (which spawned
             // this elevated child process) reads success/failure correctly.
             // SetExitCode is the documented escape hatch for forwarding cases.
-            SetExitCode(_operation.ToLowerInvariant() switch
-            {
-                "insertdotnet" => InsertDotnet(_dotnetDir!),
-                "removedotnet" => RemoveDotnet(_dotnetDir!),
-                _ => throw new InvalidOperationException($"Unknown operation: {_operation}")
-            });
+            SetExitCode(RunOperation(_operation.ToLowerInvariant()));
         }
         catch (Exception ex)
         {
@@ -63,6 +63,32 @@ internal class ElevatedSystemPathCommand : CommandBase
             Log($"Error: {ex}");
             throw;
         }
+    }
+
+    [SupportedOSPlatform("windows")]
+    private int RunOperation(string operation)
+    {
+        if (ElevatedSystemPathCommandParser.RequiresDotnetDir(operation) && string.IsNullOrWhiteSpace(_dotnetDir))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidArguments,
+                string.Format(CultureInfo.CurrentCulture, Strings.ElevatedSystemPathDotnetDirRequired, operation));
+        }
+
+        return operation switch
+        {
+            ElevatedSystemPathCommandParser.InsertDotnetOperation => InsertDotnet(_dotnetDir!),
+            ElevatedSystemPathCommandParser.RemoveDotnetOperation => RemoveDotnet(_dotnetDir!),
+            ElevatedSystemPathCommandParser.EnableAdminModeOperation => ChangeAdminMode(AdminModeOperation.Enable),
+            ElevatedSystemPathCommandParser.DisableAdminModeOperation => ChangeAdminMode(AdminModeOperation.Disable),
+            _ => throw new InvalidOperationException($"Unknown operation: {operation}")
+        };
+    }
+
+    private int ChangeAdminMode(AdminModeOperation operation)
+    {
+        AdminModeSwitcher.ApplyPolicyChange(Policy, operation);
+        return 0;
     }
 
     [SupportedOSPlatform("windows")]

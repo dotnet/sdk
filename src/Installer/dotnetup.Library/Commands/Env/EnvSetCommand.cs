@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
@@ -15,14 +16,26 @@ internal class EnvSetCommand : CommandBase
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
-    public EnvSetCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result, "env set")
+    /// <remarks>
+    /// The policy of <paramref name="adminModeSwitcher"/> is also the policy this command reads. Without a
+    /// switcher, the command uses the machine policy.
+    /// </remarks>
+    public EnvSetCommand(
+        ParseResult result,
+        IDotnetEnvironmentManager? dotnetEnvironment = null,
+        IEnvironmentStateInspector? inspector = null,
+        AdminModeSwitcher? adminModeSwitcher = null) : base(result, "env set", adminModeSwitcher?.Policy)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
+        AdminSwitcher = adminModeSwitcher;
         _modeArg = result.GetValue(EnvSetCommandParser.ModeArgument);
         _dotnetupOnPathArg = result.GetValue(EnvSetCommandParser.DotnetupOnPathOption);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
+
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
 
     protected override void ExecuteCore()
     {
@@ -64,6 +77,12 @@ internal class EnvSetCommand : CommandBase
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.
         bool targetDotnetupOnPath = _dotnetupOnPathArg ?? previous?.DotnetupOnPath ?? true;
 
-        EnvSettingsWriter.ApplyAndPersist(targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector);
+        EnvSettingsWriter.ApplyAndPersist(
+            targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector,
+            previous?.AccessMode, AdminSwitcher);
     }
+
+    [AllowNull]
+    private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher(Policy);
+
 }

@@ -41,6 +41,7 @@ internal static class TelemetryCommonProperties
     /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.
     /// </summary>
+    /// <param name="sessionId">The telemetry session ID.</param>
     public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId)
     {
         var attributes = new Dictionary<string, object>
@@ -61,6 +62,8 @@ internal static class TelemetryCommonProperties
             ["dev.build"] = s_isDevBuild.Value
         };
 
+        AddAccessModeAttributes(attributes);
+
         // Mirror the .NET CLI's DOTNET_CLI_TELEMETRY_PROFILE (same env var
         // the SDK's TelemetryCommonProperties stamps as "Telemetry Profile").
         var telemetryProfile = Environment.GetEnvironmentVariable(TelemetryProfileEnvVar);
@@ -78,6 +81,43 @@ internal static class TelemetryCommonProperties
 
         return attributes;
     }
+
+    private static void AddAccessModeAttributes(Dictionary<string, object> attributes)
+    {
+        var effective = ResolveAccessModeSafely();
+        attributes[TelemetryTagNames.AccessMode] = GetAccessModeTelemetryValue(effective.Mode);
+        attributes[TelemetryTagNames.AccessModeSource] = GetAccessModeSourceTelemetryValue(effective.Source);
+    }
+
+    private static EffectiveAccessMode ResolveAccessModeSafely()
+    {
+        try
+        {
+            return AccessModeResolver.Resolve();
+        }
+        catch
+        {
+            // Telemetry must never crash the app.
+            return EffectiveAccessMode.Unset;
+        }
+    }
+
+    internal static string GetAccessModeTelemetryValue(DotnetAccessMode? mode) => mode switch
+    {
+        null => "unset",
+        DotnetAccessMode.None => "none",
+        DotnetAccessMode.Shell => "shell",
+        DotnetAccessMode.Everywhere => "everywhere",
+        DotnetAccessMode.Admin => "admin",
+        _ => "unknown",
+    };
+
+    internal static string GetAccessModeSourceTelemetryValue(AccessModeSource source) => source switch
+    {
+        AccessModeSource.UserConfig => "user_config",
+
+        _ => "unset",
+    };
 
     /// <summary>
     /// Hashes a path for privacy-safe telemetry.

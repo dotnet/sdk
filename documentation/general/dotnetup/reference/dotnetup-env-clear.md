@@ -28,6 +28,12 @@ dotnetup env set none --dotnetup-on-path false
 
 It does not uninstall .NET.
 
+When leaving Admin mode, the command first clears the unsigned-download block,
+requesting administrator permission if needed. If that policy change is cancelled
+or fails verification, environment and user configuration remain unchanged.
+Unrelated configuration settings, such as update-notification preferences, are
+preserved.
+
 For more information about access modes, see
 [dotnetup environment configuration](../concepts/environment.md).
 

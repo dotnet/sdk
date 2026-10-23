@@ -6,7 +6,7 @@ using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
-internal class DotnetArchiveExtractor : IDisposable
+internal class DotnetArchiveExtractor : IInstallArtifact
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
@@ -24,6 +24,8 @@ internal class DotnetArchiveExtractor : IDisposable
     /// Gets the list of subcomponent identifiers that were extracted during the last Commit() call.
     /// </summary>
     public IReadOnlyList<string> ExtractedSubcomponents => [.. _extractedSubcomponents];
+
+    public bool RequiresPostInstallValidation => true;
 
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,

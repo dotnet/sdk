@@ -10,6 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -197,12 +198,14 @@ public class InitWorkflowTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void GetDefaultAccessMode_ReturnsConfiguredEverywhereModeOnWindows()
+    [DataRow(DotnetAccessMode.Everywhere)]
+    [DataRow(DotnetAccessMode.Admin)]
+    internal void GetDefaultAccessMode_ReturnsConfiguredWindowsMode(DotnetAccessMode accessMode)
     {
         InitDefaultsResolver.GetDefaultAccessMode(
             shellProvider: null,
-            configuredAccessMode: DotnetAccessMode.Everywhere)
-            .Should().Be(DotnetAccessMode.Everywhere);
+            configuredAccessMode: accessMode)
+            .Should().Be(accessMode);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
@@ -222,6 +225,87 @@ public class InitWorkflowTests : IDisposable
             .Should().BeFalse();
         InitDefaultsResolver.GetDefaultDotnetupOnPath(configured: null)
             .Should().BeTrue();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void InitWalkthrough_Admin_CompletesAfterEnablingPolicy()
+    {
+        var policyStore = new FakeDotnetupPolicyStore();
+        var policy = new DotnetupPolicy(policyStore);
+        var elevator = new FakeAdminModeElevator(policy);
+        var switcher = new AdminModeSwitcher(
+            policy,
+            elevator,
+            () => false,
+            AdminModeSwitcherTests.CreateConsole(new StringWriter()));
+        var environment = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: []);
+        var workflows = new InitWorkflows(environment, switcher, new FakeEnvironmentStateInspector())
+        {
+            FormSelectionOverride = (_, _) => new InitFormSelection(
+                Channel: null,
+                AccessMode: DotnetAccessMode.Admin,
+                MigrateSystemInstalls: false),
+        };
+        var command = new InitCommand(Parser.Parse(["init", "--shell", "bash"]), policy);
+        var previous = new DotnetupConfigData
+        {
+            AccessMode = DotnetAccessMode.Everywhere,
+            DotnetupOnPath = false,
+        };
+        DotnetupConfig.Write(previous);
+
+        List<ResolvedInstallRequest> requests = RunFromTempDirectory(
+            () => workflows.InitWalkthrough(command, requests: []));
+
+        requests.Should().BeEmpty();
+        elevator.Operations.Should().Equal(AdminModeOperation.Enable);
+        policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        DotnetupConfig.Read().Should().BeEquivalentTo(new DotnetupConfigData
+        {
+            AccessMode = DotnetAccessMode.Admin,
+            DotnetupOnPath = false,
+        });
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void InitWalkthrough_ExistingAdminWithoutUntracked_CompletesWithoutInstalling()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData
+        {
+            AccessMode = DotnetAccessMode.Admin,
+            DotnetupOnPath = false,
+        });
+        var policyStore = new FakeDotnetupPolicyStore();
+        policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
+        var policy = new DotnetupPolicy(policyStore);
+        var elevator = new FakeAdminModeElevator(policy);
+        var switcher = new AdminModeSwitcher(
+            policy,
+            elevator,
+            () => false,
+            AdminModeSwitcherTests.CreateConsole(new StringWriter()));
+        var environment = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: []);
+        var workflows = new InitWorkflows(environment, switcher, new FakeEnvironmentStateInspector())
+        {
+            FormSelectionOverride = (_, _) => new InitFormSelection(
+                Channel: null,
+                AccessMode: DotnetAccessMode.Admin,
+                MigrateSystemInstalls: false),
+        };
+        var parseResult = Parser.Parse(["init", "--shell", "bash"]);
+        parseResult.Errors.Should().BeEmpty();
+        var command = new InitCommand(parseResult, policy);
+        command.Untracked.Should().BeFalse();
+
+        List<ResolvedInstallRequest> requests = RunFromTempDirectory(
+            () => workflows.InitWalkthrough(command));
+
+        requests.Should().BeEmpty();
+        elevator.Operations.Should().BeEmpty();
+        policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
     }
 
     // The no-shell isolation fallback (which reads the SHELL environment variable) is covered

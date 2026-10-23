@@ -463,6 +463,12 @@ the policy with the platform-appropriate switch:
 
   Clear the policy by deleting the value (or setting it to `0`).
 
+  Enabling dotnetup `admin` mode also sets this value to `1`, and leaving
+  `admin` mode sets it back to `0` by default. In `admin` mode, the value controls
+  whether unsigned daily `.exe` installers may run; see
+  [dotnetup admin mode](designs/dotnetup-admin-mode.md). The access mode itself
+  is stored in the current user's dotnetup configuration.
+
 - **Linux / macOS** — create the sentinel file
   `/etc/dotnet/dnup-block-unsigned-downloads` (any content; existence is
   what matters). Example:
@@ -478,8 +484,15 @@ When the policy is in effect, attempts to install from the daily channel
 (or any version that is not present in the signed releases manifest)
 fail with a clear `UnsignedDownloadBlockedByPolicy` message directing
 the user to choose a released version or escalate to their administrator.
+`dotnetup self update` is exempt only when the installed `dotnetup` is
+Authenticode-signed (Windows), because the replacement must then carry a
+Microsoft-rooted Authenticode signature before it is installed.
 
-The check is centralized in
+The policy is read through `DotnetupPolicy.IsUnsignedDownloadBlocked`
+(`src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetupPolicy.cs`), whose
+platform store reads the registry value (`WindowsRegistryPolicyStore`) or the
+sentinel file (`UnixPolicyStore`). The channel predicate and the policy constants
+live in
 `src/Installer/Microsoft.Dotnet.Installation/Internal/UnsignedSourcePolicy.cs`.
 The warning is emitted from `InstallExecutor.ExecuteInstalls` and
 `UpdateWorkflow.InstallVersion` before any progress UI is created; the policy block check

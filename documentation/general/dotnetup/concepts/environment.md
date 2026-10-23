@@ -26,10 +26,18 @@ or later with the `dotnetup env` command.
 | `none` | Does not modify these environment variables. Run .NET with `dotnetup dotnet`. |
 | `shell` | Modifies the shell profile to set these environment variables. Processes started from that shell use the .NET SDKs and Runtimes installed by dotnetup. |
 | `everywhere` | Modifies the system `PATH` and sets the user-level `DOTNET_ROOT` environment variable. Only available on Windows. |
+| `admin` | Removes dotnetup's user-level .NET environment wiring. Installs run the official .NET installers into Program Files, which manage the system `PATH` themselves. Stored per user; only available on Windows. See [dotnetup admin mode](../designs/dotnetup-admin-mode.md). |
 
 By default, dotnetup also adds itself to the `PATH`, regardless of the access
 mode setting.  This can be controlled with
 `dotnetup env set --dotnetup-on-path <true|false>`.
+
+Admin is stored in the same per-user configuration as the other access modes.
+Entering it first ensures a machine-wide policy blocks unsigned downloads,
+elevating if needed; leaving it clears that policy before applying the new
+settings. Selecting Admin in `dotnetup init`, or using init to leave saved Admin,
+only configures the environment and mode. Install .NET afterwards with a separate
+command. The dotnetup-on-PATH setting remains independent in Admin mode too.
 
 ## Everywhere mode considerations
 

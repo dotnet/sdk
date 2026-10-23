@@ -20,7 +20,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
     private readonly bool? _updateNotifications = result.GetResult(SelfCommandParser.UpdateNotificationsOption) is { Implicit: false }
         ? result.GetValue(SelfCommandParser.UpdateNotificationsOption)
         : null;
-    private readonly Func<DotnetDownloader> _createDownloader = static () => new DotnetDownloader();
+    private readonly Func<DotnetDownloader>? _createDownloader;
 
     internal SelfUpdateCommand(ParseResult result, Func<DotnetDownloader> createDownloader) : this(result)
     {
@@ -30,6 +30,9 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
 
     /// <inheritdoc/>
     protected override bool CanRunDuringSelfUpdate => true;
+
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
 
     protected override void ExecuteCore()
     {
@@ -42,14 +45,15 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
         var invocation = SelfUpdateInvocation.Current ?? throw new DotnetInstallException(
             DotnetInstallErrorCode.ContextResolutionFailed, Strings.SelfUpdateUnsupportedHost);
         var channel = _channel ?? SelfUpdateDefaultChannel.FromLoadedVersion(invocation.LoadedVersion);
-        var downloader = _createDownloader();
+        var downloader = _createDownloader?.Invoke() ?? new DotnetDownloader(ReleaseManifest.Default, policy: Policy);
         var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
         var coordinator = new SelfUpdateCoordinator(onWaiting: lockKind => Console.Error.WriteLine(
             lockKind == SelfUpdateLockKind.Update
                 ? Strings.SelfUpdateWaitingForUpdate
                 : Strings.SelfUpdateWaitingForCommand));
         var workflow = new SelfUpdateWorkflow(invocation.Paths,
-            () => downloader.ResolveDotnetupDownload(channel, rid),
+            () => downloader.ResolveDotnetupDownload(channel, rid,
+                replacementSignatureEnforced: SelfUpdateSignature.RequiresSignedReplacement(invocation.Paths.InstalledPath)),
             (release, destination) =>
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));

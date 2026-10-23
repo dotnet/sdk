@@ -12,8 +12,20 @@ internal enum FormCompressionLevel
     /// <summary>Shows the complete form with descriptions, details, and generous spacing.</summary>
     Rich,
 
-    /// <summary>Removes extra spacing and details beneath fields that are not focused.</summary>
+    /// <summary>Removes details beneath fields that are not focused, retaining section spacing.</summary>
     Compact,
+
+    /// <summary>Moves choice descriptions beside their choices instead of placing them below.</summary>
+    InlineChoiceHelp,
+
+    /// <summary>Removes details describing the changes produced by the selected choice.</summary>
+    WithoutDerivedDetails,
+
+    /// <summary>Removes the remaining details shown beneath field rows.</summary>
+    WithoutFieldDetails,
+
+    /// <summary>Removes blank lines only after optional descriptions have been reduced.</summary>
+    WithoutSpacing,
 
     /// <summary>Removes the welcome message from the header.</summary>
     WithoutWelcome,
@@ -21,20 +33,11 @@ internal enum FormCompressionLevel
     /// <summary>Removes the installation-location message from the header.</summary>
     WithoutInstallLocation,
 
-    /// <summary>Removes the remaining details shown beneath field rows.</summary>
-    WithoutFieldDetails,
-
     /// <summary>Removes the question displayed immediately before the accept action.</summary>
     WithoutConfirmationPrompt,
 
     /// <summary>While editing, shows only the focused field and removes the accept action.</summary>
     FocusedEdit,
-
-    /// <summary>Moves choice descriptions beside their choices instead of placing them below.</summary>
-    InlineChoiceHelp,
-
-    /// <summary>Removes details describing the changes produced by the selected choice.</summary>
-    WithoutDerivedDetails,
 
     /// <summary>Displays choices horizontally for fields that support the horizontal layout.</summary>
     HorizontalChoices,

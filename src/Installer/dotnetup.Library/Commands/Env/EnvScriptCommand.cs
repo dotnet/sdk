@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Globalization;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -17,7 +18,8 @@ internal class EnvScriptCommand : CommandBase
     private readonly bool _dotnetup;
     private readonly bool _dotnetupOnly;
 
-    public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result, "env script")
+    public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, DotnetupPolicy? policy = null)
+        : base(result, "env script", policy)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _shellProvider = result.GetValue(EnvScriptCommandParser.ShellOption);
@@ -26,6 +28,8 @@ internal class EnvScriptCommand : CommandBase
         _dotnetup = result.GetValue(EnvScriptCommandParser.DotnetupOption);
         _dotnetupOnly = result.GetValue(EnvScriptCommandParser.DotnetupOnlyOption);
     }
+
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
 
     protected override void ExecuteCore()
     {
@@ -54,7 +58,8 @@ internal class EnvScriptCommand : CommandBase
                 string.Format(CultureInfo.InvariantCulture, Strings.EnvScriptUnsupportedShellError, shellName));
         }
 
-        EnvScriptSelection selection = EnvScriptSelectionResolver.Resolve(_dotnet, _dotnetup, _dotnetupOnly, DotnetupConfig.Read());
+        EnvScriptSelection selection = EnvScriptSelectionResolver.Resolve(
+            _dotnet, _dotnetup, _dotnetupOnly, DotnetupConfig.Read(), AccessModeResolver.Resolve().IsAdmin);
 
         // Determine the dotnet install path
         string installPath = _dotnetInstallPath ?? _dotnetEnvironment.GetDefaultDotnetInstallPath();

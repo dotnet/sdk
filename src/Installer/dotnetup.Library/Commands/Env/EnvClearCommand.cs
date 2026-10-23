@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
@@ -17,13 +18,22 @@ internal class EnvClearCommand : CommandBase
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
+    private readonly AdminModeSwitcher _adminModeSwitcher;
 
-    public EnvClearCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result, "env clear")
+    public EnvClearCommand(
+        ParseResult result,
+        IDotnetEnvironmentManager? dotnetEnvironment = null,
+        IEnvironmentStateInspector? inspector = null,
+        DotnetupPolicy? policy = null,
+        AdminModeSwitcher? adminModeSwitcher = null) : base(result, "env clear", adminModeSwitcher?.Policy ?? policy)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
+        _adminModeSwitcher = adminModeSwitcher ?? new AdminModeSwitcher(Policy);
     }
+
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
 
     protected override void ExecuteCore()
     {
@@ -32,6 +42,8 @@ internal class EnvClearCommand : CommandBase
             targetDotnetupOnPath: false,
             _dotnetEnvironment,
             _shellProvider,
-            _inspector);
+            _inspector,
+            DotnetupConfig.ReadAccessMode(),
+            _adminModeSwitcher);
     }
 }

@@ -18,7 +18,7 @@ internal sealed class TelemetryTestEnvironment : IDisposable
             [Constants.Telemetry.TelemetryOptOutEnvVar] = "0",
             [Constants.Telemetry.StoragePathEnvVar] = StorageDirectory,
             [Constants.Telemetry.ForceLocalDeliveryEnvVar] = "1",
-            ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = Path.Combine(TempRoot, "data"),
+            ["DOTNET_DOTNETUP_DATA_DIR"] = Path.Combine(TempRoot, "data"),
             [Constants.Telemetry.E2EConnectionStringEnvVar] =
                 $"InstrumentationKey=00000000-0000-0000-0000-000000000000;IngestionEndpoint={ingestionEndpoint}",
             ["NO_PROXY"] = "127.0.0.1",

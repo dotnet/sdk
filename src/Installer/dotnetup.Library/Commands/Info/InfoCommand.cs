@@ -46,39 +46,52 @@ internal class InfoCommand : CommandBase
         return command.Execute();
     }
 
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
         var info = GetDotnetupInfo();
         ListData? listData = null;
+        string? installationsMessage = null;
 
         if (!_noList)
         {
-            // --info verifies by default
-            listData = InstallationLister.GetListData(verify: true);
+            if (AccessModeResolver.Resolve().IsAdmin)
+            {
+                installationsMessage = Strings.AdminModeInfoInstallationsNotShown;
+            }
+            else
+            {
+                // --info verifies by default
+                listData = InstallationLister.GetListData(verify: true);
+            }
         }
 
         if (_format == OutputFormat.Json)
         {
-            PrintJsonInfo(_output, info, listData);
+            PrintJsonInfo(_output, info, listData, installationsMessage);
         }
         else
         {
-            PrintHumanReadableInfo(_output, info, listData);
+            PrintHumanReadableInfo(_output, info, listData, installationsMessage);
         }
     }
 
     private static DotnetupInfo GetDotnetupInfo()
     {
+        DotnetupConfigData? config = DotnetupConfig.Read();
         return new DotnetupInfo
         {
             Version = BuildInfo.Version,
             Commit = BuildInfo.CommitSha,
             Architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant(),
-            Rid = RuntimeInformation.RuntimeIdentifier
+            Rid = RuntimeInformation.RuntimeIdentifier,
+            AccessMode = config?.AccessMode.ToString().ToLowerInvariant(),
+            DotnetupOnPath = config?.DotnetupOnPath,
         };
     }
 
-    private static void PrintHumanReadableInfo(TextWriter output, DotnetupInfo info, ListData? listData)
+    private static void PrintHumanReadableInfo(TextWriter output, DotnetupInfo info, ListData? listData, string? installationsMessage)
     {
         output.WriteLine(Strings.InfoHeader);
 
@@ -96,6 +109,8 @@ internal class InfoCommand : CommandBase
         grid.AddRow("Commit:", info.Commit);
         grid.AddRow("Architecture:", info.Architecture);
         grid.AddRow("RID:", info.Rid);
+        grid.AddRow("Access mode:", info.AccessMode ?? "not configured");
+        grid.AddRow("dotnetup on PATH:", info.DotnetupOnPath?.ToString().ToLowerInvariant() ?? "not configured");
 
         console.Write(grid);
 
@@ -103,9 +118,14 @@ internal class InfoCommand : CommandBase
         {
             InstallationLister.WriteHumanReadable(output, listData);
         }
+        else if (installationsMessage is not null)
+        {
+            output.WriteLine();
+            output.WriteLine(installationsMessage);
+        }
     }
 
-    private static void PrintJsonInfo(TextWriter output, DotnetupInfo info, ListData? listData)
+    private static void PrintJsonInfo(TextWriter output, DotnetupInfo info, ListData? listData, string? installationsMessage)
     {
         var fullInfo = new DotnetupFullInfo
         {
@@ -113,6 +133,9 @@ internal class InfoCommand : CommandBase
             Commit = info.Commit,
             Architecture = info.Architecture,
             Rid = info.Rid,
+            AccessMode = info.AccessMode,
+            DotnetupOnPath = info.DotnetupOnPath,
+            InstallationsMessage = installationsMessage,
             InstallSpecs = listData?.InstallSpecs,
             Installations = listData?.Installations
         };
@@ -126,6 +149,8 @@ internal class DotnetupInfo
     public string Commit { get; set; } = string.Empty;
     public string Architecture { get; set; } = string.Empty;
     public string Rid { get; set; } = string.Empty;
+    public string? AccessMode { get; set; }
+    public bool? DotnetupOnPath { get; set; }
 }
 
 internal class DotnetupFullInfo
@@ -134,6 +159,9 @@ internal class DotnetupFullInfo
     public string Commit { get; set; } = string.Empty;
     public string Architecture { get; set; } = string.Empty;
     public string Rid { get; set; } = string.Empty;
+    public string? AccessMode { get; set; }
+    public bool? DotnetupOnPath { get; set; }
+    public string? InstallationsMessage { get; set; }
     public List<InstallSpecInfo>? InstallSpecs { get; set; }
     public List<InstallationInfo>? Installations { get; set; }
 }

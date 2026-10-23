@@ -16,7 +16,7 @@ internal class ListCommand : CommandBase
     private readonly string? _manifestPath;
     private readonly string? _installPath;
 
-    public ListCommand(ParseResult parseResult) : base(parseResult, "list")
+    public ListCommand(ParseResult parseResult, DotnetupPolicy? policy = null) : base(parseResult, "list", policy)
     {
         _format = parseResult.GetValue(CommonOptions.FormatOption);
         _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);
@@ -24,8 +24,17 @@ internal class ListCommand : CommandBase
         _installPath = parseResult.GetValue(CommonOptions.InstallPathOption);
     }
 
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
+        if (AccessModeResolver.Resolve().IsAdmin)
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.AdminModeCommandNotSupported,
+                Strings.AdminModeListNotSupported);
+        }
+
         var listData = InstallationLister.GetListData(verify: !_skipVerification, manifestPath: _manifestPath, installPath: _installPath);
 
         if (_format == OutputFormat.Json)
@@ -56,7 +65,7 @@ internal static class InstallationLister
             manifestData = manifest.ReadManifest();
         }
 
-        var validator = new ArchiveInstallationValidator();
+        var validator = new InstallationValidator();
 
         var roots = installPath is not null
             ? manifestData.DotnetRoots.Where(r => string.Equals(
@@ -75,7 +84,7 @@ internal static class InstallationLister
     private static (List<InstallSpecInfo> Specs, List<InstallationInfo> Installations) CollectRootData(
         DotnetRootEntry root,
         bool verify,
-        ArchiveInstallationValidator validator)
+        InstallationValidator validator)
     {
         var installRoot = new DotnetInstallRoot(root.Path, root.Architecture);
 

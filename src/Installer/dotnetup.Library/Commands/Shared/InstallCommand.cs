@@ -3,6 +3,8 @@
 
 using System.CommandLine;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
@@ -32,8 +34,12 @@ internal abstract class InstallCommand : CommandBase
     public IDotnetEnvironmentManager DotnetEnvironment { get; }
     public ChannelVersionResolver ChannelVersionResolver => _channelVersionResolver.Value;
 
-    protected InstallCommand(ParseResult parseResult, string commandName)
-        : base(parseResult, commandName)
+    protected InstallCommand(
+        ParseResult parseResult,
+        string commandName,
+        DotnetupPolicy? policy = null,
+        IDotnetEnvironmentManager? dotnetEnvironment = null)
+        : base(parseResult, commandName, policy)
     {
         InstallPath = parseResult.GetValue(CommonOptions.InstallPathOption);
         ManifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);
@@ -46,6 +52,18 @@ internal abstract class InstallCommand : CommandBase
         ShellProvider = parseResult.GetValue(CommonOptions.ShellOption);
         MigrateFromSystem = parseResult.GetValue(CommonOptions.MigrateFromSystemOption);
 
-        DotnetEnvironment = new DotnetEnvironmentManager();
+        DotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
     }
+
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) =>
+        command is RootCommand
+            ? AdminModeSupport.Unsupported
+            : AdminModeSupport.Allow(
+                CommonOptions.UntrackedOption,
+                CommonOptions.InteractiveOption,
+                CommonOptions.NoProgressOption,
+                CommonOptions.VerbosityOption,
+                SdkInstallCommandParser.ChannelArguments,
+                RuntimeInstallCommandParser.ComponentSpecsArgument);
 }

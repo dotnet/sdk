@@ -86,6 +86,9 @@ internal class InstallExecutor
                 primary.AttachAdditionalFailure(batchResult.Failures[i].Exception);
             }
 
+            // DisplayBatchResults already printed every failure message.
+            primary.MarkReportedToUser();
+
             ExceptionDispatchInfo.Capture(primary).Throw();
         }
     }

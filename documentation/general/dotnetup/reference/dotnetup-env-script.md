@@ -25,6 +25,19 @@ configuration. If no configuration exists, it includes both the managed
 
 With selection options, it includes only the requested parts.
 
+In `admin` mode, the command remains available for existing shell profiles but
+never activates user-level .NET: it does not add the managed .NET root to `PATH`
+or set `DOTNET_ROOT`, even with `--dotnet` or `--dotnet-install-path`. Selection
+options and the stored `dotnetup`-on-`PATH` setting still determine whether the
+script adds `dotnetup` itself. The hidden `print-env-script` compatibility alias
+has the same behavior.
+
+Entering `admin` mode does not remove profile entries or rewrite saved user
+settings. The preserved profile can activate the saved setup again after leaving
+`admin` mode. Existing `PATH` entries and `DOTNET_ROOT` values are not removed;
+restart open terminals and review remaining environment settings if they still
+select a user-level .NET installation.
+
 ## Options
 
 | Option | Description |

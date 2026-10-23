@@ -26,6 +26,12 @@ internal enum DotnetAccessMode
 
     /// <summary>Shell profile plus system PATH and user-level DOTNET_ROOT (so cmd.exe and GUI apps see the user dotnet too).</summary>
     Everywhere = 3,
+
+    /// <summary>
+    /// Windows-only. Installs are managed through the Windows installer in the shared system folder
+    /// alongside other tools. dotnetup does no user-level dotnet PATH or DOTNET_ROOT wiring for it.
+    /// </summary>
+    Admin = 4,
 }
 
 /// <summary>
@@ -39,7 +45,7 @@ internal class DotnetupConfigData
     /// <summary>
     /// The persisted dotnet-access choice, serialized as <c>accessMode</c> via the
     /// <see cref="DotnetAccessModeJsonConverter"/> (lowercase <c>none</c> / <c>shell</c> /
-    /// <c>everywhere</c>). <c>null</c> when the user has not completed setup; a config that only
+    /// <c>everywhere</c> / <c>admin</c>). <c>null</c> when the user has not completed setup; a config that only
     /// stores other settings (such as <see cref="UpdateNotifications"/>) must not look onboarded.
     /// </summary>
     [JsonPropertyName("accessMode")]
@@ -110,6 +116,7 @@ internal static class DotnetupConfig
     /// </summary>
     public static void Write(DotnetupConfigData config)
     {
+        ArgumentNullException.ThrowIfNull(config);
         DotnetupPaths.EnsureDataDirectoryExists();
         var json = JsonSerializer.Serialize(config, DotnetupConfigJsonContext.Default.DotnetupConfigData);
         File.WriteAllText(DotnetupPaths.ConfigPath, json);
@@ -167,6 +174,14 @@ internal static class DotnetupConfig
     }
 
     /// <summary>
+    /// Returns the recorded access mode, or <c>null</c> when the config is missing, records no
+    /// access mode, or cannot be read. Unlike <see cref="ReadAccessMode"/>, never warns or records
+    /// telemetry, so it is safe for background resolution.
+    /// </summary>
+    internal static DotnetAccessMode? ReadAccessModeSilently()
+        => TryLoad(out var config, out _) == ConfigFileState.Loaded ? config!.ConfiguredAccessMode : null;
+
+    /// <summary>
     /// Returns true if a config file records the init choices, or exists but cannot be read.
     /// A config holding only other settings does not indicate that init has been completed.
     /// </summary>
@@ -205,6 +220,7 @@ internal static class DotnetupConfig
 
             config = JsonSerializer.Deserialize(text, DotnetupConfigJsonContext.Default.DotnetupConfigData)
                 ?? throw new JsonException("The config file is empty.");
+
             return ConfigFileState.Loaded;
         }
         catch (Exception ex)

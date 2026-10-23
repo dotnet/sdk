@@ -16,6 +16,13 @@ Guidance for changes under `test/`.
   `BinLogArgument(...)` for binlog paths collected by Helix. It also initializes the
   SDK/MSBuild environment before in-process MSBuild APIs such as `ProjectCollection`
   cache toolset paths.
+  **Exception: standalone `dotnetup.Tests` classes must not inherit `SdkTest`.**
+  The [dotnetup pipeline](../eng/pipelines/templates/jobs/dotnetup/dotnetup-tests.yml)
+  builds dotnetup without the SDK redist, which `SdkTest` requires at construction.
+  Use [DotnetupTestUtilities](dotnetup.Tests/Utilities/DotnetupTestUtilities.cs) for
+  the executable under test and
+  [SelfUpdateTestFiles.DotnetHostPath](dotnetup.Tests/Utilities/SelfUpdateTestFiles.cs)
+  when a test needs the bootstrap host.
 - **Use `SdkTestContext.Current` for paths** — never hardcode paths or manually discover
   locations at runtime (e.g. walking up directories):
 
@@ -61,6 +68,13 @@ Guidance for changes under `test/`.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
+- **Control Spectre console capabilities in rendering tests.** Set
+  `Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false }` when a test
+  explicitly selects interactive or ANSI output. Spectre's
+  [Azure Pipelines enricher](https://github.com/spectreconsole/spectre.console/blob/0.54.0/src/Spectre.Console/Enrichment/CI/AzurePipelinesEnricher.cs)
+  overrides those settings when `TF_BUILD` is present. Inject `EnvironmentVariables`
+  into the test console to cover CI profiles without changing process-wide state;
+  see [BundleProcessRunnerTests](dotnetup.Tests/BundleProcessRunnerTests.cs).
 - **Use MSTest's built-in combinatorial data support.** Import
   `Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial` for
   `[CombinatorialData]`, `[CombinatorialValues]`, and `[CombinatorialRange]`; do not add

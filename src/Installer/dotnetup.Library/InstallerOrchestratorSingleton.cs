@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
@@ -91,7 +93,7 @@ internal class InstallerOrchestratorSingleton
         using var readyQueue = new System.Collections.Concurrent.BlockingCollection<PreparedInstall>();
 
         var downloadTask = Task.Run(() => PrepareConcurrent(requests, batchContext, readyQueue, results, failures, fatalExceptions, installResultCollectionLock));
-        ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, results, failures, fatalExceptions, installResultCollectionLock);
+        ConsumeConcurrentPreparedInstallsAndCommit(readyQueue, batchContext, prepared => CommitPreparedInstall(prepared), results, failures, fatalExceptions, installResultCollectionLock);
         downloadTask.Wait();
 
         // Fatal (non-DotnetInstallException) errors still abort the batch entirely.
@@ -157,9 +159,13 @@ internal class InstallerOrchestratorSingleton
     /// Consumes the ready queue and commits (extracts + records) each install as it arrives.
     /// CommitPreparedInstall acquires the install-state mutex, so commits are serialized.
     /// <see cref="DotnetInstallException"/> failures are captured per-request; other exceptions are fatal.
+    /// Once the user has asked to cancel the batch, remaining installs are recorded as cancelled instead of committed.
+    /// <c>commit</c> commits one prepared install; production code passes <see cref="CommitPreparedInstall"/>.
     /// </summary>
-    private void ConsumeConcurrentPreparedInstallsAndCommit(
+    internal static void ConsumeConcurrentPreparedInstallsAndCommit(
         System.Collections.Concurrent.BlockingCollection<PreparedInstall> readyQueue,
+        InstallBatchContext batchContext,
+        Func<PreparedInstall, InstallResult> commit,
         List<InstallResult> results,
         List<InstallFailure> failures,
         List<Exception> fatalExceptions,
@@ -181,9 +187,15 @@ internal class InstallerOrchestratorSingleton
                     continue;
                 }
 
+                if (batchContext.IsCancellationRequested)
+                {
+                    lock (installResultCollectionLock) { failures.Add(new InstallFailure(prepared.ResolvedRequest, CreateCancelledBeforeStartException(prepared))); }
+                    continue;
+                }
+
                 try
                 {
-                    results.Add(CommitPreparedInstall(prepared));
+                    results.Add(commit(prepared));
                 }
                 catch (DotnetInstallException ex)
                 {
@@ -201,6 +213,12 @@ internal class InstallerOrchestratorSingleton
         }
     }
 
+    private static DotnetInstallException CreateCancelledBeforeStartException(PreparedInstall prepared) => new(
+        DotnetInstallErrorCode.OperationCancelled,
+        string.Format(CultureInfo.CurrentCulture, Strings.InstallCancelledBeforeStart, prepared.Request.Component.GetDisplayName(), prepared.Version),
+        version: prepared.Version.ToString(),
+        component: prepared.Request.Component.ToString());
+
     /// <summary>
     /// Represents a prepared (downloaded but not yet committed) installation.
     /// </summary>
@@ -210,22 +228,22 @@ internal class InstallerOrchestratorSingleton
         public DotnetInstallRequest Request => ResolvedRequest.Request;
         public ReleaseVersion Version => ResolvedRequest.ResolvedVersion;
         public DotnetInstall Install { get; }
-        public DotnetArchiveExtractor Extractor { get; }
+        public IInstallArtifact Artifact { get; }
 
         public PreparedInstall(ResolvedInstallRequest resolvedRequest, DotnetInstall install,
-            DotnetArchiveExtractor extractor)
+            IInstallArtifact artifact)
         {
             ResolvedRequest = resolvedRequest;
             Install = install;
-            Extractor = extractor;
+            Artifact = artifact;
         }
 
-        public void Dispose() => Extractor.Dispose();
+        public void Dispose() => Artifact.Dispose();
     }
 
     /// <summary>
     /// Validates and resolves version for an install request, checks if already installed,
-    /// and downloads the archive — but does not commit (extract) it.
+    /// and downloads the install artifact — but does not commit (install) it.
     /// Returns null if the install was already present (the result is returned via the out parameter).
     /// Used for concurrent multi-install scenarios where downloads happen in parallel.
     /// </summary>
@@ -241,101 +259,157 @@ internal class InstallerOrchestratorSingleton
         out InstallResult? alreadyInstalledResult,
         IInstallationValidator? installationValidator = null)
     {
-        alreadyInstalledResult = null;
         var installRequest = resolvedRequest.Request;
-        var versionToInstall = resolvedRequest.ResolvedVersion;
-        var install = new DotnetInstall(installRequest.InstallRoot, versionToInstall, installRequest.Component);
-        ReleaseManifest releaseManifest = ReleaseManifest.Default;
-        var manifest = installRequest.Options.Untracked ? null : new DotnetupSharedManifest(installRequest.Options.ManifestPath);
-        installationValidator ??= new ArchiveInstallationValidator();
+        var install = new DotnetInstall(installRequest.InstallRoot, resolvedRequest.ResolvedVersion, installRequest.Component);
+        installationValidator ??= CreateInstallationValidator(installRequest.Options.InstallMechanism);
 
-        using (var finalizeLock = ModifyInstallStateMutex())
+        alreadyInstalledResult = CheckExistingInstallState(installRequest, install, installationValidator);
+        if (alreadyInstalledResult is not null)
         {
-            if (manifest?.InstallAlreadyExists(install) == true)
-            {
-                manifest.RecordInstallSpec(installRequest);
-                alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
-                return null;
-            }
-
-            // For --untracked installs the manifest is null, so the check above is
-            // skipped. Fall back to a filesystem check using the same layout validation
-            // that CommitPreparedInstall uses post-extraction. This runs inside the
-            // mutex so another dotnetup process can't be mid-extraction when we probe.
-            if (installRequest.Options.Untracked && installationValidator.Validate(install))
-            {
-                alreadyInstalledResult = new InstallResult(install, WasAlreadyInstalled: true);
-                return null;
-            }
-
-            if (!installRequest.Options.Untracked
-                && !manifest!.IsRootTracked(installRequest.InstallRoot)
-                && DotnetupSharedManifest.HasDotnetArtifacts(installRequest.InstallRoot.Path))
-            {
-                throw new DotnetInstallException(
-                    DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts,
-                    $"The install path '{installRequest.InstallRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
-                    "To avoid conflicts, use a different install path, remove the existing installation first, " +
-                    "or use the --untracked option to install without tracking.",
-                    version: versionToInstall.ToString(),
-                    component: installRequest.Component.ToString());
-            }
-
-            if (installRequest.Options.RequireMuxerUpdate && installRequest.InstallRoot.Path is not null)
-            {
-                MuxerHandler.EnsureMuxerIsWritable(installRequest.InstallRoot.Path);
-            }
+            return null;
         }
 
-        DotnetArchiveExtractor extractor = new(installRequest, versionToInstall, releaseManifest, batchContext, cacheDirectory: DotnetupPaths.DownloadCacheDirectory);
-        extractor.Prepare();
+        IInstallArtifact artifact = CreateInstallArtifact(resolvedRequest, ReleaseManifest.Default, batchContext);
+        try
+        {
+            artifact.Prepare();
+        }
+        catch
+        {
+            artifact.Dispose();
+            throw;
+        }
 
-        return new PreparedInstall(resolvedRequest, install, extractor);
+        return new PreparedInstall(resolvedRequest, install, artifact);
     }
 #pragma warning restore CA1822
 
     /// <summary>
-    /// Commits a previously prepared installation: extracts the archive to the target directory
+    /// Under the install-state mutex, returns an already-installed result when the install exists,
+    /// otherwise validates that the install root can be installed into and returns null.
+    /// </summary>
+    private static InstallResult? CheckExistingInstallState(
+        DotnetInstallRequest installRequest,
+        DotnetInstall install,
+        IInstallationValidator installationValidator)
+    {
+        var manifest = installRequest.Options.Untracked ? null : new DotnetupSharedManifest(installRequest.Options.ManifestPath);
+
+        using var finalizeLock = ModifyInstallStateMutex();
+
+        if (manifest?.InstallAlreadyExists(install) == true)
+        {
+            manifest.RecordInstallSpec(installRequest);
+            return new InstallResult(install, WasAlreadyInstalled: true);
+        }
+
+        // For --untracked installs the manifest is null, so the check above is
+        // skipped. Fall back to a filesystem check using the same validation
+        // that CommitPreparedInstall uses post-install. This runs inside the
+        // mutex so another dotnetup process can't be mid-extraction when we probe.
+        if (installRequest.Options.Untracked && installationValidator.Validate(install))
+        {
+            return new InstallResult(install, WasAlreadyInstalled: true);
+        }
+
+        if (!installRequest.Options.Untracked
+            && !manifest!.IsRootTracked(installRequest.InstallRoot)
+            && DotnetupSharedManifest.HasDotnetArtifacts(installRequest.InstallRoot.Path))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InstallPathHasUntrackedArtifacts,
+                $"The install path '{installRequest.InstallRoot.Path}' already contains a .NET installation that is not tracked by dotnetup. " +
+                "To avoid conflicts, use a different install path, remove the existing installation first, " +
+                "or use the --untracked option to install without tracking.",
+                version: install.Version.ToString(),
+                component: installRequest.Component.ToString());
+        }
+
+        // The installer bundle replaces the muxer itself, so --require-muxer-update only applies to archives.
+        if (installRequest.Options.RequireMuxerUpdate
+            && installRequest.Options.InstallMechanism == InstallMechanism.Archive
+            && installRequest.InstallRoot.Path is not null)
+        {
+            MuxerHandler.EnsureMuxerIsWritable(installRequest.InstallRoot.Path);
+        }
+
+        return null;
+    }
+
+    /// <summary>Creates the artifact that downloads and installs the request using its install mechanism.</summary>
+    internal static IInstallArtifact CreateInstallArtifact(
+        ResolvedInstallRequest resolvedRequest,
+        ReleaseManifest releaseManifest,
+        InstallBatchContext batchContext)
+    {
+        var request = resolvedRequest.Request;
+        var version = resolvedRequest.ResolvedVersion;
+
+        return request.Options.InstallMechanism switch
+        {
+            InstallMechanism.WindowsInstallerBundle => new WindowsBundleArtifact(request, version, batchContext, releaseManifest: releaseManifest),
+            _ => new DotnetArchiveExtractor(request, version, releaseManifest, batchContext, cacheDirectory: DotnetupPaths.DownloadCacheDirectory),
+        };
+    }
+
+    /// <summary>
+    /// Creates the validator that checks whether an install exists. Archive installs validate the layout
+    /// dotnetup extracted; installer bundle installs ask hostfxr, since the bundle owns the layout.
+    /// </summary>
+    internal static IInstallationValidator CreateInstallationValidator(InstallMechanism mechanism) => new InstallationValidator(mechanism);
+
+    /// <summary>
+    /// Commits a previously prepared installation: installs the artifact into the target directory
     /// and records it in the manifest. Must be called sequentially (not concurrently).
     /// </summary>
     /// <returns>The installation result.</returns>
 #pragma warning disable CA1822
-    public InstallResult CommitPreparedInstall(PreparedInstall prepared)
+    public InstallResult CommitPreparedInstall(PreparedInstall prepared, IInstallationValidator? installationValidator = null)
     {
         var manifest = prepared.Request.Options.Untracked ? null : new DotnetupSharedManifest(prepared.Request.Options.ManifestPath);
 
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            if (manifest?.InstallAlreadyExists(prepared.Install) == true)
+            IInstallationValidator validator = installationValidator ?? CreateInstallationValidator(prepared.Request.Options.InstallMechanism);
+            if (manifest?.InstallAlreadyExists(prepared.Install) == true
+                || (prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
+                    && validator.Validate(prepared.Install)))
             {
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
 
-            prepared.Extractor.Commit();
+            prepared.Artifact.Commit();
 
-            ArchiveInstallationValidator validator = new();
-            if (validator.Validate(prepared.Install, out string? validationFailure))
+            if (prepared.Artifact.RequiresPostInstallValidation
+                && !validator.Validate(prepared.Install, out string? validationFailure))
             {
-                manifest?.RecordInstallSpec(prepared.Request);
+                throw CreatePostInstallValidationException(prepared, validationFailure);
+            }
 
-                manifest?.AddInstallation(prepared.Request.InstallRoot, new Installation
-                {
-                    Component = prepared.Request.Component,
-                    Version = prepared.Version.ToString(),
-                    Subcomponents = [.. prepared.Extractor.ExtractedSubcomponents],
-                });
-            }
-            else
+            manifest?.RecordInstallSpec(prepared.Request);
+
+            manifest?.AddInstallation(prepared.Request.InstallRoot, new Installation
             {
-                throw new DotnetInstallException(
-                    DotnetInstallErrorCode.InstallFailed,
-                    $"Installation validation failed: {validationFailure}",
-                    version: prepared.Version.ToString(),
-                    component: prepared.Request.Component.ToString());
-            }
+                Component = prepared.Request.Component,
+                Version = prepared.Version.ToString(),
+                Subcomponents = [.. prepared.Artifact.ExtractedSubcomponents],
+            });
         }
 
         return new InstallResult(prepared.Install, WasAlreadyInstalled: false);
     }
 #pragma warning restore CA1822
+
+    private static DotnetInstallException CreatePostInstallValidationException(PreparedInstall prepared, string? validationFailure)
+    {
+        bool isBundle = prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle;
+        return new DotnetInstallException(
+            isBundle ? DotnetInstallErrorCode.InstallerPostInstallVerificationFailed : DotnetInstallErrorCode.InstallFailed,
+            string.Format(
+                CultureInfo.CurrentCulture,
+                isBundle ? Strings.WindowsInstallerPostInstallVerificationFailed : Strings.InstallValidationFailed,
+                validationFailure),
+            version: prepared.Version.ToString(),
+            component: prepared.Request.Component.ToString());
+    }
 }

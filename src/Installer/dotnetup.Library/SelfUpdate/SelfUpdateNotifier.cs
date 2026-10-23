@@ -55,7 +55,9 @@ internal sealed class SelfUpdateNotifier
     /// <c>null</c> when notifications do not apply to this invocation. Never throws: a best-effort
     /// notice must not fail the command.
     /// </summary>
-    public static SelfUpdateNotifier? Start(bool interactive)
+    /// <param name="interactive">Whether the command runs interactively.</param>
+    /// <param name="policy">The machine policy; no notifier is returned when it blocks self-update.</param>
+    public static SelfUpdateNotifier? Start(bool interactive, DotnetupPolicy policy)
     {
         // Redirected output is read by a program, even when --interactive true allows prompts.
         if (!interactive ||
@@ -67,7 +69,7 @@ internal sealed class SelfUpdateNotifier
 
         try
         {
-            if (!DotnetupConfig.ReadUpdateNotificationsEnabled() || UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
+            if (!DotnetupConfig.ReadUpdateNotificationsEnabled() || IsSelfUpdateBlockedByPolicy(policy, invocation.Paths.InstalledPath))
             {
                 return null;
             }
@@ -89,6 +91,13 @@ internal sealed class SelfUpdateNotifier
             return null;
         }
     }
+
+    /// <summary>
+    /// Returns whether the unsigned-download policy blocks <c>self update</c> for the executable at
+    /// <paramref name="installedPath"/>. Installations that require a signed replacement are exempt.
+    /// </summary>
+    internal static bool IsSelfUpdateBlockedByPolicy(DotnetupPolicy policy, string installedPath)
+        => policy.IsUnsignedDownloadBlocked() && !SelfUpdateSignature.RequiresSignedReplacement(installedPath);
 
     internal void StartRefreshIfStale()
     {

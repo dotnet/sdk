@@ -35,8 +35,7 @@ internal static class InitDefaultsResolver
         var globalJson = ignoreGlobalJson
             ? new GlobalJsonInfo()
             : GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
-            command.InstallPath, globalJson);
+        var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(command.InstallPath, globalJson);
 
         if (preResolvedRequests is { Count: > 0 })
         {
@@ -109,7 +108,8 @@ internal static class InitDefaultsResolver
         InstallCommand command,
         List<ResolvedInstallRequest>? requests)
     {
-        return requests ?? GenerateSdkInstallRequests(command, channel: null);
+        return requests ?? GenerateInstallRequests(
+            command, [new MinimalInstallSpec(InstallComponent.SDK, null)]);
     }
 
     /// <summary>

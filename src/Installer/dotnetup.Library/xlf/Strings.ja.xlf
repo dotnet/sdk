@@ -2,6 +2,111 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../Strings.resx">
     <body>
+      <trans-unit id="AccessModeAdminDescription">
+        <source>Installs are managed by other tools alongside dotnetup (with limited support) in a shared system folder.</source>
+        <target state="new">Installs are managed by other tools alongside dotnetup (with limited support) in a shared system folder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AccessModeAdminDetails">
+        <source>Commands may ask to elevate. Installation is slower, and consumes more disk space but supports existing configurations.</source>
+        <target state="new">Commands may ask to elevate. Installation is slower, and consumes more disk space but supports existing configurations.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeAlreadyEnabled">
+        <source>Admin mode is already enabled.</source>
+        <target state="new">Admin mode is already enabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeArgumentDisplayName">
+        <source>The argument '&lt;{0}&gt;'</source>
+        <target state="new">The argument '&lt;{0}&gt;'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeChangeCancelled">
+        <source>Elevation was cancelled. Admin mode was not changed.</source>
+        <target state="new">Elevation was cancelled. Admin mode was not changed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeCommandNotSupported">
+        <source>'{0}' is not available in admin mode. Run 'dotnetup env set &lt;mode&gt;' to leave admin mode.</source>
+        <target state="new">'{0}' is not available in admin mode. Run 'dotnetup env set &lt;mode&gt;' to leave admin mode.</target>
+        <note>{0} is the command name. {Locked="dotnetup env set"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeDisableFailed">
+        <source>Failed to disable admin mode: {0}</source>
+        <target state="new">Failed to disable admin mode: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeDisabled">
+        <source>Admin mode is disabled.</source>
+        <target state="new">Admin mode is disabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeDisablingNotice">
+        <source>Disabling admin mode changes a machine-wide policy that affects all users on this computer.</source>
+        <target state="new">Disabling admin mode changes a machine-wide policy that affects all users on this computer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeElevationNotice">
+        <source>Windows will ask for administrator permission.</source>
+        <target state="new">Windows will ask for administrator permission.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeEnableFailed">
+        <source>Failed to enable admin mode: {0}</source>
+        <target state="new">Failed to enable admin mode: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeEnabled">
+        <source>Admin mode is enabled.</source>
+        <target state="new">Admin mode is enabled.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeEnablingNotice">
+        <source>Enabling admin mode changes a machine-wide policy that affects all users on this computer.</source>
+        <target state="new">Enabling admin mode changes a machine-wide policy that affects all users on this computer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeInfoInstallationsNotShown">
+        <source>System installations are not yet listed by dotnetup in admin mode. Use 'dotnet --info' to view them.</source>
+        <target state="new">System installations are not yet listed by dotnetup in admin mode. Use 'dotnet --info' to view them.</target>
+        <note>{Locked="dotnetup"} {Locked="dotnet --info"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeListNotSupported">
+        <source>The list command is not yet supported in admin mode. Use 'dotnet --list-sdks', 'dotnet --list-runtimes', or 'dotnet --info' to view system installations.</source>
+        <target state="new">The list command is not yet supported in admin mode. Use 'dotnet --list-sdks', 'dotnet --list-runtimes', or 'dotnet --info' to view system installations.</target>
+        <note>{Locked="dotnetup"} {Locked="dotnet --list-sdks"} {Locked="dotnet --list-runtimes"} {Locked="dotnet --info"}</note>
+      </trans-unit>
+      <trans-unit id="AdminModeNotDisabled">
+        <source>Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</source>
+        <target state="new">Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeNotEnabled">
+        <source>Admin mode was not enabled. The machine policy did not change, which can happen when it is managed by Group Policy.</source>
+        <target state="new">Admin mode was not enabled. The machine policy did not change, which can happen when it is managed by Group Policy.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeOptionDisplayName">
+        <source>The option '{0}'</source>
+        <target state="new">The option '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeSymbolNotSupported">
+        <source>{0} is not available for '{1}' in admin mode.</source>
+        <target state="new">{0} is not available for '{1}' in admin mode.</target>
+        <note>{0} describes an option or argument; {1} is the command name.</note>
+      </trans-unit>
+      <trans-unit id="AdminModeUnsignedDownloadsAllowed">
+        <source>Unsigned executables will be allowed again by default.</source>
+        <target state="new">Unsigned executables will be allowed again by default.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AdminModeWindowsOnly">
+        <source>Admin mode is only supported on Windows.</source>
+        <target state="new">Admin mode is only supported on Windows.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDone">
         <source>Done.</source>
         <target state="new">Done.</target>
@@ -60,6 +165,31 @@
       <trans-unit id="DotnetCommandInstallFirst">
         <source>Run 'dotnetup install' to install a .NET SDK first.</source>
         <target state="new">Run 'dotnetup install' to install a .NET SDK first.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathCommandDescription">
+        <source>Modifies the machine-wide system PATH (requires elevated privileges)</source>
+        <target state="new">Modifies the machine-wide system PATH (requires elevated privileges)</target>
+        <note>{Locked="PATH"}</note>
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathDotnetDirDescription">
+        <source>The dotnet directory to insert into or remove from the system PATH. Required for 'insertdotnet' and 'removedotnet' because the elevated process may run under a different account and cannot recompute the invoking user's directory.</source>
+        <target state="new">The dotnet directory to insert into or remove from the system PATH. Required for 'insertdotnet' and 'removedotnet' because the elevated process may run under a different account and cannot recompute the invoking user's directory.</target>
+        <note>{Locked="PATH"}{Locked="insertdotnet"}{Locked="removedotnet"}</note>
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathDotnetDirRequired">
+        <source>The '{0}' operation requires the --dotnet-dir option.</source>
+        <target state="new">The '{0}' operation requires the --dotnet-dir option.</target>
+        <note>{Locked="--dotnet-dir"}</note>
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathOperationDescription">
+        <source>The operation to perform: 'insertdotnet', 'removedotnet', 'enableadminmode', or 'disableadminmode'</source>
+        <target state="new">The operation to perform: 'insertdotnet', 'removedotnet', 'enableadminmode', or 'disableadminmode'</target>
+        <note>{Locked="insertdotnet"}{Locked="removedotnet"}{Locked="enableadminmode"}{Locked="disableadminmode"}</note>
+      </trans-unit>
+      <trans-unit id="ElevatedSystemPathOutputFileDescription">
+        <source>A file where any output that should be displayed to the user should be written.</source>
+        <target state="new">A file where any output that should be displayed to the user should be written.</target>
         <note />
       </trans-unit>
       <trans-unit id="EnvApplyToTerminalPrompt">
@@ -130,6 +260,16 @@ Or open a new terminal.</target>
         <source>Open a new terminal for the change to take effect.</source>
         <target state="new">Open a new terminal for the change to take effect.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeAdminDotnetupOffPath">
+        <source>dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</source>
+        <target state="new">dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</target>
+        <note>{Locked="dotnetup"}{Locked="PATH"}</note>
+      </trans-unit>
+      <trans-unit id="EnvOutcomeAdminDotnetupOnPath">
+        <source>dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</source>
+        <target state="new">dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</target>
+        <note>{Locked="dotnetup"}{Locked="PATH"}</note>
       </trans-unit>
       <trans-unit id="EnvOutcomeBothOnPath">
         <source>dotnet and dotnetup are on your PATH.</source>
@@ -386,15 +526,65 @@ Or open a new terminal.</target>
         <target state="new">Display dotnetup information.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitAcceptAndConfigure">
+        <source>Accept and configure</source>
+        <target state="new">Accept and configure</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitAcceptAndInstall">
+        <source>Accept and install</source>
+        <target state="new">Accept and install</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InitAdminModeNextSteps">
+        <source>No .NET was installed. Run 'dotnetup sdk install &lt;version&gt; --untracked' afterwards to install .NET with the Windows installer.</source>
+        <target state="new">No .NET was installed. Run 'dotnetup sdk install &lt;version&gt; --untracked' afterwards to install .NET with the Windows installer.</target>
+        <note>{Locked="dotnetup sdk install"}{Locked="--untracked"}</note>
+      </trans-unit>
       <trans-unit id="InitCommandDescription">
         <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
         <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitConfigureConfirmation">
+        <source>Configure dotnetup with these settings?</source>
+        <target state="new">Configure dotnetup with these settings?</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="InitConfigureOnlyDescription">
+        <source>Configures dotnetup and your environment without installing or migrating .NET.</source>
+        <target state="new">Configures dotnetup and your environment without installing or migrating .NET.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="InitConfiguredModeNextSteps">
+        <source>No .NET was installed. Run 'dotnetup sdk install' afterwards to install .NET using the configured mode.</source>
+        <target state="new">No .NET was installed. Run 'dotnetup sdk install' afterwards to install .NET using the configured mode.</target>
+        <note>{Locked="dotnetup sdk install"}</note>
+      </trans-unit>
+      <trans-unit id="InitInstallConfirmation">
+        <source>Install .NET with these settings?</source>
+        <target state="new">Install .NET with these settings?</target>
+        <note>{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="InitInstallLocation">
+        <source>dotnetup will install .NET SDKs and runtimes in {0}.</source>
+        <target state="new">dotnetup will install .NET SDKs and runtimes in {0}.</target>
+        <note>{Locked="dotnetup"}{Locked=".NET"} {0} is the install directory path.</note>
+      </trans-unit>
+      <trans-unit id="InstallCancelledBeforeStart">
+        <source>Installation was cancelled before {0} {1} was installed.</source>
+        <target state="new">Installation was cancelled before {0} {1} was installed.</target>
+        <note>{0} is the component display name, such as .NET SDK. {1} is the component version.</note>
+      </trans-unit>
       <trans-unit id="InstallSpecSource">
         <source>(source: {0})</source>
         <target state="new">(source: {0})</target>
         <note>{0} is an install-source identifier or a global.json path.</note>
+      </trans-unit>
+      <trans-unit id="InstallValidationFailed">
+        <source>Installation validation failed: {0}</source>
+        <target state="new">Installation validation failed: {0}</target>
+        <note>{0} is the reason the installation validation failed.</note>
       </trans-unit>
       <trans-unit id="ListCommandDescription">
         <source>List installed .NET SDKs and runtimes managed by dotnetup.</source>
@@ -710,6 +900,76 @@ Or open a new terminal.</target>
         <source>Use {0} {1} to target these specs.</source>
         <target state="new">Use {0} {1} to target these specs.</target>
         <note>{0} is the source option name; {1} is the install-source value that selects every source.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerBusy">
+        <source>Another installation is already in progress (installer exit code {0}). Wait for it to finish, then run the command again.</source>
+        <target state="new">Another installation is already in progress (installer exit code {0}). Wait for it to finish, then run the command again.</target>
+        <note>{0} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerCancellationRequested">
+        <source>Cannot cancel this installer. Waiting; skipping remaining installs.</source>
+        <target state="new">Cannot cancel this installer. Waiting; skipping remaining installs.</target>
+        <note>Shown after Ctrl+C while a Windows installer is running. Keep this notice short enough for an 80-column terminal.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerCancelled">
+        <source>The installation of {0} was cancelled (installer exit code {1}).</source>
+        <target state="new">The installation of {0} was cancelled (installer exit code {1}).</target>
+        <note>{0} is the component display name and version. {1} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerDownloadFailed">
+        <source>Failed to download the .NET installer for version {0}: {1}</source>
+        <target state="new">Failed to download the .NET installer for version {0}: {1}</target>
+        <note>{0} is the component version. {1} is the download error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerElevationRequired">
+        <source>The installer for {0} requires administrator privileges but could not elevate (installer exit code {1}). Run the command from an account that can approve the administrator (UAC) prompt.</source>
+        <target state="new">The installer for {0} requires administrator privileges but could not elevate (installer exit code {1}). Run the command from an account that can approve the administrator (UAC) prompt.</target>
+        <note>{Locked="UAC"} {0} is the component display name and version. {1} is the numeric installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerFailed">
+        <source>The installer for {0} failed with exit code {1} (0x{2:X8}).</source>
+        <target state="new">The installer for {0} failed with exit code {1} (0x{2:X8}).</target>
+        <note>{0} is the component display name and version. {1} and {2} are the decimal and hexadecimal forms of the installer exit code.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerHashMismatch">
+        <source>The downloaded installer for {0} does not match its expected hash; it may have been modified after it was downloaded. Run the command again.</source>
+        <target state="new">The downloaded installer for {0} does not match its expected hash; it may have been modified after it was downloaded. Run the command again.</target>
+        <note>{0} is the component display name and version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerOpenFailed">
+        <source>Could not open the downloaded installer for {0}: {1}</source>
+        <target state="new">Could not open the downloaded installer for {0}: {1}</target>
+        <note>{0} is the component display name and version. {1} is the operating system error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerPostInstallVerificationFailed">
+        <source>The Windows installer reported success, but the installation could not be verified: {0}</source>
+        <target state="new">The Windows installer reported success, but the installation could not be verified: {0}</target>
+        <note>{0} is the reason the installation could not be verified.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerProcessStartFailed">
+        <source>Could not start the installer for {0}: {1}</source>
+        <target state="new">Could not start the installer for {0}: {1}</target>
+        <note>{0} is the component display name and version. {1} is the operating system error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerRestartInitiated">
+        <source>A restart has been initiated and is required to finish installing {0}.</source>
+        <target state="new">A restart has been initiated and is required to finish installing {0}.</target>
+        <note>{0} is the component display name and version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerRestartRequired">
+        <source>You must restart your computer to finish installing {0}. dotnetup will not restart it automatically.</source>
+        <target state="new">You must restart your computer to finish installing {0}. dotnetup will not restart it automatically.</target>
+        <note>{Locked="dotnetup"} {0} is the component display name and version.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerSignatureVerificationFailed">
+        <source>The installer for {0} failed Authenticode signature verification: {1}</source>
+        <target state="new">The installer for {0} failed Authenticode signature verification: {1}</target>
+        <note>{Locked="Authenticode"} {0} is the component display name and version. {1} is the signature verification error.</note>
+      </trans-unit>
+      <trans-unit id="WindowsInstallerWrongFileExtension">
+        <source>Expected a Windows installer (.exe) for {0}, but the download resolved to '{1}'.</source>
+        <target state="new">Expected a Windows installer (.exe) for {0}, but the download resolved to '{1}'.</target>
+        <note>{Locked=".exe"} {0} is the component display name and version. {1} is the downloaded file name.</note>
       </trans-unit>
     </body>
   </file>

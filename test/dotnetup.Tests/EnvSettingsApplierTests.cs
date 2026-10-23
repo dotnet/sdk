@@ -133,18 +133,35 @@ public class EnvSettingsApplierTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void All_To_None_DotnetupOff_RemovesEnvVarsAndProfile()
+    [DataRow(DotnetAccessMode.None)]
+    [DataRow(DotnetAccessMode.Admin)]
+    internal void All_To_NoUserDotnet_DotnetupOff_RemovesEnvVarsAndProfile(DotnetAccessMode mode)
     {
         WriteManagedBlockToProfile();
 
         EnvSettingsApplier.Apply(
-            DotnetAccessMode.None, targetDotnetupOnPath: false,
+            mode, targetDotnetupOnPath: false,
             Observed(dotnetEnvVarsPresent: true, dotnetEnvVarsComplete: true, profileBlock: ProfileBlockState.Present),
             _env, DotnetRoot, _shellProvider);
 
         _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(1);
         _env.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
         ProfileHasManagedBlock().Should().BeFalse();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void Admin_DotnetupOn_RemovesDotnetEnvVarsAndKeepsOnlyDotnetupInProfile()
+    {
+        EnvSettingsApplier.Apply(
+            DotnetAccessMode.Admin, targetDotnetupOnPath: true,
+            Observed(dotnetEnvVarsPresent: true, profileBlock: ProfileBlockState.Present),
+            _env, DotnetRoot, _shellProvider);
+
+        _env.ApplyEnvironmentModificationsSystemCallCount.Should().Be(1);
+        _env.ApplyEnvironmentModificationsUserCallCount.Should().Be(0);
+        _env.LastIncludeDotnetForTerminalProfileModifications.Should().BeFalse();
+        _env.LastIncludeDotnetupForTerminalProfileModifications.Should().BeTrue();
+        _env.LastDotnetupOnUserPathEnabled.Should().BeTrue();
     }
 
     [TestMethod]

@@ -7,7 +7,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 
-internal class SdkInstallCommand(ParseResult result) : InstallCommand(result, "sdk/install")
+internal class SdkInstallCommand(ParseResult result, DotnetupPolicy? policy = null) : InstallCommand(result, "sdk/install", policy)
 {
     private readonly string[] _channels = result.GetValue(SdkInstallCommandParser.ChannelArguments) ?? [];
 

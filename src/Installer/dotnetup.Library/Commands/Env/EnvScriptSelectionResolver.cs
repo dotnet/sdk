@@ -5,7 +5,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 /// <summary>
 /// Decides which aspects <c>env script</c> should wire from the selection flags and the stored
-/// config. Explicit flags always win. With no flags, the stored config drives the result — so a
+/// config. Explicit flags win, except that admin mode never activates managed dotnet. With no flags,
+/// the stored config drives the result — so a
 /// bare <c>eval "$(dotnetup env script)"</c> activates the user's configured setup — falling back to
 /// wiring both when no config exists yet (which preserves the behavior the legacy
 /// <c>print-env-script</c> profile blocks rely on). Kept free of console / environment access so it
@@ -28,7 +29,8 @@ internal static class EnvScriptSelectionResolver
     /// combined with <paramref name="dotnetRequested"/> or <paramref name="dotnetupRequested"/>.
     /// </param>
     /// <param name="config">The stored config, or <c>null</c> when none exists yet.</param>
-    public static EnvScriptSelection Resolve(bool dotnetRequested, bool dotnetupRequested, bool dotnetupOnly, DotnetupConfigData? config)
+    /// <param name="isAdminMode">Suppress managed dotnet activation, including explicit requests from existing profiles.</param>
+    public static EnvScriptSelection Resolve(bool dotnetRequested, bool dotnetupRequested, bool dotnetupOnly, DotnetupConfigData? config, bool isAdminMode = false)
     {
         if (dotnetupOnly)
         {
@@ -44,16 +46,16 @@ internal static class EnvScriptSelectionResolver
 
         if (dotnetRequested || dotnetupRequested)
         {
-            return new EnvScriptSelection(IncludeDotnet: dotnetRequested, IncludeDotnetup: dotnetupRequested);
+            return new EnvScriptSelection(IncludeDotnet: dotnetRequested && !isAdminMode, IncludeDotnetup: dotnetupRequested);
         }
 
         // No selection flags: use the stored config if present, otherwise wire both.
         if (config is null)
         {
-            return new EnvScriptSelection(IncludeDotnet: true, IncludeDotnetup: true);
+            return new EnvScriptSelection(IncludeDotnet: !isAdminMode, IncludeDotnetup: true);
         }
 
-        bool includeDotnet = config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
+        bool includeDotnet = !isAdminMode && config.AccessMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
         return new EnvScriptSelection(IncludeDotnet: includeDotnet, IncludeDotnetup: config.DotnetupOnPath);
     }
 }

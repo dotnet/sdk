@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
@@ -20,11 +22,26 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 internal class InitWorkflows
 {
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
+    private readonly IEnvironmentStateInspector _environmentInspector;
 
-    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment)
+    public InitWorkflows(
+        IDotnetEnvironmentManager dotnetEnvironment,
+        AdminModeSwitcher? adminModeSwitcher = null,
+        IEnvironmentStateInspector? environmentInspector = null)
     {
         _dotnetEnvironment = dotnetEnvironment;
+        _environmentInspector = environmentInspector ?? new EnvironmentStateInspector(dotnetEnvironment);
+        AdminSwitcher = adminModeSwitcher;
     }
+
+    [AllowNull]
+    private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher();
+
+    /// <summary>
+    /// Replaces the interactive form (or the non-interactive defaults) in tests. Returns the
+    /// selection, or <c>null</c> when the user exits without changes.
+    /// </summary>
+    internal Func<InstallCommand, InitFormDefaults, InitFormSelection?>? FormSelectionOverride { get; init; }
 
     // ── Init Flow Orchestrators ──
 
@@ -41,8 +58,7 @@ internal class InitWorkflows
     {
         // When a nearby global.json pins a local SDK via "sdk.paths", dotnetup is not the
         // environment owner for this directory: skip onboarding (the form, access-mode setup, and
-        // migration) so we don't point the environment at a repo-local path or migrate system
-        // installs. 'dotnetup install' can still install .NET to that path. Dry-run ignores
+        // migration). 'dotnetup install' can still install .NET to that path. Dry-run ignores
         // global.json entirely so the form can be previewed from any directory.
         if (!command.DryRun && HasLocalSdkPathGlobalJson())
         {
@@ -68,15 +84,51 @@ internal class InitWorkflows
 
         // Show the interactive form (or, non-interactively, take the recommended defaults) and read
         // back the user's raw choices without resolving any install requests yet.
-        InitFormSelection? formSelection = ResolveFormSelection(command, defaults);
+        InitFormSelection? formSelection = FormSelectionOverride is { } selectForm
+            ? selectForm(command, defaults)
+            : ResolveFormSelection(command, defaults);
         if (formSelection is null)
         {
             return []; // User chose to exit without changes.
         }
 
+        return ApplySelection(command, requests, defaults, formSelection, previousConfig);
+    }
+
+    /// <summary>
+    /// Applies the accepted selection. Setup involving admin mode only configures the environment;
+    /// other selections install and configure the selected setup.
+    /// </summary>
+    private List<ResolvedInstallRequest> ApplySelection(
+        InstallCommand command,
+        List<ResolvedInstallRequest>? requests,
+        InitFormDefaults defaults,
+        InitFormSelection formSelection,
+        DotnetupConfigData? previousConfig)
+    {
+        bool configureOnly = formSelection.AccessMode == DotnetAccessMode.Admin
+            || previousConfig?.AccessMode == DotnetAccessMode.Admin;
         if (command.DryRun)
         {
-            PrintDryRunPreview(defaults, formSelection);
+            PrintDryRunPreview(defaults, formSelection, configureOnly);
+            return [];
+        }
+
+        if (configureOnly)
+        {
+            EnvSettingsWriter.ApplyAndPersist(
+                formSelection.AccessMode,
+                InitDefaultsResolver.GetDefaultDotnetupOnPath(previousConfig),
+                _dotnetEnvironment,
+                command.ShellProvider,
+                _environmentInspector,
+                previousConfig?.AccessMode,
+                AdminSwitcher);
+            DisplaySetupResult(formSelection.AccessMode, previousConfig?.AccessMode);
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
+                formSelection.AccessMode == DotnetAccessMode.Admin
+                    ? Strings.InitAdminModeNextSteps
+                    : Strings.InitConfiguredModeNextSteps));
             return [];
         }
 
@@ -119,24 +171,24 @@ internal class InitWorkflows
     /// <summary>
     /// Turns the user's <see cref="InitFormSelection"/> into an <see cref="InitExecutionPlan"/>,
     /// resolving concrete install requests only now (this may resolve versions / hit the network),
-    /// which is why dry-run stops before this step.
+    /// which is why dry-run and configuration-only setup stop before this step.
     /// </summary>
-    private static InitExecutionPlan ResolveExecutionPlan(
+    internal static InitExecutionPlan ResolveExecutionPlan(
         InstallCommand command,
         List<ResolvedInstallRequest>? requests,
         InitFormDefaults defaults,
         InitFormSelection formSelection)
     {
         List<ResolvedInstallRequest> installRequests;
-        if (!SelectedChannelDiffersFromDefault(formSelection.Channel, defaults.ChannelDisplay.ChannelLabel))
-        {
-            installRequests = InitDefaultsResolver.ResolveDefaultRequests(command, requests);
-        }
-        else
+        if (SelectedChannelDiffersFromDefault(formSelection.Channel, defaults.ChannelDisplay.ChannelLabel))
         {
             installRequests = InitDefaultsResolver.GenerateInstallRequests(
                 command,
                 BuildChangedChannelSpecs(requests, formSelection.Channel));
+        }
+        else
+        {
+            installRequests = InitDefaultsResolver.ResolveDefaultRequests(command, requests);
         }
 
         List<MigrationWorkflow.MigrationSelection> migrations = formSelection.MigrateSystemInstalls
@@ -160,12 +212,20 @@ internal class InitWorkflows
     /// </summary>
     private static void PrintDryRunPreview(
         InitFormDefaults defaults,
-        InitFormSelection formSelection)
+        InitFormSelection formSelection,
+        bool configureOnly)
     {
         string dim = DotnetupTheme.Current.Dim;
         string accent = DotnetupTheme.Current.Accent;
 
         SpectreAnsiConsole.MarkupLine($"[{dim}](dry run \u2014 no changes were made to your machine)[/]");
+
+        if (configureOnly)
+        {
+            PrintPreviewLine("Access mode", formSelection.AccessMode.ToString(), accent);
+            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.InitConfigureOnlyDescription));
+            return;
+        }
 
         string channelText =
             formSelection.Channel ?? defaults.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
@@ -250,14 +310,14 @@ internal class InitWorkflows
             installFailure = ExceptionDispatchInfo.Capture(ex);
         }
 
-        DisplayEnvironmentSetupProgress(SpectreAnsiConsole.Console);
-
         // Save config and apply configuration(s) regardless of partial install failure, so the
         // user's choice persists and the successful installs are usable (PATH / shell profile).
         bool dotnetupOnPath = InitDefaultsResolver.GetDefaultDotnetupOnPath(previousConfig);
         SaveConfig(accessMode, dotnetupOnPath);
 
-        ObservedEnvironmentState observed = new EnvironmentStateInspector(_dotnetEnvironment)
+        DisplayEnvironmentSetupProgress(SpectreAnsiConsole.Console);
+
+        ObservedEnvironmentState observed = _environmentInspector
             .Inspect(command.ShellProvider ?? ShellDetection.GetCurrentShellProvider());
         EnvSettingsApplier.Apply(
             accessMode,
@@ -322,7 +382,7 @@ internal class InitWorkflows
         List<ResolvedInstallRequest> requests,
         Task? predownloadTask,
         bool noProgress,
-        CommandBase command)
+        InstallCommand command)
     {
         if (requests.Count > 0)
         {
@@ -512,6 +572,7 @@ internal class InitWorkflows
             DotnetAccessMode.None => Strings.PathGuidanceNone,
             DotnetAccessMode.Shell => Strings.PathGuidanceShell,
             DotnetAccessMode.Everywhere => Strings.PathGuidanceEverywhere,
+            DotnetAccessMode.Admin => null,
             _ => null,
         };
 

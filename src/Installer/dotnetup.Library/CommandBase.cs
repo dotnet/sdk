@@ -25,10 +25,22 @@ public abstract class CommandBase
     private int _exitCode;
 
     protected CommandBase(ParseResult parseResult, string commandName)
+        : this(parseResult, commandName, policy: null)
+    {
+    }
+
+    /// <param name="parseResult">The parsed command line.</param>
+    /// <param name="commandName">The command name used for telemetry.</param>
+    /// <param name="policy">The machine policy; defaults to the machine policy for the current platform.</param>
+    private protected CommandBase(ParseResult parseResult, string commandName, DotnetupPolicy? policy)
     {
         ParseResult = parseResult;
         _commandName = commandName;
+        Policy = policy ?? new DotnetupPolicy();
     }
+
+    /// <summary>The machine policy this command reads.</summary>
+    internal DotnetupPolicy Policy { get; }
 
     /// <summary>
     /// Gets whether this command can skip <see cref="SelfUpdateInvocation.EnterCommand(bool)"/>'s
@@ -41,17 +53,24 @@ public abstract class CommandBase
     /// </summary>
     protected virtual bool ShowsUpdateNotification => false;
 
+    /// <summary>
+    /// Admin mode support for this command when it is invoked as <paramref name="command"/>.
+    /// Default: unsupported (default deny).
+    /// </summary>
+    internal virtual AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.Unsupported;
+
     public int Execute()
     {
         _exitCode = 1;
 
         try
         {
+            AdminModeGate.Enforce(ParseResult, GetAdminModeSupport(ParseResult.CommandResult.Command), AccessModeResolver.Resolve());
             SelfUpdateInvocation.Current?.EnterCommand(CanRunDuringSelfUpdate);
             RecordOptionUsage();
             // Start before the command's work so a background refresh can finish while it runs.
             var updateNotifier = ShowsUpdateNotification
-                ? SelfUpdateNotifier.Start(CommonOptions.IsInteractive(ParseResult))
+                ? SelfUpdateNotifier.Start(CommonOptions.IsInteractive(ParseResult), Policy)
                 : null;
             // Default success exit code; ExecuteCore can overwrite via
             // SetExitCode() (e.g. DotnetCommand forwarding a child process
@@ -70,7 +89,10 @@ public abstract class CommandBase
         {
             _exitCode = 1;
             DotnetupTelemetry.Instance.RecordException(_operation, ex);
-            AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
+            if (!ex.WasReportedToUser())
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
+            }
 #if DEBUG
             // Use ToString() (vs StackTrace) so inner exceptions and the
             // exception type name are preserved for debugging.
