@@ -1213,26 +1213,6 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
         <target state="translated">Accetta tutte le richieste di conferma con "yes".</target>
         <note />
       </trans-unit>
-      <trans-unit id="SelfSignAppFullName">
-        <source>Sign OpenHarmony ELF files in place.</source>
-        <target state="new">Sign OpenHarmony ELF files in place.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SelfSignPathsArgumentName">
-        <source>PATHS</source>
-        <target state="new">PATHS</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SelfSignPathsArgumentDescription">
-        <source>One or more files or directories to sign.</source>
-        <target state="new">One or more files or directories to sign.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SelfSignForceOptionDescription">
-        <source>Replace an existing .codesign section created by another signer.</source>
-        <target state="new">Replace an existing .codesign section created by another signer.</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>
