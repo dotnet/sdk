@@ -40,7 +40,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         {
             var root = OperatingSystem.IsWindows()
                 ? Path.GetTempPath()
-                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify);
 
             if (string.IsNullOrEmpty(root))
             {
