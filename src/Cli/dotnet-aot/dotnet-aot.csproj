@@ -102,10 +102,4 @@
 
   <Import Project="$(RepositoryEngineeringDir)common\native\LocateNativeCompiler.targets"
       Condition="'$(UseCommonLocateNativeCompilerTarget)' == 'true'" />
-
-  <ItemGroup>
-    <!-- CA1418: OpenHarmony is not in the analyzer's known-platform list yet (no OHOS TFM,
-         no guard method in the target framework); declare it for this project. -->
-    <SupportedPlatform Include="openharmony" />
-  </ItemGroup>
 </Project>

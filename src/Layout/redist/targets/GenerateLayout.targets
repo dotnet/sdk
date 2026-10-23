@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
   <!-- Track this targets file so implementation changes invalidate RID-chain generation. -->
   <PropertyGroup>
@@ -788,18 +788,9 @@
       <ToolRuntimeConfigPath Include="$(OutputPath)**\*.runtimeconfig.json" Exclude="$(OutputPath)**\testhost-*.runtimeconfig.json" />
     </ItemGroup>
 
-    <!-- The SDK's own tools (csc, VBCSCompiler, F#, ...) need the OpenHarmony sandbox
-         defaults; user applications must not inherit them. Write them into every tool
-         runtimeconfig instead of setting process-wide environment variables. -->
-    <ItemGroup Condition="'$(OSName)' == 'openharmony'">
-      <OpenHarmonyRuntimeHostConfigurationOption Include="System.Runtime.EnableWriteXorExecute" Value="false" />
-      <OpenHarmonyRuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
-    </ItemGroup>
-
     <!-- Update runtimeconfig files for tools in the SDK to pin the shared frameworks to the version redistributed. -->
     <UpdateRuntimeConfig
       RuntimeConfigPaths="@(ToolRuntimeConfigPath)"
-      RuntimeHostConfigurationOptions="@(OpenHarmonyRuntimeHostConfigurationOption)"
       MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
       MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
 
