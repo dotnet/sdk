@@ -467,7 +467,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ManagedFallbackCouldNotBeLocated">
         <source>The managed fallback could not be located. Expected '{0}' and '{1}'.</source>
-        <target state="new">The managed fallback could not be located. Expected '{0}' and '{1}'.</target>
+        <target state="translated">관리되는 대체(fallback)를 찾을 수 없습니다. '{0}' 및 '{1}'가 필요합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestHasMarkOfTheWeb">
@@ -502,7 +502,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="MissingToolSettingsFile">
         <source>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</source>
-        <target state="new">Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</target>
+        <target state="translated">'DotnetToolSettings.xml' 설정 파일을 '{0}@{1}' 패키지에서 찾을 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOnePackagedShimAvailable">
@@ -698,7 +698,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ResolvedPathEscapesTargetDirectory">
         <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
-        <target state="new">The resolved path '{0}' escapes the target directory '{1}'.</target>
+        <target state="translated">확인된 경로 '{0}' 대상 디렉터리 '{1}'를 이스케이프합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
@@ -725,12 +725,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SdkDirectoryCouldNotBeDetermined">
         <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
-        <target state="new">warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</target>
+        <target state="translated">경고: SDK 디렉터리를 확인할 수 없습니다. sdk_dir이 제공되지 않았고 dotnet-aot가 자체 모듈을 찾을 수 없으므로 SDK 상대 경로 확인이 올바르지 않을 수 있습니다.</target>
         <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
       </trans-unit>
       <trans-unit id="SdkRootDirectoryDoesNotExist">
         <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
-        <target state="new">The SDK root directory '{0}' provided via the '{1}' setting does not exist.</target>
+        <target state="translated">'{1}' 설정을 통해 제공된 SDK 루트 디렉터리 '{0}'가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -775,7 +775,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
         <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
-        <target state="new">Solution folder '{0}' already contains a project with the filename '{1}'.</target>
+        <target state="translated">솔루션 폴더 '{0}'에는 이미 파일 이름이 '{1}'인 프로젝트가 있습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
@@ -820,12 +820,12 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersion">
         <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
-        <target state="new">Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</target>
+        <target state="translated">도구 '{0}'을(를) 사용하려면 현재 설치된 .NET 버전보다 더 높은 버전이 필요합니다. 이 도구의 대상은 {1}이지만 현재 런타임은 {2}입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
         <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
-        <target state="new">To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</target>
+        <target state="translated">이 도구를 사용하려면 .NET {0} 이상으로 업그레이드하거나 .NET {1}과(와) 호환되는 버전의 도구를 사용하세요.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-install" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-new-install" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet new install
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-new-install - installs a template package.
@@ -33,7 +33,8 @@ dotnet new install <PATH|NUGET_ID>  [--interactive] [--add-source|--nuget-source
 .SH DESCRIPTION
 .PP
 The \f[V]dotnet new install\f[R] command installs a template package from the \f[V]PATH\f[R] or \f[V]NUGET_ID\f[R] provided.
-If you want to install a specific version or prerelease version of a template package, specify the version in the format \f[V]<package-name>::<package-version>\f[R].
+If you want to install a specific version or prerelease version of a template package, specify the version in the format \f[V]<package-name>\[at]<package-version>\f[R].
+(The colon separator \f[V]::\f[R] was deprecated in favor of the \f[V]\[at]\f[R] character in .NET 9.0.200 SDK.)
 By default, \f[V]dotnet new\f[R] passes * for the version, which represents the latest stable package version.
 For more information, see the Examples section.
 .PP
@@ -71,7 +72,8 @@ To activate tab completion for the .NET SDK, see Enable tab completion.
 > > Examples of old syntax: > > - Install the latest version of Azure web jobs project template package: > > \f[V]dotnetcli >   dotnet new --install Microsoft.Azure.WebJobs.ProjectTemplates >\f[R]
 .RS
 .PP
-[!WARNING] Templates can run MSBuild code when triggered, don\[cq]t install or run untrusted .NET templates.
+[!WARNING] Templates can run MSBuild code and other arbitrary code when triggered.
+Don\[cq]t install or run untrusted .NET templates.
 .RE
 .SH ARGUMENTS
 .IP \[bu] 2
@@ -80,16 +82,17 @@ To activate tab completion for the .NET SDK, see Enable tab completion.
 .PP
 The folder on the file system or the NuGet package identifier to install the template package from.
 \f[V]dotnet new\f[R] attempts to install the NuGet package from the NuGet sources available for the current working directory and the sources specified via the \f[V]--add-source\f[R] option.
-If you want to install a specific version or prerelease version of a template package from NuGet source, specify the version in the format \f[V]<package-name>::<package-version>\f[R].
+If you want to install a specific version or prerelease version of a template package from NuGet source, specify the version in the format \f[V]<package-name>\[at]<package-version>\f[R].
+(The colon separator \f[V]::\f[R] was deprecated in favor of the \f[V]\[at]\f[R] character in .NET 9.0.200 SDK.)
 .RE
 .SH OPTIONS
 .IP \[bu] 2
 \f[B]\f[VB]--add-source|--nuget-source <SOURCE>\f[B]\f[R]
 .RS 2
 .PP
-By default, \f[V]dotnet new install\f[R] uses the hierarchy of NuGet configuration files from the current directory to determine the NuGet source the package can be installed from.
-If \f[V]--nuget-source\f[R] is specified, the source will be added to the list of sources to be checked.
-To check the configured sources for the current directory use \f[V]dotnet nuget list source\f[R].
+By default, \f[V]dotnet new install\f[R] uses the hierarchy of NuGet configuration files from the current directory to determine the NuGet sources for the operation.
+Specify \f[V]--nuget-source\f[R] to use a source in addition to the configured sources.
+To check the configured sources for the current directory, use \f[V]dotnet nuget list source\f[R].
 For more information, see Common NuGet Configurations.
 .RS
 .PP
@@ -112,29 +115,21 @@ Available since .NET SDK 7.0.100.
 Allows installing template packages from the specified sources even if they would override a template package from another source.
 Available since .NET SDK 7.0.100.
 .RE
-.IP \[bu] 2
-\f[B]\f[VB]-h|--help\f[B]\f[R]
-.RS 2
 .PP
-Prints out help for the install command.
-Available since .NET SDK 7.0.100.
-.RE
-.IP \[bu] 2
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.PP
+Prints out a description of how to use the command.
+.PP
 \f[B]\f[VB]--interactive\f[B]\f[R]
-.RS 2
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-Available since .NET 5.0 SDK.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
-Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], and \f[V]diag[nostic]\f[R].
-Available since .NET SDK 7.0.100.
-.RE
+Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
+For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 .SH EXAMPLES
 .IP \[bu] 2
 Install the latest version of SPA templates for ASP.NET Core:
@@ -152,7 +147,7 @@ Install version 2.0 of the SPA templates for ASP.NET Core:
 .IP
 .nf
 \f[C]
-dotnet new install Microsoft.DotNet.Web.Spa.ProjectTemplates::2.0.0
+dotnet new install Microsoft.DotNet.Web.Spa.ProjectTemplates\[at]2.0.0
 \f[R]
 .fi
 .RE
@@ -162,7 +157,7 @@ Install version 2.0 of the SPA templates for ASP.NET Core from a custom NuGet so
 .IP
 .nf
 \f[C]
-dotnet new install Microsoft.DotNet.Web.Spa.ProjectTemplates::2.0.0 --add-source \[dq]https://api.my-custom-nuget.com/v3/index.json\[dq] --interactive
+dotnet new install Microsoft.DotNet.Web.Spa.ProjectTemplates\[at]2.0.0 --add-source \[dq]https://api.my-custom-nuget.com/v3/index.json\[dq] --interactive
 \f[R]
 .fi
 .RE
@@ -172,4 +167,4 @@ dotnet new install Microsoft.DotNet.Web.Spa.ProjectTemplates::2.0.0 --add-source
 .IP \[bu] 2
 \f[V]dotnet new search\f[R] command
 .IP \[bu] 2
-Custom templates for \f[V]dotnet new\f[R]
+\&.NET templates for authors
