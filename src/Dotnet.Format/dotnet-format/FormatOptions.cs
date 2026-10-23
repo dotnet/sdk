@@ -25,6 +25,12 @@ namespace Microsoft.CodeAnalysis.Tools
             bool IncludeGeneratedFiles,
             string? TargetFramework)
     {
+        /// <summary>
+        /// Disables the on-disk formatting cache. This is a record body property (not a positional
+        /// parameter) so the positional constructor used by tests is unaffected.
+        /// </summary>
+        public bool NoCache { get; init; } = false;
+
         public static FormatOptions Instance = new(
             WorkspaceFilePath: null!, // must be supplied
             WorkspaceType: default, // must be supplied
