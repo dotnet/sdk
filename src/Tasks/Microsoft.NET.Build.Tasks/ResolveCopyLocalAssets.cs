@@ -79,6 +79,10 @@ namespace Microsoft.NET.Build.Tasks
                 item.SetMetadata(MetadataKeys.AssetType, resolvedFile.Asset.ToString().ToLowerInvariant());
                 item.SetMetadata(MetadataKeys.NuGetPackageId, resolvedFile.PackageName);
                 item.SetMetadata(MetadataKeys.NuGetPackageVersion, resolvedFile.PackageVersion.ToLowerInvariant());
+                if (!string.IsNullOrEmpty(resolvedFile.RuntimeIdentifier))
+                {
+                    item.SetMetadata(MetadataKeys.RuntimeIdentifier, resolvedFile.RuntimeIdentifier);
+                }
 
                 if (resolvedFile.Asset == AssetType.Resources)
                 {
