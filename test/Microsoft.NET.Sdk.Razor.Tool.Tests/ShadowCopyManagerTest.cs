@@ -9,14 +9,52 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Tests;
 public sealed class ShadowCopyManagerTest : SdkTest
 {
     [TestMethod]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void GetBaseDirectory_UsesPlatformSpecificUserDirectory()
     {
         var root = OperatingSystem.IsWindows()
             ? Path.GetTempPath()
-            : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData, Environment.SpecialFolderOption.DoNotVerify);
 
         Assert.IsFalse(string.IsNullOrEmpty(root));
         Assert.AreEqual(Path.Combine(root, "Razor-Server"), ShadowCopyManager.GetBaseDirectory("Razor-Server"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
+    [OSCondition(OperatingSystems.Linux)]
+    [SupportedOSPlatform("linux")]
+    public void GetBaseDirectory_CreatesPrivateUserDataDirectory(bool existingDirectory)
+    {
+        var directory = TestAssetsManager.CreateTestDirectory();
+        var root = Path.Combine(directory.Path, "data");
+        var privateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+        var publicMode = privateMode | UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+            UnixFileMode.OtherRead | UnixFileMode.OtherExecute;
+        if (existingDirectory)
+        {
+            Directory.CreateDirectory(root);
+            File.SetUnixFileMode(root, publicMode);
+        }
+
+        var originalDataHome = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+        try
+        {
+            Environment.SetEnvironmentVariable("XDG_DATA_HOME", root);
+
+            var baseDirectory = ShadowCopyManager.GetBaseDirectory("Razor-Server");
+
+            Assert.AreEqual(Path.Combine(root, "Razor-Server"), baseDirectory);
+            Assert.IsTrue(Directory.Exists(root));
+            Assert.AreEqual(existingDirectory ? publicMode : privateMode, File.GetUnixFileMode(root));
+            Assert.IsFalse(Directory.Exists(baseDirectory));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("XDG_DATA_HOME", originalDataHome);
+        }
     }
 
     [TestMethod]

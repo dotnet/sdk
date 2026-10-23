@@ -47,6 +47,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 throw new InvalidOperationException("Unable to determine a user-specific directory for Razor shadow copies.");
             }
 
+            if (!OperatingSystem.IsWindows())
+            {
+                CreatePrivateDirectory(root);
+            }
+
             return Path.Combine(root, relativePath);
         }
 
