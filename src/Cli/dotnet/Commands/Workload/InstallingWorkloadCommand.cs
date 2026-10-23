@@ -215,14 +215,6 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
         {
             updateToLatestWorkloadSet = false;
 
-            //  If a workload set version is specified, then switch to workload set update mode
-            //  Check to make sure the value needs to be changed, as updating triggers a UAC prompt
-            //  for MSI-based installs.
-            if (!WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir))
-            {
-                _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
-            }
-
             if (_workloadSetVersionFromCommandLine.Any(v => v.Contains('@')))
             {
                 var versions = WorkloadSearchVersionsCommand.FindBestWorkloadSetsFromComponents(
@@ -312,6 +304,36 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                     }
                     else if (SpecifiedWorkloadSetVersionOnCommandLine)
                     {
+                        //  If a workload set version is specified, then switch to workload set update mode
+                        //  Check to make sure the value needs to be changed, as updating triggers a UAC prompt
+                        //  for MSI-based installs.
+                        //  Switch modes inside the transaction so failure restores the previous mode as well as its pins.
+                        if (!WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir))
+                        {
+                            _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, true);
+                        }
+
+                        if (oldInstallState.Manifests != null)
+                        {
+                            // Explicitly selecting a set supersedes its manifest pins, but not pins for manifests outside the set.
+                            var workloadSetManifestIds = manifestsToUpdate.Select(m => m.ManifestId).ToHashSet();
+                            var remainingManifestPins = oldInstallState.Manifests
+                                .Where(m => !workloadSetManifestIds.Contains(new ManifestId(m.Key)))
+                                .ToDictionary(m => m.Key, m => m.Value);
+
+                            if (remainingManifestPins.Count != oldInstallState.Manifests.Count)
+                            {
+                                if (remainingManifestPins.Count == 0)
+                                {
+                                    _workloadInstaller.RemoveManifestsFromInstallState(_sdkFeatureBand);
+                                }
+                                else
+                                {
+                                    _workloadInstaller.SaveInstallStateManifestVersions(_sdkFeatureBand, remainingManifestPins);
+                                }
+                            }
+                        }
+
                         _workloadInstaller.AdjustWorkloadSetInInstallState(_sdkFeatureBand, resolvedWorkloadSetVersion);
                     }
                     else if (this is WorkloadUpdateCommand)
