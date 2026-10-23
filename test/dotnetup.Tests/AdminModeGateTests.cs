@@ -149,6 +149,7 @@ public class AdminModeGateTests
         {
             typeof(InstallCommand),
             typeof(EnvSetCommand),
+            typeof(EnvClearCommand),
             typeof(EnvShowCommand),
             typeof(EnvScriptCommand),
             typeof(InfoCommand),

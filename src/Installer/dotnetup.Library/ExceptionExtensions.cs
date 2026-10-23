@@ -35,6 +35,26 @@ internal static class ExceptionExtensions
 
     private const string AdditionalFailuresKey = "dotnetup.additional_failures";
     private const string TruncatedCountKey = "dotnetup.additional_failures.truncated";
+    private const string ReportedToUserKey = "dotnetup.reported_to_user";
+
+    /// <summary>
+    /// Marks <paramref name="exception"/> as already shown to the user so the
+    /// top-level command handler records it for telemetry without printing it again.
+    /// </summary>
+    public static void MarkReportedToUser(this Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+        exception.Data[ReportedToUserKey] = true;
+    }
+
+    /// <summary>
+    /// Returns true when <see cref="MarkReportedToUser"/> was called on <paramref name="exception"/>.
+    /// </summary>
+    public static bool WasReportedToUser(this Exception exception)
+    {
+        ArgumentNullException.ThrowIfNull(exception);
+        return exception.Data[ReportedToUserKey] is true;
+    }
 
     /// <summary>
     /// Attaches a follow-on failure to <paramref name="primary"/>. The

@@ -121,7 +121,7 @@ public class TelemetryCommonPropertiesTests
             DotnetupConfig.Write(new DotnetupConfigData { AccessMode = configuredMode });
         }
 
-        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session", environment.Policy)
+        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         Assert.AreEqual(expectedMode, attributes[TelemetryTagNames.AccessMode]);
@@ -129,14 +129,12 @@ public class TelemetryCommonPropertiesTests
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    public void GetCommonAttributes_PolicyReadThrows_TagsAccessModeAsUnset()
+    public void GetCommonAttributes_ConfigWithoutAccessMode_TagsAccessModeAsUnset()
     {
         using var environment = new AdminModeTestEnvironment();
-        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
-        var policy = new DotnetupPolicy(new FakeDotnetupPolicyStore { ReadFailure = new InvalidOperationException("boom") });
+        DotnetupConfig.SetUpdateNotifications(false);
 
-        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session", policy)
+        var attributes = TelemetryCommonProperties.GetCommonAttributes("test-session")
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         Assert.AreEqual("unset", attributes[TelemetryTagNames.AccessMode]);

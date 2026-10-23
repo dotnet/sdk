@@ -993,7 +993,11 @@ public class DotnetDownloaderBlobFeedTests
             InvokeResolveManifestEntry(downloader, BuildRequest(version, InstallComponent.SDK), new ReleaseVersion(version)));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy);
-        ex.Message.Should().Contain(version);
+        string expectedLocation = OperatingSystem.IsWindows()
+            ? @"HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup\BlockUnsignedDownloads"
+            : "/etc/dotnet/dnup-block-unsigned-downloads";
+        ex.Message.Should().Be(
+            $"Current Machine Policy requires signature verification. Installing daily or unsigned prerelease builds is thus blocked. Remove {expectedLocation} to continue.");
         history.Should().BeEmpty("policy check must short-circuit before any blob-feed probe");
     }
 

@@ -43,8 +43,7 @@ internal static class TelemetryCommonProperties
     /// Gets common attributes for the OpenTelemetry resource.
     /// </summary>
     /// <param name="sessionId">The telemetry session ID.</param>
-    /// <param name="policy">The machine policy used to resolve the access mode; defaults to the machine policy.</param>
-    public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId, DotnetupPolicy? policy = null)
+    public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId)
     {
         var attributes = new Dictionary<string, object>
         {
@@ -64,7 +63,7 @@ internal static class TelemetryCommonProperties
             ["dev.build"] = s_isDevBuild.Value
         };
 
-        AddAccessModeAttributes(attributes, policy);
+        AddAccessModeAttributes(attributes);
 
         // Mirror the .NET CLI's DOTNET_CLI_TELEMETRY_PROFILE (same env var
         // the SDK's TelemetryCommonProperties stamps as "Telemetry Profile").
@@ -84,7 +83,7 @@ internal static class TelemetryCommonProperties
         return attributes;
     }
 
-    private static void AddAccessModeAttributes(Dictionary<string, object> attributes, DotnetupPolicy? policy)
+    private static void AddAccessModeAttributes(Dictionary<string, object> attributes)
     {
         var effective = ResolveAccessModeSafely();
         attributes[TelemetryTagNames.AccessMode] = GetAccessModeTelemetryValue(effective.Mode);

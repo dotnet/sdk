@@ -33,15 +33,7 @@ internal partial class HostFxrWrapper
         {
             return Enumerable.Empty<DotnetInstall>();
         }
-        NetEnvironmentInfo environmentInfo;
-        try
-        {
-            environmentInfo = getInfo(installRoot);
-        }
-        catch (HostFxrEnvironmentInfoUnavailableException) when (HasInstallationLayout(installRoot))
-        {
-            return [];
-        }
+        var environmentInfo = getInfo(installRoot);
         var installs = new List<DotnetInstall>();
         foreach (var sdk in environmentInfo.SdkInfo.ToList())
         {
@@ -118,26 +110,22 @@ internal partial class HostFxrWrapper
             .FirstOrDefault();
     }
 
-    private static bool HasInstallationLayout(string installRoot)
-    {
-        if (!File.Exists(Path.Combine(installRoot, OperatingSystem.IsWindows() ? "dotnet.exe" : "dotnet")))
-        {
-            return false;
-        }
-
-        string[] componentDirectories =
-        [
-            Path.Combine(installRoot, "sdk"),
-            Path.Combine(installRoot, "shared", InstallComponentExtensions.RuntimeFrameworkName),
-            Path.Combine(installRoot, "shared", InstallComponentExtensions.AspNetCoreFrameworkName),
-            Path.Combine(installRoot, "shared", InstallComponentExtensions.WindowsDesktopFrameworkName),
-        ];
-        return componentDirectories.Where(Directory.Exists).Any(directory =>
-            Directory.EnumerateDirectories(directory).Any(versionDirectory =>
-                ReleaseVersion.TryParse(Path.GetFileName(versionDirectory), out _) &&
-                Directory.EnumerateFileSystemEntries(versionDirectory).Any()));
-    }
 }
 
-internal sealed class HostFxrEnvironmentInfoUnavailableException()
-    : Exception("The loaded hostfxr does not export hostfxr_get_dotnet_environment_info.");
+internal sealed class HostFxrEnvironmentInfoUnavailableException : Exception
+{
+    public HostFxrEnvironmentInfoUnavailableException()
+        : base("The loaded hostfxr does not export hostfxr_get_dotnet_environment_info.")
+    {
+    }
+
+    public HostFxrEnvironmentInfoUnavailableException(string message)
+        : base(message)
+    {
+    }
+
+    public HostFxrEnvironmentInfoUnavailableException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}

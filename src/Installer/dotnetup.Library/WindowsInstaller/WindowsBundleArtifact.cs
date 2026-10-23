@@ -234,6 +234,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
 
         if (outcome == BundleExitOutcome.SuccessRestartRequired)
         {
+            RequiresPostInstallValidation = false;
             _notices.WriteLine(Format(Strings.WindowsInstallerRestartRequired, Describe()));
             return;
         }

@@ -504,11 +504,7 @@ internal class DotnetDownloader : IArchiveDownloader
                 string.Format(
                     System.Globalization.CultureInfo.CurrentCulture,
                     Strings.UnsignedDownloadBlockedByPolicy,
-                    component,
-                    version,
-                    UnsignedSourcePolicy.WindowsPolicyKey,
-                    UnsignedSourcePolicy.WindowsPolicyValueName,
-                    UnsignedSourcePolicy.UnixPolicyFile),
+                    UnsignedSourcePolicy.GetPolicyLocationForDisplay()),
                 version: version,
                 component: component);
         }

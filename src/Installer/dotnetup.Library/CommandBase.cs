@@ -89,7 +89,10 @@ public abstract class CommandBase
         {
             _exitCode = 1;
             DotnetupTelemetry.Instance.RecordException(_operation, ex);
-            AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
+            if (!ex.WasReportedToUser())
+            {
+                AnsiConsole.MarkupLine(DotnetupTheme.Error($"Error: {ex.Message.EscapeMarkup()}"));
+            }
 #if DEBUG
             // Use ToString() (vs StackTrace) so inner exceptions and the
             // exception type name are preserved for debugging.

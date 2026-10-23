@@ -11,6 +11,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Spectre.Console;
 using Spectre.Console.Rendering;
+using Strings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -110,6 +111,237 @@ public class InitFormRendererTests
         int installLine = Array.FindIndex(lines, line => line.Contains("dotnetup will install", StringComparison.Ordinal));
 
         installLine.Should().Be(welcomeLine + 1);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void AdminConfirmation_ConfiguresOnlyAndRestoresInstallUiWhenLeaving()
+    {
+        InitFormModel model = CreateDefaultModel();
+        string userPath = model.InstallPath;
+        string adminPath = new AdminInstallRootResolver()
+            .Resolve(InstallerUtilities.GetDefaultInstallArchitecture()).Path;
+        var state = new InitFormState(model.Fields);
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+        int userIndex = accessModeField.SelectedIndex;
+        int adminIndex = accessModeField.Choices
+            .Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == DotnetAccessMode.Admin.ToString()).index;
+
+        accessModeField.SelectChoice(adminIndex);
+        string output = RenderForm(model, state, width: 240, height: 100, out _);
+
+        output.Should().Contain(Strings.InitConfigureConfirmation);
+        output.Should().Contain(Strings.InitAcceptAndConfigure);
+        output.Should().NotContain("dotnetup will install");
+        output.Should().NotContain("Install .NET with these settings?");
+        output.Should().NotContain("Accept and install");
+        output.Should().NotContain("SDK Channel");
+        output.Should().NotContain(adminPath);
+        output.Should().NotContain(userPath);
+
+        accessModeField.SelectChoice(userIndex);
+        output = RenderForm(model, state, width: 240, height: 100, out _);
+
+        output.Should().Contain(userPath);
+        output.Should().Contain("Accept and install");
+        output.Should().Contain("SDK Channel");
+        output.Should().NotContain(adminPath);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [DataRow(120, 40)]
+    [DataRow(120, 24)]
+    [DataRow(80, 24)]
+    public void ExpandedEverywhere_PreservesHeaderAndSectionSpacing(int width, int height)
+    {
+        InitFormModel model = CreateMigrateModel(DotnetAccessMode.Everywhere, migrateByDefault: true);
+        FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
+        var state = new InitFormState(model.Fields);
+        state.MoveUp();
+        state.MoveUp();
+        state.Enter();
+        state.FocusedField.Should().BeSameAs(accessMode);
+
+        string output = RenderForm(model, state, width, height, out int renderedHeight);
+        string[] lines = Lines(output);
+        int welcomeLine = Array.FindIndex(lines, line => line.Contains("Welcome to dotnetup", StringComparison.Ordinal));
+        int locationLine = Array.FindIndex(lines, line => line.Contains("dotnetup will install", StringComparison.Ordinal));
+        int channelLine = Array.FindIndex(lines, line => line.Contains("SDK Channel", StringComparison.Ordinal));
+        int modeLine = Array.FindIndex(lines, line => line.Contains("Access mode", StringComparison.Ordinal));
+        int migrationLine = Array.FindIndex(lines, line => line.Contains("Migrate system installs", StringComparison.Ordinal));
+        int confirmationLine = Array.FindIndex(lines, line => line.Contains("Install .NET with these settings?", StringComparison.Ordinal));
+
+        welcomeLine.Should().BeGreaterThanOrEqualTo(0);
+        locationLine.Should().BeGreaterThan(welcomeLine + 1);
+        lines[welcomeLine + 1].Should().BeNullOrWhiteSpace();
+        channelLine.Should().BeGreaterThan(locationLine);
+        lines[channelLine - 1].Should().BeNullOrWhiteSpace();
+        modeLine.Should().BeGreaterThan(channelLine);
+        lines[modeLine - 1].Should().BeNullOrWhiteSpace();
+        migrationLine.Should().BeGreaterThan(modeLine);
+        lines[migrationLine - 1].Should().BeNullOrWhiteSpace();
+        confirmationLine.Should().BeGreaterThan(migrationLine);
+        lines[confirmationLine - 1].Should().BeNullOrWhiteSpace();
+        renderedHeight.Should().BeLessThanOrEqualTo(height);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [DataRow(240, 100)]
+    [DataRow(120, 40)]
+    [DataRow(80, 24)]
+    [DataRow(50, 16)]
+    public void HoveringAccessModes_KeepsChoiceAndActionRowsInPlace(int width, int height)
+    {
+        InitFormModel model = CreateMigrateModel(DotnetAccessMode.Everywhere, migrateByDefault: true);
+        FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
+        var state = new InitFormState(model.Fields);
+        state.MoveUp();
+        state.MoveUp();
+        state.Enter();
+        string baseline = RenderForm(model, state, width, height, out int baselineHeight);
+        string[] baselineLines = Lines(baseline);
+
+        foreach (DotnetAccessMode mode in Enum.GetValues<DotnetAccessMode>())
+        {
+            HighlightAccessMode(state, accessMode, mode);
+            string output = RenderForm(model, state, width, height, out int renderedHeight);
+            string[] lines = Lines(output);
+
+            foreach (string label in new[] { "Access mode", "None", "Shell", "Everywhere", "Admin", "Enter select" })
+            {
+                int baselineLine = Array.FindIndex(baselineLines, line => line.Contains(label, StringComparison.Ordinal));
+                int currentLine = Array.FindIndex(lines, line => line.Contains(label, StringComparison.Ordinal));
+                baselineLine.Should().BeGreaterThanOrEqualTo(0);
+                currentLine.Should().Be(baselineLine, $"{label} should not move while highlighting {mode}");
+            }
+
+            if (height >= 40)
+            {
+                string confirmation = mode == DotnetAccessMode.Admin
+                    ? Strings.InitConfigureConfirmation : "Install .NET with these settings?";
+                string accept = mode == DotnetAccessMode.Admin ? Strings.InitAcceptAndConfigure : "Accept and install";
+                Array.FindIndex(lines, line => line.Contains(confirmation, StringComparison.Ordinal)).Should()
+                    .Be(Array.FindIndex(baselineLines, line => line.Contains("Install .NET with these settings?", StringComparison.Ordinal)));
+                Array.FindIndex(lines, line => line.Contains(accept, StringComparison.Ordinal)).Should()
+                    .Be(Array.FindIndex(baselineLines, line => line.Contains("Accept and install", StringComparison.Ordinal)));
+            }
+
+            renderedHeight.Should().Be(baselineHeight);
+            renderedHeight.Should().BeLessThanOrEqualTo(height);
+            model.SelectedAccessMode().Should().Be(DotnetAccessMode.Everywhere);
+            model.MigrateSelected().Should().BeTrue();
+        }
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [DataRow(240, 100)]
+    [DataRow(80, 24)]
+    [DataRow(50, 16)]
+    public void HighlightingAdmin_PreviewsConfigurationWithoutChangingSelections(int width, int height)
+    {
+        InitFormModel model = CreateMigrateModel(DotnetAccessMode.Shell, migrateByDefault: true);
+        FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
+        FormField migration = model.Fields.Single(field => field.Label == "Migrate system installs");
+        var state = new InitFormState(model.Fields);
+        state.MoveUp();
+        state.MoveUp();
+        state.FocusedField.Should().BeSameAs(accessMode);
+        state.Enter();
+        HighlightAccessMode(state, accessMode, DotnetAccessMode.Admin);
+
+        string output = RenderForm(model, state, width, height, out int renderedHeight);
+
+        output.Should().NotContain("Migrate system installs");
+        output.Should().NotContain("Install the SDK and runtime versions you already have system-wide");
+        output.Should().NotContain("Install .NET with these settings?");
+        output.Should().NotContain("Accept and install");
+        output.Should().NotContain("SDK Channel");
+        output.Should().NotContain("dotnetup will install");
+        output.Should().NotContain("Installs .NET with the Windows installer");
+        output.Should().NotContain("Blocks unsigned downloads through a machine-wide policy");
+        renderedHeight.Should().BeLessThanOrEqualTo(height);
+        if (width == 240)
+        {
+            output.Should().Contain("consumes more disk space but supports existing install configurations.");
+            output.Should().Contain(Strings.InitConfigureConfirmation);
+            output.Should().Contain(Strings.InitAcceptAndConfigure);
+        }
+        model.SelectedAccessMode().Should().Be(DotnetAccessMode.Shell);
+        model.MigrateSelected().Should().BeTrue();
+        migration.SelectedIndex.Should().Be(0);
+        state.FocusedField.Should().BeSameAs(accessMode);
+        state.IsDone.Should().BeFalse();
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void LeavingAdminHighlight_RestoresInstallationAndMigration(bool cancel)
+    {
+        InitFormModel model = CreateMigrateModel(DotnetAccessMode.Shell, migrateByDefault: true);
+        FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
+        FormField migration = model.Fields.Single(field => field.Label == "Migrate system installs");
+        var state = new InitFormState(model.Fields);
+        state.MoveUp();
+        state.MoveUp();
+        state.Enter();
+        HighlightAccessMode(state, accessMode, DotnetAccessMode.Admin);
+        RenderForm(model, state, width: 240, height: 100, out _)
+            .Should().NotContain("Migrate system installs");
+
+        if (cancel)
+        {
+            state.Cancel();
+        }
+        else
+        {
+            HighlightAccessMode(state, accessMode, DotnetAccessMode.Shell);
+        }
+        string output = RenderForm(model, state, width: 240, height: 100, out _);
+
+        output.Should().Contain("Migrate system installs");
+        output.Should().Contain("Install the SDK and runtime versions you already have system-wide");
+        output.Should().Contain("Install .NET with these settings?");
+        output.Should().Contain("Accept and install");
+        output.Should().Contain("SDK Channel");
+        output.Should().NotContain(Strings.InitConfigureConfirmation);
+        output.Should().NotContain(Strings.InitAcceptAndConfigure);
+        model.SelectedAccessMode().Should().Be(DotnetAccessMode.Shell);
+        model.MigrateSelected().Should().BeTrue();
+        migration.SelectedIndex.Should().Be(0);
+        state.FocusedField.Should().BeSameAs(accessMode);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void EditingSelectedAdmin_PreviewsNonAdminWithoutCommittingAndCancelRestoresAdmin()
+    {
+        InitFormModel model = CreateMigrateModel(DotnetAccessMode.Shell, migrateByDefault: true);
+        FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
+        var state = new InitFormState(model.Fields);
+        state.MoveUp();
+        state.MoveUp();
+        state.Enter();
+        HighlightAccessMode(state, accessMode, DotnetAccessMode.Admin);
+        state.Enter();
+        model.SelectedAccessMode().Should().Be(DotnetAccessMode.Admin);
+        state.FocusedField.Should().BeSameAs(accessMode);
+        state.Enter();
+        HighlightAccessMode(state, accessMode, DotnetAccessMode.Shell);
+
+        string output = RenderForm(model, state, width: 240, height: 100, out _);
+
+        output.Should().Contain("Migrate system installs");
+        output.Should().Contain("Accept and install");
+        model.SelectedAccessMode().Should().Be(DotnetAccessMode.Admin);
+
+        state.Cancel();
+        output = RenderForm(model, state, width: 240, height: 100, out _);
+
+        output.Should().NotContain("Migrate system installs");
+        output.Should().NotContain("Accept and install");
+        output.Should().Contain(Strings.InitAcceptAndConfigure);
+        model.SelectedAccessMode().Should().Be(DotnetAccessMode.Admin);
+        state.FocusedField.Should().BeSameAs(accessMode);
     }
 
     [TestMethod]
@@ -322,7 +554,9 @@ public class InitFormRendererTests
         renderedHeight.Should().BeLessThanOrEqualTo(height);
     }
 
-    private static InitFormModel CreateMigrateModel()
+    private static InitFormModel CreateMigrateModel(
+        DotnetAccessMode accessMode = DotnetAccessMode.None,
+        bool migrateByDefault = false)
     {
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
@@ -334,14 +568,28 @@ public class InitFormRendererTests
             InstallerUtilities.GetDefaultInstallArchitecture());
         var defaults = new InitFormDefaults(
             installRoot,
-            DotnetAccessMode.None,
-            MigrateSystemInstalls: false,
+            accessMode,
+            MigrateSystemInstalls: migrateByDefault,
             Migrations: [migration],
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
             [new MinimalInstallSpec(InstallComponent.SDK, ChannelVersionResolver.LatestChannel)],
             ShellProvider: null,
             InstallRootGlobalJsonPath: null);
         return InitFormModel.Create(defaults, shellProvider: null);
+    }
+
+    private static void HighlightAccessMode(InitFormState state, FormField field, DotnetAccessMode mode)
+    {
+        int index = field.Choices.Select((choice, choiceIndex) => (choice, choiceIndex))
+            .Single(item => item.choice.Title == mode.ToString()).choiceIndex;
+        while (state.EditChoiceIndex < index)
+        {
+            state.MoveDown();
+        }
+        while (state.EditChoiceIndex > index)
+        {
+            state.MoveUp();
+        }
     }
 
     private static InitFormModel CreateExpandedAccessMode(out InitFormState state)

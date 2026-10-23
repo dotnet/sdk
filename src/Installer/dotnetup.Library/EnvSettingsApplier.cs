@@ -41,15 +41,10 @@ internal static class EnvSettingsApplier
     {
         ArgumentException.ThrowIfNullOrEmpty(dotnetRoot);
 
-        if (targetEnv == DotnetAccessMode.Admin)
-        {
-            throw new InvalidOperationException("Admin mode is applied through the admin mode switcher.");
-        }
-
         if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(targetEnv))
         {
             throw new PlatformNotSupportedException(
-                $"{nameof(DotnetAccessMode)}.{nameof(DotnetAccessMode.Everywhere)} is only supported on Windows.");
+                string.Format(CultureInfo.InvariantCulture, Strings.EnvModeWindowsOnly, AccessModeCliParsing.ToToken(targetEnv)));
         }
 
         // Windows user-scope dotnet env vars (PATH + DOTNET_ROOT) are wired only by Everywhere mode.

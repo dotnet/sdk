@@ -35,7 +35,11 @@ internal abstract class InstallCommand : CommandBase
     public IDotnetEnvironmentManager DotnetEnvironment { get; }
     public ChannelVersionResolver ChannelVersionResolver => _channelVersionResolver.Value;
 
-    protected InstallCommand(ParseResult parseResult, string commandName, DotnetupPolicy? policy = null)
+    protected InstallCommand(
+        ParseResult parseResult,
+        string commandName,
+        DotnetupPolicy? policy = null,
+        IDotnetEnvironmentManager? dotnetEnvironment = null)
         : base(parseResult, commandName, policy)
     {
         InstallPath = parseResult.GetValue(CommonOptions.InstallPathOption);
@@ -49,7 +53,7 @@ internal abstract class InstallCommand : CommandBase
         ShellProvider = parseResult.GetValue(CommonOptions.ShellOption);
         MigrateFromSystem = parseResult.GetValue(CommonOptions.MigrateFromSystemOption);
 
-        DotnetEnvironment = new DotnetEnvironmentManager();
+        DotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
     }
 
     /// <inheritdoc/>

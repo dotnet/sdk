@@ -183,7 +183,7 @@ public class HostFxrQueryProcessTests
     [OSCondition(OperatingSystems.Windows)]
     [DataRow(InstallMechanism.Archive)]
     [DataRow(InstallMechanism.WindowsInstallerBundle)]
-    public void Validate_NativeHostWithoutEnvironmentInfoUsesInstalledLayout(InstallMechanism mechanism)
+    internal void Validate_NativeHostWithoutEnvironmentInfoUsesInstalledLayout(InstallMechanism mechanism)
     {
         using var testEnv = new TestEnvironment();
         CopyHostFxrWithoutEnvironmentInfo(testEnv.InstallPath);
@@ -209,7 +209,7 @@ public class HostFxrQueryProcessTests
     [DataRow("empty-component")]
     [DataRow("invalid-version")]
     [DataRow("missing-muxer")]
-    public void GetInstalls_SkipsUnavailableEnumerationOnlyWithInstalledLayout(string scenario)
+    public void GetInstalls_ThrowsWhenEnvironmentInfoIsUnavailableRegardlessOfLayout(string scenario)
     {
         using var testEnv = new TestEnvironment();
         string hostFxr = CopyHostFxrWithoutEnvironmentInfo(testEnv.InstallPath);
@@ -230,15 +230,8 @@ public class HostFxrQueryProcessTests
                 File.Delete(InstallationValidator.GetMuxerPath(testEnv.InstallPath));
             }
         }
-        if (scenario == "installed")
-        {
-            HostFxrWrapper.getInstalls(testEnv.InstallPath).Should().BeEmpty();
-        }
-        else
-        {
-            Assert.ThrowsExactly<HostFxrEnvironmentInfoUnavailableException>(() =>
-                HostFxrWrapper.getInstalls(testEnv.InstallPath));
-        }
+        Assert.ThrowsExactly<HostFxrEnvironmentInfoUnavailableException>(() =>
+            HostFxrWrapper.getInstalls(testEnv.InstallPath));
 
         using (File.Open(hostFxr, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
         {
@@ -262,8 +255,12 @@ public class HostFxrQueryProcessTests
         byte[] library = File.ReadAllBytes(sourceFxr);
         int exportOffset = library.AsSpan().IndexOf("hostfxr_get_dotnet_environment_info"u8);
         exportOffset.Should().BeGreaterThanOrEqualTo(0);
-        // Rename only the copied export to model a loadable pre-.NET 6 hostfxr deterministically.
-        library[exportOffset] = (byte)'H';
+        // Rename the copied symbol to model a loadable pre-.NET 6 hostfxr deterministically.
+        while (exportOffset >= 0)
+        {
+            library[exportOffset] = (byte)'H';
+            exportOffset = library.AsSpan().IndexOf("hostfxr_get_dotnet_environment_info"u8);
+        }
         string destination = Path.Combine(fxrDirectory, "hostfxr.dll");
         File.WriteAllBytes(destination, library);
         return destination;

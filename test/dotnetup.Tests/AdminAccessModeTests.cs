@@ -6,6 +6,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+using Microsoft.DotNet.Tools.Bootstrapper.Tests;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -21,17 +22,17 @@ public class AdminAccessModeTests
         DotnetAccessModePolicy.ShouldMigrateSystemInstallsByDefault(DotnetAccessMode.Admin).Should().BeFalse();
     }
 
-    [TestMethod]
-    public void EnvSettingsApplier_RejectsAdmin()
+    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void EnvSettingsApplier_AdminOnNonWindows_ThrowsPlatformNotSupported()
     {
         Action act = () => EnvSettingsApplier.Apply(
             DotnetAccessMode.Admin,
             targetDotnetupOnPath: false,
-            observed: null!,
-            environment: null!,
+            observed: ObservedEnvironmentState.Empty,
+            environment: new MockDotnetInstallManager(Path.GetTempPath()),
             dotnetRoot: "dotnet-root");
 
-        act.Should().Throw<InvalidOperationException>();
+        act.Should().Throw<PlatformNotSupportedException>();
     }
 
     [TestMethod]

@@ -35,7 +35,11 @@ internal static class InitFormRenderer
     {
         console ??= AnsiConsole.Console;
         ThemeColors theme = DotnetupTheme.Current;
-        IReadOnlyList<FormField> fields = state.VisibleFields;
+        // Preview the highlighted mode without changing the committed fields used by navigation.
+        bool configureOnly = model.ConfigureOnlyFor(state.FocusedField, state.EditChoiceIndex);
+        IReadOnlyList<FormField> fields = state.Fields
+            .Where(field => model.IsVisibleFor(field, configureOnly: false) || model.IsVisibleFor(field, configureOnly: true))
+            .ToList();
         int labelWidth = MaxLabelWidth(fields);
         int windowWidth = PositiveOrFallback(console.Profile.Width, FallbackWindowWidth);
         int windowHeight = PositiveOrFallback(console.Profile.Height, FallbackWindowHeight);
@@ -43,7 +47,7 @@ internal static class InitFormRenderer
         Rows? fallback = null;
         foreach (FormCompressionLevel compression in Enum.GetValues<FormCompressionLevel>())
         {
-            var candidate = new Rows(RenderForm(model, state, fields, labelWidth, showArrow, theme, compression));
+            var candidate = new Rows(RenderForm(model, state, fields, configureOnly, labelWidth, showArrow, theme, compression));
             fallback = candidate;
             if (RenderedHeight(candidate, renderOptions, windowWidth) <= windowHeight)
             {
@@ -60,12 +64,12 @@ internal static class InitFormRenderer
 #pragma warning disable MA0051 // Method is too long
     private static IEnumerable<IRenderable> RenderForm(
         InitFormModel model, InitFormState state, IReadOnlyList<FormField> fields,
-        int labelWidth, bool showArrow, ThemeColors theme, FormCompressionLevel compression)
+        bool configureOnly, int labelWidth, bool showArrow, ThemeColors theme, FormCompressionLevel compression)
     {
         if (compression < FormCompressionLevel.WithoutWelcome)
         {
             yield return new Markup($"[bold {theme.Brand}]{WelcomeMessage.EscapeMarkup()}[/]");
-            if (compression < FormCompressionLevel.Compact)
+            if (compression < FormCompressionLevel.WithoutSpacing)
             {
                 // Add a blank line for spacing if there's room for it
                 yield return Text.Empty;
@@ -74,24 +78,29 @@ internal static class InitFormRenderer
 
         if (compression < FormCompressionLevel.WithoutInstallLocation)
         {
-            yield return new Markup(
+            var installLocation = new Markup(
                 $"[{theme.Dim}]dotnetup will install .NET SDKs and runtimes in [/]" +
-                $"[{theme.Accent}]{model.InstallPath.EscapeMarkup()}[/]" +
+                $"[{theme.Accent}]{model.UserInstallPath.EscapeMarkup()}[/]" +
                 $"[{theme.Dim}].[/]");
-            yield return Text.Empty;
+            yield return configureOnly ? new BlankSpace(installLocation) : installLocation;
+            if (compression < FormCompressionLevel.WithoutSpacing)
+            {
+                yield return Text.Empty;
+            }
         }
 
         foreach (FormField field in fields)
         {
             foreach (IRenderable row in RenderField(model, state, field, compression, labelWidth, showArrow, theme))
             {
-                yield return row;
+                yield return model.IsVisibleFor(field, configureOnly) ? row : new BlankSpace(row);
             }
         }
 
         if (compression < FormCompressionLevel.WithoutConfirmationPrompt)
         {
-            yield return new Markup($"[white]{ConfirmationPrompt.EscapeMarkup()}[/]");
+            string confirmation = configureOnly ? Strings.InitConfigureConfirmation : ConfirmationPrompt;
+            yield return new Markup($"[white]{confirmation.EscapeMarkup()}[/]");
         }
 
         // Show the accept row unless we're editing a field and need to save space.
@@ -99,13 +108,13 @@ internal static class InitFormRenderer
             && compression >= FormCompressionLevel.FocusedEdit;
         if (!focusedEdit)
         {
-            const string accept = "Accept and install";
+            string accept = configureOnly ? Strings.InitAcceptAndConfigure : "Accept and install";
             string acceptStyle = state.IsAcceptFocused ? $"{theme.Success} bold" : theme.Dim;
             string acceptArrow = state.IsAcceptFocused && showArrow ? "> " : "  ";
             yield return new Markup(
                 $"[{acceptStyle}]{acceptArrow.EscapeMarkup()}{accept.EscapeMarkup()}[/]");
 
-            if (compression < FormCompressionLevel.Compact)
+            if (compression < FormCompressionLevel.WithoutSpacing)
             {
                 yield return Text.Empty;
             }
@@ -132,10 +141,8 @@ internal static class InitFormRenderer
     }
 #pragma warning restore MA0051 // Method is too long
 
-    // In the rich layout, every field shows its row, detail, and trailing spacing. The compact
-    // layout removes spacing and hides detail for unfocused fields. Subsequent levels remove the
-    // remaining field details, then hide every field except the one being
-    // edited. RenderFieldEditor applies the later reductions to an expanded field's choices.
+    // Keep section spacing while reducing optional descriptions first. Only very small terminals
+    // remove the blank lines or hide fields other than the one being edited.
 #pragma warning disable MA0051 // Method is too long
     private static IEnumerable<IRenderable> RenderField(
         InitFormModel model, InitFormState state, FormField field,
@@ -195,7 +202,7 @@ internal static class InitFormRenderer
             }
         }
 
-        if (compression < FormCompressionLevel.Compact)
+        if (compression < FormCompressionLevel.WithoutSpacing)
         {
             yield return Text.Empty;
         }
@@ -297,7 +304,7 @@ internal static class InitFormRenderer
                 yield return Indent(ChoiceDetailIndent, HelpMarkup(choice.HelperText, theme));
             }
 
-            if (selected && showDerived)
+            if (showDerived)
             {
                 foreach (DetailLine line in model.BuildDerivedDetailLines(field, index))
                 {
@@ -313,7 +320,8 @@ internal static class InitFormRenderer
                             $"[{theme.Accent}]{line.Value.EscapeMarkup()}[/]");
                     }
 
-                    yield return Indent(ChoiceDetailIndent, detail);
+                    IRenderable row = Indent(ChoiceDetailIndent, detail);
+                    yield return selected ? row : new BlankSpace(row);
                 }
             }
         }
@@ -321,6 +329,16 @@ internal static class InitFormRenderer
 
     internal static int RenderedHeight(IRenderable renderable, RenderOptions renderOptions, int width) =>
         Segment.SplitLines(renderable.Render(renderOptions, width)).Count;
+
+    // Retain wrapping and row height when a mode hides content, without retaining its text.
+    private sealed class BlankSpace(IRenderable content) : IRenderable
+    {
+        public Measurement Measure(RenderOptions options, int maxWidth) => content.Measure(options, maxWidth);
+
+        public IEnumerable<Segment> Render(RenderOptions options, int maxWidth) =>
+            content.Render(options, maxWidth)
+                .Select(segment => segment.IsLineBreak ? segment : new Segment(string.Empty));
+    }
 
     private static int PositiveOrFallback(int value, int fallback) => value > 0 ? value : fallback;
 

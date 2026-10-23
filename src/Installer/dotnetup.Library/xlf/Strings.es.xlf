@@ -3,8 +3,8 @@
   <file datatype="xml" source-language="en" target-language="es" original="../Strings.resx">
     <body>
       <trans-unit id="AccessModeAdminDescription">
-        <source>Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.</source>
-        <target state="new">Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.</target>
+        <source>Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports existing install configurations.</source>
+        <target state="new">Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports existing install configurations.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdminModeAlreadyEnabled">
@@ -86,13 +86,6 @@
         <source>The option '{0}'</source>
         <target state="new">The option '{0}'</target>
         <note />
-      </trans-unit>
-      <trans-unit id="AdminModePreservesUserEnvironment">
-        <source>Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
-Restart open apps and terminals after installing .NET and review settings if needed.</source>
-        <target state="new">Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
-Restart open apps and terminals after installing .NET and review settings if needed.</target>
-        <note>{Locked="PATH"}{Locked="DOTNET_ROOT"}</note>
       </trans-unit>
       <trans-unit id="AdminModeSymbolNotSupported">
         <source>{0} is not available for '{1}' in admin mode.</source>
@@ -262,6 +255,16 @@ Or open a new terminal.</target>
         <source>Open a new terminal for the change to take effect.</source>
         <target state="new">Open a new terminal for the change to take effect.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="EnvOutcomeAdminDotnetupOffPath">
+        <source>dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</source>
+        <target state="new">dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</target>
+        <note>{Locked="dotnetup"}{Locked="PATH"}</note>
+      </trans-unit>
+      <trans-unit id="EnvOutcomeAdminDotnetupOnPath">
+        <source>dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</source>
+        <target state="new">dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</target>
+        <note>{Locked="dotnetup"}{Locked="PATH"}</note>
       </trans-unit>
       <trans-unit id="EnvOutcomeBothOnPath">
         <source>dotnet and dotnetup are on your PATH.</source>
@@ -518,20 +521,35 @@ Or open a new terminal.</target>
         <target state="new">Display dotnetup information.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InitAdminModeInstallDescription">
-        <source>Installs .NET with the Windows installer into the shared system folder. Requires elevation.</source>
-        <target state="new">Installs .NET with the Windows installer into the shared system folder. Requires elevation.</target>
+      <trans-unit id="InitAcceptAndConfigure">
+        <source>Accept and configure</source>
+        <target state="new">Accept and configure</target>
         <note />
       </trans-unit>
-      <trans-unit id="InitAdminModeSelectionDescription">
-        <source>Changes a machine-wide setting for all users. Existing profiles, PATH entries, and DOTNET_ROOT are left unchanged.</source>
-        <target state="new">Changes a machine-wide setting for all users. Existing profiles, PATH entries, and DOTNET_ROOT are left unchanged.</target>
-        <note>{Locked="PATH"}{Locked="DOTNET_ROOT"}</note>
+      <trans-unit id="InitAdminModeNextSteps">
+        <source>No .NET was installed. Run 'dotnetup sdk install &lt;version&gt; --untracked' afterwards to install .NET with the Windows installer.</source>
+        <target state="new">No .NET was installed. Run 'dotnetup sdk install &lt;version&gt; --untracked' afterwards to install .NET with the Windows installer.</target>
+        <note>{Locked="dotnetup sdk install"}{Locked="--untracked"}</note>
       </trans-unit>
       <trans-unit id="InitCommandDescription">
         <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
         <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InitConfigureConfirmation">
+        <source>Configure dotnetup with these settings?</source>
+        <target state="new">Configure dotnetup with these settings?</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="InitConfigureOnlyDescription">
+        <source>Configures dotnetup and your environment without installing or migrating .NET.</source>
+        <target state="new">Configures dotnetup and your environment without installing or migrating .NET.</target>
+        <note>{Locked="dotnetup"}</note>
+      </trans-unit>
+      <trans-unit id="InitConfiguredModeNextSteps">
+        <source>No .NET was installed. Run 'dotnetup sdk install' afterwards to install .NET using the configured mode.</source>
+        <target state="new">No .NET was installed. Run 'dotnetup sdk install' afterwards to install .NET using the configured mode.</target>
+        <note>{Locked="dotnetup sdk install"}</note>
       </trans-unit>
       <trans-unit id="InstallCancelledBeforeStart">
         <source>Installation was cancelled before {0} {1} was installed.</source>

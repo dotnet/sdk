@@ -381,6 +381,14 @@
   <data name="EnvOutcomeDotnetOnlyOnPath" xml:space="preserve">
     <value>dotnet is on your PATH. dotnetup is not.</value>
   </data>
+  <data name="EnvOutcomeAdminDotnetupOnPath" xml:space="preserve">
+    <value>dotnetup is on your PATH. System .NET PATH configuration is managed by the Windows installer.</value>
+    <comment>{Locked="dotnetup"}{Locked="PATH"}</comment>
+  </data>
+  <data name="EnvOutcomeAdminDotnetupOffPath" xml:space="preserve">
+    <value>dotnetup is not added to your PATH. System .NET PATH configuration is managed by the Windows installer.</value>
+    <comment>{Locked="dotnetup"}{Locked="PATH"}</comment>
+  </data>
   <data name="EnvApplyToTerminalPrompt" xml:space="preserve">
     <value>To apply the change to this terminal now, run:
   {0}
@@ -573,20 +581,27 @@ Or open a new terminal.</value>
   <data name="AdminModeNotDisabled" xml:space="preserve">
     <value>Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</value>
   </data>
-  <data name="AdminModePreservesUserEnvironment" xml:space="preserve">
-    <value>Existing configuration (profiles, PATH entries, and DOTNET_ROOT) are left unchanged.
-Restart open apps and terminals after installing .NET and review settings if needed.</value>
-    <comment>{Locked="PATH"}{Locked="DOTNET_ROOT"}</comment>
+  <data name="InitConfigureOnlyDescription" xml:space="preserve">
+    <value>Configures dotnetup and your environment without installing or migrating .NET.</value>
+    <comment>{Locked="dotnetup"}</comment>
   </data>
-  <data name="InitAdminModeInstallDescription" xml:space="preserve">
-    <value>Installs .NET with the Windows installer into the shared system folder. Requires elevation.</value>
+  <data name="InitConfigureConfirmation" xml:space="preserve">
+    <value>Configure dotnetup with these settings?</value>
+    <comment>{Locked="dotnetup"}</comment>
   </data>
-  <data name="InitAdminModeSelectionDescription" xml:space="preserve">
-    <value>Changes a machine-wide setting for all users. Existing profiles, PATH entries, and DOTNET_ROOT are left unchanged.</value>
-    <comment>{Locked="PATH"}{Locked="DOTNET_ROOT"}</comment>
+  <data name="InitAcceptAndConfigure" xml:space="preserve">
+    <value>Accept and configure</value>
+  </data>
+  <data name="InitAdminModeNextSteps" xml:space="preserve">
+    <value>No .NET was installed. Run 'dotnetup sdk install &lt;version&gt; --untracked' afterwards to install .NET with the Windows installer.</value>
+    <comment>{Locked="dotnetup sdk install"}{Locked="--untracked"}</comment>
+  </data>
+  <data name="InitConfiguredModeNextSteps" xml:space="preserve">
+    <value>No .NET was installed. Run 'dotnetup sdk install' afterwards to install .NET using the configured mode.</value>
+    <comment>{Locked="dotnetup sdk install"}</comment>
   </data>
   <data name="AccessModeAdminDescription" xml:space="preserve">
-    <value>Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports external central IT management.</value>
+    <value>Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports existing install configurations.</value>
   </data>
   <data name="ElevatedSystemPathOperationDescription" xml:space="preserve">
     <value>The operation to perform: 'insertdotnet', 'removedotnet', 'enableadminmode', or 'disableadminmode'</value>

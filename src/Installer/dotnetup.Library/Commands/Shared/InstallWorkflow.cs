@@ -22,6 +22,7 @@ internal class InstallWorkflow
     private readonly InstallCommand _command;
     private readonly InstallPathResolver _installPathResolver;
     private readonly AdminInstallRootResolver _adminInstallRootResolver;
+    private readonly InitWorkflows? _initWorkflows;
 
     private readonly Lazy<DotnetInstallRootConfiguration?> _currentInstallRoot;
 
@@ -30,11 +31,15 @@ internal class InstallWorkflow
     {
     }
 
-    internal InstallWorkflow(InstallCommand command, AdminInstallRootResolver adminInstallRootResolver)
+    internal InstallWorkflow(
+        InstallCommand command,
+        AdminInstallRootResolver adminInstallRootResolver,
+        InitWorkflows? initWorkflows = null)
     {
         _command = command;
         _installPathResolver = new InstallPathResolver(command.DotnetEnvironment);
         _adminInstallRootResolver = adminInstallRootResolver;
+        _initWorkflows = initWorkflows;
         _currentInstallRoot = new Lazy<DotnetInstallRootConfiguration?>(
             command.DotnetEnvironment.GetCurrentPathConfiguration);
     }
@@ -59,8 +64,13 @@ internal class InstallWorkflow
             // Pre-resolve the user's requests unless we still need to prompt for a starter channel
             // (in which case the walkthrough generates them after the prompt).
             var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs);
-            var workflows = new InitWorkflows(_command.DotnetEnvironment, new AdminModeSwitcher(_command.Policy));
+            var workflows = _initWorkflows
+                ?? new InitWorkflows(_command.DotnetEnvironment, new AdminModeSwitcher(_command.Policy));
             requests = workflows.InitWalkthrough(_command, initialRequests);
+            if (requests.Count == 0)
+            {
+                return;
+            }
         }
         else
         {
@@ -131,17 +141,15 @@ internal class InstallWorkflow
     /// install path validation, and version resolution via the channel version resolver.
     /// In admin mode, requests target the shared system location and use the Windows installer bundle;
     /// global.json still selects the channel but its sdk paths are ignored. Admin mode requires
-    /// <c>--untracked</c> unless <paramref name="adminSelectedInSetup"/> is set, which the setup form
-    /// passes after the user selects admin mode there: those installs are untracked by definition.
+    /// <c>--untracked</c>.
     /// </summary>
     public List<ResolvedInstallRequest> GenerateInstallRequests(
-        MinimalInstallSpec[] componentSpecs,
-        bool adminSelectedInSetup = false)
+        MinimalInstallSpec[] componentSpecs)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         var target = AccessModeResolver.Resolve().IsAdmin
-            ? ResolveAdminInstallTarget(adminSelectedInSetup)
+            ? ResolveAdminInstallTarget()
             : ResolveUserInstallTarget(globalJson);
 
         var requests = new List<ResolvedInstallRequest>();
@@ -181,9 +189,9 @@ internal class InstallWorkflow
     /// shared Program Files location; explicit paths and global.json sdk paths do not apply. The installs are
     /// not tracked, so the path is not validated against the dotnetup manifest.
     /// </summary>
-    private InstallTarget ResolveAdminInstallTarget(bool adminSelectedInSetup)
+    private InstallTarget ResolveAdminInstallTarget()
     {
-        if (!_command.Untracked && !adminSelectedInSetup)
+        if (!_command.Untracked)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeRequiresUntracked,

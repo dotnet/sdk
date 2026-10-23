@@ -64,6 +64,7 @@ public class DotnetupConfigTests : IDisposable
     [DataRow(DotnetAccessMode.None)]
     [DataRow(DotnetAccessMode.Shell)]
     [DataRow(DotnetAccessMode.Everywhere)]
+    [DataRow(DotnetAccessMode.Admin)]
     internal void ReadAccessMode_ReturnsStoredPreference_WhenConfigExists(DotnetAccessMode accessMode)
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = accessMode });
@@ -233,46 +234,54 @@ public class DotnetupConfigTests : IDisposable
     }
 
     [TestMethod]
-    public void WriteAccessSettings_Admin_Throws()
+    public void WriteAccessSettings_Admin_PreservesUnrelatedSettings()
     {
-        Action act = () => DotnetupConfig.WriteAccessSettings(DotnetAccessMode.Admin, dotnetupOnPath: true);
+        DotnetupConfig.SetUpdateNotifications(false);
 
-        act.Should().Throw<ArgumentException>();
-        File.Exists(DotnetupPaths.ConfigPath).Should().BeFalse();
+        DotnetupConfig.WriteAccessSettings(DotnetAccessMode.Admin, dotnetupOnPath: true);
+
+        DotnetupConfig.Read().Should().BeEquivalentTo(new DotnetupConfigData
+        {
+            AccessMode = DotnetAccessMode.Admin,
+            UpdateNotifications = false,
+        });
+        File.ReadAllText(DotnetupPaths.ConfigPath).Should().Contain("\"accessMode\": \"admin\"");
     }
 
     [TestMethod]
-    public void Write_Admin_Throws()
+    public void Write_Admin_RoundTrips()
     {
-        Action act = () => DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });
+        var config = new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin };
 
-        act.Should().Throw<ArgumentException>();
-        File.Exists(DotnetupPaths.ConfigPath).Should().BeFalse();
+        DotnetupConfig.Write(config);
+
+        DotnetupConfig.Read().Should().BeEquivalentTo(config);
     }
 
     [TestMethod]
-    public void Read_AdminAccessMode_TreatedAsUnset()
+    public void Read_AdminAccessMode_IsConfigured()
     {
         DotnetupPaths.EnsureDataDirectoryExists();
         File.WriteAllText(
             DotnetupPaths.ConfigPath,
             """{ "schemaVersion": "1", "accessMode": "admin", "updateNotifications": false }""");
 
-        DotnetupConfig.Read().Should().BeNull();
-        DotnetupConfig.ReadAccessMode().Should().BeNull();
-        DotnetupConfig.ReadAccessModeSilently().Should().BeNull();
-        DotnetupConfig.Exists().Should().BeFalse();
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.ReadAccessMode().Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.ReadAccessModeSilently().Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.Exists().Should().BeTrue();
         DotnetupConfig.ReadUpdateNotificationsEnabled().Should().BeFalse();
     }
 
     [TestMethod]
-    public void SetUpdateNotifications_AdminAccessMode_DropsAdmin()
+    public void SetUpdateNotifications_AdminAccessMode_PreservesAdmin()
     {
         DotnetupPaths.EnsureDataDirectoryExists();
         File.WriteAllText(DotnetupPaths.ConfigPath, """{ "schemaVersion": "1", "accessMode": "admin" }""");
 
         DotnetupConfig.SetUpdateNotifications(false);
 
-        File.ReadAllText(DotnetupPaths.ConfigPath).Should().NotContain("admin");
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        DotnetupConfig.Read()!.UpdateNotifications.Should().BeFalse();
     }
 }

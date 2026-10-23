@@ -215,7 +215,7 @@ public class InstallationValidatorTests
     [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.Runtime)]
     [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.ASPNETCore)]
     [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.WindowsDesktop)]
-    public void Validate_UnavailableEnvironmentInfoRequiresInstalledComponent(InstallMechanism mechanism, InstallComponent component)
+    internal void Validate_UnavailableEnvironmentInfoRequiresInstalledComponent(InstallMechanism mechanism, InstallComponent component)
     {
         using var testEnv = new TestEnvironment();
         StubHostFxr(testEnv.InstallPath);
@@ -274,7 +274,7 @@ public class InstallationValidatorTests
     [DataRow(InstallMechanism.WindowsInstallerBundle, "dll")]
     [DataRow(InstallMechanism.WindowsInstallerBundle, "export")]
     [DataRow(InstallMechanism.WindowsInstallerBundle, "query")]
-    public void Validate_OtherHostQueryFailuresDoNotUseLayoutFallback(InstallMechanism mechanism, string failureType)
+    internal void Validate_OtherHostQueryFailuresDoNotUseLayoutFallback(InstallMechanism mechanism, string failureType)
     {
         using var testEnv = new TestEnvironment();
         StubHostFxr(testEnv.InstallPath);
@@ -297,7 +297,7 @@ public class InstallationValidatorTests
     [OSCondition(OperatingSystems.Windows)]
     [DataRow(InstallMechanism.Archive)]
     [DataRow(InstallMechanism.WindowsInstallerBundle)]
-    public void Validate_AvailableEnvironmentInfoStillRequiresHostReport(InstallMechanism mechanism)
+    internal void Validate_AvailableEnvironmentInfoStillRequiresHostReport(InstallMechanism mechanism)
     {
         using var testEnv = new TestEnvironment();
         StubHostFxr(testEnv.InstallPath);

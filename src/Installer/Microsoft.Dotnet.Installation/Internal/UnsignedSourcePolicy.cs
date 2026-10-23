@@ -34,6 +34,15 @@ internal static class UnsignedSourcePolicy
     internal const string UnixPolicyFile = "/etc/dotnet/dnup-block-unsigned-downloads";
 
     /// <summary>
+    /// Returns the location an administrator removes to clear the policy on the current OS:
+    /// the full registry value path on Windows, or <see cref="UnixPolicyFile"/> elsewhere.
+    /// </summary>
+    internal static string GetPolicyLocationForDisplay() =>
+        OperatingSystem.IsWindows()
+            ? $@"HKLM\{WindowsPolicyKey}\{WindowsPolicyValueName}"
+            : UnixPolicyFile;
+
+    /// <summary>
     /// Returns true when the given install request will (or may) be served from a source
     /// that has no detached CMS signature — the public blob feed used for daily channels
     /// and unknown prerelease versions. Predicate is purely channel-based so it can be

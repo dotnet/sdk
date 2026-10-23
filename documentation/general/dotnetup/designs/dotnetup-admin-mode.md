@@ -66,7 +66,7 @@ Migrating system installs is meaningless and so it will always be 'No.'
 dotnetup env set admin
 ```
 
-This removes user-level .NET environment wiring and stores `admin` as the current user's access mode. Callers such as C# Dev Kit then install the exact SDK they need with `dotnetup sdk install <version> --untracked`.
+This removes dotnetup-managed user-level .NET environment wiring and stores `admin` as the current user's access mode. The separate `--dotnetup-on-path` setting is honored; unrelated environment entries and installed SDKs and runtimes are left alone. Callers such as C# Dev Kit then install the exact SDK they need with `dotnetup sdk install <version> --untracked`.
 
 ## Bifurcated Behavior
 
@@ -82,7 +82,7 @@ This removes user-level .NET environment wiring and stores `admin` as the curren
 
 To rapidly support an emerging C#DK release, `dotnetup` will rollout `admin` support over time per command.
 
-`dotnetup sdk install` and `dotnetup runtime install` are the functional install commands in `admin` mode. `env set`, `env show`, `--info`, and `self update` remain available so users can change or inspect their mode and update `dotnetup`. [`env script`](../reference/dotnetup-env-script.md) and its hidden `print-env-script` compatibility alias also remain available so existing shell profiles can run without errors, but never activate user-level .NET in `admin` mode. Every other command, including bare `dotnetup`, fails with `AdminModeCommandNotSupported`; `list` uses an admin-specific unsupported message.
+`dotnetup sdk install` and `dotnetup runtime install` are the functional install commands in `admin` mode. `init`, `env set`, `env clear`, `env show`, `--info`, and `self update` remain available so users can change or inspect their mode and update `dotnetup`. [`env script`](../reference/dotnetup-env-script.md) and its hidden `print-env-script` compatibility alias also remain available so existing shell profiles can run without errors, but never activate user-level .NET in `admin` mode. Every other command, including bare `dotnetup`, fails with `AdminModeCommandNotSupported`; `list` uses an admin-specific unsupported message.
 
 Commands are blocked by default: a command runs in `admin` mode only when its command class declares `admin` support, and that declaration lists the options and arguments it accepts there. Any other option or argument that the user supplies fails with `AdminModeSymbolNotSupported`.
 
@@ -110,9 +110,13 @@ Rollout for other commands will be integrated later, such as:
 `admin`, like the other access modes, is stored in the current user's existing `dotnetup` configuration. Different users can select different access modes. This setting does not grant administrative privileges: the official installer still requests administrator approval when it performs a machine-wide installation.
 
 On Windows, `admin` can be selected from the interactive `dotnetup init` form or with
-`dotnetup env set admin`. The init form hides migration for this selection, applies the
-mode before resolving install requests, and then continues through the normal setup
-experience using the shared system installer. There is no `init --mode` option.
+`dotnetup env set admin`. When Admin is selected, the init form hides the SDK-channel
+and migration fields and offers to configure rather than install. It applies the
+policy and environment settings, saves the mode, and exits without resolving or
+executing an installation. Init also only configures when changing from a saved
+Admin mode to another mode. A subsequent explicit install command uses the newly
+saved mode, so its command gate and telemetry agree about the installation mode.
+There is no `init --mode` option.
 
 #### Registry Values (Windows only)
 
@@ -126,7 +130,24 @@ IT administrators can set this value through Group Policy, Intune, or similar to
 
 #### Changing the Mode
 
-Selecting `admin` mode with `env set` sets `BlockUnsignedDownloads` to `1` before storing the user setting. Leaving `admin` mode sets it to `0` and reports that unsigned executables will be allowed again by default. Both transitions request UAC to change the policy unless `dotnetup` is already elevated. If elevation is declined or the policy does not change, the mode change fails and the per-user configuration is left unchanged.
+Selecting `admin` mode with `env set` or init ensures `BlockUnsignedDownloads` is
+`1` before applying environment changes and storing the user setting. Leaving
+`admin` mode ensures it is `0` and reports when unsigned executables are allowed
+again by default. A policy change requests UAC unless `dotnetup` is already
+elevated; an already-correct policy needs no elevation. If elevation is declined
+or verification fails, the mode change fails before environment or per-user
+configuration changes.
+
+`env set` without a mode reapplies the stored settings, including repairing the
+unsigned-download block and environment drift in Admin mode. `env clear` is
+equivalent to `env set none --dotnetup-on-path false`, including the policy step
+when leaving Admin. Neither command installs or uninstalls .NET. Init preserves
+the configured dotnetup-on-PATH setting, defaulting to `true` on first setup.
+
+The policy, environment, and user config are not a single transaction. An
+environment or config write failure after a successful policy change is reported
+as a failure, not as successful setup. Existing Everywhere-mode PATH cleanup can
+also require elevation independently of the policy change.
 
 Elevation reuses the existing hidden-command pattern used for the system `PATH` ([`WindowsPathHelper.StartElevatedProcess`](../../../../src/Installer/dotnetup.Library/WindowsPathHelper.cs)). The elevated command accepts only the fixed `enableadminmode` and `disableadminmode` operations. It must not accept registry paths, value names, or data from its arguments. Because that pattern elevates `dotnetup.exe` from a user-writable location, a future alternative is to elevate `%SystemRoot%\System32\reg.exe` with fixed arguments instead.
 
@@ -257,7 +278,7 @@ https://github.com/dotnet/vscode-dotnet-runtime/blob/f54c68789e1bdfca13e8262045c
 | Result | Handling |
 | --- | --- |
 | `0` | Success. |
-| `3010` | Success. The user must restart to complete the installation; `dotnetup` reports this and does not restart automatically. |
+| `3010` | Success. The user must restart to complete the installation; `dotnetup` reports this, does not restart automatically, and skips post-install hostfxr validation. |
 | `1641` | Success. A restart has already been initiated; `dotnetup` reports this and skips post-install hostfxr validation. |
 | `1602`, `1223` (UAC declined) | Cancelled (`OperationCancelled`). |
 | `1618` | Another installation is in progress (`InstallerBusy`). No automatic retry. |
@@ -265,7 +286,7 @@ https://github.com/dotnet/vscode-dotnet-runtime/blob/f54c68789e1bdfca13e8262045c
 | Any other nonzero code, including `1603` | `InstallerFailed`, reporting the exit code. No retry. |
 | Installer did not start | `ProcessStartFailed`. |
 
-After a successful exit, `dotnetup` confirms that the requested version is installed and otherwise fails with `InstallerPostInstallVerificationFailed`.
+After exit code `0`, `dotnetup` confirms that the requested version is installed and otherwise fails with `InstallerPostInstallVerificationFailed`. Exit codes `3010` and `1641` skip this validation because pending file replacements may not be completed until the restart.
 
 Future work: a bounded wait for an interrupted parent that confirms the original installation has ended, re-queries the installation state, and retries at most once only if installation is still needed. If the original operation's status cannot be established, report an actionable failure without launching another installer.
 

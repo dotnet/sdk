@@ -251,10 +251,10 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow(0, null)]
-    [DataRow(3010, "must restart")]
-    [DataRow(1641, "restart has been initiated")]
-    public void Commit_SuccessExitCodes_Succeed(int exitCode, string? expectedNotice)
+    [DataRow(0, null, true)]
+    [DataRow(3010, "must restart", false)]
+    [DataRow(1641, "restart has been initiated", false)]
+    public void Commit_SuccessExitCodes_Succeed(int exitCode, string? expectedNotice, bool requiresPostInstallValidation)
     {
         using var notices = new StringWriter(CultureInfo.InvariantCulture);
         var artifact = CreateArtifact(StableChannel, runner: new FakeRunner(exitCode), notices: notices);
@@ -271,7 +271,23 @@ public class WindowsBundleArtifactTests : IDisposable
             notices.ToString().Should().BeEmpty();
         }
 
-        artifact.RequiresPostInstallValidation.Should().Be(exitCode != BundleExitCodes.RebootInitiated);
+        artifact.RequiresPostInstallValidation.Should().Be(requiresPostInstallValidation);
+    }
+
+    [TestMethod]
+    [DataRow(3010)]
+    [DataRow(1641)]
+    public void CommitPreparedInstall_RestartExitCodes_SkipPostInstallVerification(int exitCode)
+    {
+        var runner = new FakeRunner(exitCode);
+        using var prepared = Prepare(CreateArtifact(StableChannel, runner: runner), StableChannel);
+        var validator = new MockInstallationValidator(validateResult: false);
+
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared, validator);
+
+        result.WasAlreadyInstalled.Should().BeFalse();
+        runner.Calls.Should().ContainSingle();
+        validator.ValidateCalls.Should().Be(1, "only the pre-install check should run while a restart is pending");
     }
 
     [TestMethod]

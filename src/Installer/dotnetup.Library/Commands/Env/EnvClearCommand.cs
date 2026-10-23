@@ -18,17 +18,22 @@ internal class EnvClearCommand : CommandBase
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
+    private readonly AdminModeSwitcher _adminModeSwitcher;
 
     public EnvClearCommand(
         ParseResult result,
         IDotnetEnvironmentManager? dotnetEnvironment = null,
         IEnvironmentStateInspector? inspector = null,
-        DotnetupPolicy? policy = null) : base(result, "env clear", policy)
+        DotnetupPolicy? policy = null,
+        AdminModeSwitcher? adminModeSwitcher = null) : base(result, "env clear", adminModeSwitcher?.Policy ?? policy)
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
+        _adminModeSwitcher = adminModeSwitcher ?? new AdminModeSwitcher(Policy);
     }
+
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
 
     protected override void ExecuteCore()
     {
@@ -37,6 +42,8 @@ internal class EnvClearCommand : CommandBase
             targetDotnetupOnPath: false,
             _dotnetEnvironment,
             _shellProvider,
-            _inspector);
+            _inspector,
+            DotnetupConfig.ReadAccessMode(),
+            _adminModeSwitcher);
     }
 }

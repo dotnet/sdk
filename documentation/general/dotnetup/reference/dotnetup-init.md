@@ -21,17 +21,30 @@ dotnetup init [options]
 ## Description
 
 The setup flow presents the effective install path and starter SDK channel.
-It lets you select an access mode and whether the `dotnetup` executable is on
-`PATH`. It can also offer to migrate matching native-architecture
+It lets you select an access mode and preserves the configured setting for whether
+the `dotnetup` executable is on `PATH` (defaulting to `true` on first setup).
+It can also offer to migrate matching native-architecture
 system-managed installations. For descriptions of the access modes, see
 [dotnetup environment configuration](../concepts/environment.md).
 
 Run this command again to reconfigure dotnetup.
 
-On Windows, the interactive form can select admin mode. The migration prompt is
-hidden for that selection, and the normal setup flow installs the selected SDK
-through the shared system installer. Admin mode can also be selected separately
-with `dotnetup env set admin`. For details, see
+On Windows, the interactive form can select admin mode. Highlighting Admin already
+previews configuration-only setup: the SDK-channel and migration fields are hidden,
+and the confirmation offers to configure rather than install. Moving the highlight
+back or cancelling the edit restores the previous form without changing its selections.
+Hidden install-only content leaves blank rows so the other prompts stay in place
+while browsing access modes. The form preserves header and section spacing before
+removing optional descriptions when adapting to smaller terminals.
+Accepting Admin configures the
+unsigned-download policy, applies environment settings, saves Admin in the
+per-user configuration, and exits without installing .NET. Init also only
+configures when changing from saved Admin to another mode. Install afterwards
+with an explicit command; Admin installs require
+`dotnetup sdk install <version> --untracked`.
+
+Admin mode can also be selected separately with `dotnetup env set admin`.
+There is no `--mode` option. For details, see
 [dotnetup admin mode](../designs/dotnetup-admin-mode.md).
 
 ## Options

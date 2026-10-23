@@ -131,18 +131,9 @@ internal sealed class AdminModeSwitcher
             VerifyChange(enable);
         }
 
-        if (enable)
+        if (!enable && changed)
         {
-            _console.MarkupLine(DotnetupTheme.Success(Strings.AdminModeEnabled));
-            _console.WriteLine(Strings.AdminModePreservesUserEnvironment);
-        }
-        else
-        {
-            _console.MarkupLine(DotnetupTheme.Success(Strings.AdminModeDisabled));
-            if (changed)
-            {
-                _console.WriteLine(Strings.AdminModeUnsignedDownloadsAllowed);
-            }
+            _console.WriteLine(Strings.AdminModeUnsignedDownloadsAllowed);
         }
 
         return changed;
