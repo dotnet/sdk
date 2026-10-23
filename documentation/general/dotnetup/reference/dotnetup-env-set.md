@@ -28,7 +28,7 @@ The optional .NET access mode:
 | `none` | Does not modify these environment variables. Run .NET with `dotnetup dotnet`. |
 | `shell` | Modifies the shell profile to set these environment variables. Processes started from that shell use the .NET SDKs and Runtimes installed by dotnetup. |
 | `everywhere` | Modifies the system `PATH` and sets the user-level `DOTNET_ROOT` environment variable. Only available on Windows. |
-| `admin` | Stores `admin` as the current user's mode, removes dotnetup-managed user-level .NET environment wiring, and runs future installs through the official .NET installers into Program Files. Before applying or saving settings, asks for administrator permission to block unsigned downloads if the policy is not already set. Only available on Windows. See [dotnetup admin mode](../designs/dotnetup-admin-mode.md). |
+| `admin` | Stores `admin` as the current user's mode, removes dotnetup-managed user-level .NET environment wiring, and runs future installs through the official .NET installers into Program Files, except that a global.json `sdk.paths` directory receives an archive install. Before applying or saving settings, asks for administrator permission to block unsigned downloads if the policy is not already set. Only available on Windows. See [dotnetup admin mode](../designs/dotnetup-admin-mode.md). |
 
 For details about each mode and considerations for `everywhere`, see
 [dotnetup environment configuration](../concepts/environment.md).
