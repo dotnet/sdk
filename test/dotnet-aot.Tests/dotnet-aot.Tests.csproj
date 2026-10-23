@@ -1,9 +1,12 @@
-<Project Sdk="MSTest.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
+    <!-- Matches dotnet-aot.csproj: without the ASP.NET Core runtime, AotSourceFiles.props
+         compiles AspNetCoreCertificateGenerator.cs with an empty body via EXCLUDE_ASPNETCORE. -->
+    <DefineConstants Condition="'$(IncludeAspNetCoreRuntime)' == 'false'">$(DefineConstants);EXCLUDE_ASPNETCORE</DefineConstants>
     <RootNamespace>Microsoft.DotNet.Cli.Tests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <!-- Methods within a class share fixtures and process state. Audited classes use

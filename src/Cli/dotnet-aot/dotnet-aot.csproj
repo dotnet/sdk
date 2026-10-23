@@ -17,8 +17,10 @@
     <_SystemCommandLineExecutableName>dotnet</_SystemCommandLineExecutableName>
     <OutputType>Library</OutputType>
     <NativeLib>Shared</NativeLib>
-    <PublishAot>true</PublishAot>
-    <IsAotCompatible>true</IsAotCompatible>
+    <!-- Only enable PublishAot where the NativeAOT toolchain exists; otherwise restore pulls
+         the ILCompiler pack for the target RID and fails (NU1102). -->
+    <PublishAot Condition="'$(NativeAotSupported)' == 'true'">true</PublishAot>
+    <IsAotCompatible Condition="'$(NativeAotSupported)' == 'true'">true</IsAotCompatible>
     <OptimizationPreference>Size</OptimizationPreference>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
@@ -100,5 +102,4 @@
 
   <Import Project="$(RepositoryEngineeringDir)common\native\LocateNativeCompiler.targets"
       Condition="'$(UseCommonLocateNativeCompilerTarget)' == 'true'" />
-
 </Project>
