@@ -1,4 +1,4 @@
-﻿<Project Sdk="MSTest.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
@@ -36,6 +36,13 @@
   <!-- Shared AOT dependencies and source files. -->
   <Import Project="..\..\src\Cli\dotnet-aot\AotDependencies.props" />
   <Import Project="..\..\src\Cli\dotnet-aot\AotSourceFiles.props" />
+
+  <ItemGroup>
+    <!-- CA1418: OpenHarmony is not in the analyzer's known-platform list yet (no OHOS TFM,
+         no guard method in the target framework); this project compiles the same AOT sources
+         as dotnet-aot, including OpenHarmonyEnvironmentDefaults.cs. -->
+    <SupportedPlatform Include="openharmony" />
+  </ItemGroup>
 
   <!-- NativeEntryPoint for ExecuteCore tests (ManagedHost is stubbed in TestManagedHost.cs) -->
   <ItemGroup>
