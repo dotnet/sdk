@@ -347,7 +347,7 @@ public class InitFormRendererTests
     [TestMethod]
     public void BrowseForm_HidesWelcomeBeforeInstallLocationWhenMoreConstrained()
     {
-        const int height = 7;
+        const int height = 6;
         string output = RenderForm(width: 120, height, expandChannel: false, out int renderedHeight);
 
         output.Should().NotContain("Welcome to dotnetup");
@@ -358,7 +358,7 @@ public class InitFormRendererTests
     [TestMethod]
     public void BrowseForm_HidesInstallLocationAsFinalHeaderFallback()
     {
-        const int height = 6;
+        const int height = 5;
         string output = RenderForm(width: 120, height, expandChannel: false, out int renderedHeight);
 
         output.Should().NotContain("Welcome to dotnetup");
@@ -468,8 +468,15 @@ public class InitFormRendererTests
     [TestMethod]
     public void ExpandedAccessMode_ShowsChoiceHelpInlineWhenConstrained()
     {
-        // Windows needs more rows to reach the same compression level because it also shows Everywhere and Admin.
-        int height = OperatingSystem.IsWindows() ? 14 : 9;
+        // The required height depends on the OS (Windows adds Everywhere and Admin) and on how the temp
+        // install path wraps, so use the tightest height that still shows the derived details. Spacing
+        // is retained at that level, so only inline choice help can make it fit.
+        const string derivedDetail = "Only applications launched from the shell";
+        int height = Enumerable.Range(1, 100).First(candidate =>
+        {
+            InitFormModel candidateModel = CreateExpandedAccessMode(out InitFormState candidateState);
+            return RenderForm(candidateModel, candidateState, width: 80, candidate, out _).Contains(derivedDetail, StringComparison.Ordinal);
+        });
         InitFormModel model = CreateExpandedAccessMode(out InitFormState state);
 
         string output = RenderForm(model, state, width: 80, height, out int renderedHeight);
