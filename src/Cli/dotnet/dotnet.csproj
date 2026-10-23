@@ -63,6 +63,7 @@
     <EmbeddedResource Update="CliStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
     <EmbeddedResource Update="Commands\CliCommandStrings.resx" LinkBase="Resources" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
     <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
+    <Compile Include="$(RepoRoot)src\Tasks\Microsoft.NET.Build.Tasks\ElfSigner.cs" Link="Commands\SelfSign\ElfSigner.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -871,6 +871,57 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+                                        _OpenHarmonyCodeSignBuildOutputs
+    OpenHarmony only executes signed ELF binaries, so build and publish outputs are
+    re-signed in place. Mirrors _EnableMacOSCodeSign.
+    ============================================================
+     -->
+  <UsingTask TaskName="OpenHarmonyCodesign" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <PropertyGroup>
+    <_EnableOpenHarmonyCodeSign Condition="'$(_EnableOpenHarmonyCodeSign)' == '' and ($(RuntimeIdentifier.StartsWith('openharmony')) or $(AppHostRuntimeIdentifier.StartsWith('openharmony')))">true</_EnableOpenHarmonyCodeSign>
+  </PropertyGroup>
+  <Target Name="_OpenHarmonyCodeSignCollectBuildInputs"
+          BeforeTargets="_OpenHarmonyCodeSignBuildOutputs"
+          Condition="'$(_EnableOpenHarmonyCodeSign)' == 'true'">
+    <ItemGroup>
+      <_OpenHarmonyCodeSignBuildInputs Include="$(TargetDir)**/*" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_OpenHarmonyCodeSignBuildOutputs"
+          AfterTargets="Build"
+          Condition="'$(_EnableOpenHarmonyCodeSign)' == 'true'"
+          Inputs="@(_OpenHarmonyCodeSignBuildInputs)"
+          Outputs="$(IntermediateOutputPath)OpenHarmonyCodeSign.stamp">
+    <OpenHarmonyCodesign Directories="$(TargetDir)" />
+    <Touch Files="$(IntermediateOutputPath)OpenHarmonyCodeSign.stamp" AlwaysCreate="true" />
+    <!-- The pass rewrites outputs in place; `dotnet clean` must remove the stamp. -->
+    <ItemGroup>
+      <FileWrites Include="$(IntermediateOutputPath)OpenHarmonyCodeSign.stamp" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_OpenHarmonyCodeSignCollectPublishInputs"
+          BeforeTargets="_OpenHarmonyCodeSignPublishOutputs"
+          Condition="'$(_EnableOpenHarmonyCodeSign)' == 'true'">
+    <ItemGroup>
+      <_OpenHarmonyCodeSignPublishInputs Include="$(PublishDir)**/*" />
+    </ItemGroup>
+  </Target>
+  <Target Name="_OpenHarmonyCodeSignPublishOutputs"
+          AfterTargets="Publish"
+          Condition="'$(_EnableOpenHarmonyCodeSign)' == 'true'"
+          Inputs="@(_OpenHarmonyCodeSignPublishInputs)"
+          Outputs="$(IntermediateOutputPath)OpenHarmonyCodeSignPublish.stamp">
+    <OpenHarmonyCodesign Directories="$(PublishDir)" />
+    <Touch Files="$(IntermediateOutputPath)OpenHarmonyCodeSignPublish.stamp" AlwaysCreate="true" />
+    <!-- Same clean contract as the build pass above. -->
+    <ItemGroup>
+      <FileWrites Include="$(IntermediateOutputPath)OpenHarmonyCodeSignPublish.stamp" />
+    </ItemGroup>
+  </Target>
+
+  <!--
+    ============================================================
                                         _GetAppHostPaths
     Gets the path to apphost (restored via packages or in an apphost pack),
     and computes the path for the destination apphost.
