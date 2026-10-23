@@ -81,6 +81,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.13.0-1.26508.107</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftNETHostModelPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETHostModelPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETILLinkTasksPackageVersion>
+    <MicrosoftNETProjectDataTasksPackageVersion>5.13.0-1.26508.107</MicrosoftNETProjectDataTasksPackageVersion>
     <MicrosoftNETRuntimeEmscriptenInternalPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETRuntimeEmscriptenInternalPackageVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>11.1.0-preview.26508.107</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
     <MicrosoftNETSdkWindowsDesktopPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETSdkWindowsDesktopPackageVersion>
@@ -137,10 +138,10 @@ This file should be imported by eng/Versions.props
     <SystemTextJsonPackageVersion>11.0.0-rc.2.26508.107</SystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>11.0.0-rc.2.26508.107</SystemWindowsExtensionsPackageVersion>
     <!-- microsoft-testfx dependencies -->
-    <MicrosoftTestingPlatformPackageVersion>2.4.0-preview.26429.4</MicrosoftTestingPlatformPackageVersion>
+    <MicrosoftTestingPlatformPackageVersion>2.5.0-preview.26477.3</MicrosoftTestingPlatformPackageVersion>
     <MicrosoftTestingPlatformInternalDotnetTestPackageVersion>2.3.0-preview.26330.8</MicrosoftTestingPlatformInternalDotnetTestPackageVersion>
-    <MSTestPackageVersion>4.4.0-preview.26429.4</MSTestPackageVersion>
-    <MSTestSdkPackageVersion>4.4.0-preview.26429.4</MSTestSdkPackageVersion>
+    <MSTestPackageVersion>4.5.0-preview.26477.3</MSTestPackageVersion>
+    <MSTestSdkPackageVersion>4.5.0-preview.26477.3</MSTestSdkPackageVersion>
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
@@ -220,6 +221,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftNetCompilersToolsetFrameworkVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</MicrosoftNetCompilersToolsetFrameworkVersion>
     <MicrosoftNETHostModelVersion>$(MicrosoftNETHostModelPackageVersion)</MicrosoftNETHostModelVersion>
     <MicrosoftNETILLinkTasksVersion>$(MicrosoftNETILLinkTasksPackageVersion)</MicrosoftNETILLinkTasksVersion>
+    <MicrosoftNETProjectDataTasksVersion>$(MicrosoftNETProjectDataTasksPackageVersion)</MicrosoftNETProjectDataTasksVersion>
     <MicrosoftNETRuntimeEmscriptenInternalVersion>$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)</MicrosoftNETRuntimeEmscriptenInternalVersion>
     <MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>$(MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion)</MicrosoftNETSdkRazorSourceGeneratorsTransportVersion>
     <MicrosoftNETSdkWindowsDesktopVersion>$(MicrosoftNETSdkWindowsDesktopPackageVersion)</MicrosoftNETSdkWindowsDesktopVersion>
