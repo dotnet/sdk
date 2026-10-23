@@ -612,7 +612,10 @@ Or open a new terminal.</value>
     <comment>{Locked="dotnetup sdk install"}</comment>
   </data>
   <data name="AccessModeAdminDescription" xml:space="preserve">
-    <value>Installs are managed by other tools alongside dotnetup (with limited support) in a shared system folder. Commands may ask to elevate. Installation is slower, and consumes more disk space but supports existing configurations.</value>
+    <value>Installs are managed by other tools alongside dotnetup (with limited support) in a shared system folder.</value>
+  </data>
+  <data name="AccessModeAdminDetails" xml:space="preserve">
+    <value>Commands may ask to elevate. Installation is slower, and consumes more disk space but supports existing configurations.</value>
   </data>
   <data name="ElevatedSystemPathOperationDescription" xml:space="preserve">
     <value>The operation to perform: 'insertdotnet', 'removedotnet', 'enableadminmode', or 'disableadminmode'</value>

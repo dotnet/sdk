@@ -129,17 +129,16 @@ public class InitFormModelTests
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void AdminAccessMode_HasOnlySummaryWithoutDerivedDetails()
+    public void AdminAccessMode_ShowsTradeoffsOnlyAsHighlightedDetail()
     {
         var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
         FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
         int adminIndex = accessMode.Choices.Select((choice, index) => (choice, index))
             .Single(item => item.choice.Title == "Admin").index;
 
-        accessMode.Choices[adminIndex].HelperText.Should().Be(
-            "Installs are managed by other tools alongside dotnetup in a shared system folder. " +
-            "Installation is slower and consumes more disk space but supports existing install configurations.");
-        model.BuildDerivedDetailLines(accessMode, adminIndex).Should().BeEmpty();
+        accessMode.Choices[adminIndex].HelperText.Should().Be(Strings.AccessModeAdminDescription);
+        model.BuildDerivedDetailLines(accessMode, adminIndex).Should().ContainSingle()
+            .Which.Label.Should().Be(Strings.AccessModeAdminDetails);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]

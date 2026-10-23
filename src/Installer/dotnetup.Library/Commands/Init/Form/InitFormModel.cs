@@ -172,8 +172,10 @@ internal sealed class InitFormModel
         switch (mode)
         {
             case DotnetAccessMode.None:
-            case DotnetAccessMode.Admin:
                 return [];
+
+            case DotnetAccessMode.Admin:
+                return [new DetailLine(Strings.AccessModeAdminDetails)];
 
             case DotnetAccessMode.Shell:
             {
