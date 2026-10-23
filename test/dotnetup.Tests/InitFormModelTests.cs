@@ -10,6 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Strings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 

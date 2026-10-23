@@ -163,6 +163,9 @@ internal class InstallWorkflow
     }
 
     /// <summary>Where install requests are directed and how they are installed.</summary>
+    /// <param name="InstallRoot">The root that receives the install.</param>
+    /// <param name="PathResolution">How the root was chosen, for telemetry.</param>
+    /// <param name="Mechanism">Whether .NET is extracted from an archive or installed by the Windows installer bundle.</param>
     /// <param name="Untracked">Whether the target forces untracked installs regardless of <c>--untracked</c>.</param>
     private sealed record InstallTarget(
         DotnetInstallRoot InstallRoot,

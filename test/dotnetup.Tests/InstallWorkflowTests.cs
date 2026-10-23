@@ -195,6 +195,7 @@ public class InstallWorkflowTests : IDisposable
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public void GenerateInstallRequests_AdminModeWithUntracked_TargetsSystemRootWithInstallerBundle()
     {
         UseAdminMode();
@@ -202,7 +203,9 @@ public class InstallWorkflowTests : IDisposable
         var expectedRoot = new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture());
 
         // The admin root is under Program Files, which ValidateInstallPath would reject with AdminPathBlocked.
-        var requests = workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")]);
+        // Run outside the repository so its global.json sdk paths do not redirect the install.
+        var requests = RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")]));
 
         var request = requests.Should().ContainSingle().Subject.Request;
         request.InstallRoot.Should().Be(expectedRoot);
