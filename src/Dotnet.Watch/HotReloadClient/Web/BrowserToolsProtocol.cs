@@ -9,12 +9,12 @@ using System.Collections.Immutable;
 namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
-/// The contract between the dotnet-watch browser tools provider and the browser tools client.
+/// The contract between the Hot Reload browser tools provider and the browser tools client.
 ///
 /// The client is generated into the application build output together with the public half of the
 /// provider's session key, so the two always ship together and there is no version negotiation.
-/// <see cref="RoutePrefix"/> must be kept in sync with the DotNetWatchBrowserToolsRoutePrefix
-/// property in Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets.
+/// <see cref="RoutePrefix"/> must be kept in sync with the HotReloadBrowserToolsRoutePrefix
+/// property in Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets.
 /// </summary>
 internal static class BrowserToolsProtocol
 {

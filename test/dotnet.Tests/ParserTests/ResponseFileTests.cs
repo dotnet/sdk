@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -29,7 +30,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var tokens = parseResult.Tokens.Select(t => t.Value);
             var tokenString = string.Join(", ", tokens);
-            var bc = (RestoringCommand)Cli.Commands.Build.BuildCommand.FromParseResult(parseResult);
+            var bc = (RestoringCommand)Cli.Commands.Build.BuildCommand.FromParseResult(
+                parseResult,
+                msbuildPath: null,
+                CommandServices.CreateDefault());
             var tokenized = new[] {
                 "build",
                 "a b",

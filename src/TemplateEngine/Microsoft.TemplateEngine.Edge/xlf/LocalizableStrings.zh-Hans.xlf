@@ -227,6 +227,11 @@
         <target state="translated">未能读取包 {0} 的内容。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetInstaller_Error_PackageSourceMappingMatchNotFound">
+        <source>Package source mapping is enabled, but no source was found for package {0}.</source>
+        <target state="new">Package source mapping is enabled, but no source was found for package {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetInstaller_Error_FileAlreadyExists">
         <source>File {0} already exists.</source>
         <target state="translated">文件 {0} 已存在。</target>

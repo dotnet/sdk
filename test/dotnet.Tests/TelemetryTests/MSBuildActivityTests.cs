@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.MSBuild.Tests;
 using Microsoft.DotNet.Cli.Utils;
 using OpenTelemetry;
 using OpenTelemetry.Exporter;
@@ -81,12 +82,13 @@ public sealed class MSBuildActivityTests : SdkTest
             "dotnet", "publish", project, "--no-restore", "--output", output,
             "--disable-build-servers", binlogArgument,
         ];
+        CommandServices services = TestCommandServices.CreateNonLLM();
         var configured = Parser.Parse([.. arguments, "--configuration", "Debug"]);
-        _ = PublishCommand.FromParseResult(configured, msbuildPath);
+        _ = PublishCommand.FromParseResult(configured, msbuildPath, services);
         exported.AssertNoReleasePropertyDiscovery();
 
         var parseResult = Parser.Parse(arguments);
-        var command = (RestoringCommand)PublishCommand.FromParseResult(parseResult, msbuildPath);
+        var command = (RestoringCommand)PublishCommand.FromParseResult(parseResult, msbuildPath, services);
         command.MSBuildArguments.Should().Contain("--property:Configuration=Release");
         command.SeparateRestoreCommand.Should().BeNull();
         Activity discovery = exported.AssertReleasePropertyDiscovery(parent);
@@ -128,7 +130,9 @@ public sealed class MSBuildActivityTests : SdkTest
                 "--configuration", "Debug",
                 "--disable-build-servers",
                 binlogArgument,
-            ]);
+            ],
+            msbuildPath: null,
+            services: TestCommandServices.CreateNonLLM());
         command.SeparateRestoreCommand.Should().NotBeNull();
         exported.AssertNoSubmissions();
 
@@ -161,7 +165,9 @@ public sealed class MSBuildActivityTests : SdkTest
             [
                 program, "--no-restore", "--configuration", "Debug", "--output", output,
                 "--disable-build-servers", binlogArgument,
-            ]);
+            ],
+            msbuildPath: null,
+            services: TestCommandServices.CreateNonLLM());
         command.Should().BeOfType<VirtualProjectBuildingCommand>();
         exported.AssertNoSubmissions();
 
