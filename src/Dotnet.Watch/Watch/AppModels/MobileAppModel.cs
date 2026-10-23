@@ -19,8 +19,13 @@ internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNod
         ImmutableArray<HotReloadClient> clients;
         if (IsManagedAgentSupported(project, clientLogger))
         {
+            var keyDirectory = Path.Combine(
+                project.ProjectInstance.GetIntermediateOutputDirectory()
+                    ?? throw new InvalidOperationException("The mobile project must have an intermediate output directory."),
+                BrowserToolsBuildOutputs.DirectoryName);
             var transport = await WebSocketClientTransport.CreateAsync(
                 context.EnvironmentOptions.AgentWebSocketConfig,
+                new BrowserToolsBuildOutputs(keyDirectory, "websocket-key.public.json", "websocket-key.private.json"),
                 clientLogger,
                 cancellationToken);
 

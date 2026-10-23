@@ -12,6 +12,8 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -51,9 +53,9 @@ internal sealed class WebSocketClientTransport : ClientTransport
     /// <summary>
     /// Creates and starts a new <see cref="WebSocketClientTransport"/> instance.
     /// </summary>
-    public static async Task<WebSocketClientTransport> CreateAsync(WebSocketConfig config, ILogger logger, CancellationToken cancellationToken)
+    public static async Task<WebSocketClientTransport> CreateAsync(WebSocketConfig config, BrowserToolsBuildOutputs buildOutputs, ILogger logger, CancellationToken cancellationToken)
     {
-        var handler = new RequestHandler(config, logger);
+        var handler = new RequestHandler(config, buildOutputs, logger);
         var server = await KestrelWebSocketServer.StartServerAsync(config, handler.HandleRequestAsync, cancellationToken);
         var transport = new WebSocketClientTransport(server, handler);
 
@@ -66,10 +68,6 @@ internal sealed class WebSocketClientTransport : ClientTransport
         // Set the WebSocket endpoint for the app to connect to.
         // Use the actual bound URL from the server (important when port 0 was requested).
         env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint] = _server.ServerUrls.First();
-
-        // Set the RSA public key for the client to encrypt its shared secret.
-        // This is the same authentication mechanism used by BrowserRefreshServer.
-        env[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketKey] = _handler.SharedSecretProvider.GetPublicKey();
     }
 
     public override Task WaitForConnectionAsync(CancellationToken cancellationToken)
@@ -81,12 +79,12 @@ internal sealed class WebSocketClientTransport : ClientTransport
     public override ValueTask<ClientTransportResponse?> ReadAsync(CancellationToken cancellationToken)
         => _handler.ReadAsync(cancellationToken);
 
-    private sealed class RequestHandler(WebSocketConfig webSocketConfig, ILogger logger) : IDisposable
+    private sealed class RequestHandler(WebSocketConfig webSocketConfig, BrowserToolsBuildOutputs buildOutputs, ILogger logger) : IDisposable
     {
-        public SharedSecretProvider SharedSecretProvider { get; } = new();
         public TaskCompletionSource<WebSocket?> ClientConnectedSource { get; } = new();
 
         private WebSocket? _clientSocket;
+        private bool _connectionAccepted;
 
         public bool IsClientSocketAborted
             => _clientSocket?.State is WebSocketState.Aborted;
@@ -110,8 +108,6 @@ internal sealed class WebSocketClientTransport : ClientTransport
                 // The underlying HTTP context may already be disposed when the
                 // child process was terminated (e.g. Ctrl+R restart).
             }
-
-            SharedSecretProvider.Dispose();
         }
 
         public async Task HandleRequestAsync(HttpContext context)
@@ -136,23 +132,54 @@ internal sealed class WebSocketClientTransport : ClientTransport
             if (subProtocol == null)
             {
                 logger.LogWarning("WebSocket connection rejected: missing subprotocol (shared secret)");
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                context.Response.StatusCode = StatusCodes.Status400BadRequest;
                 return;
             }
 
-            // Decrypt and validate the secret
+            string sharedSecret;
+            using (var sessionKey = buildOutputs.TryCreateSessionKey(logger))
+            {
+                if (sessionKey == null)
+                {
+                    context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    return;
+                }
+
+                try
+                {
+                    sharedSecret = sessionKey.DecryptSecret(WebUtility.UrlDecode(subProtocol));
+                }
+                catch (Exception ex) when (ex is CryptographicException or FormatException)
+                {
+                    logger.LogWarning("WebSocket connection rejected: invalid shared secret - {Message}", ex.Message);
+                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    return;
+                }
+            }
+
+            if (Interlocked.CompareExchange(ref _connectionAccepted, true, false))
+            {
+                context.Response.StatusCode = StatusCodes.Status409Conflict;
+                return;
+            }
+
+            WebSocket? webSocket = null;
             try
             {
-                SharedSecretProvider.DecryptSecret(WebUtility.UrlDecode(subProtocol));
+                webSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
+                await webSocket.SendAsync(
+                    new ArraySegment<byte>(Encoding.UTF8.GetBytes(sharedSecret)),
+                    WebSocketMessageType.Text,
+                    endOfMessage: true,
+                    context.RequestAborted);
             }
-            catch (Exception ex)
+            catch
             {
-                logger.LogWarning("WebSocket connection rejected: invalid shared secret - {Message}", ex.Message);
-                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
-                return;
+                webSocket?.Dispose();
+                context.Abort();
+                Interlocked.Exchange(ref _connectionAccepted, false);
+                throw;
             }
-
-            var webSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
 
             logger.LogDebug("WebSocket client connected");
 

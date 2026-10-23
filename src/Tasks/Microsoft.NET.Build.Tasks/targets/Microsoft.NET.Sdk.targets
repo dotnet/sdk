@@ -26,6 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="GenerateDepsFile" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateRuntimeConfigurationFiles" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="EnsureHotReloadWebSocketKey" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GetAssemblyVersion" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
@@ -344,6 +345,30 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Do this in an ItemGroup instead of as an output parameter of the GenerateDepsFile task so that it still gets added to the item set
            during incremental builds when the task is skipped -->
       <FileWrites Include="$(ProjectDepsFilePath)" Condition="Exists('$(ProjectDepsFilePath)')"/>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateHotReloadWebSocketKey"
+          BeforeTargets="AssignTargetPaths;DeployToDevice;ComputeRunArguments"
+          Condition="'$(DesignTimeBuild)' != 'true'
+            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+            and '@(ProjectCapability->WithMetadataValue('Identity', 'HotReloadWebSockets'))' != ''">
+    <PropertyGroup>
+      <!-- Keep these paths in sync with BrowserToolsBuildOutputs. -->
+      <_HotReloadWebSocketKeyDirectory>$(IntermediateOutputPath)HotReload\</_HotReloadWebSocketKeyDirectory>
+    </PropertyGroup>
+    <EnsureHotReloadWebSocketKey
+      PublicKeyPath="$(_HotReloadWebSocketKeyDirectory)websocket-key.public.json"
+      PrivateKeyPath="$(_HotReloadWebSocketKeyDirectory)websocket-key.private.json">
+      <Output TaskParameter="PublicKey" PropertyName="_HotReloadWebSocketPublicKey" />
+    </EnsureHotReloadWebSocketKey>
+    <ItemGroup>
+      <!-- The workload pins the build-owned public key in the app's runtime environment.
+           Never set this in the environment inherited by dotnet run or its build processes. -->
+      <RuntimeEnvironmentVariable Remove="DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY" />
+      <RuntimeEnvironmentVariable Include="DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY" Value="$(_HotReloadWebSocketPublicKey)" />
+      <FileWrites Include="$(_HotReloadWebSocketKeyDirectory)websocket-key.public.json;
+                           $(_HotReloadWebSocketKeyDirectory)websocket-key.private.json" />
     </ItemGroup>
   </Target>
 
