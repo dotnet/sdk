@@ -215,39 +215,125 @@ public class InstallWorkflowTests : IDisposable
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
-    public void GenerateInstallRequests_AdminMode_UsesGlobalJsonChannelButIgnoresItsPaths()
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPath_UsesUntrackedArchiveInstallThere()
     {
         UseAdminMode();
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install", "--untracked"]);
+
+        resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
+        resolved.Request.Options.InstallSource.Should().Be(InstallRequestSource.GlobalJson);
+        resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        resolved.Request.Options.Untracked.Should().BeTrue();
+        File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPath_RuntimeInstallUsesArchiveThere()
+    {
+        UseAdminMode();
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0", "--untracked"]), _policy));
+
+        var request = RunInDirectory(projectDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")]))
+            .Should().ContainSingle().Subject.Request;
+
+        request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
+        request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        request.Options.Untracked.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPathWithoutUntracked_ThrowsAdminModeRequiresUntracked()
+    {
+        UseAdminMode();
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install"]), _policy));
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            RunInDirectory(projectDir, () => workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, null)])));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DataRow("""["$host$"]""")]
+    [DataRow("""["$host$", ".dotnet"]""")]
+    [DataRow("[]")]
+    [DataRow(null)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonWithoutLocalPath_UsesInstallerBundleAtSystemRoot(string? pathsJson)
+    {
+        UseAdminMode();
+        string projectDir = WriteGlobalJson(pathsJson);
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install", "--untracked"]);
+
+        resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
+        resolved.Request.Options.InstallSource.Should().Be(InstallRequestSource.GlobalJson);
+        resolved.Request.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()));
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonPathIsSystemLocation_UsesInstallerBundle()
+    {
+        UseAdminMode();
+        string systemDotnet = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles), "dotnet");
+        string projectDir = WriteGlobalJson($"[{System.Text.Json.JsonSerializer.Serialize(systemDotnet)}]");
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install", "--untracked"]);
+
+        resolved.Request.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()));
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+    }
+
+    /// <summary>Writes a global.json pinning SDK 9.0.100 with the given <c>sdk.paths</c> JSON array (omitted when null).</summary>
+    private string WriteGlobalJson(string? pathsJson)
+    {
         string projectDir = Path.Combine(_tempDir, "project");
         Directory.CreateDirectory(projectDir);
-        File.WriteAllText(Path.Combine(projectDir, "global.json"), """
+        string pathsProperty = pathsJson is null ? string.Empty : $",\n    \"paths\": {pathsJson}";
+        File.WriteAllText(Path.Combine(projectDir, "global.json"), $$"""
             {
               "sdk": {
                 "version": "9.0.100",
-                "rollForward": "disable",
-                "paths": [".dotnet"]
+                "rollForward": "disable"{{pathsProperty}}
               }
             }
             """);
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "--untracked"]), _policy));
-        var expectedRoot = new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture());
+        return projectDir;
+    }
 
+    private ResolvedInstallRequest GenerateSdkRequestFromGlobalJson(string projectDir, string[] arguments)
+    {
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments), _policy));
+        return RunInDirectory(projectDir, () => workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, null)]))
+            .Should().ContainSingle().Subject;
+    }
+
+    private static T RunInDirectory<T>(string directory, Func<T> action)
+    {
         string originalDirectory = Environment.CurrentDirectory;
-        List<ResolvedInstallRequest> requests;
         try
         {
-            Environment.CurrentDirectory = projectDir;
-            requests = workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, null)]);
+            Environment.CurrentDirectory = directory;
+            return action();
         }
         finally
         {
             Environment.CurrentDirectory = originalDirectory;
         }
-
-        var resolved = requests.Should().ContainSingle().Subject;
-        resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
-        resolved.Request.Options.InstallSource.Should().Be(InstallRequestSource.GlobalJson);
-        resolved.Request.InstallRoot.Should().Be(expectedRoot);
     }
 
     private void UseAdminMode() => DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });

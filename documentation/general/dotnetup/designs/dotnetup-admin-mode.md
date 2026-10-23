@@ -90,7 +90,7 @@ Commands are blocked by default: a command runs in `admin` mode only when its co
 
 `--untracked` must also be provided in `admin` mode, at least in the MVP stage.
 
-`--install-directory` will remain unsupported as MSI based installation will only ever install to the expected system managed, shared directory.
+`--install-directory` will remain unsupported as MSI based installation will only ever install to the expected system managed, shared directory. Only a `global.json` `paths` entry can redirect an `admin` mode install to a local directory; see [`global.json`](#globaljson).
 
 `--muxer` related replacement commands or configuration is not controllable for MSI installs so this flag will cause failure if it is applied under `admin` mode, similar to `--install-directory`, meaning `dotnet` must NOT be in use to have `admin` installs succeed.
 
@@ -255,13 +255,13 @@ Simultaneous commit operations - which in non-admin means 'extract', are not pos
 
 ## `global.json`
 
-`global.json` functionality will be very limited and only influence version resolution when it is not provided.
+`global.json` functionality will be very limited: it influences version resolution when no version is provided, and its SDK `paths` can redirect the install to a local directory.
 
 A `global.json` file in the `cwd` influences the behavior of `dotnetup`. `global.json` files may or may not have the same file privilege boundary as a system protected file. If callers want to use `global.json` `cwd` must be applied.
 
 Because UAC is required, the user's intent will be assumed and respected, so `global.json` will still influence the channel/version if no `channel` is provided when running a command such as `dotnetup sdk install` or `dotnetup runtime install`. It will not influence update behavior.
 
-SDK `Paths` functionality as a `global.json` node will not be respected as it is not respected by `admin` installers today, and this behavior should not be allowed to influence system level decisions. It will not be a failure to install due to this to prevent unexpected failure.
+SDK `paths` are not respected by the `admin` installers, which always install to the shared system location, so they must not influence system level decisions. Instead, when the first meaningful `paths` entry is a literal directory outside the system .NET location, `dotnetup` installs into that directory with the same archive mechanism it uses outside `admin` mode, because the repository opted into a local SDK there. These installs require no elevation, are untracked (`--untracked` is still required), and still honor `BlockUnsignedDownloads`. The access mode remains `admin` for the command gate and telemetry; the `install.mechanism` (`archive`) and `install.path_source` (`globaljson`) telemetry tags identify these installs. When the first entry is `$host$`, or the literal path is the system .NET location, the `.exe` installer installs to the system location as usual.
 
 ## `.exe` Installer Error Handling
 

@@ -310,7 +310,8 @@ public class InitFormRendererTests
         renderedHeight.Should().BeLessThanOrEqualTo(height);
         if (width == 240)
         {
-            output.Should().Contain("consumes more disk space but supports existing install configurations.");
+            output.Should().Contain(Strings.AccessModeAdminDescription);
+            output.Should().Contain(Strings.AccessModeAdminDetails);
             output.Should().Contain(Strings.InitConfigureConfirmation);
             output.Should().Contain(Strings.InitAcceptAndConfigure);
         }

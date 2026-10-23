@@ -60,7 +60,7 @@ internal class InitWorkflows
         // environment owner for this directory: skip onboarding (the form, access-mode setup, and
         // migration). 'dotnetup install' can still install .NET to that path. Dry-run ignores
         // global.json entirely so the form can be previewed from any directory.
-        if (!command.DryRun && command.UseGlobalJsonSdkPaths && HasLocalSdkPathGlobalJson())
+        if (!command.DryRun && HasLocalSdkPathGlobalJson())
         {
             SpectreAnsiConsole.MarkupLine(
                 $"[{DotnetupTheme.Current.Dim}]A global.json here specifies a local .NET SDK path, so dotnetup left your environment unchanged. Use 'dotnetup install' to install .NET to that path.[/]");
@@ -368,7 +368,7 @@ internal class InitWorkflows
             {
                 if (requests.Count > 0)
                 {
-                    DisplayInstallLocation(requests[0], command.UseGlobalJsonSdkPaths);
+                    DisplayInstallLocation(requests[0]);
                 }
                 // Wait for the predownload to finish (if still running) before starting the real install,
                 // so the cache is populated and we avoid redundant downloads. Only meaningful for Phase 1.
@@ -386,7 +386,7 @@ internal class InitWorkflows
     {
         if (requests.Count > 0)
         {
-            DisplayInstallLocation(requests[0], command.UseGlobalJsonSdkPaths);
+            DisplayInstallLocation(requests[0]);
         }
 
         // Wait for the predownload to finish (if still running) before starting the real install,
@@ -505,9 +505,9 @@ internal class InitWorkflows
     /// Shows the user where .NET will be installed, noting if the path
     /// was determined by a global.json file.
     /// </summary>
-    private static void DisplayInstallLocation(ResolvedInstallRequest request, bool useGlobalJsonSdkPaths)
+    private static void DisplayInstallLocation(ResolvedInstallRequest request)
     {
-        string? globalJsonPath = useGlobalJsonSdkPaths ? request.Request.Options.GlobalJsonPath : null;
+        string? globalJsonPath = request.Request.Options.GlobalJsonPath;
         string installPath = request.Request.InstallRoot.Path;
 
         if (globalJsonPath is not null)
