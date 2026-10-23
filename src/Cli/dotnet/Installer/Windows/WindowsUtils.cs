@@ -256,24 +256,6 @@ public static class WindowsUtils
     }
 
     /// <summary>
-    /// Validates that a path component (such as a package ID or version) does not contain
-    /// directory separator characters or parent-directory traversal sequences.
-    /// </summary>
-    /// <param name="component">The path component to validate.</param>
-    /// <returns><see langword="true"/> if the component is safe to use in <see cref="Path.Combine"/>; otherwise <see langword="false"/>.</returns>
-    public static bool ValidatePathComponent(string component)
-    {
-        if (string.IsNullOrWhiteSpace(component))
-        {
-            return false;
-        }
-
-        return !component.Contains(Path.DirectorySeparatorChar)
-            && !component.Contains(Path.AltDirectorySeparatorChar)
-            && !component.Contains("..");
-    }
-
-    /// <summary>
     /// Validates that the specified path, after canonicalization, is under the expected root directory.
     /// Prevents directory traversal and sibling-prefix attacks.
     /// </summary>
