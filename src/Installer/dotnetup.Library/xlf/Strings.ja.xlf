@@ -3,8 +3,13 @@
   <file datatype="xml" source-language="en" target-language="ja" original="../Strings.resx">
     <body>
       <trans-unit id="AccessModeAdminDescription">
-        <source>Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports existing install configurations.</source>
-        <target state="new">Installs are managed by other tools alongside dotnetup in a shared system folder. Installation is slower and consumes more disk space but supports existing install configurations.</target>
+        <source>Installs are managed by other tools alongside dotnetup (with limited support) in a shared system folder.</source>
+        <target state="new">Installs are managed by other tools alongside dotnetup (with limited support) in a shared system folder.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AccessModeAdminDetails">
+        <source>Commands may ask to elevate. Installation is slower, and consumes more disk space but supports existing configurations.</source>
+        <target state="new">Commands may ask to elevate. Installation is slower, and consumes more disk space but supports existing configurations.</target>
         <note />
       </trans-unit>
       <trans-unit id="AdminModeAlreadyEnabled">
