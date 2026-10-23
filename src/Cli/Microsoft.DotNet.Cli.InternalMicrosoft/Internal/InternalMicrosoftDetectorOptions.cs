@@ -12,7 +12,7 @@ internal sealed record InternalMicrosoftDetectorOptions(
     TimeSpan ProbeStageTimeout,
     Func<TimeSpan, CancellationTokenSource> CreateProbeStageTimeoutSource)
 {
-    internal static InternalMicrosoftDetectorOptions Default { get; } = new(
+    internal static InternalMicrosoftDetectorOptions Default => new(
         CreateProbeStages: CreateDefaultProbeStages,
         ProbeStageTimeout: TimeSpan.FromSeconds(5),
         CreateProbeStageTimeoutSource: static timeout => new CancellationTokenSource(timeout));
