@@ -77,10 +77,12 @@ echo ""
 if [[ "$NO_BUILD" == false ]]; then
     echo "Publishing as NativeAOT..."
 
+    # Managed module integration also needs the full Build output.
     "$DOTNET" publish "$TEST_PROJECT" \
         -c "$CONFIGURATION" \
         -r "$RID" \
         -p:PublishAotTests=true \
+        -p:UseOptimizedPublish=false \
         -p:PublishDir="$PUBLISH_DIR"
 
     "$DOTNET" publish "$PRODUCT_PROJECT" \
@@ -138,6 +140,7 @@ MANAGED_TEST_MODULE=$("$DOTNET" msbuild "$TEST_PROJECT" \
     -p:Configuration="$CONFIGURATION" \
     -p:RuntimeIdentifier="$RID" \
     -p:PublishAotTests=true \
+    -p:UseOptimizedPublish=false \
     -p:PublishDir="$PUBLISH_DIR" \
     -getProperty:TargetPath)
 if [[ ! -f "$MANAGED_TEST_MODULE" ]]; then

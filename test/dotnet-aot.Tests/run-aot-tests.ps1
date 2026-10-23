@@ -10,7 +10,8 @@
     This script publishes the dotnet-aot.Tests project as a NativeAOT executable,
     publishes the dotnet-aot library and dn host, and runs the resulting native
     test binary. This verifies both the Native AOT test closure and end-to-end dn
-    integration against a complete SDK installation.
+    integration against a complete SDK installation. The test publish retains
+    managed build output for test-module integration validation.
 
 .PARAMETER Configuration
     Build configuration (Debug or Release). Default: Debug.
@@ -95,10 +96,12 @@ Write-Host ""
 if (-not $NoBuild) {
     Write-Host "Publishing as NativeAOT..." -ForegroundColor Yellow
 
+    # Managed module integration also needs the full Build output.
     & $dotnet publish $testProject `
         -c $Configuration `
         -r $RuntimeIdentifier `
         -p:PublishAotTests=true `
+        -p:UseOptimizedPublish=false `
         -p:PublishDir=$publishDir
 
     if ($LASTEXITCODE -ne 0) {
@@ -139,6 +142,7 @@ $managedTestModule = & $dotnet msbuild $testProject `
     -p:Configuration=$Configuration `
     -p:RuntimeIdentifier=$RuntimeIdentifier `
     -p:PublishAotTests=true `
+    -p:UseOptimizedPublish=false `
     -p:PublishDir=$publishDir `
     -getProperty:TargetPath
 
