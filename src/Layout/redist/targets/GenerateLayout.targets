@@ -11,26 +11,15 @@
     </PropertyGroup>
 
     <!--
-      The RID graph normally comes from the Microsoft.NETCore.Platforms package. The portable
-      graph can be replaced for target platforms whose RIDs are not in the shipped graph yet
-      ($(RidGraphOverridePortableJson) -> PortableRuntimeIdentifierGraph.json). The legacy
-      runtime.json is frozen upstream, so it always comes from the package below; the package
-      is still restored for its other assets.
-
-      The openharmony RIDs are in the runtime RID graph (dotnet/runtime#132953); the override
-      exists only until Microsoft.NETCore.Platforms flows a version that contains them, and it
-      must then be deleted together with eng/PortableRuntimeIdentifierGraph.openharmony.json.
+      The RID graph comes from the Microsoft.NETCore.Platforms package, which is built from
+      the runtime RID graph (dotnet/runtime#132953 contains the openharmony RIDs). Do not
+      fork it here: a newer package version flows the graph without SDK-side maintenance.
     -->
-    <PropertyGroup>
-      <PortableRuntimeJsonSourceFile Condition="'$(RidGraphOverridePortableJson)' != ''">$(RidGraphOverridePortableJson)</PortableRuntimeJsonSourceFile>
-      <PortableRuntimeJsonSourceFile Condition="'$(PortableRuntimeJsonSourceFile)' == ''">$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json</PortableRuntimeJsonSourceFile>
-    </PropertyGroup>
-
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/runtime.json"
           DestinationFiles="$(OutputPath)RuntimeIdentifierGraph.json"
           SkipUnchangedFiles="true" />
 
-    <Copy SourceFiles="$(PortableRuntimeJsonSourceFile)"
+    <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/PortableRuntimeIdentifierGraph.json"
           DestinationFiles="$(PortableRuntimeIdentifierGraphTargetFile)"
           SkipUnchangedFiles="true" />
   </Target>
