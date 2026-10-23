@@ -1362,7 +1362,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow
             throw new NotImplementedException();
         }
 
-        private bool GetBlockReachability(BasicBlock basicBlock)
+        internal bool GetBlockReachability(BasicBlock basicBlock)
         {
             return basicBlock.IsReachable &&
                 (DataFlowAnalysisContext.CopyAnalysisResult == null || DataFlowAnalysisContext.CopyAnalysisResult[basicBlock].IsReachable) &&
