@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 public class BrowserRefreshServerTests
 {
     private sealed class RecordingBrowserRefreshServer()
-        : TestBrowserRefreshServer(Path.GetTempPath(), useGatewayProxy: false)
+        : TestBrowserRefreshServer(static (_, _) => { })
     {
         public List<string> Messages { get; } = [];
 
@@ -35,7 +35,7 @@ public class BrowserRefreshServerTests
     [DataRow("RefreshBrowser")]
     public async Task SerializeControlMessage(string type)
     {
-        await using var server = new RecordingBrowserRefreshServer();
+        using var server = new RecordingBrowserRefreshServer();
 
         await (type switch
         {
@@ -50,7 +50,7 @@ public class BrowserRefreshServerTests
     [TestMethod]
     public async Task SerializeDiagnosticsAndStaticAssetMessages()
     {
-        await using var server = new RecordingBrowserRefreshServer();
+        using var server = new RecordingBrowserRefreshServer();
 
         await server.ReportCompilationErrorsInBrowserAsync(["error"], CancellationToken.None);
         await server.UpdateStaticAssetsAsync(["/site.css"], CancellationToken.None);
@@ -72,7 +72,7 @@ public class BrowserRefreshServerTests
             ResponseLoggingLevel = 1,
         };
 
-        var json = Encoding.UTF8.GetString(BrowserRefreshServer.SerializeJson(request).ToArray());
+        var json = Encoding.UTF8.GetString(AbstractBrowserRefreshServer.SerializeJson(request).ToArray());
 
         Assert.AreEqual(
             """{"type":"ApplyManagedCodeUpdates","sharedSecret":"secret","deltas":[{"moduleId":"00000000-0000-0000-0000-000000000000","metadataDelta":"AQ==","ilDelta":"Ag==","pdbDelta":"Aw==","updatedTypes":[4]}],"responseLoggingLevel":1}""",
@@ -82,7 +82,7 @@ public class BrowserRefreshServerTests
     [TestMethod]
     public void DeserializeResponse_UsesWebDefaults()
     {
-        var response = BrowserRefreshServer.DeserializeJson<BrowserRefreshServer.JsonApplyDeltasResponse>(
+        var response = AbstractBrowserRefreshServer.DeserializeJson<AbstractBrowserRefreshServer.JsonApplyDeltasResponse>(
             """{"SUCCESS":true,"LOG":[{"MESSAGE":"message","SEVERITY":"1"}]}"""u8);
 
         Assert.IsTrue(response.Success);
@@ -91,34 +91,28 @@ public class BrowserRefreshServerTests
         Assert.AreEqual(1, entry.Severity);
     }
 
-    private class TestListener : IAsyncDisposable
+    private class TestListener : IDisposable
     {
-        public ValueTask DisposeAsync()
-            => ValueTask.CompletedTask;
+        public void Dispose()
+        {
+        }
     }
 
     private static async ValueTask<TestBrowserRefreshServer> CreateStartedServerAsync(
-        string middlewareAssemblyPath,
-        bool useGatewayProxy,
+        Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
         LogLevel enabledLogLevel = LogLevel.Information)
     {
-        var config = new WebSocketConfig(port: 0, securePort: null, hostName: null, additionalAllowedOrigins: []);
-
-        var server = new TestBrowserRefreshServer(middlewareAssemblyPath, useGatewayProxy)
+        var server = new TestBrowserRefreshServer(configureLaunchEnvironment)
         {
-            CreateAndStartHostImpl = _ => new WebServerHost(new TestListener(), ["ws://test.endpoint"], ["http://test.endpoint"])
+            CreateAndStartHostImpl = () => new WebServerHost(new TestListener(), ["ws://test.endpoint"], ["http://test.endpoint"])
         };
 
         ((TestLogger)server.Logger).IsEnabledImpl = level => level == enabledLogLevel;
 
-        await server.StartAsync(config, CancellationToken.None);
+        await server.StartAsync(CancellationToken.None);
         return server;
     }
 
-    /// <summary>
-    /// The server owns no knowledge of how the application is made to expose the provider routes:
-    /// it delegates to the app model supplied callback.
-    /// </summary>
     /// <summary>
     /// dotnet-watch reports an update as applied when a browser acknowledges it. A browser that could
     /// not apply the update must therefore fail the acknowledgement instead of answering with an empty
@@ -132,7 +126,7 @@ public class BrowserRefreshServerTests
             {"success":false,"log":[{"message":"Unable to apply managed code updates because this build of the app does not support runtime metadata updates.","severity":2}]}
             """u8;
 
-        var success = BrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
+        var success = AbstractBrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
 
         Assert.IsFalse(success);
         Assert.IsTrue(logger.HasError);
@@ -147,22 +141,39 @@ public class BrowserRefreshServerTests
             {"success":true,"log":[]}
             """u8;
 
-        var success = BrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
+        var success = AbstractBrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
 
         Assert.IsTrue(success);
         Assert.IsFalse(logger.HasError);
     }
 
     [TestMethod]
+    public async Task ConfigureLaunchEnvironment_DelegatesToAppModel()
+    {
+        AbstractBrowserRefreshServer? observedServer = null;
+
+        using var server = await CreateStartedServerAsync((environment, s) =>
+        {
+            observedServer = s;
+            environment["CUSTOM"] = s.ProviderAddress.AbsoluteUri;
+        });
+
+        var envBuilder = new Dictionary<string, string>();
+        server.ConfigureLaunchEnvironment(envBuilder);
+
+        Assert.AreSame(server, observedServer);
+        AssertEx.SequenceEqual(["CUSTOM=http://test.endpoint/"], envBuilder.Select(e => $"{e.Key}={e.Value}"));
+    }
+
+    [TestMethod]
     [CombinatorialData]
-    public async Task HostingStartupEnvironment(LogLevel logLevel, bool useGatewayProxy)
+    public async Task HostingStartupEnvironment(LogLevel logLevel)
     {
         var middlewarePath = Path.GetTempPath();
         var middlewareFileName = Path.GetFileNameWithoutExtension(middlewarePath);
 
-        var server = await CreateStartedServerAsync(
-            middlewarePath,
-            useGatewayProxy,
+        using var server = await CreateStartedServerAsync(
+            (environment, s) => WebApplicationAppModel.AddHostingStartupEnvironment(environment, s, middlewarePath),
             enabledLogLevel: logLevel);
 
         var envBuilder = new Dictionary<string, string>();
@@ -180,17 +191,24 @@ public class BrowserRefreshServerTests
             expected.Add("Logging__LogLevel__Microsoft.AspNetCore.Watch=Debug");
         }
 
-        if (useGatewayProxy)
-        {
-            expected.AddRange(
+        AssertEx.SequenceEqual(expected.OrderBy(e => e), envBuilder.OrderBy(e => e.Key).Select(e => $"{e.Key}={e.Value}"));
+    }
+
+    [TestMethod]
+    public async Task GatewayProxyEnvironment()
+    {
+        using var server = await CreateStartedServerAsync(BlazorWebAssemblyAppModel.AddGatewayProxyEnvironment);
+
+        var envBuilder = new Dictionary<string, string>();
+        server.ConfigureLaunchEnvironment(envBuilder);
+
+        AssertEx.SequenceEqual(
             [
                 "ReverseProxy__Clusters__dotnet-browser-tools__Destinations__provider__Address=http://test.endpoint/",
                 "ReverseProxy__Routes__dotnet-browser-tools__ClusterId=dotnet-browser-tools",
                 "ReverseProxy__Routes__dotnet-browser-tools__Match__Path=/_framework/dotnet-browser-tools/{**catch-all}",
                 "ReverseProxy__Routes__dotnet-browser-tools__Order=-1000",
-            ]);
-        }
-
-        AssertEx.SequenceEqual(expected.OrderBy(e => e), envBuilder.OrderBy(e => e.Key).Select(e => $"{e.Key}={e.Value}"));
+            ],
+            envBuilder.OrderBy(e => e.Key, StringComparer.Ordinal).Select(e => $"{e.Key}={e.Value}"));
     }
 }

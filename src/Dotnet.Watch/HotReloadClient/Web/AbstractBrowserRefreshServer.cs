@@ -11,6 +11,8 @@ using System.Linq;
 using System.Net;
 using System.Net.WebSockets;
 using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 #if NET
@@ -25,15 +27,13 @@ namespace Microsoft.DotNet.HotReload;
 /// Hosts the browser tools provider and communicates with browser tools clients.
 /// Associated with a project instance.
 /// </summary>
-internal abstract class AbstractBrowserRefreshServer(
+internal abstract partial class AbstractBrowserRefreshServer(
     Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
     Func<SharedSecretProvider> sessionKeyFactory,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
 {
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
-
     private static int s_lastConnectionId;
 
     private Func<SharedSecretProvider> _sessionKeyFactory = sessionKeyFactory;
@@ -429,10 +429,14 @@ internal abstract class AbstractBrowserRefreshServer(
     }
 
     public static ReadOnlyMemory<byte> SerializeJson<TValue>(TValue value)
-        => JsonSerializer.SerializeToUtf8Bytes(value, s_jsonSerializerOptions);
+        => JsonSerializer.SerializeToUtf8Bytes(value, GetJsonTypeInfo<TValue>());
 
     public static TValue DeserializeJson<TValue>(ReadOnlySpan<byte> value)
-        => JsonSerializer.Deserialize<TValue>(value, s_jsonSerializerOptions) ?? throw new InvalidDataException("Unexpected null object");
+        => JsonSerializer.Deserialize(value, GetJsonTypeInfo<TValue>()) ?? throw new InvalidDataException("Unexpected null object");
+
+    private static JsonTypeInfo<TValue> GetJsonTypeInfo<TValue>()
+        => BrowserRefreshJsonContext.Default.GetTypeInfo(typeof(TValue)) as JsonTypeInfo<TValue>
+            ?? throw new NotSupportedException($"No JSON serialization metadata for '{typeof(TValue)}'.");
 
     public ValueTask SendJsonMessageAsync<TValue>(TValue value, CancellationToken cancellationToken)
         => SendAsync(SerializeJson(value), cancellationToken);
@@ -551,7 +555,7 @@ internal abstract class AbstractBrowserRefreshServer(
         foreach (var relativeUrl in relativeUrls)
         {
             logger.Log(LogEvents.SendingStaticAssetUpdateRequest, relativeUrl);
-            var message = JsonSerializer.SerializeToUtf8Bytes(new JasonUpdateStaticFileRequest { Path = relativeUrl }, s_jsonSerializerOptions);
+            var message = SerializeJson(new JasonUpdateStaticFileRequest { Path = relativeUrl });
             await SendAsync(message, cancellationToken);
         }
     }
@@ -559,19 +563,19 @@ internal abstract class AbstractBrowserRefreshServer(
     private readonly struct JsonWaitRequest
     {
         public string Type => "Wait";
-        public static readonly ReadOnlyMemory<byte> Message = JsonSerializer.SerializeToUtf8Bytes(new JsonWaitRequest(), s_jsonSerializerOptions);
+        public static readonly ReadOnlyMemory<byte> Message = SerializeJson(new JsonWaitRequest());
     }
 
     private readonly struct JsonReloadRequest
     {
         public string Type => "Reload";
-        public static readonly ReadOnlyMemory<byte> Message = JsonSerializer.SerializeToUtf8Bytes(new JsonReloadRequest(), s_jsonSerializerOptions);
+        public static readonly ReadOnlyMemory<byte> Message = SerializeJson(new JsonReloadRequest());
     }
 
     private readonly struct JsonRefreshBrowserRequest
     {
         public string Type => "RefreshBrowser";
-        public static readonly ReadOnlyMemory<byte> Message = JsonSerializer.SerializeToUtf8Bytes(new JsonRefreshBrowserRequest(), s_jsonSerializerOptions);
+        public static readonly ReadOnlyMemory<byte> Message = SerializeJson(new JsonRefreshBrowserRequest());
     }
 
     private readonly struct JsonReportDiagnosticsRequest
@@ -611,4 +615,15 @@ internal abstract class AbstractBrowserRefreshServer(
         public string Message { get; init; }
         public int Severity { get; init; }
     }
+
+    [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
+    [JsonSerializable(typeof(JsonWaitRequest))]
+    [JsonSerializable(typeof(JsonReloadRequest))]
+    [JsonSerializable(typeof(JsonRefreshBrowserRequest))]
+    [JsonSerializable(typeof(JsonReportDiagnosticsRequest))]
+    [JsonSerializable(typeof(JasonUpdateStaticFileRequest))]
+    [JsonSerializable(typeof(JsonInitializeSessionRequest))]
+    [JsonSerializable(typeof(JsonApplyDeltasResponse))]
+    [JsonSerializable(typeof(WebAssemblyHotReloadClient.JsonApplyManagedCodeUpdatesRequest))]
+    private sealed partial class BrowserRefreshJsonContext : JsonSerializerContext;
 }
