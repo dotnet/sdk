@@ -15,6 +15,11 @@
       <PortableRuntimeIdentifierGraphTargetFile>$(OutputPath)PortableRuntimeIdentifierGraph.json</PortableRuntimeIdentifierGraphTargetFile>
     </PropertyGroup>
 
+    <!--
+      The RID graph comes from the Microsoft.NETCore.Platforms package, which is built from
+      the runtime RID graph (dotnet/runtime#132953 contains the openharmony RIDs). Do not
+      fork it here: a newer package version flows the graph without SDK-side maintenance.
+    -->
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/runtime.json"
           DestinationFiles="$(OutputPath)RuntimeIdentifierGraph.json"
           SkipUnchangedFiles="true" />
