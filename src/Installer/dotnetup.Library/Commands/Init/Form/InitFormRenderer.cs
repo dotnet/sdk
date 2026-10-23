@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 
@@ -23,7 +24,6 @@ internal static class InitFormRenderer
     private const string DefaultSuffix = "  (default)";
 
     private const string WelcomeMessage = "Welcome to dotnetup!";
-    private const string ConfirmationPrompt = "Install .NET with these settings?";
 
     // Fallback console dimensions used when the real dimensions are unavailable.
     private const int FallbackWindowWidth = 80;
@@ -35,8 +35,6 @@ internal static class InitFormRenderer
     {
         console ??= AnsiConsole.Console;
         ThemeColors theme = DotnetupTheme.Current;
-        // Preview the highlighted mode without changing the committed fields used by navigation.
-        bool configureOnly = model.ConfigureOnlyFor(state.FocusedField, state.EditChoiceIndex);
         IReadOnlyList<FormField> fields = state.Fields
             .Where(field => model.IsVisibleFor(field, configureOnly: false) || model.IsVisibleFor(field, configureOnly: true))
             .ToList();
@@ -44,14 +42,24 @@ internal static class InitFormRenderer
         int windowWidth = PositiveOrFallback(console.Profile.Width, FallbackWindowWidth);
         int windowHeight = PositiveOrFallback(console.Profile.Height, FallbackWindowHeight);
         RenderOptions renderOptions = RenderOptions.Create(console, console.Profile.Capabilities);
+
+        // Pick the compression level from every choice the user can highlight, not only the current
+        // one. Otherwise highlighting a choice with more details would change the form's spacing.
+        IEnumerable<int> highlightableChoices = state.Mode == FormMode.EditingField && state.FocusedField is { } edited
+            ? Enumerable.Range(0, edited.Choices.Count)
+            : [state.EditChoiceIndex];
+
+        Rows Render(int highlightedChoice, FormCompressionLevel compression) =>
+            new(RenderForm(model, state, highlightedChoice, fields, labelWidth, showArrow, theme, compression));
+
         Rows? fallback = null;
         foreach (FormCompressionLevel compression in Enum.GetValues<FormCompressionLevel>())
         {
-            var candidate = new Rows(RenderForm(model, state, fields, configureOnly, labelWidth, showArrow, theme, compression));
-            fallback = candidate;
-            if (RenderedHeight(candidate, renderOptions, windowWidth) <= windowHeight)
+            fallback = Render(state.EditChoiceIndex, compression);
+            if (highlightableChoices.All(choice =>
+                RenderedHeight(Render(choice, compression), renderOptions, windowWidth) <= windowHeight))
             {
-                return candidate;
+                return fallback;
             }
         }
 
@@ -63,9 +71,12 @@ internal static class InitFormRenderer
     // Keeping the complete form in one iterator makes its top-to-bottom layout easier to follow.
 #pragma warning disable MA0051 // Method is too long
     private static IEnumerable<IRenderable> RenderForm(
-        InitFormModel model, InitFormState state, IReadOnlyList<FormField> fields,
-        bool configureOnly, int labelWidth, bool showArrow, ThemeColors theme, FormCompressionLevel compression)
+        InitFormModel model, InitFormState state, int highlightedChoice, IReadOnlyList<FormField> fields,
+        int labelWidth, bool showArrow, ThemeColors theme, FormCompressionLevel compression)
     {
+        // Preview the highlighted mode without changing the committed fields used by navigation.
+        bool configureOnly = model.ConfigureOnlyFor(state.FocusedField, highlightedChoice);
+
         if (compression < FormCompressionLevel.WithoutWelcome)
         {
             yield return new Markup($"[bold {theme.Brand}]{WelcomeMessage.EscapeMarkup()}[/]");
@@ -78,11 +89,14 @@ internal static class InitFormRenderer
 
         if (compression < FormCompressionLevel.WithoutInstallLocation)
         {
-            var installLocation = new Markup(
-                $"[{theme.Dim}]dotnetup will install .NET SDKs and runtimes in [/]" +
-                $"[{theme.Accent}]{model.UserInstallPath.EscapeMarkup()}[/]" +
-                $"[{theme.Dim}].[/]");
-            yield return configureOnly ? new BlankSpace(installLocation) : installLocation;
+            // Both summaries share one row, sized for the taller one, so changing modes doesn't move the form.
+            string installPath = $"[{theme.Accent}]{model.UserInstallPath.EscapeMarkup()}[/]";
+            IRenderable installSummary = new Markup(
+                $"[{theme.Dim}]{string.Format(CultureInfo.CurrentCulture, Strings.InitInstallLocation.EscapeMarkup(), installPath)}[/]");
+            IRenderable configureSummary = new Markup($"[{theme.Dim}]{Strings.InitConfigureOnlyDescription.EscapeMarkup()}[/]");
+            yield return configureOnly
+                ? new ReservedHeight(configureSummary, installSummary)
+                : new ReservedHeight(installSummary, configureSummary);
             if (compression < FormCompressionLevel.WithoutSpacing)
             {
                 yield return Text.Empty;
@@ -91,15 +105,15 @@ internal static class InitFormRenderer
 
         foreach (FormField field in fields)
         {
-            foreach (IRenderable row in RenderField(model, state, field, compression, labelWidth, showArrow, theme))
+            foreach (IRenderable row in RenderField(model, state, highlightedChoice, field, compression, labelWidth, showArrow, theme))
             {
-                yield return model.IsVisibleFor(field, configureOnly) ? row : new BlankSpace(row);
+                yield return model.IsVisibleFor(field, configureOnly) ? row : new ReservedHeight(Text.Empty, row);
             }
         }
 
         if (compression < FormCompressionLevel.WithoutConfirmationPrompt)
         {
-            string confirmation = configureOnly ? Strings.InitConfigureConfirmation : ConfirmationPrompt;
+            string confirmation = configureOnly ? Strings.InitConfigureConfirmation : Strings.InitInstallConfirmation;
             yield return new Markup($"[white]{confirmation.EscapeMarkup()}[/]");
         }
 
@@ -108,7 +122,7 @@ internal static class InitFormRenderer
             && compression >= FormCompressionLevel.FocusedEdit;
         if (!focusedEdit)
         {
-            string accept = configureOnly ? Strings.InitAcceptAndConfigure : "Accept and install";
+            string accept = configureOnly ? Strings.InitAcceptAndConfigure : Strings.InitAcceptAndInstall;
             string acceptStyle = state.IsAcceptFocused ? $"{theme.Success} bold" : theme.Dim;
             string acceptArrow = state.IsAcceptFocused && showArrow ? "> " : "  ";
             yield return new Markup(
@@ -145,7 +159,7 @@ internal static class InitFormRenderer
     // remove the blank lines or hide fields other than the one being edited.
 #pragma warning disable MA0051 // Method is too long
     private static IEnumerable<IRenderable> RenderField(
-        InitFormModel model, InitFormState state, FormField field,
+        InitFormModel model, InitFormState state, int highlightedChoice, FormField field,
         FormCompressionLevel compression, int labelWidth, bool showArrow, ThemeColors theme)
     {
         bool focused = ReferenceEquals(state.FocusedField, field);
@@ -184,7 +198,7 @@ internal static class InitFormRenderer
         if (editing)
         {
             //  Render the field editor (the different possible values that can be selected)
-            foreach (IRenderable row in RenderFieldEditor(model, state, field,
+            foreach (IRenderable row in RenderFieldEditor(model, state, highlightedChoice, field,
                 compression, showDetail, showArrow, theme))
             {
                 yield return row;
@@ -210,7 +224,7 @@ internal static class InitFormRenderer
 #pragma warning restore MA0051 // Method is too long
 
     private static IEnumerable<IRenderable> RenderFieldEditor(
-        InitFormModel model, InitFormState state, FormField field,
+        InitFormModel model, InitFormState state, int highlightedChoice, FormField field,
         FormCompressionLevel compression, bool showDetail, bool showArrow, ThemeColors theme)
     {
         if (showDetail && field.Description is not null)
@@ -223,7 +237,7 @@ internal static class InitFormRenderer
         {
             //  Collapse choices into a horizontal line if we don't have enough vertical space
             //  to put each on a separate line
-            foreach (IRenderable row in RenderHorizontalChoices(state, field,
+            foreach (IRenderable row in RenderHorizontalChoices(state, highlightedChoice, field,
                 showArrow, theme))
             {
                 yield return row;
@@ -231,7 +245,7 @@ internal static class InitFormRenderer
         }
         else
         {
-            foreach (IRenderable row in RenderChoices(model, state, field,
+            foreach (IRenderable row in RenderChoices(model, state, highlightedChoice, field,
                 compression, showDerived, showArrow, theme))
             {
                 yield return row;
@@ -240,20 +254,21 @@ internal static class InitFormRenderer
     }
 
     private static IEnumerable<IRenderable> RenderHorizontalChoices(
-        InitFormState state, FormField field,
+        InitFormState state, int highlightedChoice, FormField field,
         bool showArrow, ThemeColors theme)
     {
         var choices = new List<IRenderable>();
         for (int index = 0; index < field.Choices.Count; index++)
         {
-            bool selected = state.EditChoiceIndex == index;
+            bool selected = highlightedChoice == index;
             choices.Add(BuildChoiceMarkup(field, index, selected, showArrow,
                 trailing: null, choiceColumnWidth: 0, showDefaultSuffix: false, theme));
         }
 
         yield return Indent(ChoiceRowIndent, new Columns(choices));
 
-        if (state.IsCustomChoiceHighlighted)
+        FieldChoice highlighted = field.Choices[highlightedChoice];
+        if (highlighted.IsCustomInput)
         {
             yield return Indent(
                 ChoiceDetailIndent,
@@ -262,12 +277,12 @@ internal static class InitFormRenderer
 
         yield return Indent(
             ChoiceDetailIndent,
-            HelpMarkup(field.Choices[state.EditChoiceIndex].HelperText, theme));
+            HelpMarkup(highlighted.HelperText, theme));
     }
 
     // Renders each choice row, its help text, and the highlighted choice's derived details.
     private static IEnumerable<IRenderable> RenderChoices(
-        InitFormModel model, InitFormState state, FormField field,
+        InitFormModel model, InitFormState state, int highlightedChoice, FormField field,
         FormCompressionLevel compression, bool showDerived, bool showArrow, ThemeColors theme)
     {
         bool showHelpInline = field.InlineHelp || compression >= FormCompressionLevel.InlineChoiceHelp;
@@ -277,7 +292,7 @@ internal static class InitFormRenderer
 
         for (int index = 0; index < field.Choices.Count; index++)
         {
-            bool selected = state.EditChoiceIndex == index;
+            bool selected = highlightedChoice == index;
             FieldChoice choice = field.Choices[index];
 
             string? trailing = null;
@@ -304,7 +319,7 @@ internal static class InitFormRenderer
                 yield return Indent(ChoiceDetailIndent, HelpMarkup(choice.HelperText, theme));
             }
 
-            if (showDerived)
+            if (selected && showDerived)
             {
                 foreach (DetailLine line in model.BuildDerivedDetailLines(field, index))
                 {
@@ -320,8 +335,7 @@ internal static class InitFormRenderer
                             $"[{theme.Accent}]{line.Value.EscapeMarkup()}[/]");
                     }
 
-                    IRenderable row = Indent(ChoiceDetailIndent, detail);
-                    yield return selected ? row : new BlankSpace(row);
+                    yield return Indent(ChoiceDetailIndent, detail);
                 }
             }
         }
@@ -330,14 +344,35 @@ internal static class InitFormRenderer
     internal static int RenderedHeight(IRenderable renderable, RenderOptions renderOptions, int width) =>
         Segment.SplitLines(renderable.Render(renderOptions, width)).Count;
 
-    // Retain wrapping and row height when a mode hides content, without retaining its text.
-    private sealed class BlankSpace(IRenderable content) : IRenderable
+    // Renders content padded with blank lines to the tallest alternative, so swapping between the
+    // alternatives (or hiding content by passing Text.Empty) doesn't move the rows below.
+    private sealed class ReservedHeight(IRenderable content, params IRenderable[] alternatives) : IRenderable
     {
         public Measurement Measure(RenderOptions options, int maxWidth) => content.Measure(options, maxWidth);
 
-        public IEnumerable<Segment> Render(RenderOptions options, int maxWidth) =>
-            content.Render(options, maxWidth)
-                .Select(segment => segment.IsLineBreak ? segment : new Segment(string.Empty));
+        public IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
+        {
+            List<SegmentLine> lines = Segment.SplitLines(content.Render(options, maxWidth));
+            int reserved = alternatives.Max(alternative => RenderedHeight(alternative, options, maxWidth));
+            while (lines.Count < reserved)
+            {
+                // An empty segment keeps the padding line from being dropped as a trailing line break.
+                lines.Add([new Segment(string.Empty)]);
+            }
+
+            for (int index = 0; index < lines.Count; index++)
+            {
+                if (index > 0)
+                {
+                    yield return Segment.LineBreak;
+                }
+
+                foreach (Segment segment in lines[index])
+                {
+                    yield return segment;
+                }
+            }
+        }
     }
 
     private static int PositiveOrFallback(int value, int fallback) => value > 0 ? value : fallback;

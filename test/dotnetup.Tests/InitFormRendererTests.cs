@@ -9,6 +9,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 using Strings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
@@ -132,6 +133,7 @@ public class InitFormRendererTests
 
         output.Should().Contain(Strings.InitConfigureConfirmation);
         output.Should().Contain(Strings.InitAcceptAndConfigure);
+        output.Should().Contain(Strings.InitConfigureOnlyDescription);
         output.Should().NotContain("dotnetup will install");
         output.Should().NotContain("Install .NET with these settings?");
         output.Should().NotContain("Accept and install");
@@ -186,11 +188,66 @@ public class InitFormRendererTests
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [DataRow(240, 100, 1)]
+    [DataRow(120, 40, 1)]
+    [DataRow(120, 40, 2)]
+    [DataRow(80, 24, 2)]
+    [DataRow(50, 16, 2)]
+    public void HoveringAccessModes_KeepsCompressionAndRowsAboveTheHighlightInPlace(int width, int height, int profileCount)
+    {
+        InitFormModel model = CreateMigrateModel(
+            DotnetAccessMode.Everywhere,
+            migrateByDefault: true,
+            new TestShellProvider(
+                Path.GetTempPath(),
+                [.. Enumerable.Range(0, profileCount).Select(index => $"profile{index}.ps1")]));
+        FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
+        var state = new InitFormState(model.Fields);
+        state.MoveUp();
+        state.MoveUp();
+        state.Enter();
+        HighlightAccessMode(state, accessMode, DotnetAccessMode.None);
+        string[] baselineLines = Lines(RenderForm(model, state, width, height, out _));
+        int baselineBlankLines = baselineLines.Count(string.IsNullOrWhiteSpace);
+        bool baselineHasChannelHelp = baselineLines.Any(line => line.Contains("Determines which version", StringComparison.Ordinal));
+        string[] choiceTitles = [.. accessMode.Choices.Select(choice => choice.Title)];
+
+        foreach (DotnetAccessMode mode in Enum.GetValues<DotnetAccessMode>())
+        {
+            HighlightAccessMode(state, accessMode, mode);
+            string[] lines = Lines(RenderForm(model, state, width, height, out int renderedHeight));
+
+            // Rows up to and including the highlighted choice never move; only its details push later rows down.
+            string[] stableLabels = ["Access mode", .. choiceTitles.Take(Array.IndexOf(choiceTitles, mode.ToString()) + 1)];
+            foreach (string label in stableLabels)
+            {
+                int baselineLine = Array.FindIndex(baselineLines, line => line.Contains($" {label}", StringComparison.Ordinal));
+                int currentLine = Array.FindIndex(lines, line => line.Contains($" {label}", StringComparison.Ordinal));
+                baselineLine.Should().BeGreaterThanOrEqualTo(0);
+                currentLine.Should().Be(baselineLine, $"{label} should not move while highlighting {mode}");
+            }
+
+            // The compression level, and so the spacing and descriptions, does not depend on the highlight.
+            lines.Count(string.IsNullOrWhiteSpace).Should().BeGreaterThanOrEqualTo(baselineBlankLines,
+                $"blank lines should not be removed while highlighting {mode}");
+            if (mode != DotnetAccessMode.Admin)
+            {
+                // Admin hides the SDK Channel rows, so its description is only comparable for other modes.
+                lines.Any(line => line.Contains("Determines which version", StringComparison.Ordinal))
+                    .Should().Be(baselineHasChannelHelp, $"the SDK Channel description should not toggle while highlighting {mode}");
+            }
+
+            renderedHeight.Should().BeLessThanOrEqualTo(height);
+            model.SelectedAccessMode().Should().Be(DotnetAccessMode.Everywhere);
+            model.MigrateSelected().Should().BeTrue();
+        }
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     [DataRow(240, 100)]
-    [DataRow(120, 40)]
     [DataRow(80, 24)]
-    [DataRow(50, 16)]
-    public void HoveringAccessModes_KeepsChoiceAndActionRowsInPlace(int width, int height)
+    [DataRow(50, 30)]
+    public void HoveringAdmin_ShowsConfigureDescriptionOnTheInstallLocationRow(int width, int height)
     {
         InitFormModel model = CreateMigrateModel(DotnetAccessMode.Everywhere, migrateByDefault: true);
         FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
@@ -198,39 +255,30 @@ public class InitFormRendererTests
         state.MoveUp();
         state.MoveUp();
         state.Enter();
-        string baseline = RenderForm(model, state, width, height, out int baselineHeight);
-        string[] baselineLines = Lines(baseline);
 
-        foreach (DotnetAccessMode mode in Enum.GetValues<DotnetAccessMode>())
-        {
-            HighlightAccessMode(state, accessMode, mode);
-            string output = RenderForm(model, state, width, height, out int renderedHeight);
-            string[] lines = Lines(output);
+        HighlightAccessMode(state, accessMode, DotnetAccessMode.None);
+        string[] installLines = Lines(RenderForm(model, state, width, height, out _));
+        HighlightAccessMode(state, accessMode, DotnetAccessMode.Admin);
+        string[] adminLines = Lines(RenderForm(model, state, width, height, out _));
 
-            foreach (string label in new[] { "Access mode", "None", "Shell", "Everywhere", "Admin", "Enter select" })
-            {
-                int baselineLine = Array.FindIndex(baselineLines, line => line.Contains(label, StringComparison.Ordinal));
-                int currentLine = Array.FindIndex(lines, line => line.Contains(label, StringComparison.Ordinal));
-                baselineLine.Should().BeGreaterThanOrEqualTo(0);
-                currentLine.Should().Be(baselineLine, $"{label} should not move while highlighting {mode}");
-            }
+        int installRow = Array.FindIndex(installLines, line => line.Contains("dotnetup will install", StringComparison.Ordinal));
+        int configureRow = Array.FindIndex(adminLines, line => line.Contains("Configures dotnetup", StringComparison.Ordinal));
+        installRow.Should().BeGreaterThanOrEqualTo(0);
+        configureRow.Should().Be(installRow);
+        adminLines.Should().NotContain(line => line.Contains("dotnetup will install", StringComparison.Ordinal));
+        Array.FindIndex(adminLines, line => line.Contains("Access mode", StringComparison.Ordinal)).Should()
+            .Be(Array.FindIndex(installLines, line => line.Contains("Access mode", StringComparison.Ordinal)));
+    }
 
-            if (height >= 40)
-            {
-                string confirmation = mode == DotnetAccessMode.Admin
-                    ? Strings.InitConfigureConfirmation : "Install .NET with these settings?";
-                string accept = mode == DotnetAccessMode.Admin ? Strings.InitAcceptAndConfigure : "Accept and install";
-                Array.FindIndex(lines, line => line.Contains(confirmation, StringComparison.Ordinal)).Should()
-                    .Be(Array.FindIndex(baselineLines, line => line.Contains("Install .NET with these settings?", StringComparison.Ordinal)));
-                Array.FindIndex(lines, line => line.Contains(accept, StringComparison.Ordinal)).Should()
-                    .Be(Array.FindIndex(baselineLines, line => line.Contains("Accept and install", StringComparison.Ordinal)));
-            }
+    [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+    public void AccessModeChoices_ExcludeWindowsOnlyModesOnOtherPlatforms()
+    {
+        InitFormModel model = CreateDefaultModel();
+        FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
 
-            renderedHeight.Should().Be(baselineHeight);
-            renderedHeight.Should().BeLessThanOrEqualTo(height);
-            model.SelectedAccessMode().Should().Be(DotnetAccessMode.Everywhere);
-            model.MigrateSelected().Should().BeTrue();
-        }
+        accessMode.Choices.Select(choice => choice.Title).Should().Equal(
+            DotnetAccessMode.None.ToString(),
+            DotnetAccessMode.Shell.ToString());
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
@@ -563,7 +611,8 @@ public class InitFormRendererTests
 
     private static InitFormModel CreateMigrateModel(
         DotnetAccessMode accessMode = DotnetAccessMode.None,
-        bool migrateByDefault = false)
+        bool migrateByDefault = false,
+        IEnvShellProvider? shellProvider = null)
     {
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
@@ -582,7 +631,7 @@ public class InitFormRendererTests
             [new MinimalInstallSpec(InstallComponent.SDK, ChannelVersionResolver.LatestChannel)],
             ShellProvider: null,
             InstallRootGlobalJsonPath: null);
-        return InitFormModel.Create(defaults, shellProvider: null);
+        return InitFormModel.Create(defaults, shellProvider);
     }
 
     private static void HighlightAccessMode(InitFormState state, FormField field, DotnetAccessMode mode)

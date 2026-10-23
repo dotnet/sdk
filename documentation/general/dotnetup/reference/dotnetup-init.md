@@ -34,8 +34,12 @@ previews configuration-only setup: the SDK-channel and migration fields are hidd
 and the confirmation offers to configure rather than install. Moving the highlight
 back or cancelling the edit restores the previous form without changing its selections.
 Hidden install-only content leaves blank rows so the other prompts stay in place
-while browsing access modes. The form preserves header and section spacing before
-removing optional descriptions when adapting to smaller terminals.
+while browsing access modes, and the configure-only description replaces the
+install-location line on the same row. The form chooses how much to compress for
+smaller terminals using every choice of the field being edited, so spacing and
+descriptions don't change as the highlight moves; only the highlighted choice's
+details (such as the shell profiles it edits) push later rows down. It preserves
+header and section spacing before removing optional descriptions.
 Accepting Admin configures the
 unsigned-download policy, applies environment settings, saves Admin in the
 per-user configuration, and exits without installing .NET. Init also only

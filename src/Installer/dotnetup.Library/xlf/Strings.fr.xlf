@@ -526,6 +526,11 @@ Or open a new terminal.</target>
         <target state="new">Accept and configure</target>
         <note />
       </trans-unit>
+      <trans-unit id="InitAcceptAndInstall">
+        <source>Accept and install</source>
+        <target state="new">Accept and install</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InitAdminModeNextSteps">
         <source>No .NET was installed. Run 'dotnetup sdk install &lt;version&gt; --untracked' afterwards to install .NET with the Windows installer.</source>
         <target state="new">No .NET was installed. Run 'dotnetup sdk install &lt;version&gt; --untracked' afterwards to install .NET with the Windows installer.</target>
@@ -550,6 +555,16 @@ Or open a new terminal.</target>
         <source>No .NET was installed. Run 'dotnetup sdk install' afterwards to install .NET using the configured mode.</source>
         <target state="new">No .NET was installed. Run 'dotnetup sdk install' afterwards to install .NET using the configured mode.</target>
         <note>{Locked="dotnetup sdk install"}</note>
+      </trans-unit>
+      <trans-unit id="InitInstallConfirmation">
+        <source>Install .NET with these settings?</source>
+        <target state="new">Install .NET with these settings?</target>
+        <note>{Locked=".NET"}</note>
+      </trans-unit>
+      <trans-unit id="InitInstallLocation">
+        <source>dotnetup will install .NET SDKs and runtimes in {0}.</source>
+        <target state="new">dotnetup will install .NET SDKs and runtimes in {0}.</target>
+        <note>{Locked="dotnetup"}{Locked=".NET"} {0} is the install directory path.</note>
       </trans-unit>
       <trans-unit id="InstallCancelledBeforeStart">
         <source>Installation was cancelled before {0} {1} was installed.</source>

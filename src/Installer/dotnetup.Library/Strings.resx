@@ -581,6 +581,17 @@ Or open a new terminal.</value>
   <data name="AdminModeNotDisabled" xml:space="preserve">
     <value>Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</value>
   </data>
+  <data name="InitInstallLocation" xml:space="preserve">
+    <value>dotnetup will install .NET SDKs and runtimes in {0}.</value>
+    <comment>{Locked="dotnetup"}{Locked=".NET"} {0} is the install directory path.</comment>
+  </data>
+  <data name="InitInstallConfirmation" xml:space="preserve">
+    <value>Install .NET with these settings?</value>
+    <comment>{Locked=".NET"}</comment>
+  </data>
+  <data name="InitAcceptAndInstall" xml:space="preserve">
+    <value>Accept and install</value>
+  </data>
   <data name="InitConfigureOnlyDescription" xml:space="preserve">
     <value>Configures dotnetup and your environment without installing or migrating .NET.</value>
     <comment>{Locked="dotnetup"}</comment>
