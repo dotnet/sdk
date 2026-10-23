@@ -21,19 +21,34 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         public ShadowCopyManager(string baseDirectory = null)
         {
-            BaseDirectory = baseDirectory ?? Path.Combine(Path.GetTempPath(), "Razor", "ShadowCopy");
+            BaseDirectory = baseDirectory ?? GetBaseDirectory(Path.Combine("Razor", "ShadowCopy"));
 
             var guid = Guid.NewGuid().ToString("N").ToLowerInvariant();
             UniqueDirectory = Path.Combine(BaseDirectory, guid);
 
             _mutex = new Mutex(initiallyOwned: false, name: guid);
 
-            Directory.CreateDirectory(UniqueDirectory);
+            CreatePrivateDirectory(BaseDirectory);
+            CreatePrivateDirectory(UniqueDirectory);
         }
 
         public string BaseDirectory { get; }
 
         public string UniqueDirectory { get; }
+
+        internal static string GetBaseDirectory(string relativePath)
+        {
+            var root = OperatingSystem.IsWindows()
+                ? Path.GetTempPath()
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+            if (string.IsNullOrEmpty(root))
+            {
+                throw new InvalidOperationException("Unable to determine a user-specific directory for Razor shadow copies.");
+            }
+
+            return Path.Combine(root, relativePath);
+        }
 
         public string AddAssembly(string filePath)
         {
@@ -70,7 +85,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         public void Dispose()
         {
-            _mutex.ReleaseMutex();
+            _mutex.Dispose();
         }
 
         public Task PurgeUnusedDirectoriesAsync()
@@ -83,14 +98,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var id = _counter++;
 
             var directory = Path.Combine(UniqueDirectory, id.ToString(CultureInfo.InvariantCulture));
-            Directory.CreateDirectory(directory);
+            CreatePrivateDirectory(directory);
             return directory;
         }
 
         private void CopyFile(string originalPath, string shadowCopyPath)
         {
             var directory = Path.GetDirectoryName(shadowCopyPath);
-            Directory.CreateDirectory(directory);
+            CreatePrivateDirectory(directory);
 
             File.Copy(originalPath, shadowCopyPath);
 
@@ -104,6 +119,19 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             foreach (var file in directory.EnumerateFiles(searchPattern: "*", searchOption: SearchOption.AllDirectories))
             {
                 MakeWritable(file);
+            }
+        }
+
+        private static void CreatePrivateDirectory(string directory)
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                Directory.CreateDirectory(directory);
+            }
+            else
+            {
+                // The fresh per-server directory protects copied files even if the base already exists.
+                Directory.CreateDirectory(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
             }
         }
 
