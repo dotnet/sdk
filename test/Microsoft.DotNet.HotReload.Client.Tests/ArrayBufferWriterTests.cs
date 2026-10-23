@@ -27,7 +27,6 @@ internal static class TestExtensions
         => segment.Array![segment.Offset + index];
 }
 
-[TestClass]
 public abstract class ArrayBufferWriterTests<T> where T : IEquatable<T>
 {
     [TestMethod]

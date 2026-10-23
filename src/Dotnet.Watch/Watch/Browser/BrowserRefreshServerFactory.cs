@@ -15,15 +15,19 @@ namespace Microsoft.DotNet.Watch;
 /// Reload message is sent to the browser in that case.
 ///
 /// The instances are also reused if the project file is updated or the project graph is reloaded.
+///
+/// Each connection loads the current browser tools session key from the key pair the project's
+/// build wrote to its intermediate output. Loading on connect allows the server to start before
+/// <c>dotnet run</c> builds the application and naturally observes key rotation after a clean.
 /// </summary>
-internal sealed class BrowserRefreshServerFactory : IDisposable
+internal sealed class BrowserRefreshServerFactory : IAsyncDisposable
 {
     private readonly Lock _serversGuard = new();
 
     // Null value is cached for project instances that are not web projects or do not support browser refresh for other reason.
     private readonly Dictionary<ProjectInstanceId, BrowserRefreshServer?> _servers = [];
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         BrowserRefreshServer?[] serversToDispose;
 
@@ -35,7 +39,10 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
         foreach (var server in serversToDispose)
         {
-            server?.Dispose();
+            if (server != null)
+            {
+                await server.DisposeAsync();
+            }
         };
     }
 
@@ -49,9 +56,10 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         lock (_serversGuard)
         {
             hasExistingServer = _servers.TryGetValue(key, out server);
+
             if (!hasExistingServer)
             {
-                server = appModel.TryCreateRefreshServer(projectNode);
+                server = appModel.TryCreateRefreshServer();
                 _servers.Add(key, server);
             }
         }
@@ -64,8 +72,10 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
         if (!hasExistingServer)
         {
+            var webSocketConfig = await appModel.GetRefreshServerWebSocketConfigAsync(cancellationToken);
+    
             // Start the server we just created:
-            await server.StartAsync(cancellationToken);
+            await server.StartAsync(webSocketConfig, cancellationToken);
         }
 
         return server;

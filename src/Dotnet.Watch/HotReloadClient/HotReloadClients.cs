@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.HotReload;
 /// </param>
 internal sealed class HotReloadClients(
     ImmutableArray<HotReloadClient> clients,
-    AbstractBrowserRefreshServer? browserRefreshServer,
+    BrowserRefreshServer? browserRefreshServer,
     bool useRefreshServerToApplyStaticAssets) : IDisposable
 {
     /// <summary>
@@ -55,7 +55,7 @@ internal sealed class HotReloadClients(
     public bool UseRefreshServerToApplyStaticAssets
         => useRefreshServerToApplyStaticAssets;
 
-    public AbstractBrowserRefreshServer? BrowserRefreshServer
+    public BrowserRefreshServer? BrowserRefreshServer
         => browserRefreshServer;
 
     public ImmutableArray<HotReloadClient> Clients
@@ -90,7 +90,7 @@ internal sealed class HotReloadClients(
             client.ConfigureLaunchEnvironment(environmentBuilder);
         }
 
-        browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: true);
+        browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
     }
 
     /// <param name="environmentVariables">Environment variable to be set by the agent in the target process.</param>
@@ -132,7 +132,7 @@ internal sealed class HotReloadClients(
     /// <param name="applyOperationCancellationToken">Cancellation token for the apply operation that starts but not necessarily completes when this method returns.</param>
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     /// <returns></returns>
-    public async Task<Task> ApplyManagedCodeUpdatesAsync(ImmutableArray<ImmutableArray<HotReloadManagedCodeUpdate>> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
+    public async Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<ImmutableArray<HotReloadManagedCodeUpdate>> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
         // shouldn't be called if there are no clients
         Debug.Assert(IsManagedAgentSupported);
@@ -149,13 +149,16 @@ internal sealed class HotReloadClients(
 
         return CompleteApplyOperationAsync();
 
-        async Task CompleteApplyOperationAsync()
+        async Task<bool> CompleteApplyOperationAsync()
         {
             var results = await Task.WhenAll(applyTasks);
-            if (browserRefreshServer != null && results.All(isSuccess => isSuccess))
+            var success = results.All(isSuccess => isSuccess);
+            if (browserRefreshServer != null && success)
             {
                 await browserRefreshServer.RefreshBrowserAsync(cancellationToken);
             }
+
+            return success;
         }
     }
 

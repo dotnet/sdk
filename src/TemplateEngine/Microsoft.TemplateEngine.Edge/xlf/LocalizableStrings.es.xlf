@@ -376,7 +376,7 @@ Detalles: {1}.</target>
         <source>Failed to create template.
 Details: {0}</source>
         <target state="translated">No se pudo crear la plantilla.
-Detalles: {0}.</target>
+Detalles: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCreator_TemplateCreationResult_Error_DestructiveChanges">
@@ -421,7 +421,7 @@ Detalles: {1}</target>
       <trans-unit id="TemplatePackageManager_Error_FailedToStoreCache">
         <source>Failed to store template cache, details: {0}
 Template cache will be recreated on the next run.</source>
-        <target state="translated">No se pudo almacenar la caché de las plantillas. Detalles: {0}
+        <target state="translated">No se pudo almacenar la caché de las plantillas, detalles: {0}
 La caché de las plantillas se volverá a crear en la siguiente ejecución.</target>
         <note>{0} should not end with period - period is a part of the format entry.</note>
       </trans-unit>
@@ -431,9 +431,9 @@ The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
         <target state="translated">
-Las siguientes plantillas usan la misma identidad "{0}":
+Las siguientes plantillas usan la misma identidad '{0}':
 {1}
-Se usará la plantilla de "{2}". Para resolver este conflicto, desinstale los paquetes de plantillas en conflicto.</target>
+Se usará la plantilla de '{2}'. Para resolver este conflicto, desinstale los paquetes de plantillas en conflicto.</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'

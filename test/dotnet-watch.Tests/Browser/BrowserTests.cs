@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -62,7 +62,7 @@ public class BrowserTests : DotNetWatchTestBase
         App.Start(testAsset, ["--urls", kestrelUrl], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
 
         // Verify that the connection has been rejected:
-        await App.WaitUntilOutputContains($"🧪 Fetching '{kestrelUrl}/_framework/aspnetcore-browser-refresh.js'");
+        await App.WaitUntilOutputContains($"🧪 Request for '{kestrelUrl}/_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js' succeeded");
         await App.WaitUntilOutputContains($"🧪 Setting Origin header to '{browserUrl}'.");
 
         await App.WaitUntilOutputContains(MessageDescriptor.ConnectedToRefreshServer, "Browser #1");
@@ -87,11 +87,12 @@ public class BrowserTests : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // Verify the browser has been launched.
-        await App.WaitUntilOutputContains($"🧪 Fetching '{kestrelUrl}/_framework/aspnetcore-browser-refresh.js'");
+        await App.WaitUntilOutputContains($"🧪 Request for '{kestrelUrl}/_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js' succeeded");
         await App.WaitUntilOutputContains($"🧪 Setting Origin header to '{kestrelUrl}'.");
 
         // Verify the browser connected to the refresh server.
         await App.WaitUntilOutputContains(MessageDescriptor.ConnectedToRefreshServer, "Browser #1");
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
 
         App.Process.ClearOutput();
 
@@ -124,8 +125,11 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"Reload"}
             """);
 
-        // no other browser refresh messages sent:
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
+
+        // no other browser message sent:
         Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
+        Assert.DoesNotContain("An unhandled exception was thrown by the application.", string.Join(Environment.NewLine, App.Process.Output));
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
@@ -137,16 +141,16 @@ public class BrowserTests : DotNetWatchTestBase
         errorMessage = $"[{projectDisplay}] [auto-restart] {homePagePath}(11,5): error ENC0033: Deleting method 'F()' requires restarting the application.";
         await App.WaitUntilOutputContains(errorMessage);
 
-        await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"ReportDiagnostics","diagnostics":["Restarting application to apply changes ..."]}
-            """);
-
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-        // browser page was reloaded after the app restarted:
+        // Shutdown may interrupt the restart diagnostic, so wait for the reloaded browser instead.
         await App.WaitUntilOutputContains("""
             🧪 Received: {"type":"Reload"}
             """);
+
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
+
+        Assert.DoesNotContain("An unhandled exception was thrown by the application.", string.Join(Environment.NewLine, App.Process.Output));
 
         App.Process.ClearOutput();
 
@@ -163,7 +167,7 @@ public class BrowserTests : DotNetWatchTestBase
             🧪 Received: {"type":"RefreshBrowser"}
             """);
 
-        // no other browser refresh messages sent:
+        // no other browser message sent:
         Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
     }
 }

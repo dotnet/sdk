@@ -19,6 +19,11 @@ internal sealed class BlazorWebAssemblyAppModel(DotNetWatchContext context, Proj
 
     public override bool ManagedHotReloadRequiresBrowserRefresh => true;
 
+    /// <summary>
+    /// Standalone WebAssembly app is served by the Blazor Gateway.
+    /// </summary>
+    public override bool HasGatewayProxy => true;
+
     protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {
         Debug.Assert(browserRefreshServer != null);

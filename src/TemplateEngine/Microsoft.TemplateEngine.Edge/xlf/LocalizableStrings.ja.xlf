@@ -421,7 +421,7 @@ Details: {1}</source>
       <trans-unit id="TemplatePackageManager_Error_FailedToStoreCache">
         <source>Failed to store template cache, details: {0}
 Template cache will be recreated on the next run.</source>
-        <target state="translated">テンプレート キャッシュを保存できませんでした。詳細: {0}
+        <target state="translated">テンプレート キャッシュを格納できませんでした、詳細: {0}
 テンプレート キャッシュは次回の実行時に再作成されます。</target>
         <note>{0} should not end with period - period is a part of the format entry.</note>
       </trans-unit>
@@ -431,9 +431,9 @@ The following templates use the same identity '{0}':
 {1}
 The template from '{2}' will be used. To resolve this conflict, uninstall the conflicting template packages.</source>
         <target state="translated">
-次のテンプレートは同じ ID '{0}' を使用しています:
+次のテンプレートは同じ ID '{0}' を使用します:
 {1}
-'{2}' からのテンプレートが使用されます。この競合を解決するには、競合するテンプレート パッケージをアンインストールしてください。</target>
+'{2}' のテンプレートが使用されます。この競合を解決するには、競合するテンプレート パッケージをアンインストールします。</target>
         <note>
 The following templates use the same identity 'IDENTITY':
   * 'TEMPLATE' from 'PACKAGE_ID'

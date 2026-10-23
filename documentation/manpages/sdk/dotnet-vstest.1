@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-vstest" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-vstest" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet vstest
 .PP
@@ -31,13 +31,13 @@ dotnet-vstest - Runs tests from the specified assemblies.
 .IP
 .nf
 \f[C]
-dotnet vstest [<TEST_FILE_NAMES>] [--Blame] [--Diag <PATH_TO_LOG_FILE>]
-    [--Framework <FRAMEWORK>] [--InIsolation] [-lt|--ListTests <FILE_NAME>]
-    [--logger <LOGGER_URI/FRIENDLY_NAME>] [--Parallel]
-    [--ParentProcessId <PROCESS_ID>] [--Platform] <PLATFORM_TYPE>
-    [--Port <PORT>] [--ResultsDirectory<PATH>] [--Settings <SETTINGS_FILE>]
-    [--TestAdapterPath <PATH>] [--TestCaseFilter <EXPRESSION>]
-    [--Tests <TEST_NAMES>] [[--] <args>...]
+dotnet vstest [<TEST_FILE_NAMES>] [--Blame] [--Collect:<DATA_COLLECTOR_NAME>]
+    [--Diag:<PATH_TO_LOG_FILE>] [-e|--Environment:<NAME=\[dq]VALUE\[dq]>]
+    [--Framework:<FRAMEWORK>] [--InIsolation] [-lt|--ListTests:<FILE_NAME>]
+    [--logger:<LOGGER_URI/FRIENDLY_NAME>] [--Parallel]
+    [--Platform:<PLATFORM_TYPE>] [--ResultsDirectory:<PATH>]
+    [--Settings:<SETTINGS_FILE>] [--TestAdapterPath:<PATH>]
+    [--TestCaseFilter:<EXPRESSION>] [--Tests:<TEST_NAMES>] [[--] <args>...]
 
 dotnet vstest -?|--Help
 \f[R]
@@ -45,6 +45,8 @@ dotnet vstest -?|--Help
 .SH DESCRIPTION
 .PP
 The \f[V]dotnet vstest\f[R] command runs the \f[V]VSTest.Console\f[R] command-line application to run automated unit tests.
+The options in this article are forwarded to \f[V]vstest.console\f[R].
+For the complete list of command-line options, see vstest.console.exe command line options (https://github.com/microsoft/vstest/blob/main/docs/commandline.md).
 .SH ARGUMENTS
 .IP \[bu] 2
 \f[B]\f[VB]TEST_FILE_NAMES\f[B]\f[R]
@@ -64,14 +66,31 @@ This option is helpful in isolating the problematic tests causing test host to c
 It creates an output file in the current directory as \f[I]Sequence.xml\f[R] that captures the order of tests execution before the crash.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--Diag <PATH_TO_LOG_FILE>\f[B]\f[R]
+\f[B]\f[VB]--Collect:<DATA_COLLECTOR_NAME>\f[B]\f[R]
+.RS 2
+.PP
+Enables a data collector for the test run.
+For example, \f[V]--Collect:\[dq]Code Coverage\[dq]\f[R] collects code coverage with the built-in Visual Studio collector, and \f[V]--Collect:\[dq]XPlat Code Coverage\[dq]\f[R] uses the cross-platform Coverlet collector.
+For more information, see Monitor and analyze test run (https://aka.ms/vstest-collect).
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--Diag:<PATH_TO_LOG_FILE>\f[B]\f[R]
 .RS 2
 .PP
 Enables verbose logs for the test platform.
 Logs are written to the provided file.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--Framework <FRAMEWORK>\f[B]\f[R]
+\f[B]\f[VB]-e|--Environment:<NAME=\[dq]VALUE\[dq]>\f[B]\f[R]
+.RS 2
+.PP
+Sets the value of an environment variable for the test host process.
+Creates the variable if it doesn\[cq]t exist, overrides it if it does.
+Using this option forces the tests to run in an isolated process.
+Specify the option multiple times to set multiple variables.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--Framework:<FRAMEWORK>\f[B]\f[R]
 .RS 2
 .PP
 Target .NET Framework version used for test execution.
@@ -86,13 +105,13 @@ Runs the tests in an isolated process.
 This makes \f[I]vstest.console.exe\f[R] process less likely to be stopped on an error in the tests, but tests may run slower.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]-lt|--ListTests <FILE_NAME>\f[B]\f[R]
+\f[B]\f[VB]-lt|--ListTests:<FILE_NAME>\f[B]\f[R]
 .RS 2
 .PP
 Lists all discovered tests from the given test container.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--logger <LOGGER_URI/FRIENDLY_NAME>\f[B]\f[R]
+\f[B]\f[VB]--logger:<LOGGER_URI/FRIENDLY_NAME>\f[B]\f[R]
 .RS 2
 .PP
 Specify a logger for test results.
@@ -134,23 +153,11 @@ By default, all available cores on the machine are available for use.
 Specify an explicit number of cores by setting the \f[V]MaxCpuCount\f[R] property under the \f[V]RunConfiguration\f[R] node in the \f[I]runsettings\f[R] file.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--ParentProcessId <PROCESS_ID>\f[B]\f[R]
-.RS 2
-.PP
-Process ID of the parent process responsible for launching the current process.
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]--Platform <PLATFORM_TYPE>\f[B]\f[R]
+\f[B]\f[VB]--Platform:<PLATFORM_TYPE>\f[B]\f[R]
 .RS 2
 .PP
 Target platform architecture used for test execution.
-Valid values are \f[V]x86\f[R], \f[V]x64\f[R], and \f[V]ARM\f[R].
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]--Port <PORT>\f[B]\f[R]
-.RS 2
-.PP
-Specifies the port for the socket connection and receiving the event messages.
+Valid values are \f[V]x86\f[R], \f[V]x64\f[R], \f[V]ARM\f[R], \f[V]ARM64\f[R], \f[V]S390x\f[R], \f[V]Ppc64le\f[R], \f[V]RiscV64\f[R], and \f[V]LoongArch64\f[R].
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--ResultsDirectory:<PATH>\f[B]\f[R]
@@ -159,29 +166,29 @@ Specifies the port for the socket connection and receiving the event messages.
 Test results directory will be created in specified path if not exists.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--Settings <SETTINGS_FILE>\f[B]\f[R]
+\f[B]\f[VB]--Settings:<SETTINGS_FILE>\f[B]\f[R]
 .RS 2
 .PP
 Settings to use when running tests.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--TestAdapterPath <PATH>\f[B]\f[R]
+\f[B]\f[VB]--TestAdapterPath:<PATH>\f[B]\f[R]
 .RS 2
 .PP
 Use custom test adapters from a given path (if any) in the test run.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--TestCaseFilter <EXPRESSION>\f[B]\f[R]
+\f[B]\f[VB]--TestCaseFilter:<EXPRESSION>\f[B]\f[R]
 .RS 2
 .PP
 Run tests that match the given expression.
 \f[V]<EXPRESSION>\f[R] is of the format \f[V]<property>Operator<value>[|&<EXPRESSION>]\f[R], where Operator is one of \f[V]=\f[R], \f[V]!=\f[R], or \f[V]\[ti]\f[R].
 Operator \f[V]\[ti]\f[R] has `contains' semantics and is applicable for string properties like \f[V]DisplayName\f[R].
 Parentheses \f[V]()\f[R] are used to group subexpressions.
-For more information, see TestCase filter (https://github.com/Microsoft/vstest-docs/blob/main/docs/filter.md).
+For more information, see TestCase filter (https://github.com/microsoft/vstest/blob/main/docs/filter.md).
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--Tests <TEST_NAMES>\f[B]\f[R]
+\f[B]\f[VB]--Tests:<TEST_NAMES>\f[B]\f[R]
 .RS 2
 .PP
 Run tests with names that match the provided values.
@@ -250,4 +257,10 @@ dotnet vstest /Tests:TestMethod1,TestMethod2
 .fi
 .SH SEE ALSO
 .IP \[bu] 2
-VSTest.Console.exe command-line options
+VSTest.Console.exe command-line options (Microsoft Learn) - the official Microsoft Learn reference for the \f[V]VSTest.Console.exe\f[R] tool, including options that \f[V]dotnet vstest\f[R] doesn\[cq]t expose.
+Start here for stable, curated documentation.
+.IP \[bu] 2
+VSTest.Console.exe command-line options (microsoft/vstest repo) (https://github.com/microsoft/vstest/blob/main/docs/commandline.md) - the source-derived reference in the \f[V]microsoft/vstest\f[R] repo.
+Use it for the most up-to-date option details and internal switches, plus links to related runsettings, filtering, and diagnostics docs.
+.IP \[bu] 2
+VSTest environment variables (microsoft/vstest) (https://github.com/microsoft/vstest/blob/main/docs/environment-variables.md) - environment variables that VSTest and the test host recognize, such as \f[V]VSTEST_DUMP_FORCEPROCDUMP\f[R] and the \f[V]VSTEST_DOTNET_ROOT_*\f[R] variables the .NET SDK sets when it launches \f[V]vstest.console\f[R].
