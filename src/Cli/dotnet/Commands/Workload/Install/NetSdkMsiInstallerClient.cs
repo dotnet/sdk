@@ -774,6 +774,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 }
                 string msiExtractionPath = Path.Combine(extractionPath, "msi");
 
+                Cache.VerifyPackageSignature(msiPath);
 
                 lock (_msiAdminInstallLock)
                 {
