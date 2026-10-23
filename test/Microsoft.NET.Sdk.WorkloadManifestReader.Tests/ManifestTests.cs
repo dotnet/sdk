@@ -23,6 +23,58 @@ namespace ManifestReaderTests
         string GetSampleManifestPath(string name) => Path.Combine(SampleProjectPath, name);
 
         [TestMethod]
+        [DataRow("../escape")]
+        [DataRow(".")]
+        [DataRow("..")]
+        [DataRow("")]
+        [DataRow(" ")]
+        [DataRow(null)]
+        public void PathBasedIdsRejectInvalidComponents(string id)
+        {
+            Assert.ThrowsExactly<ArgumentException>(() => new ManifestId(id));
+            Assert.ThrowsExactly<ArgumentException>(() => new WorkloadId(id));
+            Assert.ThrowsExactly<ArgumentException>(() => new WorkloadPackId(id));
+        }
+
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(@"..\escape")]
+        [DataRow(@"C:\escape")]
+        [DataRow("C:relative")]
+        [DataRow("invalid:name")]
+        [DataRow("trailingdot.")]
+        [DataRow("trailingspace ")]
+        public void PathBasedIdsRejectWindowsInvalidComponents(string id)
+        {
+            Assert.ThrowsExactly<ArgumentException>(() => new ManifestId(id));
+            Assert.ThrowsExactly<ArgumentException>(() => new WorkloadId(id));
+            Assert.ThrowsExactly<ArgumentException>(() => new WorkloadPackId(id));
+        }
+
+        [TestMethod]
+        public void InvalidWorkloadIdInManifestThrowsManifestFormatException()
+        {
+            const string manifest = """
+                {
+                    "version": "1.0.0",
+                    "workloads": {
+                        "../escape": {
+                            "description": "Invalid workload"
+                        }
+                    }
+                }
+                """;
+            using MemoryStream manifestStream = new(System.Text.Encoding.UTF8.GetBytes(manifest));
+
+            var exception = Assert.ThrowsExactly<WorkloadManifestFormatException>(
+                () => WorkloadManifestReader.ReadWorkloadManifest("Invalid", manifestStream, "invalid.json"));
+
+            Assert.IsInstanceOfType<ArgumentException>(exception.InnerException);
+            Assert.Contains("valid path component", exception.Message);
+            Assert.Contains("at offset", exception.Message);
+        }
+
+        [TestMethod]
         public void ItCanDeserialize()
         {
             using (FileStream fsSource = new(ManifestPath, FileMode.Open, FileAccess.Read))

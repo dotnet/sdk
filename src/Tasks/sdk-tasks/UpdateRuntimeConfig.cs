@@ -15,6 +15,8 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required]
         public ITaskItem[] RuntimeConfigPaths { get; set; }
 
+        public ITaskItem[] DestinationPaths { get; set; }
+
         [Required]
         public string MicrosoftNetCoreAppVersion { get; set; }
 
@@ -30,17 +32,24 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            foreach (var file in RuntimeConfigPaths)
+            if (DestinationPaths is not null && DestinationPaths.Length != RuntimeConfigPaths.Length)
             {
-                UpdateFile(file.ItemSpec);
+                Log.LogError("Runtime configuration source and destination counts must match.");
+                return false;
+            }
+
+            for (int index = 0; index < RuntimeConfigPaths.Length; index++)
+            {
+                string source = RuntimeConfigPaths[index].ItemSpec;
+                UpdateFile(source, DestinationPaths is null ? source : DestinationPaths[index].ItemSpec);
             }
 
             return true;
         }
 
-        private void UpdateFile(string file)
+        private void UpdateFile(string source, string destination)
         {
-            var text = File.ReadAllText(file);
+            var text = File.ReadAllText(source);
             var config = JsonNode.Parse(text)!.AsObject();
             var frameworks = config["runtimeOptions"]?["frameworks"];
             var framework = config["runtimeOptions"]?["framework"];
@@ -81,7 +90,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 }
             }
 
-            File.WriteAllText(file, config.ToJsonString(s_writeOptions));
+            PublishMutationUtilities.WriteFileIfDifferent(destination, config.ToJsonString(s_writeOptions));
         }
 
         private void UpdateFramework(JsonNode item)
