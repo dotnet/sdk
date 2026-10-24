@@ -2652,6 +2652,35 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
         }
 
         [TestMethod]
+        public void TestFixedBufferFieldGeneration()
+        {
+            RunTest(original: """
+                    namespace A
+                    {
+                        public struct Buffers
+                        {
+                            public unsafe fixed int Values[64];
+                            internal unsafe fixed char Name[16];
+                            public int Length;
+                        }
+                    }
+                    """,
+                expected: """
+                    namespace A
+                    {
+                        public partial struct Buffers
+                        {
+                            private int _dummyPrimitive;
+                            public int Length;
+                            public unsafe fixed int Values[64];
+                        }
+                    }
+                    """,
+                includeInternalSymbols: false,
+                allowUnsafe: true);
+        }
+
+        [TestMethod]
         public void TestUnsafeMethodGeneration()
         {
             RunTest(original: """

@@ -200,7 +200,8 @@ public sealed class CSharpAssemblyDocumentGenerator
         INamedTypeSymbol[] extensionBlocks = [.. namedType.GetTypeMembers().Where(static type => string.IsNullOrEmpty(type.Name))];
         IEnumerable<ISymbol> members = namedType.GetMembers()
             .Where(_options.SymbolFilter.Include)
-            .Where(member => !IsExtensionBlockImplementation(member, extensionBlocks));
+            .Where(member => !IsExtensionBlockImplementation(member, extensionBlocks))
+            .Where(member => !IsFixedBufferStorageType(member, namedType));
 
         // If it's a value type
         if (namedType.TypeKind == TypeKind.Struct)
@@ -279,6 +280,14 @@ public sealed class CSharpAssemblyDocumentGenerator
 
         return namedTypeNode;
     }
+
+    // The compiler emits a nested `<Name>e__FixedBuffer` struct to hold each fixed size buffer. The `fixed` field
+    // declaration produces it again, so it isn't written out.
+    private static bool IsFixedBufferStorageType(ISymbol member, INamedTypeSymbol containingType) =>
+        member is INamedTypeSymbol { TypeKind: TypeKind.Struct } nestedType &&
+        nestedType.IsCompilerGenerated() &&
+        containingType.GetMembers().Any(m => m is IFieldSymbol { IsFixedSizeBuffer: true } field &&
+            nestedType.Name == $"<{field.Name}>e__FixedBuffer");
 
     private bool IsExtensionBlockImplementation(ISymbol member, IEnumerable<INamedTypeSymbol> extensionBlocks)
     {

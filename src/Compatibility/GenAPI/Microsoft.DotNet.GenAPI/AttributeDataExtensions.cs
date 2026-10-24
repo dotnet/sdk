@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.GenAPI
         private static readonly HashSet<string> s_reservedTypes = new(StringComparer.Ordinal)
         {
             "DynamicAttribute",
+            "FixedBufferAttribute",
             "IsReadOnlyAttribute",
             "IsUnmanagedAttribute",
             "IsByRefLikeAttribute",
