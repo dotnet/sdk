@@ -1063,15 +1063,15 @@ class Program
         [TestMethod]
         public void It_does_not_warn_on_rids_if_no_framework_references()
         {
+            const string testProjectName = "NoFxRefs";
             var packageProject = CreateProjectWithRidAssets(ToolsetInfo.CurrentTargetFramework, new string[] { "unix", "win", "alpine-x64" }, true, true);
 
             var packCommand = new PackCommand(TestAssetsManager.CreateTestProject(packageProject));
             packCommand.Execute().Should().Pass();
             var package = new TestPackageReference(packageProject.Name, "1.0.0", packCommand.GetNuGetPackage());
 
-            var testProject = new TestProject()
+            var testProject = new TestProject(testProjectName)
             {
-                Name = "NoFrameworkReferences",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
                 IsExe = true
             };
@@ -1088,7 +1088,7 @@ class Program
             testProject.AdditionalProperties["UseAppHost"] = "false";
             testProject.PackageReferences.Add(new TestPackageReference("NETStandard.Library", "1.6.1"));
 
-            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject);
+            TestAsset testAsset = TestAssetsManager.CreateTestProject(testProject, callingMethod: testProjectName);
             var result = new BuildCommand(testAsset).Execute();
             result.Should().Pass()
                 .And.NotHaveStdOutContaining("NETSDK1206");
