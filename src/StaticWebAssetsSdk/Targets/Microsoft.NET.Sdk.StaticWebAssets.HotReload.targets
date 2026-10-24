@@ -217,6 +217,47 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
 
+    <!-- Hosts before .NET 11 do not supply inactive settings.
+         The live Hot Reload provider takes precedence over this build-only fallback. -->
+    <PropertyGroup Condition="$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '11.0'))">
+      <_HotReloadBrowserToolsSettingsFallbackFile>$(_HotReloadBrowserToolsIntermediatePath)hot-reload-settings.json</_HotReloadBrowserToolsSettingsFallbackFile>
+    </PropertyGroup>
+
+    <Copy
+      Condition="'$(_HotReloadBrowserToolsSettingsFallbackFile)' != ''"
+      SourceFiles="$(MSBuildThisFileDirectory)HotReload\hot-reload-settings.json"
+      DestinationFiles="$(_HotReloadBrowserToolsSettingsFallbackFile)"
+      SkipUnchangedFiles="true" />
+
+    <ItemGroup Condition="'$(_HotReloadBrowserToolsSettingsFallbackFile)' != ''">
+      <_HotReloadBrowserToolsSettingsFallback Include="$(_HotReloadBrowserToolsSettingsFallbackFile)">
+        <RelativePath>$(HotReloadBrowserToolsSettingsPath.TrimStart('/'))</RelativePath>
+        <OriginalItemSpec>$(_HotReloadBrowserToolsSettingsFallbackFile)</OriginalItemSpec>
+      </_HotReloadBrowserToolsSettingsFallback>
+      <FileWrites Include="$(_HotReloadBrowserToolsSettingsFallbackFile)" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      Condition="'@(_HotReloadBrowserToolsSettingsFallback)' != ''"
+      CandidateAssets="@(_HotReloadBrowserToolsSettingsFallback)"
+      FingerprintCandidates="false"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      ContentRoot="$(_HotReloadBrowserToolsIntermediatePath)"
+      BasePath="/"
+      AssetKind="Build"
+      CopyToPublishDirectory="Never">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_HotReloadBrowserToolsSettingsFallbackAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'@(_HotReloadBrowserToolsSettingsFallbackAsset)' != ''"
+      CandidateAssets="@(_HotReloadBrowserToolsSettingsFallbackAsset)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
   </Target>
 
 </Project>
