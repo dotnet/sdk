@@ -90,7 +90,13 @@ internal sealed class ProjectBuildManager(ProjectCollection collection, BuildRep
 
             var results = await Task.WhenAll(buildTasks);
 
+            if (results.Any(result => result?.OverallResult != BuildResultCode.Success))
+            {
+                loggers.ReportOutput();
+            }
+
             return [.. results.Select((result, index) => new BuildResult<T>(
+                result?.OverallResult == BuildResultCode.Success,
                 (IReadOnlyDictionary<string, TargetResult>?)result?.ResultsByTarget ?? s_emptyTargetResults,
                 requests[index].ProjectInstance,
                 requests[index].Data))];
