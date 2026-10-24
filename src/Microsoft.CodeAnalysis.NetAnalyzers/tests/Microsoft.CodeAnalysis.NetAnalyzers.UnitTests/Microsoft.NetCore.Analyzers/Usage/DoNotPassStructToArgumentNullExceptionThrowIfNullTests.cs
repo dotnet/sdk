@@ -887,7 +887,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task NotNullable_ExpressionBodiedMethod_Diagnostic()
         {
             const string code = """
@@ -918,7 +918,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task NotNullable_ExpressionBodiedConstructor_Diagnostic()
         {
             const string code = """
@@ -949,7 +949,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task NotNullable_ExpressionBodiedDestructor_Diagnostic()
         {
             const string code = """
@@ -984,7 +984,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         [DataRow("set")]
         [DataRow("init")]
         public async Task NotNullable_ExpressionBodiedAccessor_Diagnostic(string accessor)
@@ -1026,7 +1026,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task NotNullable_ExpressionBodiedIndexerAccessor_Diagnostic()
         {
             const string code = """
@@ -1065,7 +1065,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task NotNullable_ExpressionBodiedLocalFunction_Diagnostic()
         {
             const string code = """
@@ -1103,7 +1103,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task NotNullable_ExpressionBodiedMethod_TriviaIsPreserved_Diagnostic()
         {
             const string code = """
@@ -1140,7 +1140,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task Nullable_ExpressionBodiedMethod_Diagnostic()
         {
             const string code = """
@@ -1175,7 +1175,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task NotNullable_ExpressionBodiedLambda_Diagnostic()
         {
             const string code = """
@@ -1200,7 +1200,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task NotNullable_FixAllSkipsExpressionBodiedLambda_Diagnostic()
         {
             const string code = """
@@ -2040,7 +2040,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        [TestMethod]
+        [TestMethod, WorkItem(56775, "https://github.com/dotnet/sdk/issues/56775")]
         public async Task Vb_NotNullable_SingleLineLambda_Diagnostic()
         {
             const string code = """
