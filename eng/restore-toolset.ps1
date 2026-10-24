@@ -156,8 +156,8 @@ function ConvertTo-DotNetInstallScriptVersion([string]$version) {
     return $version
 }
 
-function Get-VersionDetailsProperty([string]$propertyName) {
-    $versionDetails = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot 'eng\Version.Details.props'))
+function Get-VersionProperty([string]$propertyName, [string]$fileName = 'Version.Details.props') {
+    $versionDetails = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot "eng\$fileName"))
     $property = $versionDetails.SelectSingleNode("//$propertyName")
     if ($null -eq $property) {
         return ""
@@ -167,10 +167,15 @@ function Get-VersionDetailsProperty([string]$propertyName) {
 }
 
 function Get-CurrentRuntimeToolsetSpecs() {
-    $runtimeVersion = Get-VersionDetailsProperty 'MicrosoftNETCoreAppRefPackageVersion'
-    $aspNetCoreVersion = Get-VersionDetailsProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+    $runtimeVersion = Get-VersionProperty 'MicrosoftNETCoreAppRefPackageVersion'
+    $aspNetCoreVersion = Get-VersionProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+    $net110Version = Get-VersionProperty 'Net110PackageVersion' 'ManualVersions.props'
+    if ([string]::IsNullOrEmpty($net110Version)) {
+        throw 'Missing Net110PackageVersion in eng/ManualVersions.props.'
+    }
 
-    $specs = @()
+    # Generated test apps still target net11 even after the current runtime packs move to net12.
+    $specs = @($net110Version, "aspnetcore@$net110Version")
     if (-not [string]::IsNullOrEmpty($runtimeVersion)) {
         $specs += $runtimeVersion
     }

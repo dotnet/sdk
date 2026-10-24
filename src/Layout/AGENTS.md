@@ -36,6 +36,11 @@ Two families of targets:
 - Producing the laid-out SDK requires the **full repo build** (so the components exist
   to copy), not just this project — see the root build/dogfood instructions.
 
+Downlevel test runtimes are acquired by `eng/restore-toolset.ps1` and `.sh` and
+overlaid by `redist/targets/OverlaySdkOnLKG.targets`. Targeting packs required by
+offline tests belong in that test-only overlay too, not in `BundledLayoutPackage`.
+Keep their versions aligned with `GenerateBundledVersions.targets`.
+
 ### macOS tool signing
 
 `PublishRoslyn` and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with

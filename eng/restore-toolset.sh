@@ -31,19 +31,13 @@ function InitializeCustomSDKToolset {
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
-    # Also install the exact runtime versions that arcade's toolset requires
-    # (from Version.Details.props) so tests can target those specific versions.
-    local runtime_version
-    runtime_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
-    local aspnetcore_version
-    aspnetcore_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
-    if [[ -n "$runtime_version" ]]; then
-      runtime_specs+=("$runtime_version")
-    fi
-    if [[ -n "$aspnetcore_version" ]]; then
-      runtime_specs+=("aspnetcore@$aspnetcore_version")
-    fi
+    local runtime_specs_text
+    runtime_specs_text=$(GetTestRuntimeSpecs) || return 1
+    local runtime_specs=()
+    local runtime_spec
+    while IFS= read -r runtime_spec; do
+      runtime_specs+=("$runtime_spec")
+    done <<< "$runtime_specs_text"
 
     local native_arch
     native_arch=$(GetNativeMachineArchitecture)
@@ -69,9 +63,35 @@ function InitializeCustomSDKToolset {
   CreateBuildEnvScript
 }
 
-function ReadVersionDetailsProperty {
+function GetTestRuntimeSpecs {
+  local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
+  local net110_version
+  net110_version=$(ReadVersionProperty "Net110PackageVersion" "ManualVersions.props")
+  if [[ -z "$net110_version" ]]; then
+    echo "Missing Net110PackageVersion in eng/ManualVersions.props." >&2
+    return 1
+  fi
+  # Generated test apps still target net11 even after the current runtime packs move to net12.
+  runtime_specs+=("$net110_version" "aspnetcore@$net110_version")
+
+  # Also install the exact current toolset runtimes from Version.Details.props.
+  local runtime_version
+  runtime_version=$(ReadVersionProperty "MicrosoftNETCoreAppRefPackageVersion")
+  local aspnetcore_version
+  aspnetcore_version=$(ReadVersionProperty "MicrosoftAspNetCoreAppRefPackageVersion")
+  if [[ -n "$runtime_version" ]]; then
+    runtime_specs+=("$runtime_version")
+  fi
+  if [[ -n "$aspnetcore_version" ]]; then
+    runtime_specs+=("aspnetcore@$aspnetcore_version")
+  fi
+  printf '%s\n' "${runtime_specs[@]}"
+}
+
+function ReadVersionProperty {
   local property_name=$1
-  sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/Version.Details.props" | head -n 1
+  local file_name=${2:-Version.Details.props}
+  sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/$file_name" | head -n 1
 }
 
 # Maps a dotnetup component (aspnetcore/windowsdesktop/dotnet) to the name of

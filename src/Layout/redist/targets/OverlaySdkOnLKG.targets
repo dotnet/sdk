@@ -1,5 +1,10 @@
 <Project>
 
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PackageDownload Update="Microsoft.NETCore.App.Ref;Microsoft.AspNetCore.App.Ref"
+                     Version="%(PackageDownload.Version);[$(Net110PackageVersion)]" />
+  </ItemGroup>
+
   <Target Name="OverlaySdkOnLKG" AfterTargets="AfterBuild" DependsOnTargets="GenerateInstallerLayout">
     <PropertyGroup>
       <_DotNetHiveRoot>$(DOTNET_INSTALL_DIR)</_DotNetHiveRoot>
@@ -137,6 +142,28 @@
     <Copy SourceFiles="@(_BuiltAspNetCoreSharedFxFile)"
           DestinationFiles="@(_BuiltAspNetCoreSharedFxFile->'$(_CurrentStage0FxDir)/%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="false" />
+  </Target>
+
+  <!-- Offline test projects still target net11. Keep their packs out of the shipping layout. -->
+  <Target Name="OverlayNET110TestTargetingPacks"
+          AfterTargets="OverlaySdkOnLKG"
+          Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <PropertyGroup>
+      <_Net110CoreRefRoot>$(NuGetPackageRoot)microsoft.netcore.app.ref/$(Net110PackageVersion)/</_Net110CoreRefRoot>
+      <_Net110AspNetRefRoot>$(NuGetPackageRoot)microsoft.aspnetcore.app.ref/$(Net110PackageVersion)/</_Net110AspNetRefRoot>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_Net110CoreRefRoot)data/FrameworkList.xml') or !Exists('$(_Net110AspNetRefRoot)data/FrameworkList.xml')"
+           Text="The .NET 11 test targeting packs are missing. Restore the redist project before building the test layout." />
+    <ItemGroup>
+      <_Net110TestPackFile Include="$(_Net110CoreRefRoot)**/*" Exclude="$(_Net110CoreRefRoot)*.nupkg"
+                          PackName="Microsoft.NETCore.App.Ref" />
+      <_Net110TestPackFile Include="$(_Net110AspNetRefRoot)**/*" Exclude="$(_Net110AspNetRefRoot)*.nupkg"
+                          PackName="Microsoft.AspNetCore.App.Ref" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_Net110TestPackFile)"
+          DestinationFiles="@(_Net110TestPackFile->'$(TestHostDotNetRoot)packs/%(PackName)/$(Net110PackageVersion)/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          UseHardLinksIfPossible="false" />
   </Target>
 
   <Target Name="PublishTestWorkloads"
