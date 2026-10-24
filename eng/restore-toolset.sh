@@ -64,7 +64,7 @@ function InitializeCustomSDKToolset {
 }
 
 function GetTestRuntimeSpecs {
-  local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
+  local runtime_specs=("6.0" "aspnetcore@6.0.36" "7.0" "8.0" "9.0" "10.0")
   local net110_version
   net110_version=$(ReadVersionProperty "Net110PackageVersion" "ManualVersions.props")
   if [[ -z "$net110_version" ]]; then
