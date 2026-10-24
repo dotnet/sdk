@@ -19,6 +19,8 @@ The structure of the localization JSON files consist of key-value pairs, where:
 - The key is the reference to an element of `template.json` to be localized. If the element is a child, the full path using `/` delimiter should be given. Example: `symbols/Framework/choices/netstandard2.1/description`.
 - The value is the localization of the element given by the key. 
 
+Avoid `/` in symbol names and choice values in `template.json`, because it is used as the separator in localization keys. Template validation reports a warning for these names; use a different character, such as `-`, instead.
+
 Examples of localization files can be found [here](https://github.com/dotnet/sdk/tree/main/template_feed/Microsoft.DotNet.Common.ItemTemplates/content/EditorConfig/.template.config/localize).
 
 These files are to be parsed by the template engine when loading information about the template. The Template Engine API returns information for localizable properties in language matching the current UI culture (if localization is available) transparently, without explicit user action.
