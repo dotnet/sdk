@@ -9,17 +9,23 @@ namespace Microsoft.NET.Build.Tasks
         public readonly string? Code;
         public readonly string Text;
         public readonly string? File;
+        public readonly int LineNumber;
+        public readonly int ColumnNumber;
 
         public Message(
             MessageLevel level,
             string text,
             string? code = default,
-            string? file = default)
+            string? file = default,
+            int lineNumber = default,
+            int columnNumber = default)
         {
             Level = level;
             Code = code;
             Text = text;
             File = file;
+            LineNumber = lineNumber;
+            ColumnNumber = columnNumber;
         }
     }
 }
