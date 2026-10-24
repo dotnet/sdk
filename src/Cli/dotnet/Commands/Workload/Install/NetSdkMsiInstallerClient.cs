@@ -61,7 +61,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         _sdkFeatureBand = sdkFeatureBand;
         _workloadResolver = workloadResolver;
         _dependent = $"{DependentPrefix},{sdkFeatureBand},{HostArchitecture}";
-        _manifestInstaller = new WindowsMsiManifestInstaller(_nugetPackageDownloader, Log, LogError);
+        _manifestInstaller = new WindowsMsiManifestInstaller(_nugetPackageDownloader, Log, LogError, Cache.VerifyPackageSignature);
 
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
@@ -1021,7 +1021,8 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <b>NOTE:</b> This is NOT a cryptographic signature check. This calls <c>MsiVerifyPackage</c>
     /// which validates the MSI database structure (tables, columns, schema). Authenticode signature
     /// verification is performed separately by <see cref="MsiPackageCache.VerifyPackageSignature"/>
-    /// when retrieving payloads from the cache.
+    /// when retrieving payloads from the cache and before administratively extracting workload
+    /// manifest MSI packages.
     /// </remarks>
     /// <param name="msiPayload">The payload to validate.</param>
     private void ValidateMsiDatabase(MsiPayload msiPayload)
