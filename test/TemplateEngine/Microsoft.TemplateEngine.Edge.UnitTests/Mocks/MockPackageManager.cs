@@ -13,6 +13,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
     internal class MockPackageManager : IDownloader, IUpdateChecker
     {
         internal const string DefaultFeed = "test_feed";
+        private readonly NuGetPackageInfo? _downloadResult;
+        internal const string PackageSourceMappingMatchNotFound = "PackageSourceMappingMatchNotFound";
         private readonly PackageManager? _packageManager;
         private readonly string? _packageToPack;
 
@@ -26,19 +28,35 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
             _packageToPack = packageToPack;
         }
 
+        internal MockPackageManager(NuGetPackageInfo downloadResult)
+        {
+            _downloadResult = downloadResult;
+        }
+
+        internal IReadOnlyList<string>? LastAdditionalSources { get; private set; }
+
+        internal string? LastAdditionalNuGetSource { get; private set; }
+
         public Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, bool force = false, bool includePrerelease = false, CancellationToken cancellationToken = default)
         {
+            LastAdditionalSources = additionalSources?.ToArray();
+
             // names of exceptions throw them for test purposes
             switch (identifier)
             {
                 case nameof(InvalidNuGetSourceException): throw new InvalidNuGetSourceException("test message");
                 case nameof(DownloadException): throw new DownloadException(identifier, version ?? string.Empty, new[] { DefaultFeed });
                 case nameof(PackageNotFoundException): throw new PackageNotFoundException(identifier, new[] { DefaultFeed });
+                case PackageSourceMappingMatchNotFound: throw new PackageNotFoundException(identifier, new[] { DefaultFeed }, packageSourceMappingMatchNotFound: true);
                 case nameof(VulnerablePackageException) when version == "12.0.3":
                     throw new VulnerablePackageException("Test Message", identifier, version, GetMockVulnerabilities());
                 case nameof(Exception): throw new Exception("Generic error");
             }
 
+            if (_downloadResult != null)
+            {
+                return Task.FromResult(_downloadResult);
+            }
             if (_packageManager == null)
             {
                 throw new InvalidOperationException($"{nameof(_packageManager)} was not initialized");
@@ -73,6 +91,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
                 nameof(InvalidNuGetSourceException) => throw new InvalidNuGetSourceException("test message"),
                 nameof(DownloadException) => throw new DownloadException(identifier, version ?? string.Empty, new[] { DefaultFeed }),
                 nameof(PackageNotFoundException) => throw new PackageNotFoundException(identifier, new[] { DefaultFeed }),
+                PackageSourceMappingMatchNotFound => throw new PackageNotFoundException(identifier, new[] { DefaultFeed }, packageSourceMappingMatchNotFound: true),
                 nameof(VulnerablePackageException) when version == "12.0.0" => throw new VulnerablePackageException("Test Message", identifier, version, GetMockVulnerabilities()),
                 nameof(Exception) => throw new Exception("Generic error"),
                 _ => Task.FromResult(("1.0.0", version != "1.0.0", (IReadOnlyList<VulnerabilityInfo>)new List<VulnerabilityInfo>())),
@@ -81,12 +100,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
 
         Task<(string LatestVersion, bool IsLatestVersion, NugetPackageMetadata PackageMetadata)> IUpdateChecker.GetLatestVersionAsync(string identifier, string? version, string? additionalNuGetSource, CancellationToken cancellationToken)
         {
+            LastAdditionalNuGetSource = additionalNuGetSource;
+
             // names of exceptions throw them for test purposes
             return identifier switch
             {
                 nameof(InvalidNuGetSourceException) => throw new InvalidNuGetSourceException("test message"),
                 nameof(DownloadException) => throw new DownloadException(identifier, version ?? string.Empty, new[] { DefaultFeed }),
                 nameof(PackageNotFoundException) => throw new PackageNotFoundException(identifier, new[] { DefaultFeed }),
+                PackageSourceMappingMatchNotFound => throw new PackageNotFoundException(identifier, new[] { DefaultFeed }, packageSourceMappingMatchNotFound: true),
                 nameof(VulnerablePackageException) when version == "12.0.0" => throw new VulnerablePackageException("Test Message", identifier, version, GetMockVulnerabilities()),
                 nameof(Exception) => throw new Exception("Generic error"),
                 _ => Task.FromResult(("1.0.0", version != "1.0.0", new NugetPackageMetadata(A.Fake<IPackageSearchMetadata>(), "owners", false))),
