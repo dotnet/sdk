@@ -609,6 +609,11 @@
                         "description": "The version of the package reference to add, applicable only if referenceType=package.",
                         "type": "string"
                       },
+                      "noRestore": {
+                        "description": "If true, the package reference is added without restoring the project, so package existence and compatibility are not validated at this step. Use it only when the template schedules its own restore. Applicable only if referenceType=package.",
+                        "type": "boolean",
+                        "default": false
+                      },
                       "targetFiles": {
                         "oneOf": [
                           {

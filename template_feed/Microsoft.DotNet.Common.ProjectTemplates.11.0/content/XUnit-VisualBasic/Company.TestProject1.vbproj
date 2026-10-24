@@ -18,6 +18,7 @@
   <ItemGroup>
     <Content Include="xunit.runner.json" CopyToOutputDirectory="IfDifferent" />
   </ItemGroup>
+<!--#if (HostIdentifier != "dotnetcli" && HostIdentifier != "dotnetcli-preview")-->
 
 <!--#if (TestRunner == "Microsoft.Testing.Platform")-->
   <ItemGroup>
@@ -30,13 +31,16 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 <!--#endif-->
+<!--#endif-->
 <!--#else-->
+<!--#if (HostIdentifier != "dotnetcli" && HostIdentifier != "dotnetcli-preview")-->
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
+<!--#endif-->
 <!--#endif-->
 
 </Project>

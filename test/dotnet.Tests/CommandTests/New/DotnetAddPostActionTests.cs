@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Commands.New.PostActions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Mocks;
@@ -10,7 +11,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 {
 
     [TestClass]
-    public class DotnetAddPostActionTests
+    public class DotnetAddPostActionTests : SdkTest
     {
         private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
 
@@ -303,6 +304,230 @@ namespace Microsoft.DotNet.Cli.New.Tests
             Assert.AreEqual("System.Net.Json", callback.Reference);
         }
 
+        [TestMethod]
+        [DataRow(null, false, DisplayName = "no noRestore argument keeps the restore")]
+        [DataRow("false", false, DisplayName = "noRestore false keeps the restore")]
+        [DataRow("true", true, DisplayName = "noRestore true skips the restore")]
+        public void AddPackageRefPassesNoRestoreOnlyWhenTheTemplateAsksForIt(string? noRestoreArg, bool expected)
+        {
+            var callback = new MockAddProjectReferenceCallback();
+            DotnetAddPostActionProcessor actionProcessor = new(callback.AddPackageReference, callback.AddProjectReference);
+
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string projFileFullPath = Path.Combine(targetBasePath, "MyApp.csproj");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(projFileFullPath, string.Empty);
+
+            var args = new Dictionary<string, string>()
+            {
+                { "targetFiles", "[\"MyApp.csproj\"]" }, { "referenceType", "package" }, { "reference", "System.Text.Json" }, { "version", "9.0.0" }
+            };
+            if (noRestoreArg is not null)
+            {
+                args.Add("noRestore", noRestoreArg);
+            }
+
+            var postAction = new MockPostAction(default, default, default, default, default!) { ActionId = DotnetAddPostActionProcessor.ActionProcessorId, Args = args };
+            MockCreationEffects creationEffects = new MockCreationEffects()
+                .WithFileChange(new MockFileChange("./MyApp.csproj", "./MyApp.csproj", ChangeKind.Create));
+
+            actionProcessor.Process(_engineEnvironmentSettings, postAction, creationEffects, new MockCreationResult(), targetBasePath);
+
+            Assert.AreEqual(expected, callback.NoRestore);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsAnExistingCentralPackageVersion()
+        {
+            // The repository already pins this package centrally. Passing the template version
+            // would rewrite that entry for every project in the repository.
+            string? version = AddNUnitUnderCentralPackageManagement(
+                CentralPackagesFile("""<PackageVersion Include="NUnit" Version="4.5.0" />"""));
+
+            Assert.IsNull(version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefUsesTheTemplateVersionWhenTheCentralFileHasNoEntry()
+        {
+            // Central package management is on, but nothing pins NUnit yet, so the template
+            // version is what creates the entry.
+            string? version = AddNUnitUnderCentralPackageManagement(
+                CentralPackagesFile("""<PackageVersion Include="Some.Other.Package" Version="1.0.0" />"""));
+
+            Assert.AreEqual("4.6.1", version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsACentralPackageVersionInheritedFromAParentFile()
+        {
+            // The nearest Directory.Packages.props only imports its parent, as the file from
+            // `dotnet new packagesprops --inherit` does, and the pin lives in the parent.
+            string? version = AddNUnitUnderCentralPackageManagement(
+                """
+                <Project>
+                  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Packages.props', '$(MSBuildThisFileDirectory)../'))"
+                          Condition="$([MSBuild]::GetPathOfFileAbove('Directory.Packages.props', '$(MSBuildThisFileDirectory)../')) != ''" />
+                </Project>
+                """,
+                parentDirectoryPackagesProps: CentralPackagesFile("""<PackageVersion Include="NUnit" Version="4.5.0" />"""));
+
+            Assert.IsNull(version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefUsesTheTemplateVersionWhenTheCentralEntryTargetsAnotherFramework()
+        {
+            // The entry does not apply to the generated project's framework. Omitting the version
+            // here would make NuGet write Version="*" and the restore fail with NU1011.
+            string? version = AddNUnitUnderCentralPackageManagement(
+                CentralPackagesFile("""<PackageVersion Include="NUnit" Version="4.5.0" Condition="'$(TargetFramework)' == 'net472'" />"""));
+
+            Assert.AreEqual("4.6.1", version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsACentralPackageVersionConditionedOnTheProjectFramework()
+        {
+            string? version = AddNUnitUnderCentralPackageManagement(
+                CentralPackagesFile($"""<PackageVersion Include="NUnit" Version="4.5.0" Condition="'$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'" />"""));
+
+            Assert.IsNull(version);
+        }
+
+        // Choose/When blocks and Import conditions are resolved while properties are evaluated,
+        // before the project sets TargetFramework. NuGet's restore reads a single-target project
+        // from that same evaluation, so it never sees these entries there and the template
+        // version has to be passed; a multi-targeting project is restored per framework, with
+        // TargetFramework set, and does see them.
+        private const string ChooseOnTargetFramework = """
+            <Project>
+              <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
+              <Choose>
+                <When Condition="'$(TargetFramework)' != ''">
+                  <ItemGroup><PackageVersion Include="NUnit" Version="4.5.0" /></ItemGroup>
+                </When>
+              </Choose>
+            </Project>
+            """;
+
+        private const string ImportOnTargetFramework = """
+            <Project>
+              <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
+              <Import Project="pins.props" Condition="'$(TargetFramework)' != ''" />
+            </Project>
+            """;
+
+        private const string NUnitPins = """<Project><ItemGroup><PackageVersion Include="NUnit" Version="4.5.0" /></ItemGroup></Project>""";
+
+        private const string MultiTargetFrameworks = $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};netstandard2.0</TargetFrameworks>";
+
+        [TestMethod]
+        public void AddPackageRefUsesTheTemplateVersionWhenASingleTargetProjectOnlyChoosesTheEntryForItsFramework()
+        {
+            string? version = AddNUnitUnderCentralPackageManagement(ChooseOnTargetFramework);
+
+            Assert.AreEqual("4.6.1", version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefUsesTheTemplateVersionWhenASingleTargetProjectOnlyImportsTheEntryForItsFramework()
+        {
+            string? version = AddNUnitUnderCentralPackageManagement(ImportOnTargetFramework, pinsProps: NUnitPins);
+
+            Assert.AreEqual("4.6.1", version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsACentralPackageVersionChosenForEveryFrameworkOfAMultiTargetProject()
+        {
+            string? version = AddNUnitUnderCentralPackageManagement(ChooseOnTargetFramework, targetFrameworkProperty: MultiTargetFrameworks);
+
+            Assert.IsNull(version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsACentralPackageVersionImportedForEveryFrameworkOfAMultiTargetProject()
+        {
+            string? version = AddNUnitUnderCentralPackageManagement(ImportOnTargetFramework, pinsProps: NUnitPins, targetFrameworkProperty: MultiTargetFrameworks);
+
+            Assert.IsNull(version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefUsesTheTemplateVersionWhenOnlySomeFrameworksHaveACentralEntry()
+        {
+            // Omitting the version is only safe when every target framework resolves an entry.
+            string? version = AddNUnitUnderCentralPackageManagement(
+                CentralPackagesFile($"""<PackageVersion Include="NUnit" Version="4.5.0" Condition="'$(TargetFramework)' == '{ToolsetInfo.CurrentTargetFramework}'" />"""),
+                targetFrameworkProperty: $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};netstandard2.0</TargetFrameworks>");
+
+            Assert.AreEqual("4.6.1", version);
+        }
+
+        [TestMethod]
+        public void AddPackageRefKeepsACentralPackageVersionThatEveryFrameworkHas()
+        {
+            string? version = AddNUnitUnderCentralPackageManagement(
+                CentralPackagesFile("""<PackageVersion Include="NUnit" Version="4.5.0" />"""),
+                targetFrameworkProperty: $"<TargetFrameworks>{ToolsetInfo.CurrentTargetFramework};netstandard2.0</TargetFrameworks>");
+
+            Assert.IsNull(version);
+        }
+
+        private static string CentralPackagesFile(string packageVersionItem) => $"""
+            <Project>
+              <PropertyGroup><ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally></PropertyGroup>
+              <ItemGroup>{packageVersionItem}</ItemGroup>
+            </Project>
+            """;
+
+        /// <summary>
+        /// Runs an NUnit 4.6.1 add-package post-action against a real project on disk, since the
+        /// central version lookup evaluates the project with MSBuild, and returns the version
+        /// that reached the callback.
+        /// </summary>
+        private string? AddNUnitUnderCentralPackageManagement(
+            string directoryPackagesProps,
+            string? parentDirectoryPackagesProps = null,
+            string? pinsProps = null,
+            string targetFrameworkProperty = $"<TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>",
+            [CallerMemberName] string testName = "")
+        {
+            string repositoryRoot = TestAssetsManager.CreateTestDirectory(testName).Path;
+            string projectDirectory = repositoryRoot;
+            if (parentDirectoryPackagesProps is not null)
+            {
+                File.WriteAllText(Path.Combine(repositoryRoot, "Directory.Packages.props"), parentDirectoryPackagesProps);
+                projectDirectory = Directory.CreateDirectory(Path.Combine(repositoryRoot, "src")).FullName;
+            }
+
+            File.WriteAllText(Path.Combine(projectDirectory, "Directory.Packages.props"), directoryPackagesProps);
+            if (pinsProps is not null)
+            {
+                File.WriteAllText(Path.Combine(projectDirectory, "pins.props"), pinsProps);
+            }
+
+            File.WriteAllText(Path.Combine(projectDirectory, "MyApp.csproj"), $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>{targetFrameworkProperty}</PropertyGroup>
+                </Project>
+                """);
+
+            var callback = new MockAddProjectReferenceCallback();
+            DotnetAddPostActionProcessor actionProcessor = new(callback.AddPackageReference, callback.AddProjectReference);
+            var args = new Dictionary<string, string>()
+            {
+                { "targetFiles", "[\"MyApp.csproj\"]" }, { "referenceType", "package" }, { "reference", "NUnit" }, { "version", "4.6.1" }
+            };
+            var postAction = new MockPostAction(default, default, default, default, default!) { ActionId = DotnetAddPostActionProcessor.ActionProcessorId, Args = args };
+            MockCreationEffects creationEffects = new MockCreationEffects()
+                .WithFileChange(new MockFileChange("./MyApp.csproj", "./MyApp.csproj", ChangeKind.Create));
+
+            Assert.IsTrue(actionProcessor.Process(_engineEnvironmentSettings, postAction, creationEffects, new MockCreationResult(), projectDirectory));
+            Assert.AreEqual("NUnit", callback.Reference);
+            return callback.Version;
+        }
+
         private class MockAddProjectReferenceCallback
         {
             public string? Target { get; private set; }
@@ -322,7 +547,11 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 return true;
             }
 
-            public bool AddPackageReference(string target, string reference, string? version)
+            public string? Version { get; private set; }
+
+            public bool? NoRestore { get; private set; }
+
+            public bool AddPackageReference(string target, string reference, string? version, bool noRestore)
             {
                 if (Target != null)
                 {
@@ -331,6 +560,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
                 Target = target;
                 Reference = reference;
+                Version = version;
+                NoRestore = noRestore;
 
                 return true;
             }

@@ -10,10 +10,12 @@
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
 <!--#if (CoverageTool == "coverlet")-->
+<!--#if (HostIdentifier != "dotnetcli" && HostIdentifier != "dotnetcli-preview")-->
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="10.0.1" />
   </ItemGroup>
+<!--#endif-->
 <!--#endif-->
 <!--#else-->
     <TestingExtensionsProfile Condition=" '$(ExtensionsProfile)' != 'Default' ">$(ExtensionsProfile)</TestingExtensionsProfile>
@@ -60,6 +62,7 @@
 <!--#endif-->
 <!--#endif-->
   </PropertyGroup>
+<!--#if (HostIdentifier != "dotnetcli" && HostIdentifier != "dotnetcli-preview")-->
 
   <ItemGroup>
 <!--#if (CoverageTool == "coverlet")-->
@@ -67,6 +70,7 @@
 <!--#endif-->
     <PackageReference Include="MSTest" Version="4.4.0" />
   </ItemGroup>
+<!--#endif-->
 
   <ItemGroup>
     <Compile Include="MSTestSettings.fs" />

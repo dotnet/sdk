@@ -10,6 +10,7 @@
     <IsPackable Condition="'$(EnablePack)' == 'true'">true</IsPackable>
     <IsPackable Condition="'$(EnablePack)' != 'true'">false</IsPackable>
   </PropertyGroup>
+<!--#if (HostIdentifier != "dotnetcli" && HostIdentifier != "dotnetcli-preview")-->
 
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
@@ -19,6 +20,7 @@
     <PackageReference Include="NUnit.Analyzers" Version="4.14.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="6.2.0" />
   </ItemGroup>
+<!--#endif-->
 
 <!--#if (csharpFeature_ImplicitUsings)-->
   <ItemGroup>

@@ -13,6 +13,7 @@
     <OutputType>Exe</OutputType>
 <!--#endif-->
   </PropertyGroup>
+<!--#if (HostIdentifier != "dotnetcli" && HostIdentifier != "dotnetcli-preview")-->
 
   <ItemGroup>
 <!--#if (TestRunner != "Microsoft.Testing.Platform")-->
@@ -23,5 +24,6 @@
     <PackageReference Include="NUnit.Analyzers" Version="4.14.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="6.2.0" />
   </ItemGroup>
+<!--#endif-->
 
 </Project>

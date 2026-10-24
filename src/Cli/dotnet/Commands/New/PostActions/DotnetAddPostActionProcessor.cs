@@ -1,19 +1,22 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.Utils;
+using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
 internal class DotnetAddPostActionProcessor(
-    Func<string, string, string?, bool>? addPackageReferenceCallback = null,
+    Func<string, string, string?, bool, bool>? addPackageReferenceCallback = null,
     Func<string, string, bool>? addProjectReferenceCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, string, string?, bool> _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
+    private readonly Func<string, string, string?, bool, bool> _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
     private readonly Func<string, string, bool> _addProjectReferenceCallback = addProjectReferenceCallback ?? DotnetCommandCallbacks.AddProjectReference;
 
     public override Guid Id => ActionProcessorId;
@@ -137,7 +140,24 @@ internal class DotnetAddPostActionProcessor(
         else if (string.Equals(referenceType, "package", StringComparison.OrdinalIgnoreCase))
         {
             actionConfig.Args.TryGetValue("version", out string? version);
-            return AddPackageReference(projectFile, referenceToAdd, version);
+
+            // A repository using central package management already owns the version of this
+            // package. Passing the template's version would rewrite the existing PackageVersion
+            // entry and change it for every project in that repository, so the template version
+            // is only supplied when the evaluated project has no active entry for the package yet.
+            if (!string.IsNullOrWhiteSpace(version) && HasCentralPackageVersion(projectFile, referenceToAdd))
+            {
+                version = null;
+            }
+
+            // Templates that schedule their own restore post-action opt out of the per-package
+            // restore. Left unset, the add keeps restoring, so package existence and
+            // compatibility are still validated for every other template.
+            bool noRestore = actionConfig.Args.TryGetValue("noRestore", out string? noRestoreValue)
+                && bool.TryParse(noRestoreValue, out bool parsedNoRestore)
+                && parsedNoRestore;
+
+            return AddPackageReference(projectFile, referenceToAdd, version, noRestore);
         }
         else if (string.Equals(referenceType, "framework", StringComparison.OrdinalIgnoreCase))
         {
@@ -151,7 +171,48 @@ internal class DotnetAddPostActionProcessor(
         }
     }
 
-    private bool AddPackageReference(string projectPath, string packageName, string? version)
+    internal static bool HasCentralPackageVersion(string projectFile, string packageName)
+    {
+        // MSBuild evaluates from the real disk, so check there rather than through the host file system.
+        if (!File.Exists(projectFile))
+        {
+            return false;
+        }
+
+        try
+        {
+            // Read the evaluated project rather than Directory.Packages.props itself, and evaluate it
+            // the way NuGet's restore does (NuGet.targets, _GenerateProjectRestoreGraphAllFrameworks
+            // and _GenerateProjectRestoreGraphCurrentProject): a project without TargetFrameworks is
+            // read from its own evaluation, a multi-targeting one once per framework with
+            // TargetFramework as a global property.
+            using var projectCollection = new ProjectCollection();
+            MSBuildProject outerProject = projectCollection.LoadProject(projectFile);
+
+            string[] targetFrameworks = outerProject.GetPropertyValue("TargetFrameworks")
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (targetFrameworks.Length == 0)
+            {
+                return DeclaresCentralPackageVersion(outerProject, packageName);
+            }
+
+            // The template version is only dropped when every framework already has an entry.
+            return targetFrameworks.All(tfm => DeclaresCentralPackageVersion(
+                projectCollection.LoadProject(projectFile, new Dictionary<string, string> { ["TargetFramework"] = tfm }, toolsVersion: null),
+                packageName));
+        }
+        catch (Exception e) when (e is InvalidProjectFileException or IOException or UnauthorizedAccessException)
+        {
+            // A project that does not evaluate keeps the previous behaviour: the template version is passed.
+            return false;
+        }
+    }
+
+    private static bool DeclaresCentralPackageVersion(MSBuildProject project, string packageName)
+        => string.Equals(project.GetPropertyValue("ManagePackageVersionsCentrally"), "true", StringComparison.OrdinalIgnoreCase)
+            && project.GetItems("PackageVersion").Any(item => string.Equals(item.EvaluatedInclude, packageName, StringComparison.OrdinalIgnoreCase));
+
+    private bool AddPackageReference(string projectPath, string packageName, string? version, bool noRestore)
     {
         try
         {
@@ -163,7 +224,7 @@ internal class DotnetAddPostActionProcessor(
             {
                 Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddPackageReference_WithVersion, packageName, version, projectPath));
             }
-            bool succeeded = _addPackageReferenceCallback(projectPath, packageName, version);
+            bool succeeded = _addPackageReferenceCallback(projectPath, packageName, version, noRestore);
             if (succeeded)
             {
                 Reporter.Output.WriteLine(CliCommandStrings.PostAction_AddReference_Succeeded);
