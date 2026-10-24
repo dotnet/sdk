@@ -164,6 +164,10 @@ The runner builds the selected test project incrementally and retains its TRX an
 binlog paths under `artifacts/log/test-runs/`. Pass `--repeat N` to build once and run
 the selected tests repeatedly, with separate TRX output and timing for each iteration.
 
+When identifying files in test output, inspect the filename or asset metadata rather
+than searching the entire path for an extension. Temporary directory names can contain
+strings such as `.br` or `.gz`, even when the asset itself is uncompressed.
+
 For process-output assertions, process exit does not imply that stdout and stderr
 callbacks have finished. Complete the output channel only after both streams reach EOF
 and drain queued lines before reporting missing output. Prefer deterministic tests that

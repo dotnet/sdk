@@ -517,9 +517,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
     }
 
     [TestMethod]
-    public void Build_DefaultDocumentAndSpaFallback_CreatesAdditionalEndpoints()
+    [DataRow(".br")]
+    [DataRow(".gz")]
+    public void Build_DefaultDocumentAndSpaFallback_CreatesAdditionalEndpoints(string directoryMarker)
     {
-        ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp")
+        ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp", callerName: $"Index{directoryMarker}")
             .WithProjectChanges(document =>
             {
                 document.Root.AddFirst(
@@ -528,6 +530,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
                         new XElement("StaticWebAssetSpaFallbackEnabled", "true")));
             });
         var root = ProjectDirectory.TestRoot;
+        root.Should().Contain(directoryMarker);
 
         var dir = Directory.CreateDirectory(Path.Combine(root, "wwwroot"));
         File.WriteAllText(Path.Combine(dir.FullName, "index.html"), "<html><body>Hello</body></html>");
@@ -544,7 +547,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
         var endpoints = manifest.Endpoints;
 
         // There should be endpoints for index.html (original + fingerprinted + default document + spa fallback)
-        var indexHtmlEndpoints = endpoints.Where(ep => ep.AssetFile.Contains("index.html") && !ep.AssetFile.Contains(".gz") && !ep.AssetFile.Contains(".br"));
+        var indexHtmlEndpoints = endpoints.Where(ep => string.Equals(Path.GetFileName(ep.AssetFile), "index.html", StringComparison.Ordinal));
 
         // Original index.html endpoint
         indexHtmlEndpoints.Should().Contain(e => e.Route == "index.html");
