@@ -52,6 +52,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         // Platform guard method name, prefix, suffix
         private const string IsOSPlatform = nameof(IsOSPlatform);
+        private const string IsApplePlatform = nameof(IsApplePlatform);
         private const string IsPrefix = "Is";
         private const string OptionalSuffix = "VersionAtLeast";
         private const string NetCoreAppIdentifier = ".NETCoreApp";
