@@ -214,14 +214,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         IDisposable? environmentScope = null;
         try
         {
-            Dictionary<string, string?> additionalEnvironmentVariables = [];
-            if (!NoRestore && !evalOnly)
-            {
-                NuGetSignatureVerificationEnabler.ConditionallyEnable(additionalEnvironmentVariables);
-            }
-
-            environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables(
-                additionalEnvironmentVariables);
+            environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];

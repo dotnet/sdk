@@ -26,18 +26,12 @@ namespace Microsoft.DotNet.HotReload;
 /// Sealed WebSocket server using Kestrel.
 /// Uses a request handler delegate for all WebSocket handling.
 /// </summary>
-internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> serverUrls, ImmutableArray<string> httpServerUrls) : IDisposable, IAsyncDisposable
+internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> serverUrls, ImmutableArray<string> httpServerUrls) : IDisposable
 {
     private static bool? s_lazyTlsSupported;
 
     public void Dispose()
         => host.Dispose();
-
-    public ValueTask DisposeAsync()
-    {
-        Dispose();
-        return default;
-    }
 
     public ImmutableArray<string> ServerUrls
         => serverUrls;
@@ -73,7 +67,26 @@ internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> 
             .Get<IServerAddressesFeature>()?
             .Addresses ?? [];
 
-        return new KestrelWebSocketServer(host, serverUrls: [.. addresses.Select(WebSocketConfig.GetWebSocketUrl)], httpServerUrls: [.. addresses]);
+        return new KestrelWebSocketServer(host, serverUrls: [.. addresses.Select(GetWebSocketUrl)], httpServerUrls: [.. addresses]);
+    }
+
+    /// <summary>
+    /// Converts an HTTP(S) URL to a WebSocket URL and replaces 127.0.0.1 with localhost.
+    /// </summary>
+    internal static string GetWebSocketUrl(string httpUrl)
+    {
+        var uri = new Uri(httpUrl, UriKind.Absolute);
+        var builder = new UriBuilder(uri)
+        {
+            Scheme = uri.Scheme == "https" ? "wss" : "ws"
+        };
+
+        if (builder.Host == "127.0.0.1")
+        {
+            builder.Host = "localhost";
+        }
+
+        return builder.Uri.ToString().TrimEnd('/');
     }
 
     /// <summary>

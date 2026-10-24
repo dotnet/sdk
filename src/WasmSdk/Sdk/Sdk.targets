@@ -29,7 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- Copy the DLL to the intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file.
-         The Hot Reload WebAssembly initializer initializes the agent and activates browser tools. -->
+         The dotnet-watch WebAssembly initializer initializes the agent and activates browser tools. -->
     <Copy
       SourceFiles="$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.Browser.dll"
       DestinationFolder="$(_WasmHotReloadIntermediatePath)"
@@ -45,16 +45,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <!-- Activates the Hot Reload browser tools client. Applies to all target frameworks: on .NET 10+
+  <!-- Activates the dotnet-watch browser tools client. Applies to all target frameworks: on .NET 10+
        this initializer loads the Hot Reload agent assembly above to apply managed code updates;
        older versions use the runtime's own window.Blazor._internal apply API. The assets are produced by
-       Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets, which substitutes the target framework
+       Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets, which substitutes the target framework
        specific tokens in the initializer template. -->
   <PropertyGroup>
-    <HotReloadBrowserToolsAssetPrefix>Microsoft.NET.Sdk.WebAssembly.HotReload</HotReloadBrowserToolsAssetPrefix>
-    <HotReloadBrowserToolsInitializerFile>$(MSBuildThisFileDirectory)HotReload\Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js.template</HotReloadBrowserToolsInitializerFile>
-    <HotReloadBrowserToolsUseSdkHotReloadAgent>$(_WasmEnableHotReload)</HotReloadBrowserToolsUseSdkHotReloadAgent>
-    <HotReloadBrowserToolsUseSdkHotReloadAgent Condition="'$(HotReloadBrowserToolsUseSdkHotReloadAgent)' == ''">false</HotReloadBrowserToolsUseSdkHotReloadAgent>
+    <DotNetWatchBrowserToolsAssetPrefix>Microsoft.NET.Sdk.WebAssembly.DotNetWatch</DotNetWatchBrowserToolsAssetPrefix>
+    <DotNetWatchBrowserToolsInitializerFile>$(MSBuildThisFileDirectory)DotNetWatch\Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template</DotNetWatchBrowserToolsInitializerFile>
+    <DotNetWatchBrowserToolsUseSdkHotReloadAgent>$(_WasmEnableHotReload)</DotNetWatchBrowserToolsUseSdkHotReloadAgent>
+    <DotNetWatchBrowserToolsUseSdkHotReloadAgent Condition="'$(DotNetWatchBrowserToolsUseSdkHotReloadAgent)' == ''">false</DotNetWatchBrowserToolsUseSdkHotReloadAgent>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />

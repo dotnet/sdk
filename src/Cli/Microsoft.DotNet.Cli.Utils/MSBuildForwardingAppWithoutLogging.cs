@@ -234,22 +234,6 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     internal static IDisposable SetMSBuildRequiredEnvironmentVariables()
         => SetEnvironmentVariables(GetMSBuildRequiredEnvironmentVariables());
 
-    /// <summary>
-    /// Sets the required MSBuild environment variables and additional variables for a direct
-    /// in-process MSBuild operation. Restores their original values when disposed.
-    /// </summary>
-    internal static IDisposable SetMSBuildRequiredEnvironmentVariables(
-        IEnumerable<KeyValuePair<string, string?>> additionalEnvironmentVariables)
-    {
-        Dictionary<string, string?> environmentVariables = GetMSBuildRequiredEnvironmentVariables();
-        foreach (KeyValuePair<string, string?> variable in additionalEnvironmentVariables)
-        {
-            environmentVariables[variable.Key] = variable.Value;
-        }
-
-        return SetEnvironmentVariables(environmentVariables);
-    }
-
     private static IDisposable SetEnvironmentVariables(IEnumerable<KeyValuePair<string, string?>> environmentVariables)
     {
         Dictionary<string, string?> savedEnvironmentVariables = [];

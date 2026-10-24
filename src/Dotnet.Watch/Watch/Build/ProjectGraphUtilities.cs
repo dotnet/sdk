@@ -90,10 +90,7 @@ internal static class ProjectGraphUtilities
         => GetBooleanPropertyValue(projectNode.ProjectInstance, propertyName, defaultValue);
 
     public static bool GetBooleanPropertyValue(this ProjectInstance project, string propertyName, bool defaultValue = false)
-        => TryGetBooleanPropertyValue(project, propertyName) ?? defaultValue;
-
-    public static bool? TryGetBooleanPropertyValue(this ProjectInstance project, string propertyName)
-        => project.GetPropertyValue(propertyName) is { Length: > 0 } value ? bool.TryParse(value, out var result) && result : null;
+        => project.GetPropertyValue(propertyName) is { Length: >0 } value ? bool.TryParse(value, out var result) && result : defaultValue;
 
     public static bool GetBooleanMetadataValue(this ProjectItemInstance item, string metadataName, bool defaultValue = false)
         => item.GetMetadataValue(metadataName) is { Length: > 0 } value ? bool.TryParse(value, out var result) && result : defaultValue;

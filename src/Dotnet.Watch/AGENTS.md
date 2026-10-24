@@ -15,6 +15,15 @@ Reload).
 
 ## Conventions & gotchas
 
+- **File-based defaults are not the watch tool's runtime framework.** The CLI and
+  watch source-link [`FileBasedProgramDefaults`](../Common/FileBasedProgramDefaults.cs).
+  Keep [`ProjectGraphFactory`](Watch/Build/ProjectGraphFactory.cs) aligned with
+  [`Product.TargetFrameworkVersion`](../Cli/Microsoft.DotNet.Cli.CoreUtils/Product.cs)
+  so Hot Reload evaluates the same references that `dotnet build` compiled.
+- **Targeted Windows cancellation uses Ctrl+Break.**
+  [`ProcessUtilities`](Watch/Utilities/ProcessUtilities.cs) requires a positive process-group ID.
+  [Windows does not deliver Ctrl+C to a specified process group](https://learn.microsoft.com/windows/console/generateconsolectrlevent),
+  even when the native call reports success. Never broadcast a console signal to group zero.
 - **Shared source via `.projitems`.** Several folders share code through
   `*.projitems` imported into multiple projects (not NuGet packages). Before
   refactoring shared files, check every importer.
@@ -42,12 +51,12 @@ Reload).
   applications.
 - **The browser authenticates the provider, so the provider must not serve code.** The
   *build* owns the browser-tools RSA keypair:
-  [`EnsureHotReloadBrowserToolsKey`](../StaticWebAssetsSdk/Tasks/EnsureHotReloadBrowserToolsKey.cs)
+  [`EnsureDotNetWatchBrowserToolsKey`](../StaticWebAssetsSdk/Tasks/EnsureDotNetWatchBrowserToolsKey.cs)
   writes both halves to deterministic paths under the browser-facing project's intermediate
   output, and
   only the public half is pinned into an application-hosted configuration module. There is
   no watch-to-MSBuild property flow: `dotnet watch` reads the private half back through
-  [`BrowserToolsBuildOutputs`](HotReloadClient/Web/BrowserToolsBuildOutputs.cs) when each browser
+  [`BrowserToolsBuildOutputs`](Watch/Browser/BrowserToolsBuildOutputs.cs) when each browser
   connects. This lets the per-project provider bind before `dotnet run` builds the
   application, avoids a separate watcher build, and observes key rotation after `Clean`.
   The provider validates and imports the current matching pair only long enough to decrypt
@@ -63,7 +72,7 @@ Reload).
   WebAssembly uses the client as the browser-tools project even though the server remains
   the launching project.
   See
-  [`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets).
+  [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets).
   Never move executable browser-tools code back into the provider, never let the private
   key or the browser's shared secret reach a build property, an application asset or a log,
   and keep the generated assets build only.
@@ -71,7 +80,7 @@ Reload).
   the first message on an accepted connection and releases live messages for that
   connection only after the browser acknowledges it, so there is no wire-level generation
   id. The internal epoch in
-  [`BrowserRefreshServer`](HotReloadClient/Web/BrowserRefreshServer.cs)
+  [`AbstractBrowserRefreshServer`](HotReloadClient/Web/AbstractBrowserRefreshServer.cs)
   exists only to drop work produced by a superseded client; do not surface it on the wire.
 - **Activation is app-model-specific, but the browser client is shared.** MVC and Razor
   Pages use
@@ -109,8 +118,8 @@ Reload).
   resolves readiness in a `finally`; the browser tools client awaits it before replaying.
   This is the one case that cannot use the runtime config object, because the value is a
   promise that only exists once `onRuntimeReady` has started. Keep the rendezvous helpers in
-  the [WebAssembly initializer](../WasmSdk/Sdk/HotReload/Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js.template)
-  and the Static Web Assets SDK's `HotReload-browser-tools.js` in sync. The wait is
+  the [WebAssembly initializer](../WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template)
+  and the Static Web Assets SDK's `dotnet-watch-browser-tools.js` in sync. The wait is
   bounded and best effort for older runtimes that install the apply API through their own
   bootstrap, or pages that never boot WebAssembly, so they degrade to a logged warning
   instead of a reload loop.
@@ -130,9 +139,9 @@ Reload).
   `__ASPNETCORE_BROWSER_TOOLS`.** Its `WebAssemblyHotReload` creates the Hot Reload agent
   only inside `InitializeAsync`, which the runtime calls only when that variable is set, so
   without it nothing is applied. The
-  [initializer template](../WasmSdk/Sdk/HotReload/Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js.template)
+  [initializer template](../WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template)
   therefore has a `__RUNTIME_HOT_RELOAD_AGENT__` placeholder that
-  [`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets)
+  [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets)
   substitutes with `true` only when `TargetFrameworkVersion` equals `9.0`. .NET 8 must not
   get it (it would import the removed `blazor-hotreload.js`) and .NET 10+ must not get it
   (the SDK ships its own agent). That initialization path also fetches

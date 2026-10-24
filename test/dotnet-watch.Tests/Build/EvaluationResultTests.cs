@@ -171,13 +171,13 @@ public class EvaluationResultTests
     [TestMethod]
     public void GetGlobalBuildProperties_PreservesUserProperties()
     {
-        // Hot Reload no longer reserves any build property for the browser tools: the build owns
-        // the browser tools key pair and settings document, and Hot Reload reads them back.
+        // dotnet-watch no longer reserves any build property for the browser tools: the build owns
+        // the browser tools key pair and settings document, and dotnet-watch reads them back.
         var properties = EvaluationResult.GetGlobalBuildProperties(["-p:CustomProperty=user-value"]);
 
         Assert.AreEqual("user-value", properties["CustomProperty"]);
         Assert.AreEqual("true", properties["DesignTimeBuild"]);
-        Assert.IsFalse(properties.ContainsKey("HotReloadBrowserTools"));
-        Assert.IsFalse(properties.ContainsKey("HotReloadBrowserToolsPublicKey"));
+        Assert.IsFalse(properties.ContainsKey("DotNetWatchBrowserTools"));
+        Assert.IsFalse(properties.ContainsKey("DotNetWatchBrowserToolsPublicKey"));
     }
 }

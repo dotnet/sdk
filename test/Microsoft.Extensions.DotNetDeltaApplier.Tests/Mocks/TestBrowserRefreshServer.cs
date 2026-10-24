@@ -3,11 +3,13 @@
 
 using System.Net.WebSockets;
 using System.Security.Cryptography;
+using System.Text;
+using Microsoft.DotNet.HotReload;
 using Microsoft.DotNet.Test.MSTest.Utilities;
 
 namespace Microsoft.DotNet.HotReload.UnitTests;
 
-internal sealed class TestBrowserRefreshServer : BrowserRefreshServer
+internal sealed class TestBrowserRefreshServer : AbstractBrowserRefreshServer
 {
     private readonly SharedSecretProvider _key;
 
@@ -16,28 +18,24 @@ internal sealed class TestBrowserRefreshServer : BrowserRefreshServer
     {
     }
 
-    public TestBrowserRefreshServer(Func<SharedSecretProvider?> sessionKeyFactory)
+    public TestBrowserRefreshServer(Func<SharedSecretProvider> sessionKeyFactory)
         : base(
-            logger: new TestLogger(),
-            connectionServerLoggerFactory: _ => new TestLogger(),
-            connectionAgentLoggerFactory: _ => new TestLogger(),
+            configureLaunchEnvironment: static (_, _) => { },
             sessionKeyFactory,
-            middlewareAssemblyPath: Path.GetTempPath(),
-            useGatewayProxy: false,
-            suppressTimeouts: true)
+            new TestLogger(),
+            _ => new TestLogger(),
+            _ => new TestLogger())
     {
         _key = new SharedSecretProvider();
     }
 
     private TestBrowserRefreshServer(RSAParameters keyParameters)
         : base(
-            logger: new TestLogger(),
-            connectionServerLoggerFactory: _ => new TestLogger(),
-            connectionAgentLoggerFactory: _ => new TestLogger(),
+            configureLaunchEnvironment: static (_, _) => { },
             sessionKeyFactory: () => new SharedSecretProvider(keyParameters),
-            middlewareAssemblyPath: Path.GetTempPath(),
-            useGatewayProxy: false,
-            suppressTimeouts: true)
+            new TestLogger(),
+            _ => new TestLogger(),
+            _ => new TestLogger())
     {
         _key = new SharedSecretProvider(keyParameters);
     }
@@ -81,12 +79,14 @@ internal sealed class TestBrowserRefreshServer : BrowserRefreshServer
         return ValueTask.FromResult<TResult?>(null);
     }
 
-    private protected override ValueTask<WebServerHost> CreateAndStartHostAsync(WebSocketConfig config, CancellationToken cancellationToken)
+    protected override ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
         => throw new NotImplementedException();
 
-    public override async ValueTask DisposeAsync()
+    protected override bool SuppressTimeouts => true;
+
+    public override void Dispose()
     {
-        await base.DisposeAsync();
+        base.Dispose();
         _key.Dispose();
     }
 
