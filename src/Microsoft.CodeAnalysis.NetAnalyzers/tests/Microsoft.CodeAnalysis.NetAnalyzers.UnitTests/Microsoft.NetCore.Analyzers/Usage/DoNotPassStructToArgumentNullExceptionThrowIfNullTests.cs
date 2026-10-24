@@ -887,6 +887,373 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public async Task NotNullable_ExpressionBodiedMethod_Diagnostic()
+        {
+            const string code = """
+                using System;
+
+                class Test
+                {
+                    public void M(int x) => {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                }
+                """;
+            const string fixedCode = """
+                using System;
+
+                class Test
+                {
+                    public void M(int x)
+                    {
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NotNullable_ExpressionBodiedConstructor_Diagnostic()
+        {
+            const string code = """
+                using System;
+
+                class Test
+                {
+                    public Test(int x) => {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                }
+                """;
+            const string fixedCode = """
+                using System;
+
+                class Test
+                {
+                    public Test(int x)
+                    {
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NotNullable_ExpressionBodiedDestructor_Diagnostic()
+        {
+            const string code = """
+                using System;
+
+                class Test
+                {
+                    private readonly int _x;
+
+                    ~Test() => {|#0:ArgumentNullException.ThrowIfNull(_x)|};
+                }
+                """;
+            const string fixedCode = """
+                using System;
+
+                class Test
+                {
+                    private readonly int _x;
+
+                    ~Test()
+                    {
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [DataRow("set")]
+        [DataRow("init")]
+        public async Task NotNullable_ExpressionBodiedAccessor_Diagnostic(string accessor)
+        {
+            var code = $$"""
+                using System;
+
+                class Test
+                {
+                    public int P
+                    {
+                        get => 0;
+                        {{accessor}} => {|#0:ArgumentNullException.ThrowIfNull(value)|};
+                    }
+                }
+                """;
+            var fixedCode = $$"""
+                using System;
+
+                class Test
+                {
+                    public int P
+                    {
+                        get => 0;
+                        {{accessor}}
+                        {
+                        }
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                LanguageVersion = LanguageVersion.CSharp9,
+                ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NotNullable_ExpressionBodiedIndexerAccessor_Diagnostic()
+        {
+            const string code = """
+                using System;
+
+                class Test
+                {
+                    public int this[int i]
+                    {
+                        get => i;
+                        set => {|#0:ArgumentNullException.ThrowIfNull(value)|};
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
+
+                class Test
+                {
+                    public int this[int i]
+                    {
+                        get => i;
+                        set
+                        {
+                        }
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NotNullable_ExpressionBodiedLocalFunction_Diagnostic()
+        {
+            const string code = """
+                using System;
+
+                class Test
+                {
+                    public void M(int x)
+                    {
+                        void Check(int y) => {|#0:ArgumentNullException.ThrowIfNull(y)|};
+                        Check(x);
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
+
+                class Test
+                {
+                    public void M(int x)
+                    {
+                        void Check(int y) { }
+
+                        Check(x);
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NotNullable_ExpressionBodiedMethod_TriviaIsPreserved_Diagnostic()
+        {
+            const string code = """
+                using System;
+
+                class Test
+                {
+                    // This is a method.
+                    public void M(int x) => {|#0:ArgumentNullException.ThrowIfNull(x)|}; // Throw if null
+
+                    public void N() { }
+                }
+                """;
+            const string fixedCode = """
+                using System;
+
+                class Test
+                {
+                    // This is a method.
+                    public void M(int x)
+                    {
+                    }
+
+                    public void N() { }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task Nullable_ExpressionBodiedMethod_Diagnostic()
+        {
+            const string code = """
+                using System;
+
+                class Test
+                {
+                    public void M(int? x) => {|#0:ArgumentNullException.ThrowIfNull(x)|};
+                }
+                """;
+            const string fixedCode = """
+                using System;
+
+                class Test
+                {
+                    public void M(int? x)
+                    {
+                        if (!x.HasValue)
+                        {
+                            throw new ArgumentNullException(nameof(x));
+                        }
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics = { NullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NotNullable_ExpressionBodiedLambda_Diagnostic()
+        {
+            const string code = """
+                using System;
+
+                class Test
+                {
+                    public void M()
+                    {
+                        Action<int> check = y => {|#0:ArgumentNullException.ThrowIfNull(y)|};
+                        check(0);
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = code,
+                ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NotNullable_FixAllSkipsExpressionBodiedLambda_Diagnostic()
+        {
+            const string code = """
+                using System;
+
+                class Test
+                {
+                    public void M(int x) => {|#0:ArgumentNullException.ThrowIfNull(x)|};
+
+                    public void N()
+                    {
+                        Action<int> check = y => {|#1:ArgumentNullException.ThrowIfNull(y)|};
+                        check(0);
+                    }
+                }
+                """;
+            const string fixedCode = """
+                using System;
+
+                class Test
+                {
+                    public void M(int x)
+                    {
+                    }
+
+                    public void N()
+                    {
+                        Action<int> check = y => {|#0:ArgumentNullException.ThrowIfNull(y)|};
+                        check(0);
+                    }
+                }
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { code },
+                    ExpectedDiagnostics =
+                    {
+                        NonNullableDiagnosticResult,
+                        new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNonNullableValueDiagnostic).WithLocation(1),
+                    },
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode },
+                    ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
         #endregion
 
         #region No diagnostic
@@ -1669,6 +2036,29 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     NullableDiagnosticResult,
                     new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNullableStructDiagnostic).WithLocation(1),
                 },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task Vb_NotNullable_SingleLineLambda_Diagnostic()
+        {
+            const string code = """
+                Imports System
+
+                Class Test
+                    Sub Run()
+                        Dim check As Action(Of Int32) = Sub(y) {|#0:ArgumentNullException.ThrowIfNull(y)|}
+                        check(0)
+                    End Sub
+                End Class
+                """;
+
+            await new VerifyVB.Test
+            {
+                TestCode = code,
+                FixedCode = code,
+                ExpectedDiagnostics = { NonNullableDiagnosticResult },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
             }.RunAsync(CancellationToken.None);
         }
