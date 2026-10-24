@@ -90,6 +90,7 @@
     <SystemMemoryToolsetPackageVersion>4.6.3</SystemMemoryToolsetPackageVersion>
     <SystemReflectionMetadataLoadContextToolsetPackageVersion>10.0.10</SystemReflectionMetadataLoadContextToolsetPackageVersion>
     <SystemReflectionMetadataToolsetPackageVersion>10.0.10</SystemReflectionMetadataToolsetPackageVersion>
+    <SystemSecurityCryptographyPkcsToolsetPackageVersion>10.0.13</SystemSecurityCryptographyPkcsToolsetPackageVersion>
     <SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>10.0.10</SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>
     <SystemTextEncodingCodePagesToolsetPackageVersion>10.0.10</SystemTextEncodingCodePagesToolsetPackageVersion>
     <SystemTextJsonToolsetPackageVersion>10.0.10</SystemTextJsonToolsetPackageVersion>
