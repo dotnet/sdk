@@ -36,10 +36,18 @@ Two families of targets:
 - Producing the laid-out SDK requires the **full repo build** (so the components exist
   to copy), not just this project — see the root build/dogfood instructions.
 
-Downlevel test runtimes are acquired by `eng/restore-toolset.ps1` and `.sh` and
-overlaid by `redist/targets/OverlaySdkOnLKG.targets`. Targeting packs required by
-offline tests belong in that test-only overlay too, not in `BundledLayoutPackage`.
-Keep their versions aligned with `GenerateBundledVersions.targets`.
+Downlevel test runtimes are acquired by
+[`eng/restore-toolset.ps1`](../../eng/restore-toolset.ps1) and
+[`.sh`](../../eng/restore-toolset.sh) and overlaid by
+[`OverlaySdkOnLKG.targets`](redist/targets/OverlaySdkOnLKG.targets).
+Targeting packs required by offline tests belong in that test-only overlay too,
+not in `BundledLayoutPackage`. Keep their versions aligned with
+`GenerateBundledVersions.targets`.
+Windows GUI tests also need the matching Windows Desktop shared runtime.
+Workload devserver runtimes follow
+[`VersionFeature110ForWorkloads`](../../eng/Versions.props), which can be newer
+than the test targeting packs pinned by
+[`Net110PackageVersion`](../../eng/ManualVersions.props).
 
 ### macOS tool signing
 

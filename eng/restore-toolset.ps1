@@ -173,9 +173,26 @@ function Get-CurrentRuntimeToolsetSpecs() {
     if ([string]::IsNullOrEmpty($net110Version)) {
         throw 'Missing Net110PackageVersion in eng/ManualVersions.props.'
     }
+    $net110WorkloadPatch = Get-VersionProperty 'VersionFeature110ForWorkloads' 'Versions.props'
+    if ($net110WorkloadPatch -eq '$(VersionFeature110)') {
+        $net110WorkloadPatch = Get-VersionProperty 'VersionFeature110' 'Versions.props'
+    }
+    if ([string]::IsNullOrEmpty($net110WorkloadPatch)) {
+        throw 'Missing VersionFeature110ForWorkloads in eng/Versions.props.'
+    }
 
     # Generated test apps still target net11 even after the current runtime packs move to net12.
     $specs = @($net110Version, "aspnetcore@$net110Version")
+    if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
+        $specs += "windowsdesktop@$net110Version"
+    }
+
+    # Workload devservers can require a newer net11 runtime than the app targeting packs.
+    $net110WorkloadVersion = "11.0.$net110WorkloadPatch"
+    if ($net110WorkloadVersion -ne $net110Version) {
+        $specs += $net110WorkloadVersion, "aspnetcore@$net110WorkloadVersion"
+    }
+
     if (-not [string]::IsNullOrEmpty($runtimeVersion)) {
         $specs += $runtimeVersion
     }

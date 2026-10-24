@@ -74,6 +74,21 @@ function GetTestRuntimeSpecs {
   # Generated test apps still target net11 even after the current runtime packs move to net12.
   runtime_specs+=("$net110_version" "aspnetcore@$net110_version")
 
+  local net110_workload_patch
+  net110_workload_patch=$(ReadVersionProperty "VersionFeature110ForWorkloads" "Versions.props")
+  if [[ "$net110_workload_patch" == '$(VersionFeature110)' ]]; then
+    net110_workload_patch=$(ReadVersionProperty "VersionFeature110" "Versions.props")
+  fi
+  if [[ -z "$net110_workload_patch" ]]; then
+    echo "Missing VersionFeature110ForWorkloads in eng/Versions.props." >&2
+    return 1
+  fi
+  # Workload devservers can require a newer net11 runtime than the app targeting packs.
+  local net110_workload_version="11.0.$net110_workload_patch"
+  if [[ "$net110_workload_version" != "$net110_version" ]]; then
+    runtime_specs+=("$net110_workload_version" "aspnetcore@$net110_workload_version")
+  fi
+
   # Also install the exact current toolset runtimes from Version.Details.props.
   local runtime_version
   runtime_version=$(ReadVersionProperty "MicrosoftNETCoreAppRefPackageVersion")
