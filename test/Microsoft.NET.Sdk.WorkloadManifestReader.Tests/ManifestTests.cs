@@ -20,6 +20,64 @@ namespace ManifestReaderTests
 
         string GetSampleManifestPath(string name) => Path.Combine(SampleProjectPath, name);
 
+        [Theory]
+        [InlineData("../escape")]
+        [InlineData(".")]
+        [InlineData("..")]
+        [InlineData("")]
+        [InlineData(" ")]
+        public void PathBasedIdsRejectInvalidComponents(string id)
+        {
+            Assert.Throws<ArgumentException>(() => new ManifestId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadPackId(id));
+        }
+
+        [Fact]
+        public void PathBasedIdsRejectNullComponents()
+        {
+            Assert.Throws<ArgumentException>(() => new ManifestId(null!));
+            Assert.Throws<ArgumentException>(() => new WorkloadId(null!));
+            Assert.Throws<ArgumentException>(() => new WorkloadPackId(null!));
+        }
+
+        [PlatformSpecificTheory(TestPlatforms.Windows)]
+        [InlineData(@"..\escape")]
+        [InlineData(@"C:\escape")]
+        [InlineData("C:relative")]
+        [InlineData("invalid:name")]
+        [InlineData("trailingdot.")]
+        [InlineData("trailingspace ")]
+        public void PathBasedIdsRejectWindowsInvalidComponents(string id)
+        {
+            Assert.Throws<ArgumentException>(() => new ManifestId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadPackId(id));
+        }
+
+        [Fact]
+        public void InvalidWorkloadIdInManifestThrowsManifestFormatException()
+        {
+            const string manifest = """
+                {
+                    "version": "1.0.0",
+                    "workloads": {
+                        "../escape": {
+                            "description": "Invalid workload"
+                        }
+                    }
+                }
+                """;
+            using MemoryStream manifestStream = new(System.Text.Encoding.UTF8.GetBytes(manifest));
+
+            var exception = Assert.Throws<WorkloadManifestFormatException>(
+                () => WorkloadManifestReader.ReadWorkloadManifest("Invalid", manifestStream, "invalid.json"));
+
+            Assert.IsType<ArgumentException>(exception.InnerException);
+            exception.Message.Should().Contain("valid path component");
+            exception.Message.Should().Contain("at offset");
+        }
+
         [Fact]
         public void ItCanDeserialize()
         {

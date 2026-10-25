@@ -9,6 +9,7 @@ using System.Runtime.Versioning;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.DotNet;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Win32;
@@ -286,16 +287,7 @@ public static class WindowsUtils
     /// <param name="component">The path component to validate.</param>
     /// <returns><see langword="true"/> if the component is safe to use in <see cref="Path.Combine"/>; otherwise <see langword="false"/>.</returns>
     public static bool ValidatePathComponent(string component)
-    {
-        if (string.IsNullOrWhiteSpace(component))
-        {
-            return false;
-        }
-
-        return !component.Contains(Path.DirectorySeparatorChar)
-            && !component.Contains(Path.AltDirectorySeparatorChar)
-            && !component.Contains("..");
-    }
+        => PathComponentUtilities.IsValidPathComponent(component);
 
     /// <summary>
     /// Validates that the specified path, after canonicalization, is the expected root directory itself

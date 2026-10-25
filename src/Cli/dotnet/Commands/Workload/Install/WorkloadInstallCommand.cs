@@ -81,6 +81,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
                 continue; // Skip this workload
             }
 
+            _ = ParseWorkloadId(workloadId);
             validWorkloadIds.Add(workloadId);
         }
 
@@ -95,7 +96,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         {
             if (!availableWorkloads.Select(workload => workload.Id.ToString()).Contains(workloadId))
             {
-                var exceptionMessage = _workloadResolver.IsPlatformIncompatibleWorkload(new WorkloadId(workloadId)) ?
+                var exceptionMessage = _workloadResolver.IsPlatformIncompatibleWorkload(ParseWorkloadId(workloadId)) ?
                     CliCommandStrings.WorkloadNotSupportedOnPlatform : CliCommandStrings.WorkloadNotRecognized;
 
                 throw new GracefulException(string.Format(exceptionMessage, workloadId), isUserError: false);
