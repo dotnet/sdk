@@ -3,15 +3,16 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Net;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.ObjectModel;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 {
@@ -19,6 +20,177 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
     public class ChannelVersionResolverTests(TestContext testContext)
     {
         ITestOutputHelper Log = new TestContextOutputHelper(testContext);
+
+        [TestMethod]
+        [DataRow("10", null, null, "10.0.202")]
+        [DataRow("10.0", null, null, "10.0.202")]
+        [DataRow("10.0.1xx", null, null, "10.0.106-preview.1")]
+        [DataRow("10.0.1xx", "10.0.103", false, "10.0.105")]
+        [DataRow("10.0.1xx", "10.0.199", true, null)]
+        [DataRow("10.0", "10.0.103", false, "10.0.202")]
+        [DataRow("10.0", "10.0.250", false, null)]
+        [DataRow("latest", null, null, "10.0.202")]
+        [DataRow("latest", "10.0.103", false, "10.0.202")]
+        [DataRow("latest", "10.0.103", true, "12.0.100-preview.1")]
+        [DataRow("LTS", null, null, "10.0.202")]
+        [DataRow("preview", null, null, "12.0.100-preview.1")]
+        [DataRow("8.0", null, null, "8.0.100")]
+        [DataRow("9", null, null, "9.0.100")]
+        public void MatchingResolutionSelectsLatestEligibleRelease(string name, string? minimum, bool? previews, string? expected)
+        {
+            var fixture = ReleaseIndexFixture.Create();
+            var channel = new UpdateChannel(name, minimum is null ? null : new ReleaseVersion(minimum), previews);
+
+            var selected = ChannelVersionResolver.GetLatestMatchingVersion(
+                channel, InstallComponent.SDK, fixture.Index, fixture.GetReleases);
+
+            (selected?.ToString()).Should().Be(expected);
+        }
+
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow(null, false)]
+        [DataRow(null, true)]
+        [DataRow("8.0.100", null)]
+        [DataRow("8.0.100", false)]
+        [DataRow("8.0.100", true)]
+        public void MatchingResolutionLatestIncludesAllSupportPhases(string? minimum, bool? previews)
+        {
+            var fixture = ReleaseIndexFixture.Create(version11Phase: "eol");
+            var loaded = new List<string>();
+            var channel = new UpdateChannel("latest", minimum is null ? null : new ReleaseVersion(minimum), previews);
+
+            var selected = ChannelVersionResolver.GetLatestMatchingVersion(channel, InstallComponent.SDK, fixture.Index, product =>
+            {
+                loaded.Add(product.ProductVersion);
+                return fixture.GetReleases(product);
+            });
+
+            selected!.ToString().Should().Be(previews == true ? "12.0.100-preview.1" : "11.0.100");
+            loaded.Should().Equal(previews == true ? new[] { "12.0" } : new[] { "12.0", "11.0" });
+        }
+
+        [TestMethod]
+        [DataRow(InstallComponent.Runtime, "10.0.5")]
+        [DataRow(InstallComponent.ASPNETCore, "10.0.4")]
+        [DataRow(InstallComponent.WindowsDesktop, "10.0.6")]
+        public void MatchingResolutionSelectsRequestedRuntime(InstallComponent component, string expected)
+        {
+            var fixture = ReleaseIndexFixture.Create();
+
+            var selected = ChannelVersionResolver.GetLatestMatchingVersion(
+                new UpdateChannel("10.0", new ReleaseVersion("10.0.3"), false), component, fixture.Index, fixture.GetReleases);
+
+            selected!.ToString().Should().Be(expected);
+        }
+
+        [TestMethod]
+        [DataRow("latest", "active")]
+        [DataRow("latest", "maintenance")]
+        [DataRow("latest", "eol")]
+        [DataRow("preview", "active")]
+        [DataRow("preview", "maintenance")]
+        [DataRow("preview", "eol")]
+        public void MatchingResolutionSelectsStableOverOlderPreviewRegardlessOfSupportPhase(string name, string phase)
+        {
+            var fixture = ReleaseIndexFixture.Create(version11Phase: phase);
+
+            var selected = ChannelVersionResolver.GetLatestMatchingVersion(
+                new UpdateChannel(name), InstallComponent.SDK,
+                fixture.Index.Where(p => p.ProductVersion != "12.0"), fixture.GetReleases);
+
+            selected!.ToString().Should().Be("11.0.100");
+        }
+
+        [TestMethod]
+        [DataRow("latest", "9.0.100")]
+        [DataRow("preview", "9.0.100")]
+        [DataRow("lts", "8.0.100")]
+        public void MatchingResolutionAllowsArchivedProducts(string name, string expected)
+        {
+            var fixture = ReleaseIndexFixture.Create();
+
+            var selected = ChannelVersionResolver.GetLatestMatchingVersion(
+                new UpdateChannel(name), InstallComponent.SDK,
+                fixture.Index.Where(p => p.ProductVersion is "8.0" or "9.0"), fixture.GetReleases);
+
+            selected!.ToString().Should().Be(expected);
+        }
+
+        [TestMethod]
+        [DataRow("latest", null, "10.0.202", "12.0,11.0,10.0")]
+        [DataRow("preview", null, "12.0.100-preview.1", "12.0")]
+        [DataRow("lts", null, "10.0.202", "12.0,10.0")]
+        [DataRow("8.0", null, "8.0.100", "8.0")]
+        [DataRow("latest", "11.0.100", null, "12.0,11.0")]
+        public void MatchingResolutionLoadsProductsNewestFirstUntilSatisfied(
+            string name, string? minimum, string? expected, string expectedProducts)
+        {
+            var fixture = ReleaseIndexFixture.Create();
+            var loaded = new List<string>();
+            var channel = new UpdateChannel(name, minimum is null ? null : new ReleaseVersion(minimum));
+
+            var selected = ChannelVersionResolver.GetLatestMatchingVersion(
+                channel, InstallComponent.SDK, fixture.Index, product =>
+                {
+                    loaded.Add(product.ProductVersion);
+                    return fixture.GetReleases(product);
+                });
+
+            (selected?.ToString()).Should().Be(expected);
+            loaded.Should().Equal(expectedProducts.Split(','));
+        }
+
+        [TestMethod]
+        [DataRow(InstallComponent.SDK, "8.0.100")]
+        [DataRow(InstallComponent.Runtime, "8.0.5")]
+        [DataRow(InstallComponent.ASPNETCore, "8.0.4")]
+        [DataRow(InstallComponent.WindowsDesktop, "8.0.6")]
+        public void MatchingResolutionContinuesToArchivedProductWhenNewerProductsHaveNoMatch(
+            InstallComponent component, string expected)
+        {
+            var fixture = ReleaseIndexFixture.Create();
+            var loaded = new List<string>();
+
+            var selected = ChannelVersionResolver.GetLatestMatchingVersion(
+                new UpdateChannel("latest"), component, fixture.Index, product =>
+                {
+                    loaded.Add(product.ProductVersion);
+                    return product.ProductVersion == "8.0" ? fixture.GetReleases(product) : [];
+                });
+
+            selected!.ToString().Should().Be(expected);
+            loaded.Should().Equal("12.0", "11.0", "10.0", "9.0", "8.0");
+        }
+
+        [TestMethod]
+        public void MatchingResolutionLoadsOnlyProductsInChannelScope()
+        {
+            var fixture = ReleaseIndexFixture.Create();
+            var loaded = new List<string>();
+
+            var selected = ChannelVersionResolver.GetLatestMatchingVersion(
+                new UpdateChannel("10.0.1xx"), InstallComponent.SDK, fixture.Index, product =>
+                {
+                    loaded.Add(product.ProductVersion);
+                    return fixture.GetReleases(product);
+                });
+
+            selected.Should().NotBeNull();
+            loaded.Should().Equal("10.0");
+        }
+
+        [TestMethod]
+        [DataRow("10.0.103", "10.0.100", false, "10.0.103")]
+        [DataRow("10.0.103", "10.0.105", false, null)]
+        [DataRow("11.0.100-preview.1", null, false, null)]
+        [DataRow("11.0.100-preview.1", null, true, "11.0.100-preview.1")]
+        public void ExactResolutionHonorsConstraints(string name, string? minimum, bool previews, string? expected)
+        {
+            var channel = new UpdateChannel(name, minimum is null ? null : new ReleaseVersion(minimum), previews);
+            var selected = new ChannelVersionResolver().GetLatestVersionForChannel(channel, InstallComponent.SDK);
+            (selected?.ToString()).Should().Be(expected);
+        }
 
         [TestMethod]
         public void GetLatestVersionForChannel_MajorOnly_ReturnsLatestVersion()
@@ -51,6 +223,27 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         }
 
         [TestMethod]
+        [DataRow("5.0", null, true, "5.0.100-preview.7.20366.6")]
+        [DataRow("5.0.1xx", null, true, "5.0.100-preview.7.20366.6")]
+        [DataRow("5.0", null, false, null)]
+        [DataRow("5.0.1xx", null, false, null)]
+        [DataRow("5.0", "5.0.101", true, null)]
+        [DataRow("5.0.1xx", "5.0.101", true, null)]
+        public void GetLatestVersionForChannel_KnownProductChannels_HonorConstraintsWithoutLoadingIndex(
+            string name, string? minimum, bool previews, string? expected)
+        {
+            var releaseManifest = new TrackingReleaseManifest();
+            var resolver = new ChannelVersionResolver(releaseManifest, new DailyChannelResolver(releaseManifest));
+            var channel = new UpdateChannel(name, minimum is null ? null : new ReleaseVersion(minimum), previews);
+
+            var selected = resolver.GetLatestVersionForChannel(channel, InstallComponent.SDK);
+
+            (selected?.ToString()).Should().Be(expected);
+            releaseManifest.DirectReleaseRequestCount.Should().Be(1);
+            releaseManifest.IndexRequestCount.Should().Be(0);
+        }
+
+        [TestMethod]
         public void GetLatestVersionForChannel_MajorOnly_LoadsIndex()
         {
             var releaseManifest = new TrackingReleaseManifest();
@@ -60,6 +253,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             releaseManifest.IndexRequestCount.Should().Be(1);
             releaseManifest.DirectReleaseRequestCount.Should().Be(0);
+            releaseManifest.ProductReleaseRequestCount.Should().Be(0);
         }
 
         [TestMethod]
@@ -75,6 +269,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             releaseManifest.IndexRequestCount.Should().Be(1);
             releaseManifest.DirectReleaseRequestCount.Should().Be(0);
+            releaseManifest.ProductReleaseRequestCount.Should().Be(0);
         }
 
         [TestMethod]
@@ -335,7 +530,9 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
         }
 
         [TestMethod]
-        public void GetLatestVersionForChannel_DailyChannel_RoutesThroughDailyChannelResolver()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void GetLatestVersionForChannel_DailyChannel_RoutesThroughDailyChannelResolver(bool higherMinimum)
         {
             // Wiring test: GetLatestVersionForChannel for a daily channel must invoke
             // DailyChannelResolver, not the release-manifest path. We prove this by stubbing
@@ -353,10 +550,10 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             var resolver = new ChannelVersionResolver(new ReleaseManifest(), dailyResolver);
 
-            var version = resolver.GetLatestVersionForChannel(new UpdateChannel("10.0.1xx-daily"), InstallComponent.SDK, InstallArchitecture.x64);
+            var channel = new UpdateChannel("10.0.1xx-daily", higherMinimum ? new ReleaseVersion("10.0.101") : null);
+            var version = resolver.GetLatestVersionForChannel(channel, InstallComponent.SDK, InstallArchitecture.x64);
 
-            Assert.IsNotNull(version);
-            Assert.AreEqual("10.0.100-preview.4.25216.37", version!.ToString());
+            (version?.ToString()).Should().Be(higherMinimum ? null : "10.0.100-preview.4.25216.37");
         }
 
         /// <summary>
@@ -413,12 +610,20 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             public int DirectReleaseRequestCount { get; private set; }
 
+            public int ProductReleaseRequestCount { get; private set; }
+
             public ReadOnlyCollection<ProductRelease> Releases { get; }
 
             public override ProductCollection GetReleasesIndex()
             {
                 IndexRequestCount++;
                 return _index;
+            }
+
+            public override ReadOnlyCollection<ProductRelease> GetReleases(Product product)
+            {
+                ProductReleaseRequestCount++;
+                return product.ProductVersion == "5.0" ? Releases : new ReadOnlyCollection<ProductRelease>([]);
             }
 
             public override ReadOnlyCollection<ProductRelease>? GetReleases(int major, int minor)
