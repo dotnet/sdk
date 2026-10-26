@@ -650,7 +650,7 @@ public class InternalMicrosoftDetectorTests : SdkTest
     public void TelemetryProcessorEnrichesCompletedActivities()
     {
         var telemetry = new InternalMicrosoftTelemetry();
-        telemetry.Start(new TestDetector(new(
+        telemetry.Start(() => new TestDetector(new(
             true,
             "test",
             "alias",
@@ -675,7 +675,7 @@ public class InternalMicrosoftDetectorTests : SdkTest
     public void TelemetryProcessorSuppressesIdentityInCi()
     {
         var telemetry = new InternalMicrosoftTelemetry();
-        telemetry.Start(new TestDetector(new(
+        telemetry.Start(() => new TestDetector(new(
             true,
             "test",
             "alias",
@@ -699,7 +699,7 @@ public class InternalMicrosoftDetectorTests : SdkTest
     public void TelemetryTagsAreComputedOnce()
     {
         var telemetry = new InternalMicrosoftTelemetry();
-        telemetry.Start(new TestDetector(new(
+        telemetry.Start(() => new TestDetector(new(
             true,
             "test",
             "alias",
@@ -730,10 +730,50 @@ public class InternalMicrosoftDetectorTests : SdkTest
             []));
         var telemetry = new InternalMicrosoftTelemetry();
 
-        telemetry.Start(detector, cancellationSource.Token);
+        telemetry.Start(() => detector, cancellationSource.Token);
         telemetry.WaitForCompletion();
 
         detector.ObservedCancellationToken.Should().Be(cancellationSource.Token);
+    }
+
+    [TestMethod]
+    public async Task TelemetryStartDoesNotBlockOnDetectorFactory()
+    {
+        using var releaseDetectorFactory = new ManualResetEventSlim();
+        var detectorFactoryEntered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var detector = new TestDetector(new(
+            false,
+            null,
+            null,
+            null,
+            false,
+            InternalMicrosoftDetectorOutcome.NotDetected,
+            InternalMicrosoftDetectorCacheStatus.Miss,
+            TimeSpan.FromMilliseconds(1),
+            []));
+        var telemetry = new InternalMicrosoftTelemetry();
+
+        var startTask = Task.Run(() => telemetry.Start(
+            () =>
+            {
+                detectorFactoryEntered.SetResult();
+                releaseDetectorFactory.Wait(TestContext.CancellationToken);
+                return detector;
+            },
+            TestContext.CancellationToken),
+            TestContext.CancellationToken);
+
+        await detectorFactoryEntered.Task.WaitAsync(TestContext.CancellationToken);
+        try
+        {
+            await startTask.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+        }
+        finally
+        {
+            releaseDetectorFactory.Set();
+        }
+
+        telemetry.WaitForCompletion();
     }
 
     private InternalMicrosoftDetector CreateDetector(

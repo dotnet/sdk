@@ -89,7 +89,4 @@
   
   <String Id="VisualStudioWarning" Value="Если вы планируете использовать .NET [VERSIONMAJOR].[VERSIONMINOR] с Visual Studio, вам потребуется Visual Studio 2026 версии [MINIMUMVSVERSION] или более поздней. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Подробнее&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Нажимая кнопку &quot;Установить&quot;, вы принимаете следующие условия."/>
-  <String Id="InstallPathx64x86" Value="Совпадение пути установки недопустимо для установок пакетов SDK x64: &quot;[DOTNETHOME_X64]&quot; и SDK x86: &quot;[DOTNETHOME_X86]&quot;."/>
-  <String Id="InstallPathARM64x86" Value="Совпадение пути установки недопустимо для установок пакетов SDK ARM64: &quot;[DOTNETHOME_ARM64]&quot; и SDK x86: &quot;[DOTNETHOME_X86]&quot;."/>
-  <String Id="InstallPathARM64x64" Value="Совпадение пути установки недопустимо для установок пакетов SDK ARM64: &quot;[DOTNETHOME_ARM64]&quot; и SDK x64: &quot;[DOTNETHOME_X64]&quot;."/>
 </WixLocalization>
