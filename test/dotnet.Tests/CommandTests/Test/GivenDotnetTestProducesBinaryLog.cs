@@ -84,6 +84,7 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
 
         new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_TEST_PARALLELIZATION_DIRECTORY", testInstance.Path)
             .Execute("--property", "TestTfmsInParallel=false", "-bl")
             .ExitCode.Should().Be(ExitCodes.Success);
 
@@ -152,6 +153,9 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
             File.Copy(
                 Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"),
                 Path.Combine(dir, Path.GetFileName(dir) + ".csproj"));
+            File.Copy(
+                Path.Combine(testInstance.Path, "DotnetTestDevices.Device.targets"),
+                Path.Combine(dir, "DotnetTestDevices.Device.targets"));
         }
 
         File.Delete(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"));

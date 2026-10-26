@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -29,48 +28,48 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 yield return new[]
                 {
-                    @"var _ = {|#0:foo.Substring(1) + bar|};",
-                    @"var _ = string.Concat(foo.AsSpan(1), bar);"
+                    "var _ = {|#0:foo.Substring(1) + bar|};",
+                    "var _ = string.Concat(foo.AsSpan(1), bar);"
                 };
                 yield return new[]
                 {
-                    @"var _ = {|#0:foo.Substring(1, 2) + bar|};",
-                    @"var _ = string.Concat(foo.AsSpan(1, 2), bar);"
+                    "var _ = {|#0:foo.Substring(1, 2) + bar|};",
+                    "var _ = string.Concat(foo.AsSpan(1, 2), bar);"
                 };
                 yield return new[]
                 {
-                    @"var _ = {|#0:foo + bar.Substring(1)|};",
-                    @"var _ = string.Concat(foo, bar.AsSpan(1));"
+                    "var _ = {|#0:foo + bar.Substring(1)|};",
+                    "var _ = string.Concat(foo, bar.AsSpan(1));"
                 };
                 yield return new[]
                 {
-                    @"var _ = {|#0:foo + bar.Substring(1) + baz|};",
-                    @"var _ = string.Concat(foo, bar.AsSpan(1), baz);"
+                    "var _ = {|#0:foo + bar.Substring(1) + baz|};",
+                    "var _ = string.Concat(foo, bar.AsSpan(1), baz);"
                 };
                 yield return new[]
                 {
-                    @"var _ = {|#0:foo.Substring(1) + bar.Substring(1) + baz.Substring(1)|};",
-                    @"var _ = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1));"
+                    "var _ = {|#0:foo.Substring(1) + bar.Substring(1) + baz.Substring(1)|};",
+                    "var _ = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1));"
                 };
                 yield return new[]
                 {
-                    @"var _ = {|#0:foo.Substring(1, 2) + bar + baz + baz.Substring(1, 2)|};",
-                    @"var _ = string.Concat(foo.AsSpan(1, 2), bar, baz, baz.AsSpan(1, 2));"
+                    "var _ = {|#0:foo.Substring(1, 2) + bar + baz + baz.Substring(1, 2)|};",
+                    "var _ = string.Concat(foo.AsSpan(1, 2), bar, baz, baz.AsSpan(1, 2));"
                 };
                 yield return new[]
                 {
-                    @"Consume({|#0:foo + bar.Substring(1, 2)|});",
-                    @"Consume(string.Concat(foo, bar.AsSpan(1, 2)));"
+                    "Consume({|#0:foo + bar.Substring(1, 2)|});",
+                    "Consume(string.Concat(foo, bar.AsSpan(1, 2)));"
                 };
                 yield return new[]
                 {
-                    @"var _ = Fwd({|#0:foo.Substring(1) + bar|});",
-                    @"var _ = Fwd(string.Concat(foo.AsSpan(1), bar));"
+                    "var _ = Fwd({|#0:foo.Substring(1) + bar|});",
+                    "var _ = Fwd(string.Concat(foo.AsSpan(1), bar));"
                 };
                 yield return new[]
                 {
-                    @"var _ = Fwd({|#0:foo.Substring(1) + bar.Substring(1)|});",
-                    @"var _ = Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1)));"
+                    "var _ = Fwd({|#0:foo.Substring(1) + bar.Substring(1)|});",
+                    "var _ = Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1)));"
                 };
             }
         }
@@ -95,48 +94,48 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 yield return new[]
                 {
-                    @"Dim s = {|#0:foo.Substring(1) & bar|}",
-                    @"Dim s = String.Concat(foo.AsSpan(1), bar)"
+                    "Dim s = {|#0:foo.Substring(1) & bar|}",
+                    "Dim s = String.Concat(foo.AsSpan(1), bar)"
                 };
                 yield return new[]
                 {
-                    @"Dim s = {|#0:foo.Substring(1, 2) & bar|}",
-                    @"Dim s = String.Concat(foo.AsSpan(1, 2), bar)"
+                    "Dim s = {|#0:foo.Substring(1, 2) & bar|}",
+                    "Dim s = String.Concat(foo.AsSpan(1, 2), bar)"
                 };
                 yield return new[]
                 {
-                    @"Dim s = {|#0:foo & bar.Substring(1)|}",
-                    @"Dim s = String.Concat(foo, bar.AsSpan(1))"
+                    "Dim s = {|#0:foo & bar.Substring(1)|}",
+                    "Dim s = String.Concat(foo, bar.AsSpan(1))"
                 };
                 yield return new[]
                 {
-                    @"Dim s = {|#0:foo & bar.Substring(1) & baz|}",
-                    @"Dim s = String.Concat(foo, bar.AsSpan(1), baz)"
+                    "Dim s = {|#0:foo & bar.Substring(1) & baz|}",
+                    "Dim s = String.Concat(foo, bar.AsSpan(1), baz)"
                 };
                 yield return new[]
                 {
-                    @"Dim s = {|#0:foo.Substring(1) & bar.Substring(1) & baz.Substring(1)|}",
-                    @"Dim s = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1))"
+                    "Dim s = {|#0:foo.Substring(1) & bar.Substring(1) & baz.Substring(1)|}",
+                    "Dim s = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1))"
                 };
                 yield return new[]
                 {
-                    @"Dim s = {|#0:foo.Substring(1, 2) & bar & baz & baz.Substring(1, 2)|}",
-                    @"Dim s = String.Concat(foo.AsSpan(1, 2), bar, baz, baz.AsSpan(1, 2))"
+                    "Dim s = {|#0:foo.Substring(1, 2) & bar & baz & baz.Substring(1, 2)|}",
+                    "Dim s = String.Concat(foo.AsSpan(1, 2), bar, baz, baz.AsSpan(1, 2))"
                 };
                 yield return new[]
                 {
-                    @"Consume({|#0:foo & bar.Substring(1, 2)|})",
-                    @"Consume(String.Concat(foo, bar.AsSpan(1, 2)))"
+                    "Consume({|#0:foo & bar.Substring(1, 2)|})",
+                    "Consume(String.Concat(foo, bar.AsSpan(1, 2)))"
                 };
                 yield return new[]
                 {
-                    @"Dim s = Fwd({|#0:foo.Substring(1) & bar|})",
-                    @"Dim s = Fwd(String.Concat(foo.AsSpan(1), bar))"
+                    "Dim s = Fwd({|#0:foo.Substring(1) & bar|})",
+                    "Dim s = Fwd(String.Concat(foo.AsSpan(1), bar))"
                 };
                 yield return new[]
                 {
-                    @"Dim s = Fwd({|#0:foo.Substring(1) & bar.Substring(1)|})",
-                    @"Dim s = Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1)))"
+                    "Dim s = Fwd({|#0:foo.Substring(1) & bar.Substring(1)|})",
+                    "Dim s = Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1)))"
                 };
             }
         }
@@ -161,28 +160,32 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 yield return new object[]
                 {
-                    @"
-string alpha = {|#0:foo.Substring(1, 2) + bar.Substring(1) + baz|};
-string bravo = {|#1:foo + bar.Substring(3) + baz.Substring(1, 2)|};
-string charlie = {|#2:foo + bar + baz.Substring(1, 2)|};
-string delta = {|#3:foo.Substring(1) + bar.Substring(1) + baz.Substring(1, 2) + foo.Substring(1, 2)|};",
-                    @"
-string alpha = string.Concat(foo.AsSpan(1, 2), bar.AsSpan(1), baz);
-string bravo = string.Concat(foo, bar.AsSpan(3), baz.AsSpan(1, 2));
-string charlie = string.Concat(foo, bar, baz.AsSpan(1, 2));
-string delta = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.AsSpan(1, 2));",
+                    """
+
+                        string alpha = {|#0:foo.Substring(1, 2) + bar.Substring(1) + baz|};
+                        string bravo = {|#1:foo + bar.Substring(3) + baz.Substring(1, 2)|};
+                        string charlie = {|#2:foo + bar + baz.Substring(1, 2)|};
+                        string delta = {|#3:foo.Substring(1) + bar.Substring(1) + baz.Substring(1, 2) + foo.Substring(1, 2)|};
+                        """,
+                    """
+
+                        string alpha = string.Concat(foo.AsSpan(1, 2), bar.AsSpan(1), baz);
+                        string bravo = string.Concat(foo, bar.AsSpan(3), baz.AsSpan(1, 2));
+                        string charlie = string.Concat(foo, bar, baz.AsSpan(1, 2));
+                        string delta = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.AsSpan(1, 2));
+                        """,
                     new[] { 0, 1, 2, 3 }
                 };
                 yield return new object[]
                 {
-                    @"Consume({|#0:foo.Substring(1) + bar|}, {|#1:foo + bar.Substring(1)|});",
-                    @"Consume(string.Concat(foo.AsSpan(1), bar), string.Concat(foo, bar.AsSpan(1)));",
+                    "Consume({|#0:foo.Substring(1) + bar|}, {|#1:foo + bar.Substring(1)|});",
+                    "Consume(string.Concat(foo.AsSpan(1), bar), string.Concat(foo, bar.AsSpan(1)));",
                     new[] { 0, 1 }
                 };
                 yield return new object[]
                 {
-                    @"Consume(Fwd({|#0:foo.Substring(1) + bar|}), Fwd({|#1:foo + bar.Substring(1)|}));",
-                    @"Consume(Fwd(string.Concat(foo.AsSpan(1), bar)), Fwd(string.Concat(foo, bar.AsSpan(1))));",
+                    "Consume(Fwd({|#0:foo.Substring(1) + bar|}), Fwd({|#1:foo + bar.Substring(1)|}));",
+                    "Consume(Fwd(string.Concat(foo.AsSpan(1), bar)), Fwd(string.Concat(foo, bar.AsSpan(1))));",
                     new[] { 0, 1 }
                 };
             }
@@ -208,28 +211,32 @@ string delta = string.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo
             {
                 yield return new object[]
                 {
-                    @"
-Dim alpha = {|#0:foo.Substring(1, 2) & bar.Substring(1) & baz|}
-Dim bravo = {|#1:foo & bar.Substring(3) & baz.Substring(1, 2)|}
-Dim charlie = {|#2:foo & bar & baz.Substring(1, 2)|}
-Dim delta = {|#3:foo.Substring(1) & bar.Substring(1) & baz.Substring(1, 2) & foo.Substring(1, 2)|}",
-                    @"
-Dim alpha = String.Concat(foo.AsSpan(1, 2), bar.AsSpan(1), baz)
-Dim bravo = String.Concat(foo, bar.AsSpan(3), baz.AsSpan(1, 2))
-Dim charlie = String.Concat(foo, bar, baz.AsSpan(1, 2))
-Dim delta = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.AsSpan(1, 2))",
+                    """
+
+                        Dim alpha = {|#0:foo.Substring(1, 2) & bar.Substring(1) & baz|}
+                        Dim bravo = {|#1:foo & bar.Substring(3) & baz.Substring(1, 2)|}
+                        Dim charlie = {|#2:foo & bar & baz.Substring(1, 2)|}
+                        Dim delta = {|#3:foo.Substring(1) & bar.Substring(1) & baz.Substring(1, 2) & foo.Substring(1, 2)|}
+                        """,
+                    """
+
+                        Dim alpha = String.Concat(foo.AsSpan(1, 2), bar.AsSpan(1), baz)
+                        Dim bravo = String.Concat(foo, bar.AsSpan(3), baz.AsSpan(1, 2))
+                        Dim charlie = String.Concat(foo, bar, baz.AsSpan(1, 2))
+                        Dim delta = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.AsSpan(1, 2))
+                        """,
                     new[] { 0, 1, 2, 3 }
                 };
                 yield return new object[]
                 {
-                    @"Consume({|#0:foo.Substring(1) & bar|}, {|#1:foo & bar.Substring(1)|})",
-                    @"Consume(String.Concat(foo.AsSpan(1), bar), String.Concat(foo, bar.AsSpan(1)))",
+                    "Consume({|#0:foo.Substring(1) & bar|}, {|#1:foo & bar.Substring(1)|})",
+                    "Consume(String.Concat(foo.AsSpan(1), bar), String.Concat(foo, bar.AsSpan(1)))",
                     new[] { 0, 1 }
                 };
                 yield return new object[]
                 {
-                    @"Consume(Fwd({|#0:foo.Substring(1) & bar|}), Fwd({|#1:foo & bar.Substring(1)|}))",
-                    @"Consume(Fwd(String.Concat(foo.AsSpan(1), bar)), Fwd(String.Concat(foo, bar.AsSpan(1))))",
+                    "Consume(Fwd({|#0:foo.Substring(1) & bar|}), Fwd({|#1:foo & bar.Substring(1)|}))",
+                    "Consume(Fwd(String.Concat(foo.AsSpan(1), bar)), Fwd(String.Concat(foo, bar.AsSpan(1))))",
                     new[] { 0, 1 }
                 };
             }
@@ -255,19 +262,27 @@ Dim delta = String.Concat(foo.AsSpan(1), bar.AsSpan(1), baz.AsSpan(1, 2), foo.As
             {
                 yield return new object[]
                 {
-                    @"
-Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|});",
-                    @"
-Consume(string.Concat(Fwd(string.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)));",
+                    """
+
+                        Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|});
+                        """,
+                    """
+
+                        Consume(string.Concat(Fwd(string.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)));
+                        """,
                     new[] { 0, 1 },
                     2, 1, 1
                 };
                 yield return new object[]
                 {
-                    @"
-var _ = {|#0:Fwd({|#1:foo.Substring(1) + bar.Substring(1)|}) + Fwd({|#2:foo.Substring(1) + bar|}).Substring(1) + Fwd({|#3:foo + bar.Substring(1)|})|};",
-                    @"
-var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(string.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(string.Concat(foo, bar.AsSpan(1))));",
+                    """
+
+                        var _ = {|#0:Fwd({|#1:foo.Substring(1) + bar.Substring(1)|}) + Fwd({|#2:foo.Substring(1) + bar|}).Substring(1) + Fwd({|#3:foo + bar.Substring(1)|})|};
+                        """,
+                    """
+
+                        var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(string.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(string.Concat(foo, bar.AsSpan(1))));
+                        """,
                     new[] { 0, 1, 2, 3 },
                     4, 1, 1
                 };
@@ -299,19 +314,27 @@ var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(stri
             {
                 yield return new object[]
                 {
-                    @"
-Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|})",
-                    @"
-Consume(String.Concat(Fwd(String.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)))",
+                    """
+
+                        Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|})
+                        """,
+                    """
+
+                        Consume(String.Concat(Fwd(String.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)))
+                        """,
                     new[] { 0, 1 },
                     2, 1, 1
                 };
                 yield return new object[]
                 {
-                    @"
-Dim s = {|#0:Fwd({|#1:foo.Substring(1) & bar.Substring(1)|}) & Fwd({|#2:foo.Substring(1) & bar|}).Substring(1) & Fwd({|#3:foo & bar.Substring(1)|})|}",
-                    @"
-Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(String.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(String.Concat(foo, bar.AsSpan(1))))",
+                    """
+
+                        Dim s = {|#0:Fwd({|#1:foo.Substring(1) & bar.Substring(1)|}) & Fwd({|#2:foo.Substring(1) & bar|}).Substring(1) & Fwd({|#3:foo & bar.Substring(1)|})|}
+                        """,
+                    """
+
+                        Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(String.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(String.Concat(foo, bar.AsSpan(1))))
+                        """,
                     new[] { 0, 1, 2, 3 },
                     4, 1, 1
                 };
@@ -340,7 +363,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
         [TestMethod]
         public Task ConditionalSubstringAccess_IsFlaggedButNotFixed_CSAsync()
         {
-            string statements = @"var s = {|#0:foo?.Substring(1) + bar|};";
+            string statements = "var s = {|#0:foo?.Substring(1) + bar|};";
             string source = CSUsings + CSWithBody(statements);
 
             var test = new VerifyCS.Test
@@ -356,7 +379,7 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
         [TestMethod]
         public Task ConditionalSubstringAccess_IsFlaggedButNotFixed_VBAsync()
         {
-            string statements = @"Dim s = {|#0:foo?.Substring(1) & bar|}";
+            string statements = "Dim s = {|#0:foo?.Substring(1) & bar|}";
             string source = VBUsings + VBWithBody(statements);
 
             var test = new VerifyVB.Test
@@ -374,8 +397,8 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
         {
             var test = new VerifyCS.Test
             {
-                TestCode = CSWithBody(@"var _ = {|#0:foo + bar.Substring(1)|};"),
-                FixedCode = $"{Environment.NewLine}{CSUsings}{Environment.NewLine}" + CSWithBody(@"var _ = string.Concat(foo, bar.AsSpan(1));"),
+                TestCode = CSWithBody("var _ = {|#0:foo + bar.Substring(1)|};"),
+                FixedCode = $"{Environment.NewLine}{CSUsings}{Environment.NewLine}" + CSWithBody("var _ = string.Concat(foo, bar.AsSpan(1));"),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0) }
             };
@@ -389,8 +412,8 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
         {
             var test = new VerifyVB.Test
             {
-                TestCode = VBWithBody(@"Dim s = {|#0:foo & bar.Substring(1)|}"),
-                FixedCode = VBWithBody(@"Dim s = String.Concat(foo, bar.AsSpan(1))"),
+                TestCode = VBWithBody("Dim s = {|#0:foo & bar.Substring(1)|}"),
+                FixedCode = VBWithBody("Dim s = String.Concat(foo, bar.AsSpan(1))"),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
@@ -411,8 +434,8 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
         {
             var test = new VerifyVB.Test
             {
-                TestCode = VBWithBody(@"Dim s = {|#0:foo & bar.Substring(1)|}"),
-                FixedCode = $"{Environment.NewLine}{VBUsings}{Environment.NewLine}" + VBWithBody(@"Dim s = String.Concat(foo, bar.AsSpan(1))"),
+                TestCode = VBWithBody("Dim s = {|#0:foo & bar.Substring(1)|}"),
+                FixedCode = $"{Environment.NewLine}{VBUsings}{Environment.NewLine}" + VBWithBody("Dim s = String.Concat(foo, bar.AsSpan(1))"),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
@@ -420,15 +443,15 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
         }
 
         [TestMethod]
-        [DataRow(@"Substring(startIndex: 1)", @"AsSpan(start: 1)")]
-        [DataRow(@"Substring(startIndex: 1, length: 2)", @"AsSpan(start: 1, length: 2)")]
-        [DataRow(@"Substring(1, length: 2)", @"AsSpan(1, length: 2)")]
-        [DataRow(@"Substring(startIndex: 1, 2)", @"AsSpan(start: 1, 2)")]
-        [DataRow(@"Substring(length: 2, startIndex: 1)", @"AsSpan(length: 2, start: 1)")]
+        [DataRow("Substring(startIndex: 1)", "AsSpan(start: 1)")]
+        [DataRow("Substring(startIndex: 1, length: 2)", "AsSpan(start: 1, length: 2)")]
+        [DataRow("Substring(1, length: 2)", "AsSpan(1, length: 2)")]
+        [DataRow("Substring(startIndex: 1, 2)", "AsSpan(start: 1, 2)")]
+        [DataRow("Substring(length: 2, startIndex: 1)", "AsSpan(length: 2, start: 1)")]
         public Task NamedSubstringArguments_ArePreserved_CSAsync(string substring, string asSpan)
         {
-            string testStatements = $@"var s = {{|#0:foo.{substring} + bar|}};";
-            string fixedStatements = $@"var s = string.Concat(foo.{asSpan}, bar);";
+            string testStatements = $$"""var s = {|#0:foo.{{substring}} + bar|};""";
+            string fixedStatements = $"""var s = string.Concat(foo.{asSpan}, bar);""";
 
             var test = new VerifyCS.Test
             {
@@ -441,15 +464,15 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
         }
 
         [TestMethod]
-        [DataRow(@"Substring(startIndex:=1)", @"AsSpan(start:=1)")]
-        [DataRow(@"Substring(startIndex:=1, length:=2)", @"AsSpan(start:=1, length:=2)")]
-        [DataRow(@"Substring(1, length:=2)", @"AsSpan(1, length:=2)")]
-        [DataRow(@"Substring(startIndex:=1, 2)", @"AsSpan(start:=1, 2)")]
-        [DataRow(@"Substring(length:=2, startIndex:=1)", @"AsSpan(length:=2, start:=1)")]
+        [DataRow("Substring(startIndex:=1)", "AsSpan(start:=1)")]
+        [DataRow("Substring(startIndex:=1, length:=2)", "AsSpan(start:=1, length:=2)")]
+        [DataRow("Substring(1, length:=2)", "AsSpan(1, length:=2)")]
+        [DataRow("Substring(startIndex:=1, 2)", "AsSpan(start:=1, 2)")]
+        [DataRow("Substring(length:=2, startIndex:=1)", "AsSpan(length:=2, start:=1)")]
         public Task NamedSubstringArguments_ArePreserved_VBAsync(string substring, string asSpan)
         {
-            string testStatements = $@"Dim s = {{|#0:foo.{substring} & bar|}}";
-            string fixedStatements = $@"Dim s = String.Concat(foo.{asSpan}, bar)";
+            string testStatements = $$"""Dim s = {|#0:foo.{{substring}} & bar|}""";
+            string fixedStatements = $"""Dim s = String.Concat(foo.{asSpan}, bar)""";
 
             var test = new VerifyVB.Test
             {
@@ -462,31 +485,32 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
         }
 
         [TestMethod]
-        [DataRow(@"foo.Substring(1) + (string)explicitTo", @"string.Concat(foo.AsSpan(1), (string)explicitTo)")]
-        [DataRow(@"(string)explicitTo + foo.Substring(1)", @"string.Concat((string)explicitTo, foo.AsSpan(1))")]
-        [DataRow(@"foo.Substring(1) + (string)thing", @"string.Concat(foo.AsSpan(1), (string)thing)")]
-        [DataRow(@"(string)thing + foo.Substring(1)", @"string.Concat((string)thing, foo.AsSpan(1))")]
-        [DataRow(@"foo.Substring(1) + (thing as string)", @"string.Concat(foo.AsSpan(1), thing as string)")]
-        [DataRow(@"(thing as string) + foo.Substring(1)", @"string.Concat(thing as string, foo.AsSpan(1))")]
+        [DataRow("foo.Substring(1) + (string)explicitTo", "string.Concat(foo.AsSpan(1), (string)explicitTo)")]
+        [DataRow("(string)explicitTo + foo.Substring(1)", "string.Concat((string)explicitTo, foo.AsSpan(1))")]
+        [DataRow("foo.Substring(1) + (string)thing", "string.Concat(foo.AsSpan(1), (string)thing)")]
+        [DataRow("(string)thing + foo.Substring(1)", "string.Concat((string)thing, foo.AsSpan(1))")]
+        [DataRow("foo.Substring(1) + (thing as string)", "string.Concat(foo.AsSpan(1), thing as string)")]
+        [DataRow("(thing as string) + foo.Substring(1)", "string.Concat(thing as string, foo.AsSpan(1))")]
         public Task ExplicitConversions_ArePreserved_CSAsync(string testExpression, string fixedExpression)
         {
-            string helperTypes = @"
-public class ExplicitTo
-{
-    public static explicit operator string(ExplicitTo operand) => operand?.ToString();
-}
+            string helperTypes = """
+                public class ExplicitTo
+                {
+                    public static explicit operator string(ExplicitTo operand) => operand?.ToString();
+                }
 
-public class ExplicitFrom
-{
-    public static explicit operator ExplicitFrom(string operand) => new ExplicitFrom();
-}";
-            string format = @"
-var explicitTo = new ExplicitTo();
-object thing = bar;
-var s = {0};";
-            var culture = CultureInfo.InvariantCulture;
-            string testStatements = string.Format(culture, format, $@"{{|#0:{testExpression}|}}");
-            string fixedStatements = string.Format(culture, format, fixedExpression);
+                public class ExplicitFrom
+                {
+                    public static explicit operator ExplicitFrom(string operand) => new ExplicitFrom();
+                }
+                """;
+            static string CreateStatements(string expression) => $$"""
+                var explicitTo = new ExplicitTo();
+                object thing = bar;
+                var s = {{expression}};
+                """;
+            string testStatements = CreateStatements($$"""{|#0:{{testExpression}}|}""");
+            string fixedStatements = CreateStatements(fixedExpression);
 
             var test = new VerifyCS.Test
             {
@@ -499,34 +523,37 @@ var s = {0};";
         }
 
         [TestMethod]
-        [DataRow(@"foo.Substring(1) & CType(explicitTo, String)", @"String.Concat(foo.AsSpan(1), CType(explicitTo, String))")]
-        [DataRow(@"CType(explicitTo, String) & foo.Substring(1)", @"String.Concat(CType(explicitTo, String), foo.AsSpan(1))")]
-        [DataRow(@"foo.Substring(1) & DirectCast(thing, String)", @"String.Concat(foo.AsSpan(1), DirectCast(thing, String))")]
-        [DataRow(@"DirectCast(thing, String) & foo.Substring(1)", @"String.Concat(DirectCast(thing, String), foo.AsSpan(1))")]
-        [DataRow(@"foo.Substring(1) & TryCast(thing, String)", @"String.Concat(foo.AsSpan(1), TryCast(thing, String))")]
-        [DataRow(@"TryCast(thing, String) & foo.Substring(1)", @"String.Concat(TryCast(thing, String), foo.AsSpan(1))")]
+        [DataRow("foo.Substring(1) & CType(explicitTo, String)", "String.Concat(foo.AsSpan(1), CType(explicitTo, String))")]
+        [DataRow("CType(explicitTo, String) & foo.Substring(1)", "String.Concat(CType(explicitTo, String), foo.AsSpan(1))")]
+        [DataRow("foo.Substring(1) & DirectCast(thing, String)", "String.Concat(foo.AsSpan(1), DirectCast(thing, String))")]
+        [DataRow("DirectCast(thing, String) & foo.Substring(1)", "String.Concat(DirectCast(thing, String), foo.AsSpan(1))")]
+        [DataRow("foo.Substring(1) & TryCast(thing, String)", "String.Concat(foo.AsSpan(1), TryCast(thing, String))")]
+        [DataRow("TryCast(thing, String) & foo.Substring(1)", "String.Concat(TryCast(thing, String), foo.AsSpan(1))")]
         public Task ExplicitConversions_ArePreserved_VBAsync(string testExpression, string fixedExpression)
         {
-            string helperTypes = @"
-Public Class ExplicitTo
+            string helperTypes = """
 
-    Public Shared Narrowing Operator CType(operand As ExplicitTo) As String
-        Return New ExplicitTo()
-    End Operator
-End Class
+                Public Class ExplicitTo
 
-Public Class ExplicitFrom
-    Public Shared Narrowing Operator CType(operand As String) As ExplicitFrom
-        Return New ExplicitFrom()
-    End Operator
-End Class";
-            string format = @"
-Dim explicitTo = New ExplicitTo()
-Dim thing As Object = bar
-Dim s = {0}";
-            var culture = CultureInfo.InvariantCulture;
-            string testStatements = string.Format(culture, format, $@"{{|#0:{testExpression}|}}");
-            string fixedStatements = string.Format(culture, format, fixedExpression);
+                    Public Shared Narrowing Operator CType(operand As ExplicitTo) As String
+                        Return New ExplicitTo()
+                    End Operator
+                End Class
+
+                Public Class ExplicitFrom
+                    Public Shared Narrowing Operator CType(operand As String) As ExplicitFrom
+                        Return New ExplicitFrom()
+                    End Operator
+                End Class
+                """;
+            static string CreateStatements(string expression) => $$"""
+
+                Dim explicitTo = New ExplicitTo()
+                Dim thing As Object = bar
+                Dim s = {{expression}}
+                """;
+            string testStatements = CreateStatements($$"""{|#0:{{testExpression}}|}""");
+            string fixedStatements = CreateStatements(fixedExpression);
 
             var test = new VerifyVB.Test
             {
@@ -540,26 +567,26 @@ Dim s = {0}";
 
         //  No C# case because C# has only one concat operator.
         [TestMethod]
-        [DataRow(@"foo.Substring(1) & bar + baz", @"String.Concat(foo.AsSpan(1), bar, baz)")]
-        [DataRow(@"foo & bar.Substring(1) + baz", @"String.Concat(foo, bar.AsSpan(1), baz)")]
-        [DataRow(@"foo & bar + baz.Substring(1)", @"String.Concat(foo, bar, baz.AsSpan(1))")]
-        [DataRow(@"foo.Substring(1) + bar & baz", @"String.Concat(foo.AsSpan(1), bar, baz)")]
-        [DataRow(@"foo + bar.Substring(1) & baz", @"String.Concat(foo, bar.AsSpan(1), baz)")]
-        [DataRow(@"foo + bar & baz.Substring(1)", @"String.Concat(foo, bar, baz.AsSpan(1))")]
-        [DataRow(@"foo.Substring(1) & bar + baz & baz.Substring(1)", @"String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
-        [DataRow(@"foo & bar.Substring(1) + baz & foo", @"String.Concat(foo, bar.AsSpan(1), baz, foo)")]
-        [DataRow(@"foo.Substring(1) & bar + baz & foo", @"String.Concat(foo.AsSpan(1), bar, baz, foo)")]
-        [DataRow(@"foo & bar + baz & foo.Substring(1)", @"String.Concat(foo, bar, baz, foo.AsSpan(1))")]
-        [DataRow(@"foo.Substring(1) + bar & baz + baz.Substring(1)", @"String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
-        [DataRow(@"foo + bar.Substring(1) & baz + foo", @"String.Concat(foo, bar.AsSpan(1), baz, foo)")]
-        [DataRow(@"foo.Substring(1) + bar & baz + foo", @"String.Concat(foo.AsSpan(1), bar, baz, foo)")]
-        [DataRow(@"foo + bar & baz + foo.Substring(1)", @"String.Concat(foo, bar, baz, foo.AsSpan(1))")]
+        [DataRow("foo.Substring(1) & bar + baz", "String.Concat(foo.AsSpan(1), bar, baz)")]
+        [DataRow("foo & bar.Substring(1) + baz", "String.Concat(foo, bar.AsSpan(1), baz)")]
+        [DataRow("foo & bar + baz.Substring(1)", "String.Concat(foo, bar, baz.AsSpan(1))")]
+        [DataRow("foo.Substring(1) + bar & baz", "String.Concat(foo.AsSpan(1), bar, baz)")]
+        [DataRow("foo + bar.Substring(1) & baz", "String.Concat(foo, bar.AsSpan(1), baz)")]
+        [DataRow("foo + bar & baz.Substring(1)", "String.Concat(foo, bar, baz.AsSpan(1))")]
+        [DataRow("foo.Substring(1) & bar + baz & baz.Substring(1)", "String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
+        [DataRow("foo & bar.Substring(1) + baz & foo", "String.Concat(foo, bar.AsSpan(1), baz, foo)")]
+        [DataRow("foo.Substring(1) & bar + baz & foo", "String.Concat(foo.AsSpan(1), bar, baz, foo)")]
+        [DataRow("foo & bar + baz & foo.Substring(1)", "String.Concat(foo, bar, baz, foo.AsSpan(1))")]
+        [DataRow("foo.Substring(1) + bar & baz + baz.Substring(1)", "String.Concat(foo.AsSpan(1), bar, baz, baz.AsSpan(1))")]
+        [DataRow("foo + bar.Substring(1) & baz + foo", "String.Concat(foo, bar.AsSpan(1), baz, foo)")]
+        [DataRow("foo.Substring(1) + bar & baz + foo", "String.Concat(foo.AsSpan(1), bar, baz, foo)")]
+        [DataRow("foo + bar & baz + foo.Substring(1)", "String.Concat(foo, bar, baz, foo.AsSpan(1))")]
         public Task MixedAddAndConcatenateOperatorChains_AreReportedAndFixed_VBAsync(string testExpression, string fixedExpression)
         {
             var test = new VerifyVB.Test
             {
-                TestCode = VBUsings + VBWithBody($@"Dim s = {{|#0:{testExpression}|}}"),
-                FixedCode = VBUsings + VBWithBody($@"Dim s = {fixedExpression}"),
+                TestCode = VBUsings + VBWithBody($$"""Dim s = {|#0:{{testExpression}}|}"""),
+                FixedCode = VBUsings + VBWithBody($"""Dim s = {fixedExpression}"""),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { VerifyVB.Diagnostic(Rule).WithLocation(0) }
             };
@@ -567,12 +594,12 @@ Dim s = {0}";
         }
 
         [TestMethod]
-        [DataRow(@"foo.Substring(1) + 'A'", @"string.Concat(foo.AsSpan(1), ""A"")")]
-        [DataRow(@"'A' + foo.Substring(1)", @"string.Concat(""A"", foo.AsSpan(1))")]
-        [DataRow(@"foo.Substring(1) + bar + 'A'", @"string.Concat(foo.AsSpan(1), bar, ""A"")")]
-        [DataRow(@"foo.Substring(1) + 'A' + bar", @"string.Concat(foo.AsSpan(1), ""A"", bar)")]
-        [DataRow(@"foo + 'A' + bar.Substring(1)", @"string.Concat(foo, ""A"", bar.AsSpan(1))")]
-        [DataRow(@"foo + bar.Substring(1) + 'A'", @"string.Concat(foo, bar.AsSpan(1), ""A"")")]
+        [DataRow("foo.Substring(1) + 'A'", """"string.Concat(foo.AsSpan(1), "A")"""")]
+        [DataRow("'A' + foo.Substring(1)", """"string.Concat("A", foo.AsSpan(1))"""")]
+        [DataRow("foo.Substring(1) + bar + 'A'", """"string.Concat(foo.AsSpan(1), bar, "A")"""")]
+        [DataRow("foo.Substring(1) + 'A' + bar", """"string.Concat(foo.AsSpan(1), "A", bar)"""")]
+        [DataRow("foo + 'A' + bar.Substring(1)", """"string.Concat(foo, "A", bar.AsSpan(1))"""")]
+        [DataRow("foo + bar.Substring(1) + 'A'", """"string.Concat(foo, bar.AsSpan(1), "A")"""")]
         public Task CharLiterals_AreConvertedToStringLiterals_CSAsync(string testExpression, string fixedExpression)
         {
             var test = new VerifyCS.Test
@@ -586,12 +613,12 @@ Dim s = {0}";
         }
 
         [TestMethod]
-        [DataRow(@"foo.Substring(1) & ""A""c", @"String.Concat(foo.AsSpan(1), ""A"")")]
-        [DataRow(@"""A""c & foo.Substring(1)", @"String.Concat(""A"", foo.AsSpan(1))")]
-        [DataRow(@"foo.Substring(1) & bar & ""A""c", @"String.Concat(foo.AsSpan(1), bar, ""A"")")]
-        [DataRow(@"foo.Substring(1) & ""A""c & bar", @"String.Concat(foo.AsSpan(1), ""A"", bar)")]
-        [DataRow(@"foo & ""A""c & bar.Substring(1)", @"String.Concat(foo, ""A"", bar.AsSpan(1))")]
-        [DataRow(@"foo & bar.Substring(1) & ""A""c", @"String.Concat(foo, bar.AsSpan(1), ""A"")")]
+        [DataRow(""""foo.Substring(1) & "A"c"""", """"String.Concat(foo.AsSpan(1), "A")"""")]
+        [DataRow("\"A\"c & foo.Substring(1)", """"String.Concat("A", foo.AsSpan(1))"""")]
+        [DataRow(""""foo.Substring(1) & bar & "A"c"""", """"String.Concat(foo.AsSpan(1), bar, "A")"""")]
+        [DataRow(""""foo.Substring(1) & "A"c & bar"""", """"String.Concat(foo.AsSpan(1), "A", bar)"""")]
+        [DataRow(""""foo & "A"c & bar.Substring(1)"""", """"String.Concat(foo, "A", bar.AsSpan(1))"""")]
+        [DataRow(""""foo & bar.Substring(1) & "A"c"""", """"String.Concat(foo, bar.AsSpan(1), "A")"""")]
         public Task CharLiterals_AreConvertedToStringLiterals_VBAsync(string testExpression, string fixedExpression)
         {
             var test = new VerifyVB.Test
@@ -615,7 +642,7 @@ Dim s = {0}";
         [DataRow("foo.Substring(1) + bar + baz.Substring(1) + foo.Substring(1) + bar + baz.Substring(1)")]
         public Task TooManyArguments_NoDiagnostic_CSAsync(string expression)
         {
-            string statements = $@"var s = {expression};";
+            string statements = $"""var s = {expression};""";
 
             var test = new VerifyCS.Test
             {
@@ -634,7 +661,7 @@ Dim s = {0}";
         [DataRow("foo.Substring(1) & bar & baz.Substring(1) & foo.Substring(1) & bar & baz.Substring(1)")]
         public Task TooManyArguments_NoDiagnostic_VBAsync(string expression)
         {
-            string statements = $@"Dim s = {expression}";
+            string statements = $"""Dim s = {expression}""";
 
             var test = new VerifyVB.Test
             {
@@ -651,7 +678,7 @@ Dim s = {0}";
         [DataRow("foo.ToLower() + bar")]
         public Task NoSubstringInvocations_NoDiagnostic_CSAsync(string expression)
         {
-            string statements = $@"var s = {expression};";
+            string statements = $"""var s = {expression};""";
 
             var test = new VerifyCS.Test
             {
@@ -668,7 +695,7 @@ Dim s = {0}";
         [DataRow("foo.ToLower() & bar")]
         public Task NoSubstringInvocations_NoDiagnostic_VBAsync(string expression)
         {
-            string statements = $@"Dim s = {expression}";
+            string statements = $"""Dim s = {expression}""";
 
             var test = new VerifyVB.Test
             {
@@ -680,19 +707,20 @@ Dim s = {0}";
 
         //  No VB case because VB can't overload operators.
         [TestMethod]
-        [DataRow(@"foo.Substring(1) + evil")]
-        [DataRow(@"evil + foo.Substring(1)")]
-        [DataRow(@"foo + evil + bar.Substring(1)")]
-        [DataRow(@"foo.Substring(1) + evil + bar")]
-        [DataRow(@"foo.Substring(1) + evil + bar + baz")]
-        [DataRow(@"foo + bar + evil + baz.Substring(1)")]
-        [DataRow(@"foo + evil + bar.Substring(1) + evil")]
-        [DataRow(@"foo + evil + bar.Substring(1) + evil + baz.Substring(1)")]
+        [DataRow("foo.Substring(1) + evil")]
+        [DataRow("evil + foo.Substring(1)")]
+        [DataRow("foo + evil + bar.Substring(1)")]
+        [DataRow("foo.Substring(1) + evil + bar")]
+        [DataRow("foo.Substring(1) + evil + bar + baz")]
+        [DataRow("foo + bar + evil + baz.Substring(1)")]
+        [DataRow("foo + evil + bar.Substring(1) + evil")]
+        [DataRow("foo + evil + bar.Substring(1) + evil + baz.Substring(1)")]
         public Task OverloadedAddOperator_NoDiagnostic_CSAsync(string expression)
         {
-            string statements = $@"
-var evil = new EvilOverloads();
-var e = {expression};";
+            string statements = $"""
+                var evil = new EvilOverloads();
+                var e = {expression};
+                """;
 
             var test = new VerifyCS.Test
             {
@@ -710,23 +738,24 @@ var e = {expression};";
         }
 
         [TestMethod]
-        [DataRow(@"foo.Substring(1) + thing")]
-        [DataRow(@"thing + foo.Substring(1)")]
-        [DataRow(@"foo.Substring(1) + count")]
-        [DataRow(@"count + foo.Substring(1)")]
-        [DataRow(@"foo.Substring(1) + charvar")]
-        [DataRow(@"charvar + foo.Substring(1)")]
-        [DataRow(@"foo.Substring(1) + bar + thing")]
-        [DataRow(@"foo + bar.Substring(1) + thing")]
-        [DataRow(@"foo.Substring(1) + thing + bar.Substring(1)")]
-        [DataRow(@"foo.Substring(1) + bar.Substring(1) + thing")]
+        [DataRow("foo.Substring(1) + thing")]
+        [DataRow("thing + foo.Substring(1)")]
+        [DataRow("foo.Substring(1) + count")]
+        [DataRow("count + foo.Substring(1)")]
+        [DataRow("foo.Substring(1) + charvar")]
+        [DataRow("charvar + foo.Substring(1)")]
+        [DataRow("foo.Substring(1) + bar + thing")]
+        [DataRow("foo + bar.Substring(1) + thing")]
+        [DataRow("foo.Substring(1) + thing + bar.Substring(1)")]
+        [DataRow("foo.Substring(1) + bar.Substring(1) + thing")]
         public Task WithNonStringNonCharLiteralOperands_NoDiagnostic_CSAsync(string expression)
         {
-            string statements = $@"
-object thing = new object();
-int count = 17;
-char charvar = 'H';
-string s = {expression};";
+            string statements = $"""
+                object thing = new object();
+                int count = 17;
+                char charvar = 'H';
+                string s = {expression};
+                """;
 
             var test = new VerifyCS.Test
             {
@@ -737,23 +766,25 @@ string s = {expression};";
         }
 
         [TestMethod]
-        [DataRow(@"foo.Substring(1) & thing")]
-        [DataRow(@"thing & foo.Substring(1)")]
-        [DataRow(@"foo.Substring(1) & count")]
-        [DataRow(@"count & foo.Substring(1)")]
-        [DataRow(@"foo.Substring(1) & charvar")]
-        [DataRow(@"charvar & foo.Substring(1)")]
-        [DataRow(@"foo.Substring(1) & bar & thing")]
-        [DataRow(@"foo & bar.Substring(1) & thing")]
-        [DataRow(@"foo.Substring(1) & thing & bar.Substring(1)")]
-        [DataRow(@"foo.Substring(1) & bar.Substring(1) & thing")]
+        [DataRow("foo.Substring(1) & thing")]
+        [DataRow("thing & foo.Substring(1)")]
+        [DataRow("foo.Substring(1) & count")]
+        [DataRow("count & foo.Substring(1)")]
+        [DataRow("foo.Substring(1) & charvar")]
+        [DataRow("charvar & foo.Substring(1)")]
+        [DataRow("foo.Substring(1) & bar & thing")]
+        [DataRow("foo & bar.Substring(1) & thing")]
+        [DataRow("foo.Substring(1) & thing & bar.Substring(1)")]
+        [DataRow("foo.Substring(1) & bar.Substring(1) & thing")]
         public Task WithNonStringNonCharLiteralOperands_NoDiagnostic_VBAsync(string expression)
         {
-            string statements = $@"
-Dim thing As Object = New Object()
-Dim count As Integer = 17
-Dim charvar As Char = ""H""
-Dim s As String = {expression}";
+            string statements = $"""
+
+                Dim thing As Object = New Object()
+                Dim count As Integer = 17
+                Dim charvar As Char = "H"
+                Dim s As String = {expression}
+                """;
 
             var test = new VerifyVB.Test
             {
@@ -791,63 +822,73 @@ Dim s As String = {expression}";
 
         #region Helpers
         private static DiagnosticDescriptor Rule => UseSpanBasedStringConcat.Rule;
-        private const string CSUsings = @"using System;";
-        private const string VBUsings = @"Imports System";
-        private const string EvilOverloads = @"    
-public class EvilOverloads
-{
-    public static EvilOverloads operator +(EvilOverloads left, string right) => left;
-    public static EvilOverloads operator +(string left, EvilOverloads right) => right;
-    public static EvilOverloads operator +(EvilOverloads left, EvilOverloads right) => left;
-}";
+        private const string CSUsings = "using System;";
+        private const string VBUsings = "Imports System";
+        private const string EvilOverloads = """
+                
+            public class EvilOverloads
+            {
+                public static EvilOverloads operator +(EvilOverloads left, string right) => left;
+                public static EvilOverloads operator +(string left, EvilOverloads right) => right;
+                public static EvilOverloads operator +(EvilOverloads left, EvilOverloads right) => left;
+            }
+            """;
 
         private static string CSWithBody(string statements)
         {
-            return @"
-public class Testopolis
-{
-    private void Consume(string consumed) { }
-    private void Consume(string s1, string s2) { }
-    private void Consume(string s1, string s2, string s3) { }
-    private string Fwd(string arg) => arg;
-    private string Transform(string first, string second) => second;
-    private string Transform(string first, string second, string third) => first;
-    private string Produce() => ""Hello World"";
+            return """
 
-    public void FrobThem(string foo, string bar, string baz)
-    {
-" + IndentLines(statements, "        ") + @"
+                public class Testopolis
+                {
+                    private void Consume(string consumed) { }
+                    private void Consume(string s1, string s2) { }
+                    private void Consume(string s1, string s2, string s3) { }
+                    private string Fwd(string arg) => arg;
+                    private string Transform(string first, string second) => second;
+                    private string Transform(string first, string second, string third) => first;
+                    private string Produce() => "Hello World";
+
+                    public void FrobThem(string foo, string bar, string baz)
+                    {
+
+                """ + IndentLines(statements, "        ") + """
+
+        }
     }
-}";
+    """;
         }
 
         private static string VBWithBody(string statements)
         {
-            return @"
-Public Class Testopolis
-    Private Sub Consume(consumed As String)
-    End Sub
-    Private Sub Consume(s1 As String, s2 As String)
-    End Sub
-    Private Sub Consume(s1 As String, s2 As String, s3 As String)
-    End Sub
-    Private Function Fwd(arg As String) As String
-        Return arg
-    End Function
-    Private Function Transform(first As String, second As String) As String
-        Return second
-    End Function
-    Private Function Transform(first As String, second As String, third As String) As String
-        Return first
-    End Function
-    Private Function Produce() As String
-        Return ""Hello World""
-    End Function
+            return """
 
-    Public Sub FrobThem(foo As String, bar As String, baz As String)
-" + IndentLines(statements, "        ") + @"
-    End Sub
-End Class";
+                Public Class Testopolis
+                    Private Sub Consume(consumed As String)
+                    End Sub
+                    Private Sub Consume(s1 As String, s2 As String)
+                    End Sub
+                    Private Sub Consume(s1 As String, s2 As String, s3 As String)
+                    End Sub
+                    Private Function Fwd(arg As String) As String
+                        Return arg
+                    End Function
+                    Private Function Transform(first As String, second As String) As String
+                        Return second
+                    End Function
+                    Private Function Transform(first As String, second As String, third As String) As String
+                        Return first
+                    End Function
+                    Private Function Produce() As String
+                        Return "Hello World"
+                    End Function
+
+                    Public Sub FrobThem(foo As String, bar As String, baz As String)
+
+                """ + IndentLines(statements, "        ") + """
+
+        End Sub
+    End Class
+    """;
         }
 
         private static string IndentLines(string body, string indent)

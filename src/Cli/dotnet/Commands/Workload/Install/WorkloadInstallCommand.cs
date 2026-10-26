@@ -82,7 +82,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         _shouldShutdownInstaller = _workloadInstallerFromConstructor != null;
 
         _workloadManifestUpdater = _workloadManifestUpdaterFromConstructor ?? new WorkloadManifestUpdater(resolvedReporter, _workloadResolver, PackageDownloader, _userProfileDir,
-            _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
+            _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDiagnostic());
     }
 
     private IReadOnlyCollection<string> GetValidWorkloadIds()
@@ -98,6 +98,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
                 continue; // Skip this workload
             }
 
+            _ = ParseWorkloadId(workloadId);
             validWorkloadIds.Add(workloadId);
         }
 
@@ -112,7 +113,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         {
             if (!availableWorkloads.Select(workload => workload.Id.ToString()).Contains(workloadId))
             {
-                var exceptionMessage = _workloadResolver.IsPlatformIncompatibleWorkload(new WorkloadId(workloadId)) ?
+                var exceptionMessage = _workloadResolver.IsPlatformIncompatibleWorkload(ParseWorkloadId(workloadId)) ?
                     CliCommandStrings.WorkloadNotSupportedOnPlatform : CliCommandStrings.WorkloadNotRecognized;
 
                 throw new GracefulException(string.Format(exceptionMessage, workloadId), isUserError: false);

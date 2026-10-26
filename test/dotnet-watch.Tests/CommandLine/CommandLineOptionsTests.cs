@@ -99,7 +99,7 @@ public class CommandLineOptionsTests
     [TestMethod]
     [CombinatorialData]
     public void WatchOptions_NotPassedThrough(
-        [CombinatorialValues("--quiet", "--verbose", "--no-hot-reload", "--non-interactive")] string option,
+        [CombinatorialValues("--quiet", "--verbose", "--trace", "--no-hot-reload", "--non-interactive")] string option,
         bool beforeCommand)
     {
         var options = VerifyOptions(beforeCommand ? [option, "test"] : ["test", option]);
@@ -112,6 +112,35 @@ public class CommandLineOptionsTests
     {
          VerifyErrors(["--quiet", "--verbose"],
             expectedErrors: [$"[Error] {string.Format(Resources.Cannot_specify_both_0_and_1_options, "--quiet", "--verbose")}"]);
+    }
+
+    [TestMethod]
+    [DataRow("--quiet")]
+    [DataRow("--verbose")]
+    public void TraceAndOtherLogLevel(string option)
+    {
+        VerifyErrors([option, "--trace"],
+            expectedErrors: [$"[Error] {string.Format(Resources.Cannot_specify_both_0_and_1_options, option, "--trace")}"]);
+    }
+
+    [TestMethod]
+    public void Trace()
+    {
+        var options = VerifyOptions(["--trace"]);
+        Assert.AreEqual(LogLevel.Trace, options.GlobalOptions.LogLevel);
+    }
+
+    [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("\"--mt:false\"")]
+    public void TraceWithMultiThreadedOption(string option)
+    {
+        var options = VerifyOptions(["--trace", option, "--", option]);
+
+        Assert.AreEqual(LogLevel.Trace, options.GlobalOptions.LogLevel);
+        AssertEx.SequenceEqual([NugetInteractiveProperty, option], options.BuildArguments);
+        AssertEx.SequenceEqual([option, "--", option], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", option], options.CommandArgumentsForFileDiscovery);
     }
 
     [TestMethod]
@@ -284,13 +313,13 @@ public class CommandLineOptionsTests
         var options1 = VerifyOptions(["--", option]);
 
         AssertEx.SequenceEqual(["--", option], options1.CommandArguments);
-        AssertEx.SequenceEqual(["--", option], options1.CommandArgumentsWithoutBinLog);
+        AssertEx.SequenceEqual(["--", option], options1.CommandArgumentsForFileDiscovery);
         AssertEx.SequenceEqual(["--property:NuGetInteractive=false"], options1.BuildArguments);
 
         var options2 = VerifyOptions(["-bl:1", option, "A", "--", "-bl:XXX"]);
 
         AssertEx.SequenceEqual(["-bl:1", option, "A", "--", "-bl:XXX"], options2.CommandArguments);
-        AssertEx.SequenceEqual(["A", "--", "-bl:XXX"], options2.CommandArgumentsWithoutBinLog);
+        AssertEx.SequenceEqual(["A", "--", "-bl:XXX"], options2.CommandArgumentsForFileDiscovery);
 
         // the last bin log option before "--" is used:
         AssertEx.SequenceEqual(["--property:NuGetInteractive=false", option], options2.BuildArguments);
@@ -307,6 +336,88 @@ public class CommandLineOptionsTests
 
         AssertEx.SequenceEqual([option], options.CommandArguments);
         AssertEx.SequenceEqual(["--property:NuGetInteractive=false"], options.BuildArguments);
+    }
+
+    [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("/mt")]
+    [DataRow("--mt")]
+    [DataRow("-multiThreaded")]
+    [DataRow("/multiThreaded")]
+    [DataRow("--multiThreaded")]
+    [DataRow("-mt:true")]
+    [DataRow("-mt:")]
+    [DataRow("--multiThreaded:false")]
+    [DataRow("--multiThreaded:")]
+    [DataRow("-mt:\"true\"")]
+    [DataRow("-mt:\"false\"")]
+    [DataRow("--multiThreaded:\"False\"")]
+    [DataRow("/mt:\"true\"")]
+    [DataRow("-mt:\"\"")]
+    [DataRow("\"--mt:false\"")]
+    [DataRow("-m\"t\":fa\"lse\"")]
+    public void MultiThreadedOption(string option)
+    {
+        var options = VerifyOptions([option]);
+
+        AssertEx.SequenceEqual([option], options.CommandArguments);
+        AssertEx.SequenceEqual([], options.CommandArgumentsForFileDiscovery);
+        AssertEx.SequenceEqual(["--property:NuGetInteractive=false", option], options.BuildArguments);
+    }
+
+    [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("/mt")]
+    [DataRow("--mt")]
+    [DataRow("-multiThreaded")]
+    [DataRow("/multiThreaded")]
+    [DataRow("--multiThreaded")]
+    [DataRow("-mt:true")]
+    [DataRow("-mt:")]
+    [DataRow("--multiThreaded:false")]
+    [DataRow("--multiThreaded:")]
+    [DataRow("-mt:\"true\"")]
+    [DataRow("-mt:\"false\"")]
+    [DataRow("--multiThreaded:\"False\"")]
+    [DataRow("/mt:\"true\"")]
+    [DataRow("-mt:\"\"")]
+    [DataRow("\"--mt:false\"")]
+    [DataRow("-m\"t\":fa\"lse\"")]
+    public void MultiThreadedOption_AfterDashDash(string option)
+    {
+        var options = VerifyOptions(["--", option]);
+
+        AssertEx.SequenceEqual(["--", option], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", option], options.CommandArgumentsForFileDiscovery);
+        AssertEx.SequenceEqual(["--property:NuGetInteractive=false"], options.BuildArguments);
+    }
+
+    [TestMethod]
+    [DataRow("-mt:auto")]
+    [DataRow("-mt:on")]
+    [DataRow("-mtx")]
+    [DataRow("--multiThreaded:invalid")]
+    [DataRow("-mt:\"invalid\"")]
+    [DataRow("-mt:\\\"false\\\"")]
+    [DataRow("-mt:'false'")]
+    [DataRow("-mt:\"\"\"false\"\"\"")]
+    public void MultiThreadedOption_Invalid(string option)
+    {
+        var options = VerifyOptions([option]);
+
+        AssertEx.SequenceEqual([option], options.CommandArguments);
+        AssertEx.SequenceEqual([option], options.CommandArgumentsForFileDiscovery);
+        AssertEx.SequenceEqual(["--property:NuGetInteractive=false"], options.BuildArguments);
+    }
+
+    [TestMethod]
+    public void MultiThreadedOption_PreservesEmptyDuplicates()
+    {
+        var options = VerifyOptions(["-mt:false", "-mt:", "-mt:\"\"", "--", "\"--mt:true\""]);
+
+        AssertEx.SequenceEqual(["--property:NuGetInteractive=false", "-mt:false", "-mt:", "-mt:\"\""], options.BuildArguments);
+        AssertEx.SequenceEqual(["-mt:false", "-mt:", "-mt:\"\"", "--", "\"--mt:true\""], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", "\"--mt:true\""], options.CommandArgumentsForFileDiscovery);
     }
 
     [TestMethod]

@@ -74,6 +74,23 @@ namespace Microsoft.TemplateEngine.Core.Util
 
         protected virtual bool TryGetBufferSize(IFile sourceFile, out int bufferSize)
         {
+            if (sourceFile is IKnownLengthFile knownLengthFile)
+            {
+                try
+                {
+                    long length = knownLengthFile.Length;
+                    if (length >= 0 && length < Processor.DefaultBufferSize)
+                    {
+                        bufferSize = Math.Max(4, (int)length);
+                        return true;
+                    }
+                }
+                catch
+                {
+                    // Fall back to the default when the source cannot report a stable length.
+                }
+            }
+
             bufferSize = -1;
             return false;
         }

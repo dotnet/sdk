@@ -63,25 +63,31 @@ internal static class LoggerUtility
         return new FacadeLogger(dispatcher);
     }
 
-    internal static void SeparateLoggerArguments(IEnumerable<string>? args, out ImmutableArray<string> loggerArgs, out ImmutableArray<string> nonLoggerArgs)
+    /// <summary>
+    /// Splits tokens the SDK parser didn't model into those that configure MSBuild itself and those that
+    /// belong to whatever the verb ultimately launches (a test application for <c>dotnet test</c>, the
+    /// built app for <c>dotnet run</c>). Besides logger switches this also covers build-engine switches
+    /// such as <c>-mt</c>, which are meaningless to a launched process.
+    /// </summary>
+    internal static void SeparateMSBuildArguments(IEnumerable<string>? args, out ImmutableArray<string> msbuildArgs, out ImmutableArray<string> otherArgs)
     {
-        var loggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
-        var nonLoggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
+        var msbuildArgsBuilder = ImmutableArray.CreateBuilder<string>();
+        var otherArgsBuilder = ImmutableArray.CreateBuilder<string>();
 
         foreach (var arg in args ?? [])
         {
-            if (TryGetLoggerArgument(arg, out string? loggerArg))
+            if (TryGetMSBuildArgument(arg, out string? msbuildArg))
             {
-                loggerArgsBuilder.Add(loggerArg);
+                msbuildArgsBuilder.Add(msbuildArg);
             }
             else
             {
-                nonLoggerArgsBuilder.Add(arg);
+                otherArgsBuilder.Add(arg);
             }
         }
 
-        loggerArgs = loggerArgsBuilder.ToImmutable();
-        nonLoggerArgs = nonLoggerArgsBuilder.ToImmutable();
+        msbuildArgs = msbuildArgsBuilder.ToImmutable();
+        otherArgs = otherArgsBuilder.ToImmutable();
     }
 
     internal static bool IsBinLogArgument(string arg)
@@ -103,17 +109,18 @@ internal static class LoggerUtility
             switchName.Equals("noConsoleLogger", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool TryGetLoggerArgument(string arg, [NotNullWhen(true)] out string? loggerArg)
+    private static bool TryGetMSBuildArgument(string arg, [NotNullWhen(true)] out string? msbuildArg)
     {
-        loggerArg = arg;
-        if (IsBinLogArgument(arg) || IsNoConsoleLoggerArgument(arg))
+        msbuildArg = arg;
+        if (IsBinLogArgument(arg) || IsNoConsoleLoggerArgument(arg) ||
+            MSBuildArgumentParser.IsMultiThreadedSwitch(arg))
         {
             return true;
         }
 
         if (!TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue))
         {
-            loggerArg = null;
+            msbuildArg = null;
             return false;
         }
 
@@ -123,7 +130,7 @@ internal static class LoggerUtility
         {
             if (!hasValue)
             {
-                loggerArg = $"{prefix}{switchName}:auto";
+                msbuildArg = $"{prefix}{switchName}:auto";
                 return true;
             }
 
@@ -134,7 +141,7 @@ internal static class LoggerUtility
                   switchValue.Equals("false", comp) ||
                   switchValue.Equals("auto", comp)))
             {
-                loggerArg = null;
+                msbuildArg = null;
                 return false;
             }
 
@@ -150,7 +157,7 @@ internal static class LoggerUtility
             }
         }
 
-        loggerArg = null;
+        msbuildArg = null;
         return false;
     }
 

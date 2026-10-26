@@ -183,6 +183,12 @@
   <data name="EnumTypesMustMatch" xml:space="preserve">
     <value>Underlying type of enum '{0}' changed from '{1}' to '{2}'.</value>
   </data>
+  <data name="ExperimentalApiBecomesStable" xml:space="preserve">
+    <value>API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</value>
+  </data>
+  <data name="StableApiBecomesExperimental" xml:space="preserve">
+    <value>API '{0}' was previously stable and is now marked experimental. Existing consumers will receive diagnostics when using this API.</value>
+  </data>
   <data name="CannotAddVirtualToMember" xml:space="preserve">
     <value>Cannot add virtual keyword to member '{0}'.</value>
   </data>

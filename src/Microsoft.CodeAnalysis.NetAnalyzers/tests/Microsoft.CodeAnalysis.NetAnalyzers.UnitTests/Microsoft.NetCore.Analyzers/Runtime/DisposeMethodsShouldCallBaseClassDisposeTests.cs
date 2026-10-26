@@ -33,154 +33,161 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A 
-{
-}
+                class A
+                {
+                }
 
-class B : A, IDisposable
-{
-    public void Dispose()
-    {
-    }
-}
-");
+                class B : A, IDisposable
+                {
+                    public void Dispose()
+                    {
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-End Class
+                Class A
+                End Class
 
-Class B
-    Inherits A
-    Implements IDisposable
+                Class B
+                    Inherits A
+                    Implements IDisposable
 
-    Public Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class");
+                    Public Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_02_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A 
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                class A
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
 
-class B : A, IDisposable
-{
-    public override void Dispose()
-    {
-    }
-}
-");
+                class B : A, IDisposable
+                {
+                    public override void Dispose()
+                    {
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Public Overridable Sub Dispose()
-    End Sub
-End Class
+                Class A
+                    Public Overridable Sub Dispose()
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
-    Implements IDisposable
+                Class B
+                    Inherits A
+                    Implements IDisposable
 
-    Public Overrides Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class");
+                    Public Overrides Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task BaseDisposeCall_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
 
-class B : A
-{
-    public override void Dispose()
-    {
-        base.Dispose();
-    }
-}
-");
+                class B : A
+                {
+                    public override void Dispose()
+                    {
+                        base.Dispose();
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Public Overrides Sub Dispose()
-        MyBase.Dispose()
-    End Sub
-End Class");
+                    Public Overrides Sub Dispose()
+                        MyBase.Dispose()
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task NoBaseDisposeCall_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                using System;
 
-class B : A
-{
-    public override void Dispose()
-    {
-    }
-}
-",
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
+
+                class B : A
+                {
+                    public override void Dispose()
+                    {
+                    }
+                }
+
+                """,
             // Test0.cs(13,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(13, 26, "void B.Dispose()", "base.Dispose()"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class A
-    Implements IDisposable
+                Imports System
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                Class A
+                    Implements IDisposable
 
-Class B
-    Inherits A
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-    Public Overrides Sub Dispose()
-    End Sub
-End Class",
+                Class B
+                    Inherits A
+
+                    Public Overrides Sub Dispose()
+                    End Sub
+                End Class
+                """,
             // Test0.vb(14,26): warning CA2215: Ensure that method 'Sub B.Dispose()' calls 'MyBase.Dispose()' in all possible control flow paths.
             GetBasicResultAt(14, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
@@ -188,127 +195,133 @@ End Class",
         [TestMethod]
         public async Task BaseDisposeCall_IgnoreCase_VB_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Public Overrides Sub Dispose()
-        myBasE.Dispose()
-    End Sub
-End Class");
+                    Public Overrides Sub Dispose()
+                        myBasE.Dispose()
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task BaseDisposeBoolCall_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A : IDisposable
-{
-    public virtual void Dispose(bool b)
-    {
-    }
+                class A : IDisposable
+                {
+                    public virtual void Dispose(bool b)
+                    {
+                    }
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-}
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        GC.SuppressFinalize(this);
+                    }
+                }
 
-class B : A
-{
-    public override void Dispose(bool b)
-    {
-        base.Dispose(b);
-    }
-}
-");
+                class B : A
+                {
+                    public override void Dispose(bool b)
+                    {
+                        base.Dispose(b);
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Dispose(b As Boolean)
-    End Sub
+                    Public Overridable Sub Dispose(b As Boolean)
+                    End Sub
 
-    Public Sub Dispose() Implements IDisposable.Dispose
-        Dispose(True)
-        GC.SuppressFinalize(Me)
-    End Sub
-End Class
+                    Public Sub Dispose() Implements IDisposable.Dispose
+                        Dispose(True)
+                        GC.SuppressFinalize(Me)
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Public Overrides Sub Dispose(b As Boolean)
-        MyBase.Dispose(b)
-    End Sub
-End Class");
+                    Public Overrides Sub Dispose(b As Boolean)
+                        MyBase.Dispose(b)
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task NoBaseDisposeBoolCall_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class A : IDisposable
-{
-    public virtual void Dispose(bool b)
-    {
-    }
+                using System;
 
-    public void Dispose()
-    {
-        Dispose(true);
-        GC.SuppressFinalize(this);
-    }
-}
+                class A : IDisposable
+                {
+                    public virtual void Dispose(bool b)
+                    {
+                    }
 
-class B : A
-{
-    public override void Dispose(bool b)
-    {
-    }
-}
-",
+                    public void Dispose()
+                    {
+                        Dispose(true);
+                        GC.SuppressFinalize(this);
+                    }
+                }
+
+                class B : A
+                {
+                    public override void Dispose(bool b)
+                    {
+                    }
+                }
+
+                """,
             // Test0.cs(19,26): warning CA2215: Ensure that method 'void B.Dispose(bool b)' calls 'base.Dispose(bool)' in all possible control flow paths.
             GetCSharpResultAt(19, 26, "void B.Dispose(bool b)", "base.Dispose(bool)"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class A
-    Implements IDisposable
+                Imports System
 
-    Public Overridable Sub Dispose(b As Boolean)
-    End Sub
+                Class A
+                    Implements IDisposable
 
-    Public Sub Dispose() Implements IDisposable.Dispose
-        Dispose(True)
-        GC.SuppressFinalize(Me)
-    End Sub
-End Class
+                    Public Overridable Sub Dispose(b As Boolean)
+                    End Sub
 
-Class B
-    Inherits A
+                    Public Sub Dispose() Implements IDisposable.Dispose
+                        Dispose(True)
+                        GC.SuppressFinalize(Me)
+                    End Sub
+                End Class
 
-    Public Overrides Sub Dispose(b As Boolean)
-    End Sub
-End Class",
+                Class B
+                    Inherits A
+
+                    Public Overrides Sub Dispose(b As Boolean)
+                    End Sub
+                End Class
+                """,
             // Test0.vb(19,26): warning CA2215: Ensure that method 'Sub B.Dispose(b As Boolean)' calls 'MyBase.Dispose(Boolean)' in all possible control flow paths.
             GetBasicResultAt(19, 26, "Sub B.Dispose(b As Boolean)", "MyBase.Dispose(Boolean)"));
         }
@@ -316,155 +329,161 @@ End Class",
         [TestMethod]
         public async Task NoBaseDisposeCloseCall_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A : IDisposable
-{
-    public virtual void Close()
-    {
-    }
+                class A : IDisposable
+                {
+                    public virtual void Close()
+                    {
+                    }
 
-    public void Dispose()
-    {
-        Close();
-        GC.SuppressFinalize(this);
-    }
-}
+                    public void Dispose()
+                    {
+                        Close();
+                        GC.SuppressFinalize(this);
+                    }
+                }
 
-class B : A
-{
-    public override void Close()
-    {
-    }
-}
-");
+                class B : A
+                {
+                    public override void Close()
+                    {
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Close()
-    End Sub
+                    Public Overridable Sub Close()
+                    End Sub
 
-    Public Sub Dispose() Implements IDisposable.Dispose
-        Close()
-        GC.SuppressFinalize(Me)
-    End Sub
-End Class
+                    Public Sub Dispose() Implements IDisposable.Dispose
+                        Close()
+                        GC.SuppressFinalize(Me)
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Public Overrides Sub Close()
-    End Sub
-End Class");
+                    Public Overrides Sub Close()
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
         public async Task BaseDisposeAsyncCall_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Threading.Tasks;
 
-class A : IDisposable
-{
-    public void Dispose() => DisposeAsync();
+                class A : IDisposable
+                {
+                    public void Dispose() => DisposeAsync();
 
-    public virtual Task DisposeAsync()
-    {
-        return Task.CompletedTask;
-    }
-}
+                    public virtual Task DisposeAsync()
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
 
-class B : A
-{
-    public override Task DisposeAsync()
-    {
-        return base.DisposeAsync();
-    }
-}
-");
+                class B : A
+                {
+                    public override Task DisposeAsync()
+                    {
+                        return base.DisposeAsync();
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Threading.Tasks
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Threading.Tasks
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Sub Dispose() Implements IDisposable.Dispose
-        DisposeAsync()
-    End Sub
+                    Public Sub Dispose() Implements IDisposable.Dispose
+                        DisposeAsync()
+                    End Sub
 
-    Public Overridable Function DisposeAsync() As Task
-        Return Task.CompletedTask
-    End Function
-End Class
+                    Public Overridable Function DisposeAsync() As Task
+                        Return Task.CompletedTask
+                    End Function
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Public Overrides Function DisposeAsync() As Task
-        Return MyBase.DisposeAsync()
-    End Function
-End Class");
+                    Public Overrides Function DisposeAsync() As Task
+                        Return MyBase.DisposeAsync()
+                    End Function
+                End Class
+                """);
         }
 
         [TestMethod, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
         public async Task NoBaseDisposeAsyncCall_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class A : IDisposable
-{
-    public void Dispose() => DisposeAsync();
+                using System;
+                using System.Threading.Tasks;
 
-    public virtual Task DisposeAsync()
-    {
-        return Task.CompletedTask;
-    }
-}
+                class A : IDisposable
+                {
+                    public void Dispose() => DisposeAsync();
 
-class B : A
-{
-    public override Task DisposeAsync()
-    {
-        return Task.CompletedTask;
-    }
-}
-",
+                    public virtual Task DisposeAsync()
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+
+                class B : A
+                {
+                    public override Task DisposeAsync()
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+
+                """,
             // Test0.cs(17,26): warning CA2215: Ensure that method 'Task B.DisposeAsync()' calls 'base.DisposeAsync()' in all possible control flow paths.
             GetCSharpResultAt(17, 26, "Task B.DisposeAsync()", "base.DisposeAsync()"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Threading.Tasks
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class A
-    Implements IDisposable
+                Imports System
+                Imports System.Threading.Tasks
 
-    Public Sub Dispose() Implements IDisposable.Dispose
-        DisposeAsync()
-    End Sub
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Function DisposeAsync() As Task
-        Return Task.CompletedTask
-    End Function
-End Class
+                    Public Sub Dispose() Implements IDisposable.Dispose
+                        DisposeAsync()
+                    End Sub
 
-Class B
-    Inherits A
+                    Public Overridable Function DisposeAsync() As Task
+                        Return Task.CompletedTask
+                    End Function
+                End Class
 
-    Public Overrides Function DisposeAsync() As Task
-        Return Task.CompletedTask
-    End Function
-End Class",
+                Class B
+                    Inherits A
+
+                    Public Overrides Function DisposeAsync() As Task
+                        Return Task.CompletedTask
+                    End Function
+                End Class
+                """,
             // Test0.vb(20,31): warning CA2215: Ensure that method 'Function B.DisposeAsync() As Task' calls 'MyBase.DisposeAsync()' in all possible control flow paths.
             GetBasicResultAt(20, 31, "Function B.DisposeAsync() As Task", "MyBase.DisposeAsync()"));
         }
@@ -472,139 +491,144 @@ End Class",
         [TestMethod, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
         public async Task BaseDisposeCoreAsyncCall_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Threading.Tasks;
 
-abstract class A : IDisposable
-{
-    public void Dispose() => DisposeAsync();
+                abstract class A : IDisposable
+                {
+                    public void Dispose() => DisposeAsync();
 
-    public Task DisposeAsync() => DisposeCoreAsync(true);
+                    public Task DisposeAsync() => DisposeCoreAsync(true);
 
-    protected abstract Task DisposeCoreAsync(bool initialized);
-}
+                    protected abstract Task DisposeCoreAsync(bool initialized);
+                }
 
-class B : A
-{
-    protected override Task DisposeCoreAsync(bool initialized)
-    {
-        return Task.CompletedTask;
-    }
-}
+                class B : A
+                {
+                    protected override Task DisposeCoreAsync(bool initialized)
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
 
-class C : B
-{
-    protected override Task DisposeCoreAsync(bool initialized)
-    {
-        return base.DisposeCoreAsync(initialized);
-    }
-}
-");
+                class C : B
+                {
+                    protected override Task DisposeCoreAsync(bool initialized)
+                    {
+                        return base.DisposeCoreAsync(initialized);
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Threading.Tasks
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Threading.Tasks
 
-MustInherit Class A
-    Implements IDisposable
+                MustInherit Class A
+                    Implements IDisposable
 
-    Public Sub Dispose() Implements IDisposable.Dispose
-        DisposeAsync()
-    End Sub
+                    Public Sub Dispose() Implements IDisposable.Dispose
+                        DisposeAsync()
+                    End Sub
 
-    Public Function DisposeAsync() As Task
-        Return DisposeCoreAsync(True)
-    End Function
+                    Public Function DisposeAsync() As Task
+                        Return DisposeCoreAsync(True)
+                    End Function
 
-    Protected MustOverride Function DisposeCoreAsync(initialized As Boolean) As Task
-End Class
+                    Protected MustOverride Function DisposeCoreAsync(initialized As Boolean) As Task
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Protected Overrides Function DisposeCoreAsync(initialized As Boolean) As Task
-        Return Task.CompletedTask
-    End Function
-End Class
+                    Protected Overrides Function DisposeCoreAsync(initialized As Boolean) As Task
+                        Return Task.CompletedTask
+                    End Function
+                End Class
 
-Class C
-    Inherits B
+                Class C
+                    Inherits B
 
-    Protected Overrides Function DisposeCoreAsync(initialized As Boolean) As Task
-        Return MyBase.DisposeCoreAsync(initialized)
-    End Function
-End Class");
+                    Protected Overrides Function DisposeCoreAsync(initialized As Boolean) As Task
+                        Return MyBase.DisposeCoreAsync(initialized)
+                    End Function
+                End Class
+                """);
         }
 
         [TestMethod, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
         public async Task NoBaseDisposeCoreAsyncCall_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-abstract class A : IDisposable
-{
-    public void Dispose() => DisposeAsync();
+                using System;
+                using System.Threading.Tasks;
 
-    public Task DisposeAsync() => DisposeCoreAsync(true);
+                abstract class A : IDisposable
+                {
+                    public void Dispose() => DisposeAsync();
 
-    protected abstract Task DisposeCoreAsync(bool initialized);
-}
+                    public Task DisposeAsync() => DisposeCoreAsync(true);
 
-class B : A
-{
-    protected override Task DisposeCoreAsync(bool initialized)
-    {
-        return Task.CompletedTask;
-    }
-}
+                    protected abstract Task DisposeCoreAsync(bool initialized);
+                }
 
-class C : B
-{
-    protected override Task DisposeCoreAsync(bool initialized)
-    {
-        return Task.CompletedTask;
-    }
-}
-",
+                class B : A
+                {
+                    protected override Task DisposeCoreAsync(bool initialized)
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+
+                class C : B
+                {
+                    protected override Task DisposeCoreAsync(bool initialized)
+                    {
+                        return Task.CompletedTask;
+                    }
+                }
+
+                """,
             // Test0.cs(24,29): warning CA2215: Ensure that method 'Task C.DisposeCoreAsync(bool initialized)' calls 'base.DisposeCoreAsync(bool)' in all possible control flow paths.
             GetCSharpResultAt(24, 29, "Task C.DisposeCoreAsync(bool initialized)", "base.DisposeCoreAsync(bool)"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Threading.Tasks
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-MustInherit Class A
-    Implements IDisposable
+                Imports System
+                Imports System.Threading.Tasks
 
-    Public Sub Dispose() Implements IDisposable.Dispose
-        DisposeAsync()
-    End Sub
+                MustInherit Class A
+                    Implements IDisposable
 
-    Public Function DisposeAsync() As Task
-        Return DisposeCoreAsync(True)
-    End Function
+                    Public Sub Dispose() Implements IDisposable.Dispose
+                        DisposeAsync()
+                    End Sub
 
-    Protected MustOverride Function DisposeCoreAsync(initialized As Boolean) As Task
-End Class
+                    Public Function DisposeAsync() As Task
+                        Return DisposeCoreAsync(True)
+                    End Function
 
-Class B
-    Inherits A
+                    Protected MustOverride Function DisposeCoreAsync(initialized As Boolean) As Task
+                End Class
 
-    Protected Overrides Function DisposeCoreAsync(initialized As Boolean) As Task
-        Return Task.CompletedTask
-    End Function
-End Class
+                Class B
+                    Inherits A
 
-Class C
-    Inherits B
+                    Protected Overrides Function DisposeCoreAsync(initialized As Boolean) As Task
+                        Return Task.CompletedTask
+                    End Function
+                End Class
 
-    Protected Overrides Function DisposeCoreAsync(initialized As Boolean) As Task
-        Return Task.CompletedTask
-    End Function
-End Class",
+                Class C
+                    Inherits B
+
+                    Protected Overrides Function DisposeCoreAsync(initialized As Boolean) As Task
+                        Return Task.CompletedTask
+                    End Function
+                End Class
+                """,
             // Test0.vb(30,34): warning CA2215: Ensure that method 'Function C.DisposeCoreAsync(initialized As Boolean) As Task' calls 'MyBase.DisposeCoreAsync(Boolean)' in all possible control flow paths.
             GetBasicResultAt(30, 34, "Function C.DisposeCoreAsync(initialized As Boolean) As Task", "MyBase.DisposeCoreAsync(Boolean)"));
         }
@@ -612,223 +636,228 @@ End Class",
         [TestMethod]
         public async Task AbstractBaseDisposeMethod_NoBaseDisposeCall_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-abstract class A : IDisposable
-{
-    public abstract void Dispose();
-}
+                abstract class A : IDisposable
+                {
+                    public abstract void Dispose();
+                }
 
-class B : A
-{
-    public override void Dispose()
-    {
-    }
-}
-");
+                class B : A
+                {
+                    public override void Dispose()
+                    {
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-MustInherit Class A
-    Implements IDisposable
+                MustInherit Class A
+                    Implements IDisposable
 
-    Public MustOverride Sub Dispose() Implements IDisposable.Dispose
-End Class
+                    Public MustOverride Sub Dispose() Implements IDisposable.Dispose
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Public Overrides Sub Dispose()
-    End Sub
-End Class");
+                    Public Overrides Sub Dispose()
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task ShadowsBaseDisposeMethod_NoBaseDisposeCall_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
 
-class B : A
-{
-    public new void Dispose()
-    {
-    }
-}
-");
+                class B : A
+                {
+                    public new void Dispose()
+                    {
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Public Shadows Sub Dispose()
-    End Sub
-End Class");
+                    Public Shadows Sub Dispose()
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task Multiple_BaseDisposeCalls_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
 
-class B : A
-{
-    public override void Dispose()
-    {
-        base.Dispose();
-        base.Dispose();
-    }
-}
-");
+                class B : A
+                {
+                    public override void Dispose()
+                    {
+                        base.Dispose();
+                        base.Dispose();
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Public Overrides Sub Dispose()
-        MyBase.Dispose()
-        MyBase.Dispose()
-    End Sub
-End Class");
+                    Public Overrides Sub Dispose()
+                        MyBase.Dispose()
+                        MyBase.Dispose()
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task BaseDisposeCalls_AllPaths_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
 
-class B : A
-{
-    private readonly bool flag;
-    public override void Dispose()
-    {
-        if (flag)
-        {
-            base.Dispose();
-        }
-        else
-        {
-            base.Dispose();
-        }
-    }
-}
-");
+                class B : A
+                {
+                    private readonly bool flag;
+                    public override void Dispose()
+                    {
+                        if (flag)
+                        {
+                            base.Dispose();
+                        }
+                        else
+                        {
+                            base.Dispose();
+                        }
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Private ReadOnly flag As Boolean
-    Public Overrides Sub Dispose()
-        If flag Then
-            MyBase.Dispose()
-        Else 
-            MyBase.Dispose()
-        End If
-    End Sub
-End Class");
+                    Private ReadOnly flag As Boolean
+                    Public Overrides Sub Dispose()
+                        If flag Then
+                            MyBase.Dispose()
+                        Else
+                            MyBase.Dispose()
+                        End If
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod, Ignore("Analyzer isn't yet flow based."), WorkItem(1654, "https://github.com/dotnet/roslyn-analyzers/issues/1654")]
         public async Task BaseDisposeCalls_SomePaths_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
 
-class B : A
-{
-    private readonly A a;
-    public override void Dispose()
-    {
-        if (a != null)
-        {
-            base.Dispose();
-        }
-    }
-}
-",
+                class B : A
+                {
+                    private readonly A a;
+                    public override void Dispose()
+                    {
+                        if (a != null)
+                        {
+                            base.Dispose();
+                        }
+                    }
+                }
+                """,
             // Test0.cs(14,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(14, 26, "void B.Dispose()", "base.Dispose()"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Private ReadOnly a As A
-    Public Overrides Sub Dispose()
-        If a IsNot Nothing Then
-            MyBase.Dispose()
-        End If
-    End Sub
-End Class",
+                    Private ReadOnly a As A
+                    Public Overrides Sub Dispose()
+                        If a IsNot Nothing Then
+                            MyBase.Dispose()
+                        End If
+                    End Sub
+                End Class
+                """,
             // Test0.vb(15,26): warning CA2215: Ensure that method 'Sub B.Dispose()' calls 'MyBase.Dispose()' in all possible control flow paths.
             GetBasicResultAt(15, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
@@ -836,107 +865,112 @@ End Class",
         [TestMethod]
         public async Task BaseDisposeCall_GuardedWithBoolField_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
 
-class B : A
-{
-    private bool disposed;
+                class B : A
+                {
+                    private bool disposed;
 
-    public override void Dispose()
-    {
-        if (disposed)
-        {
-            return;
-        }
+                    public override void Dispose()
+                    {
+                        if (disposed)
+                        {
+                            return;
+                        }
 
-        base.Dispose();
-        disposed = true;
-    }
-}
-");
+                        base.Dispose();
+                        disposed = true;
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Class A
-    Implements IDisposable
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-Class B
-    Inherits A
+                Class B
+                    Inherits A
 
-    Private disposed As Boolean
+                    Private disposed As Boolean
 
-    Public Overrides Sub Dispose()
-        If disposed Then
-            Return
-        End If
+                    Public Overrides Sub Dispose()
+                        If disposed Then
+                            Return
+                        End If
 
-        MyBase.Dispose()
-        disposed = True
-    End Sub
-End Class");
+                        MyBase.Dispose()
+                        disposed = True
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task BaseDisposeCall_DifferentOverload_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
+                using System;
 
-    public void Dispose(int i)
-    {
-    }
-}
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
 
-class B : A
-{
-    public override void Dispose()
-    {
-        Dispose(0);
-    }
-}
-",
+                    public void Dispose(int i)
+                    {
+                    }
+                }
+
+                class B : A
+                {
+                    public override void Dispose()
+                    {
+                        Dispose(0);
+                    }
+                }
+
+                """,
             // Test0.cs(17,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(17, 26, "void B.Dispose()", "base.Dispose()"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class A
-    Implements IDisposable
+                Imports System
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
+                Class A
+                    Implements IDisposable
 
-    Public Overridable Sub Dispose(i As Integer)
-    End Sub
-End Class
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
 
-Class B
-    Inherits A
+                    Public Overridable Sub Dispose(i As Integer)
+                    End Sub
+                End Class
 
-    Public Overrides Sub Dispose()
-        Dispose(0)
-    End Sub
-End Class",
+                Class B
+                    Inherits A
+
+                    Public Overrides Sub Dispose()
+                        Dispose(0)
+                    End Sub
+                End Class
+                """,
             // Test0.vb(17,26): warning CA2215: Ensure that method 'Sub B.Dispose()' calls 'MyBase.Dispose()' in all possible control flow paths.
             GetBasicResultAt(17, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
@@ -944,46 +978,50 @@ End Class",
         [TestMethod]
         public async Task DisposeCall_DifferentInstance_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                using System;
 
-class B : A
-{
-    private readonly A a;
-    public override void Dispose()
-    {
-        a.Dispose();
-    }
-}
-",
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
+
+                class B : A
+                {
+                    private readonly A a;
+                    public override void Dispose()
+                    {
+                        a.Dispose();
+                    }
+                }
+
+                """,
             // Test0.cs(14,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(14, 26, "void B.Dispose()", "base.Dispose()"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class A
-    Implements IDisposable
+                Imports System
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                Class A
+                    Implements IDisposable
 
-Class B
-    Inherits A
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-    Private ReadOnly a As A
-    Public Overrides Sub Dispose()
-        a.Dispose()
-    End Sub
-End Class",
+                Class B
+                    Inherits A
+
+                    Private ReadOnly a As A
+                    Public Overrides Sub Dispose()
+                        a.Dispose()
+                    End Sub
+                End Class
+                """,
             // Test0.vb(15,26): warning CA2215: Ensure that method 'Sub B.Dispose()' calls 'MyBase.Dispose()' in all possible control flow paths.
             GetBasicResultAt(15, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
@@ -991,51 +1029,55 @@ End Class",
         [TestMethod]
         public async Task DisposeCall_StaticMethod_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
+                using System;
 
-    public static void Dispose(bool b)
-    {
-    }
-}
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
 
-class B : A
-{
-    public override void Dispose()
-    {
-        A.Dispose(true);
-    }
-}
-",
+                    public static void Dispose(bool b)
+                    {
+                    }
+                }
+
+                class B : A
+                {
+                    public override void Dispose()
+                    {
+                        A.Dispose(true);
+                    }
+                }
+
+                """,
             // Test0.cs(17,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(17, 26, "void B.Dispose()", "base.Dispose()"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class A
-    Implements IDisposable
+                Imports System
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
+                Class A
+                    Implements IDisposable
 
-    Public Shared Sub Dispose(b As Boolean)
-    End Sub
-End Class
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
 
-Class B
-    Inherits A
+                    Public Shared Sub Dispose(b As Boolean)
+                    End Sub
+                End Class
 
-    Public Overrides Sub Dispose()
-        A.Dispose(True)
-    End Sub
-End Class",
+                Class B
+                    Inherits A
+
+                    Public Overrides Sub Dispose()
+                        A.Dispose(True)
+                    End Sub
+                End Class
+                """,
             // Test0.vb(17,26): warning CA2215: Ensure that method 'Sub B.Dispose()' calls 'MyBase.Dispose()' in all possible control flow paths.
             GetBasicResultAt(17, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
@@ -1043,44 +1085,48 @@ End Class",
         [TestMethod]
         public async Task DisposeCall_ThisOrMeInstance_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class A : IDisposable
-{
-    public virtual void Dispose()
-    {
-    }
-}
+                using System;
 
-class B : A
-{
-    public override void Dispose()
-    {
-        this.Dispose();
-    }
-}
-",
+                class A : IDisposable
+                {
+                    public virtual void Dispose()
+                    {
+                    }
+                }
+
+                class B : A
+                {
+                    public override void Dispose()
+                    {
+                        this.Dispose();
+                    }
+                }
+
+                """,
             // Test0.cs(13,26): warning CA2215: Ensure that method 'void B.Dispose()' calls 'base.Dispose()' in all possible control flow paths.
             GetCSharpResultAt(13, 26, "void B.Dispose()", "base.Dispose()"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class A
-    Implements IDisposable
+                Imports System
 
-    Public Overridable Sub Dispose() Implements IDisposable.Dispose
-    End Sub
-End Class
+                Class A
+                    Implements IDisposable
 
-Class B
-    Inherits A
+                    Public Overridable Sub Dispose() Implements IDisposable.Dispose
+                    End Sub
+                End Class
 
-    Public Overrides Sub Dispose()
-        Me.Dispose()
-    End Sub
-End Class",
+                Class B
+                    Inherits A
+
+                    Public Overrides Sub Dispose()
+                        Me.Dispose()
+                    End Sub
+                End Class
+                """,
             // Test0.vb(14,26): warning CA2215: Ensure that method 'Sub B.Dispose()' calls 'MyBase.Dispose()' in all possible control flow paths.
             GetBasicResultAt(14, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }

@@ -122,11 +122,18 @@ bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
 can run entirely in AOT (`--version`, `--info`, the AOT-capable `sln`
-subcommands, and the narrow file-based run path described below) execute immediately and return.
+subcommands, the narrow file-based run path, and build-free
+`test --test-modules` invocations described below) execute immediately and return.
 Other built-in command shapes are wired with a fallback action that throws
 `CommandNotAvailableInAotException`;
 the bridge catches it (and any unexpected parse-time failure) and transparently
 falls through to the managed CLI.
+
+Before parsing or first-run setup, the bridge applies the same
+`UILanguageOverride` as the managed entry point. The Configurer satellite assemblies
+are supplied to ILC so localized first-run resources are available inside the native
+image. UI culture is not an AOT eligibility condition; only behavior unavailable in
+the native closure triggers managed fallback.
 
 **External command path** — When the parsed command is not a built-in
 (`parseResult.RequiresManagedCommandResolution()`), it is either an external
@@ -163,6 +170,17 @@ The bridge validates versions, global properties, source and tracked filesystem 
 serialized `RunProperties` contract before using its command, arguments, working directory, and
 RID/framework values. Stale or ambiguous caches defer before launch. Missing launch output follows
 the same process-start or apphost failure path as managed `dotnet run`.
+
+**Build-free test orchestration** — `AotTestCommand` handles
+Microsoft.Testing.Platform invocations with an explicit `--test-modules` expression. The
+native path reuses the managed test-module matcher, IPC protocol, terminal reporting,
+cancellation and policy handling, results-directory layout, and artifact post-processing.
+Eligibility is decided before module discovery or output: only an allowlisted set of
+test-module and orchestration options is accepted, and test-application options must
+follow `--`. VSTest, project/solution/file-based discovery, positional module shorthand,
+unknown command options, and options that require MSBuild evaluation fall back to the
+managed CLI. This keeps build and project evaluation outside the native path while
+rooting and validating the rest of the test orchestration closure.
 
 **MSBuild evaluation infrastructure** — The Native AOT closure includes the
 SDK-shipped workload and NuGet SDK resolvers and a reflection-free project evaluator

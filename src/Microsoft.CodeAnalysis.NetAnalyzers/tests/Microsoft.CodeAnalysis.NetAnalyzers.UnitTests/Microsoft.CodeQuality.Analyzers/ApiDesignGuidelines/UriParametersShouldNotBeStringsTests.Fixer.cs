@@ -17,28 +17,32 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CA1054WarningWithUrlAsync()
         {
-            var code = @"
-using System;
+            var code = """
 
-public class A
-{
-    public static void Method(string [|url|]) { }
-}
-";
+                using System;
 
-            var fix = @"
-using System;
+                public class A
+                {
+                    public static void Method(string [|url|]) { }
+                }
 
-public class A
-{
-    public static void Method(string url) { }
+                """;
 
-    public static void Method(Uri url)
-    {
-        throw new NotImplementedException();
-    }
-}
-";
+            var fix = """
+
+                using System;
+
+                public class A
+                {
+                    public static void Method(string url) { }
+
+                    public static void Method(Uri url)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
@@ -46,37 +50,41 @@ public class A
         [TestMethod]
         public async Task CA1054MultipleWarningWithUrlAsync()
         {
-            var code = @"
-using System;
+            var code = """
 
-public class A
-{
-    public static void Method(string [|url|], string [|url2|]) { }
-}
-";
-            var fix = @"
-using System;
+                using System;
 
-public class A
-{
-    public static void Method(string url, string url2) { }
+                public class A
+                {
+                    public static void Method(string [|url|], string [|url2|]) { }
+                }
 
-    public static void Method(Uri url, string url2)
-    {
-        throw new NotImplementedException();
-    }
+                """;
+            var fix = """
 
-    public static void Method(string url, Uri url2)
-    {
-        throw new NotImplementedException();
-    }
+                using System;
 
-    public static void Method(Uri url, Uri url2)
-    {
-        throw new NotImplementedException();
-    }
-}
-";
+                public class A
+                {
+                    public static void Method(string url, string url2) { }
+
+                    public static void Method(Uri url, string url2)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    public static void Method(string url, Uri url2)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    public static void Method(Uri url, Uri url2)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                """;
 
             await new VerifyCS.Test
             {
@@ -91,34 +99,38 @@ public class A
         public async Task CA1054MultipleWarningWithUrlWithOverloadAsync()
         {
             // Following original FxCop implementation. but this seems strange.
-            var code = @"
-using System;
+            var code = """
 
-public class A
-{
-    public static void Method(string [|url|], string [|url2|]) { }
-    public static void Method(Uri url, Uri url2) { }
-}
-";
-            var fix = @"
-using System;
+                using System;
 
-public class A
-{
-    public static void Method(string url, string url2) { }
-    public static void Method(Uri url, Uri url2) { }
+                public class A
+                {
+                    public static void Method(string [|url|], string [|url2|]) { }
+                    public static void Method(Uri url, Uri url2) { }
+                }
 
-    public static void Method(Uri url, string url2)
-    {
-        throw new NotImplementedException();
-    }
+                """;
+            var fix = """
 
-    public static void Method(string url, Uri url2)
-    {
-        throw new NotImplementedException();
-    }
-}
-";
+                using System;
+
+                public class A
+                {
+                    public static void Method(string url, string url2) { }
+                    public static void Method(Uri url, Uri url2) { }
+
+                    public static void Method(Uri url, string url2)
+                    {
+                        throw new NotImplementedException();
+                    }
+
+                    public static void Method(string url, Uri url2)
+                    {
+                        throw new NotImplementedException();
+                    }
+                }
+
+                """;
             await new VerifyCS.Test
             {
                 TestState = { Sources = { code } },
@@ -132,26 +144,30 @@ public class A
         public async Task CA1054WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
-            var code = @"
-Imports System
+            var code = """
 
-Public Class A
-    Public Sub Method([|firstUri|] As String)
-    End Sub
-End Class
-";
-            var fix = @"
-Imports System
+                Imports System
 
-Public Class A
-    Public Sub Method(firstUri As String)
-    End Sub
+                Public Class A
+                    Public Sub Method([|firstUri|] As String)
+                    End Sub
+                End Class
 
-    Public Sub Method(firstUri As Uri)
-        Throw New NotImplementedException()
-    End Sub
-End Class
-";
+                """;
+            var fix = """
+
+                Imports System
+
+                Public Class A
+                    Public Sub Method(firstUri As String)
+                    End Sub
+
+                    Public Sub Method(firstUri As Uri)
+                        Throw New NotImplementedException()
+                    End Sub
+                End Class
+
+                """;
 
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }

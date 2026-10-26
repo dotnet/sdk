@@ -16,4 +16,9 @@ internal sealed class GlobalOptions
     /// or null to not generate binlog files.
     /// </summary>
     public string? BinaryLogPath { get; init; }
+
+    public LogLevel GetEffectiveLogLevel(EnvironmentOptions environmentOptions)
+        => environmentOptions.CliContextVerbose && LogLevel != LogLevel.Trace
+            ? LogLevel.Debug
+            : LogLevel;
 }

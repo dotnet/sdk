@@ -12,6 +12,7 @@ internal static class ImagePublisher
         BuiltImage singleArchImage,
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
+        bool noCache,
         Microsoft.Build.Utilities.TaskLoggingHelper Log,
         Telemetry telemetry,
         CancellationToken cancellationToken)
@@ -37,7 +38,12 @@ internal static class ImagePublisher
                     destinationImageReference,
                     Log,
                     cancellationToken,
-                    destinationImageReference.RemoteRegistry!.PushAsync,
+                    (image, source, destination, token) => destinationImageReference.RemoteRegistry!.PushAsync(
+                        image,
+                        source,
+                        destination,
+                        noCache,
+                        token),
                     Strings.ContainerBuilder_ImageUploadedToRegistry).ConfigureAwait(false);
                 break;
             default:
@@ -111,6 +117,10 @@ internal static class ImagePublisher
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToDownloadFromRepository), sourceImageReference);
         }
+        catch (InvalidAuthResponseException e)
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidRegistryAuthResponse), e.Registry, e.Reason);
+        }
         catch (ContainerHttpException e)
         {
             Log.LogErrorFromException(e, true);
@@ -152,6 +162,10 @@ internal static class ImagePublisher
         catch (UnableToAccessRepositoryException)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
+        }
+        catch (InvalidAuthResponseException e)
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidRegistryAuthResponse), e.Registry, e.Reason);
         }
         catch (ContainerHttpException e)
         {

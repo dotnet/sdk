@@ -167,14 +167,35 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 }
             };
 
+            var event5 = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.MSBuildTaskSubclassedTelemetryAggregatedEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "Microsoft_Build_Tasks_Copy", "2" },
+                    { "Microsoft_Build_Utilities_Task", "1" }
+                }
+            };
+
+            var event6 = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.MSBuildTaskSubclassedTelemetryAggregatedEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "Microsoft_Build_Tasks_Copy", "3" }
+                }
+            };
+
             logger.AggregateEvent(event1);
             logger.AggregateEvent(event2);
             logger.AggregateEvent(event3);
             logger.AggregateEvent(event4);
+            logger.AggregateEvent(event5);
+            logger.AggregateEvent(event6);
 
             logger.SendAggregatedEventsOnBuildFinished(fakeTelemetry);
 
-            fakeTelemetry.LogEntries.Should().HaveCount(2);
+            fakeTelemetry.LogEntries.Should().HaveCount(3);
 
             var taskFactoryEntry = fakeTelemetry.LogEntries.FirstOrDefault(e => e.EventName == $"msbuild/{MSBuildLogger.TaskFactoryTelemetryAggregatedEventName}");
             taskFactoryEntry.Should().NotBeNull();
@@ -186,6 +207,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             tasksEntry.Should().NotBeNull();
             tasksEntry.Properties["TasksExecutedCount"].Should().Be("8"); // 3 + 5
             tasksEntry.Properties["TaskHostTasksExecutedCount"].Should().Be("2"); // 2 + 0
+
+            var subclassedEntry = fakeTelemetry.LogEntries.FirstOrDefault(e => e.EventName == $"msbuild/{MSBuildLogger.MSBuildTaskSubclassedTelemetryAggregatedEventName}");
+            subclassedEntry.Should().NotBeNull();
+            subclassedEntry.Properties["Microsoft_Build_Tasks_Copy"].Should().Be("5"); // 2 + 3
+            subclassedEntry.Properties["Microsoft_Build_Utilities_Task"].Should().Be("1"); // 1 + 0
         }
 
         [TestMethod]
@@ -243,6 +269,33 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        public void ItForwardsRoslynCompilerCacheEvent()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            var telemetryEventArgs = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.RoslynCompilerCacheEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "cachestatus", "hit" },
+                    { "storeresult", "none" },
+                    { "language", "C#" },
+                    { "keycomputems", "5" },
+                    { "restorems", "6" },
+                    { "storems", "0" }
+                }
+            };
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
+
+            fakeTelemetry.LogEntry.Should().NotBeNull();
+            fakeTelemetry.LogEntry.EventName.Should().Be($"msbuild/{MSBuildLogger.RoslynCompilerCacheEventName}");
+            fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(telemetryEventArgs.Properties);
+        }
+
+        [TestMethod]
+        // ActivitySource listeners are process-wide and can observe activities from tests that do not use a matching resource lock.
+        [DoNotParallelize]
         public void ItCreatesAnInternalActivityForEachBuild()
         {
             ActivitySource activitySource = Activities.Source;
@@ -279,6 +332,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        // ActivitySource listeners are process-wide and can observe activities from tests that do not use a matching resource lock.
         [DoNotParallelize]
         public void ItUsesTheCurrentParentContextForEachServerBuild()
         {

@@ -57,6 +57,40 @@ public class TestNodeResultsStateTests
         Assert.AreEqual(3, state.Count);
     }
 
+    [TestMethod]
+    [DataRow(0)]
+    [DataRow(-1)]
+    public void GetRunningTasks_WithNonPositiveMaximum_ReturnsNoTasks(int maxCount)
+    {
+        var state = new TestNodeResultsState(id: 1);
+        state.AddRunningTestNode(id: 100, "instance-A", "Test1", "Test1", new FakeStopwatch());
+
+        Assert.IsEmpty(state.GetRunningTasks(maxCount));
+    }
+
+    [TestMethod]
+    public void AnsiProgressFrame_WithNoDetailLineBudget_RendersOnlyProjectProgress()
+    {
+        var progress = new TestProgressState(
+            id: 1,
+            assembly: "MyTests.dll",
+            targetFramework: "net11.0",
+            architecture: "x64",
+            stopwatch: new FakeStopwatch(),
+            isDiscovery: false);
+        progress.GetOrCreateTestNodeResultsState(() => new TestNodeResultsState(id: 2))
+            .AddRunningTestNode(id: 3, "instance-A", "test-1", "Test 1", new FakeStopwatch());
+
+        var previousFrame = new AnsiTerminalTestProgressFrame(width: 120, height: 1);
+        var currentFrame = new AnsiTerminalTestProgressFrame(width: 120, height: 1);
+        var terminal = new AnsiTerminal(new CapturingConsole(), baseDirectory: null);
+
+        currentFrame.Render(previousFrame, [progress], terminal);
+
+        Assert.IsNotNull(currentFrame.RenderedLines);
+        Assert.HasCount(1, currentFrame.RenderedLines);
+    }
+
     private sealed class FakeStopwatch : IStopwatch
     {
         public TimeSpan Elapsed => TimeSpan.Zero;

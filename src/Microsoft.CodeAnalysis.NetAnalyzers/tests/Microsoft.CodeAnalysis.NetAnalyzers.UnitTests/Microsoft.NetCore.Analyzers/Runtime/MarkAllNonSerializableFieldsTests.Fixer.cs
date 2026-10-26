@@ -22,45 +22,49 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CA2235WithNonSerializableFieldsWithFixAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
-public class NonSerializableType { }
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+                public class NonSerializableType { }
 
-[Serializable]
-public class CA2235WithNonPublicNonSerializableFields
-{
-    internal NonSerializableType {|CA2235:s1|};
-}",
-@"
-using System;
-public class NonSerializableType { }
+                [Serializable]
+                public class CA2235WithNonPublicNonSerializableFields
+                {
+                    internal NonSerializableType {|CA2235:s1|};
+                }
+                """,
+"""
+    using System;
+    public class NonSerializableType { }
 
-[Serializable]
-public class CA2235WithNonPublicNonSerializableFields
-{
-    [NonSerialized]
-    internal NonSerializableType s1;
-}");
+    [Serializable]
+    public class CA2235WithNonPublicNonSerializableFields
+    {
+        [NonSerialized]
+        internal NonSerializableType s1;
+    }
+    """);
 
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
-Public Class NonSerializableType
-End Class
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
+                Public Class NonSerializableType
+                End Class
 
-<Serializable>
-Public Class CA2235WithNonPublicNonSerializableFields 
-    Friend {|CA2235:s1|} As NonSerializableType
-End Class",
-@"
-Imports System
-Public Class NonSerializableType
-End Class
+                <Serializable>
+                Public Class CA2235WithNonPublicNonSerializableFields
+                    Friend {|CA2235:s1|} As NonSerializableType
+                End Class
+                """,
+"""
+    Imports System
+    Public Class NonSerializableType
+    End Class
 
-<Serializable>
-Public Class CA2235WithNonPublicNonSerializableFields
-    <NonSerialized>
-    Friend s1 As NonSerializableType
-End Class");
+    <Serializable>
+    Public Class CA2235WithNonPublicNonSerializableFields
+        <NonSerialized>
+        Friend s1 As NonSerializableType
+    End Class
+    """);
         }
 
         [TestMethod]
@@ -68,51 +72,55 @@ End Class");
         {
             await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
-                TestCode = @"
-using System;
-public class NonSerializableType { }
+                TestCode = """
+                    using System;
+                    public class NonSerializableType { }
 
-[Serializable]
-public class CA2235WithNonPublicNonSerializableFields
-{
-    internal NonSerializableType {|CA2235:s1|};
-}",
-                FixedCode = @"
-using System;
+                    [Serializable]
+                    public class CA2235WithNonPublicNonSerializableFields
+                    {
+                        internal NonSerializableType {|CA2235:s1|};
+                    }
+                    """,
+                FixedCode = """
+                    using System;
 
-[Serializable]
-public class NonSerializableType { }
+                    [Serializable]
+                    public class NonSerializableType { }
 
-[Serializable]
-public class CA2235WithNonPublicNonSerializableFields
-{
-    internal NonSerializableType s1;
-}",
+                    [Serializable]
+                    public class CA2235WithNonPublicNonSerializableFields
+                    {
+                        internal NonSerializableType s1;
+                    }
+                    """,
                 CodeActionIndex = 1,
             }.RunAsync(CancellationToken.None);
 
             await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
-                TestCode = @"
-Imports System
-Public Class NonSerializableType
-End Class
+                TestCode = """
+                    Imports System
+                    Public Class NonSerializableType
+                    End Class
 
-<Serializable>
-Public Class CA2235WithNonPublicNonSerializableFields
-    Friend {|CA2235:s1|} As NonSerializableType
-End Class",
-                FixedCode = @"
-Imports System
+                    <Serializable>
+                    Public Class CA2235WithNonPublicNonSerializableFields
+                        Friend {|CA2235:s1|} As NonSerializableType
+                    End Class
+                    """,
+                FixedCode = """
+                    Imports System
 
-<Serializable>
-Public Class NonSerializableType
-End Class
+                    <Serializable>
+                    Public Class NonSerializableType
+                    End Class
 
-<Serializable>
-Public Class CA2235WithNonPublicNonSerializableFields
-    Friend s1 As NonSerializableType
-End Class",
+                    <Serializable>
+                    Public Class CA2235WithNonPublicNonSerializableFields
+                        Friend s1 As NonSerializableType
+                    End Class
+                    """,
                 CodeActionIndex = 1,
             }.RunAsync(CancellationToken.None);
         }
@@ -120,45 +128,49 @@ End Class",
         [TestMethod]
         public async Task CA2235WithNonSerializableFieldsWithFix2Async()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
-public class NonSerializableType { }
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
+                public class NonSerializableType { }
 
-[Serializable]
-public class CA2235WithNonPublicNonSerializableFields
-{
-    internal NonSerializableType {|CA2235:s1|}, {|CA2235:s2|} = new NonSerializableType(), {|CA2235:s3|};
-}",
-@"
-using System;
-public class NonSerializableType { }
+                [Serializable]
+                public class CA2235WithNonPublicNonSerializableFields
+                {
+                    internal NonSerializableType {|CA2235:s1|}, {|CA2235:s2|} = new NonSerializableType(), {|CA2235:s3|};
+                }
+                """,
+"""
+    using System;
+    public class NonSerializableType { }
 
-[Serializable]
-public class CA2235WithNonPublicNonSerializableFields
-{
-    [NonSerialized]
-    internal NonSerializableType s1, s2 = new NonSerializableType(), s3;
-}");
+    [Serializable]
+    public class CA2235WithNonPublicNonSerializableFields
+    {
+        [NonSerialized]
+        internal NonSerializableType s1, s2 = new NonSerializableType(), s3;
+    }
+    """);
 
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
-Public Class NonSerializableType
-End Class
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
+                Public Class NonSerializableType
+                End Class
 
-<Serializable>
-Public Class CA2235WithNonPublicNonSerializableFields 
-    Friend {|CA2235:s1|}, {|CA2235:s2|}, {|CA2235:s3|} As NonSerializableType
-End Class",
-@"
-Imports System
-Public Class NonSerializableType
-End Class
+                <Serializable>
+                Public Class CA2235WithNonPublicNonSerializableFields
+                    Friend {|CA2235:s1|}, {|CA2235:s2|}, {|CA2235:s3|} As NonSerializableType
+                End Class
+                """,
+"""
+    Imports System
+    Public Class NonSerializableType
+    End Class
 
-<Serializable>
-Public Class CA2235WithNonPublicNonSerializableFields
-    <NonSerialized>
-    Friend s1, s2, s3 As NonSerializableType
-End Class");
+    <Serializable>
+    Public Class CA2235WithNonPublicNonSerializableFields
+        <NonSerialized>
+        Friend s1, s2, s3 As NonSerializableType
+    End Class
+    """);
         }
 
         [TestMethod]
@@ -166,65 +178,69 @@ End Class");
         {
             await new CSharpCodeFixTest<SerializationRulesDiagnosticAnalyzer, CSharpMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
-                TestCode = @"
-using System;
-public partial class NonSerializableType { }
+                TestCode = """
+                    using System;
+                    public partial class NonSerializableType { }
 
-public partial class NonSerializableType { public void method() { } }
+                    public partial class NonSerializableType { public void method() { } }
 
-[Serializable]
-public class CA2235WithNonPublicNonSerializableFields
-{
-    internal NonSerializableType {|CA2235:s1|};
-}",
-                FixedCode = @"
-using System;
+                    [Serializable]
+                    public class CA2235WithNonPublicNonSerializableFields
+                    {
+                        internal NonSerializableType {|CA2235:s1|};
+                    }
+                    """,
+                FixedCode = """
+                    using System;
 
-[Serializable]
-public partial class NonSerializableType { }
+                    [Serializable]
+                    public partial class NonSerializableType { }
 
-public partial class NonSerializableType { public void method() { } }
+                    public partial class NonSerializableType { public void method() { } }
 
-[Serializable]
-public class CA2235WithNonPublicNonSerializableFields
-{
-    internal NonSerializableType s1;
-}",
+                    [Serializable]
+                    public class CA2235WithNonPublicNonSerializableFields
+                    {
+                        internal NonSerializableType s1;
+                    }
+                    """,
                 CodeActionIndex = 1,
             }.RunAsync(CancellationToken.None);
 
             await new VisualBasicCodeFixTest<SerializationRulesDiagnosticAnalyzer, BasicMarkAllNonSerializableFieldsFixer, DefaultVerifier>
             {
-                TestCode = @"
-Imports System
-Public Partial Class NonSerializableType
-End Class
+                TestCode = """
+                    Imports System
+                    Public Partial Class NonSerializableType
+                    End Class
 
-Public Class NonSerializableType
-    Sub method()
-    End Sub
-End Class
+                    Public Class NonSerializableType
+                        Sub method()
+                        End Sub
+                    End Class
 
-<Serializable>
-Public Class CA2235WithNonPublicNonSerializableFields
-    Friend {|CA2235:s1|} As NonSerializableType
-End Class",
-                FixedCode = @"
-Imports System
+                    <Serializable>
+                    Public Class CA2235WithNonPublicNonSerializableFields
+                        Friend {|CA2235:s1|} As NonSerializableType
+                    End Class
+                    """,
+                FixedCode = """
+                    Imports System
 
-<Serializable>
-Public Partial Class NonSerializableType
-End Class
+                    <Serializable>
+                    Public Partial Class NonSerializableType
+                    End Class
 
-Public Class NonSerializableType
-    Sub method()
-    End Sub
-End Class
+                    Public Class NonSerializableType
+                        Sub method()
+                        End Sub
+                    End Class
 
-<Serializable>
-Public Class CA2235WithNonPublicNonSerializableFields
-    Friend s1 As NonSerializableType
-End Class",
+                    <Serializable>
+                    Public Class CA2235WithNonPublicNonSerializableFields
+                        Friend s1 As NonSerializableType
+                    End Class
+                    """,
                 CodeActionIndex = 1,
             }.RunAsync(CancellationToken.None);
         }

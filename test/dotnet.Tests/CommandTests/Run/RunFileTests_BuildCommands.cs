@@ -30,6 +30,36 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Linux)]
+    [DataRow("not-false", true)]
+    [DataRow("false", false)]
+    public void Run_RestoreConfiguresNuGetSignatureVerification(string configuredValue, bool expectedValue)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_NUGET_SIGNATURE_VERIFICATION"));
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), $"""
+            <Project>
+              <Target Name="_VerifyNuGetSignatureVerification" BeforeTargets="Restore">
+                <Error
+                  Condition="'$(DOTNET_NUGET_SIGNATURE_VERIFICATION)' != '{expectedValue}'"
+                  Text="Expected DOTNET_NUGET_SIGNATURE_VERIFICATION to be '{expectedValue}', but it was '$(DOTNET_NUGET_SIGNATURE_VERIFICATION)'." />
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithEnvironmentVariable(
+                NuGetSignatureVerificationEnabler.DotNetNuGetSignatureVerification,
+                configuredValue)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(configuredValue);
+    }
+
+    [TestMethod]
     public void NoRestore_01()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1079,6 +1109,41 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .And.HaveStdOutContaining(prefix + """
                 Hello from Program
                 Message: 'TestProfileMessage2'
+                """);
+    }
+
+    [TestMethod, CombinatorialData]
+    public void LaunchProfile_MSBuildPropertyExpansion(bool cscOnly)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        if (!cscOnly)
+        {
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), "<Project />");
+        }
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.run.json"), """
+            {
+                "profiles": {
+                    "TestProfile": {
+                        "commandName": "Project",
+                        "commandLineArgs": "\"$(MSBuildProjectDirectory)\""
+                    }
+                }
+            }
+            """);
+
+        string prefix = cscOnly
+            ? CliCommandStrings.NoBinaryLogBecauseRunningJustCsc + Environment.NewLine
+            : string.Empty;
+
+        new DotnetCommand(Log, "run", "-bl", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(prefix + $"""
+                echo args:{testInstance.Path}
+                Hello from Program
                 """);
     }
 

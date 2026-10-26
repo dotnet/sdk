@@ -70,22 +70,11 @@ Copy-Item artifacts\bin\dotnet\Debug\net10.0\dotnet.dll artifacts\bin\redist\Deb
 - Some projects multi-target (e.g., `net10.0` and `net472`). Always use the `net10.0` output.
 - If localization resource DLLs were changed (in subdirectories like `cs\`, `de\`, etc.), copy those too.
 
-### Step 4: Build the test project (if test code was modified)
+### Step 4: Run the tests
 
-The test project `test\dotnet.Tests\dotnet.Tests.csproj` outputs directly to `artifacts\bin\redist\Debug\` (via `TestHostFolder`), so just build it:
-
-```
-.\.dotnet\dotnet build test\dotnet.Tests\dotnet.Tests.csproj
-```
-
-### Step 5: Run the tests
-
-Use the **targeted-test** runner so failures retain detailed output, a TRX, and a
-binlog:
-
-```shell
-./.dotnet/dotnet .github/skills/targeted-test/scripts/RunTargetedTests.cs -- --project test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~TestMethodName" --no-build
-```
+Invoke the [`run-tests`](../run-tests/SKILL.md) skill for `test/dotnet.Tests/dotnet.Tests.csproj` with a filter for
+the affected tests. It builds the test project incrementally and retains detailed output,
+a TRX, and a binlog.
 
 ## Common project paths
 

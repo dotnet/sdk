@@ -3,11 +3,13 @@
 
 using System.Globalization;
 using System.Text;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Mount;
+using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Utils;
 
@@ -121,6 +123,61 @@ namespace Microsoft.TemplateEngine.Edge.Settings
             TemplateInfo = templateList;
         }
 
+        private TemplateCache(JsonElement content)
+        {
+            if (!TryGetPropertyCaseInsensitive(content, nameof(Version), out JsonElement versionToken)
+                || versionToken.ValueKind == JsonValueKind.Null)
+            {
+                Version = null;
+                TemplateInfo = [];
+                MountPointsInfo = new Dictionary<string, DateTime>();
+                Locale = string.Empty;
+                return;
+            }
+
+            Version = versionToken.ValueKind == JsonValueKind.String
+                ? versionToken.GetString()
+                : versionToken.GetRawText();
+            Locale = TryGetPropertyCaseInsensitive(content, nameof(Locale), out JsonElement localeToken)
+                && localeToken.ValueKind != JsonValueKind.Null
+                    ? localeToken.GetString() ?? string.Empty
+                    : string.Empty;
+
+            Dictionary<string, DateTime> mountPointInfo = new();
+            if (TryGetPropertyCaseInsensitive(content, nameof(MountPointsInfo), out JsonElement mountPointInfoToken)
+                && mountPointInfoToken.ValueKind == JsonValueKind.Object)
+            {
+                foreach (JsonProperty entry in mountPointInfoToken.EnumerateObject())
+                {
+                    if (entry.Value.ValueKind != JsonValueKind.Null)
+                    {
+                        mountPointInfo.Add(entry.Name, entry.Value.GetDateTime());
+                    }
+                }
+            }
+            MountPointsInfo = mountPointInfo;
+
+            List<TemplateInfo> templateList = new();
+            if (TryGetPropertyCaseInsensitive(content, nameof(TemplateInfo), out JsonElement templateInfoToken)
+                && templateInfoToken.ValueKind == JsonValueKind.Array)
+            {
+                foreach (JsonElement entry in templateInfoToken.EnumerateArray())
+                {
+                    if (entry.ValueKind == JsonValueKind.Object)
+                    {
+                        templateList.Add(Settings.TemplateInfo.FromJsonElement(entry));
+                    }
+                }
+            }
+            TemplateInfo = templateList;
+        }
+
+        internal static TemplateCache Read(IPhysicalFileSystem fileSystem, string path)
+        {
+            using JsonDocument document = fileSystem.ReadUtf8Document(path);
+            return new TemplateCache(document.RootElement);
+        }
+
         [JsonPropertyName("Version")]
         public string? Version { get; }
 
@@ -132,6 +189,34 @@ namespace Microsoft.TemplateEngine.Edge.Settings
 
         [JsonPropertyName("MountPointsInfo")]
         public Dictionary<string, DateTime> MountPointsInfo { get; }
+
+        private static bool TryGetPropertyCaseInsensitive(JsonElement element, string propertyName, out JsonElement value)
+        {
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                if (element.TryGetProperty(propertyName, out value))
+                {
+                    return true;
+                }
+
+                bool found = false;
+                foreach (JsonProperty property in element.EnumerateObject())
+                {
+                    if (string.Equals(property.Name, propertyName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        value = property.Value;
+                        found = true;
+                    }
+                }
+                if (found)
+                {
+                    return true;
+                }
+            }
+
+            value = default;
+            return false;
+        }
 
         private ILocalizationLocator? GetBestLocalizationLocatorMatch(IScanTemplateInfo template)
         {

@@ -17,82 +17,94 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task ClassWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class C<T1, T2, T3> {}",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class C<T1, T2, T3> {}
+                """,
                 VerifyCS.Diagnostic().WithSpan(2, 14, 2, 15).WithArguments("C", AvoidExcessiveParametersOnGenericTypes.MaximumNumberOfTypeParameters));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class C(Of T1, T2, T3)
-End Class",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Class C(Of T1, T2, T3)
+                End Class
+                """,
                 VerifyVB.Diagnostic().WithSpan(2, 14, 2, 15).WithArguments("C", AvoidExcessiveParametersOnGenericTypes.MaximumNumberOfTypeParameters));
         }
 
         [TestMethod]
         public async Task InterfaceWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public interface [|I|]<T1, T2, T3> {}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public interface [|I|]<T1, T2, T3> {}
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Interface [|I|](Of T1, T2, T3)
-End Interface");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Interface [|I|](Of T1, T2, T3)
+                End Interface
+                """);
         }
 
         [TestMethod]
         public async Task StructWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public struct [|S|]<T1, T2, T3> {}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public struct [|S|]<T1, T2, T3> {}
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Structure [|S|](Of T1, T2, T3)
-End Structure");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Structure [|S|](Of T1, T2, T3)
+                End Structure
+                """);
         }
 
         [TestMethod]
         public async Task ClassImplementsInterfaceWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class [|I|]<T1, T2, T3> {}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class [|I|]<T1, T2, T3> {}
 
-public class [|C|]<T1, T2, T3> : I<T1, T2, T3> {}
+                public class [|C|]<T1, T2, T3> : I<T1, T2, T3> {}
 
-public class C2 : I<int, string, object> {}");
+                public class C2 : I<int, string, object> {}
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Interface [|I|](Of T1, T2, T3)
-End Interface
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Interface [|I|](Of T1, T2, T3)
+                End Interface
 
-Public Class [|C|](Of T1, T2, T3)
-    Implements I(Of T1, T2, T3)
-End Class
+                Public Class [|C|](Of T1, T2, T3)
+                    Implements I(Of T1, T2, T3)
+                End Class
 
-Public Class C2
-    Implements I(Of Integer, String, Object)
-End Class");
+                Public Class C2
+                    Implements I(Of Integer, String, Object)
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task ClassInheritsClassWithMoreThanTwoTypeParameters_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class [|C|]<T1, T2, T3> {}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class [|C|]<T1, T2, T3> {}
 
-public class [|C2|]<T1, T2, T3> : C<T1, T2, T3> {}
+                public class [|C2|]<T1, T2, T3> : C<T1, T2, T3> {}
 
-public class C3 : C<int, string, object> {}");
+                public class C3 : C<int, string, object> {}
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class [|C|](Of T1, T2, T3)
-End Class
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class [|C|](Of T1, T2, T3)
+                End Class
 
-Public Class [|C2|](Of T1, T2, T3)
-    Inherits C(Of T1, T2, T3)
-End Class
+                Public Class [|C2|](Of T1, T2, T3)
+                    Inherits C(Of T1, T2, T3)
+                End Class
 
-Public Class C3
-    Inherits C(Of Integer, String, Object)
-End Class");
+                Public Class C3
+                    Inherits C(Of Integer, String, Object)
+                End Class
+                """);
         }
 
         [TestMethod]
@@ -113,13 +125,17 @@ End Class");
         [DataRow("internal", "dotnet_code_quality.CA1005.api_surface = all")]
         [DataRow("internal", "dotnet_code_quality.Design.api_surface = all")]
         // General + Specific analyzer option
-        [DataRow("internal", @"dotnet_code_quality.api_surface = private
-                                  dotnet_code_quality.CA1005.api_surface = all")]
+        [DataRow("internal", """
+            dotnet_code_quality.api_surface = private
+                                              dotnet_code_quality.CA1005.api_surface = all
+            """)]
         // Case-insensitive analyzer option
         [DataRow("internal", "DOTNET_code_quality.CA1005.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [DataRow("internal", @"dotnet_code_quality.api_surface = all
-                                  dotnet_code_quality.CA1005.api_surface_2 = private")]
+        [DataRow("internal", """
+            dotnet_code_quality.api_surface = all
+                                              dotnet_code_quality.CA1005.api_surface_2 = private
+            """)]
         public async Task CSharp_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyCS.Test
@@ -128,17 +144,19 @@ End Class");
                 {
                     Sources =
                     {
-                        $@"
-public class OuterClass
-{{
-    {accessibility} class [|C|]<T1, T2, T3> {{ }}
-}}"
+                        $$"""
+                            public class OuterClass
+                            {
+                                {{accessibility}} class [|C|]<T1, T2, T3> { }
+                            }
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-"), },
+                        [*]
+                        {editorConfigText}
+                        """), },
                 },
             }.RunAsync(CancellationToken.None);
         }
@@ -161,13 +179,17 @@ public class OuterClass
         [DataRow("Friend", "dotnet_code_quality.CA1005.api_surface = All")]
         [DataRow("Friend", "dotnet_code_quality.Design.api_surface = All")]
         // General + Specific analyzer option
-        [DataRow("Friend", @"dotnet_code_quality.api_surface = Private
-                                dotnet_code_quality.CA1005.api_surface = All")]
+        [DataRow("Friend", """
+            dotnet_code_quality.api_surface = Private
+                                            dotnet_code_quality.CA1005.api_surface = All
+            """)]
         // Case-insensitive analyzer option
         [DataRow("Friend", "DOTNET_code_quality.CA1005.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [DataRow("Friend", @"dotnet_code_quality.api_surface = All
-                                dotnet_code_quality.CA1005.api_surface_2 = Private")]
+        [DataRow("Friend", """
+            dotnet_code_quality.api_surface = All
+                                            dotnet_code_quality.CA1005.api_surface_2 = Private
+            """)]
         public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
             await new VerifyVB.Test
@@ -176,17 +198,19 @@ public class OuterClass
                 {
                     Sources =
                     {
-                        $@"
-Public Class OuterClass
-    {accessibility} Class [|C|](Of T1, T2, T3)
-    End Class
-End Class"
+                        $"""
+                            Public Class OuterClass
+                                {accessibility} Class [|C|](Of T1, T2, T3)
+                                End Class
+                            End Class
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-"), },
+                        [*]
+                        {editorConfigText}
+                        """), },
                 },
             }.RunAsync(CancellationToken.None);
         }

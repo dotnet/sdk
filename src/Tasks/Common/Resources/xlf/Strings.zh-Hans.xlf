@@ -344,6 +344,16 @@
         <target state="translated">NETSDK1154: 当 UseCrossgen2 设置为 true 时，必须指定 Crossgen2Tool。</target>
         <note>{StrBegins="NETSDK1154: "}</note>
       </trans-unit>
+      <trans-unit id="Crossgen2UnsupportedHostRuntimeIdentifier">
+        <source>NETSDK1245: The crossgen2 pack is not available for the build host platform '{0}'.</source>
+        <target state="new">NETSDK1245: The crossgen2 pack is not available for the build host platform '{0}'.</target>
+        <note>{StrBegins="NETSDK1245: "}</note>
+      </trans-unit>
+      <trans-unit id="Crossgen2UnsupportedTargetFramework">
+        <source>NETSDK1246: The crossgen2 pack is not available for the target framework.</source>
+        <target state="new">NETSDK1246: The crossgen2 pack is not available for the target framework.</target>
+        <note>{StrBegins="NETSDK1246: "}</note>
+      </trans-unit>
       <trans-unit id="Crossgen5CannotEmitSymbolsInCompositeMode">
         <source>NETSDK1166: Cannot emit symbols when publishing for .NET 5 with Crossgen2 using composite mode.</source>
         <target state="translated">NETSDK1166: 使用复合模式针对具有 Crossgen2 的 .NET 5 发布时，无法发出符号。</target>

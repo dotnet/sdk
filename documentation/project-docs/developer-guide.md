@@ -153,12 +153,22 @@ Run "dotnet --debug <command>" which will launch dotnet and pause waiting for us
 
 ## Run tests from the command line
 
-```shell
+```powershell
 build.cmd # to have a full build first
-.\artifacts\sdk-build-env.bat
-cd test\YOURTEST.Tests # cd to the test folder that contains the test csproj file
-dotnet test --filter "FullyQualifiedName~TESTNAME" # run individual test
+.\.dotnet\dotnet.exe scripts\RunTests.cs -- `
+  --project test\YOURTEST.Tests\YOURTEST.Tests.csproj `
+  --filter "FullyQualifiedName~TESTNAME"
 ```
+
+The runner builds the selected test project incrementally and retains its TRX and MSBuild
+binlog paths under `artifacts/log/test-runs/`. Pass `--repeat N` to build once and run
+the selected tests repeatedly, with separate TRX output and timing for each iteration.
+
+For process-output assertions, process exit does not imply that stdout and stderr
+callbacks have finished. Complete the output channel only after both streams reach EOF
+and drain queued lines before reporting missing output. Prefer deterministic tests that
+hold an output callback past process exit over sleeps or retries; see
+[the output-drain regression tests](../../test/dotnet-watch.Tests/TestUtilities/AwaitableProcessTests.cs).
 
 ## Run tests in Visual Studio
 

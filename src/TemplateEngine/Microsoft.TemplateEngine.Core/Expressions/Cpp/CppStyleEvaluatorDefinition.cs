@@ -522,7 +522,13 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Cpp
             }
 
             Debug.Assert(parents.Count == 0, "Unbalanced condition");
-            return (bool)Convert.ChangeType(current.Evaluate() ?? "false", typeof(bool));
+            object? evaluated = current.Evaluate();
+            // Unspecified choice parameters have defaultValue: "" which evaluates as empty string → treat as false
+            if (evaluated is string evalStr && string.IsNullOrEmpty(evalStr))
+            {
+                return false;
+            }
+            return (bool)Convert.ChangeType(evaluated ?? "false", typeof(bool));
         }
 
         private static object? InferTypeAndConvertLiteral(string literal)

@@ -17,6 +17,10 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" VersionOverride="$(MicrosoftCodeAnalysisVersionForNetAnalyzers)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\..\..\Cli\Microsoft.DotNet.FileBasedPrograms\FileBasedProgramDirectiveValueHelpers.cs" LinkBase="Microsoft.NetCore.Analyzers\Usage" />
+  </ItemGroup>
+
   <Import Project="..\Utilities\Compiler.CSharp\Analyzer.CSharp.Utilities.projitems" Label="Shared" />
 
 </Project>

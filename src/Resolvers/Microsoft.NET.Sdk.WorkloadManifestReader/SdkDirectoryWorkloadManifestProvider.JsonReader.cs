@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.Serialization;
 using System.Text.Json;
 using Microsoft.NET.Sdk.Localization;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
@@ -80,18 +79,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             }
         }
 
-        [Serializable]
         public class JsonFormatException : Exception
         {
             public JsonFormatException() { }
             public JsonFormatException(string messageFormat, params object?[] args) : base(string.Format(messageFormat, args)) { }
             public JsonFormatException(string message) : base(message) { }
             public JsonFormatException(string message, Exception inner) : base(message, inner) { }
-#if NET8_0_OR_GREATER
-            [Obsolete(DiagnosticId = "SYSLIB0051")] // add this attribute to the serialization ctor
-#endif
-            protected JsonFormatException(SerializationInfo info, StreamingContext context) : base(info, context) { }
         }
     }
 }
-

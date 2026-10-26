@@ -8,7 +8,6 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/53787")]
         [DataRow("NET")]
         // dotnet.exe doesn't support launching .Net Framework nodes
 #if NETFRAMEWORK

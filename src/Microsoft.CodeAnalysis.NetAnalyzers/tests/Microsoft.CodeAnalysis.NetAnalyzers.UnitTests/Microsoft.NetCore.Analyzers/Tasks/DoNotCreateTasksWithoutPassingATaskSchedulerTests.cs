@@ -18,128 +18,130 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
         [TestMethod]
         public async Task NoDiagnosticCasesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
 
-class C
-{
-    public void M(Task task, TaskFactory factory, TaskScheduler scheduler, TaskContinuationOptions continuationOptions, TaskCreationOptions creationOptions, CancellationToken ct)
-    {
-        task.ContinueWith(M2, scheduler);
-        task.ContinueWith(M3, null, scheduler);
-        task.ContinueWith(M2, ct, continuationOptions, scheduler);
-        task.ContinueWith(M3, null, ct, continuationOptions, scheduler);
+                class C
+                {
+                    public void M(Task task, TaskFactory factory, TaskScheduler scheduler, TaskContinuationOptions continuationOptions, TaskCreationOptions creationOptions, CancellationToken ct)
+                    {
+                        task.ContinueWith(M2, scheduler);
+                        task.ContinueWith(M3, null, scheduler);
+                        task.ContinueWith(M2, ct, continuationOptions, scheduler);
+                        task.ContinueWith(M3, null, ct, continuationOptions, scheduler);
 
-        factory.StartNew(M5, ct, creationOptions, scheduler);
-        factory.StartNew(M6, null, ct, creationOptions, scheduler);
-    }
+                        factory.StartNew(M5, ct, creationOptions, scheduler);
+                        factory.StartNew(M6, null, ct, creationOptions, scheduler);
+                    }
 
-    public void M2(Task task)
-    {
-    }
+                    public void M2(Task task)
+                    {
+                    }
 
-    public void M3(Task task, object obj)
-    {
-    }
+                    public void M3(Task task, object obj)
+                    {
+                    }
 
-    public void M4<TResult>(Task task, TResult obj)
-    {
-    }
+                    public void M4<TResult>(Task task, TResult obj)
+                    {
+                    }
 
-    public void M5()
-    {
-    }
+                    public void M5()
+                    {
+                    }
 
-    public void M6(object obj)
-    {
-    }
-}
-");
+                    public void M6(object obj)
+                    {
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Threading
-Imports System.Threading.Tasks
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Threading
+                Imports System.Threading.Tasks
 
-Class C
-	Public Sub M(task As Task, factory As TaskFactory, scheduler As TaskScheduler, continuationOptions As TaskContinuationOptions, creationOptions As TaskCreationOptions, ct As CancellationToken)
-		task.ContinueWith(AddressOf M2, scheduler)
-		task.ContinueWith(AddressOf M3, Nothing, scheduler)
-		task.ContinueWith(AddressOf M2, ct, continuationOptions, scheduler)
-		task.ContinueWith(AddressOf M3, Nothing, ct, continuationOptions, scheduler)
+                Class C
+                	Public Sub M(task As Task, factory As TaskFactory, scheduler As TaskScheduler, continuationOptions As TaskContinuationOptions, creationOptions As TaskCreationOptions, ct As CancellationToken)
+                		task.ContinueWith(AddressOf M2, scheduler)
+                		task.ContinueWith(AddressOf M3, Nothing, scheduler)
+                		task.ContinueWith(AddressOf M2, ct, continuationOptions, scheduler)
+                		task.ContinueWith(AddressOf M3, Nothing, ct, continuationOptions, scheduler)
 
-		factory.StartNew(AddressOf M5, ct, creationOptions, scheduler)
-		factory.StartNew(AddressOf M6, Nothing, ct, creationOptions, scheduler)
-	End Sub
+                		factory.StartNew(AddressOf M5, ct, creationOptions, scheduler)
+                		factory.StartNew(AddressOf M6, Nothing, ct, creationOptions, scheduler)
+                	End Sub
 
-	Public Sub M2(task As Task)
-	End Sub
+                	Public Sub M2(task As Task)
+                	End Sub
 
-	Public Sub M3(task As Task, obj As Object)
-	End Sub
+                	Public Sub M3(task As Task, obj As Object)
+                	End Sub
 
-	Public Sub M4(Of TResult)(task As Task, obj As TResult)
-	End Sub
+                	Public Sub M4(Of TResult)(task As Task, obj As TResult)
+                	End Sub
 
-	Public Sub M5()
-	End Sub
+                	Public Sub M5()
+                	End Sub
 
-	Public Sub M6(obj As Object)
-	End Sub
-End Class
-");
+                	Public Sub M6(obj As Object)
+                	End Sub
+                End Class
+                """);
         }
 
         [TestMethod]
         public async Task DiagnosticCasesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class C
-{
-    public void M(Task task, TaskFactory factory, TaskScheduler scheduler, TaskContinuationOptions continuationOptions, TaskCreationOptions creationOptions, CancellationToken ct)
-    {
-        task.ContinueWith(M2);
-        task.ContinueWith(M2, ct);
-        task.ContinueWith(M2, continuationOptions);
-        task.ContinueWith(M3, null);
-        task.ContinueWith(M3, null, ct);
-        task.ContinueWith(M3, null, continuationOptions);
+                using System;
+                using System.Threading;
+                using System.Threading.Tasks;
 
-        factory.StartNew(M5);
-        factory.StartNew(M5, ct);
-        factory.StartNew(M5, creationOptions);
-        factory.StartNew(M6, null);
-        factory.StartNew(M6, null, ct);
-        factory.StartNew(M6, null, creationOptions);
-    }
+                class C
+                {
+                    public void M(Task task, TaskFactory factory, TaskScheduler scheduler, TaskContinuationOptions continuationOptions, TaskCreationOptions creationOptions, CancellationToken ct)
+                    {
+                        task.ContinueWith(M2);
+                        task.ContinueWith(M2, ct);
+                        task.ContinueWith(M2, continuationOptions);
+                        task.ContinueWith(M3, null);
+                        task.ContinueWith(M3, null, ct);
+                        task.ContinueWith(M3, null, continuationOptions);
 
-    public void M2(Task task)
-    {
-    }
+                        factory.StartNew(M5);
+                        factory.StartNew(M5, ct);
+                        factory.StartNew(M5, creationOptions);
+                        factory.StartNew(M6, null);
+                        factory.StartNew(M6, null, ct);
+                        factory.StartNew(M6, null, creationOptions);
+                    }
 
-    public void M3(Task task, object obj)
-    {
-    }
+                    public void M2(Task task)
+                    {
+                    }
 
-    public void M4<TResult>(Task task, TResult obj)
-    {
-    }
+                    public void M3(Task task, object obj)
+                    {
+                    }
 
-    public void M5()
-    {
-    }
+                    public void M4<TResult>(Task task, TResult obj)
+                    {
+                    }
 
-    public void M6(object obj)
-    {
-    }
-}
-",
+                    public void M5()
+                    {
+                    }
+
+                    public void M6(object obj)
+                    {
+                    }
+                }
+
+                """,
     // Test0.cs(10,9): warning RS0018: Do not create tasks without passing a TaskScheduler
     GetCSharpResultAt(10, 9),
     // Test0.cs(11,9): warning RS0018: Do not create tasks without passing a TaskScheduler
@@ -165,44 +167,46 @@ class C
     // Test0.cs(22,9): warning RS0018: Do not create tasks without passing a TaskScheduler
     GetCSharpResultAt(22, 9));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Threading
-Imports System.Threading.Tasks
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class C
-	Public Sub M(task As Task, factory As TaskFactory, scheduler As TaskScheduler, continuationOptions As TaskContinuationOptions, creationOptions As TaskCreationOptions, ct As CancellationToken)
-		task.ContinueWith(AddressOf M2)
-		task.ContinueWith(AddressOf M2, ct)
-		task.ContinueWith(AddressOf M2, continuationOptions)
-		task.ContinueWith(AddressOf M3, Nothing)
-		task.ContinueWith(AddressOf M3, Nothing, ct)
-		task.ContinueWith(AddressOf M3, Nothing, continuationOptions)
+                Imports System
+                Imports System.Threading
+                Imports System.Threading.Tasks
 
-		factory.StartNew(AddressOf M5)
-		factory.StartNew(AddressOf M5, ct)
-		factory.StartNew(AddressOf M5, creationOptions)
-		factory.StartNew(AddressOf M6, Nothing)
-		factory.StartNew(AddressOf M6, Nothing, ct)
-		factory.StartNew(AddressOf M6, Nothing, creationOptions)
-	End Sub
+                Class C
+                	Public Sub M(task As Task, factory As TaskFactory, scheduler As TaskScheduler, continuationOptions As TaskContinuationOptions, creationOptions As TaskCreationOptions, ct As CancellationToken)
+                		task.ContinueWith(AddressOf M2)
+                		task.ContinueWith(AddressOf M2, ct)
+                		task.ContinueWith(AddressOf M2, continuationOptions)
+                		task.ContinueWith(AddressOf M3, Nothing)
+                		task.ContinueWith(AddressOf M3, Nothing, ct)
+                		task.ContinueWith(AddressOf M3, Nothing, continuationOptions)
 
-	Public Sub M2(task As Task)
-	End Sub
+                		factory.StartNew(AddressOf M5)
+                		factory.StartNew(AddressOf M5, ct)
+                		factory.StartNew(AddressOf M5, creationOptions)
+                		factory.StartNew(AddressOf M6, Nothing)
+                		factory.StartNew(AddressOf M6, Nothing, ct)
+                		factory.StartNew(AddressOf M6, Nothing, creationOptions)
+                	End Sub
 
-	Public Sub M3(task As Task, obj As Object)
-	End Sub
+                	Public Sub M2(task As Task)
+                	End Sub
 
-	Public Sub M4(Of TResult)(task As Task, obj As TResult)
-	End Sub
+                	Public Sub M3(task As Task, obj As Object)
+                	End Sub
 
-	Public Sub M5()
-	End Sub
+                	Public Sub M4(Of TResult)(task As Task, obj As TResult)
+                	End Sub
 
-	Public Sub M6(obj As Object)
-	End Sub
-End Class
-",
+                	Public Sub M5()
+                	End Sub
+
+                	Public Sub M6(obj As Object)
+                	End Sub
+                End Class
+
+                """,
     // Test0.vb(8,3): warning RS0018: Do not create tasks without passing a TaskScheduler
     GetBasicResultAt(8, 3),
     // Test0.vb(9,3): warning RS0018: Do not create tasks without passing a TaskScheduler

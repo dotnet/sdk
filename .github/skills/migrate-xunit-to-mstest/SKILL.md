@@ -376,7 +376,7 @@ public sealed class MyTests
 | xUnit companion | MSTest equivalent |
 |---|---|
 | `Xunit.SkippableFact` (`[SkippableFact]`, `Skip.If`, `Skip.IfNot`) | For environmental predicates (OS/CI/arch): MSTest 3.10+ condition attributes (`[OSCondition]`, `[CICondition]`, etc.). Otherwise: `[Ignore]` (compile-time) or `Assert.Inconclusive("reason")` (runtime). Remove the package |
-| `Xunit.Combinatorial` (`[CombinatorialData]`, `[CombinatorialValues]`) | [`Combinatorial.MSTest`](https://github.com/Youssef1313/Combinatorial.MSTest) (community port; attribute surface matches xUnit.Combinatorial). Or expand combinations into explicit `[DataRow]`s / `[DynamicData]` |
+| `Xunit.Combinatorial` (`[CombinatorialData]`, `[CombinatorialValues]`) | MSTest 4.4+'s built-in combinatorial data support. Import `Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial`; the attribute surface matches `Xunit.Combinatorial`. |
 | `Xunit.StaFact` (`[StaFact]`, `[WpfFact]`) | `[TestMethod]` + manual STA thread. No MSTest equivalent for `[WpfFact]`; flag for manual conversion |
 | `Verify.Xunit` | `Verify.MSTest` -- swap the package; usage is similar |
 | `FluentAssertions` / `Shouldly` / `AwesomeAssertions` | Keep -- assertion library is framework-agnostic |
@@ -504,7 +504,7 @@ Custom orderers/test framework hooks must be reimplemented against MSTest's exte
 ### Step 13: Build and verify parity
 
 1. `dotnet build` -- must succeed with zero errors. Address remaining errors using the mapping reference.
-2. `dotnet test` -- run with the **same** filter/runner combination as before migration.
+2. Invoke the [`run-tests`](../run-tests/SKILL.md) skill to test the same project, framework, and filter as the Step 1.7 baseline.
 3. **Compare pass/fail counts** to the baseline from Step 1.7. Investigate any deltas:
    - **New failures on shared-state tests** -- you enabled parallelization (Choice A/C in Step 11) and tests are now stomping each other. Add `[DoNotParallelize]` to the specific class(es), or fix the shared state.
    - **Tests previously parallel now serial (wall-clock much longer)** -- you forgot `[assembly: Parallelize]`. See Step 11 Choice A.

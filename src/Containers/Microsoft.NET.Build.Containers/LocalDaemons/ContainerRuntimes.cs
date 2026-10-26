@@ -268,6 +268,7 @@ internal sealed class PodmanContainerRuntime(ContainerRuntimeOperations operatio
             {
                 string firstTag = destinationReference.Tags.First();
                 string manifestName = $"{destinationReference.Repository}:{firstTag}";
+                await RunAndIgnoreAsync($"manifest rm {manifestName}");
                 await RunAndIgnoreAsync($"rmi {manifestName}");
                 await RunAsync($"manifest create {manifestName}");
                 createdImages.Add(manifestName);

@@ -1944,6 +1944,18 @@ When multiple Path.Combine or Path.Join operations are nested, they can be colla
 |CodeFix|True|
 ---
 
+## [CA1878](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1878): Prefer ReadOnlySpan\<T> properties over readonly array fields
+
+If an array field is readonly and the array is never modified, the compiler can emit more efficient code if the readonly field is replaced with a read-only ReadOnlySpan\<T> property.
+
+|Item|Value|
+|-|-|
+|Category|Performance|
+|Enabled|True|
+|Severity|Info|
+|CodeFix|True|
+---
+
 ## [CA2000](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2000): Dispose objects before losing scope
 
 If a disposable object is not explicitly disposed before all references to it are out of scope, the object will be disposed at some indeterminate time when the garbage collector runs the finalizer of the object. Because an exceptional event might occur that will prevent the finalizer of the object from running, the object should be explicitly disposed instead.
@@ -2817,6 +2829,18 @@ Comparing a span to 'null' or 'default' might not do what you intended. 'default
 ## [CA2266](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2266): File-based program entry point should start with '#!'
 
 When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
+## [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267): Quote whitespace in file-based program directive values
+
+Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.
 
 |Item|Value|
 |-|-|

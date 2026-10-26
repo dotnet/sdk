@@ -19,144 +19,154 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CA1056NoWarningWithUrlAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A
-    {
-        public Uri SampleUri { get; set; }
-    }
-");
+                    public class A
+                    {
+                        public Uri SampleUri { get; set; }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task CA1056NoWarningWithUrlNotStringTypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A
-    {
-        public int SampleUri { get; set; }
-    }
-");
+                    public class A
+                    {
+                        public int SampleUri { get; set; }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task CA1056WarningWithUrlAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    public class A
-    {
-        public string SampleUri { get; set; }
-    }
-", GetCA1056CSharpResultAt(6, 23, "A.SampleUri"));
+                    using System;
+
+                    public class A
+                    {
+                        public string SampleUri { get; set; }
+                    }
+
+                """, GetCA1056CSharpResultAt(6, 23, "A.SampleUri"));
         }
 
         [TestMethod]
         public async Task CA1056NoWarningWithNoUrlAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A
-    {
-        public string Sample { get; set; }
-    }
-");
+                    public class A
+                    {
+                        public string Sample { get; set; }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task CA1056NoWarningNotPublicAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A
-    {
-        private string SampleUrl { get; set; }
+                    public class A
+                    {
+                        private string SampleUrl { get; set; }
 
-        public int CompareTo(object obj) { throw new NotImplementedException(); }
-    }
-");
+                        public int CompareTo(object obj) { throw new NotImplementedException(); }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task CA1056NoWarningDerivedFromAttributeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A : Attribute
-    {
-        private string SampleUrl { get; set; }
-    }
-");
+                    public class A : Attribute
+                    {
+                        private string SampleUrl { get; set; }
+                    }
+                """);
         }
 
         [TestMethod]
         public async Task CA1056NoWarningOverrideAsync()
         {
             // warning is from base type not overriden one
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    public class Base
-    {
-        protected virtual string SampleUrl { get; set; }
-    }
+                    using System;
 
-    public class A : Base
-    {
-        protected override string SampleUrl { get; set; }
-    }
-", GetCA1056CSharpResultAt(6, 34, "Base.SampleUrl"));
+                    public class Base
+                    {
+                        protected virtual string SampleUrl { get; set; }
+                    }
+
+                    public class A : Base
+                    {
+                        protected override string SampleUrl { get; set; }
+                    }
+
+                """, GetCA1056CSharpResultAt(6, 34, "Base.SampleUrl"));
         }
 
         [TestMethod]
         public async Task CA1056WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
-            await VerifyVB.VerifyAnalyzerAsync(@"
-    Imports System
-    
-    Public Module A
-        Public ReadOnly Property SampleUrl As String
-                Get
-                    Return Nothing
-                End Get
-            End Property
-    End Module
-", GetCA1056BasicResultAt(5, 34, "A.SampleUrl"));
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                    Imports System
+
+                    Public Module A
+                        Public ReadOnly Property SampleUrl As String
+                                Get
+                                    Return Nothing
+                                End Get
+                            End Property
+                    End Module
+
+                """, GetCA1056BasicResultAt(5, 34, "A.SampleUrl"));
         }
 
         [TestMethod, WorkItem(3146, "https://github.com/dotnet/roslyn-analyzers/issues/3146")]
         public async Task DoNotReportOnInterfaceImplementationAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public interface IPath
-{
-    string UrlPathSegment { get; }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class SomeClass : IPath
-{
-    public string UrlPathSegment { get; }
-}",
+                public interface IPath
+                {
+                    string UrlPathSegment { get; }
+                }
+
+                public class SomeClass : IPath
+                {
+                    public string UrlPathSegment { get; }
+                }
+                """,
                 GetCA1056CSharpResultAt(4, 12, "IPath.UrlPathSegment"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Interface IPath
-    Property UrlPathSegment As String
-End Interface
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class SomeClass
-    Implements IPath
+                Public Interface IPath
+                    Property UrlPathSegment As String
+                End Interface
 
-    Public Property UrlPathSegment As String Implements IPath.UrlPathSegment
-End Class",
+                Public Class SomeClass
+                    Implements IPath
+
+                    Public Property UrlPathSegment As String Implements IPath.UrlPathSegment
+                End Class
+                """,
                 GetCA1056BasicResultAt(3, 14, "IPath.UrlPathSegment"));
         }
 
@@ -173,19 +183,23 @@ End Class",
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
 
-public class A
-{
-    public string SampleUri { get; set; }
-}
-"                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                            using System;
 
-[*]
-{editorConfigText}
-") }
+                            public class A
+                            {
+                                public string SampleUri { get; set; }
+                            }
+
+                            """                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) }
                 }
             };
 
@@ -202,22 +216,26 @@ public class A
                 {
                     Sources =
                     {
-                        @"
-Imports System
+                        """
 
-Public Module A
-    Public ReadOnly Property SampleUri As String
-        Get
-            Return Nothing
-        End Get
-    End Property
-End Module"
+                            Imports System
+
+                            Public Module A
+                                Public ReadOnly Property SampleUri As String
+                                    Get
+                                        Return Nothing
+                                    End Get
+                                End Property
+                            End Module
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") }
+                        [*]
+                        {editorConfigText}
+
+                        """) }
                 }
             };
 

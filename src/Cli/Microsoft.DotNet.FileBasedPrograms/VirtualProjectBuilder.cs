@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Threading.Tasks;
@@ -38,6 +37,8 @@ sealed class VirtualProjectBuilder
     private readonly string? _targetFramework;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
+
+    private bool? _useLegacyArtifactsPath;
 
     internal string EntryPointFileFullPath { get; }
 
@@ -465,7 +466,6 @@ sealed class VirtualProjectBuilder
             }
         }
 
-        await CheckDirectivesAsync(project, evaluatedDirectives, reportError).ConfigureAwait(false);
         await CreateReferencedVirtualProjectsAsync(projectCollection, evaluatedDirectives, reportError, validateAllDirectives, processedRefFiles).ConfigureAwait(false);
 
         return new Result(project, projectRootElement, evaluatedDirectives);
@@ -484,6 +484,7 @@ sealed class VirtualProjectBuilder
                 isVirtualProject: true,
                 entryPointFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,
+                useLegacyArtifactsPath: _useLegacyArtifactsPath == true,
                 includeRuntimeConfigInformation: RequestedTargets?.Any(static t => t is "Publish" or "Pack") != true);
 
             var projectFileText = projectFileWriter.ToString();
@@ -499,6 +500,20 @@ sealed class VirtualProjectBuilder
             var project = await _buildService.CreateProjectInstanceFromProjectRootElementAsync(projectRoot, projectCollection, additionalGlobalProperties).ConfigureAwait(false);
 
             lastProject = (projectFileText, project, projectRoot);
+
+            // Preserve the legacy artifacts behavior when the .NET SDK imported its artifacts props but does not support FileBasedAppArtifactsPath.
+            // dotnet CLI has the latest SDK imported but other hosts like MSBuildWorkspace may not.
+            if (_useLegacyArtifactsPath is null)
+            {
+                var supportsFileBasedAppArtifactsPath = await project.GetPropertyValueAsync("_SupportsFileBasedAppArtifactsPath").ConfigureAwait(false);
+
+                _useLegacyArtifactsPath = !string.Equals(supportsFileBasedAppArtifactsPath, bool.TrueString, StringComparison.OrdinalIgnoreCase);
+
+                if (_useLegacyArtifactsPath == true)
+                {
+                    return await CreateProjectInstanceNoEvaluation(projectCollection, directives, additionalGlobalProperties).ConfigureAwait(false);
+                }
+            }
 
             return (project, projectRoot);
 
@@ -555,36 +570,6 @@ sealed class VirtualProjectBuilder
         }
     }
 
-    private async ValueTask CheckDirectivesAsync(
-        IProjectInstance project,
-        ImmutableArray<CSharpDirective> directives,
-        ErrorReporter reportError)
-    {
-        var refEnabled = new StrongBox<bool?>();
-
-        foreach (var directive in directives)
-        {
-            if (directive is CSharpDirective.Ref)
-            {
-                await CheckFlagEnabledAsync(refEnabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, directive).ConfigureAwait(false);
-            }
-        }
-
-        async ValueTask CheckFlagEnabledAsync(StrongBox<bool?> flag, string flagName, CSharpDirective directive)
-        {
-            bool value = flag.Value ??= MSBuildUtilities.ConvertStringToBool(await project.GetPropertyValueAsync(flagName).ConfigureAwait(false));
-
-            if (!value)
-            {
-                reportError(
-                    directive.Info.SourceFile.Text,
-                    directive.Info.SourceFile.Path,
-                    directive.Info.Span,
-                    string.Format(FileBasedProgramsResources.ExperimentalFeatureDisabled, flagName));
-            }
-        }
-    }
-
     internal static void WriteProjectFile(
         TextWriter writer,
         ImmutableArray<CSharpDirective> directives,
@@ -592,6 +577,7 @@ sealed class VirtualProjectBuilder
         bool isVirtualProject,
         string? entryPointFilePath = null,
         string? artifactsPath = null,
+        bool useLegacyArtifactsPath = false,
         bool includeRuntimeConfigInformation = true,
         string? userSecretsId = null,
         ImmutableArray<ExplicitProjectItem> explicitProjectItems = default)
@@ -628,14 +614,32 @@ sealed class VirtualProjectBuilder
             Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
             Debug.Assert(entryPointFilePath is not null);
 
-            // Note that FileBasedAppArtifactsPath needs to be specified before Sdk.props
+            // Note that the artifacts properties need to be specified before Sdk.props
             // (usually it's recommended to specify it in Directory.Build.props
             // but importing Sdk.props manually afterwards also works).
-            writer.WriteLine($"""
+            writer.WriteLine("""
                 <Project>
 
                   <PropertyGroup>
-                    <FileBasedAppArtifactsPath>{EscapeValue(artifactsPath)}</FileBasedAppArtifactsPath>
+                """);
+
+            if (useLegacyArtifactsPath)
+            {
+                writer.WriteLine($"""
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
+                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
+                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
+                    """);
+            }
+            else
+            {
+                writer.WriteLine($"""
+                        <FileBasedAppArtifactsPath>{EscapeValue(artifactsPath)}</FileBasedAppArtifactsPath>
+                    """);
+            }
+
+            writer.WriteLine($"""
                     <AssemblyName>{EscapeValue(Path.GetFileNameWithoutExtension(entryPointFilePath))}</AssemblyName>
                     <RootNamespace>$(AssemblyName)</RootNamespace>
                     <FileBasedProgram>true</FileBasedProgram>
@@ -863,18 +867,11 @@ sealed class VirtualProjectBuilder
 
             foreach (var package in packageDirectives)
             {
-                if (package.Version is null)
-                {
-                    writer.WriteLine($"""
-                            <PackageReference Include="{EscapeValue(package.Name)}" />
-                        """);
-                }
-                else
-                {
-                    writer.WriteLine($"""
-                            <PackageReference Include="{EscapeValue(package.Name)}" Version="{EscapeValue(package.Version)}" />
-                        """);
-                }
+                string attributes = package.Version is null
+                    ? $"Include=\"{EscapeValue(package.Name)}\""
+                    : $"Include=\"{EscapeValue(package.Name)}\" Version=\"{EscapeValue(package.Version)}\"";
+
+                WriteItem(writer, "PackageReference", attributes, package.Metadata);
 
                 processedDirectives++;
             }
@@ -893,9 +890,7 @@ sealed class VirtualProjectBuilder
 
             foreach (var projectReference in projectDirectives)
             {
-                writer.WriteLine($"""
-                        <ProjectReference Include="{EscapeValue(projectReference.Name)}" />
-                    """);
+                WriteItem(writer, "ProjectReference", $"Include=\"{EscapeValue(projectReference.Name)}\"", projectReference.Metadata);
 
                 processedDirectives++;
             }
@@ -905,9 +900,8 @@ sealed class VirtualProjectBuilder
                 if (refDirective.ResolvedPath is not null)
                 {
                     var virtualProjectPath = GetVirtualProjectPath(refDirective.ResolvedPath);
-                    writer.WriteLine($"""
-                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" {FromRefDirectiveMetadataName}="{EscapeValue(refDirective.ResolvedPath)}" />
-                        """);
+                    var attributes = $"Include=\"{EscapeValue(virtualProjectPath)}\" {FromRefDirectiveMetadataName}=\"{EscapeValue(refDirective.ResolvedPath)}\"";
+                    WriteItem(writer, "ProjectReference", attributes, refDirective.Metadata);
                 }
 
                 processedDirectives++;
@@ -968,6 +962,23 @@ sealed class VirtualProjectBuilder
             """);
 
         static string EscapeValue(string value) => SecurityElement.Escape(value);
+
+        static void WriteItem(TextWriter writer, string itemType, string attributes, ImmutableArray<(string Name, string Value)> metadata)
+        {
+            if (metadata.IsDefaultOrEmpty)
+            {
+                writer.WriteLine($"    <{itemType} {attributes} />");
+                return;
+            }
+
+            writer.WriteLine($"    <{itemType} {attributes}>");
+            foreach (var (name, value) in metadata)
+            {
+                writer.WriteLine($"      <{name}>{EscapeValue(value)}</{name}>");
+            }
+
+            writer.WriteLine($"    </{itemType}>");
+        }
 
         static void WriteImport(TextWriter writer, string project, CSharpDirective.Sdk sdk)
         {

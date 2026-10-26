@@ -30,6 +30,7 @@ set DOTNET_CLI_HOME=%TestExecutionDirectory%\.dotnet
 mkdir %TestExecutionDirectory%
 REM https://stackoverflow.com/a/7487697/294804
 robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles %TestExecutionDirectory% /s /nfl /ndl /njh /njs /np
+if not exist %TestExecutionDirectory%\Testpackages mkdir %TestExecutionDirectory%\Testpackages
 
 set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%
 set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\r
@@ -37,33 +38,5 @@ set DOTNET_SDK_TEST_ASSETS_DIRECTORY=%TestExecutionDirectory%\TestAssets
 set DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES=%TestExecutionDirectory%\template_feed
 set DOTNET_SDK_TEST_TEMPLATE_SAMPLES_DIR=%TestExecutionDirectory%\TemplateSamples
 
-REM call dotnet new so the first run message doesn't interfere with the first test
+REM Call dotnet new so the first run message doesn't interfere with the first test.
 dotnet new --debug:ephemeral-hive
-
-dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile %TestExecutionDirectory%\nuget.config
-if exist %TestExecutionDirectory%\Testpackages dotnet nuget add source %TestExecutionDirectory%\Testpackages --name testpackages --configfile %TestExecutionDirectory%\nuget.config
-
-dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet6-internal-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet7-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet7-internal-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet8-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet8-internal-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet9-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet9-internal-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet10-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet10-internal-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source richnav --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source vs-impl --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-libraries-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-tools-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-libraries --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-eng --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
-
-REM Install Node.js if version is specified (needed for TypeScript compilation tests)
-if "%DOTNET_SDK_TEST_NODE_VERSION%" NEQ "" (
-    PowerShell -ExecutionPolicy ByPass -File "%HELIX_CORRELATION_PAYLOAD%\t\InstallNode.ps1" %DOTNET_SDK_TEST_NODE_VERSION%
-    if exist "%HELIX_CORRELATION_PAYLOAD%\t\nodejs\node.exe" set "PATH=%HELIX_CORRELATION_PAYLOAD%\t\nodejs;%PATH%"
-)

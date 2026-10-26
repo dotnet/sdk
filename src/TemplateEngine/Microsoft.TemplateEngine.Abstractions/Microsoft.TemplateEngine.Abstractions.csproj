@@ -27,4 +27,11 @@
     <Compile Include="..\Shared\IsExternalInit.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Core" Key="$(TemplateEnginePublicKey)" />
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Core.UnitTests" Key="$(TemplateEnginePublicKey)" />
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Edge" Key="$(TemplateEnginePublicKey)" />
+    <InternalsVisibleTo Include="Microsoft.TemplateEngine.Edge.UnitTests" Key="$(TemplateEnginePublicKey)" />
+  </ItemGroup>
+
 </Project>

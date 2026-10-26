@@ -15,159 +15,171 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestNormalMethodOfPasswordDeriveBytesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(PasswordDeriveBytes passwordDeriveBytes)
-    {
-        passwordDeriveBytes.GetBytes(1);
-    }
-}",
+                using System;
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    public void TestMethod(PasswordDeriveBytes passwordDeriveBytes)
+                    {
+                        passwordDeriveBytes.GetBytes(1);
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, "PasswordDeriveBytes", "GetBytes"));
         }
 
         [TestMethod]
         public async Task TestCryptDeriveKeyOfClassDerivedFromPasswordDeriveBytesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class DerivedClass : PasswordDeriveBytes
-{
-    public DerivedClass(string password, byte[] salt) : base(password, salt)
-    {
-    }
-}
+                using System;
+                using System.Security.Cryptography;
 
-class TestClass
-{
-    public void TestMethod(DerivedClass derivedClass, string algname, string alghashname, int keySize, byte[] rgbIV)
-    {
-        derivedClass.CryptDeriveKey(algname, alghashname, keySize, rgbIV);
-    }
-}",
+                class DerivedClass : PasswordDeriveBytes
+                {
+                    public DerivedClass(string password, byte[] salt) : base(password, salt)
+                    {
+                    }
+                }
+
+                class TestClass
+                {
+                    public void TestMethod(DerivedClass derivedClass, string algname, string alghashname, int keySize, byte[] rgbIV)
+                    {
+                        derivedClass.CryptDeriveKey(algname, alghashname, keySize, rgbIV);
+                    }
+                }
+                """,
             GetCSharpResultAt(16, 9, "PasswordDeriveBytes", "CryptDeriveKey"));
         }
 
         [TestMethod]
         public async Task TestCryptDeriveKeyOfRfc2898DeriveBytesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(Rfc2898DeriveBytes rfc2898DeriveBytes, string algname, string alghashname, int keySize, byte[] rgbIV)
-    {
-        rfc2898DeriveBytes.CryptDeriveKey(algname, alghashname, keySize, rgbIV);
-    }
-}",
+                using System;
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    public void TestMethod(Rfc2898DeriveBytes rfc2898DeriveBytes, string algname, string alghashname, int keySize, byte[] rgbIV)
+                    {
+                        rfc2898DeriveBytes.CryptDeriveKey(algname, alghashname, keySize, rgbIV);
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, "Rfc2898DeriveBytes", "CryptDeriveKey"));
         }
 
         [TestMethod]
         public async Task TestCryptDeriveKeyOfClassDerivedFromRfc2898DeriveBytesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class DerivedClass : Rfc2898DeriveBytes
-{
-    public DerivedClass(string password, byte[] salt) : base(password, salt)
-    {
-    }
-}
+                using System;
+                using System.Security.Cryptography;
 
-class TestClass
-{
-    public void TestMethod(DerivedClass derivedClass, string algname, string alghashname, int keySize, byte[] rgbIV)
-    {
-        derivedClass.CryptDeriveKey(algname, alghashname, keySize, rgbIV);
-    }
-}",
+                class DerivedClass : Rfc2898DeriveBytes
+                {
+                    public DerivedClass(string password, byte[] salt) : base(password, salt)
+                    {
+                    }
+                }
+
+                class TestClass
+                {
+                    public void TestMethod(DerivedClass derivedClass, string algname, string alghashname, int keySize, byte[] rgbIV)
+                    {
+                        derivedClass.CryptDeriveKey(algname, alghashname, keySize, rgbIV);
+                    }
+                }
+                """,
             GetCSharpResultAt(16, 9, "Rfc2898DeriveBytes", "CryptDeriveKey"));
         }
 
         [TestMethod]
         public async Task TestNormalMethodOfRfc2898DeriveBytesNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Security.Cryptography;
 
-class TestClass
-{
-    public void TestMethod(Rfc2898DeriveBytes rfc2898DeriveBytes)
-    {
-        rfc2898DeriveBytes.GetBytes(1);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(Rfc2898DeriveBytes rfc2898DeriveBytes)
+                    {
+                        rfc2898DeriveBytes.GetBytes(1);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestConstructorOfRfc2898DeriveBytesNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Security.Cryptography;
 
-class TestClass
-{
-    public void TestMethod(string password, byte[] salt)
-    {
-        new Rfc2898DeriveBytes(password, salt);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(string password, byte[] salt)
+                    {
+                        new Rfc2898DeriveBytes(password, salt);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestConstructorOfPasswordDeriveBytesNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Security.Cryptography;
 
-class TestClass
-{
-    public void TestMethod(string password, byte[] salt)
-    {
-        new PasswordDeriveBytes(password, salt);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(string password, byte[] salt)
+                    {
+                        new PasswordDeriveBytes(password, salt);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestGetBytesOfClassDerivedFromPasswordDeriveBytesNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Cryptography;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Security.Cryptography;
 
-class DerivedClass : PasswordDeriveBytes
-{
-    public DerivedClass(string password, byte[] salt) : base(password, salt)
-    {
-    }
+                class DerivedClass : PasswordDeriveBytes
+                {
+                    public DerivedClass(string password, byte[] salt) : base(password, salt)
+                    {
+                    }
 
-    public override byte[] GetBytes (int cb)
-    {
-        return null;
-    }
-}
+                    public override byte[] GetBytes (int cb)
+                    {
+                        return null;
+                    }
+                }
 
-class TestClass
-{
-    public void TestMethod(string password, byte[] salt, int cb)
-    {
-        new DerivedClass(password, salt).GetBytes(cb);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(string password, byte[] salt, int cb)
+                    {
+                        new DerivedClass(password, salt).GetBytes(cb);
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

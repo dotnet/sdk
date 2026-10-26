@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
@@ -16,6 +17,35 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
     public void Cancel() => _cancellationTokenSource.Cancel();
+
+    internal static DateTime? ParseSourceDateEpoch(string? value)
+    {
+        return TryParseSourceDateEpoch(value, out DateTime? timestamp) ? timestamp : null;
+    }
+
+    internal static bool TryParseSourceDateEpoch(string? value, out DateTime? timestamp)
+    {
+        timestamp = null;
+        if (string.IsNullOrEmpty(value))
+        {
+            return true;
+        }
+
+        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
+        {
+            return false;
+        }
+
+        try
+        {
+            timestamp = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
+            return true;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return false;
+        }
+    }
 
     public override bool Execute()
     {
@@ -48,6 +78,41 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
+        KnownImageFormats? requestedImageFormat = null;
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
+            {
+                requestedImageFormat = imageFormat;
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
+                return !Log.HasLoggedErrors;
+            }
+        }
+
+        if (!TryParseSourceDateEpoch(SourceDateEpoch, out DateTime? sourceDateEpoch))
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidSourceDateEpoch), SourceDateEpoch);
+            return !Log.HasLoggedErrors;
+        }
+
+        string? archiveIncrementalFingerprint = null;
+        if (EnableArchiveIncrementalCache && !string.IsNullOrEmpty(BaseImageDigest))
+        {
+            archiveIncrementalFingerprint = ContainerArchiveCache.ComputeFingerprint(
+                this,
+                BaseImageDigest,
+                baseImageIsResolved: false,
+                cancellationToken);
+            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return true;
+            }
+        }
+
         bool credentialsSet = false;
         VSHostObject hostObj = new(HostObject, Log);
         if (hostObj.TryGetCredentials() is (string userName, string pass))
@@ -65,7 +130,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         try
         {
-            return await ExecuteAsyncCore(logger, msbuildLoggerFactory, cancellationToken).ConfigureAwait(false);
+            return await ExecuteAsyncCore(logger, msbuildLoggerFactory, archiveIncrementalFingerprint, requestedImageFormat, sourceDateEpoch, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -78,7 +143,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private async Task<bool> ExecuteAsyncCore(ILogger logger, ILoggerFactory msbuildLoggerFactory, CancellationToken cancellationToken)
+    private async Task<bool> ExecuteAsyncCore(
+        ILogger logger,
+        ILoggerFactory msbuildLoggerFactory,
+        string? archiveIncrementalFingerprint,
+        KnownImageFormats? requestedImageFormat,
+        DateTime? sourceDateEpoch,
+        CancellationToken cancellationToken)
     {
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
@@ -119,6 +190,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, registry.RegistryName);
                 return !Log.HasLoggedErrors;
             }
+            catch (InvalidAuthResponseException e)
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidRegistryAuthResponse), e.Registry, e.Reason);
+                return !Log.HasLoggedErrors;
+            }
             catch (ContainerHttpException e)
             {
                 Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
@@ -142,29 +218,38 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
+        if (EnableArchiveIncrementalCache && archiveIncrementalFingerprint is null)
+        {
+            archiveIncrementalFingerprint = ContainerArchiveCache.ComputeFingerprint(
+                this,
+                imageBuilder.BaseImageManifestDigest,
+                baseImageIsResolved: true,
+                cancellationToken);
+            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return true;
+            }
+        }
+
         (string message, object[] parameters) = SkipPublishing ?
             (Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
             (Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
         Log.LogMessage(MessageImportance.High, message, parameters);
 
-        KnownImageFormats? requestedImageFormat = null;
-        if (ImageFormat is not null)
-        {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                requestedImageFormat = imageFormat;
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
-        }
         imageBuilder.ManifestMediaType = ContainerHelpers.GetManifestMediaType(
             imageBuilder.ManifestMediaType,
             requestedImageFormat,
             destinationImageReference);
+        DateTime createdAt = sourceDateEpoch ?? DateTime.UtcNow;
         var userId = imageBuilder.IsWindows ? null : ContainerHelpers.TryParseUserId(ContainerUser);
-        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, userId);
+        Layer newLayer = Layer.FromDirectory(
+            PublishDirectory,
+            WorkingDirectory,
+            imageBuilder.IsWindows,
+            imageBuilder.ManifestMediaType,
+            userId,
+            modificationTime: createdAt);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
@@ -178,6 +263,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             foreach (ITaskItem label in Labels)
             {
                 imageBuilder.AddLabel(label.ItemSpec, label.GetMetadata("Value"));
+            }
+
+            if (GenerateCreatedLabels)
+            {
+                string createdLabel = createdAt.ToString("o", CultureInfo.InvariantCulture);
+                imageBuilder.AddLabel("org.opencontainers.image.created", createdLabel);
+                imageBuilder.AddLabel("org.opencontainers.artifact.created", createdLabel);
             }
 
             if (GenerateDigestLabel)
@@ -208,7 +300,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return false;
         }
 
-        BuiltImage builtImage = imageBuilder.Build();
+        BuiltImage builtImage = imageBuilder.Build(createdAt);
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places
@@ -227,8 +319,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         if (!SkipPublishing)
         {
-            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
+            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, NoCache, Log, telemetry, cancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        if (archiveIncrementalFingerprint is not null && !Log.HasLoggedErrors)
+        {
+            ContainerArchiveCache.Save(this, archiveIncrementalFingerprint);
         }
 
         return !Log.HasLoggedErrors;

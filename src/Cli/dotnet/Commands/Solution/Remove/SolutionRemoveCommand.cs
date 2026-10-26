@@ -84,8 +84,10 @@ internal sealed class SolutionRemoveCommand : CommandBase<SolutionRemoveCommandD
             // If the project is not found, try to find it by name without extension
             if (project is null && !Path.HasExtension(projectPath))
             {
-                var projectsMatchByName = solution.SolutionProjects.Where(p => Path.GetFileNameWithoutExtension(p.DisplayName).Equals(projectPath));
-                project = projectsMatchByName.Count() == 1 ? projectsMatchByName.First() : null;
+                var projectsMatchByName = solution.SolutionProjects
+                    .Where(p => projectPath.Equals(Path.GetFileNameWithoutExtension(p.DisplayName ?? p.FilePath)))
+                    .ToList();
+                project = projectsMatchByName.Count == 1 ? projectsMatchByName[0] : null;
             }
             // If project is still not found, print error
             if (project is null)

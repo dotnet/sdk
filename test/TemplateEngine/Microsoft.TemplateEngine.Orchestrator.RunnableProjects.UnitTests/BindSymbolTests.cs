@@ -93,8 +93,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            Environment.SetEnvironmentVariable("MYENVVAR", "MyValue");
-            IEnvironment environment = new DefaultEnvironment();
+            IEnvironment environment = CreateEnvironment("MYENVVAR", "MyValue");
 
             IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
@@ -166,8 +165,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            Environment.SetEnvironmentVariable("MYENVVAR", "MyValue");
-            IEnvironment environment = new DefaultEnvironment();
+            IEnvironment environment = CreateEnvironment("MYENVVAR", "MyValue");
 
             IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
@@ -502,8 +500,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            Environment.SetEnvironmentVariable("MYENVVAR", "MyValue");
-            IEnvironment environment = new DefaultEnvironment();
+            IEnvironment environment = CreateEnvironment("MYENVVAR", "MyValue");
 
             IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             ((TestHost)settings.Host).HostParamDefaults["HostIdentifier"] = "TestHost";
@@ -581,9 +578,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            //int
-            Environment.SetEnvironmentVariable("MYENVVAR", "100");
-            IEnvironment environment = new DefaultEnvironment();
+            IEnvironment environment = CreateEnvironment("MYENVVAR", "100");
 
             IEngineEnvironmentSettings settings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: "TestHost", virtualize: true, environment: environment);
             string sourceBasePath = settings.GetTempVirtualizedPath();
@@ -693,6 +688,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             (LogLevel, string Message) warningMessage = Assert.ContainsSingle(loggedMessages.Where(lm => lm.Level == LogLevel.Warning));
             Assert.AreEqual("Failed to evaluate bind symbol 'env2', it will be skipped.", warningMessage.Message);
             Assert.Contains("Failed to evaluate bind symbol 'env1', the returned value is null. The default value 'envDefault' is used instead.", loggedMessages.Select(lm => lm.Message));
+        }
+
+        private static IEnvironment CreateEnvironment(string variableName, string variableValue)
+        {
+            IEnvironment environment = A.Fake<IEnvironment>(options => options.Wrapping(new DefaultEnvironment()));
+            A.CallTo(() => environment.GetEnvironmentVariable(variableName)).Returns(variableValue);
+            return environment;
         }
 
         private class TestBindSymbolSource : IBindSymbolSource

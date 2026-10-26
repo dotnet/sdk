@@ -6,6 +6,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.CodeAnalysis;
+using Microsoft.NET.TestFramework;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -56,6 +57,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void GetPidFilePath_ReturnsCorrectDefaultPath()
         {
             // Arrange
@@ -69,10 +71,12 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void GetPidFilePath_UsesEnvironmentVariablePathIfSpecified()
         {
             // Arrange
             var expectedPath = "/Some/directory/path/";
+            var previousPath = Environment.GetEnvironmentVariable("DOTNET_BUILD_PIDFILE_DIRECTORY");
             Environment.SetEnvironmentVariable("DOTNET_BUILD_PIDFILE_DIRECTORY", expectedPath);
             try
             {
@@ -84,7 +88,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
             finally
             {
-                Environment.SetEnvironmentVariable("DOTNET_BUILD_PIDFILE_DIRECTORY", "");
+                Environment.SetEnvironmentVariable("DOTNET_BUILD_PIDFILE_DIRECTORY", previousPath);
             }
         }
 

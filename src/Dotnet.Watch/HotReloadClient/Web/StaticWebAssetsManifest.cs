@@ -10,16 +10,16 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string> urlToPathMap, ImmutableArray<StaticWebAssetPattern> discoveryPatterns)
+internal sealed partial class StaticWebAssetsManifest(ImmutableDictionary<string, string> urlToPathMap, ImmutableArray<StaticWebAssetPattern> discoveryPatterns)
 {
-    private static readonly JsonSerializerOptions s_options = new()
-    {
-        RespectNullableAnnotations = true,
-    };
+    [JsonSourceGenerationOptions(RespectNullableAnnotations = true)]
+    [JsonSerializable(typeof(ManifestJson))]
+    private sealed partial class StaticWebAssetsManifestJsonContext : JsonSerializerContext;
 
     private sealed class ManifestJson
     {
@@ -69,8 +69,11 @@ internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string
             // Exclude bundle files as they are regenarated when scoped CSS files are updated.
             // Exclude compressed asset files as they are not directly editable.
             // Exclude external content URLs as they are not directly included in the project.
+            // Exclude generated build outputs of the watcher itself and the JS initializer manifest.
             if (!StaticWebAsset.IsCompressedAssetFile(filePath) &&
                 !StaticWebAsset.IsScopedCssBundleFile(filePath) &&
+                !StaticWebAsset.IsBrowserToolsAssetFile(filePath) &&
+                !StaticWebAsset.IsGeneratedJSModuleManifestFile(filePath) &&
                 !StaticWebAsset.IsExternalContentUrl(url))
             {
                 yield return (filePath, url);
@@ -140,7 +143,7 @@ internal sealed class StaticWebAssetsManifest(ImmutableDictionary<string, string
 
         try
         {
-            manifest = JsonSerializer.Deserialize<ManifestJson>(stream, s_options);
+            manifest = JsonSerializer.Deserialize(stream, StaticWebAssetsManifestJsonContext.Default.ManifestJson);
         }
         catch (JsonException e)
         {

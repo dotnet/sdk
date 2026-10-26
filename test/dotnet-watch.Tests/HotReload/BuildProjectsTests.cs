@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 extern alias MSTestFramework;
@@ -66,8 +66,9 @@ public class BuildProjects
         {
             SolutionFile = processSpec.Arguments.FirstOrDefault(a => a.EndsWith(".slnx"));
 
-            // Replace path to solution, which is a temp path, with placeholder to make assertions easier.
-            BuildInvocations.Add(string.Join(" ", processSpec.Arguments.Select(a => a == SolutionFile ? "<solution>" : a)));
+            // Replace path to solution, which is a temp path, with a placeholder to make assertions easier.
+            BuildInvocations.Add(string.Join(" ", processSpec.Arguments.Select(a =>
+                a == SolutionFile ? "<solution>" : a)));
         }
 
         public void Dispose()
@@ -139,6 +140,45 @@ public class BuildProjects
         [
             $"restore {project1} -p A=1 -consoleLoggerParameters:NoSummary",
             $"build {project1} -p A=1 --framework net9.0 --no-restore"
+        ], context.BuildInvocations);
+    }
+
+    [TestMethod]
+    public async Task SingleProject_DeviceIdIsEscaped()
+    {
+        const string DeviceId = "\"device (" + TestConstants.GB18030 + ")\";InjectedProperty=true,OtherProperty=value%3B";
+        const string EscapedDeviceId = "%22device %28" + TestConstants.GB18030 + "%29%22%3bInjectedProperty=true%2COtherProperty=value%253B";
+
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project = Path.Combine(dir.Path, "Project.csproj");
+        File.WriteAllText(project, $"""
+        <Project>
+          <PropertyGroup>
+            <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+          </PropertyGroup>
+          <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+            <ItemGroup>
+              <Devices Include="{EscapedDeviceId}" />
+            </ItemGroup>
+          </Target>
+        </Project>
+        """);
+
+        using var context = CreateContext([project]);
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(project, entryPointFilePath: null)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.ProjectOptions with { TargetFramework = ToolsetInfo.CurrentTargetFramework },
+            frameworkSelector: null,
+            deviceSelector: (_, _) => throw new AssertFailedException("A single device should be selected automatically"),
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(DeviceId, result.SelectedDevice);
+        AssertEx.SequenceEqual(
+        [
+            $"restore {project} -p A=1 -consoleLoggerParameters:NoSummary",
+            $"build {project} -p A=1 --framework {ToolsetInfo.CurrentTargetFramework} -p:Device={EscapedDeviceId} --no-restore"
         ], context.BuildInvocations);
     }
 

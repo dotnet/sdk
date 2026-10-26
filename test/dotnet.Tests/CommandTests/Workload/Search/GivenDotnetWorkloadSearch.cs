@@ -114,6 +114,37 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         }
 
         [TestMethod]
+        public void GivenWorkloadSearchVersionWithNuGetOptionsItPassesThemToTheDownloader()
+        {
+            MockPackWorkloadInstaller installer = new(workloadSetContents: new Dictionary<string, string>());
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.101.0")]);
+            var parseResult = Parser.Parse("dotnet workload search version --source myfeed --configfile mynuget.config --disable-parallel --ignore-failed-sources --no-http-cache --interactive");
+            MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
+            _reporter.Clear();
+            command.Execute();
+
+            var packageSourceLocation = nugetPackageDownloader.GetLatestPackageVersionsCallParams.Should().ContainSingle().Subject.packageSourceLocation;
+            packageSourceLocation.Should().NotBeNull();
+            packageSourceLocation.SourceFeedOverrides.Should().ContainSingle().Which.Should().EndWith("myfeed");
+            packageSourceLocation.NugetConfig.Value.Value.Should().Contain("mynuget.config");
+        }
+
+        [TestMethod]
+        public void GivenWorkloadSearchVersionWithoutNuGetOptionsNoPackageSourceLocationIsUsed()
+        {
+            MockPackWorkloadInstaller installer = new(workloadSetContents: new Dictionary<string, string>());
+            MockNuGetPackageDownloader nugetPackageDownloader = new(packageVersions: [new NuGetVersion("9.101.0")]);
+            var parseResult = Parser.Parse("dotnet workload search version");
+            MockWorkloadResolver resolver = new(Enumerable.Empty<WorkloadResolver.WorkloadInfo>());
+            var command = new WorkloadSearchVersionsCommand(parseResult, _reporter, installer: installer, nugetPackageDownloader: nugetPackageDownloader, resolver: resolver, sdkVersion: new ReleaseVersion(9, 0, 100));
+            _reporter.Clear();
+            command.Execute();
+
+            nugetPackageDownloader.GetLatestPackageVersionsCallParams.Should().ContainSingle().Subject.packageSourceLocation.Should().BeNull();
+        }
+
+        [TestMethod]
         public void GivenNoStubIsProvidedSearchShowsAllWorkloads()
         {
             _reporter.Clear();

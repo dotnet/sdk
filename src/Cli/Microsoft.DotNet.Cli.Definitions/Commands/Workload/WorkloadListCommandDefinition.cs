@@ -26,6 +26,10 @@ internal sealed class WorkloadListCommandDefinition : WorkloadCommandDefinitionB
 
     public override NuGetRestoreOptions RestoreOptions { get; } = new(hidden: true);
 
+    public readonly Option<string> ConfigOption = CreateConfigOption().Hide();
+
+    public readonly Option<string[]> SourceOption = CreateSourceOption().Hide();
+
     public WorkloadListCommandDefinition()
         : base("list", CommandDefinitionStrings.WorkloadListCommandDescription)
     {
@@ -34,6 +38,8 @@ internal sealed class WorkloadListCommandDefinition : WorkloadCommandDefinitionB
         Options.Add(VersionOption);
         Options.Add(TempDirOption);
         Options.Add(IncludePreviewsOption);
+        Options.Add(ConfigOption);
+        Options.Add(SourceOption);
 
         RestoreOptions.AddTo(Options);
     }

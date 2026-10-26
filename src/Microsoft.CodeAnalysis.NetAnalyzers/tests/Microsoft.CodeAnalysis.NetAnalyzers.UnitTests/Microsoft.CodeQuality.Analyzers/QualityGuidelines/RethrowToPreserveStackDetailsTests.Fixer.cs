@@ -19,82 +19,90 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
         {
             await VerifyCS.VerifyCodeFixAsync(
 #pragma warning disable RS0030 // Do not use banned APIs
-@"
-using System;
+"""
 
-class Program
-{
-    void CatchAndRethrowExplicitly()
+    using System;
+
+    class Program
     {
-        try
+        void CatchAndRethrowExplicitly()
         {
-            ThrowException();
+            try
+            {
+                ThrowException();
+            }
+            catch (ArithmeticException e)
+            {
+                throw e; //Some comments
+            }
         }
-        catch (ArithmeticException e)
+
+        void ThrowException()
         {
-            throw e; //Some comments
+            throw new ArithmeticException();
         }
     }
-
-    void ThrowException()
-    {
-        throw new ArithmeticException();
-    }
-}", VerifyCS.Diagnostic().WithLocation(14, 13),
+    """, VerifyCS.Diagnostic().WithLocation(14, 13),
 #pragma warning restore RS0030 // Do not use banned APIs
-@"
-using System;
+"""
 
-class Program
-{
-    void CatchAndRethrowExplicitly()
+    using System;
+
+    class Program
     {
-        try
+        void CatchAndRethrowExplicitly()
         {
-            ThrowException();
+            try
+            {
+                ThrowException();
+            }
+            catch (ArithmeticException e)
+            {
+                throw; //Some comments
+            }
         }
-        catch (ArithmeticException e)
+
+        void ThrowException()
         {
-            throw; //Some comments
+            throw new ArithmeticException();
         }
     }
-
-    void ThrowException()
-    {
-        throw new ArithmeticException();
-    }
-}");
+    """);
         }
         [TestMethod]
         public async Task TestBasic_RethrowExplicitlyToThrowImplicitlyAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
 #pragma warning disable RS0030 // Do not use banned APIs
-@"
-Imports System
-Class Program
-    Sub CatchAndRethrowExplicitly()
-        Try
-            Throw New ArithmeticException()
-        Catch e As ArithmeticException
-            Throw e 'Some comment
-        End Try
-    End Sub
-End Class
-", VerifyVB.Diagnostic().WithLocation(8, 13),
+"""
+
+    Imports System
+    Class Program
+        Sub CatchAndRethrowExplicitly()
+            Try
+                Throw New ArithmeticException()
+            Catch e As ArithmeticException
+                Throw e 'Some comment
+            End Try
+        End Sub
+    End Class
+
+    """, VerifyVB.Diagnostic().WithLocation(8, 13),
 #pragma warning restore RS0030 // Do not use banned APIs
-    @"
-Imports System
-Class Program
-    Sub CatchAndRethrowExplicitly()
-        Try
-            Throw New ArithmeticException()
-        Catch e As ArithmeticException
-            Throw 'Some comment
-        End Try
-    End Sub
-End Class
-"
+    """
+
+        Imports System
+        Class Program
+            Sub CatchAndRethrowExplicitly()
+                Try
+                    Throw New ArithmeticException()
+                Catch e As ArithmeticException
+                    Throw 'Some comment
+                End Try
+            End Sub
+        End Class
+
+        """
     );
         }
 
@@ -102,80 +110,82 @@ End Class
         public async Task TestCSharp_MultipleCatchClauses_FixAllRewritesEveryRethrowAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
-@"
-using System;
-class Program
-{
-    void CatchAndRethrowExplicitly()
+"""
+    using System;
+    class Program
     {
-        try
+        void CatchAndRethrowExplicitly()
         {
-            throw new ArithmeticException();
-        }
-        catch (ArithmeticException e)
-        {
-            [|throw e;|]
-        }
-        catch (Exception e)
-        {
-            [|throw e;|]
+            try
+            {
+                throw new ArithmeticException();
+            }
+            catch (ArithmeticException e)
+            {
+                [|throw e;|]
+            }
+            catch (Exception e)
+            {
+                [|throw e;|]
+            }
         }
     }
-}",
-@"
-using System;
-class Program
-{
-    void CatchAndRethrowExplicitly()
+    """,
+"""
+    using System;
+    class Program
     {
-        try
+        void CatchAndRethrowExplicitly()
         {
-            throw new ArithmeticException();
-        }
-        catch (ArithmeticException e)
-        {
-            throw;
-        }
-        catch (Exception e)
-        {
-            throw;
+            try
+            {
+                throw new ArithmeticException();
+            }
+            catch (ArithmeticException e)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
         }
     }
-}");
+    """);
         }
 
         [TestMethod]
         public async Task TestBasic_MultipleCatchClauses_FixAllRewritesEveryRethrowAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
-@"
-Imports System
-Class Program
-    Sub CatchAndRethrowExplicitly()
-        Try
-            Throw New ArithmeticException()
-        Catch e As ArithmeticException
-            [|Throw e|]
-        Catch ex As Exception
-            [|Throw ex|]
-        End Try
-    End Sub
-End Class
-",
-@"
-Imports System
-Class Program
-    Sub CatchAndRethrowExplicitly()
-        Try
-            Throw New ArithmeticException()
-        Catch e As ArithmeticException
-            Throw
-        Catch ex As Exception
-            Throw
-        End Try
-    End Sub
-End Class
-");
+"""
+    Imports System
+    Class Program
+        Sub CatchAndRethrowExplicitly()
+            Try
+                Throw New ArithmeticException()
+            Catch e As ArithmeticException
+                [|Throw e|]
+            Catch ex As Exception
+                [|Throw ex|]
+            End Try
+        End Sub
+    End Class
+    """,
+"""
+    Imports System
+    Class Program
+        Sub CatchAndRethrowExplicitly()
+            Try
+                Throw New ArithmeticException()
+            Catch e As ArithmeticException
+                Throw
+            Catch ex As Exception
+                Throw
+            End Try
+        End Sub
+    End Class
+    """);
         }
     }
 }

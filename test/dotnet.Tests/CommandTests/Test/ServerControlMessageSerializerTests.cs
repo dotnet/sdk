@@ -41,4 +41,33 @@ public class ServerControlMessageSerializerTests
         stream.Length.Should().Be(0);
         serializer.Deserialize(stream).Should().BeSameAs(WaitForServerControlRequest.CachedInstance);
     }
+
+    [TestMethod]
+    public void PrimitiveByteAndBoolReadsThrowAtEndOfStream()
+    {
+        using var byteStream = new MemoryStream();
+        using var boolStream = new MemoryStream();
+
+        Assert.ThrowsExactly<EndOfStreamException>(() => BaseSerializerProbe.ReadByteValue(byteStream));
+        Assert.ThrowsExactly<EndOfStreamException>(() => BaseSerializerProbe.ReadBoolValue(boolStream));
+    }
+
+    [TestMethod]
+    public void UnsupportedPrimitiveSizeThrowsInvalidOperationException()
+    {
+        using var stream = new MemoryStream();
+
+        Assert.ThrowsExactly<InvalidOperationException>(() => BaseSerializerProbe.WritePrimitiveSize<decimal>(stream));
+    }
+
+    private sealed class BaseSerializerProbe : BaseSerializer
+    {
+        public static byte ReadByteValue(Stream stream) => ReadByte(stream);
+
+        public static bool ReadBoolValue(Stream stream) => ReadBool(stream);
+
+        public static void WritePrimitiveSize<T>(Stream stream)
+            where T : struct
+            => WriteSize<T>(stream);
+    }
 }

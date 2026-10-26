@@ -3,6 +3,9 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+#if !CLI_AOT
+using Microsoft.Build.Exceptions;
+#endif
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
@@ -111,9 +114,9 @@ internal static class CommonRunHelpers
     /// <summary>
     /// Applies adjustments to MSBuild arguments to better suit LLM/agentic environments, if such an environment is detected.
     /// </summary>
-    public static MSBuildArgs AdjustMSBuildForLLMs(MSBuildArgs msbuildArgs)
+    public static MSBuildArgs AdjustMSBuildForLLMs(MSBuildArgs msbuildArgs, CommandServices services)
     {
-        if (new Telemetry.LLMEnvironmentDetectorForTelemetry().IsLLMEnvironment())
+        if (services.LLMEnvironmentDetector.IsLLMEnvironment())
         {
             // disable the live-update display of the TerminalLogger, which wastes tokens
             return msbuildArgs.CloneWithAdditionalArgs(Constants.TerminalLogger_DisableNodeDisplay);
@@ -138,14 +141,17 @@ internal static class CommonRunHelpers
         string? launchProfile,
         bool noLaunchProfile,
         bool reportUsingLaunchSettings,
-        Action<string, bool> report)
+        Action<string, bool> report,
+        LaunchProfileParserOptions parserOptions,
+        out string? launchSettingsPath)
     {
+        launchSettingsPath = null;
         if (noLaunchProfile || projectOrEntryPointFilePath is null)
         {
             return LaunchProfileParseResult.Success(model: null);
         }
 
-        string? launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(
+        launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(
             projectOrEntryPointFilePath,
             launchProfile,
             report);
@@ -159,7 +165,26 @@ internal static class CommonRunHelpers
             report(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath), true);
         }
 
-        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile);
+        return ReadLaunchProfileFromFile(launchSettingsPath, launchProfile, parserOptions);
+    }
+
+    internal static LaunchProfileParseResult ReadLaunchProfileFromFile(
+        string launchSettingsPath,
+        string? launchProfile,
+        LaunchProfileParserOptions parserOptions)
+    {
+#if CLI_AOT
+        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, parserOptions);
+#else
+        try
+        {
+            return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, parserOptions);
+        }
+        catch (InvalidProjectFileException ex)
+        {
+            return LaunchProfileParseResult.Failure(ex.Message);
+        }
+#endif
     }
 
     /// <summary>
@@ -203,7 +228,7 @@ internal static class CommonRunHelpers
     /// This uses the in-process MSBuild logging APIs (<c>Microsoft.Build.*</c>) and so is excluded
     /// from the AOT build, which only ever forwards MSBuild out-of-process.
     /// </remarks>
-    public static Microsoft.Build.Framework.ILogger GetConsoleLogger(MSBuildArgs args) =>
-        Microsoft.Build.Logging.TerminalLogger.CreateTerminalOrConsoleLogger([.. AdjustMSBuildForLLMs(args).OtherMSBuildArgs]);
+    public static Microsoft.Build.Framework.ILogger GetConsoleLogger(MSBuildArgs args, CommandServices services) =>
+        Microsoft.Build.Logging.TerminalLogger.CreateTerminalOrConsoleLogger([.. AdjustMSBuildForLLMs(args, services).OtherMSBuildArgs]);
 #endif
 }

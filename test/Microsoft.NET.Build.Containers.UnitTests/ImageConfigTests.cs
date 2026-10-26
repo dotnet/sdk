@@ -51,8 +51,21 @@ public class ImageConfigTests
     public void PassesThroughPropertyEvenThoughPropertyIsntExplicitlyHandled(string property)
     {
         ImageConfig c = new(SampleImageConfig);
-        JsonNode after = JsonNode.Parse(c.BuildConfig())!;
+        JsonNode after = JsonNode.Parse(c.BuildConfig(DateTime.UtcNow))!;
         JsonNode? prop = after["config"]?[property];
         Assert.IsNotNull(prop);
+    }
+
+    [TestMethod]
+    public void BuildConfigUsesProvidedCreationTime()
+    {
+        var createdAt = new DateTime(2021, 11, 8, 12, 34, 56, DateTimeKind.Utc);
+        ImageConfig config = new(SampleImageConfig);
+
+        JsonNode result = JsonNode.Parse(config.BuildConfig(createdAt))!;
+
+        Assert.AreEqual("2021-11-08T12:34:56.0000000Z", result["created"]?.GetValue<string>());
+        Assert.IsTrue(result["history"]!.AsArray().All(entry =>
+            entry?["created"]?.GetValue<string>() == "2021-11-08T12:34:56.0000000Z"));
     }
 }

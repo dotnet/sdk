@@ -13,7 +13,8 @@
         group, otherwise the duplicate <Compile>/<EmbeddedResource> items will fail the
         build once both changes merge.
       * Each command contributes its own clearly-labeled group below, referencing only
-        its command-specific sources and dependencies.
+        its command-specific sources and resources. Add package and project dependencies
+        to AotDependencies.props so the product and tests consume the same closure.
 
     NativeEntryPoint.cs and ManagedHost.cs are added separately by each consumer because
     ManagedHost.cs requires InternalsVisibleTo access to NativeWrapper and the test
@@ -30,14 +31,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ParserOptionActions.cs" Link="ParserOptionActions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandServices.cs" Link="CommandServices.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandInvocation.cs" Link="CommandInvocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\AutomaticEncodingRestorer.cs" Link="AutomaticEncodingRestorer.cs" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryClient.cs" Link="TelemetryClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryCommonProperties.cs" Link="TelemetryCommonProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\InternalMicrosoft\InternalMicrosoftTelemetry.cs" Link="Telemetry\InternalMicrosoft\InternalMicrosoftTelemetry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ITelemetryClient.cs" Link="ITelemetryClient.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryDiskLogger.cs" Link="TelemetryDiskLogger.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\IDockerContainerDetector.cs" Link="Telemetry\IDockerContainerDetector.cs" />
@@ -151,6 +155,19 @@
   </ItemGroup>
 
   <!--
+    Build-free 'dotnet test' support for explicit test modules. Project/solution discovery and build remain
+    managed-only; the linked command implementation shares the MTP orchestration, IPC, terminal,
+    cancellation, results-layout, and artifact post-processing code with the managed CLI.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\AotTestCommand.cs" Link="Commands\Test\AotTestCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\CliConstants.cs" Link="Commands\Test\CliConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\**\*.cs"
+             Exclude="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildHandler.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\SolutionAndProjectUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\ValidationUtility.cs"
+             LinkBase="Commands\Test\MTP" />
+  </ItemGroup>
+
+  <!--
     Workload reporting for the info command: WorkloadInfoHelper.GetWorkloadsVersion() and
     ShowWorkloadsInfo(). Under CLI_AOT, WorkloadInfoHelper builds the installation-record repository
     directly (the registry/file-based record repositories are already in the AOT source set) and does
@@ -159,6 +176,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInfoHelper.cs" Link="Commands\Workload\WorkloadInfoHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\InstallStateContents.cs" Link="Commands\Workload\InstallStateContents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\TrustedMachinePath.cs" Link="Installer\Windows\TrustedMachinePath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\List\InstalledWorkloadsCollection.cs" Link="Commands\Workload\List\InstalledWorkloadsCollection.cs" />
   </ItemGroup>
 

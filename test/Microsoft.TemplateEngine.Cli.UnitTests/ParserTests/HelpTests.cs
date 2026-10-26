@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using FakeItEasy;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Help;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -15,6 +16,41 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
     [TestClass]
     public partial class HelpTests : VerifyBase
     {
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("create")]
+        public void GenericHelpDoesNotCreateHost(string commandLine)
+        {
+            int hostCreationCount = 0;
+            using ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost();
+            NewCommand command = (NewCommand)NewCommandFactory.Create(
+                _ =>
+                {
+                    hostCreationCount++;
+                    return host;
+                },
+                new NewCommandDefinition());
+            ParseResult parseResult = command.Parse(commandLine);
+            ICustomHelp helpCommand = (ICustomHelp)parseResult.CommandResult.Command;
+            InstantiateCommandArgs instantiateCommandArgs = helpCommand switch
+            {
+                NewCommand newCommand => InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(newCommand, parseResult)),
+                InstantiateCommand instantiateCommand => new InstantiateCommandArgs(instantiateCommand, parseResult),
+                _ => throw new InvalidOperationException()
+            };
+            Assert.IsNull(instantiateCommandArgs.ShortName);
+            StringWriter output = new();
+            HelpContext helpContext = new(new HelpBuilder(), parseResult.CommandResult.Command, output, parseResult);
+
+            foreach (Action<HelpContext> helpBlock in helpCommand.CustomHelpLayout())
+            {
+                helpBlock(helpContext);
+            }
+
+            Assert.AreNotEqual(string.Empty, output.ToString());
+            Assert.AreEqual(0, hostCreationCount);
+        }
+
         [TestMethod]
 #pragma warning disable SA1117 // Parameters should be on same line or separate lines
         [DataRow("Template Name", "Language", "Me", "Template Description",

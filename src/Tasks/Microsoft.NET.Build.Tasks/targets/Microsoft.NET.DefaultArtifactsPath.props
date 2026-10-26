@@ -17,6 +17,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        Set a property to indicate it was imported, so we can avoid a duplicate import. -->
   <PropertyGroup>
     <_DefaultArtifactsPathPropsImported>true</_DefaultArtifactsPathPropsImported>
+    <_SupportsFileBasedAppArtifactsPath>true</_SupportsFileBasedAppArtifactsPath>
   </PropertyGroup>
   
   <!-- Setting ArtifactsPath automatically opts in to the artifacts output format -->

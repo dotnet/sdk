@@ -32,6 +32,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         ];
 
         private static readonly string PackagesJsonPath = Path.Combine(SdkTestContext.Current.TestPackages, "cgmanifest.json");
+        private const string CoverletCollectorVersion = "10.0.1";
 
         public DotnetNewTestTemplatesTests()
         {
@@ -229,24 +230,39 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string language,
             string coverageTool,
             string testRunner,
-            bool runDotnetTest)
+            bool runDotnetTest,
+            bool useMSTestSdk,
+            bool collectCoverletCoverage)
         {
             string testProjectName = GenerateTestProjectName();
-            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+            string outputDirectory = CreateTemporaryFolder(testName: "MSTestTemplate", folderName: "Home");
 
             // Prevent the global.json post action from walking up the directory parents up to our own solution root, which would affect other tests.
             Directory.CreateDirectory(Path.Combine(outputDirectory, ".git"));
 
-            string workingDirectory = CreateTemporaryFolder();
+            string workingDirectory = CreateTemporaryFolder(testName: "MSTestTemplate", folderName: "Working");
 
-            // Create new test project: dotnet new <projectTemplate> -n <testProjectName> -f <targetFramework> -lang <language> --coverage-tool <coverageTool> --test-runner <testRunner>
-            string args = $"{projectTemplate} -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory} --coverage-tool {coverageTool} --test-runner {testRunner}";
+            // Create new test project: dotnet new <projectTemplate> -n <testProjectName> -f <targetFramework> -lang <language> --coverage-tool <coverageTool> --test-runner <testRunner> [--sdk]
+            string args = $"{projectTemplate} -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory} --coverage-tool {coverageTool} --test-runner {testRunner}{(useMSTestSdk ? " --sdk" : string.Empty)}";
             new DotnetNewCommand(_log, args)
                 .WithCustomHive(outputDirectory).WithRawArguments()
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
                 .Should()
                 .Pass();
+
+            string projectFile = Directory.GetFiles(outputDirectory, "*.*proj").Single();
+            string projectContents = File.ReadAllText(projectFile);
+            if (projectTemplate == "mstest" && coverageTool == "coverlet")
+            {
+                projectContents.Should().Contain(
+                    $"""<PackageReference Include="coverlet.collector" Version="{CoverletCollectorVersion}" />""");
+            }
+
+            if (useMSTestSdk)
+            {
+                projectContents.Should().Contain("""<Project Sdk="MSTest.Sdk/4.4.0">""");
+            }
 
             if (runDotnetTest)
             {
@@ -256,16 +272,28 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeTrue();
                 }
 
+                string resultsDirectory = Path.Combine(outputDirectory, "TestResults");
                 var result = new DotnetTestCommand(_log, false)
                 .WithWorkingDirectory(outputDirectory)
 #pragma warning disable SA1010 // Opening square brackets should be spaced correctly - false positive. Current formatting is good.
-                .Execute(isMTP ? ["--project", outputDirectory] : [outputDirectory]);
+                .Execute(
+                    isMTP
+                        ? ["--project", outputDirectory]
+                        : collectCoverletCoverage
+                            ? [outputDirectory, "--collect", "XPlat Code Coverage", "--results-directory", resultsDirectory]
+                            : [outputDirectory]);
 #pragma warning restore SA1010 // Opening square brackets should be spaced correctly
 
                 result.Should().Pass();
 
                 result.StdOut.Should().Contain("Passed!");
                 result.StdOut.Should().MatchRegex(isMTP ? "succeeded: 1" : @"Passed:\s*1");
+
+                if (collectCoverletCoverage)
+                {
+                    Directory.GetFiles(resultsDirectory, "coverage.cobertura.xml", SearchOption.AllDirectories)
+                        .Should().ContainSingle();
+                }
             }
 
             // After executing dotnet new and before cleaning up
@@ -619,16 +647,25 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     {
                         foreach (var testRunner in testRunners)
                         {
-                            yield return new object[] { "mstest", targetFramework, language, coverageTool, testRunner, true };
+                            bool collectCoverletCoverage =
+                                language == Languages.CSharp &&
+                                coverageTool == "coverlet" &&
+                                testRunner == "VSTest";
+                            yield return new object[] { "mstest", targetFramework, language, coverageTool, testRunner, true, false, collectCoverletCoverage };
                         }
                     }
+                }
+                // MSTest.Sdk project style: all languages with coverlet and VSTest.
+                foreach (var language in Languages.All)
+                {
+                    yield return new object[] { "mstest", targetFramework, language, "coverlet", "VSTest", true, true, false };
                 }
                 // mstest-playwright: only c#, runDotnetTest = false
                 foreach (var coverageTool in coverageTools)
                 {
                     foreach (var testRunner in testRunners)
                     {
-                        yield return new object[] { "mstest-playwright", targetFramework, Languages.CSharp, coverageTool, testRunner, false };
+                        yield return new object[] { "mstest-playwright", targetFramework, Languages.CSharp, coverageTool, testRunner, false, false, false };
                     }
                 }
             }

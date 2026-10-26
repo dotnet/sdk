@@ -15,6 +15,7 @@ using NuGet.Frameworks;
 namespace Microsoft.DotNet.PackageValidation.Tests
 {
     [TestClass]
+    [DoNotParallelize] // Concurrent pack/restore child processes can emit shared-cache diagnostics to stderr.
     public class ValidatePackageInProcessTests : SdkTest
     {
 

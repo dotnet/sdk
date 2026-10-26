@@ -6,8 +6,9 @@
     <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
     <RootNamespace>Microsoft.DotNet.Cli.Tests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <!-- Tests modify process-global state; run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
-    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+    <!-- Methods within a class share fixtures and process state. Audited classes use
+         ResourceLock for the process-global resources they share with other classes. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
 
     <!-- Strong naming deprecated on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
