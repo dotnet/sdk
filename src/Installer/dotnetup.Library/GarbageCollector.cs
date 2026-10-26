@@ -114,10 +114,10 @@ internal class GarbageCollector
             }
             if (spec.InstallSource == InstallSource.GlobalJson && resolution.Spec is { } requirement)
             {
-                // Preserve the legacy manifest shape; the file remains authoritative.
                 spec.VersionOrChannel = requirement.Name;
                 if (!resolution.UsesFallbackRequirement)
                 {
+                    // Refresh saved constraints only after successfully reading global.json.
                     spec.MinimumVersion = requirement.MinimumVersion?.ToString();
                     spec.AllowPrerelease = requirement.AllowPrerelease;
                 }
