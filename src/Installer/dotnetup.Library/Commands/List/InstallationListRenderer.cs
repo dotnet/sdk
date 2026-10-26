@@ -75,7 +75,7 @@ internal static class InstallationListRenderer
         };
         var display = resolution.GlobalJsonSdk is { } requirement
             ? FormatRequirement(requirement) : spec.VersionOrChannel;
-        if (resolution.UsesLastKnownRequirement)
+        if (resolution.UsesFallbackRequirement)
         {
             var saved = resolution.Spec!;
             display = string.Format(CultureInfo.InvariantCulture, Strings.ListLastKnownRequirement,
@@ -86,7 +86,7 @@ internal static class InstallationListRenderer
             Component = spec.Component,
             Spec = spec,
             Installation = selected,
-            SpecDisplay = resolution.Error is null || resolution.UsesLastKnownRequirement ? display : Strings.ListUnavailable,
+            SpecDisplay = resolution.Error is null || resolution.UsesFallbackRequirement ? display : Strings.ListUnavailable,
             SourceDisplay = source,
             Error = resolution.Error
         };

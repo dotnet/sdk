@@ -106,7 +106,7 @@ internal class GarbageCollector
             {
                 Console.Error.WriteLine(resolution.Error);
                 skipCollection |= resolution.Spec is null;
-                if (resolution.UsesLastKnownRequirement)
+                if (resolution.UsesFallbackRequirement)
                 {
                     Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture,
                         Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath));
@@ -116,7 +116,7 @@ internal class GarbageCollector
             {
                 // Preserve the legacy manifest shape; the file remains authoritative.
                 spec.VersionOrChannel = requirement.Name;
-                if (!resolution.UsesLastKnownRequirement)
+                if (!resolution.UsesFallbackRequirement)
                 {
                     spec.MinimumVersion = requirement.MinimumVersion?.ToString();
                     spec.AllowPrerelease = requirement.AllowPrerelease;

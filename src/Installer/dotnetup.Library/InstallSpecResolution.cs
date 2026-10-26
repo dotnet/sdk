@@ -21,5 +21,5 @@ internal sealed class InstallSpecResolution
     public GlobalJsonContents.SdkSection? GlobalJsonSdk { get; init; }
     public Installation? Installation { get; set; }
     public string? Error { get; init; }
-    public bool UsesLastKnownRequirement => Error is not null && Spec is not null;
+    public bool UsesFallbackRequirement => Error is not null && Spec is not null;
 }
