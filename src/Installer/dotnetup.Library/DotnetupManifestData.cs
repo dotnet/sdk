@@ -1,6 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
@@ -29,10 +33,30 @@ internal class DotnetRootEntry
 internal class InstallSpec
 {
     public InstallComponent Component { get; set; }
-    // Repository entries retain this field for compatibility, but are evaluated from GlobalJsonPath.
+    // Repository entries are evaluated from GlobalJsonPath, falling back to LastKnownRequirement on read failures.
     public string VersionOrChannel { get; set; } = string.Empty;
     public InstallSource InstallSource { get; set; }
     public string? GlobalJsonPath { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public RepositoryRequirement? LastKnownRequirement { get; set; }
+}
+
+internal sealed class RepositoryRequirement
+{
+    public string VersionOrChannel { get; set; } = string.Empty;
+    public string MinimumVersion { get; set; } = string.Empty;
+    public bool AllowPrerelease { get; set; }
+
+    internal static RepositoryRequirement FromChannel(UpdateChannel channel) => new()
+    {
+        VersionOrChannel = channel.Name,
+        MinimumVersion = (channel.MinimumVersion
+            ?? throw new ArgumentException("Repository requirements must have a minimum SDK version.", nameof(channel))).ToString(),
+        AllowPrerelease = channel.AllowPrerelease
+            ?? throw new ArgumentException("Repository requirements must specify prerelease eligibility.", nameof(channel))
+    };
+
+    internal UpdateChannel ToChannel() => new(VersionOrChannel, new ReleaseVersion(MinimumVersion), AllowPrerelease);
 }
 
 /// <summary>

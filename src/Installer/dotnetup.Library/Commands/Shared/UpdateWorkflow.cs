@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
@@ -154,11 +155,17 @@ internal class UpdateWorkflow
         bool updateGlobalJson,
         Verbosity verbosity)
     {
-        var channel = GetChannelToUpdate(spec);
+        var channel = GetChannelToUpdate(spec, out bool usesLastKnownRequirement);
         if (channel is null)
         {
             new DotnetupSharedManifest(manifestPath).RemoveInstallSpec(installRoot, spec);
             return true;
+        }
+        if (spec.InstallSource == InstallSource.GlobalJson && !usesLastKnownRequirement)
+        {
+            spec.VersionOrChannel = channel.Name;
+            spec.LastKnownRequirement = RepositoryRequirement.FromChannel(channel);
+            new DotnetupSharedManifest(manifestPath).AddInstallSpec(installRoot, spec);
         }
         // Skip standalone exact-version specs. Exact global.json specs still need processing
         // because the requested version may have changed in the file.
@@ -203,6 +210,7 @@ internal class UpdateWorkflow
         // Update global.json if requested and this spec came from a global.json,
         // but only if the latest version is newer than what's already specified.
         if (updateGlobalJson
+            && !usesLastKnownRequirement
             && spec.InstallSource == InstallSource.GlobalJson
             && spec.GlobalJsonPath is not null
             && spec.Component == InstallComponent.SDK)
@@ -214,12 +222,21 @@ internal class UpdateWorkflow
         return updated || spec.InstallSource == InstallSource.GlobalJson;
     }
 
-    internal static UpdateChannel? GetChannelToUpdate(InstallSpec spec)
+    internal static UpdateChannel? GetChannelToUpdate(InstallSpec spec) => GetChannelToUpdate(spec, out _);
+
+    private static UpdateChannel? GetChannelToUpdate(InstallSpec spec, out bool usesLastKnownRequirement)
     {
         var evaluation = InstallSpecResolver.Evaluate(spec);
+        usesLastKnownRequirement = evaluation.UsesLastKnownRequirement;
         if (evaluation.Error is not null)
         {
-            throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
+            if (!usesLastKnownRequirement)
+            {
+                throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
+            }
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(evaluation.Error.EscapeMarkup()));
+            AnsiConsole.MarkupLine(DotnetupTheme.Warning(string.Format(CultureInfo.InvariantCulture,
+                Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath).EscapeMarkup()));
         }
         return evaluation.Spec;
     }

@@ -65,6 +65,7 @@ internal static class InstallSpecResolver
         {
             return new InstallSpecResolution
             {
+                Spec = spec.LastKnownRequirement?.ToChannel(),
                 Error = string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError,
                     spec.GlobalJsonPath, ex.Message)
             };

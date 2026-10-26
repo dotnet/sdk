@@ -358,12 +358,57 @@ public class GarbageCollectorTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void CollectionPersistsLiveRequirementAndUsesItAfterReadFailure(bool unreadable)
+    {
+        using var env = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(env.ManifestPath);
+        var root = new DotnetInstallRoot(env.InstallPath, InstallArchitecture.x64);
+        var path = Path.Combine(env.TempRoot, "global.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
+        manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
+            VersionOrChannel = "9.0.1xx", GlobalJsonPath = path
+        });
+        env.StubComponentDirectories(null, (InstallComponent.SDK, "10.0.105"));
+        manifest.AddInstallation(root, new Installation
+        {
+            Component = InstallComponent.SDK, Version = "10.0.105", Subcomponents = ["sdk/10.0.105"]
+        });
+        new GarbageCollector(manifest).Collect(root);
+        var saved = manifest.GetInstallSpecs(root).Single().LastKnownRequirement!;
+        saved.MinimumVersion.Should().Be("10.0.103");
+        saved.AllowPrerelease.Should().BeFalse();
+
+        foreach (var version in new[] { "10.0.101", "10.0.106-preview.1", "10.0.200" })
+        {
+            env.StubComponentDirectories(null, (InstallComponent.SDK, version));
+            manifest.AddInstallation(root, new Installation
+            {
+                Component = InstallComponent.SDK, Version = version, Subcomponents = [$"sdk/{version}"]
+            });
+        }
+        File.WriteAllText(path, "{broken");
+        using var locked = unreadable ? File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None) : null;
+
+        new GarbageCollector(manifest).Collect(root);
+
+        manifest.GetInstallations(root).Should().ContainSingle().Which.Version.Should().Be("10.0.105");
+        manifest.GetInstallSpecs(root).Single().LastKnownRequirement.Should().BeEquivalentTo(saved);
+        Directory.Exists(Path.Combine(root.Path, "sdk", "10.0.105")).Should().BeTrue();
+        Directory.Exists(Path.Combine(root.Path, "sdk", "10.0.106-preview.1")).Should().BeFalse();
+    }
+
+    [TestMethod]
     [DataRow("missing", false, false)]
     [DataRow("versionless", false, false)]
     [DataRow("malformed", true, true)]
     [DataRow("unreadable", true, true)]
     [DataRow("unmatched", true, false)]
-    public void UnresolvedRepositoryRequirementsDoNotRetainCachedInstallations(string state, bool keepSpec, bool hasError)
+    public void UnresolvedRepositoryRequirementsWithoutSnapshotSkipCollectionOnReadErrors(string state, bool keepSpec, bool hasError)
     {
         using var testEnv = new TestEnvironment();
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
@@ -405,12 +450,13 @@ public class GarbageCollectorTests
         }
 
         manifest.GetInstallSpecs(root).Should().HaveCount(keepSpec ? 1 : 0);
-        manifest.GetInstallations(root).Should().BeEmpty();
-        deleted.Should().Contain("sdk/10.0.105");
-        Directory.Exists(Path.Combine(testEnv.InstallPath, "sdk", "10.0.105")).Should().BeFalse();
+        manifest.GetInstallations(root).Should().HaveCount(hasError ? 1 : 0);
+        deleted.Contains("sdk/10.0.105").Should().Be(!hasError);
+        Directory.Exists(Path.Combine(testEnv.InstallPath, "sdk", "10.0.105")).Should().Be(hasError);
         if (hasError)
         {
-            error.ToString().Should().Contain(path).And.Contain("Warning: Cannot read");
+            error.ToString().Should().Contain(path).And.Contain("Warning: Cannot read")
+                .And.Contain("Skipping garbage collection");
         }
         else
         {
