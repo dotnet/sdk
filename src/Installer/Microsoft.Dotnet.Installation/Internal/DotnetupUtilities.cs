@@ -20,13 +20,9 @@ internal static class DotnetupUtilities
 
     public static bool PathsEqual(string? a, string? b)
     {
-        if (a == null && b == null)
+        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
         {
-            return true;
-        }
-        else if (a == null || b == null)
-        {
-            return false;
+            return a == b;
         }
 
         return string.Equals(Path.GetFullPath(a).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),

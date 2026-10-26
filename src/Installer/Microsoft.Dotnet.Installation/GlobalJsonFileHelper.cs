@@ -17,7 +17,7 @@ public static class GlobalJsonFileHelper
     /// <returns>A tuple of (content, encoding).</returns>
     public static (string Content, Encoding Encoding) ReadFileWithEncodingDetection(string filePath)
     {
-        using var reader = new StreamReader(filePath, detectEncodingFromByteOrderMarks: true);
+        using var reader = new StreamReader(filePath, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), detectEncodingFromByteOrderMarks: true);
         reader.Peek(); // trigger BOM detection without consuming content
         var content = reader.ReadToEnd();
         return (content, reader.CurrentEncoding);
