@@ -22,7 +22,8 @@ internal static class WorkloadIntegrityChecker
         var packageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
             tempPackagesDirectory,
             verboseLogger: new NullLogger(),
-            verifySignatures: verifySignatures);
+            verifySignatures: verifySignatures,
+            shouldUsePackageSourceMapping: true);
 
         var installer = WorkloadInstallerFactory.GetWorkloadInstaller(
             reporter,

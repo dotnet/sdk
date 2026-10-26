@@ -68,11 +68,23 @@ internal static class SecurityUtils
 
     /// <summary>
     /// Creates the specified directory and secures it by configuring access rules (ACLs) that allow sub-directories
-    /// and files to inherit access control entries. 
+    /// and files to inherit access control entries.
     /// </summary>
+    /// <remarks>
+    /// Below <see cref="TrustedMachinePath.ProgramDataDotnetRoot"/> the root is proven trustworthy first, because
+    /// the default <c>%ProgramData%</c> descriptor lets a standard user pre-create that tree. An untrusted root is
+    /// rejected rather than repaired: its existing contents cannot be trusted, and repairing it would leave the
+    /// attacker's data in place under an administrator-owned descriptor.
+    /// </remarks>
     /// <param name="path">The path of the directory to create.</param>
+    /// <exception cref="InvalidDataException">The machine-wide dotnet directory cannot be trusted.</exception>
     public static void CreateSecureDirectory(string path)
     {
+        if (TrustedMachinePath.IsUnderRoot(path, TrustedMachinePath.ProgramDataDotnetRoot))
+        {
+            EnsureSecureProgramDataRoot();
+        }
+
         if (!Directory.Exists(path))
         {
             DirectorySecurity ds = new();
@@ -81,27 +93,57 @@ internal static class SecurityUtils
         }
     }
 
+    private static bool s_programDataRootValidated;
+
     /// <summary>
-    /// Moves a file from one location to another if the destination file does not already exist and
-    /// configure its permissions.
+    /// Creates or validates the machine-wide dotnet directory once per process. Only an administrator can
+    /// change it afterwards, so this single check anchors every path below it.
+    /// </summary>
+    /// <exception cref="InvalidDataException">The machine-wide dotnet directory cannot be trusted.</exception>
+    internal static void EnsureSecureProgramDataRoot()
+    {
+        if (s_programDataRootValidated)
+        {
+            return;
+        }
+
+        string root = TrustedMachinePath.ProgramDataDotnetRoot;
+
+        if (!Directory.Exists(root))
+        {
+            DirectorySecurity ds = new();
+            SetDirectoryAccessRules(ds);
+            ds.CreateDirectory(root);
+        }
+
+        // Validate even after creating: another process may have won the race and created the root first.
+        TrustedMachinePath.ValidateDirectory(root);
+        s_programDataRootValidated = true;
+    }
+
+    /// <summary>
+    /// Moves a file from one location to another and configures its permissions.
     /// </summary>
     /// <param name="sourceFile">The source file to move.</param>
     /// <param name="destinationFile">The destination where the source file will be moved.</param>
     /// <param name="log">The underlying setup log to use.</param>
-    public static void MoveAndSecureFile(string sourceFile, string destinationFile, ISetupLogger log = null)
+    /// <param name="overwrite">Replaces an existing destination file instead of leaving it in place.</param>
+    public static void MoveAndSecureFile(string sourceFile, string destinationFile, ISetupLogger log = null, bool overwrite = false)
     {
-        if (!File.Exists(destinationFile))
+        if (File.Exists(destinationFile) && !overwrite)
         {
-            FileAccessRetrier.RetryOnMoveAccessFailure(() =>
-            {
-                // Moving the file preserves the owner SID and fails to inherit the WD ACE.
-                File.Copy(sourceFile, destinationFile, overwrite: true);
-                File.Delete(sourceFile);
-            });
-            log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
-
-            SecureFile(destinationFile);
+            return;
         }
+
+        FileAccessRetrier.RetryOnMoveAccessFailure(() =>
+        {
+            // Moving the file preserves the owner SID and fails to inherit the WD ACE.
+            File.Copy(sourceFile, destinationFile, overwrite: true);
+            File.Delete(sourceFile);
+        });
+        log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
+
+        SecureFile(destinationFile);
     }
 
     /// <summary>
