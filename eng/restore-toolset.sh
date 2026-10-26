@@ -193,7 +193,8 @@ function InstallDotNetSharedFrameworks {
     runtime_install_version=$(GetRuntimeInstallVersion "$component" "$version") || return 1
     if [[ "$runtime_install_version" != "$version" ]]; then
       # Stabilized runtimes live under build-stamped directories before the GA release is published.
-      InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "" "$spec" || return $?
+      # Explicit native architecture avoids installing x64 runtimes under Rosetta.
+      InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "$(GetNativeMachineArchitecture)" "$spec" || return $?
     else
       dotnetup_specs+=("$spec")
     fi
