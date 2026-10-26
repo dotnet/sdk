@@ -155,13 +155,13 @@ internal class UpdateWorkflow
         bool updateGlobalJson,
         Verbosity verbosity)
     {
-        var channel = GetChannelToUpdate(spec, out bool usesLastKnownRequirement);
+        var channel = GetChannelToUpdate(spec, out bool usesFallbackRequirement);
         if (channel is null)
         {
             new DotnetupSharedManifest(manifestPath).RemoveInstallSpec(installRoot, spec);
             return true;
         }
-        if (spec.InstallSource == InstallSource.GlobalJson && !usesLastKnownRequirement)
+        if (spec.InstallSource == InstallSource.GlobalJson && !usesFallbackRequirement)
         {
             spec.VersionOrChannel = channel.Name;
             spec.MinimumVersion = channel.MinimumVersion?.ToString();
@@ -211,7 +211,7 @@ internal class UpdateWorkflow
         // Update global.json if requested and this spec came from a global.json,
         // but only if the latest version is newer than what's already specified.
         if (updateGlobalJson
-            && !usesLastKnownRequirement
+            && !usesFallbackRequirement
             && spec.InstallSource == InstallSource.GlobalJson
             && spec.GlobalJsonPath is not null
             && spec.Component == InstallComponent.SDK)
@@ -225,13 +225,13 @@ internal class UpdateWorkflow
 
     internal static UpdateChannel? GetChannelToUpdate(InstallSpec spec) => GetChannelToUpdate(spec, out _);
 
-    private static UpdateChannel? GetChannelToUpdate(InstallSpec spec, out bool usesLastKnownRequirement)
+    private static UpdateChannel? GetChannelToUpdate(InstallSpec spec, out bool usesFallbackRequirement)
     {
         var evaluation = InstallSpecResolver.Evaluate(spec);
-        usesLastKnownRequirement = evaluation.UsesLastKnownRequirement;
+        usesFallbackRequirement = evaluation.UsesFallbackRequirement;
         if (evaluation.Error is not null)
         {
-            if (!usesLastKnownRequirement)
+            if (!usesFallbackRequirement)
             {
                 throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed, evaluation.Error);
             }
