@@ -741,7 +741,6 @@ class Program
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/3044")]
         public void ReferenceLegacyContracts()
         {
             var testProject = new TestProject()
