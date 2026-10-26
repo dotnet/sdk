@@ -38,11 +38,11 @@ internal static class SolutionArgumentValidator
             string args;
             if (_inRoot)
             {
-                args = $"--{SolutionAddCommandParser.InRootOption.Name} ";
+                args = $"--{SolutionAddCommandDefinition.InRootOptionName} ";
             }
             else if (hasRelativeRoot)
             {
-                args = $"--{SolutionAddCommandParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} ";
+                args = $"--{SolutionAddCommandDefinition.SolutionFolderOptionName} {string.Join(" ", relativeRoot)} ";
             }
             else
             {

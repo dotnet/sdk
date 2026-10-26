@@ -5,6 +5,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
 using Microsoft.NET.Build.Containers.Resources;
+using Microsoft.NET.Sdk.Common;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
@@ -12,16 +13,6 @@ namespace Microsoft.NET.Build.Containers.Tasks;
 public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
-
-    /// <summary>
-    /// Unused. For interface parity with the ToolTask implementation of the task.
-    /// </summary>
-    public string ToolExe { get; set; }
-
-    /// <summary>
-    /// Unused. For interface parity with the ToolTask implementation of the task.
-    /// </summary>
-    public string ToolPath { get; set; }
 
     private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
@@ -58,6 +49,38 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
+        bool credentialsSet = false;
+        VSHostObject hostObj = new(HostObject, Log);
+        if (hostObj.TryGetCredentials() is (string userName, string pass))
+        {
+            // Set credentials for the duration of this operation.
+            // These will be cleared in the finally block to minimize exposure.
+            Environment.SetEnvironmentVariable(ContainerHelpers.HostObjectUser, userName);
+            Environment.SetEnvironmentVariable(ContainerHelpers.HostObjectPass, pass);
+            credentialsSet = true;
+        }
+        else
+        {
+            Log.LogMessage(MessageImportance.Low, Resource.GetString(nameof(Strings.HostObjectNotDetected)));
+        }
+
+        try
+        {
+            return await ExecuteAsyncCore(logger, msbuildLoggerFactory, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            // Clear credentials from environment to minimize exposure window.
+            if (credentialsSet)
+            {
+                Environment.SetEnvironmentVariable(ContainerHelpers.HostObjectUser, null);
+                Environment.SetEnvironmentVariable(ContainerHelpers.HostObjectPass, null);
+            }
+        }
+    }
+
+    private async Task<bool> ExecuteAsyncCore(ILogger logger, ILoggerFactory msbuildLoggerFactory, CancellationToken cancellationToken)
+    {
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
@@ -239,7 +262,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             var portType = port.GetMetadata("Type");
             if (ContainerHelpers.TryParsePort(portNo, portType, out Port? parsedPort, out ContainerHelpers.ParsePortError? errors))
             {
-                image.ExposePort(parsedPort.Value.Number, parsedPort.Value.Type);
+                image.ExposePort(parsedPort!.Value.Number, parsedPort.Value.Type);
             }
             else
             {

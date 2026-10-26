@@ -2,30 +2,30 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class TestModulesFilterHandler(TestApplicationActionQueue actionQueue, TerminalTestReporter output)
+internal sealed class TestModulesFilterHandler(TerminalTestReporter output)
 {
-    private readonly TestApplicationActionQueue _actionQueue = actionQueue;
     private readonly TerminalTestReporter _output = output;
+    private List<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
 
-    public bool RunWithTestModulesFilter(ParseResult parseResult)
+    public bool RunWithTestModulesFilter(ParseResult parseResult, string testModules)
     {
-        // If the module path pattern(s) was provided, we will use that to filter the test modules
-        string testModules = parseResult.GetValue(MicrosoftTestingPlatformOptions.TestModulesFilterOption)!;
+        var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
+        // If the module path pattern(s) was provided, we will use that to filter the test modules
         // If the root directory was provided, we will use that to search for the test modules
         // Otherwise, we will use the current directory
         string? rootDirectory = Directory.GetCurrentDirectory();
-        if (parseResult.HasOption(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption))
+        if (parseResult.HasOption(definition.TestModulesRootDirectoryOption))
         {
-            rootDirectory = parseResult.GetValue(MicrosoftTestingPlatformOptions.TestModulesRootDirectoryOption);
+            rootDirectory = parseResult.GetValue(definition.TestModulesRootDirectoryOption);
 
             // If the root directory is not valid, we simply return
             if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))
@@ -46,7 +46,25 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
             return false;
         }
 
+        _testApplications = BuildTestApplications(testModulePaths);
+        return true;
+    }
+
+    public IEnumerable<TestModule> EnumerateTestModules()
+        => _testApplications.SelectMany(static moduleGroup => moduleGroup);
+
+    public void EnqueueTestApplications(TestApplicationActionQueue actionQueue)
+    {
+        foreach (ParallelizableTestModuleGroupWithSequentialInnerModules testApplication in _testApplications)
+        {
+            actionQueue.Enqueue(testApplication);
+        }
+    }
+
+    private static List<ParallelizableTestModuleGroupWithSequentialInnerModules> BuildTestApplications(IEnumerable<string> testModulePaths)
+    {
         var muxerPath = new Muxer().MuxerPath;
+        List<ParallelizableTestModuleGroupWithSequentialInnerModules> testApplications = [];
         foreach (string testModule in testModulePaths)
         {
             // We want to produce the right RunCommand and RunArguments for TestApplication implementation to consume directly.
@@ -56,12 +74,11 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
                 ? new RunProperties(muxerPath, $@"exec ""{testModule}""", null)
                 : new RunProperties(testModule, null, null);
 
-            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, null, testModule, DotnetRootArchVariableName: null));
-            // Write the test application to the channel
-            _actionQueue.Enqueue(testApp);
+            testApplications.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(
+                new TestModule(runProperties, null, null, true, null, testModule, DotnetRootArchVariableName: null)));
         }
 
-        return true;
+        return testApplications;
     }
 
     private static IEnumerable<string> GetMatchedModulePaths(string testModules, string rootDirectory)

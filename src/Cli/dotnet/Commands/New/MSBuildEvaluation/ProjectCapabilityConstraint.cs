@@ -113,7 +113,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
                 return TemplateConstraintResult.CreateRestricted(
                     this,
                     _evaluationResult.ErrorMessage ?? string.Format(CliCommandStrings.MultipleProjectsEvaluationResult_Error, foundProjects),
-                    string.Format(CliCommandStrings.ProjectCapabilityConstraint_Restricted_MultipleProjectsFound_CTA, SharedOptions.ProjectPathOption.Name));
+                    string.Format(CliCommandStrings.ProjectCapabilityConstraint_Restricted_MultipleProjectsFound_CTA, SharedOptionsFactory.ProjectOptionName));
             }
             if (_evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.NoRestore)
             {

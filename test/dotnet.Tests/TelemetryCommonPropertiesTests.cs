@@ -8,6 +8,29 @@ namespace Microsoft.DotNet.Tests
 {
     public class TelemetryCommonPropertiesTests : SdkTest
     {
+        // All environment variables checked by LLMEnvironmentDetectorForTelemetry.
+        // Used to save/restore ambient state so tests are isolated from the host environment.
+        private static readonly string[] _allLLMEnvVars = [
+            "CLAUDECODE", "CLAUDE_CODE_ENTRYPOINT",
+            "CURSOR_EDITOR", "CURSOR_AI",
+            "GEMINI_CLI",
+            "GITHUB_COPILOT_CLI_MODE", "COPILOT_CLI",
+            "AI_AGENT",
+            "CODEX_CLI", "CODEX_SANDBOX",
+            "OR_APP_NAME",
+            "AMP_HOME",
+            "QWEN_CODE",
+            "DROID_CLI",
+            "OPENCODE_AI",
+            "ZED_ENVIRONMENT", "ZED_TERM",
+            "KIMI_CLI",
+            "GOOSE_TERMINAL",
+            "CLINE_TASK_ID",
+            "ROO_CODE_TASK_ID",
+            "WINDSURF_SESSION",
+            "AGENT_CLI",
+        ];
+
         public TelemetryCommonPropertiesTests(ITestOutputHelper log) : base(log)
         {
         }
@@ -165,7 +188,13 @@ namespace Microsoft.DotNet.Tests
         public void TelemetryCommonPropertiesShouldReturnIsLLMDetection()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"].Should().BeOneOf("claude", null);
+            var llmValue = unitUnderTest.GetTelemetryCommonProperties("dummySessionId")["llm"];
+            // The value may be non-null when tests run inside an LLM agent environment.
+            // Just verify the property exists and is either null or a non-empty detection result.
+            if (llmValue != null)
+            {
+                llmValue.Should().NotBeEmpty();
+            }
         }
 
         [Theory]
@@ -193,6 +222,17 @@ namespace Microsoft.DotNet.Tests
         [MemberData(nameof(LLMTelemetryTestCases))]
         public void CanDetectLLMStatusForEnvVars(Dictionary<string, string>? envVars, string? expected)
         {
+            // Save and clear all ambient LLM env vars so the test is isolated
+            // from the host environment (e.g., when running inside a Copilot CLI agent).
+            var savedEnvVars = _allLLMEnvVars
+                .Select(v => (v, Environment.GetEnvironmentVariable(v)))
+                .Where(t => t.Item2 != null)
+                .ToArray();
+            foreach (var (key, _) in savedEnvVars)
+            {
+                Environment.SetEnvironmentVariable(key, null);
+            }
+
             try
             {
                 if (envVars is not null){
@@ -211,6 +251,11 @@ namespace Microsoft.DotNet.Tests
                     {
                         Environment.SetEnvironmentVariable(key, null);
                     }
+                }
+                // Restore saved ambient env vars
+                foreach (var (key, value) in savedEnvVars)
+                {
+                    Environment.SetEnvironmentVariable(key, value);
                 }
             }
         }
@@ -231,18 +276,47 @@ namespace Microsoft.DotNet.Tests
         public static TheoryData<Dictionary<string, string>?, string?> LLMTelemetryTestCases => new()
         {
             { new Dictionary<string, string> { {"CLAUDECODE", "1" } }, "claude" },
+            { new Dictionary<string, string> { {"CLAUDE_CODE_ENTRYPOINT", "some_value" } }, "claude" },
             { new Dictionary<string, string> { { "CURSOR_EDITOR", "1" } }, "cursor" },
+            { new Dictionary<string, string> { { "CURSOR_AI", "1" } }, "cursor" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "true" } }, "gemini" },
             { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "true" } }, "copilot" },
             { new Dictionary<string, string> { { "COPILOT_CLI", "1" } }, "copilot" },
+            { new Dictionary<string, string> { { "AI_AGENT", "github_copilot_app_agent" } }, "copilot-app" },
+            { new Dictionary<string, string> { { "CODEX_CLI", "1" } }, "codex" },
+            { new Dictionary<string, string> { { "CODEX_SANDBOX", "1" } }, "codex" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" } }, "aider" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "aider" } }, "aider" },
+            { new Dictionary<string, string> { { "AMP_HOME", "/path/to/amp" } }, "amp" },
+            { new Dictionary<string, string> { { "QWEN_CODE", "1" } }, "qwen" },
+            { new Dictionary<string, string> { { "DROID_CLI", "true" } }, "droid" },
+            { new Dictionary<string, string> { { "OPENCODE_AI", "1" } }, "opencode" },
+            { new Dictionary<string, string> { { "ZED_ENVIRONMENT", "1" } }, "zed" },
+            { new Dictionary<string, string> { { "ZED_TERM", "1" } }, "zed" },
+            { new Dictionary<string, string> { { "KIMI_CLI", "true" } }, "kimi" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "OpenHands" } }, "openhands" },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "openhands" } }, "openhands" },
+            { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" } }, "goose" },
+            { new Dictionary<string, string> { { "CLINE_TASK_ID", "task123" } }, "cline" },
+            { new Dictionary<string, string> { { "ROO_CODE_TASK_ID", "task456" } }, "roo" },
+            { new Dictionary<string, string> { { "WINDSURF_SESSION", "session789" } }, "windsurf" },
             { new Dictionary<string, string> { { "AGENT_CLI", "true" } }, "generic_agent" },
+            // Test combinations of older tools
             { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" } }, "claude, cursor" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" } }, "gemini, copilot" },
             { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "GEMINI_CLI", "true" }, { "AGENT_CLI", "true" } }, "claude, gemini, generic_agent" },
             { new Dictionary<string, string> { { "CLAUDECODE", "1" }, { "CURSOR_EDITOR", "1" }, { "GEMINI_CLI", "true" }, { "GITHUB_COPILOT_CLI_MODE", "true" }, { "AGENT_CLI", "true" } }, "claude, cursor, gemini, copilot, generic_agent" },
+            // Test combinations of newer tools
+            { new Dictionary<string, string> { { "OR_APP_NAME", "Aider" }, { "CLINE_TASK_ID", "task123" } }, "aider, cline" },
+            { new Dictionary<string, string> { { "CODEX_CLI", "1" }, { "WINDSURF_SESSION", "session789" } }, "codex, windsurf" },
+            { new Dictionary<string, string> { { "GOOSE_TERMINAL", "1" }, { "ROO_CODE_TASK_ID", "task456" } }, "goose, roo" },
+            { new Dictionary<string, string> { { "COPILOT_CLI", "1" }, { "AI_AGENT", "github_copilot_app_agent" } }, "copilot, copilot-app" },
             { new Dictionary<string, string> { { "GEMINI_CLI", "false" } }, null },
             { new Dictionary<string, string> { { "GITHUB_COPILOT_CLI_MODE", "false" } }, null },
             { new Dictionary<string, string> { { "AGENT_CLI", "false" } }, null },
+            { new Dictionary<string, string> { { "DROID_CLI", "false" } }, null },
+            { new Dictionary<string, string> { { "KIMI_CLI", "false" } }, null },
+            { new Dictionary<string, string> { { "OR_APP_NAME", "SomeOtherApp" } }, null },
             { new Dictionary<string, string>(), null },
         };
 

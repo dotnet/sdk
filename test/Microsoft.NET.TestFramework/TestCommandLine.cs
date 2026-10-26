@@ -288,7 +288,7 @@ namespace Microsoft.NET.TestFramework
 
             if (!commandLine.ShouldShowHelp)
             {
-                TestContext.Initialize(commandLine);
+                SdkTestContext.Initialize(commandLine);
             }
 
             return commandLine;

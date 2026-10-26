@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "解决方案筛选器文件",
+  "description": "创建一个引用父解决方案的解决方案筛选器文件",
+  "symbols/ParentSolution/displayName": "父解决方案文件",
+  "symbols/ParentSolution/description": "此筛选器引用的父解决方案文件(sln 或 slnx) (默认: 同名且扩展名为 .slnx)。"
+}

@@ -5,13 +5,15 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 internal static class ToolsetUtils
 {
+    private const string ContainersPackageId = "Microsoft.NET.Build.Containers";
+
     /// <summary>
     /// Gets path to RuntimeIdentifierGraph.json file.
     /// </summary>
     /// <returns></returns>
     internal static string GetRuntimeGraphFilePath()
     {
-        return TestContext.GetRuntimeGraphFilePath();
+        return SdkTestContext.GetRuntimeGraphFilePath();
     }
 
     internal static IManifestPicker RidGraphManifestPicker { get; } = new RidGraphManifestPicker(GetRuntimeGraphFilePath());
@@ -22,22 +24,15 @@ internal static class ToolsetUtils
     /// <returns></returns>
     internal static (string? PackagePath, string? PackageVersion) GetContainersPackagePath()
     {
-        string packageDir = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "package");
-
-        //until the package is stabilized, the package version matches TestContext.Current.ToolsetUnderTest.SdkVersion
-        //after the package is stabilized, the package version doesn't have -prefix (-dev, -ci) anymore
-        //so one of those is expected
-        string?[] expectedPackageVersions = new[] { TestContext.Current.ToolsetUnderTest?.SdkVersion, TestContext.Current.ToolsetUnderTest?.SdkVersion?.Split('-')[0] };
-
-        foreach (string? expectedVersion in expectedPackageVersions)
+        string packageDir = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "package");
+        string[] packagePaths = Directory.GetFiles(packageDir, $"{ContainersPackageId}.*.nupkg");
+        if (packagePaths.Length == 1)
         {
-            string? fullFileName = Path.Combine(packageDir, $"Microsoft.NET.Build.Containers.{expectedVersion}.nupkg");
-            if (File.Exists(fullFileName))
-            {
-                return (fullFileName, expectedVersion);
-            }
+            string packageVersion = Path.GetFileNameWithoutExtension(packagePaths[0])[(ContainersPackageId.Length + 1)..];
+            return (packagePaths[0], packageVersion);
         }
 
-        throw new FileNotFoundException($"No Microsoft.NET.Build.Containers.*.nupkg found in expected package folder {packageDir}. Tried the following package versions: {string.Join(", ", expectedPackageVersions.Select(v => $"'Microsoft.NET.Build.Containers.{v}.nupkg'"))}. You may need to rerun the build.");
+        throw new FileNotFoundException(
+            $"Expected exactly one {ContainersPackageId}.*.nupkg in {packageDir}, but found {packagePaths.Length}. You may need to rerun the build.");
     }
 }

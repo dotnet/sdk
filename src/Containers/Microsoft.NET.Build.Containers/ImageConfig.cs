@@ -240,7 +240,7 @@ internal sealed class ImageConfig
                     && property.Value is JsonObject propertyValue
                     && ContainerHelpers.TryParsePort(propertyName, out Port? parsedPort, out ContainerHelpers.ParsePortError? _))
                 {
-                    ports.Add(parsedPort.Value);
+                    ports.Add(parsedPort!.Value);
                 }
             }
         }

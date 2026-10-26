@@ -23,7 +23,7 @@ public class PackageTests
             "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj"
         };
 
-        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "containerize.csproj");
+        string projectFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "containerize.csproj");
         XDocument project = XDocument.Load(projectFilePath);
         XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
 
@@ -42,7 +42,6 @@ public class PackageTests
             "Microsoft.Build.Utilities.Core",
             "Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "Nuget.Packaging",
-            "System.Text.Json",
             "Valleysoft.DockerCredsProvider",
             "Microsoft.Extensions.Logging",
             "Microsoft.Extensions.Logging.Abstractions"
@@ -53,7 +52,7 @@ public class PackageTests
             "..\\..\\Microsoft.Extensions.Logging.MSBuild\\Microsoft.Extensions.Logging.MSBuild.csproj"
         };
 
-        string projectFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
+        string projectFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
         XDocument project = XDocument.Load(projectFilePath);
         XNamespace ns = project.Root?.Name.Namespace ?? throw new InvalidOperationException("Project file is empty");
 
@@ -108,13 +107,6 @@ public class PackageTests
               "Icon.png",
               "Microsoft.NET.Build.Containers.nuspec",
               "README.md",
-              "tasks/net472/Microsoft.NET.Build.Containers.dll",
-              "tasks/net472/Newtonsoft.Json.dll",
-              "tasks/net472/NuGet.Common.dll",
-              "tasks/net472/NuGet.Configuration.dll",
-              "tasks/net472/NuGet.Frameworks.dll",
-              "tasks/net472/NuGet.Packaging.dll",
-              "tasks/net472/NuGet.Versioning.dll",
               $"tasks/{netTFM}/Microsoft.DotNet.Cli.Utils.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.Abstractions.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.dll",

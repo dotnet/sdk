@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.Utils;
@@ -10,24 +8,23 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 
-internal class BuildServerShutdownCommand : CommandBase
+internal sealed class BuildServerShutdownCommand : CommandBase<BuildServerShutdownCommandDefinition>
 {
     private readonly ServerEnumerationFlags _enumerationFlags;
     private readonly IBuildServerProvider _serverProvider;
     private readonly bool _useOrderedWait;
     private readonly IReporter _reporter;
-    private readonly IReporter _errorReporter;
 
     public BuildServerShutdownCommand(
         ParseResult result,
-        IBuildServerProvider serverProvider = null,
+        IBuildServerProvider? serverProvider = null,
         bool useOrderedWait = false,
-        IReporter reporter = null)
+        IReporter? reporter = null)
         : base(result)
     {
-        bool msbuild = result.GetValue(BuildServerShutdownCommandParser.MSBuildOption);
-        bool vbcscompiler = result.GetValue(BuildServerShutdownCommandParser.VbcsOption);
-        bool razor = result.GetValue(BuildServerShutdownCommandParser.RazorOption);
+        bool msbuild = result.GetValue(Definition.MSBuildOption);
+        bool vbcscompiler = result.GetValue(Definition.VbcsOption);
+        bool razor = result.GetValue(Definition.RazorOption);
         bool all = !msbuild && !vbcscompiler && !razor;
 
         _enumerationFlags = ServerEnumerationFlags.None;
@@ -49,7 +46,6 @@ internal class BuildServerShutdownCommand : CommandBase
         _serverProvider = serverProvider ?? new BuildServerProvider();
         _useOrderedWait = useOrderedWait;
         _reporter = reporter ?? Reporter.Output;
-        _errorReporter = reporter ?? Reporter.Error;
     }
 
     public override int Execute()
@@ -133,7 +129,7 @@ internal class BuildServerShutdownCommand : CommandBase
                     CliCommandStrings.ShutDownFailedWithPid,
                     server.Name,
                     server.ProcessId,
-                    exception.InnerException.Message).Red());
+                    exception.InnerException?.Message).Red());
         }
         else
         {
@@ -141,7 +137,7 @@ internal class BuildServerShutdownCommand : CommandBase
                 string.Format(
                     CliCommandStrings.ShutDownFailed,
                     server.Name,
-                    exception.InnerException.Message).Red());
+                    exception.InnerException?.Message).Red());
         }
 
         if (CommandLoggingContext.IsVerbose)

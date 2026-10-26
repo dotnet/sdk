@@ -2,22 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class AliasCommand : BaseCommand<AliasCommandArgs>
+    internal sealed class AliasCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewAliasCommandDefinition definition)
+        : BaseCommand<AliasCommandArgs, NewAliasCommandDefinition>(hostBuilder, definition)
     {
-        internal AliasCommand(
-            Func<ParseResult, ITemplateEngineHost> hostBuilder)
-            : base(hostBuilder, "alias", SymbolStrings.Command_Alias_Description)
-        {
-            Hidden = true;
-            Add(new AliasAddCommand(hostBuilder));
-            Add(new AliasShowCommand(hostBuilder));
-        }
-
         protected override Task<NewCommandStatus> ExecuteAsync(
             AliasCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
@@ -25,6 +18,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             ParseResult parseResult,
             CancellationToken cancellationToken) => throw new NotImplementedException();
 
-        protected override AliasCommandArgs ParseContext(ParseResult parseResult) => new(this, parseResult);
+        protected override AliasCommandArgs ParseContext(ParseResult parseResult) => new(parseResult);
     }
 }

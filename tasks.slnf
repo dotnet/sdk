@@ -1,0 +1,11 @@
+{
+  "solution": {
+    "path": "sdk.slnx",
+    "projects": [
+      "src\\Tasks\\Microsoft.NET.Build.Tasks\\Microsoft.NET.Build.Tasks.csproj",
+      "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompat.Task\\Microsoft.DotNet.ApiCompat.Task.csproj",
+      "src\\Tasks\\Microsoft.NET.Build.Tasks.UnitTests\\Microsoft.NET.Build.Tasks.UnitTests.csproj",
+      "test\\Microsoft.NET.TestFramework\\Microsoft.NET.TestFramework.csproj"
+    ]
+  }
+}

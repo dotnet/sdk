@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Commands;
+using Xunit.Runners;
 
 namespace Microsoft.DotNet.Cli.Package.Add.Tests
 {
@@ -276,8 +277,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithSource()
                 .Path;
 
-            var packageName = "Humanizer";
-            var packageVersion = "2.*";
+            var packageName = "Newtonsoft.Json";
+            var packageVersion = ToolsetInfo.GetNewtonsoftJsonPackageVersion().Split('.')[0] + ".*";
             string[] args = asArgument
                 ? ["add", "package", $"{packageName}@{packageVersion}"]
                 : ["add", "package", packageName, "--version", packageVersion];
@@ -290,7 +291,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        private string[]? GetFileBasedAppArgs(bool legacyForm, bool? versionOption, bool fileOption, bool noRestore, string packageName = "Humanizer")
+        private string[]? GetFileBasedAppArgs(bool legacyForm, bool? versionOption, bool fileOption, bool noRestore, string packageName = "Newtonsoft.Json", string? packageVersion = null)
         {
             if (!legacyForm && !fileOption)
             {
@@ -302,14 +303,16 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 ? ("add", "package")
                 : ("package", "add");
 
+            packageVersion ??= ToolsetInfo.GetNewtonsoftJsonPackageVersion();
+
             return [
                 commandArgs.Item1,
                 .. (ReadOnlySpan<string>)(fileOption ? [] : ["Program.cs"]),
                 commandArgs.Item2,
                 .. (ReadOnlySpan<string>)(versionOption switch
                 {
-                    true => [packageName, "--version", "2.14.1"],
-                    false => [$"{packageName}@2.14.1"],
+                    true => [packageName, "--version", packageVersion],
+                    false => [$"{packageName}@{packageVersion}"],
                     null => [packageName],
                 }),
                 .. (ReadOnlySpan<string>)(fileOption ? ["--file", "Program.cs"] : []),
@@ -333,8 +336,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Execute()
                 .Should().Pass();
 
-            File.ReadAllText(file).Should().Be("""
-                #:package Humanizer@2.14.1
+            File.ReadAllText(file).Should().Be($"""
+                #:package Newtonsoft.Json@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
 
                 Console.WriteLine();
                 """);
@@ -342,7 +345,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
 
         [Theory, CombinatorialData]
         public void FileBasedApp_ReplaceExisting(
-            [CombinatorialValues("Humanizer", "humanizer")] string sourceFilePackageId,
+            [CombinatorialValues("Newtonsoft.Json", "newtonsoft.json")] string sourceFilePackageId,
             bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
@@ -350,7 +353,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             var testInstance = _testAssetsManager.CreateTestDirectory();
             var file = Path.Join(testInstance.Path, "Program.cs");
             File.WriteAllText(file, $"""
-                #:package {sourceFilePackageId}@2.9.9
+                #:package {sourceFilePackageId}@13.0.1
                 Console.WriteLine();
                 """);
 
@@ -360,7 +363,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be($"""
-                #:package Humanizer@2.14.1
+                #:package {sourceFilePackageId}@{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}
                 Console.WriteLine();
                 """);
         }
@@ -447,7 +450,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be("""
-                #:package Humanizer@*
+                #:package Newtonsoft.Json@*
 
                 Console.WriteLine();
                 """);
@@ -469,7 +472,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute()
                 .Should().Fail()
-                .And.HaveStdErrContaining(CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime);
+                .And.HaveStdOutContaining(CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime);
 
             File.ReadAllText(file).Should().Be(source);
         }
@@ -544,18 +547,18 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
                 .Should().Pass();
 
             File.ReadAllText(file).Should().Be($"""
-                #:package Humanizer
+                #:package Newtonsoft.Json
 
                 {source}
                 """);
 
-            File.ReadAllText(directoryPackagesProps).Should().Be("""
+            File.ReadAllText(directoryPackagesProps).Should().Be($"""
                 <Project>
                   <PropertyGroup>
                     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageVersion Include="Humanizer" Version="2.14.1" />
+                    <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
                   </ItemGroup>
                 </Project>
                 """);
@@ -564,6 +567,8 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
         [Theory, CombinatorialData]
         public void FileBasedApp_CentralPackageManagement_ReplaceExisting(bool wasInFile, bool legacyForm, bool versionOption, bool fileOption, bool noRestore)
         {
+            const string OlderVersion = "13.0.1";
+
             if (GetFileBasedAppArgs(legacyForm, versionOption, fileOption, noRestore) is not { } args) return;
 
             var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -575,7 +580,7 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             if (wasInFile)
             {
                 source = $"""
-                    #:package Humanizer@2.9.9
+                    #:package Newtonsoft.Json@{OlderVersion}
 
                     {source}
                     """;
@@ -584,38 +589,62 @@ namespace Microsoft.DotNet.Cli.Package.Add.Tests
             File.WriteAllText(file, source);
 
             var directoryPackagesProps = Path.Join(testInstance.Path, "Directory.Packages.props");
-            File.WriteAllText(directoryPackagesProps, """
+            File.WriteAllText(directoryPackagesProps, $"""
                 <Project>
                   <PropertyGroup>
                     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
                   </PropertyGroup>
                   <ItemGroup>
-                    <PackageVersion Include="Humanizer" Version="2.9.9" />
+                    <PackageVersion Include="Newtonsoft.Json" Version="{OlderVersion}" />
                   </ItemGroup>
                 </Project>
                 """);
 
-            new DotnetCommand(Log, args)
+            var directoryPackagesPropsOriginal = File.ReadAllText(directoryPackagesProps);
+
+            var result = new DotnetCommand(Log, args)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute()
-                .Should().Pass();
+                .Execute();
 
-            File.ReadAllText(file).Should().Be("""
-                #:package Humanizer
+            if (wasInFile && !noRestore)
+            {
+                // When a version is already pinned in both the #:package directive and
+                // Directory.Packages.props, this is the same invalid state as a project-based CPM
+                // app with version on both <PackageReference> and <PackageVersion>. NuGet rejects it.
+                result.Should().Fail();
+                File.ReadAllText(file).Should().Be(source);
+                File.ReadAllText(directoryPackagesProps).Should().Be(directoryPackagesPropsOriginal);
+            }
+            else
+            {
+                result.Should().Pass();
 
-                Console.WriteLine();
-                """);
+                if (wasInFile)
+                {
+                    // With --no-restore, NuGet doesn't validate the conflicting state. The command
+                    // succeeds, the source file is unchanged but the CPM version is updated.
+                    File.ReadAllText(file).Should().Be(source);
+                }
+                else
+                {
+                    File.ReadAllText(file).Should().Be("""
+                        #:package Newtonsoft.Json
 
-            File.ReadAllText(directoryPackagesProps).Should().Be("""
-                <Project>
-                  <PropertyGroup>
-                    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
-                  </PropertyGroup>
-                  <ItemGroup>
-                    <PackageVersion Include="Humanizer" Version="2.14.1" />
-                  </ItemGroup>
-                </Project>
-                """);
+                        Console.WriteLine();
+                        """);
+                }
+
+                File.ReadAllText(directoryPackagesProps).Should().Be($"""
+                    <Project>
+                      <PropertyGroup>
+                        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+                      </PropertyGroup>
+                      <ItemGroup>
+                        <PackageVersion Include="Newtonsoft.Json" Version="{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}" />
+                      </ItemGroup>
+                    </Project>
+                    """);
+            }
         }
 
         [Theory, CombinatorialData]

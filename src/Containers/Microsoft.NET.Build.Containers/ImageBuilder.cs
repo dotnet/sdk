@@ -62,8 +62,8 @@ internal sealed class ImageBuilder
         AssignPortsFromEnvironment();
 
         string imageJsonStr = _baseImageConfig.BuildConfig();
-        string imageSha = DigestUtils.GetSha(imageJsonStr);
-        string imageDigest = DigestUtils.GetDigestFromSha(imageSha);
+        string imageSha = DigestUtils.ComputeSha256(imageJsonStr);
+        string imageDigest = DigestUtils.FormatSha256Digest(imageSha);
         long imageSize = Encoding.UTF8.GetBytes(imageJsonStr).Length;
 
         ManifestConfig newManifestConfig = _manifest.Config with

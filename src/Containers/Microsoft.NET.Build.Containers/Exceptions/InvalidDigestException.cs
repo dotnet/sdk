@@ -16,8 +16,8 @@ internal sealed class InvalidDigestException : Exception
     {
         if (!CryptographicOperations.FixedTimeEquals(expected, actual))
         {
-            string expectedHashString = Convert.ToHexString(expected).ToLowerInvariant();
-            string actualHashString = Convert.ToHexString(actual).ToLowerInvariant();
+            string expectedHashString = Convert.ToHexStringLower(expected);
+            string actualHashString = Convert.ToHexStringLower(actual);
             throw new InvalidDigestException($"Expected {expectedHashString}, got {actualHashString}.");
         }
     }

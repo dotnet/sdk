@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Archivo de filtro de solución",
+  "description": "Crear un archivo de filtro de solución que haga referencia a una solución primaria",
+  "symbols/ParentSolution/displayName": "Archivo de solución principal",
+  "symbols/ParentSolution/description": "El archivo de solución primario (sln o slnx) al que hace referencia este filtro (valor predeterminado: el mismo nombre con la extensión .slnx)."
+}

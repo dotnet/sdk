@@ -30,7 +30,7 @@ public class TerminalTestReporterTests
         reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery, isHelp: false, isRetry: false);
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode);
 
-        if (!TestContext.IsLocalized())
+        if (!SdkTestContext.IsLocalized())
         {
             output.ToString().Should().Contain(expected);
         }

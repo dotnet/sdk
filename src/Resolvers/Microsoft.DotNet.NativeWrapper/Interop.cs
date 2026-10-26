@@ -49,14 +49,26 @@ namespace Microsoft.DotNet.NativeWrapper
                 return IntPtr.Zero;
             }
 
-            if (string.IsNullOrEmpty(HostFxrPath))
+            string? hostFxrPath = HostFxrPath;
+
+            // The host only publishes the HOSTFXR_PATH runtime property for first-class SDK
+            // commands (e.g. `dotnet build`). When the SDK is launched via `dotnet exec dotnet.dll`
+            // (as the `dnx` script does), the property is absent. On glibc the bare `libhostfxr`
+            // load succeeds against the already-loaded library so this resolver never runs, but on
+            // musl it does not, so fall back to locating hostfxr under the running .NET root.
+            if (string.IsNullOrEmpty(hostFxrPath))
+            {
+                hostFxrPath = HostFxrLocator.ResolveHostFxrPath();
+            }
+
+            if (string.IsNullOrEmpty(hostFxrPath))
             {
                 throw new HostFxrRuntimePropertyNotSetException();
             }
 
-            if (!NativeLibrary.TryLoad(HostFxrPath, out var handle))
+            if (!NativeLibrary.TryLoad(hostFxrPath, out var handle))
             {
-                throw new HostFxrNotFoundException(HostFxrPath);
+                throw new HostFxrNotFoundException(hostFxrPath);
             }
 
             return handle;
@@ -162,7 +174,6 @@ namespace Microsoft.DotNet.NativeWrapper
         {
             // Ansi marshaling on Unix is actually UTF8
             private const CharSet UTF8 = CharSet.Ansi;
-            private static string? PtrToStringUTF8(IntPtr ptr) => Marshal.PtrToStringAnsi(ptr);
 
             [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = UTF8)]
             internal delegate void hostfxr_resolve_sdk2_result_fn(
@@ -186,20 +197,6 @@ namespace Microsoft.DotNet.NativeWrapper
             internal static extern int hostfxr_get_available_sdks(
                 string? exe_dir,
                 hostfxr_get_available_sdks_result_fn result);
-
-            [DllImport("libc", CharSet = UTF8, ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-            private static extern IntPtr realpath(string path, IntPtr buffer);
-
-            [DllImport("libc", ExactSpelling = true, CallingConvention = CallingConvention.Cdecl)]
-            private static extern void free(IntPtr ptr);
-
-            public static string? realpath(string path)
-            {
-                var ptr = realpath(path, IntPtr.Zero);
-                var result = PtrToStringUTF8(ptr);
-                free(ptr);
-                return result;
-            }
         }
     }
 }

@@ -5,7 +5,20 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal record TestOptions(bool IsHelp, bool IsDiscovery, IReadOnlyDictionary<string, string> EnvironmentVariables);
 
-internal record PathOptions(string? ProjectPath, string? SolutionPath, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
+internal enum ResultsDirectoryLayout
+{
+    Flat,
+    PerModule,
+}
+
+internal record PathOptions(
+    string? ProjectOrSolutionPath,
+    string? SolutionPath,
+    string? TestModules,
+    string? ResultsDirectoryPath,
+    ResultsDirectoryLayout ResultsDirectoryLayout,
+    string? ConfigFilePath,
+    string? DiagnosticOutputDirectoryPath);
 
 internal record BuildOptions(
     PathOptions PathOptions,
@@ -14,5 +27,5 @@ internal record BuildOptions(
     Utils.VerbosityOptions? Verbosity,
     bool NoLaunchProfile,
     bool NoLaunchProfileArguments,
-    List<string> UnmatchedTokens,
+    List<string> TestApplicationArguments,
     IEnumerable<string> MSBuildArgs);

@@ -140,11 +140,11 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
             var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{existingVersionToOverwrite}";
 
-            Log.WriteLine($"Deploying SDK from {TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest} to {installedSdkFolder} on VM.");
+            Log.WriteLine($"Deploying SDK from {SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest} to {installedSdkFolder} on VM.");
 
             //  TODO: It would be nice if the description included the date/time of the SDK build, to distinguish different snapshots
             VM.CreateActionGroup("Deploy Stage 2 SDK",
-                    VM.CopyFolder(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, installedSdkFolder),
+                    VM.CopyFolder(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, installedSdkFolder),
                     ChangeVersionFileContents(existingVersionToOverwrite))
                 .Execute()
                 .Should()
@@ -177,7 +177,7 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             var installedSdkFolder = $@"c:\Program Files\dotnet\sdk\{sdkVersion}";
             var vmVersionFilePath = Path.Combine(installedSdkFolder, ".version");
 
-            var newVersionFileContents = File.ReadAllLines(Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, ".version"));
+            var newVersionFileContents = File.ReadAllLines(Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, ".version"));
             newVersionFileContents[1] = sdkVersion;
 
             return VM.WriteFile(vmVersionFilePath, string.Join(Environment.NewLine, newVersionFileContents));

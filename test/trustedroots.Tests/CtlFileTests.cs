@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Tests
         public CtlFileTests(string fileName)
         {
             _filePath = Path.Combine(
-                TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
+                SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
                 "trustedroots",
                 fileName);
         }

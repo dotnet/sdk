@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "솔루션 필터 파일",
+  "description": "부모 솔루션을 참조하는 솔루션 필터 파일 만들기",
+  "symbols/ParentSolution/displayName": "부모 솔루션 파일",
+  "symbols/ParentSolution/description": "이 필터가 참조하는 부모 솔루션 파일(sln 또는 slnx)입니다(기본값: 확장자가 .slnx인 같은 이름의 파일)."
+}

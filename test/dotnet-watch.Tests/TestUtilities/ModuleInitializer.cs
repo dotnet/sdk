@@ -20,7 +20,7 @@ public static class ModuleInitializer
         // does not have any public type that has a dependency on msbuild.
         // xUnit loads all public types and any reference to msbuild assembly will trigger its load.
 
-        var toolset = TestContext.Current.ToolsetUnderTest;
+        var toolset = SdkTestContext.Current.ToolsetUnderTest;
         var sdkDir = toolset.SdkFolderUnderTest;
         var watchDir = Path.Combine(sdkDir, "DotnetTools", "dotnet-watch", toolset.SdkVersion, "tools", ToolsetInfo.CurrentTargetFramework, "any");
 
