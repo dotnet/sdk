@@ -26,15 +26,22 @@ namespace ManifestReaderTests
         [InlineData("..")]
         [InlineData("")]
         [InlineData(" ")]
-        [InlineData(null)]
-        public void PathBasedIdsRejectInvalidComponents(string? id)
+        public void PathBasedIdsRejectInvalidComponents(string id)
         {
-            Assert.Throws<ArgumentException>(() => new ManifestId(id!));
-            Assert.Throws<ArgumentException>(() => new WorkloadId(id!));
-            Assert.Throws<ArgumentException>(() => new WorkloadPackId(id!));
+            Assert.Throws<ArgumentException>(() => new ManifestId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadId(id));
+            Assert.Throws<ArgumentException>(() => new WorkloadPackId(id));
         }
 
-        [WindowsOnlyTheory]
+        [Fact]
+        public void PathBasedIdsRejectNullComponents()
+        {
+            Assert.Throws<ArgumentException>(() => new ManifestId(null!));
+            Assert.Throws<ArgumentException>(() => new WorkloadId(null!));
+            Assert.Throws<ArgumentException>(() => new WorkloadPackId(null!));
+        }
+
+        [PlatformSpecificTheory(TestPlatforms.Windows)]
         [InlineData(@"..\escape")]
         [InlineData(@"C:\escape")]
         [InlineData("C:relative")]
@@ -51,23 +58,24 @@ namespace ManifestReaderTests
         [Fact]
         public void InvalidWorkloadIdInManifestThrowsManifestFormatException()
         {
-            const string manifest = @"{
-    ""version"": ""1.0.0"",
-    ""workloads"": {
-        ""../escape"": {
-            ""description"": ""Invalid workload""
-        }
-    }
-}";
-
+            const string manifest = """
+                {
+                    "version": "1.0.0",
+                    "workloads": {
+                        "../escape": {
+                            "description": "Invalid workload"
+                        }
+                    }
+                }
+                """;
             using MemoryStream manifestStream = new(System.Text.Encoding.UTF8.GetBytes(manifest));
 
             var exception = Assert.Throws<WorkloadManifestFormatException>(
                 () => WorkloadManifestReader.ReadWorkloadManifest("Invalid", manifestStream, "invalid.json"));
 
             Assert.IsType<ArgumentException>(exception.InnerException);
-            Assert.Contains("valid path component", exception.Message);
-            Assert.Contains("at offset", exception.Message);
+            exception.Message.Should().Contain("valid path component");
+            exception.Message.Should().Contain("at offset");
         }
 
         [Fact]
@@ -160,7 +168,7 @@ namespace ManifestReaderTests
             }
 
             var manifestProvider = new FakeManifestProvider(ManifestPath);
-            var resolver = WorkloadResolver.CreateForTests(manifestProvider, new[] { (additionalRoot, false), (dotnetRoot, true), ("other", true) });
+            var resolver = WorkloadResolver.CreateForTests(manifestProvider, [ new(additionalRoot, false), new(dotnetRoot, true), new("other", true) ]);
 
             var pack = resolver.TryGetPackInfo(new WorkloadPackId("Xamarin.Android.Sdk"));
             pack.Should().NotBeNull();
@@ -182,7 +190,7 @@ namespace ManifestReaderTests
             Directory.CreateDirectory(defaultPackPath);
 
             var manifestProvider = new FakeManifestProvider(ManifestPath);
-            var resolver = WorkloadResolver.CreateForTests(manifestProvider, new[] { (additionalRoot, false), (dotnetRoot, true) });
+            var resolver = WorkloadResolver.CreateForTests(manifestProvider, [ new(additionalRoot, false), new(dotnetRoot, true) ]);
 
             var pack = resolver.TryGetPackInfo(new WorkloadPackId("Xamarin.Android.Sdk"));
             pack.Should().NotBeNull();

@@ -46,9 +46,9 @@ namespace Microsoft.NET.TestFramework
             return parameterlessAttributes;
         }
 
-        public static IDictionary<string, string> Get(string assemblyPath)
+        public static ISet<(string Key, string Value)> Get(string assemblyPath)
         {
-            var dictionary = new SortedDictionary<string, string>();
+            var assemblyInfo = new HashSet<(string, string)>();
 
             using (var stream = File.OpenRead(assemblyPath))
             using (var peReader = new PEReader(stream))
@@ -59,7 +59,7 @@ namespace Microsoft.NET.TestFramework
                 // AssemblyVersion is not actually a custom attribute
                 if (assemblyDefinition.Version != new Version(0, 0, 0, 0))
                 {
-                    dictionary.Add("AssemblyVersionAttribute", assemblyDefinition.Version.ToString());
+                    assemblyInfo.Add(("AssemblyVersionAttribute", assemblyDefinition.Version.ToString()));
                 }
 
                 foreach (var handle in assemblyDefinition.GetCustomAttributes())
@@ -108,12 +108,12 @@ namespace Microsoft.NET.TestFramework
 
                     if (sb != null)
                     {
-                        dictionary.Add(name, sb.ToString());
+                        assemblyInfo.Add((name, sb.ToString()));
                     }
                 }
             }
 
-            return dictionary;
+            return assemblyInfo;
         }
     }
 }

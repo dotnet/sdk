@@ -12,6 +12,11 @@
         <target state="translated">Impossible de résoudre le type '{0}' dans l’assembly conteneur '{1}' via le type Suivant. Assurez-vous que l’assembly est fourni en tant que référence et qu’il contient le type.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">Le nœud syntaxique est introuvable.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

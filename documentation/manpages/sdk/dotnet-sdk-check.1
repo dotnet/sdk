@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-sdk-check" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-sdk-check" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet sdk check
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-sdk-check - Lists the latest available version of the .NET SDK and .NET Runtime, for each feature band.
@@ -68,12 +68,10 @@ The latest versions of .NET can be installed from https://aka.ms/dotnet-core-dow
 \f[R]
 .fi
 .SH OPTIONS
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .SH EXAMPLES
 .IP \[bu] 2
 Show up-to-date status of installed .NET SDKs and .NET Runtimes.
@@ -85,3 +83,7 @@ dotnet sdk check
 \f[R]
 .fi
 .RE
+.SH SEE ALSO
+.PP
+To get similar SDK status information as a build warning for the SDK that your build resolves, set the \f[V]CheckSdkVulnerabilities\f[R] MSBuild property to \f[V]true\f[R] in your project.
+See NETSDK1238, NETSDK1239, and NETSDK1240.

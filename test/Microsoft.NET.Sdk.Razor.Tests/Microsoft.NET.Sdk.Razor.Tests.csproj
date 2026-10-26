@@ -35,9 +35,8 @@
       <_Parameter2>5.0</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Moq" />
@@ -56,8 +55,6 @@
     <None Include="TestFiles\Generated\*.bundle.scp.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <EmbeddedResource Include="StaticWebAssetsBaselines\**">
-    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

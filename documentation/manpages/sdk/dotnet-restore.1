@@ -14,11 +14,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-restore" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-restore" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet restore
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-restore - Restores the dependencies and tools of a project.
@@ -26,14 +26,15 @@ dotnet-restore - Restores the dependencies and tools of a project.
 .IP
 .nf
 \f[C]
-dotnet restore [<ROOT>] [--configfile <FILE>] [--disable-build-servers]
-    [--disable-parallel]
-    [-f|--force] [--force-evaluate] [--ignore-failed-sources]
-    [--interactive] [--lock-file-path <LOCK_FILE_PATH>] [--locked-mode]
-    [--no-cache] [--no-dependencies] [--packages <PACKAGES_DIRECTORY>]
-    [-r|--runtime <RUNTIME_IDENTIFIER>] [-s|--source <SOURCE>]
-    [--tl:[auto|on|off]] [--use-current-runtime, --ucr [true|false]]
-    [--use-lock-file] [-v|--verbosity <LEVEL>]
+dotnet restore [<PROJECT>|<SOLUTION>|<FILE>]
+  [-a|--arch <ARCHITECTURE>] [--artifacts-path <ARTIFACTS_DIR>] [--configfile <FILE>]
+  [--disable-build-servers] [--disable-parallel] [-f|--force] [--force-evaluate]
+  [--ignore-failed-sources] [--interactive] [--lock-file-path <LOCK_FILE_PATH>]
+  [--locked-mode] [--no-dependencies] [--no-http-cache]
+  [--os <OS>] [--packages <PACKAGES_DIRECTORY>]
+  [-r|--runtime <RUNTIME_IDENTIFIER>] [-s|--source <SOURCE>]
+  [--tl:[auto|on|off]] [--ucr|--use-current-runtime] [--use-lock-file]
+  [-v|--verbosity <LEVEL>]
 
 dotnet restore -h|--help
 \f[R]
@@ -68,7 +69,7 @@ To prevent the implicit NuGet restore, you can use the \f[V]--no-restore\f[R] fl
 .RS
 .PP
 Signed package verification during restore operations requires a certificate root store that is valid for both code signing and timestamping.
-For more inforomation, see NuGet signed package verification.
+For more information, see NuGet signed package verification.
 .RE
 .SS Specify feeds
 .PP
@@ -126,41 +127,50 @@ When you run this command, it initiates an asynchronous background download of a
 If the download is still running when this command finishes, the download is stopped.
 For more information, see Advertising manifests.
 .SH ARGUMENTS
-.IP \[bu] 2
-\f[B]\f[VB]ROOT\f[B]\f[R]
-.RS 2
 .PP
-Optional path to the project file to restore.
-.RE
-.SH OPTIONS
+\f[V]PROJECT | SOLUTION | FILE\f[R]
+.PP
+The project or solution or C# (file-based app) file to operate on.
+If a file isn\[cq]t specified, MSBuild searches the current directory for a project or solution.
 .IP \[bu] 2
+\f[V]PROJECT\f[R] is the path and filename of a C#, F#, or Visual Basic project file, or the path to a directory that contains a C#, F#, or Visual Basic project file.
+.IP \[bu] 2
+\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] extension), or the path to a directory that contains a solution file.
+.IP \[bu] 2
+\f[V]FILE\f[R] is an argument added in .NET 10.
+The path and filename of a file-based app.
+File-based apps are contained within a single file that is built and run without a corresponding project (\f[I].csproj\f[R]) file.
+For more information, see Build file-based C# apps.
+.SH OPTIONS
+.PP
 \f[B]\f[VB]-a|--arch <ARCHITECTURE>\f[B]\f[R]
-.RS 2
 .PP
 Specifies the target architecture.
 This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
 For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--arch x86\f[R] sets the RID to \f[V]win-x86\f[R].
 If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
 Available since .NET 6 Preview 7.
-.RE
-.IP \[bu] 2
+.PP
+\f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
+.PP
+All build output files from the executed command will go in subfolders under the specified path, separated by project.
+For more information see Artifacts Output Layout.
+This option and the value provided must be explicitly cascaded in any \f[V]dotnet\f[R] command that depends on the output of another \f[V]dotnet\f[R] command, for example, when using \f[V]dotnet build --no-restore\f[R] and \f[V]dotnet publish --no-build\f[R].
+Available since .NET 8 SDK.
+.PP
 \f[B]\f[VB]--configfile <FILE>\f[B]\f[R]
-.RS 2
 .PP
 The NuGet configuration file (\f[I]nuget.config\f[R]) to use.
 If specified, only the settings from this file will be used.
 If not specified, the hierarchy of configuration files from the current directory will be used.
 For more information, see Common NuGet Configurations.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--disable-build-servers\f[B]\f[R]
-.RS 2
 .PP
 Forces the command to ignore any persistent build servers.
 This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
 A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
 Available since .NET 7 SDK.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--disable-parallel\f[B]\f[R]
 .RS 2
@@ -181,24 +191,16 @@ Specifying this flag is the same as deleting the \f[I]project.assets.json\f[R] f
 Forces restore to reevaluate all dependencies even if a lock file already exists.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
-.PP
-Prints out a description of how to use the command.
-.RE
-.IP \[bu] 2
 \f[B]\f[VB]--ignore-failed-sources\f[B]\f[R]
 .RS 2
 .PP
 Only warn about failed sources if there are packages meeting the version requirement.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--interactive\f[B]\f[R]
-.RS 2
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--lock-file-path <LOCK_FILE_PATH>\f[B]\f[R]
 .RS 2
@@ -213,16 +215,26 @@ By default, this is \f[I]PROJECT_ROOT.lock.json\f[R].
 Don\[cq]t allow updating project lock file.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]--no-cache\f[B]\f[R]
-.RS 2
-.PP
-Specifies to not cache HTTP requests.
-.RE
-.IP \[bu] 2
 \f[B]\f[VB]--no-dependencies\f[B]\f[R]
 .RS 2
 .PP
 When restoring a project with project-to-project (P2P) references, restores the root project and not the references.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--no-http-cache\f[B]\f[R]
+.RS 2
+.PP
+Disable HTTP caching for packages.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--os\f[B]\f[R]
+.RS 2
+.PP
+Specifies the target operating system (OS).
+This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
+For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--os linux\f[R] sets the RID to \f[V]linux-x64\f[R].
+.PP
+Introduced in .NET SDK 10.0.100
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--packages <PACKAGES_DIRECTORY>\f[B]\f[R]
@@ -246,17 +258,26 @@ Specifies the URI of the NuGet package source to use during the restore operatio
 This setting overrides all of the sources specified in the \f[I]nuget.config\f[R] files.
 Multiple sources can be provided by specifying this option multiple times.
 .RE
+.PP
+\f[B]\f[VB]--ucr|--use-current-runtime\f[B]\f[R]
+.PP
+Use the current runtime as the target runtime.
 .IP \[bu] 2
-\f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
+\f[B]\f[VB]--use-lock-file\f[B]\f[R]
 .RS 2
 .PP
-Specifies whether the \f[I]terminal logger\f[R] should be used for the build output.
+Enables project lock file to be generated and used with restore.
+.RE
+.PP
+\f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
+.PP
+Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
 The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
 The environment check verifies that the terminal is capable of using modern output features and isn\[cq]t using a redirected standard output before enabling the new logger.
 \f[V]on\f[R] skips the environment check and enables terminal logging.
 \f[V]off\f[R] skips the environment check and uses the default console logger.
 .PP
-The terminal logger shows you the restore phase followed by the build phase.
+Terminal Logger shows you the restore phase followed by the build phase.
 During each phase, the currently building projects appear at the bottom of the terminal.
 Each project that\[cq]s building outputs both the MSBuild target currently being built and the amount of time spent on that target.
 You can search this information to learn more about the build.
@@ -273,30 +294,17 @@ The primary output of that build (which is hyperlinked).
 Any diagnostics generated for that project.
 .PP
 This option is available starting in .NET 8.
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]--use-current-runtime, --ucr [true|false]\f[B]\f[R]
-.RS 2
 .PP
-Sets the \f[V]RuntimeIdentifier\f[R] to a platform portable \f[V]RuntimeIdentifier\f[R] based on the one of your machine.
-This happens implicitly with properties that require a \f[V]RuntimeIdentifier\f[R], such as \f[V]SelfContained\f[R], \f[V]PublishAot\f[R], \f[V]PublishSelfContained\f[R], \f[V]PublishSingleFile\f[R], and \f[V]PublishReadyToRun\f[R].
-If the property is set to false, that implicit resolution will no longer occur.
-.RE
-.IP \[bu] 2
-\f[B]\f[VB]--use-lock-file\f[B]\f[R]
-.RS 2
-.PP
-Enables project lock file to be generated and used with restore.
-.RE
-.IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
+.PP
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.PP
+Prints out a description of how to use the command.
 .SH EXAMPLES
 .IP \[bu] 2
 Restore dependencies and tools for the project in the current directory:
@@ -355,13 +363,20 @@ This auditing produces a report of security vulnerabilities with the affected pa
 .PP
 To opt out of the security auditing, set the \f[V]<NuGetAudit>\f[R] MSBuild property to \f[V]false\f[R] in your project file.
 .PP
-To retrieve the known vulnerability dataset, ensure that you have the NuGet.org central registry defined as one of your package sources:
+To get vulnerability data, starting in .NET 9, you can use \f[V]auditSources\f[R] in addition to \f[V]packageSources\f[R].
+If no audit sources are provided, \f[V]dotnet restore\f[R] uses package sources instead.
+NuGet audits any source as long as the source provides the \f[V]VulnerabilityInfo\f[R] resource.
+.PP
+To list NuGet.org as an audit source, define the following in the \f[I]nuget.config\f[R] file:
 .IP
 .nf
 \f[C]
-<packageSources>
-    <add key=\[dq]nuget.org\[dq] value=\[dq]https://api.nuget.org/v3/index.json\[dq] protocolVersion=\[dq]3\[dq] />
-</packageSources>
+<configuration>
+    <auditSources>
+        <clear />
+        <add key=\[dq]nuget.org\[dq] value=\[dq]https://api.nuget.org/v3/index.json\[dq] />
+    </auditSources>
+</configuration>
 \f[R]
 .fi
 .PP
@@ -369,8 +384,8 @@ You can configure the level at which auditing will fail by setting the \f[V]<NuG
 Possible values are \f[V]low\f[R], \f[V]moderate\f[R], \f[V]high\f[R], and \f[V]critical\f[R].
 For example if you only want to see moderate, high, and critical advisories, you can set the property to \f[V]moderate\f[R].
 .PP
-Starting in .NET 9, NuGet audits both \f[I]direct\f[R] and \f[I]transitive\f[R] package references, by default.
-In .NET 8, only \f[I]direct\f[R] package references are audited.
+In .NET 8 and .NET 9, only \f[I]direct\f[R] package references are audited by default.
+Starting in .NET 10, NuGet audits both \f[I]direct\f[R] and \f[I]transitive\f[R] package references by default.
 You can change the mode by setting the \f[V]<NuGetAuditMode>\f[R] MSBuild property to \f[V]direct\f[R] or \f[V]all\f[R].
 .PP
 For more information, see Auditing package dependencies for security vulnerabilities.

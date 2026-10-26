@@ -1,7 +1,0 @@
-<Project>
-
-  <PropertyGroup>
-      <RuntimeAnalyzersLayoutDirectory>$(ArtifactsBinDir)$(Configuration)\RuntimeAnalyzers</RuntimeAnalyzersLayoutDirectory>
-  </PropertyGroup>
-
-</Project>

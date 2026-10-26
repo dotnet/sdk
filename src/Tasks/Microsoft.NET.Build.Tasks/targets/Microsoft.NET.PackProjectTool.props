@@ -10,6 +10,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- This UsingTask is in the PackTool.props because there is usage of it in other areas of the product
+       and on public GitHub: https://github.com/search?q=path%3A*.props+OR+path%3A*.targets+AND+%28NOT+path%3A*%2FMicrosoft.NET.PackTool.targets%29+AND+%28NOT+path%3A*%2FMicrosoft.NET.Publish.targets%29+GetNuGetShortFolderName&amp;type=code -->
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetNuGetShortFolderName"
+            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <PropertyGroup>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_PackProjectToolValidation</TargetsForTfmSpecificContentInPackage>

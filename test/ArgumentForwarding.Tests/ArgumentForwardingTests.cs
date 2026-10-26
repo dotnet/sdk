@@ -2,7 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Tests.ArgumentForwarding
 {
@@ -11,8 +12,8 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         private static readonly string s_reflectorDllName = "ArgumentsReflector.dll";
         private static readonly string s_reflectorCmdName = "reflector_cmd";
 
-        private string ReflectorPath { get; set; }
-        private string ReflectorCmdPath { get; set; }
+        private string ReflectorPath { get; set; } = string.Empty;
+        private string ReflectorCmdPath { get; set; } = string.Empty;
 
         public ArgumentForwardingTests(ITestOutputHelper log) : base(log)
         {
@@ -146,6 +147,15 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
             rawEvaluatedArgument.Length.Should().NotBe(escapedEvaluatedRawArgument.Length);
         }
 
+        [Fact]
+        public void ForwardAsWorks()
+        {
+            var cmd = Microsoft.DotNet.Cli.Commands.Package.Add.PackageAddCommandParser.GetCommand();
+            var parseResult = cmd.Parse(["package", "add", "thing", "--prerelease"]);
+            var forwardedValues = parseResult.OptionValuesToBeForwarded();
+            forwardedValues.Should().Contain("--prerelease");
+        }
+
         /// <summary>
         /// EscapeAndEvaluateArgumentString returns a representation of string[] args
         /// when rawEvaluatedArgument is passed as an argument to a process using
@@ -201,9 +211,9 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// </summary>
         /// <param name="reflectorOutput"></param>
         /// <returns></returns>
-        private string[] ParseReflectorOutput(string reflectorOutput)
+        private string[] ParseReflectorOutput(string? reflectorOutput)
         {
-            return reflectorOutput.TrimEnd('\r', '\n').Split(',');
+            return reflectorOutput?.TrimEnd('\r', '\n').Split(',') ?? Array.Empty<string>();
         }
 
         /// <summary>
@@ -213,9 +223,9 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// </summary>
         /// <param name="reflectorOutput"></param>
         /// <returns></returns>
-        private string[] ParseReflectorCmdOutput(string reflectorOutput)
+        private string[] ParseReflectorCmdOutput(string? reflectorOutput)
         {
-            var args = reflectorOutput.Split(new string[] { "," }, StringSplitOptions.None);
+            var args = reflectorOutput?.Split(new string[] { "," }, StringSplitOptions.None) ?? Array.Empty<string>();
             args[args.Length - 1] = args[args.Length - 1].TrimEnd('\r', '\n');
 
             // To properly pass args to cmd, quotes inside a parameter are doubled

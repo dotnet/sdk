@@ -1,21 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 internal sealed class ContentTypeProvider
 {
-    private static Dictionary<string, ContentTypeMapping> _builtInMappings =
-        new Dictionary<string, ContentTypeMapping>()
+    private static readonly Dictionary<string, ContentTypeMapping> _builtInMappings =
+        new()
         {
             ["*.js"] = new ContentTypeMapping("text/javascript", null, "*.js", 1),
             ["*.css"] = new ContentTypeMapping("text/css", null, "*.css", 1),
@@ -463,7 +459,7 @@ internal sealed class ContentTypeProvider
         var match = _matcher.Match(context);
         if (match.IsMatch)
         {
-            if (_builtInMappings.TryGetValue(match.Pattern, out mapping) || _customMappings.TryGetValue(match.Pattern, out mapping))
+            if (_customMappings.TryGetValue(match.Pattern, out mapping) || _builtInMappings.TryGetValue(match.Pattern, out mapping))
             {
                 log.LogMessage(MessageImportance.Low, $"Matched {relativePath} to {mapping.MimeType} using pattern {match.Pattern}");
                 return true;

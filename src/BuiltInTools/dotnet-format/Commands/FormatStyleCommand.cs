@@ -3,7 +3,6 @@
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.CommandLine.IO;
 using Microsoft.Extensions.Logging;
 using static Microsoft.CodeAnalysis.Tools.FormatCommandCommon;
 
@@ -13,9 +12,9 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
     {
         private static readonly FormatStyleHandler s_styleHandler = new();
 
-        internal static CliCommand GetCommand()
+        internal static Command GetCommand()
         {
-            var command = new CliCommand("style", Resources.Run_code_style_analyzers_and_apply_fixes)
+            var command = new Command("style", Resources.Run_code_style_analyzers_and_apply_fixes)
             {
                 DiagnosticsOption,
                 ExcludeDiagnosticsOption,
@@ -26,12 +25,12 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             return command;
         }
 
-        private class FormatStyleHandler : AsynchronousCliAction
+        private class FormatStyleHandler : AsynchronousCommandLineAction
         {
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {
                 var formatOptions = parseResult.ParseVerbosityOption(FormatOptions.Instance);
-                var logger = new SystemConsole().SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
+                var logger = SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
                 formatOptions = parseResult.ParseCommonOptions(formatOptions, logger);
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 

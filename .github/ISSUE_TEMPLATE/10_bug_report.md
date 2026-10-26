@@ -29,5 +29,11 @@ Include the exception you get when facing this issue
 -->
 
 ### Further technical details
-- Include the output of `dotnet --info`
+<details><summary>details of dotnet --info</summary>
+<p>
+<!-- 
+Include the `dotnet --info` output here
+-->
+</p>
+</details>
 - The IDE (VS / VS Code/ VS4Mac) you're running on, and its version

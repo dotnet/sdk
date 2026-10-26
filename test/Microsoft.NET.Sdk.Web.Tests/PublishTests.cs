@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Sdk.Web.Tests
@@ -47,7 +49,8 @@ namespace Microsoft.NET.Sdk.Web.Tests
                     .Should().BeFalse();
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void TrimMode_Defaulted_Correctly_On_Trimmed_Apps_Pre_Net8()
         {
             var projectName = "HelloWorld";
@@ -108,7 +111,7 @@ namespace Microsoft.NET.Sdk.Web.Tests
 
         public static IEnumerable<object[]> SupportedTfms { get; } = new List<object[]>
         {
-#if NET9_0
+#if NET10_0
             new object[] { ToolsetInfo.CurrentTargetFramework }
 #else
 #error If building for a newer TFM, please update the values above

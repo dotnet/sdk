@@ -12,6 +12,11 @@
         <target state="translated">Não foi possível resolver o tipo ''{0}'' no assembly que contém ''{1}'' por meio do tipo de encaminhamento. Certifique-se de que o assembly foi fornecido como uma referência e contém o tipo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">Nó de sintaxe não encontrado.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

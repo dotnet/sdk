@@ -14,11 +14,18 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-store" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-store" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet store
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
+.RS
+.PP
+[!WARNING] The \f[V]dotnet store\f[R] command and the runtime package store feature are \f[B]deprecated and no longer supported\f[R].
+This command has known issues with .NET 6 and later versions and \f[B]is not recommended for use\f[R].
+The .NET team plans to eventually stop shipping this command.
+For more information, see GitHub issue #24752 (https://github.com/dotnet/sdk/issues/24752).
+.RE
 .SH NAME
 .PP
 dotnet-store - Stores the specified assemblies in the runtime package store.
@@ -26,16 +33,24 @@ dotnet-store - Stores the specified assemblies in the runtime package store.
 .IP
 .nf
 \f[C]
-dotnet store -m|--manifest <PATH_TO_MANIFEST_FILE>
-    -f|--framework <FRAMEWORK_VERSION> -r|--runtime <RUNTIME_IDENTIFIER>
-    [--framework-version <FRAMEWORK_VERSION>] [--output <OUTPUT_DIRECTORY>]
-    [--skip-optimization] [--skip-symbols] [-v|--verbosity <LEVEL>]
-    [--working-dir <WORKING_DIRECTORY>]
+dotnet store [-m|--manifest <PATH_TO_MANIFEST_FILE>]
+  [-f|--framework <FRAMEWORK_VERSION>] [--disable-build-servers]
+  [--framework-version <FRAMEWORK_VERSION>]
+  [--output <OUTPUT_DIRECTORY>] [-r|--runtime <RUNTIME_IDENTIFIER>] 
+  [--skip-optimization] [--skip-symbols]
+  [--ucr|--use-current-runtime] [-v|--verbosity <LEVEL>]
+  [--working-dir <WORKING_DIRECTORY>]
 
 dotnet store -h|--help
 \f[R]
 .fi
 .SH DESCRIPTION
+.RS
+.PP
+[!CAUTION] The runtime package store feature is deprecated and no longer functional on .NET 6+.
+This command might fail with crossgen-related errors.
+Even when using the \f[V]--skip-optimization\f[R] workaround, the generated stores might not work correctly.
+.RE
 .PP
 \f[V]dotnet store\f[R] stores the specified assemblies in the runtime package store.
 By default, assemblies are optimized for the target runtime and framework.
@@ -48,6 +63,13 @@ For more information, see the runtime package store topic.
 Specifies the target framework.
 The target framework has to be specified in the project file.
 .RE
+.PP
+\f[B]\f[VB]--disable-build-servers\f[B]\f[R]
+.PP
+Forces the command to ignore any persistent build servers.
+This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
+A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
+Available since .NET 7 SDK.
 .IP \[bu] 2
 \f[B]\f[VB]-m|--manifest <PATH_TO_MANIFEST_FILE>\f[B]\f[R]
 .RS 2
@@ -73,12 +95,6 @@ Specifies the .NET SDK version.
 This option enables you to select a specific framework version beyond the framework specified by the \f[V]-f|--framework\f[R] option.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
-.PP
-Prints out a description of how to use the command.
-.RE
-.IP \[bu] 2
 \f[B]\f[VB]-o|--output <OUTPUT_DIRECTORY>\f[B]\f[R]
 .RS 2
 .PP
@@ -100,13 +116,18 @@ Skips symbol generation.
 Currently, you can only generate symbols on Windows and Linux.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
+\f[B]\f[VB]--ucr|--use-current-runtime\f[B]\f[R]
 .RS 2
+.PP
+Use current runtime as the target runtime.
+The default is \f[V]false\f[R].
+.RE
+.PP
+\f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]-w|--working-dir <WORKING_DIRECTORY>\f[B]\f[R]
 .RS 2
@@ -114,6 +135,10 @@ For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 The working directory used by the command.
 If not specified, it uses the \f[I]obj\f[R] subdirectory of the current directory.
 .RE
+.PP
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.PP
+Prints out a description of how to use the command.
 .SH EXAMPLES
 .IP \[bu] 2
 Store the packages specified in the \f[I]packages.csproj\f[R] project file for .NET 6.0.1:

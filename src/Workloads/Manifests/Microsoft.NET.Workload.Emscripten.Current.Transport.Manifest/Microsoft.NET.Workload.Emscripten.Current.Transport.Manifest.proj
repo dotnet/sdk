@@ -1,0 +1,3 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+  <!-- empty package to flow the version of the manifest -->
+</Project>

@@ -132,6 +132,7 @@ namespace BinaryFormatterTests
         }
 
         [Theory]
+        [InlineData("net9.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_errors_when_targeting_certain_frameworks_and_not_using_pragma_suppressions(string targetFramework)
         {
@@ -158,6 +159,7 @@ namespace BinaryFormatterTests
         }
 
         [Theory]
+        [InlineData("net9.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_allows_downgrading_errors_to_warnings_via_project_config(string targetFramework)
         {

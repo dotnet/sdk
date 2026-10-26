@@ -1,0 +1,38 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <GenerateNuspecDependsOn>_GenerateWorkloadManifestFiles;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <WorkloadManifestPath>$(IntermediateOutputPath)WorkloadManifest.json</WorkloadManifestPath>
+    <WorkloadManifestTargetsPath>$(IntermediateOutputPath)WorkloadManifest.targets</WorkloadManifestTargetsPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(WorkloadManifestPath)" Pack="true" PackagePath="data" />
+    <None Include="$(WorkloadManifestTargetsPath)" Pack="true" PackagePath="data" />
+  </ItemGroup>
+
+  <Target Name="_GenerateWorkloadManifestFiles">
+    <ItemGroup>
+      <_WorkloadManifestValues Include="NetVersion" Value="net7" />
+      <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
+      <_WorkloadManifestValues Include="EmsdkVersion" Value="7.0.$(VersionFeature70)" />
+      <_WorkloadManifestValues Include="EmscriptenVersion" Value="$(EmscriptenVersionNet7)" />
+    </ItemGroup>
+
+    <Error Condition="'%(_WorkloadManifestValues.Value)' == ''"
+           Text="No value specified for template variable '%(_WorkloadManifestValues.Identity)'" />
+
+    <GenerateFileFromTemplate
+      TemplateFile="WorkloadManifest.json.in"
+      Properties="@(_WorkloadManifestValues->'%(Identity)=%(Value)')"
+      OutputPath="$(WorkloadManifestPath)" />
+    <GenerateFileFromTemplate
+      TemplateFile="WorkloadManifest.targets.in"
+      Properties="@(_WorkloadManifestValues->'%(Identity)=%(Value)')"
+      OutputPath="$(WorkloadManifestTargetsPath)" />
+  </Target>
+
+</Project>

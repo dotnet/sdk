@@ -19,22 +19,22 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Options.Add(AddSourceOption);
         }
 
-        internal static CliArgument<string> NameArgument { get; } = new("package-identifier")
+        internal static Argument<string> NameArgument { get; } = new("package-identifier")
         {
             Description = LocalizableStrings.DetailsCommand_Argument_PackageIdentifier,
             Arity = new ArgumentArity(1, 1)
         };
 
         // Option disabled until https://github.com/dotnet/templating/issues/6811 is solved
-        //internal static CliOption<string> VersionOption { get; } = new("-version", "--version")
+        //internal static Option<string> VersionOption { get; } = new("-version", "--version")
         //{
         //    Description = LocalizableStrings.DetailsCommand_Option_Version,
         //    Arity = new ArgumentArity(1, 1)
         //};
 
-        internal virtual CliOption<bool> InteractiveOption { get; } = SharedOptions.InteractiveOption;
+        internal virtual Option<bool> InteractiveOption { get; } = SharedOptions.InteractiveOption;
 
-        internal virtual CliOption<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
+        internal virtual Option<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
 
         protected override async Task<NewCommandStatus> ExecuteAsync(
             DetailsCommandArgs args,

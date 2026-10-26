@@ -15,7 +15,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
-namespace Microsoft.DotNet.Installer.Windows;
+namespace Microsoft.DotNet.Cli.Installer.Windows;
 
 [SupportedOSPlatform("windows")]
 /// <summary>
@@ -281,15 +281,13 @@ public static class WindowsUtils
     }
 
     /// <summary>
-    /// Validates that a path component (such as a package ID or version) can be used as a single
-    /// file or directory name on the current operating system.
+    /// Validates that a path component (such as a package ID or version) does not contain
+    /// directory separator characters or parent-directory traversal sequences.
     /// </summary>
     /// <param name="component">The path component to validate.</param>
     /// <returns><see langword="true"/> if the component is safe to use in <see cref="Path.Combine"/>; otherwise <see langword="false"/>.</returns>
     public static bool ValidatePathComponent(string component)
-    {
-        return PathComponentUtilities.IsValidPathComponent(component);
-    }
+        => PathComponentUtilities.IsValidPathComponent(component);
 
     /// <summary>
     /// Validates that the specified path, after canonicalization, is the expected root directory itself

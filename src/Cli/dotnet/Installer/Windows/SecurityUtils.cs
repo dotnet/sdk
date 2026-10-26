@@ -1,178 +1,181 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.IO.Pipes;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Installer.Windows
+namespace Microsoft.DotNet.Cli.Installer.Windows;
+
+/// <summary>
+/// Defines some generic security related helper methods.
+/// </summary>
+[SupportedOSPlatform("windows")]
+internal static class SecurityUtils
 {
     /// <summary>
-    /// Defines some generic security related helper methods.
+    /// Default inheritance to apply to directory ACLs.
     /// </summary>
-    [SupportedOSPlatform("windows")]
-    internal static class SecurityUtils
+    private static readonly InheritanceFlags s_DefaultInheritance = InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit;
+
+    /// <summary>
+    /// SID that matches built-in administrators.
+    /// </summary>
+    private static readonly SecurityIdentifier s_AdministratorsSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
+
+    /// <summary>
+    /// SID that matches everyone.
+    /// </summary>
+    private static readonly SecurityIdentifier s_EveryoneSid = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
+
+    /// <summary>
+    /// Local SYSTEM SID.
+    /// </summary>
+    private static readonly SecurityIdentifier s_LocalSystemSid = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
+
+    /// <summary>
+    /// SID matching built-in user accounts.
+    /// </summary>
+    private static readonly SecurityIdentifier s_UsersSid = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
+
+    /// <summary>
+    /// ACL rule associated with the Administrators SID.
+    /// </summary>
+    private static readonly FileSystemAccessRule s_AdministratorRule = new FileSystemAccessRule(s_AdministratorsSid, FileSystemRights.FullControl,
+        s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
+
+    /// <summary>
+    /// ACL rule associated with the Everyone SID.
+    /// </summary>
+    private static readonly FileSystemAccessRule s_EveryoneRule = new FileSystemAccessRule(s_EveryoneSid, FileSystemRights.ReadAndExecute,
+        s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
+
+    /// <summary>
+    /// ACL rule associated with the Local SYSTEM SID.
+    /// </summary>
+    private static readonly FileSystemAccessRule s_LocalSystemRule = new FileSystemAccessRule(s_LocalSystemSid, FileSystemRights.FullControl,
+        s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
+
+    /// <summary>
+    /// ACL rule associated with the built-in users SID.
+    /// </summary>
+    private static readonly FileSystemAccessRule s_UsersRule = new FileSystemAccessRule(s_UsersSid, FileSystemRights.ReadAndExecute,
+        s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
+
+    /// <summary>
+    /// Creates the specified directory and secures it by configuring access rules (ACLs) that allow sub-directories
+    /// and files to inherit access control entries.
+    /// </summary>
+    /// <remarks>
+    /// Below <see cref="TrustedMachinePath.ProgramDataDotnetRoot"/> the root is proven trustworthy first, because
+    /// the default <c>%ProgramData%</c> descriptor lets a standard user pre-create that tree. An untrusted root is
+    /// rejected rather than repaired: its existing contents cannot be trusted, and repairing it would leave the
+    /// attacker's data in place under an administrator-owned descriptor.
+    /// </remarks>
+    /// <param name="path">The path of the directory to create.</param>
+    /// <exception cref="InvalidDataException">The machine-wide dotnet directory cannot be trusted.</exception>
+    public static void CreateSecureDirectory(string path)
     {
-        /// <summary>
-        /// Default inheritance to apply to directory ACLs.
-        /// </summary>
-        private static readonly InheritanceFlags s_DefaultInheritance = InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit;
-
-        /// <summary>
-        /// SID that matches built-in administrators.
-        /// </summary>
-        private static readonly SecurityIdentifier s_AdministratorsSid = new SecurityIdentifier(WellKnownSidType.BuiltinAdministratorsSid, null);
-
-        /// <summary>
-        /// SID that matches everyone.
-        /// </summary>
-        private static readonly SecurityIdentifier s_EveryoneSid = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
-
-        /// <summary>
-        /// Local SYSTEM SID.
-        /// </summary>
-        private static readonly SecurityIdentifier s_LocalSystemSid = new SecurityIdentifier(WellKnownSidType.LocalSystemSid, null);
-
-        /// <summary>
-        /// SID matching built-in user accounts.
-        /// </summary>
-        private static readonly SecurityIdentifier s_UsersSid = new SecurityIdentifier(WellKnownSidType.BuiltinUsersSid, null);
-
-        /// <summary>
-        /// ACL rule associated with the Administrators SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_AdministratorRule = new FileSystemAccessRule(s_AdministratorsSid, FileSystemRights.FullControl,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// ACL rule associated with the Everyone SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_EveryoneRule = new FileSystemAccessRule(s_EveryoneSid, FileSystemRights.ReadAndExecute,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// ACL rule associated with the Local SYSTEM SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_LocalSystemRule = new FileSystemAccessRule(s_LocalSystemSid, FileSystemRights.FullControl,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// ACL rule associated with the built-in users SID.
-        /// </summary>
-        private static readonly FileSystemAccessRule s_UsersRule = new FileSystemAccessRule(s_UsersSid, FileSystemRights.ReadAndExecute,
-            s_DefaultInheritance, PropagationFlags.None, AccessControlType.Allow);
-
-        /// <summary>
-        /// Creates the specified directory and secures it by configuring access rules (ACLs) that allow sub-directories
-        /// and files to inherit access control entries.
-        /// </summary>
-        /// <remarks>
-        /// Below <see cref="TrustedMachinePath.ProgramDataDotnetRoot"/> the root is proven trustworthy first, because
-        /// the default <c>%ProgramData%</c> descriptor lets a standard user pre-create that tree. An untrusted root is
-        /// rejected rather than repaired: its existing contents cannot be trusted, and repairing it would leave the
-        /// attacker's data in place under an administrator-owned descriptor.
-        /// </remarks>
-        /// <param name="path">The path of the directory to create.</param>
-        /// <exception cref="InvalidDataException">The machine-wide dotnet directory cannot be trusted.</exception>
-        public static void CreateSecureDirectory(string path)
+        if (TrustedMachinePath.IsUnderRoot(path, TrustedMachinePath.ProgramDataDotnetRoot))
         {
-            if (TrustedMachinePath.IsUnderRoot(path, TrustedMachinePath.ProgramDataDotnetRoot))
-            {
-                EnsureSecureProgramDataRoot();
-            }
-
-            if (!Directory.Exists(path))
-            {
-                DirectorySecurity ds = new();
-                SecurityUtils.SetDirectoryAccessRules(ds);
-                ds.CreateDirectory(path);
-            }
+            EnsureSecureProgramDataRoot();
         }
 
-        private static bool s_ProgramDataRootValidated;
-
-        /// <summary>
-        /// Creates or validates the machine-wide dotnet directory once per process. Only an administrator can
-        /// change it afterwards, so this single check anchors every path below it.
-        /// </summary>
-        /// <exception cref="InvalidDataException">The machine-wide dotnet directory cannot be trusted.</exception>
-        internal static void EnsureSecureProgramDataRoot()
+        if (!Directory.Exists(path))
         {
-            if (s_ProgramDataRootValidated)
-            {
-                return;
-            }
+            DirectorySecurity ds = new();
+            SetDirectoryAccessRules(ds);
+            ds.CreateDirectory(path);
+        }
+    }
 
-            string root = TrustedMachinePath.ProgramDataDotnetRoot;
+    private static bool s_programDataRootValidated;
 
-            if (!Directory.Exists(root))
-            {
-                DirectorySecurity ds = new();
-                SetDirectoryAccessRules(ds);
-                ds.CreateDirectory(root);
-            }
-
-            // Validate even after creating: another process may have won the race and created the root first.
-            TrustedMachinePath.ValidateDirectory(root);
-            s_ProgramDataRootValidated = true;
+    /// <summary>
+    /// Creates or validates the machine-wide dotnet directory once per process. Only an administrator can
+    /// change it afterwards, so this single check anchors every path below it.
+    /// </summary>
+    /// <exception cref="InvalidDataException">The machine-wide dotnet directory cannot be trusted.</exception>
+    internal static void EnsureSecureProgramDataRoot()
+    {
+        if (s_programDataRootValidated)
+        {
+            return;
         }
 
-        /// <summary>
-        /// Moves a file from one location to another if the destination file does not already exist and
-        /// configures its permissions.
-        /// </summary>
-        /// <param name="sourceFile">The source file to move.</param>
-        /// <param name="destinationFile">The destination where the source file will be moved.</param>
-        /// <param name="log">The underlying setup log to use.</param>
-        public static void MoveAndSecureFile(string sourceFile, string destinationFile, ISetupLogger log = null)
-        {
-            if (!File.Exists(destinationFile))
-            {
-                FileAccessRetrier.RetryOnMoveAccessFailure(() =>
-                {
-                    // Moving the file preserves the owner SID and fails to inherit the WD ACE.
-                    File.Copy(sourceFile, destinationFile, overwrite: true);
-                    File.Delete(sourceFile);
-                });
-                log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
+        string root = TrustedMachinePath.ProgramDataDotnetRoot;
 
-                SecureFile(destinationFile);
-            }
+        if (!Directory.Exists(root))
+        {
+            DirectorySecurity ds = new();
+            SetDirectoryAccessRules(ds);
+            ds.CreateDirectory(root);
         }
 
-        /// <summary>
-        /// Secures a file by setting the owner and group to built-in administrators (BA). All other ACE values are inherited from
-        /// the parent directory.
-        /// </summary>
-        /// <param name="path">The path of the file to secure.</param>
-        public static void SecureFile(string path)
-        {
-            FileInfo fi = new(path);
-            FileSecurity fs = new();
+        // Validate even after creating: another process may have won the race and created the root first.
+        TrustedMachinePath.ValidateDirectory(root);
+        s_programDataRootValidated = true;
+    }
 
-            // See https://github.com/dotnet/sdk/issues/28450. If the directory's descriptor
-            // is correctly configured, we should end up with an inherited ACE for Everyone: (A;ID;0x1200a9;;;WD)
-            fs.SetOwner(s_AdministratorsSid);
-            fs.SetGroup(s_AdministratorsSid);
-            fi.SetAccessControl(fs);
+    /// <summary>
+    /// Moves a file from one location to another and configures its permissions.
+    /// </summary>
+    /// <param name="sourceFile">The source file to move.</param>
+    /// <param name="destinationFile">The destination where the source file will be moved.</param>
+    /// <param name="log">The underlying setup log to use.</param>
+    /// <param name="overwrite">Replaces an existing destination file instead of leaving it in place.</param>
+    public static void MoveAndSecureFile(string sourceFile, string destinationFile, ISetupLogger log = null, bool overwrite = false)
+    {
+        if (File.Exists(destinationFile) && !overwrite)
+        {
+            return;
         }
 
-        /// <summary>
-        /// Apply a standard set of access rules to the directory security descriptor. The owner and group will
-        /// be set to built-in Administrators. Full access is granted to built-in administators and SYSTEM with
-        /// read, execute, synchronize permssions for built-in users and Everyone.
-        /// </summary>
-        /// <param name="ds">The security descriptor to update.</param>
-        private static void SetDirectoryAccessRules(DirectorySecurity ds)
+        FileAccessRetrier.RetryOnMoveAccessFailure(() =>
         {
-            ds.SetOwner(s_AdministratorsSid);
-            ds.SetGroup(s_AdministratorsSid);
-            ds.SetAccessRule(s_AdministratorRule);
-            ds.SetAccessRule(s_LocalSystemRule);
-            ds.SetAccessRule(s_UsersRule);
-            ds.SetAccessRule(s_EveryoneRule);
-        }
+            // Moving the file preserves the owner SID and fails to inherit the WD ACE.
+            File.Copy(sourceFile, destinationFile, overwrite: true);
+            File.Delete(sourceFile);
+        });
+        log?.LogMessage($"Moved '{sourceFile}' to '{destinationFile}'");
+
+        SecureFile(destinationFile);
+    }
+
+    /// <summary>
+    /// Secures a file by setting the owner and group to built-in administrators (BA). All other ACE values are inherited from
+    /// the parent directory.
+    /// </summary>
+    /// <param name="path">The path of the file to secure.</param>
+    public static void SecureFile(string path)
+    {
+        FileInfo fi = new(path);
+        FileSecurity fs = new();
+
+        // See https://github.com/dotnet/sdk/issues/28450. If the directory's descriptor
+        // is correctly configured, we should end up with an inherited ACE for Everyone: (A;ID;0x1200a9;;;WD)
+        fs.SetOwner(s_AdministratorsSid);
+        fs.SetGroup(s_AdministratorsSid);
+        fi.SetAccessControl(fs);
+    }
+
+    /// <summary>
+    /// Apply a standard set of access rules to the directory security descriptor. The owner and group will
+    /// be set to built-in Administrators. Full access is granted to built-in administators and SYSTEM with
+    /// read, execute, synchronize permssions for built-in users and Everyone.
+    /// </summary>
+    /// <param name="ds">The security descriptor to update.</param>
+    private static void SetDirectoryAccessRules(DirectorySecurity ds)
+    {
+        ds.SetOwner(s_AdministratorsSid);
+        ds.SetGroup(s_AdministratorsSid);
+        ds.SetAccessRule(s_AdministratorRule);
+        ds.SetAccessRule(s_LocalSystemRule);
+        ds.SetAccessRule(s_UsersRule);
+        ds.SetAccessRule(s_EveryoneRule);
     }
 }

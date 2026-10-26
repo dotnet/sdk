@@ -5,6 +5,11 @@ namespace Microsoft.NET.TestFramework
 {
     public class RequiresMSBuildVersionTheoryAttribute : TheoryAttribute
     {
+        /// <summary>
+        /// Can be used to document the reason a test needs a specific version of MSBuild
+        /// </summary>
+        public string? Reason { get; set; }
+
         public RequiresMSBuildVersionTheoryAttribute(string version)
         {
             CheckForRequiredMSBuildVersion(this, version);
@@ -12,12 +17,12 @@ namespace Microsoft.NET.TestFramework
 
         public static void CheckForRequiredMSBuildVersion(FactAttribute attribute, string version)
         {
-            if (!Version.TryParse(TestContext.Current.ToolsetUnderTest.MSBuildVersion, out Version msbuildVersion))
+            if (!Version.TryParse(TestContext.Current.ToolsetUnderTest.MSBuildVersion, out Version? msbuildVersion))
             {
                 attribute.Skip = $"Failed to determine the version of MSBuild ({TestContext.Current.ToolsetUnderTest.MSBuildVersion}).";
                 return;
             }
-            if (!Version.TryParse(version, out Version requiredVersion))
+            if (!Version.TryParse(version, out Version? requiredVersion))
             {
                 attribute.Skip = $"Failed to determine the version required by this test ({version}).";
                 return;

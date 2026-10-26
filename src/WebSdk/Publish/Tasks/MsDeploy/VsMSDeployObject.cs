@@ -8,19 +8,16 @@
 ///
 /// Copyright(c) 2006 Microsoft Corporation
 ///--------------------------------------------------------------------------------------------
+
+using Microsoft.NET.Sdk.Publish.Tasks.Properties;
+using Diagnostics = System.Diagnostics;
+// using Deployment = Microsoft.Web.Deployment;
+using RegularExpressions = System.Text.RegularExpressions;
+// we need to think of a way to split the MSDeployment to other dll
+// using VSMSDeploySyncOption = Deployment.DeploymentSyncOptions;
+
 namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
-    using System;
-    using Microsoft.NET.Sdk.Publish.Tasks.Properties;
-    using Diagnostics = System.Diagnostics;
-    using Generic = System.Collections.Generic;
-    // using Deployment = Microsoft.Web.Deployment;
-    using RegularExpressions = System.Text.RegularExpressions;
-
-    // we need to think of a way to split the MSDeployment to other dll
-    // using VSMSDeploySyncOption = Deployment.DeploymentSyncOptions;
-
-
     static class VSMSDeployObjectFactory
     {
         /// <summary>
@@ -49,7 +46,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
     }
 
     /// <summary>
-    /// Utility class to abstract the multiple MSDeploy object for various secnario
+    /// Utility class to abstract the multiple MSDeploy object for various scenario
     /// It also make sure the Dispose is called properly for MSDeploy object 
     /// </summary>
     internal static class MSDeployUtility
@@ -59,70 +56,73 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// </summary>
         /// <param name="vSMSDeployObject"></param>
         /// <returns></returns>
-        public static /*Deployment.DeploymentBaseOptions*/ dynamic CreateBaseOptions(VSMSDeployObject vSMSDeployObject)
+        public static /*Deployment.DeploymentBaseOptions*/ dynamic? CreateBaseOptions(VSMSDeployObject vSMSDeployObject)
         {
             // /*Deployment.DeploymentBaseOptions*/dynamic baseOptions = new Microsoft.Web.Deployment.DeploymentBaseOptions();
             /*Deployment.DeploymentBaseOptions*/
-            dynamic baseOptions = MSWebDeploymentAssembly.DynamicAssembly.CreateObject("Microsoft.Web.Deployment.DeploymentBaseOptions");
+            dynamic? baseOptions = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentBaseOptions");
 
-            if (vSMSDeployObject.IsLocal)
+            if (baseOptions is not null)
             {
-                // do nothing
+                if (vSMSDeployObject.IsLocal)
+                {
+                    // do nothing
+                }
+                else if (!vSMSDeployObject.UseSeparatedCredential)
+                {
+                    baseOptions.ComputerName = vSMSDeployObject.ComputerName;
+                }
+                else
+                {
+                    baseOptions.ComputerName = vSMSDeployObject.ComputerName;
+                    baseOptions.UserName = vSMSDeployObject.UserName;
+                    baseOptions.Password = vSMSDeployObject.Password;
+                }
+
+                baseOptions.PrefetchPayload = vSMSDeployObject.PrefetchPayload;
+                baseOptions.IncludeAcls = vSMSDeployObject.IncludeAcls;
+                if (!string.IsNullOrEmpty(vSMSDeployObject.AuthenticationType))
+                {
+                    baseOptions.AuthenticationType = vSMSDeployObject.AuthenticationType;
+                }
+
+                if (string.Equals(Guid.Empty.ToString(), vSMSDeployObject.UserName, StringComparison.OrdinalIgnoreCase))
+                {
+                    baseOptions.AuthenticationType = "Bearer";
+                }
+
+                if (!string.IsNullOrEmpty(vSMSDeployObject.EncryptPassword))
+                    baseOptions.EncryptPassword = vSMSDeployObject.EncryptPassword;
+
+                if (!string.IsNullOrEmpty(vSMSDeployObject.WebServerManifest))
+                    baseOptions.WebServerConfiguration.WebServerManifest = Path.GetFileName(vSMSDeployObject.WebServerManifest);
+                if (!string.IsNullOrEmpty(vSMSDeployObject.WebServerDirectory))
+                    baseOptions.WebServerConfiguration.WebServerDirectory = vSMSDeployObject.WebServerDirectory;
+
+                if (!string.IsNullOrEmpty(vSMSDeployObject.WebServerAppHostConfigDirectory))
+                    baseOptions.WebServerConfiguration.ConfigurationDirectory = vSMSDeployObject.WebServerAppHostConfigDirectory;
+
+
+                if (vSMSDeployObject.RetryInterval >= 0)
+                    baseOptions.RetryInterval = vSMSDeployObject.RetryInterval;
+                if (vSMSDeployObject.RetryAttempts >= 0)
+                    baseOptions.RetryAttempts = vSMSDeployObject.RetryAttempts;
+
+                if (!string.IsNullOrEmpty(vSMSDeployObject.UserAgent))
+                    baseOptions.UserAgent = vSMSDeployObject.UserAgent;
+
+                //remove duplicate items appearing in both "EnableLinks" and "DisableLinks" caused by the default value set by publish target file
+                List<string> enabledLinkList = ConvertStringIntoList(vSMSDeployObject.EnableLinks);
+                List<string> disabledLinkList = ConvertStringIntoList(vSMSDeployObject.DisableLinks);
+                foreach (string link in disabledLinkList)
+                {
+                    if (LinkContainedInTheCollection(link, enabledLinkList))
+                        enabledLinkList.Remove(link);
+                }
+
+                ChangeLinkExtensionEnableStatue(baseOptions, disabledLinkList, false);
+                ChangeLinkExtensionEnableStatue(baseOptions, enabledLinkList, true);
             }
-            else if (!vSMSDeployObject.UseSeparatedCredential)
-            {
-                baseOptions.ComputerName = vSMSDeployObject.ComputerName;
-            }
-            else
-            {
-                baseOptions.ComputerName = vSMSDeployObject.ComputerName;
-                baseOptions.UserName = vSMSDeployObject.UserName;
-                baseOptions.Password = vSMSDeployObject.Password;
-            }
-
-            baseOptions.PrefetchPayload = vSMSDeployObject.PrefetchPayload;
-            baseOptions.IncludeAcls = vSMSDeployObject.IncludeAcls;
-            if (!string.IsNullOrEmpty(vSMSDeployObject.AuthenticationType))
-            {
-                baseOptions.AuthenticationType = vSMSDeployObject.AuthenticationType;
-            }
-
-            if (string.Equals(Guid.Empty.ToString(), vSMSDeployObject.UserName, StringComparison.OrdinalIgnoreCase))
-            {
-                baseOptions.AuthenticationType = "Bearer";
-            }
-
-            if (!string.IsNullOrEmpty(vSMSDeployObject.EncryptPassword))
-                baseOptions.EncryptPassword = vSMSDeployObject.EncryptPassword;
-
-            if (!string.IsNullOrEmpty(vSMSDeployObject.WebServerManifest))
-                baseOptions.WebServerConfiguration.WebServerManifest = Path.GetFileName(vSMSDeployObject.WebServerManifest);
-            if (!string.IsNullOrEmpty(vSMSDeployObject.WebServerDirectory))
-                baseOptions.WebServerConfiguration.WebServerDirectory = vSMSDeployObject.WebServerDirectory;
-
-            if (!string.IsNullOrEmpty(vSMSDeployObject.WebServerAppHostConfigDirectory))
-                baseOptions.WebServerConfiguration.ConfigurationDirectory = vSMSDeployObject.WebServerAppHostConfigDirectory;
-
-
-            if (vSMSDeployObject.RetryInterval >= 0)
-                baseOptions.RetryInterval = vSMSDeployObject.RetryInterval;
-            if (vSMSDeployObject.RetryAttempts >= 0)
-                baseOptions.RetryAttempts = vSMSDeployObject.RetryAttempts;
-
-            if (!string.IsNullOrEmpty(vSMSDeployObject.UserAgent))
-                baseOptions.UserAgent = vSMSDeployObject.UserAgent;
-
-            //remove duplicate items appearing in both "EnableLinks" and "DisableLinks" caused by the default value set by publish target file
-            Generic.List<string> enabledLinkList = ConvertStringIntoList(vSMSDeployObject.EnableLinks);
-            Generic.List<string> disabledLinkList = ConvertStringIntoList(vSMSDeployObject.DisableLinks);
-            foreach (string link in disabledLinkList)
-            {
-                if (LinkContainedInTheCollection(link, enabledLinkList))
-                    enabledLinkList.Remove(link);
-            }
-
-            ChangeLinkExtensionEnableStatue(baseOptions, disabledLinkList, false);
-            ChangeLinkExtensionEnableStatue(baseOptions, enabledLinkList, true);
 
             return baseOptions;
         }
@@ -132,19 +132,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// </summary>
         /// <param name="linkExtensionsString"></param>
         /// <returns></returns>
-        internal static Generic.List<string> ConvertStringIntoList(string linkExtensionsString)
+        internal static List<string> ConvertStringIntoList(string? linkExtensionsString)
         {
-            string linkExtensionsInfo = "";
-            if (!string.IsNullOrEmpty(linkExtensionsString))
+            if (linkExtensionsString is not null && linkExtensionsString.Length != 0)
             {
-                linkExtensionsInfo = linkExtensionsString;
+                string linkExtensionsInfo = linkExtensionsString;
                 string[] linksArray = linkExtensionsInfo.Split(new char[] { ';' });
-                Generic.List<string> linksList = new(linksArray);
+                List<string> linksList = new(linksArray);
                 return linksList;
             }
             else
-                return new System.Collections.Generic.List<string>(0);
-
+                return new List<string>(0);
         }
 
         /// <summary>
@@ -153,7 +151,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <param name="link"></param>
         /// <param name="linkCollection"></param>
         /// <returns></returns>
-        internal static bool LinkContainedInTheCollection(string link, Generic.List<string> linkCollection)
+        internal static bool LinkContainedInTheCollection(string link, List<string> linkCollection)
         {
             foreach (string l in linkCollection)
                 if (string.Compare(l, link, StringComparison.OrdinalIgnoreCase) == 0)
@@ -171,7 +169,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
             if (!string.IsNullOrEmpty(listOfLinkExtensions))
             {
-                Generic.List<string> linkExtensionList = ConvertStringIntoList(listOfLinkExtensions);
+                List<string> linkExtensionList = ConvertStringIntoList(listOfLinkExtensions);
                 ChangeLinkExtensionEnableStatue(baseOptions, linkExtensionList, enable);
             }
         }
@@ -182,15 +180,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         /// <param name="baseOptions"></param>
         /// <param name="linkExtensions"></param>
         /// <param name="enable"></param>
-        public static void ChangeLinkExtensionEnableStatue(/*Deployment.DeploymentBaseOptions*/ dynamic baseOptions, System.Collections.Generic.List<string> linkExtensions, bool enable)
+        public static void ChangeLinkExtensionEnableStatue(/*Deployment.DeploymentBaseOptions*/ dynamic baseOptions, List<string> linkExtensions, bool enable)
         {
-            if (linkExtensions != null && linkExtensions.Count != 0)
+            if (linkExtensions is not null && linkExtensions.Count != 0)
             {
                 foreach (string linkExtObj in linkExtensions)
                 {
-
                     RegularExpressions.Regex match = new(linkExtObj, RegularExpressions.RegexOptions.IgnoreCase);
-                    Generic.List<object> matchedList = new();
+                    List<object> matchedList = new();
 
                     foreach (/*Deployment.DeploymentLinkExtension*/dynamic linkExtension in baseOptions.LinkExtensions)
                     {
@@ -212,18 +209,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                         // throw new DeploymentException(Resources.UnknownLinkExtension, disableLink);
                         //$Todo lmchen
                         //Diagnostics.Debug.Assert(false, "NYI, we should prompt user for invalid LinkExtension");
-                        throw new System.InvalidOperationException("UnknowLinkExtension");
+                        throw new InvalidOperationException("UnknowLinkExtension");
                     }
                 }
             }
         }
     }
     /// <summary>
-    /// Abstract interface to allow homogenious SynTo() operation to work regardless of the object
+    /// Abstract interface to allow homogeneous SynTo() operation to work regardless of the object
     /// </summary>
     internal class VSMSDeployObject
     {
-
         public VSMSDeployObject(string provider, string root)
         {
             m_NameValueDictionary.Clear();
@@ -234,13 +230,13 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             m_provider = provider;
 
             // maybe we should show the "secure data to display"
-            // for now just supress it.
+            // for now just suppress it.
 #if NET472
-            if (0 == string.Compare(m_provider, MSWebDeploymentAssembly.DynamicAssembly.GetEnumValue(MSDeploy.TypeName.DeploymentWellKnownProvider, MSDeploy.Provider.DBFullSql).ToString(), StringComparison.InvariantCultureIgnoreCase)
+            if (0 == string.Compare(m_provider, MSWebDeploymentAssembly.DynamicAssembly?.GetEnumValue(MSDeploy.TypeName.DeploymentWellKnownProvider, MSDeploy.Provider.DBFullSql)?.ToString(), StringComparison.InvariantCultureIgnoreCase)
                 || 0 == string.Compare(m_provider, MSDeploy.Provider.DbDacFx , StringComparison.InvariantCultureIgnoreCase))
                 m_fNoDisplayRoot = true;
 #else
-            if (0 == string.Compare(m_provider, MSWebDeploymentAssembly.DynamicAssembly.GetEnumValue(MSDeploy.TypeName.DeploymentWellKnownProvider, MSDeploy.Provider.DBFullSql).ToString())
+            if (0 == string.Compare(m_provider, MSWebDeploymentAssembly.DynamicAssembly?.GetEnumValue(MSDeploy.TypeName.DeploymentWellKnownProvider, MSDeploy.Provider.DBFullSql)?.ToString())
                 || 0 == string.Compare(m_provider, MSDeploy.Provider.DbDacFx, StringComparison.OrdinalIgnoreCase))
                 m_fNoDisplayRoot = true;
 #endif
@@ -249,6 +245,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         public VSMSDeployObject(Build.Framework.ITaskItem taskItem)
         {
             Diagnostics.Debug.Assert(taskItem != null);
+
+            if (taskItem is null)
+            {
+                // This constructor would spectacularly fail if taskItem is null. Just get out in this situation.
+                return;
+            }
 
             m_provider = taskItem.ItemSpec;
             m_root = taskItem.GetMetadata("Path");
@@ -259,8 +261,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             Diagnostics.Debug.Assert(Utility.IsDeploymentWellKnownProvider(m_provider));
 
             // maybe we should show the "secure data to display"
-            // for now just supress it.
-            if (0 == string.Compare(m_provider, MSWebDeploymentAssembly.DynamicAssembly.GetEnumValue(MSDeploy.TypeName.DeploymentWellKnownProvider, MSDeploy.Provider.DBFullSql).ToString(), StringComparison.OrdinalIgnoreCase))
+            // for now just suppress it.
+            if (0 == string.Compare(m_provider, MSWebDeploymentAssembly.DynamicAssembly?.GetEnumValue(MSDeploy.TypeName.DeploymentWellKnownProvider, MSDeploy.Provider.DBFullSql)?.ToString(), StringComparison.OrdinalIgnoreCase))
                 m_fNoDisplayRoot = true;
 
             m_NameValueDictionary.Clear();
@@ -284,8 +286,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 }
                 else
                 {
-                    MsDeploy.Utility.IISExpressMetadata expressMetadata;
-                    if (Enum.TryParse<MsDeploy.Utility.IISExpressMetadata>(name, out expressMetadata))
+                    Utility.IISExpressMetadata expressMetadata;
+                    if (Enum.TryParse(name, out expressMetadata))
                     {
                         string value = taskItem.GetMetadata(name);
                         if (!string.IsNullOrEmpty(value))
@@ -296,7 +298,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 
                 }
             }
-
         }
 
         public VSMSDeployObject(Build.Framework.ITaskItem taskItem, bool fNoDisplayRoot)
@@ -305,25 +306,25 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             m_fNoDisplayRoot = fNoDisplayRoot;
         }
 
-        private string GetDictionaryValue(string name)
+        private string? GetDictionaryValue(string name)
         {
-            string value = null;
+            string? value = null;
             if (m_NameValueDictionary != null)
             {
                 m_NameValueDictionary.TryGetValue(name, out value);
             }
             return value;
         }
-        private void SetDictionaryValue(string name, string value)
+        private void SetDictionaryValue(string name, string? value)
         {
             Diagnostics.Debug.Assert(m_NameValueDictionary != null);
-            if (m_NameValueDictionary.ContainsKey(name))
+            if (m_NameValueDictionary is not null && m_NameValueDictionary.ContainsKey(name))
             {
                 m_NameValueDictionary[name] = value;
             }
             else
             {
-                m_NameValueDictionary.Add(name, value);
+                m_NameValueDictionary?.Add(name, value);
             }
         }
 
@@ -335,21 +336,20 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         protected int m_retryInterval = -1;
         protected int m_retryAttempts = -1;
 
-        Generic.IList<MsDeploy.ParameterInfo> m_iListParameter = new Generic.List<MsDeploy.ParameterInfo>();
-        Generic.IList<MsDeploy.ProviderOption> m_iListProviderOption = new Generic.List<MsDeploy.ProviderOption>();
-        Generic.IList<MsDeploy.ParameterInfoWithEntry> m_iListParameterWithEntry = new Generic.List<MsDeploy.ParameterInfoWithEntry>();
-        Generic.IList<string> m_iListSetParametersFiles = new Generic.List<string>();
+        IList<ParameterInfo> m_iListParameter = new List<ParameterInfo>();
+        IList<ProviderOption> m_iListProviderOption = new List<ProviderOption>();
+        IList<ParameterInfoWithEntry> m_iListParameterWithEntry = new List<ParameterInfoWithEntry>();
+        IList<string> m_iListSetParametersFiles = new List<string>();
 
-        private System.Collections.Generic.Dictionary<string, string> m_NameValueDictionary = new(10, StringComparer.OrdinalIgnoreCase);
+        private Dictionary<string, string?> m_NameValueDictionary = new(10, StringComparer.OrdinalIgnoreCase);
 
-        protected /*Deployment.DeploymentBaseOptions*/ dynamic m_deploymentBaseOptions = null;
+        protected /*Deployment.DeploymentBaseOptions*/ dynamic? m_deploymentBaseOptions = null;
 
         public override string ToString()
         {
             string root = m_fNoDisplayRoot ? "******" : m_root;
             return string.Format(System.Globalization.CultureInfo.CurrentCulture, Resources.VSMSDEPLOY_ObjectIdentity, m_provider.ToString(), root);
         }
-
 
         // property used to call Deployment.DeploymentManager.CreateObject
         public virtual string Root
@@ -363,7 +363,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             set { m_provider = value; }
         }
 
-
         // property use to create the LocationInfo
         public virtual bool IsLocal
         {
@@ -374,7 +373,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         {
             get { return !string.IsNullOrEmpty(UserName); }
         }
-
 
         public virtual string DisableLinks
         {
@@ -388,8 +386,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             set { m_enableLinks = value; }
         }
 
-
-
         //   <ComputerName></ComputerName>
         //<Wmsvc></Wmsvc>   -------------------------// bugbug, not supported yet
         //<UserName></UserName>
@@ -399,30 +395,29 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
         //<authType></authType>
         //<prefetchPayload></prefetchPayload>
 
-
-        public virtual string ComputerName
+        public virtual string? ComputerName
         {
             get { return GetDictionaryValue("computerName"); }
             set { SetDictionaryValue("computerName", value); }
         }
-        public virtual string UserName
+        public virtual string? UserName
         {
             get { return GetDictionaryValue("userName"); }
             set { SetDictionaryValue("userName", value); }
         }
 
-        public virtual string Password
+        public virtual string? Password
         {
             get { return GetDictionaryValue("password"); }
             set { SetDictionaryValue("password", value); }
         }
 
         // Note this support is still broken for vsmsdeploy
-        public string MSDeployServiceUrl
+        public string? MSDeployServiceUrl
         {
             get
             {
-                string value = GetDictionaryValue("wmsvc");
+                string? value = GetDictionaryValue("wmsvc");
                 Diagnostics.Debug.Assert(string.IsNullOrEmpty(value), "Not yet implement");
                 return value;
             }
@@ -433,11 +428,11 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-        public string AuthenticationType
+        public string? AuthenticationType
         {
             get
             {
-                string authType = GetDictionaryValue("authType");
+                string? authType = GetDictionaryValue("authType");
                 if (string.IsNullOrEmpty(authType))
                 {
                     if (!string.IsNullOrEmpty(MSDeployServiceUrl) && string.IsNullOrEmpty(ComputerName))
@@ -451,7 +446,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             set { SetDictionaryValue("authType", value); }
         }
 
-        public string EncryptPassword
+        public string? EncryptPassword
         {
             get { return GetDictionaryValue("encryptPassword"); }
             set { SetDictionaryValue("encryptPassword", value); }
@@ -468,26 +463,23 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             set { SetDictionaryValue("prefetchPayload", value.ToString()); }
         }
 
-
-        public string WebServerAppHostConfigDirectory
+        public string? WebServerAppHostConfigDirectory
         {
             get { return GetDictionaryValue("WebServerAppHostConfigDirectory"); }
             set { SetDictionaryValue("WebServerAppHostConfigDirectory", value); }
         }
 
-        public string WebServerDirectory
+        public string? WebServerDirectory
         {
             get { return GetDictionaryValue("WebServerDirectory"); }
             set { SetDictionaryValue("WebServerDirectory", value); }
         }
 
-        public string WebServerManifest
+        public string? WebServerManifest
         {
             get { return GetDictionaryValue("WebServerManifest"); }
             set { SetDictionaryValue("WebServerManifest", value); }
         }
-
-
 
         public int RetryAttempts
         {
@@ -501,16 +493,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             set { m_retryInterval = value; }
         }
 
-        public string UserAgent { get; set; }
+        public string? UserAgent { get; set; }
 
-
-
-        public Generic.IList<MsDeploy.ParameterInfo> Parameters
+        public IList<ParameterInfo> Parameters
         {
             get { return m_iListParameter; }
         }
 
-        public Generic.IList<MsDeploy.ProviderOption> ProviderOptions
+        public IList<ProviderOption> ProviderOptions
         {
             get { return m_iListProviderOption; }
         }
@@ -525,21 +515,19 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             m_iListParameter.Add(new ParameterInfo(parameterName, parameterStringValue));
         }
 
-
-        public Generic.IList<ParameterInfoWithEntry> EntryParameters
+        public IList<ParameterInfoWithEntry> EntryParameters
         {
             get { return m_iListParameterWithEntry; }
         }
 
-        public Generic.IList<string> SetParametersFiles
+        public IList<string> SetParametersFiles
         {
             get { return m_iListSetParametersFiles; }
         }
 
-
         public void SyncParameter(string name, string value, string type, string scope, string matchRegularExpression, string description, string defaultValue, string tags, string element, string validationString)
         {
-            m_iListParameterWithEntry.Add(new MsDeploy.ParameterInfoWithEntry(name, value, type, scope, matchRegularExpression, description, defaultValue, tags, element, validationString));
+            m_iListParameterWithEntry.Add(new ParameterInfoWithEntry(name, value, type, scope, matchRegularExpression, description, defaultValue, tags, element, validationString));
         }
 
         public void SyncParameterFile(string filename)
@@ -553,7 +541,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             m_deploymentBaseOptions = null;
         }
 
-        public /*Deployment.DeploymentBaseOptions*/ dynamic BaseOptions
+        public /*Deployment.DeploymentBaseOptions*/ dynamic? BaseOptions
         {
             get
             {
@@ -565,18 +553,25 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             }
         }
 
-
         public void SyncTo(VSMSDeployObject destObject, /*VSMSDeploySyncOption*/ dynamic syncOptions, IVSMSDeployHost _host)
         {
 #if NET472
             //$BUGBUG lmchen, there is only set to source provider?
             // set up the provider setting
             /*Deployment.DeploymentProviderOptions*/
-            dynamic srcProviderConfig = MSWebDeploymentAssembly.DynamicAssembly.CreateObject("Microsoft.Web.Deployment.DeploymentProviderOptions", new object[]{Provider.ToString()});
+            dynamic? srcProviderConfig = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentProviderOptions", new object[]{Provider.ToString()});
+            if (srcProviderConfig is null)
+            {
+                return;
+            }
             srcProviderConfig.Path = Root;
             Utility.AddProviderOptions(srcProviderConfig, ProviderOptions, _host);
 
-            using (/*Deployment.DeploymentObject*/ dynamic srcObj =  MSWebDeploymentAssembly.DynamicAssembly.CallStaticMethod("Microsoft.Web.Deployment.DeploymentManager", "CreateObject", new object[]{srcProviderConfig, BaseOptions}))
+            if (BaseOptions is null)
+            {
+                return;
+            }
+            using (/*Deployment.DeploymentObject*/ dynamic? srcObj =  MSWebDeploymentAssembly.DynamicAssembly?.CallStaticMethod("Microsoft.Web.Deployment.DeploymentManager", "CreateObject", new object[]{srcProviderConfig, BaseOptions}))
             {
 
                 //$BUGBUG lmchen, there is only set to source provider?
@@ -585,13 +580,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                 Utility.AddSimpleSetParametersToObject(srcObj, Parameters, _host);
                 Utility.AddSetParametersToObject(srcObj, EntryParameters, _host);
                 
-                /*Deployment.DeploymentProviderOptions*/ dynamic destProviderConfig = MSWebDeploymentAssembly.DynamicAssembly.CreateObject("Microsoft.Web.Deployment.DeploymentProviderOptions", new object[]{destObject.Provider.ToString()});
+                /*Deployment.DeploymentProviderOptions*/ dynamic? destProviderConfig = MSWebDeploymentAssembly.DynamicAssembly?.CreateObject("Microsoft.Web.Deployment.DeploymentProviderOptions", new object[]{destObject.Provider.ToString()});
+                if (destProviderConfig is null)
+                {
+                    return;
+                }
                 destProviderConfig.Path = destObject.Root;
 
-                // Setup Destination Provider otpion
+                // Setup Destination Provider option
                 Utility.AddProviderOptions(destProviderConfig, destObject.ProviderOptions, _host);
 
-                srcObj.SyncTo(destProviderConfig, destObject.BaseOptions, syncOptions);
+                srcObj?.SyncTo(destProviderConfig, destObject.BaseOptions, syncOptions);
             }
 #endif
         }

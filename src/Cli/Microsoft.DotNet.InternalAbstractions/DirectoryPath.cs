@@ -35,19 +35,9 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
             return new FilePath(Path.Combine(Value, fileName));
         }
 
-        public string ToQuotedString()
-        {
-            return $"\"{Value}\"";
-        }
-
-        public string ToXmlEncodeString()
-        {
-            return System.Net.WebUtility.HtmlEncode(Value);
-        }
-
         public override string ToString()
         {
-            return ToQuotedString();
+            return $"\"{Value}\"";
         }
 
         public DirectoryPath GetParentPath()
@@ -56,8 +46,8 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
 
             var directoryInfo = new DirectoryInfo(Value);
 
-            DirectoryInfo parentDirectory = directoryInfo.Parent;
-            if (directoryInfo.Parent is null)
+            DirectoryInfo? parentDirectory = directoryInfo.Parent;
+            if (parentDirectory is null)
             {
                 throw new InvalidOperationException(Value + " does not have parent directory.");
             }
@@ -69,8 +59,8 @@ namespace Microsoft.Extensions.EnvironmentAbstractions
         {
             var directoryInfo = new DirectoryInfo(Value);
 
-            DirectoryInfo parentDirectory = directoryInfo.Parent;
-            if (directoryInfo.Parent is null)
+            DirectoryInfo? parentDirectory = directoryInfo.Parent;
+            if (parentDirectory is null)
             {
                 return null;
             }

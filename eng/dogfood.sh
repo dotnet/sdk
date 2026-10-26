@@ -25,3 +25,6 @@ export MicrosoftNETBuildExtensionsTargets="$artifacts_dir/bin/$configuration/Sdk
 
 export PATH=$testDotnetRoot:$PATH
 export DOTNET_ROOT=$testDotnetRoot
+export DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=0
+export PS1="(dogfood) $PS1"
+export DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT="true"

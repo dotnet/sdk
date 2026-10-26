@@ -1,0 +1,20 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <ComponentGroup Id="AuthoredRegistryKeys_x86node">
+      <Component Id="SetupRegistry" Directory="TARGETDIR" Bitness="always32">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\$(var.Platform)\sdk">
+          <!-- This is the full, semantic version of the SDK. -->
+          <RegistryValue Action="write" Name="$(var.Version)" Type="integer" Value="1" KeyPath="yes"/>
+        </RegistryKey>
+      </Component>
+      <!--- The 'WpfWinformsTemplatesFlag' registry key is meant to be a temporary solution for Visual Studio 16.0 -->
+      <!--- https://devdiv.visualstudio.com/DevDiv/_workitems/edit/676485 -->
+      <Component Id="WpfWinformsTemplatesFlag" Directory="TARGETDIR" Bitness="always32">
+        <RegistryKey Root="HKLM" Key="SOFTWARE\dotnet\Setup\InstalledVersions\SDKFeatures">
+          <RegistryValue Action="write" Name="WpfWinformsTemplates" Type="integer" Value="1" KeyPath="yes"/>
+        </RegistryKey>
+      </Component>
+    </ComponentGroup>
+  </Fragment>
+</Wix>

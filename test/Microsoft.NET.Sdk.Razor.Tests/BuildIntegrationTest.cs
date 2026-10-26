@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
@@ -160,8 +162,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
             var assemblyPath = Path.Combine(intermediateOutputPath, "SimpleMvc.dll");
 
-            AssemblyInfo.Get(assemblyPath)["AssemblyTitleAttribute"].Should().Be("SimpleMvc");
-            AssemblyInfo.Get(assemblyPath)["ProvideApplicationPartFactoryAttribute"].Should().Contain("ConsolidatedAssemblyApplicationPartFactory");
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("AssemblyTitleAttribute", "SimpleMvc"));
+            AssemblyInfo.Get(assemblyPath).Should().Contain(("ProvideApplicationPartFactoryAttribute", "Microsoft.AspNetCore.Mvc.ApplicationParts.ConsolidatedAssemblyApplicationPartFactory, Microsoft.AspNetCore.Mvc.Razor"));
 
         }
 

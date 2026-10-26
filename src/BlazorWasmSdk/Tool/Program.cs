@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.IO.Compression;
 
@@ -10,20 +12,20 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tool
     {
         public static int Main(string[] args)
         {
-            CliRootCommand rootCommand = new();
-            CliCommand brotli = new("brotli");
+            RootCommand rootCommand = new();
+            Command brotli = new("brotli");
 
-            CliOption<CompressionLevel> compressionLevelOption = new("-c")
+            Option<CompressionLevel> compressionLevelOption = new("-c")
             {
                 DefaultValueFactory = _ => CompressionLevel.SmallestSize,
                 Description = "System.IO.Compression.CompressionLevel for the Brotli compression algorithm.",
             };
-            CliOption<List<string>> sourcesOption = new("-s")
+            Option<List<string>> sourcesOption = new("-s")
             {
                 Description = "A list of files to compress.",
                 AllowMultipleArgumentsPerToken = false
             };
-            CliOption<List<string>> outputsOption = new("-o")
+            Option<List<string>> outputsOption = new("-o")
             {
                 Description = "The filenames to output the compressed file to.",
                 AllowMultipleArgumentsPerToken = false

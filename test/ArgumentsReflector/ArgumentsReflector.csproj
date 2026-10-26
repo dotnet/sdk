@@ -8,7 +8,7 @@
   <!-- Global usings removal -->
   <!-- See: https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props#using -->
   <ItemGroup>
-    <Using Remove="FluentAssertions" />
+    <Using Remove="AwesomeAssertions" />
     <Using Remove="Microsoft.NET.TestFramework" />
     <Using Remove="Microsoft.NET.TestFramework.Assertions" />
     <Using Remove="Microsoft.NET.TestFramework.Commands" />

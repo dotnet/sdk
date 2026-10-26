@@ -12,6 +12,11 @@
         <target state="translated">无法通过类型转发解析包含程序集 '{1}' 中的类型 '{0}'。请确保将程序集作为引用提供并包含类型。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">找不到语法节点。</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

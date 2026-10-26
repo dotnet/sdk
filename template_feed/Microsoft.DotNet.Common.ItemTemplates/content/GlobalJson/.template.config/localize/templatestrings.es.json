@@ -25,5 +25,11 @@
   "symbols/RollForward/choices/latestMajor/displayName": "Última versión principal",
   "symbols/RollForward/choices/disable/description": "No se hace un reenvío. Se requiere una coincidencia exacta.",
   "symbols/RollForward/choices/disable/displayName": "Deshabilitar el reenvío",
+  "symbols/TestRunner/description": "Ejecutor de pruebas que se va a usar.",
+  "symbols/TestRunner/displayName": "Ejecutor de pruebas",
+  "symbols/TestRunner/choices/VSTest/description": "Usar VSTest como ejecutor de pruebas",
+  "symbols/TestRunner/choices/VSTest/displayName": "VSTest",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Usar Microsoft.Testing.Platform como ejecutor de pruebas",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/displayName": "Microsoft.Testing.Platform",
   "postActions/open-file/description": "Abre global.json el editor"
 }

@@ -17,7 +17,13 @@ namespace Microsoft.NET.Build.Tests
             Type loggerType = typeof(LogTelemetryToStdOutForTest);
             string telemetryTestLogger = $"/Logger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}";
 
-            var testAsset = _testAssetsManager.CopyTestAsset("HelloWorld").WithSource();
+            var testAsset = _testAssetsManager.CopyTestAsset("HelloWorld").WithSource()
+            .WithProjectChanges(projectFile =>
+                projectFile.Root!.Descendants()
+                            .First(e => e.Name.LocalName == "PropertyGroup")
+                            .Add(XElement.Parse("""
+                                <PackAsTool>true</PackAsTool>
+                                """)));
 
             var mSBuildCommand = new MSBuildCommand(Log, "GenerateToolsSettingsFileFromBuildProperty", Path.Combine(testAsset.TestRoot));
 

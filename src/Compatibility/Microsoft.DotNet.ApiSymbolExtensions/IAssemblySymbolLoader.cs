@@ -19,21 +19,6 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         void AddReferenceSearchPaths(params string[] paths);
 
         /// <summary>
-        /// Indicates if the compilation used to resolve binaries has any roslyn diagnostics.
-        /// Might be useful when loading an assembly from source files.
-        /// </summary>
-        /// <param name="diagnostics">List of diagnostics.</param>
-        /// <returns>True if there are any diagnostics, false otherwise.</returns>
-        bool HasRoslynDiagnostics(out IReadOnlyList<Diagnostic> diagnostics);
-
-        /// <summary>
-        /// Indicates if the loader emitted any warnings that might affect the assembly resolution.
-        /// </summary>
-        /// <param name="warnings">List of warnings.</param>
-        /// <returns>True if there are any warnings, false otherwise.</returns>
-        bool HasLoadWarnings(out IReadOnlyList<AssemblyLoadWarning> warnings);
-
-        /// <summary>
         /// Loads a list of assemblies and gets its corresponding <see cref="IAssemblySymbol"/> from the specified paths.
         /// </summary>
         /// <param name="paths">List of paths to load binaries from. Can be full paths to binaries or directories.</param>
@@ -60,7 +45,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions
         /// </summary>
         /// <param name="name">The name to use to resolve the assembly.</param>
         /// <param name="stream">The stream to read the metadata from.</param>
-        /// <returns><see cref="IAssemblySymbol"/> representing the given <paramref name="stream"/>. If an 
+        /// <returns><see cref="IAssemblySymbol"/> representing the given <paramref name="stream"/>. If an
         /// assembly with the same <paramref name="name"/> was already loaded, the previously loaded assembly is returned.</returns>
         IAssemblySymbol? LoadAssembly(string name, Stream stream);
 

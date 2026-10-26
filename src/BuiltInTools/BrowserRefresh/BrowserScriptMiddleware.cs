@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         {
             var jsFileName = "Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorHotReload.js";
             using var stream = new MemoryStream();
-            var manifestStream = typeof(WebSocketScriptInjection).Assembly.GetManifestResourceStream(jsFileName)!;
+            var manifestStream = typeof(BrowserScriptMiddleware).Assembly.GetManifestResourceStream(jsFileName)!;
             manifestStream.CopyTo(stream);
 
             return stream.ToArray();
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         internal static ReadOnlyMemory<byte> GetWebSocketClientJavaScript(string hostString, string serverKey)
         {
             var jsFileName = "Microsoft.AspNetCore.Watch.BrowserRefresh.WebSocketScriptInjection.js";
-            using var reader = new StreamReader(typeof(WebSocketScriptInjection).Assembly.GetManifestResourceStream(jsFileName)!);
+            using var reader = new StreamReader(typeof(BrowserScriptMiddleware).Assembly.GetManifestResourceStream(jsFileName)!);
             var script = reader.ReadToEnd()
                 .Replace("{{hostString}}", hostString)
                 .Replace("{{ServerKey}}", serverKey);

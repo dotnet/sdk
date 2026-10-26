@@ -2,7 +2,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using System.CommandLine.IO;
 using System.CommandLine.Parsing;
 using Microsoft.Extensions.Logging;
 using static Microsoft.CodeAnalysis.Tools.FormatCommandCommon;
@@ -11,26 +10,11 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
 {
     internal static class FormatWhitespaceCommand
     {
-        // This delegate should be kept in Sync with the FormatCommand options and argument names
-        // so that values bind correctly.
-        internal delegate Task<int> Handler(
-            bool folder,
-            string? workspace,
-            bool noRestore,
-            bool check,
-            string[] include,
-            string[] exclude,
-            bool includeGenerated,
-            string? verbosity,
-            string? binarylog,
-            string? report,
-            IConsole console);
-
         private static readonly FormatWhitespaceHandler s_formattingHandler = new();
 
-        internal static CliCommand GetCommand()
+        internal static Command GetCommand()
         {
-            var command = new CliCommand("whitespace", Resources.Run_whitespace_formatting)
+            var command = new Command("whitespace", Resources.Run_whitespace_formatting)
             {
                 FolderOption
             };
@@ -44,8 +28,8 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
         internal static void EnsureFolderNotSpecifiedWithNoRestore(CommandResult symbolResult)
         {
             var folder = symbolResult.GetValue(FolderOption);
-            var noRestore = symbolResult.GetResult(NoRestoreOption);
-            if (folder && noRestore != null)
+            var noRestore = symbolResult.GetValue(NoRestoreOption);
+            if (folder && noRestore)
             {
                 symbolResult.AddError(Resources.Cannot_specify_the_folder_option_with_no_restore);
             }
@@ -61,12 +45,12 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
             }
         }
 
-        private class FormatWhitespaceHandler : AsynchronousCliAction
+        private class FormatWhitespaceHandler : AsynchronousCommandLineAction
         {
             public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
             {
                 var formatOptions = parseResult.ParseVerbosityOption(FormatOptions.Instance);
-                var logger = new SystemConsole().SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
+                var logger = SetupLogging(minimalLogLevel: formatOptions.LogLevel, minimalErrorLevel: LogLevel.Warning);
                 formatOptions = parseResult.ParseCommonOptions(formatOptions, logger);
                 formatOptions = parseResult.ParseWorkspaceOptions(formatOptions);
 
