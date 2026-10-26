@@ -25,9 +25,16 @@ One or more SDK channels or exact versions. Multiple values are resolved
 before installation and can be installed concurrently.
 
 When no value is present, `dotnetup` reads the nearest existing `global.json`
-and derives a channel from it. A malformed file causes the command to fail. If
-the file has no usable SDK requirement, or if no file exists, it selects
-`latest`.
+and derives a channel from it. Unreadable files, malformed JSON, and invalid SDK
+settings cause the command to fail instead of searching a parent directory.
+If the file does not specify an SDK version, or if no file exists, it selects
+`latest` without searching past the nearest file.
+
+`global.json` must be UTF-8, with or without a byte-order mark (BOM). Comments are
+allowed, but trailing commas and UTF-16/UTF-32 encodings are not, matching the
+`dotnet` host's parsing rules for those features. Dotnetup reports malformed files
+as errors rather than ignoring their SDK settings. Updating `sdk.version` preserves
+the file's formatting, comments, and presence or absence of a UTF-8 BOM.
 
 ## Options
 

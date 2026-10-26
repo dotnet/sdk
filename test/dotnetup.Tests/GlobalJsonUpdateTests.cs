@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using System.Text.Json;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
@@ -263,16 +265,15 @@ public class GlobalJsonUpdateTests : IDisposable
     }
 
     // ──────────────────────────────────────────────────────────────
-    //  UTF-16 BOM support
+    //  UTF-8 input and BOM preservation
     // ──────────────────────────────────────────────────────────────
 
     [TestMethod]
-    [DataRow("utf-8")]
-    [DataRow("utf-16")]    // UTF-16 LE with BOM
-    [DataRow("utf-16BE")]  // UTF-16 BE with BOM
-    public void GetGlobalJsonInfo_ReadsCorrectVersion_WithEncoding(string encodingName)
+    [DataRow(false)]
+    [DataRow(true)]
+    public void GetGlobalJsonInfo_ReadsCorrectVersion_WithUtf8(bool emitBom)
     {
-        var encoding = Encoding.GetEncoding(encodingName);
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom);
         var json = """
             {
               "sdk": {
@@ -291,11 +292,79 @@ public class GlobalJsonUpdateTests : IDisposable
     }
 
     [TestMethod]
-    [DataRow("utf-16")]    // UTF-16 LE with BOM
-    [DataRow("utf-16BE")]  // UTF-16 BE with BOM
-    public void UpdateGlobalJson_PreservesEncoding_WithUtf16Bom(string encodingName)
+    [DataRow(false)]
+    [DataRow(true)]
+    public void GetGlobalJsonInfo_AndChannelResolver_ReadTheSameSettings(bool emitBom)
     {
-        var encoding = Encoding.GetEncoding(encodingName);
+        var json = """
+            {
+              // SDK policy
+              "sdk": {
+                "version": "10.0.103",
+                "rollForward": "latestPatch",
+                "allowPrerelease": false,
+                "paths": [".dotnet"]
+              }
+            }
+            """;
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, json, new UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom));
+        var childDirectory = Directory.CreateDirectory(Path.Combine(_testDir, "child"));
+
+        var info = GlobalJsonModifier.GetGlobalJsonInfo(childDirectory.FullName);
+        var sdk = GlobalJsonChannelResolver.ReadSdkSection(path);
+
+        info.GlobalJsonPath.Should().Be(path);
+        info.GlobalJsonContents!.Sdk.Should().BeEquivalentTo(sdk);
+        info.SdkVersion.Should().Be("10.0.103");
+        info.RollForward.Should().Be("latestPatch");
+        info.AllowPrerelease.Should().BeFalse();
+        info.SdkPath.Should().Be(Path.Combine(_testDir, ".dotnet"));
+
+        GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.102")).Should().BeFalse();
+        File.ReadAllText(path).Should().Be(json);
+        GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105")).Should().BeTrue();
+        File.ReadAllText(path).Should().Be(json.Replace("10.0.103", "10.0.105", StringComparison.Ordinal));
+        File.ReadAllBytes(path).AsSpan().StartsWith(Encoding.UTF8.GetPreamble()).Should().Be(emitBom);
+    }
+
+    [TestMethod]
+    [DataRow("{")]
+    [DataRow("null")]
+    [DataRow("""{"sdk":[]}""")]
+    [DataRow("""{"sdk":{"allowPrerelease":"false"}}""")]
+    public void GetGlobalJsonInfo_ReportsMalformedContentsAsContextResolutionFailure(string contents)
+    {
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, contents);
+
+        var read = () => GlobalJsonModifier.GetGlobalJsonInfo(_testDir);
+
+        var error = read.Should().Throw<DotnetInstallException>().Which;
+        error.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        error.Message.Should().Contain(path);
+        error.InnerException.Should().BeAssignableTo<JsonException>();
+    }
+
+    [TestMethod]
+    public void UpdateGlobalJsonIfNewer_ReportsMalformedContentsWithoutChangingFile()
+    {
+        var path = Path.Combine(_testDir, "global.json");
+        var contents = """{"sdk":{"version":"10.0.103"},"broken":}""";
+        File.WriteAllText(path, contents);
+
+        var update = () => GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
+
+        update.Should().Throw<JsonException>();
+        File.ReadAllText(path).Should().Be(contents);
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void UpdateGlobalJson_PreservesUtf8Bom(bool emitBom)
+    {
+        var encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: emitBom);
         var json = """
             {
               "sdk": {
@@ -308,12 +377,64 @@ public class GlobalJsonUpdateTests : IDisposable
 
         GlobalJsonModifier.UpdateGlobalJson(path, sdkVersion: "10.0.100");
 
-        // Re-read with BOM detection to verify encoding was preserved
-        var (content, detectedEncoding) = GlobalJsonFileHelper.ReadFileWithEncodingDetection(path);
+        var content = File.ReadAllText(path);
         content.Should().Contain("\"10.0.100\"");
         content.Should().NotContain("\"8.0.100\"");
-        detectedEncoding.CodePage.Should().Be(encoding.CodePage,
-            $"file should still be encoded as {encodingName}");
+        File.ReadAllBytes(path).AsSpan().StartsWith(Encoding.UTF8.GetPreamble()).Should().Be(emitBom);
+    }
+
+    [TestMethod]
+    [DataRow(1200, false)]
+    [DataRow(1200, true)]
+    [DataRow(1201, false)]
+    [DataRow(1201, true)]
+    [DataRow(12000, false)]
+    [DataRow(12000, true)]
+    [DataRow(12001, false)]
+    [DataRow(12001, true)]
+    public void GlobalJson_RejectsNonUtf8WithoutChangingFile(int codePage, bool emitBom)
+    {
+        var encoding = Encoding.GetEncoding(codePage);
+        var path = Path.Combine(_testDir, "global.json");
+        byte[] contents = [..(emitBom ? encoding.GetPreamble() : []), ..encoding.GetBytes("""{"sdk":{"version":"10.0.103"}}""")];
+        File.WriteAllBytes(path, contents);
+
+        var read = () => GlobalJsonModifier.GetGlobalJsonInfo(_testDir);
+        var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
+        var update = () => GlobalJsonModifier.UpdateGlobalJson(path, "10.0.105");
+        var updateIfNewer = () => GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
+
+        read.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        readSdk.Should().Throw<JsonException>();
+        update.Should().Throw<JsonException>();
+        updateIfNewer.Should().Throw<JsonException>();
+        File.ReadAllBytes(path).Should().Equal(contents);
+    }
+
+    [TestMethod]
+    [DataRow("""{"sdk":{"version":"10.0.103",}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.103"},}""")]
+    [DataRow("""{"sdk":{"paths":[".dotnet",],"version":"10.0.103"}}""")]
+    [DataRow("""{"sdk":{"version":"10.0.103","paths":[".dotnet",]}}""")]
+    public void GlobalJson_RejectsTrailingCommasWithoutChangingFile(string contents)
+    {
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, contents);
+
+        var read = () => GlobalJsonModifier.GetGlobalJsonInfo(_testDir);
+        var readSdk = () => GlobalJsonChannelResolver.ReadSdkSection(path);
+        var update = () => GlobalJsonModifier.UpdateGlobalJson(path, "10.0.105");
+        var updateIfNewer = () => GlobalJsonModifier.UpdateGlobalJsonIfNewer(path, new ReleaseVersion("10.0.105"));
+        var replace = () => GlobalJsonModifier.ReplaceGlobalJsonSdkVersion(contents, "10.0.105");
+
+        read.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+        readSdk.Should().Throw<JsonException>();
+        update.Should().Throw<JsonException>();
+        updateIfNewer.Should().Throw<JsonException>();
+        replace.Should().Throw<JsonException>();
+        File.ReadAllText(path).Should().Be(contents);
     }
 
     [TestMethod]

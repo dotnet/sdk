@@ -29,6 +29,7 @@ internal class DotnetRootEntry
 internal class InstallSpec
 {
     public InstallComponent Component { get; set; }
+    // Repository entries retain this field for compatibility, but are evaluated from GlobalJsonPath.
     public string VersionOrChannel { get; set; } = string.Empty;
     public InstallSource InstallSource { get; set; }
     public string? GlobalJsonPath { get; set; }
@@ -42,14 +43,4 @@ internal class Installation
     public InstallComponent Component { get; set; }
     public string Version { get; set; } = string.Empty;
     public List<string> Subcomponents { get; set; } = [];
-}
-
-/// <summary>
-/// The source of an install spec.
-/// </summary>
-internal enum InstallSource
-{
-    Explicit,
-    GlobalJson,
-    All,
 }
