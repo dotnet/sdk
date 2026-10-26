@@ -6,6 +6,10 @@ This repository contains core functionality needed to create .NET projects that 
 
 See [dotnet/project-system](https://github.com/dotnet/project-system) for the project system work that is specific to Visual Studio.
 
+See the [dotnetup documentation](https://github.com/dotnet/sdk/tree/release/dnup/documentation/general/dotnetup)
+for work on the .NET toolchain manager. Dotnetup changes should target the
+`release/dnup` branch rather than `main`.
+
 Common project and item templates are found in [template_feed](https://github.com/dotnet/sdk/tree/main/template_feed).
 
 ## Build status

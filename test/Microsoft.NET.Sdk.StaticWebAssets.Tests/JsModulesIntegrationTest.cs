@@ -58,7 +58,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [TestMethod]
-        public void DotNetWatchBrowserToolsInitializer_IsDevelopmentOnlyAndBuildOnly()
+        public void HotReloadBrowserToolsInitializer_IsDevelopmentOnlyAndBuildOnly()
         {
             var projectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp");
             var build = CreateBuildCommand(projectDirectory);
@@ -66,17 +66,17 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var jsModulesManifestPath = Path.Combine(intermediateOutputPath, "jsmodules", "jsmodules.build.manifest.json");
 
             // The assets are part of every development build: the build owns the browser tools key
-            // pair and the settings document, and dotnet-watch only reads them back.
+            // pair and the settings document, and Hot Reload only reads them back.
             ExecuteCommand(build).Should().Pass();
             File.ReadAllText(jsModulesManifestPath)
-                .Should().Contain("Microsoft.NET.Sdk.BlazorWeb.DotNetWatch")
+                .Should().Contain("Microsoft.NET.Sdk.BlazorWeb.HotReload")
                 .And.Contain("lib.module.js");
 
             // Opting out removes them entirely.
             ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
             if (File.Exists(jsModulesManifestPath))
             {
-                File.ReadAllText(jsModulesManifestPath).Should().NotContain("Microsoft.NET.Sdk.BlazorWeb.DotNetWatch");
+                File.ReadAllText(jsModulesManifestPath).Should().NotContain("Microsoft.NET.Sdk.BlazorWeb.HotReload");
             }
 
             var publish = CreatePublishCommand(projectDirectory);
@@ -85,10 +85,10 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var publishManifestPath = Path.Combine(
                 publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
                 "staticwebassets.publish.json");
-            File.ReadAllText(publishManifestPath).Should().NotContain("Microsoft.NET.Sdk.BlazorWeb.DotNetWatch");
+            File.ReadAllText(publishManifestPath).Should().NotContain("Microsoft.NET.Sdk.BlazorWeb.HotReload");
             Directory.GetFiles(
                 publish.GetOutputDirectory(DefaultTfm, "Debug").ToString(),
-                "*DotNetWatch*",
+                "*HotReload*",
                 SearchOption.AllDirectories).Should().BeEmpty();
         }
 
