@@ -204,6 +204,69 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             .And.HaveStdOut(expectedStdOut);
     }
 
+    /// <seealso href="https://github.com/dotnet/sdk/issues/56747"/>
+    [TestMethod]
+    [DataRow("System.CommandLine.dll", false, null)]
+    [DataRow("System.CommandLine.dll", true, null)]
+    [DataRow("Program.dll", false, null)]
+    [DataRow("Program.deps.json", false, null)]
+    [DataRow("Program.runtimeconfig.json", false, null)]
+    [DataRow("System.CommandLine.resources.dll", false, "fr")]
+    public void UpToDate_MissingOutput(string outputFileName, bool modifySource, string? subdirectory)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var code = """
+            #:property PublishAot=false
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            new System.CommandLine.RootCommand("v1");
+            Console.WriteLine("v1");
+            """;
+        File.WriteAllText(programPath, code);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1");
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1");
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2");
+        Build(testInstance, BuildLevel.None, expectedOutput: "v2");
+
+        string outputPath = Path.Join(artifactsDir, "bin", "debug", subdirectory, outputFileName);
+        Assert.IsTrue(File.Exists(outputPath));
+        File.Delete(outputPath);
+
+        if (modifySource)
+        {
+            code = code.Replace("v2", "v3");
+            File.WriteAllText(programPath, code);
+        }
+
+        if (outputFileName == "System.CommandLine.dll")
+        {
+            new DotnetCommand(Log, "run", "--no-build", "--file", programPath)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining("System.IO.FileNotFoundException")
+                .And.HaveStdErrContaining("System.CommandLine");
+            Assert.IsFalse(File.Exists(outputPath));
+        }
+
+        string expectedOutput = modifySource ? "v3" : "v2";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Assert.IsTrue(File.Exists(outputPath));
+        Build(testInstance, BuildLevel.None, expectedOutput: expectedOutput);
+
+        File.Delete(outputPath);
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Assert.IsTrue(File.Exists(outputPath));
+        Build(testInstance, BuildLevel.None, expectedOutput: expectedOutput);
+    }
+
     /// <summary>
     /// <see cref="UpToDate"/> optimization should see through symlinks.
     /// See <see href="https://github.com/dotnet/sdk/issues/52063"/>.
