@@ -240,7 +240,9 @@ public class DotnetArchiveExtractorTests
     }
 
     [TestMethod]
-    public void Commit_LayoutConflictWithGlobalJsonSpec_SuggestsSourceAndManifestPath()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Commit_LayoutConflictWithGlobalJsonSpec_SuggestsUpdatingRepository(bool includeStandaloneSpec)
     {
         using var testEnv = new TestEnvironment();
         const string markerPath = "sdk/11.0.100/dotnet.dll";
@@ -250,11 +252,30 @@ public class DotnetArchiveExtractorTests
         {
             InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(existing);
         }
+        if (includeStandaloneSpec)
+        {
+            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var data = manifest.ReadManifest();
+            data.DotnetRoots.Single().InstallSpecs.Add(new InstallSpec
+            {
+                Component = InstallComponent.SDK, VersionOrChannel = "11.0.100", InstallSource = InstallSource.Migration
+            });
+            manifest.WriteManifest(data);
+        }
         using var replacement = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "replacement");
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(replacement));
 
-        ex.Message.Should().Contain("--source globaljson").And.Contain($"--manifest-path \"{testEnv.ManifestPath}\"");
+        ex.Message.Should().Contain("update or delete its global.json").And.Contain(globalJson).And.NotContain("--source");
+        if (includeStandaloneSpec)
+        {
+            ex.Message.Should().Contain("sdk uninstall 11.0.100 ").And.Contain($"--manifest-path \"{testEnv.ManifestPath}\"");
+        }
+        else
+        {
+            ex.Message.Should().NotContain("sdk uninstall");
+        }
     }
 
     [TestMethod]

@@ -461,8 +461,7 @@ internal class InstallerOrchestratorSingleton
             string existingVersions = string.Join(", ", existing.Select(installation => installation.Version));
             string action = owningSpecs.Count == 0
                 ? string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictRemoveFolder, component, existingVersions, install.ComponentDirectory)
-                : string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictRunCommand,
-                    string.Join(", ", owningSpecs.Select(spec => $"'{GetUninstallCommand(spec, install.InstallRoot, prepared.Request.Options.ManifestPath)}'")));
+                : GetLayoutConflictActions(owningSpecs, install.InstallRoot, prepared.Request.Options.ManifestPath);
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InstallLayoutConflict,
                 string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflict, component, install.Version, existingVersions, install.LayoutVersion, action),
@@ -471,17 +470,32 @@ internal class InstallerOrchestratorSingleton
         }
     }
 
+    private static string GetLayoutConflictActions(IReadOnlyList<InstallSpec> owningSpecs, DotnetInstallRoot installRoot, string? manifestPath)
+    {
+        var actions = new List<string>();
+        var standaloneSpecs = owningSpecs.Where(spec => spec.InstallSource != InstallSource.GlobalJson).ToList();
+        if (standaloneSpecs.Count > 0)
+        {
+            actions.Add(string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictRunCommand,
+                string.Join(", ", standaloneSpecs.Select(spec => $"'{GetUninstallCommand(spec, installRoot, manifestPath)}'"))));
+        }
+
+        var repositoryPaths = owningSpecs.Where(spec => spec.InstallSource == InstallSource.GlobalJson)
+            .Select(spec => $"'{spec.GlobalJsonPath}'").Distinct().ToList();
+        if (repositoryPaths.Count > 0)
+        {
+            actions.Add($"{Strings.UninstallRepositoryRequirement} {string.Join(", ", repositoryPaths)}");
+        }
+
+        return string.Join(" ", actions);
+    }
+
     private static string GetUninstallCommand(InstallSpec spec, DotnetInstallRoot installRoot, string? manifestPath)
     {
         string target = spec.Component == InstallComponent.SDK
             ? $"sdk uninstall {spec.VersionOrChannel}"
             : $"runtime uninstall {Commands.Runtime.Install.RuntimeInstallCommand.FormatComponentSpec(spec.Component, spec.VersionOrChannel)}";
         string command = $"dotnetup {target} {CommonOptions.InstallPathOption.Name} \"{installRoot.Path}\"";
-        if (spec.InstallSource != InstallSource.Explicit)
-        {
-            command += $" {CommonOptions.SourceOption.Name} {spec.InstallSource.ToString().ToLowerInvariant()}";
-        }
-
         return manifestPath is null ? command : $"{command} {CommonOptions.ManifestPathOption.Name} \"{manifestPath}\"";
     }
 

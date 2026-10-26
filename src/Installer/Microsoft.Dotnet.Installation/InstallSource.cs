@@ -11,6 +11,4 @@ internal enum InstallSource
     Explicit,
     GlobalJson,
     Migration,
-    // Wildcard for source filtering, not an actual install requirement origin.
-    All,
 }
