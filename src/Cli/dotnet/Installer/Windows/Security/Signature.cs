@@ -16,6 +16,10 @@ namespace Microsoft.DotNet.Cli.Installer.Windows.Security;
 /// <summary>
 /// Contains methods for verifying Authenticode signatures on Windows.
 /// </summary>
+/// <remarks>
+/// Also compiled into the NativeAOT dotnetup executable for self-update; keep it AOT-compatible and
+/// limited to <c>CliStrings.UnableToCheckCertificateChainPolicy</c> from the CLI resources.
+/// </remarks>
 #if NETCOREAPP
 [SupportedOSPlatform("windows5.1.2600")]
 #endif

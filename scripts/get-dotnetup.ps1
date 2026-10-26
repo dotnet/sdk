@@ -1,0 +1,318 @@
+#!/usr/bin/env pwsh
+<#
+.SYNOPSIS
+    Downloads the latest dotnetup preview build and installs it locally.
+
+.DESCRIPTION
+    Downloads dotnetup from the public aka.ms shortlinks (e.g.
+    https://aka.ms/dotnet/dotnetup/preview/dotnetup-win-x64.exe), verifies the
+    SHA-512 checksum, and installs the binary to a local directory.
+
+.PARAMETER InstallDir
+    Directory to install dotnetup into. Defaults to ~/.dotnetup.
+
+.PARAMETER Quality
+    Build quality to install. Defaults to 'preview'. Use 'daily' for the latest daily build.
+
+.PARAMETER RuntimeId
+    Override automatic OS/architecture detection with an explicit RID
+    (e.g. win-x64, linux-arm64, osx-arm64, linux-musl-x64).
+
+.EXAMPLE
+    ./get-dotnetup.ps1
+
+.EXAMPLE
+    ./get-dotnetup.ps1 -RuntimeId linux-musl-x64 -InstallDir /opt/dotnetup
+
+.EXAMPLE
+    ./get-dotnetup.ps1 -Quality daily
+#>
+[CmdletBinding()]
+param(
+    [string]$InstallDir = (Join-Path $HOME ".dotnetup"),
+    [string]$Quality = "preview",
+    [string]$RuntimeId
+)
+
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+$BaseUrl = "https://aka.ms/dotnet/dotnetup/$Quality"
+
+# The SYNC section below is verified by a test to keep the dotnetup script + dotnet sdk engineering script logic in sync.
+# (the get-dotnetup script intentionally does not yet exist in `main` and that script must work standalone)
+# BEGIN-SYNC ArchitectureDetection (keep identical with eng/sdk-tools.ps1)
+function ConvertTo-RidArchitecture([System.Runtime.InteropServices.Architecture]$Architecture) {
+    switch ($Architecture) {
+        ([System.Runtime.InteropServices.Architecture]::Arm64) { return "arm64" }
+        ([System.Runtime.InteropServices.Architecture]::X86) { return "x86" }
+        ([System.Runtime.InteropServices.Architecture]::Arm) { return "arm" }
+        default { return "x64" }
+    }
+}
+
+# Maps a Windows PROCESSOR_ARCHITECTURE/PROCESSOR_ARCHITEW6432 env-var value to the
+# lowercase dotnet RID architecture token. Throws when the value is empty or unrecognized.
+function ConvertTo-RidFromProcessorArchitecture([string]$ProcessorArchitecture) {
+    switch ($ProcessorArchitecture) {
+        "ARM64" { return "arm64" }
+        "AMD64" { return "x64" }
+        "ARM" { return "arm" }
+        "x86" { return "x86" }
+        default { throw "Unable to determine the machine architecture from the processor architecture ('$ProcessorArchitecture'); it is empty or unrecognized." }
+    }
+}
+
+# Detect native OS architecture, which may differ from the process architecture
+# (e.g., x64 process running on ARM64 Windows via emulation).
+function Get-NativeMachineArchitecture {
+    try {
+        return ConvertTo-RidArchitecture ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)
+    }
+    catch {
+        # OSArchitecture can throw when a shadowing RuntimeInformation type lacks
+        # the property (PSReadLine's polyfill on Windows PowerShell 5.1 under strict mode).
+        # PROCESSOR_ARCHITEW6432 reports the native arch under emulation (e.g. an x64 process on ARM64 Windows).
+        if ([Environment]::OSVersion.Platform -ne 'Win32NT') { throw }
+        $procArch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
+        return ConvertTo-RidFromProcessorArchitecture $procArch
+    }
+}
+# END-SYNC ArchitectureDetection
+
+function Get-RuntimeId {
+    if ($RuntimeId) {
+        return $RuntimeId
+    }
+
+    # Use RuntimeInformation so this works on both Windows PowerShell 5.1
+    # and PowerShell Core ($IsWindows/$IsMacOS/$IsLinux only exist on Core).
+
+    # Detect OS
+    if ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::Windows)) {
+        $os = "win"
+    }
+    elseif ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::OSX)) {
+        $os = "osx"
+    }
+    elseif ([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform(
+            [System.Runtime.InteropServices.OSPlatform]::Linux)) {
+        $os = "linux"
+
+        # Detect musl vs glibc
+        $isMusl = $false
+        try {
+            $lddOutput = & ldd --version 2>&1 | Out-String
+            if ($lddOutput -match "musl") {
+                $isMusl = $true
+            }
+        }
+        catch { }
+
+        if (-not $isMusl) {
+            try {
+                $null = & getconf GNU_LIBC_VERSION 2>&1
+                # If getconf succeeds, it's glibc
+            }
+            catch {
+                # getconf failed — likely musl
+                $isMusl = $true
+            }
+        }
+
+        if ($isMusl) {
+            $os = "linux-musl"
+        }
+    }
+    else {
+        throw "Unsupported operating system. Use -RuntimeId to specify a RID manually."
+    }
+
+    # Detect architecture using the shared helper (see the SYNC section above).
+    $archStr = Get-NativeMachineArchitecture
+    switch ($archStr) {
+        "x64" { }
+        "arm64" { }
+        default { throw "Unsupported architecture: $archStr. Use -RuntimeId to specify a RID manually." }
+    }
+
+    return "$os-$archStr"
+}
+
+# --- Main ---
+
+# Map a 'channel' such as 'daily' to specific version url for the binary and its .sha512 to prevent release race condition mismatches
+function Resolve-FinalUrl([string]$Url) {
+    # Require an actual curl executable; on Windows PowerShell 5.1 'curl' is an alias for Invoke-WebRequest, so -CommandType Application excludes it.
+    $curl = Get-Command curl.exe -CommandType Application -ErrorAction SilentlyContinue
+    if (-not $curl) { $curl = Get-Command curl -CommandType Application -ErrorAction SilentlyContinue }
+    if ($curl) {
+        $sink = [System.IO.Path]::GetTempFileName()
+        try {
+            # --head resolves redirects without downloading the body.
+            $final = & $curl.Source --silent --show-error --location --head `
+                --output $sink --write-out '%{url_effective}' $Url 2>$null
+            if ($LASTEXITCODE -eq 0 -and $final) { return "$final".Trim() }
+        }
+        catch { }
+        finally { Remove-Item $sink -Force -ErrorAction SilentlyContinue }
+    }
+
+    # Fallback for hosts without a curl executable (e.g. Windows PowerShell 5.1):
+    try {
+        $req = [System.Net.WebRequest]::Create($Url)
+        $req.Method = "HEAD"
+        $req.AllowAutoRedirect = $true
+        $resp = $req.GetResponse()
+        try { return $resp.ResponseUri.AbsoluteUri }
+        finally { $resp.Dispose() }
+    }
+    catch {
+        return $null
+    }
+}
+
+$rid = Get-RuntimeId
+Write-Host "Detected runtime: $rid" -ForegroundColor Cyan
+
+$binaryName = if ($rid -like "win-*") { "dotnetup.exe" } else { "dotnetup" }
+$fileName = if ($rid -like "win-*") { "dotnetup-$rid.exe" } else { "dotnetup-$rid" }
+$downloadUrl = "$BaseUrl/$fileName"
+$checksumUrl = "$downloadUrl.sha512"
+
+$resolvedUrl = Resolve-FinalUrl $downloadUrl
+if ($resolvedUrl -and $resolvedUrl -like "*/public/*") {
+    Write-Host "Resolved '$Quality' to concrete build: $resolvedUrl" -ForegroundColor DarkGray
+    $downloadUrl = $resolvedUrl
+    # Checksums live under the sibling 'public-checksums' path with a .sha512 suffix.
+    $checksumUrl = ($resolvedUrl -replace '/public/', '/public-checksums/') + ".sha512"
+}
+else {
+    Write-Host "Could not resolve '$Quality' shortlink to a concrete build; using shortlink URLs directly." -ForegroundColor DarkGray
+}
+
+$tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "dotnetup-install-$([System.IO.Path]::GetRandomFileName())"
+New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+
+try {
+    $tempBinary = Join-Path $tempDir $fileName
+
+    function Invoke-WithRetry {
+        param([scriptblock]$ScriptBlock, [string]$ActionDescription, [int]$MaxAttempts = 3)
+        $attempt = 1
+        while ($true) {
+            try {
+                & $ScriptBlock
+                return
+            }
+            catch {
+                if ($attempt -ge $MaxAttempts) {
+                    throw "${ActionDescription} failed after $MaxAttempts attempts.`nError: $($_.Exception.Message)"
+                }
+                $delay = [Math]::Pow(2, $attempt)
+                Write-Host "${ActionDescription} failed (attempt $attempt of $MaxAttempts): $($_.Exception.Message). Retrying in $delay seconds..." -ForegroundColor Yellow
+                Start-Sleep -Seconds $delay
+                $attempt++
+            }
+        }
+    }
+
+    Write-Host "Downloading $downloadUrl" -ForegroundColor Cyan
+    try {
+        Invoke-WithRetry -ActionDescription "Download from $downloadUrl" -ScriptBlock {
+            Invoke-WebRequest -Uri $downloadUrl -OutFile $tempBinary -UseBasicParsing
+        }
+    }
+    catch {
+        throw @"
+Failed to download dotnetup from $downloadUrl
+Available RIDs: win-x64, win-arm64, linux-x64, linux-arm64, linux-musl-x64, linux-musl-arm64, osx-x64, osx-arm64
+Use -RuntimeId to specify the correct RID, or -Quality to select a different build quality.
+
+Error: $($_.Exception.Message)
+"@
+    }
+
+    Write-Host "Verifying SHA-512 checksum..." -ForegroundColor Cyan
+    $tempChecksum = Join-Path $tempDir "$fileName.sha512"
+    Invoke-WithRetry -ActionDescription "Download checksum from $checksumUrl" -ScriptBlock {
+        Invoke-WebRequest -Uri $checksumUrl -OutFile $tempChecksum -UseBasicParsing
+    }
+
+    $expected = ((Get-Content $tempChecksum -Raw).Trim() -split '\s+')[0].ToLowerInvariant()
+    # Compute SHA-512 directly via .NET to avoid relying on Get-FileHash, which is
+    # not always resolvable in stripped-down PowerShell hosts (e.g., some CI agents).
+    $sha512 = [System.Security.Cryptography.SHA512]::Create()
+    try {
+        $stream = [System.IO.File]::OpenRead($tempBinary)
+        try {
+            $hashBytes = $sha512.ComputeHash($stream)
+        }
+        finally {
+            $stream.Dispose()
+        }
+    }
+    finally {
+        $sha512.Dispose()
+    }
+    $actual = ([System.BitConverter]::ToString($hashBytes) -replace '-', '').ToLowerInvariant()
+    if ($expected -ne $actual) {
+        throw "Checksum mismatch.`n  Expected: $expected`n  Actual:   $actual"
+    }
+    Write-Host "Checksum verified." -ForegroundColor Green
+
+    # Install just the binary (renamed to plain dotnetup[.exe])
+    Write-Host "Installing to $InstallDir..." -ForegroundColor Cyan
+    if (-not (Test-Path $InstallDir)) {
+        New-Item -ItemType Directory -Path $InstallDir -Force | Out-Null
+    }
+
+    $installedBinary = Join-Path $InstallDir $binaryName
+    Copy-Item -Path $tempBinary -Destination $installedBinary -Force
+
+    if (-not (Test-Path $installedBinary)) {
+        throw "Installation failed: '$installedBinary' not found after copy."
+    }
+
+    # Set executable bit on non-Windows
+    if ($rid -notlike "win-*") {
+        chmod +x $installedBinary
+    }
+
+    Write-Host ""
+    Write-Host "dotnetup installed successfully to $InstallDir" -ForegroundColor Green
+    Write-Host ""
+
+    # Check if install dir is on PATH
+    $pathDirs = $env:PATH -split [System.IO.Path]::PathSeparator
+    $onPath = $pathDirs | Where-Object { $_ -eq $InstallDir -or $_ -eq "$InstallDir/" -or $_ -eq "$InstallDir\" }
+
+    if (-not $onPath) {
+        Write-Host "To add dotnetup to your PATH, run:" -ForegroundColor Yellow
+        Write-Host ""
+        if ($rid -like "win-*") {
+            Write-Host "  # Current session:" -ForegroundColor DarkGray
+            Write-Host "  `$env:PATH = `"$InstallDir;`$env:PATH`""
+            Write-Host ""
+            Write-Host "  # Permanently (current user):" -ForegroundColor DarkGray
+            Write-Host "  [Environment]::SetEnvironmentVariable('PATH', `"$InstallDir;`$([Environment]::GetEnvironmentVariable('PATH', 'User'))`", 'User')"
+        }
+        else {
+            Write-Host "  # Current session:" -ForegroundColor DarkGray
+            Write-Host "  export PATH=`"$InstallDir`:`$PATH`""
+            Write-Host ""
+            Write-Host "  # Permanently (add to your shell profile):" -ForegroundColor DarkGray
+            Write-Host "  echo 'export PATH=`"$InstallDir`:`$PATH`"' >> ~/.bashrc"
+        }
+        Write-Host ""
+    }
+    else {
+        Write-Host "dotnetup is already on your PATH. Run 'dotnetup --help' to get started." -ForegroundColor Green
+    }
+}
+finally {
+    # Cleanup temp files
+    if (Test-Path $tempDir) { Remove-Item $tempDir -Recurse -Force -ErrorAction SilentlyContinue }
+}
