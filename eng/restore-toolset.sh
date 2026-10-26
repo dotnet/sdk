@@ -74,6 +74,36 @@ function ReadVersionDetailsProperty {
   sed -n "s:.*<$property_name>\([^<]*\)</$property_name>.*:\1:p" "$repo_root/eng/Version.Details.props" | head -n 1
 }
 
+function GetRuntimeInstallVersion {
+  local component=$1
+  local version=$2
+  local product_version build_version_property
+  case "$component" in
+    dotnet)
+      product_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
+      build_version_property="MicrosoftNETCorePlatformsPackageVersion"
+      ;;
+    aspnetcore)
+      product_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
+      build_version_property="MicrosoftAspNetCoreAppRefInternalPackageVersion"
+      ;;
+    *) echo "$version"; return ;;
+  esac
+
+  if [[ "$version" != "$product_version" ]]; then
+    echo "$version"
+    return
+  fi
+
+  local build_version
+  build_version=$(ReadVersionDetailsProperty "$build_version_property")
+  if [[ -z "$build_version" ]]; then
+    echo "Missing runtime build version property '$build_version_property' in eng/Version.Details.props." >&2
+    return 1
+  fi
+  echo "$build_version"
+}
+
 # Maps a dotnetup component (aspnetcore/windowsdesktop/dotnet) to the name of
 # its shared-framework folder under <dotnet root>/shared.
 function GetSharedFrameworkName {
@@ -151,6 +181,28 @@ function InstallDotNetSharedFrameworks {
     return
   fi
 
+  local dotnetup_specs=()
+  for spec in "${specs_to_install[@]}"; do
+    local component="dotnet"
+    local version="$spec"
+    if [[ "$spec" == *@* ]]; then
+      component="${spec%@*}"
+      version="${spec#*@}"
+    fi
+    local runtime_install_version
+    runtime_install_version=$(GetRuntimeInstallVersion "$component" "$version") || return 1
+    if [[ "$runtime_install_version" != "$version" ]]; then
+      # Stabilized runtimes live under build-stamped directories before the GA release is published.
+      InstallDotNetSharedFrameworksWithInstallScript "$dotnet_root" "" "$spec" || return $?
+    else
+      dotnetup_specs+=("$spec")
+    fi
+  done
+  specs_to_install=("${dotnetup_specs[@]}")
+  if [[ ${#specs_to_install[@]} -eq 0 ]]; then
+    return
+  fi
+
   local script_dir
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   local dotnetup_dir="$script_dir/dotnetup"
@@ -190,12 +242,18 @@ function InstallDotNetSharedFrameworksWithInstallScript {
     fi
     # Map dotnetup channel (e.g. "9.0") to the specific version the install
     # script's --version parameter expects (e.g. "9.0.0").
-    local install_version="$version"
+    local runtime_install_version
+    runtime_install_version=$(GetRuntimeInstallVersion "$component" "$version") || return 1
+    local install_version="$runtime_install_version"
     if [[ "$install_version" =~ ^[0-9]+\.[0-9]+$ ]]; then
       install_version="$install_version.0"
     fi
 
     local install_args=(--version "$install_version" --install-dir "$dotnet_root" --runtime "$component" --skip-non-versioned-files)
+    if [[ "$runtime_install_version" != "$version" ]]; then
+      # The installer resolves the stabilized filename using this build's productVersion.txt.
+      install_args+=(--azure-feed "https://ci.dot.net/public")
+    fi
     if [[ -n "$arch" ]]; then
       install_args+=(--architecture "$arch")
     fi

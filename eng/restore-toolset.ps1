@@ -181,6 +181,31 @@ function Get-CurrentRuntimeToolsetSpecs() {
     return $specs
 }
 
+function Get-RuntimeInstallVersion([string]$component, [string]$version) {
+    switch ($component) {
+        'dotnet' {
+            $productVersion = Get-VersionDetailsProperty 'MicrosoftNETCoreAppRefPackageVersion'
+            $buildVersionProperty = 'MicrosoftNETCorePlatformsPackageVersion'
+        }
+        'aspnetcore' {
+            $productVersion = Get-VersionDetailsProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+            $buildVersionProperty = 'MicrosoftAspNetCoreAppRefInternalPackageVersion'
+        }
+        default { return $version }
+    }
+
+    if ($version -ne $productVersion) {
+        return $version
+    }
+
+    $buildVersion = Get-VersionDetailsProperty $buildVersionProperty
+    if ([string]::IsNullOrEmpty($buildVersion)) {
+        throw "Missing runtime build version property '$buildVersionProperty' in eng/Version.Details.props."
+    }
+
+    return $buildVersion
+}
+
 # Maps a dotnetup component (e.g. 'aspnetcore', 'windowsdesktop' or 'dotnet')
 # to the name of its shared-framework folder under <dotnet root>\shared.
 function Get-SharedFrameworkName([string]$component) {
@@ -237,6 +262,22 @@ function InstallDotNetSharedFrameworks([string[]]$runtimeSpecs, [string]$dotNetR
         return
     }
 
+    $dotnetupSpecs = @()
+    foreach ($spec in $runtimeSpecsToInstall) {
+        $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
+        if ((Get-RuntimeInstallVersion $component $version) -ne $version) {
+            # Stabilized runtimes live under build-stamped directories before the GA release is published.
+            InstallDotNetSharedFrameworksWithInstallScript -RuntimeSpecs @($spec) -DotNetRoot $dotnetRoot
+        }
+        else {
+            $dotnetupSpecs += $spec
+        }
+    }
+    $runtimeSpecsToInstall = $dotnetupSpecs
+    if ($runtimeSpecsToInstall.Count -eq 0) {
+        return
+    }
+
     $dotnetupDir = Join-Path $PSScriptRoot "dotnetup"
     $dotnetupExe = Join-Path $dotnetupDir (GetExecutableFileName "dotnetup")
 
@@ -266,12 +307,17 @@ function InstallDotNetSharedFrameworksWithInstallScript([string[]]$runtimeSpecs,
     $installScript = GetDotNetInstallScript $dotNetRoot
     foreach ($spec in $runtimeSpecs) {
         $component, $version = if ($spec -match '^([^@]+)@(.+)$') { $matches[1], $matches[2] } else { 'dotnet', $spec }
-        $installVersion = ConvertTo-DotNetInstallScriptVersion $version
+        $runtimeInstallVersion = Get-RuntimeInstallVersion $component $version
+        $installVersion = ConvertTo-DotNetInstallScriptVersion $runtimeInstallVersion
         $installArgs = @{
             Version               = $installVersion
             InstallDir            = $dotNetRoot
             Runtime               = $component
             SkipNonVersionedFiles = $true
+        }
+        if ($runtimeInstallVersion -ne $version) {
+            # The installer resolves the stabilized filename using this build's productVersion.txt.
+            $installArgs.AzureFeed = 'https://ci.dot.net/public'
         }
         if (-not [string]::IsNullOrEmpty($architecture)) {
             $installArgs.Architecture = $architecture
