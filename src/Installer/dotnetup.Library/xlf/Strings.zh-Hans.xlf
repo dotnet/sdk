@@ -882,9 +882,9 @@ Or open a new terminal.</target>
         <note>{0} is a component name; {1} is a highlighted version or channel; {2} is the formatted install-source description.</note>
       </trans-unit>
       <trans-unit id="UninstallNoMatchingInstallations">
-        <source>No tracked installations matched component={0}, version='{1}', source={2} at {3}.</source>
-        <target state="new">No tracked installations matched component={0}, version='{1}', source={2} at {3}.</target>
-        <note>{0} is a component identifier; {1} is a version or channel; {2} is an install-source identifier; {3} is the installation root path.</note>
+        <source>No command-line or migration install spec found for {0} '{1}' at {2}.</source>
+        <target state="new">No command-line or migration install spec found for {0} '{1}' at {2}.</target>
+        <note>{0} is a component name; {1} is a version or channel; {2} is the installation root path.</note>
       </trans-unit>
       <trans-unit id="UninstallNoTrackedInstallations">
         <source>No tracked installations found at {0}.</source>
@@ -896,25 +896,15 @@ Or open a new terminal.</target>
         <target state="new">Install spec '{0}' ({1}; source: {2}) will be removed from tracking.</target>
         <note>{0} is a highlighted version or channel; {1} is a component name; {2} is an install-source identifier or a global.json path.</note>
       </trans-unit>
+      <trans-unit id="UninstallRepositoryRequirement">
+        <source>To change or remove a repository SDK requirement, update or delete its global.json file:</source>
+        <target state="new">To change or remove a repository SDK requirement, update or delete its global.json file:</target>
+        <note>{Locked="global.json"}</note>
+      </trans-unit>
       <trans-unit id="UninstallRetainedInstallation">
         <source>{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</source>
         <target state="new">{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</target>
         <note>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</note>
-      </trans-unit>
-      <trans-unit id="UninstallSourceNotFound">
-        <source>No [bold]{0}[/] {1} install spec found for '{2}', but matching specs exist with other sources:</source>
-        <target state="new">No [bold]{0}[/] {1} install spec found for '{2}', but matching specs exist with other sources:</target>
-        <note>{0} is an install-source identifier; {1} is a component name; {2} is a version or channel. {Locked="[bold]"}{Locked="[/]"}</note>
-      </trans-unit>
-      <trans-unit id="UninstallSpecNotFound">
-        <source>No {0} install spec found for '{1}' at {2}.</source>
-        <target state="new">No {0} install spec found for '{1}' at {2}.</target>
-        <note>{0} is a component name; {1} is a version or channel; {2} is the installation root path.</note>
-      </trans-unit>
-      <trans-unit id="UninstallSpecNotFoundWithOtherSources">
-        <source>No {0} install spec found for '{1}', but matching specs exist with other sources:</source>
-        <target state="new">No {0} install spec found for '{1}', but matching specs exist with other sources:</target>
-        <note>{0} is a component name; {1} is a version or channel.</note>
       </trans-unit>
       <trans-unit id="UninstallUnexpectedAdditionalRemoval">
         <source>{0} will [bold]also[/] be [bold]uninstalled[/] because it is no longer referenced by any install specs.</source>
@@ -925,11 +915,6 @@ Or open a new terminal.</target>
         <source>{0} will be [bold]uninstalled[/] because it is no longer referenced by any install specs.</source>
         <target state="new">{0} will be [bold]uninstalled[/] because it is no longer referenced by any install specs.</target>
         <note>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</note>
-      </trans-unit>
-      <trans-unit id="UninstallUseAllSources">
-        <source>Use {0} {1} to target these specs.</source>
-        <target state="new">Use {0} {1} to target these specs.</target>
-        <note>{0} is the source option name; {1} is the install-source value that selects every source.</note>
       </trans-unit>
       <trans-unit id="WindowsInstallerBusy">
         <source>Another installation is already in progress (installer exit code {0}). Wait for it to finish, then run the command again.</source>
