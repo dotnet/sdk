@@ -346,7 +346,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public void AddInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
     {
-        if (!Enum.IsDefined(spec.InstallSource) || spec.InstallSource == InstallSource.All)
+        if (!Enum.IsDefined(spec.InstallSource))
         {
             throw new ArgumentException("Unknown install source.", nameof(spec));
         }

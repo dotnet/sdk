@@ -772,24 +772,12 @@ Or open a new terminal.</value>
     <comment>{0} is the installation root path.</comment>
   </data>
   <data name="UninstallNoMatchingInstallations" xml:space="preserve">
-    <value>No tracked installations matched component={0}, version='{1}', source={2} at {3}.</value>
-    <comment>{0} is a component identifier; {1} is a version or channel; {2} is an install-source identifier; {3} is the installation root path.</comment>
-  </data>
-  <data name="UninstallSourceNotFound" xml:space="preserve">
-    <value>No [bold]{0}[/] {1} install spec found for '{2}', but matching specs exist with other sources:</value>
-    <comment>{0} is an install-source identifier; {1} is a component name; {2} is a version or channel. {Locked="[bold]"}{Locked="[/]"}</comment>
-  </data>
-  <data name="UninstallSpecNotFoundWithOtherSources" xml:space="preserve">
-    <value>No {0} install spec found for '{1}', but matching specs exist with other sources:</value>
-    <comment>{0} is a component name; {1} is a version or channel.</comment>
-  </data>
-  <data name="UninstallSpecNotFound" xml:space="preserve">
-    <value>No {0} install spec found for '{1}' at {2}.</value>
+    <value>No command-line or migration install spec found for {0} '{1}' at {2}.</value>
     <comment>{0} is a component name; {1} is a version or channel; {2} is the installation root path.</comment>
   </data>
-  <data name="UninstallUseAllSources" xml:space="preserve">
-    <value>Use {0} {1} to target these specs.</value>
-    <comment>{0} is the source option name; {1} is the install-source value that selects every source.</comment>
+  <data name="UninstallRepositoryRequirement" xml:space="preserve">
+    <value>To change or remove a repository SDK requirement, update or delete its global.json file:</value>
+    <comment>{Locked="global.json"}</comment>
   </data>
   <data name="UninstallConfirmationPrompt" xml:space="preserve">
     <value>Proceed with uninstall?</value>

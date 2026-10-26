@@ -20,6 +20,7 @@ internal static class UninstallPreview
         InstallComponent requestedComponent, string versionOrChannel, IReadOnlyList<InstallSpec> specsToRemove)
     {
         var hasWarnings = false;
+        var hasRepositoryRequirements = false;
         foreach (var target in targets.DistinctBy(i => (i.Component, i.Version)))
         {
             var specs = plan.GetReferencingSpecs(target);
@@ -38,6 +39,11 @@ internal static class UninstallPreview
                     "  {0} {1} {2}", spec.Component.GetDisplayName().EscapeMarkup(), spec.VersionOrChannel.EscapeMarkup(),
                     DotnetupTheme.Dim(string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecSource, source.EscapeMarkup()))));
             }
+            hasRepositoryRequirements |= specs.Any(s => s.InstallSource == InstallSource.GlobalJson);
+        }
+        if (hasRepositoryRequirements)
+        {
+            AnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.UninstallRepositoryRequirement.EscapeMarkup()));
         }
 
         var deletedPaths = plan.PathsToDelete.ToHashSet(StringComparer.OrdinalIgnoreCase);
