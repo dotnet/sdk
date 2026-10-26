@@ -164,7 +164,8 @@ internal class UpdateWorkflow
         if (spec.InstallSource == InstallSource.GlobalJson && !usesLastKnownRequirement)
         {
             spec.VersionOrChannel = channel.Name;
-            spec.LastKnownRequirement = RepositoryRequirement.FromChannel(channel);
+            spec.MinimumVersion = channel.MinimumVersion?.ToString();
+            spec.AllowPrerelease = channel.AllowPrerelease;
             new DotnetupSharedManifest(manifestPath).AddInstallSpec(installRoot, spec);
         }
         // Skip standalone exact-version specs. Exact global.json specs still need processing

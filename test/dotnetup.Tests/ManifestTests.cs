@@ -33,15 +33,20 @@ public class ManifestTests
         manifest.RecordInstallSpec(new DotnetInstallRequest(root,
             new UpdateChannel("10.0.1xx", new ReleaseVersion("10.0.103"), false), InstallComponent.SDK, options));
 
-        var saved = manifest.GetInstallSpecs(root).Single().LastKnownRequirement!;
+        var saved = manifest.GetInstallSpecs(root).Single();
         saved.VersionOrChannel.Should().Be("10.0.1xx");
         saved.MinimumVersion.Should().Be("10.0.103");
         saved.AllowPrerelease.Should().BeFalse();
+        using var json = JsonDocument.Parse(File.ReadAllText(env.ManifestPath));
+        var jsonSpec = json.RootElement.GetProperty("dotnetRoots")[0].GetProperty("installSpecs")[0];
+        jsonSpec.GetProperty("minimumVersion").GetString().Should().Be("10.0.103");
+        jsonSpec.GetProperty("allowPrerelease").GetBoolean().Should().BeFalse();
+        jsonSpec.TryGetProperty("lastKnownRequirement", out _).Should().BeFalse();
 
         manifest.RecordInstallSpec(new DotnetInstallRequest(root,
             new UpdateChannel("11", new ReleaseVersion("11.0.100-preview.1"), true), InstallComponent.SDK, options));
 
-        var updated = manifest.GetInstallSpecs(root).Should().ContainSingle().Subject.LastKnownRequirement!;
+        var updated = manifest.GetInstallSpecs(root).Should().ContainSingle().Subject;
         updated.VersionOrChannel.Should().Be("11");
         updated.MinimumVersion.Should().Be("11.0.100-preview.1");
         updated.AllowPrerelease.Should().BeTrue();
@@ -58,7 +63,8 @@ public class ManifestTests
         var original = new InstallSpec
         {
             Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
-            VersionOrChannel = "10.0.1xx", GlobalJsonPath = path
+            VersionOrChannel = "10.0.1xx", GlobalJsonPath = path,
+            MinimumVersion = "10.0.103", AllowPrerelease = false
         };
         manifest.AddInstallSpec(root, original);
         manifest.AddInstallSpec(root, new InstallSpec
@@ -67,6 +73,8 @@ public class ManifestTests
             VersionOrChannel = "11", GlobalJsonPath = Path.Combine(testEnv.TempRoot, ".", "global.json")
         });
         manifest.GetInstallSpecs(root).Should().ContainSingle().Which.VersionOrChannel.Should().Be("11");
+        manifest.GetInstallSpecs(root).Single().MinimumVersion.Should().BeNull();
+        manifest.GetInstallSpecs(root).Single().AllowPrerelease.Should().BeNull();
 
         manifest.RemoveInstallSpec(root, original);
         manifest.GetInstallSpecs(root).Should().BeEmpty();
@@ -134,6 +142,7 @@ public class ManifestTests
         };
 
         var json = JsonSerializer.Serialize(original, DotnetupManifestJsonContext.Default.DotnetupManifestData);
+        json.Should().NotContain("minimumVersion").And.NotContain("allowPrerelease");
         var deserialized = JsonSerializer.Deserialize(json, DotnetupManifestJsonContext.Default.DotnetupManifestData);
 
         deserialized.Should().NotBeNull();

@@ -379,7 +379,7 @@ public class GarbageCollectorTests
             Component = InstallComponent.SDK, Version = "10.0.105", Subcomponents = ["sdk/10.0.105"]
         });
         new GarbageCollector(manifest).Collect(root);
-        var saved = manifest.GetInstallSpecs(root).Single().LastKnownRequirement!;
+        var saved = manifest.GetInstallSpecs(root).Single();
         saved.MinimumVersion.Should().Be("10.0.103");
         saved.AllowPrerelease.Should().BeFalse();
 
@@ -397,7 +397,7 @@ public class GarbageCollectorTests
         new GarbageCollector(manifest).Collect(root);
 
         manifest.GetInstallations(root).Should().ContainSingle().Which.Version.Should().Be("10.0.105");
-        manifest.GetInstallSpecs(root).Single().LastKnownRequirement.Should().BeEquivalentTo(saved);
+        manifest.GetInstallSpecs(root).Single().Should().BeEquivalentTo(saved);
         Directory.Exists(Path.Combine(root.Path, "sdk", "10.0.105")).Should().BeTrue();
         Directory.Exists(Path.Combine(root.Path, "sdk", "10.0.106-preview.1")).Should().BeFalse();
     }

@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Dotnet.Installation;
-using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -33,9 +31,8 @@ public class InstallSpecResolverTests
         var spec = new InstallSpec
         {
             Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
-            VersionOrChannel = "9.0.1xx", GlobalJsonPath = path,
-            LastKnownRequirement = RepositoryRequirement.FromChannel(
-                new UpdateChannel("10.0.1xx", new ReleaseVersion("10.0.103"), false))
+            VersionOrChannel = "10.0.1xx", GlobalJsonPath = path,
+            MinimumVersion = "10.0.103", AllowPrerelease = false
         };
 
         var result = InstallSpecResolver.Resolve(spec,
@@ -51,7 +48,7 @@ public class InstallSpecResolverTests
         result.Spec!.MinimumVersion!.ToString().Should().Be("10.0.103");
         result.Spec.AllowPrerelease.Should().BeFalse();
         result.Installation!.Version.Should().Be("10.0.105");
-        spec.VersionOrChannel.Should().Be("9.0.1xx");
+        spec.VersionOrChannel.Should().Be("10.0.1xx");
     }
 
     [TestMethod]
@@ -69,8 +66,8 @@ public class InstallSpecResolverTests
         var spec = new InstallSpec
         {
             InstallSource = InstallSource.GlobalJson, GlobalJsonPath = path,
-            LastKnownRequirement = RepositoryRequirement.FromChannel(
-                new UpdateChannel("10.0.1xx", new ReleaseVersion("10.0.103"), false))
+            VersionOrChannel = "10.0.1xx",
+            MinimumVersion = "10.0.103", AllowPrerelease = false
         };
 
         var result = InstallSpecResolver.Evaluate(spec);
@@ -123,11 +120,16 @@ public class InstallSpecResolverTests
     }
 
     [TestMethod]
-    public void Resolve_RepositoryWithoutPathReportsErrorRatherThanUsingCachedChannel()
+    [DataRow(null, null)]
+    [DataRow("10.0.103", null)]
+    [DataRow(null, false)]
+    public void Resolve_RepositoryWithoutCompleteConstraintsReportsErrorRatherThanUsingCachedChannel(
+        string? minimumVersion, bool? allowPrerelease)
     {
         var result = InstallSpecResolver.Resolve(new InstallSpec
         {
-            Component = InstallComponent.SDK, VersionOrChannel = "10.0.1xx", InstallSource = InstallSource.GlobalJson
+            Component = InstallComponent.SDK, VersionOrChannel = "10.0.1xx", InstallSource = InstallSource.GlobalJson,
+            MinimumVersion = minimumVersion, AllowPrerelease = allowPrerelease
         }, [new() { Component = InstallComponent.SDK, Version = "10.0.100" }]);
 
         result.IsActive.Should().BeTrue();

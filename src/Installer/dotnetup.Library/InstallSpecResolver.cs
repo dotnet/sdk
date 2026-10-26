@@ -65,7 +65,8 @@ internal static class InstallSpecResolver
         {
             return new InstallSpecResolution
             {
-                Spec = spec.LastKnownRequirement?.ToChannel(),
+                Spec = spec.MinimumVersion is { } minimum && spec.AllowPrerelease is { } previews
+                    ? new UpdateChannel(spec.VersionOrChannel, new ReleaseVersion(minimum), previews) : null,
                 Error = string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError,
                     spec.GlobalJsonPath, ex.Message)
             };

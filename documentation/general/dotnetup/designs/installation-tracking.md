@@ -25,7 +25,9 @@ We will store the manifest in json format.  At the top level it should have a sc
 - Version, channel, or version range
 - Source: explicit install command, global.json, or previous (non-dotnetup) install
 - Global.json path
-- Last known repository requirement: resolved channel, minimum SDK version, and prerelease eligibility
+- Optional `minimumVersion` and `allowPrerelease` constraints for repository specs.
+  Together with `versionOrChannel`, these store the last known complete requirement.
+  Both constraints are absent for standalone specs and older channel-only registrations.
 
 ### Installation
 - Component

@@ -128,7 +128,7 @@ public class UpdateWorkflowTests
         var resolver = new ChannelVersionResolver(releases, new DailyChannelResolver(releases));
         var workflow = new UpdateWorkflow(resolver);
         workflow.Execute(env.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true);
-        var saved = manifest.GetInstallSpecs(root).Single().LastKnownRequirement!;
+        var saved = manifest.GetInstallSpecs(root).Single();
         saved.MinimumVersion.Should().Be("10.0.103");
         saved.AllowPrerelease.Should().BeFalse();
         File.WriteAllText(path, "{broken");
@@ -139,7 +139,7 @@ public class UpdateWorkflowTests
 
         manifest.GetInstallations(root).Should().ContainSingle().Which.Version.Should().Be("10.0.105");
         var remaining = manifest.GetInstallSpecs(root).Should().ContainSingle().Subject;
-        remaining.LastKnownRequirement.Should().BeEquivalentTo(saved);
+        remaining.Should().BeEquivalentTo(saved);
         locked?.Dispose();
         File.ReadAllText(path).Should().Be("{broken");
     }
