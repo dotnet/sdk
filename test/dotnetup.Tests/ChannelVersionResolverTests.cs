@@ -257,7 +257,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             releaseManifest.IndexRequestCount.Should().Be(1);
             releaseManifest.DirectReleaseRequestCount.Should().Be(0);
-            releaseManifest.ProductReleaseRequestCount.Should().Be(0);
         }
 
         [TestMethod]
@@ -273,7 +272,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             releaseManifest.IndexRequestCount.Should().Be(1);
             releaseManifest.DirectReleaseRequestCount.Should().Be(0);
-            releaseManifest.ProductReleaseRequestCount.Should().Be(0);
         }
 
         [TestMethod]
@@ -614,8 +612,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             public int DirectReleaseRequestCount { get; private set; }
 
-            public int ProductReleaseRequestCount { get; private set; }
-
             public ReadOnlyCollection<ProductRelease> Releases { get; }
 
             public override ProductCollection GetReleasesIndex()
@@ -626,7 +622,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests
 
             public override ReadOnlyCollection<ProductRelease> GetReleases(Product product)
             {
-                ProductReleaseRequestCount++;
                 return product.ProductVersion == "5.0" ? Releases : new ReadOnlyCollection<ProductRelease>([]);
             }
 
