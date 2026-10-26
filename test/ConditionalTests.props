@@ -72,13 +72,15 @@
         test/Microsoft.WebTools.AspireService.Tests/**/*.csproj
       </TestProjects>
       <TriggerPaths>
+        src/BlazorWasmSdk/**;
         src/Cli/**;
-        src/Dotnet.Format/**;
         src/Dotnet.Watch/**;
         src/Microsoft.DotNet.ProjectTools/**;
         src/RazorSdk/**;
         src/StaticWebAssetsSdk/**;
+        src/Tasks/Microsoft.NET.Build.Tasks/**;
         src/WasmSdk/**;
+        src/WebSdk/**;
         test/dotnet-watch*/**;
         test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/**;
         test/Microsoft.DotNet.HotReload*/**;
