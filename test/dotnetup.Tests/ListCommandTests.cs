@@ -472,10 +472,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         {
             Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
             VersionOrChannel = "10.0.1xx", GlobalJsonPath = path,
-            LastKnownRequirement = new RepositoryRequirement
-            {
-                VersionOrChannel = "10.0.1xx", MinimumVersion = "10.0.103", AllowPrerelease = false
-            }
+            MinimumVersion = "10.0.103", AllowPrerelease = false
         });
         Directory.CreateDirectory(Path.Combine(root.Path, "sdk", "10.0.105"));
         manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.105" });
@@ -492,7 +489,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
 
         using var jsonOutput = new StringWriter();
         InstallationLister.WriteJson(jsonOutput, data);
-        jsonOutput.ToString().Should().NotContain("lastKnownRequirement");
+        jsonOutput.ToString().Should().NotContain("minimumVersion").And.NotContain("allowPrerelease");
     }
 
     [TestMethod]

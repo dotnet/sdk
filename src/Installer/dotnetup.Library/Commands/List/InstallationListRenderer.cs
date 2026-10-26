@@ -30,7 +30,8 @@ internal static class InstallationListRenderer
                 VersionOrChannel = spec.VersionOrChannel,
                 InstallSource = spec.Source,
                 GlobalJsonPath = spec.GlobalJsonPath,
-                LastKnownRequirement = spec.LastKnownRequirement
+                MinimumVersion = spec.MinimumVersion,
+                AllowPrerelease = spec.AllowPrerelease
             });
             var selected = resolution.Spec is { } requirement
                 ? InstallSpecResolver.SelectInstallation(spec.Component, requirement, installations,
@@ -76,9 +77,9 @@ internal static class InstallationListRenderer
             ? FormatRequirement(requirement) : spec.VersionOrChannel;
         if (resolution.UsesLastKnownRequirement)
         {
-            var saved = spec.LastKnownRequirement!;
+            var saved = resolution.Spec!;
             display = string.Format(CultureInfo.InvariantCulture, Strings.ListLastKnownRequirement,
-                saved.VersionOrChannel, saved.MinimumVersion, saved.AllowPrerelease.ToString().ToLowerInvariant());
+                saved.Name, saved.MinimumVersion, saved.AllowPrerelease!.Value.ToString().ToLowerInvariant());
         }
         return new InstallationListRow
         {
@@ -172,7 +173,8 @@ internal static class InstallationListRenderer
         table.AddColumn(new TableColumn(new Text(Strings.ListSourceColumn)));
         foreach (var row in rows)
         {
-            var version = row.Installation?.Version ?? (row.Error is null || row.Spec?.LastKnownRequirement is not null
+            var version = row.Installation?.Version ?? (row.Error is null
+                || row.Spec is { MinimumVersion: not null, AllowPrerelease: not null }
                 ? Strings.ListNotInstalled : Strings.ListUnknown);
             if (row.Installation?.IsValid == false)
             {

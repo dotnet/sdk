@@ -93,7 +93,8 @@ internal static class InstallationLister
             VersionOrChannel = spec.VersionOrChannel,
             Source = spec.InstallSource,
             GlobalJsonPath = spec.GlobalJsonPath,
-            LastKnownRequirement = spec.LastKnownRequirement,
+            MinimumVersion = spec.MinimumVersion,
+            AllowPrerelease = spec.AllowPrerelease,
             InstallRoot = root.Path,
             Architecture = root.Architecture
         }).ToList();
@@ -150,7 +151,9 @@ internal class InstallSpecInfo
     public InstallSource Source { get; set; }
     public string? GlobalJsonPath { get; set; }
     [JsonIgnore]
-    public RepositoryRequirement? LastKnownRequirement { get; set; }
+    public string? MinimumVersion { get; set; }
+    [JsonIgnore]
+    public bool? AllowPrerelease { get; set; }
     public string InstallRoot { get; set; } = string.Empty;
     public InstallArchitecture Architecture { get; set; }
 }

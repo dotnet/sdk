@@ -118,7 +118,8 @@ internal class GarbageCollector
                 spec.VersionOrChannel = requirement.Name;
                 if (!resolution.UsesLastKnownRequirement)
                 {
-                    spec.LastKnownRequirement = RepositoryRequirement.FromChannel(requirement);
+                    spec.MinimumVersion = requirement.MinimumVersion?.ToString();
+                    spec.AllowPrerelease = requirement.AllowPrerelease;
                 }
             }
             if (resolution.Installation is { } matchingInstallation)
