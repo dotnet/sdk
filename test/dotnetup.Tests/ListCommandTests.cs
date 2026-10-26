@@ -460,6 +460,42 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
+    public void RelationshipRows_ShowLastKnownRequirementWithoutChangingJsonContractOrManifest()
+    {
+        var path = Path.Combine(_tempDir.FullName, "global.json");
+        File.WriteAllText(path, "{broken");
+        var root = new DotnetInstallRoot(_tempDir.FullName, InstallArchitecture.x64);
+        var manifestPath = Path.Combine(_tempDir.FullName, "manifest.json");
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(manifestPath);
+        manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
+            VersionOrChannel = "10.0.1xx", GlobalJsonPath = path,
+            LastKnownRequirement = new RepositoryRequirement
+            {
+                VersionOrChannel = "10.0.1xx", MinimumVersion = "10.0.103", AllowPrerelease = false
+            }
+        });
+        Directory.CreateDirectory(Path.Combine(root.Path, "sdk", "10.0.105"));
+        manifest.AddInstallation(root, new Installation { Component = InstallComponent.SDK, Version = "10.0.105" });
+        var before = File.ReadAllText(manifestPath);
+
+        var data = InstallationLister.GetListData(manifestPath: manifestPath);
+        var row = InstallationListRenderer.CreateRows(data.InstallSpecs, data.Installations).Single();
+        row.SpecDisplay.Should().Be("10.0.1xx (last known; minimum: 10.0.103, allowPrerelease: false)");
+        row.Installation!.Version.Should().Be("10.0.105");
+        row.Error.Should().Contain(path);
+        InstallationListRenderer.Write(Output, data, width: 250);
+        Output.ToString().Should().Contain("last known").And.Contain("Warning: Cannot read");
+        File.ReadAllText(manifestPath).Should().Be(before);
+
+        using var jsonOutput = new StringWriter();
+        InstallationLister.WriteJson(jsonOutput, data);
+        jsonOutput.ToString().Should().NotContain("lastKnownRequirement");
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void InstallationLister_ListsOnlyTopLevelInstallations(bool verify)

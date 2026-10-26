@@ -48,8 +48,11 @@ an SDK appear separately only if you also installed them separately. A `-` in
 the Install spec and Source columns means no displayed spec uses that installation.
 
 `Not installed` means no matching installation was found. If a `global.json`
-file cannot be read or parsed, its row shows `Unavailable` and `Unknown`, with
-a warning below the table. Deleted files and files that no longer specify an
+file cannot be read or parsed, its row shows the saved channel, minimum version,
+and prerelease eligibility labeled `last known`, with a warning below the table.
+The installed version is matched against those saved constraints. If there is
+no saved requirement, the row shows `Unavailable` and `Unknown` instead.
+Deleted files and files that no longer specify an
 SDK version are not shown. An `(invalid)` marker next to a version indicates
 that installation verification failed; the warning explains why.
 

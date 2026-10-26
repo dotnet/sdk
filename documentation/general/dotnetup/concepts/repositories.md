@@ -116,9 +116,22 @@ Use `dotnetup list` to find the stored channel, source path, and installation
 root. Add `--install-path` to select a custom root.
 
 If `global.json` cannot be read or contains an invalid SDK requirement, dotnetup
-reports a warning and keeps the requirement visible, but it does not keep an SDK
-based on the file's previously recorded version or channel. Other valid
-requirements can still keep that SDK installed.
+reports a warning and uses the last successfully resolved requirement for update
+and garbage collection. The saved requirement includes the channel, minimum SDK
+version, and prerelease eligibility. `dotnetup list` labels this fallback as
+`last known` and shows the read error. Listing does not modify the saved requirement.
+
+Update continues processing all requirements and does not fail solely because a
+repository uses this fallback. Even with `--update-global-json`, it does not
+rewrite a file that could not be read. A subsequent successful read replaces the
+saved requirement. Missing files and files with no SDK version still deactivate
+the registration instead of using the fallback.
+
+Older registrations might have only a recorded channel, without the complete
+requirement. If such a file cannot be read, update reports a failure for that
+repository but continues processing other requirements. Garbage collection skips
+that installation root, with a warning, rather than guessing which SDKs are safe
+to remove.
 
 ## See also
 

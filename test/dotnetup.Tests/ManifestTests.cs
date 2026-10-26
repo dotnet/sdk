@@ -19,6 +19,35 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class ManifestTests
 {
     [TestMethod]
+    public void RecordRepositoryRequirementPersistsAndRefreshesFullConstraints()
+    {
+        using var env = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(env.ManifestPath);
+        var root = new DotnetInstallRoot(env.InstallPath, InstallArchitecture.x64);
+        var options = new InstallRequestOptions
+        {
+            InstallSource = InstallSource.GlobalJson,
+            GlobalJsonPath = Path.Combine(env.TempRoot, "global.json")
+        };
+        manifest.RecordInstallSpec(new DotnetInstallRequest(root,
+            new UpdateChannel("10.0.1xx", new ReleaseVersion("10.0.103"), false), InstallComponent.SDK, options));
+
+        var saved = manifest.GetInstallSpecs(root).Single().LastKnownRequirement!;
+        saved.VersionOrChannel.Should().Be("10.0.1xx");
+        saved.MinimumVersion.Should().Be("10.0.103");
+        saved.AllowPrerelease.Should().BeFalse();
+
+        manifest.RecordInstallSpec(new DotnetInstallRequest(root,
+            new UpdateChannel("11", new ReleaseVersion("11.0.100-preview.1"), true), InstallComponent.SDK, options));
+
+        var updated = manifest.GetInstallSpecs(root).Should().ContainSingle().Subject.LastKnownRequirement!;
+        updated.VersionOrChannel.Should().Be("11");
+        updated.MinimumVersion.Should().Be("11.0.100-preview.1");
+        updated.AllowPrerelease.Should().BeTrue();
+    }
+
+    [TestMethod]
     public void RepositorySpecIdentityDoesNotDependOnCachedChannel()
     {
         using var testEnv = new TestEnvironment();

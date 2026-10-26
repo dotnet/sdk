@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
@@ -42,7 +43,13 @@ internal class GarbageCollector
             return new GarbageCollectionPlan(manifest, null, [], [], []);
         }
 
-        var installSpecsByInstallation = ResolveInstallSpecsByInstallation(root);
+        var installSpecsByInstallation = ResolveInstallSpecsByInstallation(root, out bool skipCollection);
+        if (skipCollection)
+        {
+            Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                Strings.GarbageCollectionSkippedUnreadableRequirement, root.Path));
+            return new GarbageCollectionPlan(manifest, root, installSpecsByInstallation, [], []);
+        }
 
         var installationsToKeep = installSpecsByInstallation.Keys.Select(i => (i.Component, i.Version)).ToHashSet();
         var installationsToRemove = root.Installations
@@ -83,8 +90,9 @@ internal class GarbageCollector
         return DeleteOrphanedSubcomponents(plan.Root.Path, plan.PathsToDelete);
     }
 
-    private static Dictionary<Installation, List<InstallSpec>> ResolveInstallSpecsByInstallation(DotnetRootEntry root)
+    private static Dictionary<Installation, List<InstallSpec>> ResolveInstallSpecsByInstallation(DotnetRootEntry root, out bool skipCollection)
     {
+        skipCollection = false;
         var installSpecsByInstallation = new Dictionary<Installation, List<InstallSpec>>();
         foreach (var spec in root.InstallSpecs.ToList())
         {
@@ -97,11 +105,21 @@ internal class GarbageCollector
             if (resolution.Error is not null)
             {
                 Console.Error.WriteLine(resolution.Error);
+                skipCollection |= resolution.Spec is null;
+                if (resolution.UsesLastKnownRequirement)
+                {
+                    Console.Error.WriteLine(string.Format(CultureInfo.InvariantCulture,
+                        Strings.RepositoryUsingLastKnownRequirement, spec.GlobalJsonPath));
+                }
             }
             if (spec.InstallSource == InstallSource.GlobalJson && resolution.Spec is { } requirement)
             {
                 // Preserve the legacy manifest shape; the file remains authoritative.
                 spec.VersionOrChannel = requirement.Name;
+                if (!resolution.UsesLastKnownRequirement)
+                {
+                    spec.LastKnownRequirement = RepositoryRequirement.FromChannel(requirement);
+                }
             }
             if (resolution.Installation is { } matchingInstallation)
             {

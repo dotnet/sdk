@@ -29,7 +29,8 @@ internal static class InstallationListRenderer
                 Component = spec.Component,
                 VersionOrChannel = spec.VersionOrChannel,
                 InstallSource = spec.Source,
-                GlobalJsonPath = spec.GlobalJsonPath
+                GlobalJsonPath = spec.GlobalJsonPath,
+                LastKnownRequirement = spec.LastKnownRequirement
             });
             var selected = resolution.Spec is { } requirement
                 ? InstallSpecResolver.SelectInstallation(spec.Component, requirement, installations,
@@ -73,12 +74,18 @@ internal static class InstallationListRenderer
         };
         var display = resolution.GlobalJsonSdk is { } requirement
             ? FormatRequirement(requirement) : spec.VersionOrChannel;
+        if (resolution.UsesLastKnownRequirement)
+        {
+            var saved = spec.LastKnownRequirement!;
+            display = string.Format(CultureInfo.InvariantCulture, Strings.ListLastKnownRequirement,
+                saved.VersionOrChannel, saved.MinimumVersion, saved.AllowPrerelease.ToString().ToLowerInvariant());
+        }
         return new InstallationListRow
         {
             Component = spec.Component,
             Spec = spec,
             Installation = selected,
-            SpecDisplay = resolution.Error is null ? display : Strings.ListUnavailable,
+            SpecDisplay = resolution.Error is null || resolution.UsesLastKnownRequirement ? display : Strings.ListUnavailable,
             SourceDisplay = source,
             Error = resolution.Error
         };
@@ -165,7 +172,8 @@ internal static class InstallationListRenderer
         table.AddColumn(new TableColumn(new Text(Strings.ListSourceColumn)));
         foreach (var row in rows)
         {
-            var version = row.Installation?.Version ?? (row.Error is null ? Strings.ListNotInstalled : Strings.ListUnknown);
+            var version = row.Installation?.Version ?? (row.Error is null || row.Spec?.LastKnownRequirement is not null
+                ? Strings.ListNotInstalled : Strings.ListUnknown);
             if (row.Installation?.IsValid == false)
             {
                 version = string.Format(CultureInfo.InvariantCulture, Strings.ListInvalidInstallation, version);
