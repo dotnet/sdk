@@ -8,17 +8,18 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// <summary>
 /// The current evaluated version spec and selected installation for a saved spec. Missing or
 /// versionless repository files are inactive; unreadable requirements remain active
-/// with an error and no selected installation.
+/// with a diagnostic, using the last known requirement when available.
 /// </summary>
 internal sealed class InstallSpecResolution
 {
     public bool IsActive { get; init; } = true;
     /// <summary>
-    /// The current evaluated version specification, not the saved manifest entry.
-    /// Null when the repository specification is inactive or cannot be read.
+    /// The current or last known version specification.
+    /// Null when inactive or unreadable without a saved requirement.
     /// </summary>
     public UpdateChannel? Spec { get; init; }
     public GlobalJsonContents.SdkSection? GlobalJsonSdk { get; init; }
     public Installation? Installation { get; set; }
     public string? Error { get; init; }
+    public bool UsesLastKnownRequirement => Error is not null && Spec is not null;
 }

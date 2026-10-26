@@ -370,6 +370,18 @@
     <value>Warning: Cannot read {0}: {1}</value>
     <comment>0: global.json path, 1: error details.</comment>
   </data>
+  <data name="RepositoryUsingLastKnownRequirement" xml:space="preserve">
+    <value>Warning: Using the last known SDK requirement from {0}.</value>
+    <comment>0: global.json path.</comment>
+  </data>
+  <data name="GarbageCollectionSkippedUnreadableRequirement" xml:space="preserve">
+    <value>Warning: Skipping garbage collection for {0} because a repository requirement could not be read and has no saved requirement.</value>
+    <comment>0: dotnet installation root.</comment>
+  </data>
+  <data name="ListLastKnownRequirement" xml:space="preserve">
+    <value>{0} (last known; minimum: {1}, allowPrerelease: {2})</value>
+    <comment>0: saved channel, 1: minimum SDK version, 2: prerelease eligibility. {Locked="allowPrerelease"}</comment>
+  </data>
   <data name="GlobalJsonInvalidContents" xml:space="preserve">
     <value>Expected a JSON object.</value>
   </data>

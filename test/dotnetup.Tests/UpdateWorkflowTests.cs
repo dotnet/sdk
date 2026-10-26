@@ -6,6 +6,7 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -81,6 +82,11 @@ public class UpdateWorkflowTests
         {
             Component = InstallComponent.SDK, InstallSource = InstallSource.Explicit, VersionOrChannel = "9.0.100"
         });
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "10.0.103"));
+        manifest.AddInstallation(root, new Installation
+        {
+            Component = InstallComponent.SDK, Version = "10.0.103", Subcomponents = ["sdk/10.0.103"]
+        });
 
         var update = () => new UpdateWorkflow(new ChannelVersionResolver())
             .Execute(testEnv.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true);
@@ -90,6 +96,63 @@ public class UpdateWorkflowTests
         remaining.Should().HaveCount(2);
         remaining.Should().Contain(s => s.GlobalJsonPath == invalidPath);
         remaining.Should().Contain(s => s.InstallSource == InstallSource.Explicit);
+        manifest.GetInstallations(root).Should().ContainSingle().Which.Version.Should().Be("10.0.103");
+        Directory.Exists(Path.Combine(root.Path, "sdk", "10.0.103")).Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void UpdateUsesSavedRequirementAndDoesNotRewriteUnreadableFile(bool unreadable)
+    {
+        using var env = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(env.ManifestPath);
+        var root = new DotnetInstallRoot(env.InstallPath, InstallArchitecture.x64);
+        var path = Path.Combine(env.TempRoot, "global.json");
+        File.WriteAllText(path, """{"sdk":{"version":"10.0.103","allowPrerelease":false}}""");
+        var spec = RepositorySpec(path);
+        manifest.AddInstallSpec(root, spec);
+        manifest.AddInstallSpec(root, RepositorySpec(Path.Combine(env.TempRoot, "missing.json")));
+        foreach (var version in new[] { "10.0.103", "10.0.105" })
+        {
+            env.StubComponentDirectories(null, (InstallComponent.SDK, version));
+            File.WriteAllText(Path.Combine(root.Path, "sdk", version, "dotnet.dll"), "");
+            manifest.AddInstallation(root, new Installation
+            {
+                Component = InstallComponent.SDK, Version = version, Subcomponents = [$"sdk/{version}"]
+            });
+        }
+        File.WriteAllText(Path.Combine(root.Path, DotnetupUtilities.GetDotnetExeName()), "");
+        var releases = new OfflineReleaseManifest();
+        var resolver = new ChannelVersionResolver(releases, new DailyChannelResolver(releases));
+        var workflow = new UpdateWorkflow(resolver);
+        workflow.Execute(env.ManifestPath, root.Path, InstallComponent.SDK, noProgress: true);
+        var saved = manifest.GetInstallSpecs(root).Single().LastKnownRequirement!;
+        saved.MinimumVersion.Should().Be("10.0.103");
+        saved.AllowPrerelease.Should().BeFalse();
+        File.WriteAllText(path, "{broken");
+        using var locked = unreadable ? File.Open(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None) : null;
+
+        workflow.Execute(env.ManifestPath, root.Path, InstallComponent.SDK,
+            noProgress: true, updateGlobalJson: true);
+
+        manifest.GetInstallations(root).Should().ContainSingle().Which.Version.Should().Be("10.0.105");
+        var remaining = manifest.GetInstallSpecs(root).Should().ContainSingle().Subject;
+        remaining.LastKnownRequirement.Should().BeEquivalentTo(saved);
+        locked?.Dispose();
+        File.ReadAllText(path).Should().Be("{broken");
+    }
+
+    private sealed class OfflineReleaseManifest : ReleaseManifest
+    {
+        private readonly ReleaseIndexFixture _fixture = ReleaseIndexFixture.Create();
+
+        public override System.Collections.ObjectModel.ReadOnlyCollection<ProductRelease>? GetReleases(int major, int minor)
+        {
+            var product = _fixture.Index.Single(p => p.ProductVersion == $"{major}.{minor}");
+            return new(_fixture.GetReleases(product).ToList());
+        }
     }
 
     private static InstallSpec RepositorySpec(string path) => new()

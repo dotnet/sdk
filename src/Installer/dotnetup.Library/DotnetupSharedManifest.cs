@@ -328,6 +328,12 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 {
                     errors.Add($"An install spec for {spec.Component} in root '{root.Path}' has an empty version/channel.");
                 }
+                if (spec.LastKnownRequirement is { } requirement
+                    && (string.IsNullOrWhiteSpace(requirement.VersionOrChannel)
+                        || !ReleaseVersion.TryParse(requirement.MinimumVersion, out _)))
+                {
+                    errors.Add($"An install spec in root '{root.Path}' has an invalid last known repository requirement.");
+                }
             }
         }
 
@@ -372,6 +378,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         else if (spec.InstallSource == InstallSource.GlobalJson)
         {
             existing.VersionOrChannel = spec.VersionOrChannel;
+            existing.LastKnownRequirement = spec.LastKnownRequirement ?? existing.LastKnownRequirement;
         }
 
         WriteManifest(manifest);
@@ -532,7 +539,9 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             Component = installRequest.Component,
             VersionOrChannel = installRequest.Channel.Name,
             InstallSource = installRequest.Options.InstallSource,
-            GlobalJsonPath = installRequest.Options.GlobalJsonPath
+            GlobalJsonPath = installRequest.Options.GlobalJsonPath,
+            LastKnownRequirement = installRequest.Options.InstallSource == InstallSource.GlobalJson
+                ? RepositoryRequirement.FromChannel(installRequest.Channel) : null
         });
     }
 
