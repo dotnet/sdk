@@ -1282,7 +1282,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 
     /// <summary>
     /// Testing optimization <see cref="CscOnly_AfterMSBuild"/>.
-    /// When compilation fails, the obj dll should not be copied to bin directory.
+    /// When compilation fails, the obj dll should not be copied to bin directory and the existing bin dll should remain unchanged.
     /// This prevents spurious errors if the dll file was not even produced by roslyn due to compilation errors.
     /// </summary>
     [TestMethod]
@@ -1308,10 +1308,11 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         new FileInfo(objDll).Should().Exist();
         var binDll = Path.Join(artifactsDir, "bin", "debug", "Program.dll");
         new FileInfo(binDll).Should().Exist();
+        byte[] binDllContents = File.ReadAllBytes(binDll);
+        DateTime binDllLastWriteTimeUtc = File.GetLastWriteTimeUtc(binDll);
 
-        // Delete the dlls
+        // Keep the bin DLL so the missing-output check does not force MSBuild.
         File.Delete(objDll);
-        File.Delete(binDll);
 
         // Write invalid code that causes compilation to fail
         code = code + "\n#error my custom error";
@@ -1327,7 +1328,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
 
         new FileInfo(objDll).Should().NotExist();
-        new FileInfo(binDll).Should().NotExist();
+        new FileInfo(binDll).Should().Exist();
+        Assert.AreSequenceEqual(binDllContents, File.ReadAllBytes(binDll));
+        Assert.AreEqual(binDllLastWriteTimeUtc, File.GetLastWriteTimeUtc(binDll));
     }
 
     /// <summary>
