@@ -125,10 +125,12 @@ function GetSharedFrameworkPath {
 
 # Returns success (0) if a shared framework matching $version (a major.minor
 # channel such as 6.0 or an exact version) is already present for $component.
+# Stabilized product folders also require a matching stamp when a build is specified.
 function IsSharedFrameworkInstalled {
   local dotnet_root=$1
   local component=$2
   local version=$3
+  local build_version=${4:-}
   local fx_root
   fx_root="$(GetSharedFrameworkPath "$dotnet_root" "$component")"
 
@@ -137,9 +139,17 @@ function IsSharedFrameworkInstalled {
   # spuriously match an installed 8.0.10.
   if [[ "$version" =~ ^[0-9]+\.[0-9]+$ ]]; then
     compgen -G "$fx_root/$version*" > /dev/null 2>&1
-  else
-    [[ -d "$fx_root/$version" ]]
+    return $?
   fi
+
+  local framework_path="$fx_root/$version"
+  [[ -d "$framework_path" ]] || return 1
+  if [[ -n "$build_version" && "$build_version" != "$version" ]]; then
+    local build_version_file="$framework_path/.sdk-runtime-build-version"
+    [[ -f "$build_version_file" ]] && [[ "$(cat "$build_version_file")" == "$build_version" ]]
+    return $?
+  fi
+  return 0
 }
 
 # Installs additional shared frameworks for testing purposes.
@@ -160,7 +170,9 @@ function InstallDotNetSharedFrameworks {
       version="${spec#*@}"
     fi
 
-    if ! IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version"; then
+    local runtime_install_version
+    runtime_install_version=$(GetRuntimeInstallVersion "$component" "$version") || return 1
+    if ! IsSharedFrameworkInstalled "$dotnet_root" "$component" "$version" "$runtime_install_version"; then
       specs_to_install+=("$spec")
     fi
   done
@@ -254,6 +266,14 @@ function InstallDotNetSharedFrameworksWithInstallScript {
     if [[ "$runtime_install_version" != "$version" ]]; then
       # The installer resolves the stabilized filename using this build's productVersion.txt.
       install_args+=(--azure-feed "https://ci.dot.net/public")
+
+      # Installers skip existing versioned directories, even if they contain an older build.
+      local framework_path
+      framework_path="$(GetSharedFrameworkPath "$dotnet_root" "$component")/$version"
+      rm -rf -- "$framework_path" || return $?
+      if [[ "$component" == "dotnet" ]]; then
+        rm -rf -- "$dotnet_root/host/fxr/$version" || return $?
+      fi
     fi
     if [[ -n "$arch" ]]; then
       install_args+=(--architecture "$arch")
@@ -281,6 +301,9 @@ function InstallDotNetSharedFrameworksWithInstallScript {
       fi
       echo "Failed to install shared framework spec '$spec' to '$dotnet_root' using dotnet install script${architecture_message} (exit code '$lastexitcode', installed '$framework_installed')."
       ExitWithExitCode $lastexitcode
+    fi
+    if [[ "$runtime_install_version" != "$version" ]]; then
+      printf '%s' "$runtime_install_version" > "$framework_path/.sdk-runtime-build-version" || return $?
     fi
   done
 }
