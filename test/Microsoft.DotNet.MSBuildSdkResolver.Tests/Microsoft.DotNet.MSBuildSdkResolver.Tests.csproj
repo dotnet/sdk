@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" VersionOverride="$(MicrosoftDeploymentDotNetReleasesToolsetPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

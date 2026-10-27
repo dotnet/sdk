@@ -89,7 +89,4 @@ Bu ürün, kullanım verilerini toplar
   
   <String Id="VisualStudioWarning" Value="Visual Studio ile .NET [VERSIONMAJOR].[VERSIONMINOR] kullanmayı planlıyorsanız Visual Studio 2026 [MINIMUMVSVERSION] veya üzeri bir sürüm gerekir. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Daha fazla bilgi edinin&lt;/A&gt;."/>
   <String Id="LicenseAssent" Value="Yükle'ye tıklayarak aşağıdaki koşulları kabul etmiş olursunuz:"/>
-  <String Id="InstallPathx64x86" Value="x64 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X64]&quot;), x86 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X86]&quot;) ile aynı olamaz"/>
-  <String Id="InstallPathARM64x86" Value="ARM64 SDK yüklemeleri için yükleme yolu (&quot;[DOTNETHOME_ARM64]&quot;), x86 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X86]&quot;) ile aynı olamaz"/>
-  <String Id="InstallPathARM64x64" Value="ARM64 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_ARM64]&quot;), x64 SDK yüklemelerinin yükleme yolu (&quot;[DOTNETHOME_X64]&quot;) ile aynı olamaz"/>
 </WixLocalization>
