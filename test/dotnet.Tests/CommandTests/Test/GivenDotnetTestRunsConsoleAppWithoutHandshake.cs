@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute("--unsupported-option");
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(5);
             result.StdOut.Should().Contain("Usage: ConsoleAppDoesNothing [options]");
             result.StdOut.Should().Contain("Option '--unsupported-option' is not recognized.");
             result.StdOut.Should().NotContain("\0");
