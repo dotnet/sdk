@@ -37,7 +37,9 @@ public class ProjectGraphFactoryTests
     }
 
     [TestMethod]
-    public void VirtualProject()
+    [DataRow(null, ToolsetInfo.CurrentTargetFramework)]
+    [DataRow("net9.0", "net9.0")]
+    public void VirtualProject(string? targetFramework, string expectedTargetFramework)
     {
         var dir = TestAssetManager.CreateTestDirectory().Path;
 
@@ -49,11 +51,12 @@ public class ProjectGraphFactoryTests
         var projectRepr = new ProjectRepresentation(projectPath: null, entryPointFilePath);
         var factory = new ProjectGraphFactory([projectRepr], buildProperties: [], _testLogger, TestOptions.GlobalOptions, TestOptions.GetEnvironmentOptions());
 
-        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: null, CancellationToken.None);
+        var graph = factory.TryLoadProjectGraph(projectGraphRequired: true, virtualProjectTargetFramework: targetFramework, CancellationToken.None);
         Assert.IsNotNull(graph);
 
         var root = graph.Graph.GraphRoots.Single();
         Assert.AreEqual(VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath), root.ProjectInstance.FullPath);
+        Assert.AreEqual(expectedTargetFramework, root.ProjectInstance.GetPropertyValue("TargetFramework"));
     }
 
     [TestMethod]

@@ -27,7 +27,7 @@ function InitializeCustomSDKToolset {
     # The following shared frameworks are only needed for testing.
     # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
     if ($env:DOTNET_INSTALL_TEST_RUNTIMES -ne 'false') {
-        $runtimeSpecs = @("6.0", "7.0", "8.0", "9.0", "10.0")
+        $runtimeSpecs = @("6.0", "aspnetcore@6.0.36", "7.0", "8.0", "9.0", "10.0")
         # Also install the exact runtime versions that arcade's toolset requires
         # (from Version.Details.props) so tests can target those specific versions.
         $runtimeSpecs += Get-CurrentRuntimeToolsetSpecs
@@ -156,8 +156,8 @@ function ConvertTo-DotNetInstallScriptVersion([string]$version) {
     return $version
 }
 
-function Get-VersionDetailsProperty([string]$propertyName) {
-    $versionDetails = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot 'eng\Version.Details.props'))
+function Get-VersionProperty([string]$propertyName, [string]$fileName = 'Version.Details.props') {
+    $versionDetails = [xml](Get-Content -Raw -Path (Join-Path $RepoRoot "eng\$fileName"))
     $property = $versionDetails.SelectSingleNode("//$propertyName")
     if ($null -eq $property) {
         return ""
@@ -167,10 +167,32 @@ function Get-VersionDetailsProperty([string]$propertyName) {
 }
 
 function Get-CurrentRuntimeToolsetSpecs() {
-    $runtimeVersion = Get-VersionDetailsProperty 'MicrosoftNETCoreAppRefPackageVersion'
-    $aspNetCoreVersion = Get-VersionDetailsProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+    $runtimeVersion = Get-VersionProperty 'MicrosoftNETCoreAppRefPackageVersion'
+    $aspNetCoreVersion = Get-VersionProperty 'MicrosoftAspNetCoreAppRefPackageVersion'
+    $net110Version = Get-VersionProperty 'Net110PackageVersion' 'ManualVersions.props'
+    if ([string]::IsNullOrEmpty($net110Version)) {
+        throw 'Missing Net110PackageVersion in eng/ManualVersions.props.'
+    }
+    $net110WorkloadPatch = Get-VersionProperty 'VersionFeature110ForWorkloads' 'Versions.props'
+    if ($net110WorkloadPatch -eq '$(VersionFeature110)') {
+        $net110WorkloadPatch = Get-VersionProperty 'VersionFeature110' 'Versions.props'
+    }
+    if ([string]::IsNullOrEmpty($net110WorkloadPatch)) {
+        throw 'Missing VersionFeature110ForWorkloads in eng/Versions.props.'
+    }
 
-    $specs = @()
+    # Generated test apps still target net11 even after the current runtime packs move to net12.
+    $specs = @($net110Version, "aspnetcore@$net110Version")
+    if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
+        $specs += "windowsdesktop@$net110Version"
+    }
+
+    # Workload devservers can require a newer net11 runtime than the app targeting packs.
+    $net110WorkloadVersion = "11.0.$net110WorkloadPatch"
+    if ($net110WorkloadVersion -ne $net110Version) {
+        $specs += $net110WorkloadVersion, "aspnetcore@$net110WorkloadVersion"
+    }
+
     if (-not [string]::IsNullOrEmpty($runtimeVersion)) {
         $specs += $runtimeVersion
     }
