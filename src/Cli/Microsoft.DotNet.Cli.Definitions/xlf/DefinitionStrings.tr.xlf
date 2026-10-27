@@ -105,10 +105,10 @@ Değişken yoksa oluşturur, varsa değişkeni geçersiz kılar.
 Bu bağımsız değişken, birden çok değişken sağlamak için birden çok kez belirtilebilir.
 
 Örnek:
--e DEĞİŞKEN=abc
--e DEĞİŞKEN="boşluk içeren değerler"
--e DEĞİŞKEN="noktalı virgülle;ayrılmış;değerler"
--e DEĞ1=abc -e DEĞ2=def -e DEĞ3=ghi
+-e VARIABLE=abc
+-e VARIABLE="boşluk içeren değerler"
+-e VARIABLE="değer;noktalı virgüllerle;ayrılmış"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>
@@ -135,10 +135,10 @@ Bu, testleri yalıtılmış bir işlemde çalıştırılmaya zorlar.
 Bu bağımsız değişken, birden çok değişken sağlamak için birden çok kez belirtilebilir.
 
 Örnek:
--e DEĞİŞKEN=abc
--e DEĞİŞKEN="boşluk içeren değerler"
--e DEĞİŞKEN="noktalı virgülle;ayrılmış;değerler"
--e DEĞ1=abc -e DEĞ2=def -e DEĞ3=ghi
+-e VARIABLE=abc
+-e VARIABLE="boşluk içeren değerler"
+-e VARIABLE="değer;noktalı virgüllerle;ayrılmış"
+-e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>

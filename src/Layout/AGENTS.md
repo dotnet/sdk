@@ -36,6 +36,41 @@ Two families of targets:
 - Producing the laid-out SDK requires the **full repo build** (so the components exist
   to copy), not just this project — see the root build/dogfood instructions.
 
+Downlevel test runtimes are acquired by
+[`eng/restore-toolset.ps1`](../../eng/restore-toolset.ps1) and
+[`.sh`](../../eng/restore-toolset.sh) and overlaid by
+[`OverlaySdkOnLKG.targets`](redist/targets/OverlaySdkOnLKG.targets).
+Targeting packs required by offline tests belong in that test-only overlay too,
+not in `BundledLayoutPackage`. Keep their versions aligned with
+`GenerateBundledVersions.targets`.
+Windows GUI tests also need the matching Windows Desktop shared runtime.
+Workload devserver runtimes follow
+[`VersionFeature110ForWorkloads`](../../eng/Versions.props), which can be newer
+than the test targeting packs pinned by
+[`Net110PackageVersion`](../../eng/ManualVersions.props).
+
+### macOS tool signing
+
+`PublishRoslyn` and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with
+per-tool `SigningIdentifier` metadata and their existing entitlement files, while
+preserving other signing metadata. Official signing must preserve those identifiers
+and entitlements or explicitly supply the same values. Do not assign a shared
+product identifier to apphost templates.
+Identifiers use `com.microsoft.dotnet.<executable-name>` in lowercase, including
+`msbuild`, `vbcscompiler`, and the `dotnet-*` tool names.
+
+`LayoutBundledTools` ad hoc signs the three native `aspnetcoretools` shims after
+copying the selected package into the SDK layout. It preserves existing entitlements,
+requirements, signing flags, hardened runtime version, and launch and library
+constraints while explicitly setting the identifier, without adding JIT
+entitlements to NativeAOT tools. Its file selection is scoped to the selected
+package version and RID (`tools/*/<rid>`).
+The framework directory is `any` for self-contained tools. Selection excludes
+debug-symbol bundles.
+This is an integrated signing experiment: permanent signing belongs in the
+ASP.NET Core publishing targets so standalone packages have the same identities,
+and SDK composition does not replace a producer's official signature.
+
 ### SDK staging incrementality
 
 The targets below manage their own incremental state. When you change these targets,

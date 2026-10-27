@@ -61,7 +61,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         _sdkFeatureBand = sdkFeatureBand;
         _workloadResolver = workloadResolver;
         _dependent = $"{DependentPrefix},{sdkFeatureBand},{HostArchitecture}";
-        _manifestInstaller = new WindowsMsiManifestInstaller(_nugetPackageDownloader, Log, LogError);
+        _manifestInstaller = new WindowsMsiManifestInstaller(_nugetPackageDownloader, Log, LogError, Cache.VerifyPackageSignature);
 
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 

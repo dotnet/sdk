@@ -10,7 +10,8 @@
     This script publishes the dotnet-aot.Tests project as a NativeAOT executable,
     publishes the dotnet-aot library and dn host, and runs the resulting native
     test binary. This verifies both the Native AOT test closure and end-to-end dn
-    integration against a complete SDK installation.
+    integration against a complete SDK installation. The test publish retains
+    managed build output for test-module integration validation.
 
 .PARAMETER Configuration
     Build configuration (Debug or Release). Default: Debug.
@@ -95,26 +96,16 @@ Write-Host ""
 if (-not $NoBuild) {
     Write-Host "Publishing as NativeAOT..." -ForegroundColor Yellow
 
+    # Managed module integration also needs the full Build output.
     & $dotnet publish $testProject `
         -c $Configuration `
         -r $RuntimeIdentifier `
         -p:PublishAotTests=true `
+        -p:UseOptimizedPublish=false `
         -p:PublishDir=$publishDir
 
     if ($LASTEXITCODE -ne 0) {
         Write-Host "ERROR: AOT publish failed with exit code $LASTEXITCODE" -ForegroundColor Red
-        exit $LASTEXITCODE
-    }
-
-    # AotTestModules_RunsManagedTestModule runs the managed (JIT) build of this test module
-    # through dn. Build it explicitly rather than relying on the NativeAOT publish above to
-    # leave a RID-specific copy in artifacts/bin.
-    & $dotnet build $testProject `
-        -c $Configuration `
-        -r $RuntimeIdentifier
-
-    if ($LASTEXITCODE -ne 0) {
-        Write-Host "ERROR: Managed test module build failed with exit code $LASTEXITCODE" -ForegroundColor Red
         exit $LASTEXITCODE
     }
 
@@ -147,10 +138,18 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
-$managedTestModule = Get-ChildItem ([System.IO.Path]::Combine($repoRoot, "artifacts", "bin", "dotnet-aot.Tests", $Configuration)) `
-    -Recurse -Filter "dotnet-aot.Tests.dll" -ErrorAction SilentlyContinue |
-    Where-Object { $_.FullName -like "*$RuntimeIdentifier*" } |
-    Select-Object -First 1 -ExpandProperty FullName
+$managedTestModule = & $dotnet msbuild $testProject `
+    -p:Configuration=$Configuration `
+    -p:RuntimeIdentifier=$RuntimeIdentifier `
+    -p:PublishAotTests=true `
+    -p:UseOptimizedPublish=false `
+    -p:PublishDir=$publishDir `
+    -getProperty:TargetPath
+
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Could not determine the managed test module path." -ForegroundColor Red
+    exit $LASTEXITCODE
+}
 
 # Run
 if (-not (Test-Path $exePath)) {
@@ -166,8 +165,8 @@ if (-not (Test-Path $dnPath)) {
     Write-Host "ERROR: Published dn host not found at $dnPath" -ForegroundColor Red
     exit 1
 }
-if (-not $managedTestModule) {
-    Write-Host "ERROR: Managed test module not found for Native AOT integration validation." -ForegroundColor Red
+if (-not (Test-Path -LiteralPath $managedTestModule -PathType Leaf)) {
+    Write-Host "ERROR: Managed test module not found at $managedTestModule for Native AOT integration validation." -ForegroundColor Red
     exit 1
 }
 
