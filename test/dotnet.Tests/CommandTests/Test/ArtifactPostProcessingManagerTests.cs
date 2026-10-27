@@ -232,6 +232,48 @@ public class ArtifactPostProcessingManagerTests
             failureMessage: null,
             exitCode: TestExitCode.GenericFailure);
 
+    [TestMethod]
+    [DataRow("complete", true, true)]
+    [DataRow("partial", true, false)]
+    [DataRow("legacy", true, false)]
+    [DataRow("foreign", true, false)]
+    [DataRow("complete", false, false)]
+    public void ApplyOutputs_CoverageTotalRequiresCompleteProvenanceAndUntruncatedRun(
+        string provenance, bool allowCoverageSummary, bool expectedTotal)
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        reporter.AssemblyRunStarted("A.dll", "net10.0", "x64", "execution-1", "instance-1");
+        reporter.AssemblyRunStarted("B.dll", "net10.0", "x64", "execution-2", "instance-2");
+        ArtifactPostProcessingArtifact first = CreateArtifact("first.coverage", "microsoft.codecoverage") with { ExecutionId = "execution-1" };
+        ArtifactPostProcessingArtifact second = CreateArtifact("second.coverage", "microsoft.codecoverage") with { ExecutionId = "execution-2" };
+        ArtifactPostProcessingApplication application = CreateApplication();
+        var group = new ArtifactPostProcessingGroup("microsoft.codecoverage", IsKind: true, [first, second], [application]);
+        var job = new ArtifactPostProcessingJob(application, [group]);
+        string[]? inputPaths = provenance switch
+        {
+            "complete" => [first.Path, second.Path],
+            "partial" => [first.Path],
+            "foreign" => [first.Path, second.Path, "outside-job.coverage"],
+            _ => null,
+        };
+        ArtifactPostProcessingArtifact merged = CreateArtifact("merged.coverage", "microsoft.codecoverage", inputPaths) with
+        {
+            CoverageSummary = [new(null, "collector.postprocessor", 0, null, (int)CoverageMetric.Line, null, 184, 186)],
+        };
+
+        ArtifactPostProcessingManager.ApplyOutputs(reporter, job, [merged], allowCoverageSummary);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        string output = console.GetOutput();
+        output.Should().Contain("merged.coverage");
+        output.Contains("Total - Line: 98.9%", StringComparison.Ordinal).Should().Be(expectedTotal);
+        if (!allowCoverageSummary)
+        {
+            output.Should().NotContain(CliCommandStrings.CodeCoverageSummary);
+        }
+    }
+
     private static void AssertFailedPostProcessingPreservesOriginalArtifacts(
         string? failureMessage,
         int exitCode)
@@ -264,7 +306,8 @@ public class ArtifactPostProcessingManagerTests
                 TestDisplayName: null,
                 SessionUid: null,
                 Kind: "microsoft.testing.trx",
-                InputArtifactPaths: [first.Path, second.Path]));
+                InputArtifactPaths: [first.Path, second.Path],
+                CoverageSummary: [new(null, "collector.postprocessor", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
         if (failureMessage is not null)
         {
             invocation.RecordFailure(failureMessage);
@@ -287,6 +330,7 @@ public class ArtifactPostProcessingManagerTests
         output.Should().Contain("first.trx");
         output.Should().Contain("second.trx");
         output.Should().NotContain("merged.trx");
+        output.Should().NotContain(CliCommandStrings.CodeCoverageSummary);
     }
 
     [TestMethod]

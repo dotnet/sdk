@@ -260,6 +260,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
         _handshakeFailures.Clear();
+        ClearCoverageSummaries();
         _buildErrorsCount = 0;
         _testExecutionStartTime = null;
         _testExecutionEndTime = null;
@@ -473,6 +474,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.Append(durationText);
         AppendLongDuration(terminal, runDuration, wrapInParentheses: false, colorize: false);
         terminal.AppendLine();
+
+        AppendCoverageSummary(terminal, exitCode);
 
         // Optional "Flaky tests" section (on by default, suppressed by '--show-flaky-tests off'). No-op when
         // nothing was retried, so the summary stays byte-identical for a run without retries.
@@ -1325,6 +1328,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
         lock (_artifactsLock)
         {
             _artifacts.RemoveAll(artifact => paths.Contains(artifact.Path));
+        }
+
+        lock (_coverageLock)
+        {
+            foreach (string path in paths)
+            {
+                _mergedCoverageSummaries.Remove(path);
+            }
         }
     }
 

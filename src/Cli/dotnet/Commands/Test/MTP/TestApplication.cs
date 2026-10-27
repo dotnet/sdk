@@ -758,7 +758,8 @@ internal sealed class TestApplication(
                         SetNegotiatedProtocolVersion(handshakeAccepted ? negotiatedVersion : string.Empty);
                         return Task.FromResult((IResponse)CreateHandshakeMessage(
                             handshakeAccepted ? negotiatedVersion : string.Empty,
-                            includeControlPipe: _httpGateway is null));
+                            includeControlPipe: _httpGateway is null,
+                            includeCoverageSummary: handshakeAccepted && SupportsCoverageSummary(handshakeMessage)));
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -774,6 +775,10 @@ internal sealed class TestApplication(
 
                     case FileArtifactMessages fileArtifactMessages:
                         OnFileArtifactMessages(fileArtifactMessages);
+                        break;
+
+                    case CoverageSummaryMessages coverageSummaryMessages:
+                        _handler.OnCoverageSummaryReceived(coverageSummaryMessages);
                         break;
 
                     case TestInProgressMessages testInProgressMessages:
@@ -866,7 +871,11 @@ internal sealed class TestApplication(
         return highestCommonVersionText;
     }
 
-    private HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true)
+    internal static bool SupportsCoverageSummary(HandshakeMessage handshakeMessage)
+        => handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.CoverageSummaryVersion, out string? version)
+            && version == ProtocolConstants.CoverageSummaryVersion;
+
+    private HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true, bool includeCoverageSummary = false)
     {
         var properties = new Dictionary<byte, string>(capacity: 6)
         {
@@ -880,6 +889,11 @@ internal sealed class TestApplication(
         if (version.Length > 0 && includeControlPipe)
         {
             properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+        }
+
+        if (includeCoverageSummary)
+        {
+            properties.Add(HandshakeMessagePropertyNames.CoverageSummaryVersion, ProtocolConstants.CoverageSummaryVersion);
         }
 
         return new HandshakeMessage(properties);

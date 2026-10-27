@@ -148,6 +148,7 @@ internal static class FileArtifactMessageFieldsId
     public const ushort SessionUid = 6;
     public const ushort Kind = 7;
     public const ushort InputArtifactPaths = 8;
+    public const ushort CoverageSummary = 9;
 }
 
 internal static class TestSessionEventFieldsId
@@ -208,4 +209,25 @@ internal static class ServerControlMessageFieldsId
     public const int MessagesSerializerId = 14;
 
     public const ushort Kind = 1;
+}
+
+internal static class CoverageSummaryMessagesFieldsId
+{
+    public const int MessagesSerializerId = 15;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort Summaries = 3;
+}
+
+internal static class CoverageSummaryMessageFieldsId
+{
+    public const ushort SessionUid = 1;
+    public const ushort ProducerId = 2;
+    public const ushort ScopeLevel = 3;
+    public const ushort ScopeName = 4;
+    public const ushort Metric = 5;
+    public const ushort CustomMetricName = 6;
+    public const ushort CoveredCount = 7;
+    public const ushort CoverableCount = 8;
 }

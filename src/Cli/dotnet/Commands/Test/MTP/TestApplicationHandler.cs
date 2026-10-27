@@ -21,6 +21,7 @@ internal sealed class TestApplicationHandler
     private readonly TestApplicationSettings _testApplicationSettings;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
+    private readonly HashSet<string> _coverageSummaryInstances = new(StringComparer.Ordinal);
 
     private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
     private bool _receivedTestHostHandshake;
@@ -28,6 +29,7 @@ internal sealed class TestApplicationHandler
     private bool _receivedIncompleteHandshake;
     private bool _handshakeRejected;
     private bool _retryEnabled;
+    private bool _postProcessorSupportsCoverageSummary;
 
     public TestApplicationHandler(
         TerminalTestReporter output,
@@ -186,6 +188,19 @@ internal sealed class TestApplicationHandler
                 _module.TargetFramework ?? tfm,
                 arch,
                 handshakeMessage);
+        }
+
+        if (TestApplication.SupportsCoverageSummary(handshakeMessage))
+        {
+            if (_options.IsArtifactPostProcessing)
+            {
+                _postProcessorSupportsCoverageSummary = true;
+            }
+            else if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.InstanceId, out string? coverageInstanceId)
+                && !string.IsNullOrWhiteSpace(coverageInstanceId))
+            {
+                _coverageSummaryInstances.Add(coverageInstanceId);
+            }
         }
 
         return true;
@@ -501,7 +516,11 @@ internal sealed class TestApplicationHandler
                     handshakeInfo.TargetFramework,
                     handshakeInfo.Architecture,
                     handshakeInfo.ExecutionId,
-                    artifact with { FullPath = fullPath });
+                    artifact with
+                    {
+                        FullPath = fullPath,
+                        CoverageSummary = _postProcessorSupportsCoverageSummary ? artifact.CoverageSummary : null,
+                    });
             }
             else
             {
@@ -517,6 +536,40 @@ internal sealed class TestApplicationHandler
                     artifact.TestDisplayName, fullPath);
             }
         }
+    }
+
+    internal void OnCoverageSummaryReceived(CoverageSummaryMessages message)
+    {
+        if (_options.IsHelp)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(CoverageSummaryMessages)));
+        }
+
+        if (!_handshakeInfo.HasValue || _handshakeRejected)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(CoverageSummaryMessages)));
+        }
+
+        if (!_receivedTestHostHandshake || _options.IsArtifactPostProcessing)
+        {
+            throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutTestHostHandshake, nameof(CoverageSummaryMessages)));
+        }
+
+        string executionId = ValidateRequiredMessageProperty(message.ExecutionId, nameof(CoverageSummaryMessages.ExecutionId), nameof(CoverageSummaryMessages));
+        string instanceId = ValidateRequiredMessageProperty(message.InstanceId, nameof(CoverageSummaryMessages.InstanceId), nameof(CoverageSummaryMessages));
+        if (executionId != _handshakeInfo.Value.ExecutionId)
+        {
+            throw new InvalidOperationException(string.Format(
+                CliCommandStrings.DotnetTestMismatchingExecutionId, executionId, nameof(CoverageSummaryMessages), _handshakeInfo.Value.ExecutionId));
+        }
+
+        if (!_coverageSummaryInstances.Contains(instanceId))
+        {
+            _output.WriteWarningMessage(CliCommandStrings.UnnegotiatedCoverageSummary);
+            return;
+        }
+
+        _output.CoverageSummaryAdded(_module.TargetPath, executionId, instanceId, message.Summaries);
     }
 
     internal void OnSessionEventReceived(TestSessionEvent sessionEvent)

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using NuGet.Frameworks;
 
@@ -22,7 +23,8 @@ internal sealed record ArtifactPostProcessingArtifact(
     string? TargetFramework,
     string? Architecture,
     string ExecutionId,
-    IReadOnlyList<string>? InputArtifactPaths = null);
+    IReadOnlyList<string>? InputArtifactPaths = null,
+    CoverageSummaryMessage[]? CoverageSummary = null);
 
 internal sealed record ArtifactPostProcessingGroup(
     string Key,

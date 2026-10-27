@@ -147,10 +147,14 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
-$managedTestModule = Get-ChildItem ([System.IO.Path]::Combine($repoRoot, "artifacts", "bin", "dotnet-aot.Tests", $Configuration)) `
-    -Recurse -Filter "dotnet-aot.Tests.dll" -ErrorAction SilentlyContinue |
-    Where-Object { $_.FullName -like "*$RuntimeIdentifier*" } |
-    Select-Object -First 1 -ExpandProperty FullName
+$managedTestModule = & $dotnet msbuild $testProject -nologo `
+    "-p:Configuration=$Configuration" `
+    "-p:RuntimeIdentifier=$RuntimeIdentifier" `
+    -getProperty:TargetPath
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: Could not resolve the managed test module." -ForegroundColor Red
+    exit $LASTEXITCODE
+}
 
 # Run
 if (-not (Test-Path $exePath)) {
@@ -166,7 +170,7 @@ if (-not (Test-Path $dnPath)) {
     Write-Host "ERROR: Published dn host not found at $dnPath" -ForegroundColor Red
     exit 1
 }
-if (-not $managedTestModule) {
+if (-not $managedTestModule -or -not (Test-Path -LiteralPath $managedTestModule)) {
     Write-Host "ERROR: Managed test module not found for Native AOT integration validation." -ForegroundColor Red
     exit 1
 }

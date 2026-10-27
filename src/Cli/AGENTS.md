@@ -116,3 +116,18 @@ controller-only or mixed partial handshakes, and explicit handshake rejections m
 gain that exemption. Rejection and partial-handshake state must survive later accepted
 handshakes. Keep these boundaries covered by
 [`TestApplicationHandlerTests`](../../test/dotnet.Tests/CommandTests/Test/TestApplicationHandlerTests.cs).
+
+## MTP coverage summaries
+
+Keep coverage scoped by execution, instance, session, and producer. Never add counts or
+percentages across test applications: they can cover the same assembly. The
+[`coverage reporter`](dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.Coverage.cs)
+reserves `Total` for a single source or an accepted, complete merged artifact with explicit
+input provenance. Failed, partial, unsupported, or cancelled processing must not fabricate a
+run total.
+
+Controller coverage can arrive after `TestSessionEnd`; accept it until process completion.
+Negotiate coverage-summary support independently of the base protocol, without enabling the
+unimplemented 1.4 server-control channel. Keep producer, wire, artifact-acceptance, and
+managed/Native AOT behavior aligned. See the
+[coverage contract and output format](../../documentation/general/dotnet-test-artifact-post-processing.md#code-coverage-summary).

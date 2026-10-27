@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
 
@@ -969,6 +970,122 @@ public class TestApplicationHandlerTests : IDisposable
         console.GetOutput().Should().Contain("buffered-stdout-line").And.Contain("buffered-stderr-line");
     }
 
+    [TestMethod]
+    public void OnCoverageSummaryReceived_WithNegotiatedCapability_ReportsSingleApplicationTotal()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+
+        handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "inst-1", [new("session", "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("Total - Line: 98.9%");
+    }
+
+    [TestMethod]
+    public void OnCoverageSummaryReceived_FromControllerAfterTestSessionEnd_ReportsCoverage()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        HandshakeMessage controller = BuildHandshake(
+            HandshakeMessageExecutionModes.Run, "TestHostController", coverageSummaryVersion: "1");
+        controller.Properties[HandshakeMessagePropertyNames.InstanceId] = "controller-instance";
+        handler.OnHandshakeReceived(controller, gotSupportedVersion: true).Should().BeTrue();
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "session", "exec-1"));
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "session", "exec-1"));
+
+        handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "controller-instance", [new("session", "collector.controller", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("Total - Line: 98.9%");
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("2")]
+    public void OnCoverageSummaryReceived_WithoutNegotiatedCapability_WarnsAndDoesNotInventCoverage(string? version)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: version), gotSupportedVersion: true).Should().BeTrue();
+
+        handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "inst-1", [new("session", "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain(CliCommandStrings.UnnegotiatedCoverageSummary)
+            .And.NotContain(CliCommandStrings.CodeCoverageSummary);
+    }
+
+    [TestMethod]
+    public void OnCoverageSummaryReceived_WithoutHandshake_RejectsMessage()
+    {
+        (TestApplicationHandler handler, _, _) = CreateHandler(false, false);
+        Action receive = () => handler.OnCoverageSummaryReceived(new CoverageSummaryMessages("exec-1", "inst-1", []));
+
+        receive.Should().Throw<InvalidOperationException>();
+    }
+
+    [TestMethod]
+    public void OnCoverageSummaryReceived_WithMismatchingExecution_RejectsMessage()
+    {
+        (TestApplicationHandler handler, _, _) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+
+        Action receive = () => handler.OnCoverageSummaryReceived(new CoverageSummaryMessages("other-execution", "inst-1", []));
+
+        receive.Should().Throw<InvalidOperationException>();
+    }
+
+    [TestMethod]
+    public void OnCoverageSummaryReceived_FromUnknownInstance_WarnsAndDoesNotReportCoverage()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+
+        handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "other-instance", [new("session", "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain(CliCommandStrings.UnnegotiatedCoverageSummary)
+            .And.NotContain(CliCommandStrings.CodeCoverageSummary);
+    }
+
+    [TestMethod]
+    [DataRow("1", true)]
+    [DataRow(null, false)]
+    [DataRow("2", false)]
+    public void OnFileArtifactsReceived_OnlyAcceptsNegotiatedMergedCoverageMetadata(string? version, bool expectedMetadata)
+    {
+        var invocation = new ArtifactPostProcessingInvocation("manifest.json");
+        (TestApplicationHandler handler, _, _) = CreateHandler(false, false, artifactPostProcessingInvocation: invocation);
+        handler.OnHandshakeReceived(
+            BuildHandshake(
+                HandshakeMessageExecutionModes.Tool, HandshakeMessageHostTypes.ArtifactPostProcessor, coverageSummaryVersion: version),
+            gotSupportedVersion: true).Should().BeTrue();
+        CoverageSummaryMessage[] summary = [new(null, "collector.postprocessor", 0, null, (int)CoverageMetric.Line, null, 184, 186)];
+
+        handler.OnFileArtifactsReceived(new FileArtifactMessages(
+            "exec-1", "inst-1",
+            [new("merged.coverage", null, null, null, null, null, "microsoft.codecoverage", ["first.coverage", "second.coverage"], summary)]));
+
+        ArtifactPostProcessingArtifact artifact = invocation.SnapshotOutputs().Should().ContainSingle().Subject;
+        if (expectedMetadata)
+        {
+            artifact.CoverageSummary.Should().Equal(summary);
+        }
+        else
+        {
+            artifact.CoverageSummary.Should().BeNull();
+        }
+    }
+
     private const string TargetPath = "/repo/bin/Debug/net9.0/MyTest.dll";
     private const string ProjectPath = "/repo/MyTest.csproj";
     private const string TargetFramework = "net9.0";
@@ -1042,7 +1159,8 @@ public class TestApplicationHandlerTests : IDisposable
         string? supportedPostProcessorKinds = null,
         string? supportedPostProcessorExtensions = null,
         string? supportedTruncatedRunPostProcessorKinds = null,
-        string? supportedTruncatedRunPostProcessorExtensions = null)
+        string? supportedTruncatedRunPostProcessorExtensions = null,
+        string? coverageSummaryVersion = null)
     {
         var properties = new Dictionary<byte, string>
         {
@@ -1096,6 +1214,11 @@ public class TestApplicationHandlerTests : IDisposable
         {
             properties[HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy] =
                 supportedTruncatedRunPostProcessorExtensions;
+        }
+
+        if (coverageSummaryVersion is not null)
+        {
+            properties[HandshakeMessagePropertyNames.CoverageSummaryVersion] = coverageSummaryVersion;
         }
 
         return new HandshakeMessage(properties);

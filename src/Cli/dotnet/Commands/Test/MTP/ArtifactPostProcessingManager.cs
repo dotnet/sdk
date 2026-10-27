@@ -73,7 +73,8 @@ internal sealed class ArtifactPostProcessingManager
                 targetFramework,
                 architecture,
                 executionId,
-                artifact.InputArtifactPaths));
+                artifact.InputArtifactPaths,
+                artifact.CoverageSummary));
         }
     }
 
@@ -184,7 +185,9 @@ internal sealed class ArtifactPostProcessingManager
                 string? failureMessage = invocation.FailureMessage;
                 if (ShouldApplyOutputs(failureMessage, exitCode))
                 {
-                    ApplyOutputs(output, job, invocation.SnapshotOutputs());
+                    ApplyOutputs(
+                        output, job, invocation.SnapshotOutputs(),
+                        allowCoverageSummary: cancellationReason == TestRunCancellationReason.None && !ctrlC.Token.IsCancellationRequested);
                 }
                 else if (failureMessage is not null)
                 {
@@ -390,7 +393,8 @@ internal sealed class ArtifactPostProcessingManager
     internal static void ApplyOutputs(
         TerminalTestReporter output,
         ArtifactPostProcessingJob job,
-        IReadOnlyList<ArtifactPostProcessingArtifact> processedArtifacts)
+        IReadOnlyList<ArtifactPostProcessingArtifact> processedArtifacts,
+        bool allowCoverageSummary = true)
     {
         HashSet<string>? jobInputPaths = null;
         foreach (ArtifactPostProcessingArtifact processedArtifact in processedArtifacts)
@@ -434,6 +438,30 @@ internal sealed class ArtifactPostProcessingManager
                 processedArtifact.ExecutionId,
                 testName: null,
                 processedArtifact.Path);
+
+            if (allowCoverageSummary && processedArtifact.CoverageSummary is { Length: > 0 } coverageSummary)
+            {
+                ArtifactPostProcessingGroup[] representedGroups =
+                [
+                    .. job.Groups.Where(group =>
+                        (group.IsKind && string.Equals(group.Key, processedArtifact.Kind, StringComparison.Ordinal))
+                        || group.Artifacts.Any(artifact => consumedPaths.Contains(artifact.Path))),
+                ];
+                // Summary metadata is authoritative only with complete, explicit provenance. Legacy
+                // kind/extension inference remains sufficient for listing artifacts, not for a total.
+                bool complete = processedArtifact.InputArtifactPaths is { Count: > 0 } inputPaths
+                    && inputPaths.All(jobInputPaths!.Contains)
+                    && representedGroups.Length > 0
+                    && representedGroups.SelectMany(group => group.Artifacts).All(artifact => consumedPaths.Contains(artifact.Path));
+                output.MergedCoverageSummaryAdded(
+                    processedArtifact.Path,
+                    representedGroups.SelectMany(group => group.Artifacts)
+                        .Where(artifact => consumedPaths.Contains(artifact.Path))
+                        .Select(artifact => artifact.ExecutionId)
+                        .ToHashSet(StringComparer.Ordinal),
+                    complete,
+                    coverageSummary);
+            }
         }
     }
 
@@ -492,7 +520,8 @@ internal sealed class ArtifactPostProcessingInvocation(string manifestPath)
                 targetFramework,
                 architecture,
                 executionId,
-                artifact.InputArtifactPaths));
+                artifact.InputArtifactPaths,
+                artifact.CoverageSummary));
         }
     }
 

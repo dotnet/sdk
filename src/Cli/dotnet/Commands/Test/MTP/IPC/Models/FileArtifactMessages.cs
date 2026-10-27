@@ -11,6 +11,7 @@ internal sealed record FileArtifactMessage(
     string? TestDisplayName,
     string? SessionUid,
     string? Kind,
-    string[]? InputArtifactPaths = null);
+    string[]? InputArtifactPaths = null,
+    CoverageSummaryMessage[]? CoverageSummary = null);
 
 internal sealed record FileArtifactMessages(string? ExecutionId, string? InstanceId, FileArtifactMessage[] FileArtifacts) : IRequest;

@@ -41,6 +41,12 @@
     <Compile Include="..\..\src\Cli\dotnet-aot\SdkRootLocator.cs" Link="SdkRootLocator.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Include="..\dotnet.Tests\CommandTests\Test\CapturingConsole.cs" Link="Test\CapturingConsole.cs" />
+    <Compile Include="..\dotnet.Tests\CommandTests\Test\CoverageSummaryTests.cs" Link="Test\CoverageSummaryTests.cs" />
+    <Compile Include="..\dotnet.Tests\CommandTests\Test\CoverageSummaryMessagesSerializerTests.cs" Link="Test\CoverageSummaryMessagesSerializerTests.cs" />
+  </ItemGroup>
+
   <!-- DotnetRootResolver from the dn project -->
   <ItemGroup>
     <Compile Include="..\..\src\Cli\dn\DotnetRootResolver.cs" Link="DotnetRootResolver.cs" />

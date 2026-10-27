@@ -157,6 +157,11 @@
         <target state="new">No test projects were found.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CodeCoverageSummary">
+        <source>Code Coverage Summary:</source>
+        <target state="new">Code Coverage Summary:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceDescription">
         <source>The device identifier to use for running the application.</source>
         <target state="new">The device identifier to use for running the application.</target>
@@ -171,6 +176,81 @@
         <source>List available devices for running the application.</source>
         <target state="new">List available devices for running the application.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CoverageMergedArtifact">
+        <source>Merged coverage ({0})</source>
+        <target state="new">Merged coverage ({0})</target>
+        <note>{0} is an artifact path. Used instead of Total when the merged artifact does not represent every test application.</note>
+      </trans-unit>
+      <trans-unit id="CoverageMetricBlock">
+        <source>Block</source>
+        <target state="new">Block</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricBranch">
+        <source>Branch</source>
+        <target state="new">Branch</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricClass">
+        <source>Class</source>
+        <target state="new">Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricComplexity">
+        <source>Complexity</source>
+        <target state="new">Complexity</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricCondition">
+        <source>Condition</source>
+        <target state="new">Condition</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricFunction">
+        <source>Function</source>
+        <target state="new">Function</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricInstruction">
+        <source>Instruction</source>
+        <target state="new">Instruction</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricLine">
+        <source>Line</source>
+        <target state="new">Line</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricMethod">
+        <source>Method</source>
+        <target state="new">Method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricRegion">
+        <source>Region</source>
+        <target state="new">Region</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricStatement">
+        <source>Statement</source>
+        <target state="new">Statement</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricWithProducer">
+        <source>{0} ({1})</source>
+        <target state="new">{0} ({1})</target>
+        <note>{0} is the coverage metric label. {1} identifies its producer when several producers report the same metric.</note>
+      </trans-unit>
+      <trans-unit id="CoverageNoData">
+        <source>no coverable data</source>
+        <target state="new">no coverable data</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageScopeOverall">
+        <source>Total</source>
+        <target state="new">Total</target>
+        <note>Labels coverage of a single test application or a complete merged coverage artifact, never a sum of application percentages.</note>
       </trans-unit>
       <trans-unit id="DotnetTestDuplicateHandshakeOnConnection">
         <source>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</source>
@@ -286,6 +366,11 @@
         <source>Handshake failures:</source>
         <target state="new">Handshake failures:</target>
         <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
+      </trans-unit>
+      <trans-unit id="InvalidCoverageSummary">
+        <source>A test application reported an invalid code coverage summary. The invalid summary was ignored.</source>
+        <target state="new">A test application reported an invalid code coverage summary. The invalid summary was ignored.</target>
+        <note />
       </trans-unit>
       <trans-unit id="MismatchingHandshakeExecutionMode">
         <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>
@@ -3816,6 +3901,11 @@ i odpowiednie identyfikatory pakietów zainstalowanych narzędzi można znaleź�
       <trans-unit id="UnknownSessionEventType">
         <source>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</source>
         <target state="new">Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnnegotiatedCoverageSummary">
+        <source>A test application reported a code coverage summary without negotiating coverage summary support. The summary was ignored.</source>
+        <target state="new">A test application reported a code coverage summary without negotiating coverage summary support. The summary was ignored.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
