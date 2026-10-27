@@ -46,6 +46,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>5.14.0-1.26528.111</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>5.14.0-1.26528.111</MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>5.14.0-1.26528.111</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
+    <MicrosoftCodeAnalysisRazorDotNetFormatPackageVersion>11.2.0-preview.26528.111</MicrosoftCodeAnalysisRazorDotNetFormatPackageVersion>
     <MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>11.2.0-preview.26528.111</MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.14.0-1.26528.111</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
     <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>5.14.0-1.26528.111</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
@@ -186,6 +187,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftCodeAnalysisCSharpWorkspacesVersion>$(MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion)</MicrosoftCodeAnalysisCSharpWorkspacesVersion>
     <MicrosoftCodeAnalysisExternalAccessHotReloadVersion>$(MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion)</MicrosoftCodeAnalysisExternalAccessHotReloadVersion>
     <MicrosoftCodeAnalysisPublicApiAnalyzersVersion>$(MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion)</MicrosoftCodeAnalysisPublicApiAnalyzersVersion>
+    <MicrosoftCodeAnalysisRazorDotNetFormatVersion>$(MicrosoftCodeAnalysisRazorDotNetFormatPackageVersion)</MicrosoftCodeAnalysisRazorDotNetFormatVersion>
     <MicrosoftCodeAnalysisRazorToolingInternalVersion>$(MicrosoftCodeAnalysisRazorToolingInternalPackageVersion)</MicrosoftCodeAnalysisRazorToolingInternalVersion>
     <MicrosoftCodeAnalysisWorkspacesCommonVersion>$(MicrosoftCodeAnalysisWorkspacesCommonPackageVersion)</MicrosoftCodeAnalysisWorkspacesCommonVersion>
     <MicrosoftCodeAnalysisWorkspacesMSBuildVersion>$(MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion)</MicrosoftCodeAnalysisWorkspacesMSBuildVersion>
