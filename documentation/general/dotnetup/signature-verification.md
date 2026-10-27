@@ -485,8 +485,8 @@ When the policy is in effect, attempts to install from the daily channel
 (or any version that is not present in the signed releases manifest)
 fail with a clear `UnsignedDownloadBlockedByPolicy` message directing
 the user to choose a released version or escalate to their administrator.
-`dotnetup self update` is exempt only when the installed `dotnetup` is
-Authenticode-signed (Windows), because the replacement must then carry a
+`dotnetup self update` is exempt only when admin mode is active or the installed
+`dotnetup` is Authenticode-signed (Windows), because the replacement must then carry a
 Microsoft-rooted Authenticode signature before it is installed.
 
 The policy is read through `DotnetupPolicy.IsUnsignedDownloadBlocked`

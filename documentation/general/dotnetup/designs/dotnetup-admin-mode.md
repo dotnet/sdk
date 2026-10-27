@@ -124,7 +124,7 @@ The `BlockUnsignedDownloads` `REG_DWORD` value under `HKLM\SOFTWARE\Policies\Mic
 
 | Value | Purpose |
 | --- | --- |
-| [`BlockUnsignedDownloads`](../signature-verification.md) | Blocks downloads that have no detached signature, such as daily builds. It applies in every mode. It does not block `self update` of an Authenticode-signed `dotnetup`, whose replacement must itself be Authenticode-signed. |
+| [`BlockUnsignedDownloads`](../signature-verification.md) | Blocks downloads that have no detached signature, such as daily builds. It applies in every mode. It does not block `self update` when admin mode is active or the installed `dotnetup` is Authenticode-signed, because the replacement must pass Authenticode validation. |
 
 Administrators can set this value through Group Policy, Intune, or similar tools.
 dotnetup does not change it when selecting, reapplying, or leaving an access mode.
@@ -256,11 +256,11 @@ A `global.json` file in the `cwd` influences the behavior of `dotnetup`. `global
 
 Because UAC is required, the user's intent will be assumed and respected, so `global.json` will still influence the channel/version if no `channel` is provided when running a command such as `dotnetup sdk install` or `dotnetup runtime install`. It will not influence update behavior.
 
-SDK `paths` are not respected by the `admin` installers, which always install to the shared system location, so they must not influence system level decisions. Instead, when the first meaningful `paths` entry is a literal directory outside the system .NET location, `dotnetup` installs into that directory with the same archive mechanism it uses outside `admin` mode, because the repository opted into a local SDK there. These installs require no elevation, are untracked (`--untracked` is still required), and still honor `BlockUnsignedDownloads`. The access mode remains `admin` for the command gate and telemetry; the `install.mechanism` (`archive`) and `install.path_source` (`globaljson`) telemetry tags identify these installs. When the first entry is `$host$`, or the literal path is the system .NET location, the `.exe` installer installs to the system location as usual.
+SDK `paths` are not respected by the `admin` installers, which always install to the shared system location, so they must not influence system level decisions. Instead, when the first meaningful `paths` entry is a literal directory outside the system .NET location, `dotnetup` installs into that directory with the same archive mechanism it uses outside `admin` mode, because the repository opted into a local SDK there. These installs require no elevation, are untracked (`--untracked` is still required), and require signed release metadata regardless of `BlockUnsignedDownloads`. The access mode remains `admin` for the command gate and telemetry; the `install.mechanism` (`archive`) and `install.path_source` (`globaljson`) telemetry tags identify these installs. When the first entry is `$host$`, or the literal path is the system .NET location, the `.exe` installer installs to the system location as usual.
 
 ## `.exe` Installer Error Handling
 
-Before running an installer, `dotnetup` verifies its SHA-512 hash (from the signed `releases.json`, or from the blob feed for allowed unsigned builds), opens it so that it cannot be written or deleted until the installer exits, verifies the hash again, and then verifies Authenticode for signed sources.
+Before running an installer, `dotnetup` verifies its SHA-512 hash from the signed `releases.json`, opens it so that it cannot be written or deleted until the installer exits, verifies the hash again, and then verifies Authenticode. Unsigned blob-feed builds are blocked before download.
 
 The installer bundles request `asInvoker`, so `dotnetup` starts them without elevation using `/install /quiet /norestart`, and each bundle raises its own UAC prompt. `dotnetup` itself is never elevated to install. Installers run one at a time, so prompts never overlap.
 

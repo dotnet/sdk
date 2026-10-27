@@ -229,7 +229,7 @@ public class InitWorkflowTests : IDisposable
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
-    public void InitWalkthrough_Admin_CompletesAfterEnablingPolicy()
+    public void InitWalkthrough_Admin_CompletesWithoutChangingPolicy()
     {
         var policyStore = new FakeDotnetupPolicyStore();
         var policy = new DotnetupPolicy(policyStore);
@@ -259,8 +259,9 @@ public class InitWorkflowTests : IDisposable
             () => workflows.InitWalkthrough(command, requests: []));
 
         requests.Should().BeEmpty();
-        elevator.Operations.Should().Equal(AdminModeOperation.Enable);
-        policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        elevator.Operations.Should().BeEmpty();
+        policyStore.Writes.Should().BeEmpty();
+        policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read().Should().BeEquivalentTo(new DotnetupConfigData
         {
             AccessMode = DotnetAccessMode.Admin,

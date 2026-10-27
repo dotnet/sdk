@@ -40,7 +40,7 @@ public class AdminModeInitTests : IDisposable
         var environment = CreateEnvironment();
         environment.BeforeEnvironmentChange = () =>
         {
-            _environment.Policy.IsUnsignedDownloadBlocked().Should().Be(selectedMode == DotnetAccessMode.Admin);
+            _environment.Policy.IsUnsignedDownloadBlocked().Should().Be(previousMode == DotnetAccessMode.Admin);
             DotnetupConfig.Read()!.AccessMode.Should().Be(previousMode);
         };
         var workflows = CreateWorkflows(environment, selectedMode);
@@ -50,6 +50,7 @@ public class AdminModeInitTests : IDisposable
 
         DotnetupConfig.Read()!.AccessMode.Should().Be(selectedMode);
         DotnetupConfig.Read()!.UpdateNotifications.Should().BeFalse();
+        _environment.Store.Writes.Should().BeEmpty();
         environment.ApplyDotnetupOnUserPathCallCount.Should().Be(1);
         environment.LastIncludeDotnetForTerminalProfileModifications.Should()
             .Be(selectedMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere);
@@ -62,7 +63,7 @@ public class AdminModeInitTests : IDisposable
     [ResourceLock(WellKnownResources.Console)]
     [DataRow(false)]
     [DataRow(true)]
-    public void PolicyFailure_DoesNotApplyEnvironmentOrSaveMode(bool cancelled)
+    public void AdminSetup_DoesNotRequestPolicyElevation(bool cancelled)
     {
         var previous = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false };
         DotnetupConfig.Write(previous);
@@ -73,19 +74,13 @@ public class AdminModeInitTests : IDisposable
         var workflows = CreateWorkflows(environment, DotnetAccessMode.Admin, elevator);
         var command = new InitCommand(Parser.Parse(["init", "--shell", "bash"]), _environment.Policy);
 
-        string output = Run(() =>
-        {
-            Action initialize = () => workflows.InitWalkthrough(command);
-            initialize.Should().Throw<DotnetInstallException>()
-                .Where(ex => ex.ErrorCode == DotnetInstallErrorCode.AdminModeChangeFailed);
-        });
+        string output = Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
-        DotnetupConfig.Read().Should().BeEquivalentTo(previous);
-        environment.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
-        environment.ApplyEnvironmentModificationsCallCount.Should().Be(0);
-        environment.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
-        output.Should().NotContain(Strings.AdminModeEnabled);
-        output.Should().NotContain("Setup complete!");
+        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
+        elevator.Operations.Should().BeEmpty();
+        _environment.Store.Writes.Should().BeEmpty();
+        environment.ApplyDotnetupOnUserPathCallCount.Should().Be(1);
+        output.Should().Contain(Strings.AdminModeEnabled);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
@@ -140,7 +135,7 @@ public class AdminModeInitTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
     [ResourceLock(WellKnownResources.Console)]
-    public void StoredAdmin_NonInteractiveSetup_RepairsPolicyWithoutInstalling()
+    public void StoredAdmin_NonInteractiveSetup_LeavesPolicyUnchangedWithoutInstalling()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin, DotnetupOnPath = false });
         var environment = CreateEnvironment();
@@ -151,8 +146,9 @@ public class AdminModeInitTests : IDisposable
 
         Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
-        elevator.Operations.Should().Equal(AdminModeOperation.Enable);
-        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
+        elevator.Operations.Should().BeEmpty();
+        _environment.Store.Writes.Should().BeEmpty();
+        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
         environment.LastDotnetupOnUserPathEnabled.Should().BeFalse();
     }

@@ -500,7 +500,7 @@ internal class DotnetDownloader : IArchiveDownloader
     /// </summary>
     private void ThrowIfUnsignedDownloadBlocked(string component, string version)
     {
-        // Admin mode requires signatures even while mode changes still manage the machine policy.
+        // Admin mode requires signatures independently of the machine policy.
         if (_requireSignature)
         {
             throw new DotnetInstallException(

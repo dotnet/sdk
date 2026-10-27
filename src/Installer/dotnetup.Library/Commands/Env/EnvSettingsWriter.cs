@@ -8,8 +8,8 @@ using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 /// <summary>
-/// Shared configuration path for env commands and configuration-only init. Changes and verifies
-/// the admin policy before applying the environment and persisting the config. Keeping this in one
+/// Shared configuration path for env commands and configuration-only init. Applies the environment
+/// and persists the config without changing machine policy. Keeping this in one
 /// place ensures env clear and env set none --dotnetup-on-path false behave identically.
 /// </summary>
 internal static class EnvSettingsWriter
@@ -31,16 +31,6 @@ internal static class EnvSettingsWriter
         // corrected on re-sync.
         ObservedEnvironmentState observedBefore = inspector.Inspect(resolvedShellProvider);
 
-        bool policyChanged = false;
-        if (targetEnv == DotnetAccessMode.Admin)
-        {
-            policyChanged = adminModeSwitcher.Enable();
-        }
-        else if (previousAccessMode == DotnetAccessMode.Admin)
-        {
-            adminModeSwitcher.Disable();
-        }
-
         EnvSettingsApplier.Apply(
             targetEnv,
             targetDotnetupOnPath,
@@ -54,7 +44,7 @@ internal static class EnvSettingsWriter
         if (targetEnv == DotnetAccessMode.Admin)
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Success(
-                previousAccessMode == DotnetAccessMode.Admin && !policyChanged
+                previousAccessMode == DotnetAccessMode.Admin
                     ? Strings.AdminModeAlreadyEnabled
                     : Strings.AdminModeEnabled));
         }
