@@ -114,8 +114,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Coverage.cs",
-          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
-          "baseline_blob_sha": "897e98cd2503a44f6d92ac0f7008edc77741c017",
+          "baseline_ref_sha": "cf702354886e08383386278dc286bbcebc8fa022",
+          "baseline_blob_sha": "9a9b4803e2ceb63661b8f7864c65b3e8fb15ceec",
           "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
         },
         {

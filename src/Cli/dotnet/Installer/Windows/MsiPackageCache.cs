@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using Microsoft.DotNet;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
@@ -53,12 +54,12 @@ internal class MsiPackageCache(
     {
         // Validate that packageId and packageVersion do not contain path traversal characters
         // to prevent an IPC client from constructing paths outside the package cache.
-        if (!WindowsUtils.ValidatePathComponent(packageId))
+        if (!PathComponentUtilities.IsValidPathComponent(packageId))
         {
             throw new ArgumentException($"Invalid package ID: {packageId}");
         }
 
-        if (!WindowsUtils.ValidatePathComponent(packageVersion))
+        if (!PathComponentUtilities.IsValidPathComponent(packageVersion))
         {
             throw new ArgumentException($"Invalid package version: {packageVersion}");
         }
@@ -85,8 +86,13 @@ internal class MsiPackageCache(
         {
             string packageDirectory = GetPackageDirectory(packageId, packageVersion);
 
-            // Delete the package directory and create a new one that's secure. If all the files were properly
-            // cached, the client would not request this action.
+            if (TrustedMachinePath.IsUnderRoot(packageDirectory, TrustedMachinePath.ProgramDataDotnetRoot))
+            {
+                // Establish the ProgramData trust anchor before recursively deleting a partial cache entry.
+                SecurityUtils.EnsureSecureProgramDataRoot();
+            }
+
+            // If all the files were properly cached, the client would not request this action.
             if (Directory.Exists(packageDirectory))
             {
                 Directory.Delete(packageDirectory, recursive: true);

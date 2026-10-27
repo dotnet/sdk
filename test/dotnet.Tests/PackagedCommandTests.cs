@@ -83,7 +83,9 @@ namespace Microsoft.DotNet.Tests
         {
             string toolName = "dotnet-portable-v1";
 
-            var testInstance = TestAssetsManager.CopyTestAsset("AppWithToolDependency")
+            var testInstance = TestAssetsManager.CopyTestAsset(
+                    "AppWithToolDependency",
+                    testDestinationDirectory: Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Tool"))
                 .WithSource();
 
             NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);

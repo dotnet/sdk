@@ -394,10 +394,9 @@ namespace Microsoft.NET.ILLink.Tests
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var intermediateLinkDir = Path.Combine(intermediateDirectory, "linked");
 
-            var linkSemaphore = Path.Combine(intermediateLinkDir, "Link.semaphore");
             var publishedDll = Path.Combine(publishDirectory, $"{projectName}.dll");
 
-            File.Exists(linkSemaphore).Should().BeFalse();
+            GetLinkSemaphoreCandidates(intermediateLinkDir).Where(File.Exists).Should().BeEmpty();
             File.Exists(publishedDll).Should().BeFalse();
         }
     }

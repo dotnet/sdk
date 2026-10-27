@@ -6,12 +6,14 @@
       File="$(ArtifactsShippingPackagesDir)productVersion.txt"
       Lines="$(PackageVersion)"
       Overwrite="true"
+      WriteOnlyWhenDifferent="true"
       Encoding="ASCII" />
 
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt"
       Lines="$(PackageVersion)"
       Overwrite="true"
+      WriteOnlyWhenDifferent="true"
       Encoding="ASCII" />
 
     <!-- The Version.Details file doesn't contain live information when building
@@ -53,6 +55,7 @@
       File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).txt"
       Lines="@(Line->'%(Identity)_commit=&quot;%(Commit)&quot; %(Identity)_version=&quot;%(Version)&quot;', '%0A')"
       Overwrite="true"
+      WriteOnlyWhenDifferent="true"
       Encoding="ASCII" />
 
     <!-- Format for productCommits-%rid%.json:
@@ -71,6 +74,7 @@
       File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).json"
       Lines="$(JsonContents)"
       Overwrite="true"
+      WriteOnlyWhenDifferent="true"
       Encoding="ASCII" />
   </Target>
 
@@ -1784,7 +1788,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <WriteLinesToFile File="$(OutputPath)$(BundledVersionsPropsFileName)"
                       Lines="$(BundledVersionsPropsContent)"
-                      Overwrite="true" />
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
   </Target>
 
   <Target Name="GenerateBundledCliToolsProps">
@@ -1819,7 +1824,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <WriteLinesToFile File="$(OutputPath)$(BundledBundledCliToolsPropsFileName)"
                       Lines="$(BundledBundledCliToolsPropsContent)"
-                      Overwrite="true" />
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
   </Target>
 
   <Target Name="GenerateBundledMSBuildProps">
@@ -1867,7 +1873,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <WriteLinesToFile File="$(OutputPath)$(BundledMSBuildPropsFileName)"
     Lines="$(BundledMSBuildPropsFileContent)"
-    Overwrite="true" />
+    Overwrite="true"
+    WriteOnlyWhenDifferent="true" />
   </Target>
 
 </Project>
