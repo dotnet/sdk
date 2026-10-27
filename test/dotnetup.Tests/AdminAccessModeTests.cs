@@ -38,7 +38,10 @@ public class AdminAccessModeTests
     [TestMethod]
     public void InitFormModel_DescribesAdmin()
     {
-        InitFormModel.AccessModeDescription(DotnetAccessMode.Admin).Should().Contain("shared system folder");
+        InitFormModel.AccessModeDescription(DotnetAccessMode.Admin).Should().Be(
+            "Installs can be managed by other tools alongside dotnetup in a shared system folder.");
+        Microsoft.DotNet.Tools.Bootstrapper.Strings.AccessModeAdminDetails.ReplaceLineEndings("\n").Should().Be(
+            "Requires elevation.\nInstall .NET afterwards with 'dotnetup sdk install <version> --untracked'.");
     }
 
     [TestMethod]
