@@ -87,8 +87,8 @@ public class WindowsBundleArtifactTests : IDisposable
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
 
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
-        ex.Message.Should().Contain(FakeVerifier.UntrustedReason);
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSignatureRequired);
+        ex.Message.Should().Be("Signature validation is required when using admin mode.");
         runner.Calls.Should().BeEmpty();
     }
 
@@ -103,7 +103,7 @@ public class WindowsBundleArtifactTests : IDisposable
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
 
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSignatureRequired);
         runner.Calls.Should().BeEmpty();
     }
 
@@ -111,15 +111,17 @@ public class WindowsBundleArtifactTests : IDisposable
     [DataRow("daily")]
     [DataRow("10.0.100-preview.4.25216.37")]
     [DataRow(StableChannel)]
-    public void Commit_UnsignedSourceAllowedByPolicy_RunsInstaller(string channel)
+    public void Commit_UnsignedSourceAllowedByPolicy_ThrowsAndDoesNotRunInstaller(string channel)
     {
         var runner = new FakeRunner(exitCode: 0);
         var artifact = CreateArtifact(channel, downloader: CreateDownloader(isUnsigned: true), verifier: FakeVerifier.Untrusted, runner: runner);
         artifact.Prepare();
 
-        artifact.Commit();
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
 
-        runner.Calls.Should().ContainSingle();
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSignatureRequired);
+        exception.Message.Should().Be("Signature validation is required when using admin mode.");
+        runner.Calls.Should().BeEmpty();
     }
 
     [TestMethod]
@@ -132,7 +134,7 @@ public class WindowsBundleArtifactTests : IDisposable
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
 
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSignatureRequired);
         runner.Calls.Should().BeEmpty();
     }
 

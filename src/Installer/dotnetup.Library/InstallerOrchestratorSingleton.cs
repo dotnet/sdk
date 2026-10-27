@@ -348,7 +348,9 @@ internal class InstallerOrchestratorSingleton
         return request.Options.InstallMechanism switch
         {
             InstallMechanism.WindowsInstallerBundle => new WindowsBundleArtifact(request, version, batchContext, releaseManifest: releaseManifest),
-            _ => new DotnetArchiveExtractor(request, version, releaseManifest, batchContext, cacheDirectory: DotnetupPaths.DownloadCacheDirectory),
+            _ => new DotnetArchiveExtractor(request, version, releaseManifest, batchContext,
+                archiveDownloader: new DotnetDownloader(releaseManifest, cacheDirectory: DotnetupPaths.DownloadCacheDirectory,
+                    requireSignature: AccessModeResolver.Resolve().IsAdmin)),
         };
     }
 

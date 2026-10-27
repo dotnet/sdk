@@ -75,6 +75,31 @@ public class SelfUpdateSignatureTests
         Assert.AreEqual(policyBlocks, SelfUpdateNotifier.IsSelfUpdateBlockedByPolicy(policy, files.Paths.InstalledPath));
     }
 
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void AdminModeRejectsUnsignedReplacementEvenForUnsignedInstallation()
+    {
+        using var files = new SelfUpdateTestFiles();
+
+        Assert.IsTrue(SelfUpdateSignature.RequiresSignedReplacement(files.Paths.InstalledPath, isAdmin: true));
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            SelfUpdateSignature.VerifyReplacement(files.Paths.InstalledPath, files.Paths.StagedPath, isAdmin: true));
+
+        Assert.AreEqual(DotnetInstallErrorCode.AdminModeSignatureRequired, exception.ErrorCode);
+        Assert.AreEqual("Signature validation is required when using admin mode.", exception.Message);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [SupportedOSPlatform("windows")]
+    public void AdminModeAcceptsMicrosoftSignedReplacementForUnsignedInstallation()
+    {
+        using var files = new SelfUpdateTestFiles();
+        var staged = CopySignedHost(files, "staged.exe");
+
+        SelfUpdateSignature.VerifyReplacement(files.Paths.InstalledPath, staged, isAdmin: true);
+    }
+
     private static DotnetupPolicy CreatePolicy(bool blocksUnsignedDownloads)
     {
         var store = new FakeDotnetupPolicyStore();

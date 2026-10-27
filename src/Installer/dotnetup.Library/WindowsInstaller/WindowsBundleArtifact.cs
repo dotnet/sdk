@@ -27,7 +27,6 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     private readonly ExtractorProgressTracker _progress;
     private readonly InstallBatchContext _batchContext;
     private readonly TextWriter _notices;
-    private readonly DotnetupPolicy _policy;
     private VerifiedDownload? _download;
 
     // Denies write and delete access from the moment the bundle is verified until this artifact is
@@ -47,7 +46,6 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     {
         _request = request;
         _version = version;
-        _policy = policy ?? new DotnetupPolicy();
         _signatureVerifier = signatureVerifier ?? CreateDefaultSignatureVerifier();
         _processRunner = processRunner ?? new BundleProcessRunner();
         _notices = notices ?? Console.Error;
@@ -57,7 +55,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         ScratchDirectory = Directory.CreateTempSubdirectory().FullName;
         _downloader = downloader ?? new DotnetDownloader(
             releaseManifest ?? ReleaseManifest.Default,
-            policy: _policy);
+            policy: policy,
+            requireSignature: true);
     }
 
     /// <summary>
@@ -191,23 +190,15 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     private void EnsureTrustedSignature(VerifiedDownload download)
     {
         InstallerSignatureResult result = _signatureVerifier.Verify(download.Path);
-        if (result.IsTrusted || IsUnsignedSourceAllowed(download))
+        if (result.IsTrusted)
         {
             return;
         }
 
         throw CreateException(
-            DotnetInstallErrorCode.SignatureVerificationFailed,
-            Format(Strings.WindowsInstallerSignatureVerificationFailed, Describe(), result.FailureReason));
+            DotnetInstallErrorCode.AdminModeSignatureRequired,
+            Microsoft.Dotnet.Installation.Strings.AdminModeSignatureRequired);
     }
-
-    /// <summary>
-    /// Installers from the blob feed are not Authenticode signed. Their SHA-512 hash was verified during
-    /// download and the user was warned up front, so they may run unless IT policy blocks unsigned downloads.
-    /// Installers resolved from the signed releases manifest must always pass Authenticode, whatever the channel.
-    /// </summary>
-    private bool IsUnsignedSourceAllowed(VerifiedDownload download) =>
-        download.IsUnsigned && !_policy.IsUnsignedDownloadBlocked();
 
     private int RunInstaller(string bundlePath)
     {

@@ -73,6 +73,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.PlatformNotSupported => ErrorCategory.User,
             DotnetInstallErrorCode.UninstallTargetNotFound => ErrorCategory.User,
             DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy => ErrorCategory.User,
+            DotnetInstallErrorCode.AdminModeSignatureRequired => ErrorCategory.User,
             DotnetInstallErrorCode.NoUserInstallableArtifact => ErrorCategory.User,
             DotnetInstallErrorCode.InvalidModeSelection => ErrorCategory.Product,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,

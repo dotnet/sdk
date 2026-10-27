@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate
 {
     /// <summary>
     /// Requires a Microsoft-rooted Authenticode signature on a Windows replacement when the installed
-    /// executable is Authenticode-signed. Unsigned installations, such as local builds, and other
+    /// executable is Authenticode-signed or admin mode is active. Other unsigned installations and other
     /// platforms rely on the pinned SHA-512 hash alone.
     /// </summary>
     internal static class SelfUpdateSignature
@@ -23,19 +23,26 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate
         /// trusted on its hash alone, so the unsigned-download policy does not apply to it.
         /// </summary>
         [SupportedOSPlatformGuard("windows5.1.2600")]
-        public static bool RequiresSignedReplacement(string installedPath)
+        public static bool RequiresSignedReplacement(string installedPath, bool? isAdmin = null)
         {
 #if TARGET_WINDOWS
-            return OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600) && Signature.IsAuthenticodeSigned(installedPath) == 0;
+            return OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600)
+            && ((isAdmin ?? AccessModeResolver.Resolve().IsAdmin) || Signature.IsAuthenticodeSigned(installedPath) == 0);
 #else
             return false;
 #endif
         }
 
-        public static void VerifyReplacement(string installedPath, string stagedPath)
+        public static void VerifyReplacement(string installedPath, string stagedPath, bool? isAdmin = null)
         {
+            bool admin = isAdmin ?? AccessModeResolver.Resolve().IsAdmin;
+            if (admin && !RequiresSignedReplacement(installedPath, admin))
+            {
+                throw new DotnetInstallException(DotnetInstallErrorCode.AdminModeSignatureRequired,
+                    Microsoft.Dotnet.Installation.Strings.AdminModeSignatureRequired);
+            }
 #if TARGET_WINDOWS
-            if (!RequiresSignedReplacement(installedPath))
+            if (!RequiresSignedReplacement(installedPath, admin))
             {
                 return;
             }
@@ -51,23 +58,25 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate
             }
             catch (CryptographicException exception)
             {
-                throw CreateFailure(exception.Message, exception);
+                throw CreateFailure(exception.Message, exception, admin);
             }
 
             if (status != 0)
             {
-                throw CreateFailure(Marshal.GetPInvokeErrorMessage(status), innerException: null);
+                throw CreateFailure(Marshal.GetPInvokeErrorMessage(status), innerException: null, admin);
             }
 #endif
         }
 
 #if TARGET_WINDOWS
-        private static DotnetInstallException CreateFailure(string reason, Exception? innerException)
+        private static DotnetInstallException CreateFailure(string reason, Exception? innerException, bool isAdmin)
         {
-            var message = string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateSignatureInvalid, reason);
+            var message = isAdmin ? Microsoft.Dotnet.Installation.Strings.AdminModeSignatureRequired
+                : string.Format(CultureInfo.CurrentCulture, Strings.SelfUpdateSignatureInvalid, reason);
+            var errorCode = isAdmin ? DotnetInstallErrorCode.AdminModeSignatureRequired : DotnetInstallErrorCode.SignatureVerificationFailed;
             return innerException is null
-                ? new(DotnetInstallErrorCode.SignatureVerificationFailed, message)
-                : new(DotnetInstallErrorCode.SignatureVerificationFailed, message, innerException);
+                ? new(errorCode, message)
+                : new(errorCode, message, innerException);
         }
 #endif
     }
