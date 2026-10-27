@@ -464,8 +464,8 @@ the policy with the platform-appropriate switch:
   Clear the policy by deleting the value (or setting it to `0`).
 
   Selecting, reapplying, or leaving dotnetup `admin` mode does not change this
-  value. Admin mode independently requires signature validation, so unsigned
-  daily or blob-feed builds are blocked even when the policy allows them, with
+  value. Admin mode independently requires signature validation for .NET installs,
+  so unsigned daily or blob-feed builds are blocked even when the policy allows them, with
   "Signature validation is required when using admin mode." See
   [dotnetup admin mode](designs/dotnetup-admin-mode.md). The access mode itself
   is stored in the current user's dotnetup configuration.
@@ -485,9 +485,12 @@ When the policy is in effect, attempts to install from the daily channel
 (or any version that is not present in the signed releases manifest)
 fail with a clear `UnsignedDownloadBlockedByPolicy` message directing
 the user to choose a released version or escalate to their administrator.
-`dotnetup self update` is exempt only when admin mode is active or the installed
-`dotnetup` is Authenticode-signed (Windows), because the replacement must then carry a
+`dotnetup self update` is exempt only when the installed `dotnetup` is
+Authenticode-signed (Windows), because the replacement must then carry a
 Microsoft-rooted Authenticode signature before it is installed.
+Admin mode does not change self-update signature verification or its handling of
+the unsigned-download policy; the admin-mode signature requirement applies only
+to .NET installs, not dotnetup itself.
 
 The policy is read through `DotnetupPolicy.IsUnsignedDownloadBlocked`
 (`src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetupPolicy.cs`), whose

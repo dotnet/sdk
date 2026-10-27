@@ -124,7 +124,7 @@ The `BlockUnsignedDownloads` `REG_DWORD` value under `HKLM\SOFTWARE\Policies\Mic
 
 | Value | Purpose |
 | --- | --- |
-| [`BlockUnsignedDownloads`](../signature-verification.md) | Blocks downloads that have no detached signature, such as daily builds. It applies in every mode. It does not block `self update` when admin mode is active or the installed `dotnetup` is Authenticode-signed, because the replacement must pass Authenticode validation. |
+| [`BlockUnsignedDownloads`](../signature-verification.md) | Blocks downloads that have no detached signature, such as daily builds. It applies in every mode. It does not block `self update` of an Authenticode-signed `dotnetup`, because the replacement must pass Authenticode validation. |
 
 Administrators can set this value through Group Policy, Intune, or similar tools.
 dotnetup does not change it when selecting, reapplying, or leaving an access mode.
@@ -166,9 +166,10 @@ signature validation. Unsigned daily or blob-feed builds are blocked even when
 "Signature validation is required when using admin mode."
 Installers must pass Authenticode verification chaining to a Microsoft root.
 Archive installs selected through global.json `sdk.paths` must use signed release
-metadata. `dotnetup self update` may use its channel feed only when the replacement
-is validated with a Microsoft-rooted Authenticode signature; it cannot fall back
-to hash-only validation in admin mode.
+metadata. This admin-mode requirement applies to .NET installs, not dotnetup
+itself. `dotnetup self update` is unaffected by access mode: it retains its
+existing hash verification, machine-policy checks, and requirement for a
+Microsoft-rooted Authenticode signature when the installed executable is signed.
 
 
 ### Channel Differentiators under `admin`

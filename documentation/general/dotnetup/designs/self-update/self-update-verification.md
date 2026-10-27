@@ -2,12 +2,12 @@
 
 Self-update checks the published SHA-512 hash and the executable's `--version` output. The
 channel feed is not a signed manifest, so self-update emits an unsigned-source warning and respects
-the unsigned-download policy. On Windows, when admin mode is active or the installed dotnetup is Authenticode-signed, the
+the unsigned-download policy. On Windows, when the installed dotnetup is Authenticode-signed, the
 downloaded executable must also have a valid Authenticode signature that chains to a Microsoft root.
-Otherwise the staged file is deleted and the command fails before replacement, with
-`AdminModeSignatureRequired` ("Signature validation is required when using admin mode.")
-in admin mode or `SignatureVerificationFailed` otherwise.
-Unsigned installations outside admin mode, such as local builds, and Linux and macOS rely on the
+Otherwise the staged file is deleted and the command fails with `SignatureVerificationFailed`
+before replacement. Admin mode does not change these checks; its signature requirement
+applies to .NET installs, not dotnetup itself.
+Unsigned installations, such as local builds, and Linux and macOS rely on the
 hash alone. The selected release must publish the executable and checksum; no identity
 sidecar or custom embedded version record is needed. After replacement, `--version`
 must run successfully and report the selected release's version within a bounded
