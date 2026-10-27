@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 /// asset. Both files are reported through <c>FileWrites</c> by the caller so that <c>Clean</c>
 /// removes them.
 /// </summary>
-public class EnsureDotNetWatchBrowserToolsKey : Task
+public class EnsureHotReloadBrowserToolsKey : Task
 {
     /// <summary>
     /// Path of the JSON document that holds the base64 X.509 SubjectPublicKeyInfo.
@@ -63,7 +63,7 @@ public class EnsureDotNetWatchBrowserToolsKey : Task
             {
                 PublicKey = existingPublicKey;
                 Regenerated = false;
-                Log.LogMessage(MessageImportance.Low, "Reusing the existing dotnet-watch browser tools key pair.");
+                Log.LogMessage(MessageImportance.Low, "Reusing the existing HotReload browser tools key pair.");
                 return true;
             }
 
@@ -90,13 +90,13 @@ public class EnsureDotNetWatchBrowserToolsKey : Task
             PublicKey = publicKey;
             Regenerated = true;
 
-            Log.LogMessage(MessageImportance.Low, "Generated a new dotnet-watch browser tools key pair.");
+            Log.LogMessage(MessageImportance.Low, "Generated a new Hot Reload browser tools key pair.");
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // The message of an IO exception contains paths only, never key material.
-            Log.LogError("Unable to create the dotnet-watch browser tools key pair: {0}", ex.Message);
+            Log.LogError("Unable to create the Hot Reload browser tools key pair: {0}", ex.Message);
             return false;
         }
     }
@@ -108,20 +108,20 @@ public class EnsureDotNetWatchBrowserToolsKey : Task
         var publicDocument = BrowserToolsKeyPair.TryReadPublicKeyFile(PublicKeyPath);
         if (!publicDocument.IsValid)
         {
-            Log.LogMessage(MessageImportance.Low, "Regenerating the dotnet-watch browser tools key pair because the public key document is not usable: {0}.", publicDocument.Reason);
+            Log.LogMessage(MessageImportance.Low, "Regenerating the Hot Reload browser tools key pair because the public key document is not usable: {0}.", publicDocument.Reason);
             return false;
         }
 
         var privateDocument = BrowserToolsKeyPair.TryReadPrivateKeyFile(PrivateKeyPath);
         if (!privateDocument.IsValid)
         {
-            Log.LogMessage(MessageImportance.Low, "Regenerating the dotnet-watch browser tools key pair because the private key document is not usable: {0}.", privateDocument.Reason);
+            Log.LogMessage(MessageImportance.Low, "Regenerating the Hot Reload browser tools key pair because the private key document is not usable: {0}.", privateDocument.Reason);
             return false;
         }
 
         if (!string.Equals(publicDocument.PublicKey, privateDocument.PublicKey, StringComparison.Ordinal))
         {
-            Log.LogMessage(MessageImportance.Low, "Regenerating the dotnet-watch browser tools key pair because the two documents describe different keys.");
+            Log.LogMessage(MessageImportance.Low, "Regenerating the Hot Reload browser tools key pair because the two documents describe different keys.");
             return false;
         }
 
@@ -131,7 +131,7 @@ public class EnsureDotNetWatchBrowserToolsKey : Task
         if (!BrowserToolsKeyPair.TryDerivePublicKey(privateDocument.Parameters, out var derivedPublicKey) ||
             !string.Equals(derivedPublicKey, publicDocument.PublicKey, StringComparison.Ordinal))
         {
-            Log.LogMessage(MessageImportance.Low, "Regenerating the dotnet-watch browser tools key pair because the private key does not match the public key.");
+            Log.LogMessage(MessageImportance.Low, "Regenerating the Hot Reload browser tools key pair because the private key does not match the public key.");
             return false;
         }
 

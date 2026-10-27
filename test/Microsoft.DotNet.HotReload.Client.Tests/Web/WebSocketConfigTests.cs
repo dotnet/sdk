@@ -6,7 +6,7 @@ using Microsoft.DotNet.HotReload;
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 [TestClass]
-public class KestrelWebSocketServerTests
+public class WebSocketConfigTests
 {
     [TestMethod]
     [DataRow("http://contoso.com:10", "ws://contoso.com:10")]
@@ -17,6 +17,6 @@ public class KestrelWebSocketServerTests
     [DataRow("https://127.0.0.1:10", "wss://localhost:10")]
     public void Urls(string httpUrl, string wsUrl)
     {
-        Assert.AreEqual(wsUrl, KestrelWebSocketServer.GetWebSocketUrl(httpUrl));
+        Assert.AreEqual(wsUrl, WebSocketConfig.GetWebSocketUrl(httpUrl));
     }
 }

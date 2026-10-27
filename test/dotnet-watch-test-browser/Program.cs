@@ -205,8 +205,8 @@ static async Task<(Uri configUrl, string key)> GetConfigurationAsync(Uri baseUrl
 
 static IEnumerable<Uri> GetConfigurationUrls(Uri baseUrl)
 {
-    yield return new Uri(baseUrl, "_framework/Microsoft.NET.Sdk.BlazorWeb.DotNetWatch.BrowserTools.Config.js");
-    yield return new Uri(baseUrl, "_framework/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.BrowserTools.Config.js");
+    yield return new Uri(baseUrl, "_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js");
+    yield return new Uri(baseUrl, "_framework/Microsoft.NET.Sdk.WebAssembly.HotReload.BrowserTools.Config.js");
 }
 
 static string ParsePublicKey(string moduleContent)
