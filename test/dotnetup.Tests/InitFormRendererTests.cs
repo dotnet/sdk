@@ -311,7 +311,10 @@ public class InitFormRendererTests
         if (width == 240)
         {
             output.Should().Contain(Strings.AccessModeAdminDescription);
-            output.Should().Contain(Strings.AccessModeAdminDetails);
+            foreach (string detail in Lines(Strings.AccessModeAdminDetails))
+            {
+                output.Should().Contain(detail);
+            }
             output.Should().Contain(Strings.InitConfigureConfirmation);
             output.Should().Contain(Strings.InitAcceptAndConfigure);
         }
@@ -722,6 +725,7 @@ public class InitFormRendererTests
         {
             Out = new AnsiConsoleOutput(writer),
             Ansi = AnsiSupport.No,
+            Enrichment = new ProfileEnrichment { UseDefaultEnrichers = false },
         });
         console.Profile.Width = width;
         console.Profile.Height = height;

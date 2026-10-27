@@ -191,7 +191,7 @@ public enum DotnetInstallErrorCode
     /// <summary>The download resolved for a Windows installer bundle does not have the expected <c>.exe</c> file extension.</summary>
     WrongInstallerFileExtension,
 
-    /// <summary>Admin mode cannot use a download without signature validation.</summary>
+    /// <summary>Admin mode will not use a download without signature validation until we add interactive agreement.</summary>
     AdminModeSignatureRequired,
 }
 

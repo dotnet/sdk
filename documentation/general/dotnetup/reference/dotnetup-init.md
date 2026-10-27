@@ -45,8 +45,7 @@ per-user configuration, and exits without installing .NET. Init also only
 configures when changing from saved Admin to another mode. Install afterwards
 with an explicit command; Admin installs require
 `dotnetup sdk install <version> --untracked`.
-Init does not change the unsigned-download policy. Admin mode requires signature
-validation, so unsigned daily builds cannot be installed.
+Init does not change the unsigned-download policy.
 
 Admin mode can also be selected separately with `dotnetup env set admin`.
 There is no `--mode` option. For details, see

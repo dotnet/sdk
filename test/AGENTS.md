@@ -23,6 +23,9 @@ Guidance for changes under `test/`.
   the executable under test and
   [SelfUpdateTestFiles.DotnetHostPath](dotnetup.Tests/Utilities/SelfUpdateTestFiles.cs)
   when a test needs the bootstrap host.
+  Managed-host process tests build the
+  [ManagedDotnetup fixture](TestAssets/Dotnetup/ManagedDotnetup/ManagedDotnetup.csproj);
+  do not rely on a managed application DLL being present after NativeAOT publishing.
 - **Use `SdkTestContext.Current` for paths** — never hardcode paths or manually discover
   locations at runtime (e.g. walking up directories):
 

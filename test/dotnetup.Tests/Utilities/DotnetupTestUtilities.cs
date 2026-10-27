@@ -330,41 +330,6 @@ internal static class DotnetupTestUtilities
             $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
     }
 
-    internal static string GetDotnetupManagedAssemblyPath()
-    {
-#if DEBUG
-        string configuration = "Debug";
-        string fallbackConfiguration = "Release";
-#else
-        string configuration = "Release";
-        string fallbackConfiguration = "Debug";
-#endif
-
-        string artifactsDir = GetArtifactsDirectory();
-        string rid = RuntimeInformation.RuntimeIdentifier;
-
-        foreach (string config in new[] { configuration, fallbackConfiguration })
-        {
-            string configDir = Path.Combine(artifactsDir, "bin", "dotnetup", config);
-            if (!Directory.Exists(configDir))
-            {
-                continue;
-            }
-
-            foreach (string tfmDir in Directory.GetDirectories(configDir))
-            {
-                string managedPath = Path.Combine(tfmDir, rid, "dotnetup.dll");
-                if (File.Exists(managedPath))
-                {
-                    return Path.GetFullPath(managedPath);
-                }
-            }
-        }
-
-        throw new FileNotFoundException(
-            $"Managed dotnetup assembly not found under '{Path.Combine(artifactsDir, "bin", "dotnetup")}'.");
-    }
-
     internal static string GetLatestNativeAotExecutablePath(string artifactsDirectory, string rid, string executableName)
     {
         string? latestExecutable = Directory.Exists(artifactsDirectory)
