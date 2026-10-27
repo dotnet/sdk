@@ -11,4 +11,5 @@ CA1878 | Performance | Info | PreferReadOnlySpanPropertiesOverReadOnlyArrayField
 CA2026 | Reliability | Info | PreferJsonElementParse, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2026)
 CA2027 | Reliability | Info | DoNotUseNonCancelableTaskDelayWithWhenAny, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2027)
 CA2028 | Reliability | Info | AvoidRedundantRegexIsMatchBeforeMatch, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2028)
+CA2029 | Reliability | Warning | DoNotSetApartmentStateOfRunningThread, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2029)
 CA2267 | Usage | Warning | PreferQuotedFileBasedProgramDirective, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267)

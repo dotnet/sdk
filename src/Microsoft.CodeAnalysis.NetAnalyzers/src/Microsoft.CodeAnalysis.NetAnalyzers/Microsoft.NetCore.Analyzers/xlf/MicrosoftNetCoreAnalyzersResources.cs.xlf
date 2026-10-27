@@ -1078,6 +1078,21 @@ Rozšíření a uživatelem definované převody se u obecných typů nepodporuj
         <target state="translated">Pole ukazatele {0} v serializovatelném typu</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotSetApartmentStateOfRunningThreadDescription">
+        <source>The apartment state of a thread can only be set before the thread starts. The 'STAThread' attribute takes effect only on the synchronous entry point of an application; on any other method, including an async 'Main' method, it is ignored and the method runs in the multithreaded apartment. Calling 'SetApartmentState' or 'TrySetApartmentState' on the current thread to request a single-threaded apartment fails because the thread is already running, and in an async method, code after an 'await' can resume on a different thread. To run code in a single-threaded apartment, mark a synchronous 'Main' method with 'STAThread', or call 'SetApartmentState' on a new thread before starting it.</source>
+        <target state="new">The apartment state of a thread can only be set before the thread starts. The 'STAThread' attribute takes effect only on the synchronous entry point of an application; on any other method, including an async 'Main' method, it is ignored and the method runs in the multithreaded apartment. Calling 'SetApartmentState' or 'TrySetApartmentState' on the current thread to request a single-threaded apartment fails because the thread is already running, and in an async method, code after an 'await' can resume on a different thread. To run code in a single-threaded apartment, mark a synchronous 'Main' method with 'STAThread', or call 'SetApartmentState' on a new thread before starting it.</target>
+        <note>{Locked="STAThread"}{Locked="SetApartmentState"}{Locked="TrySetApartmentState"}{Locked="await"}{Locked="Main"}</note>
+      </trans-unit>
+      <trans-unit id="DoNotSetApartmentStateOfRunningThreadMessage">
+        <source>'{0}' cannot change the apartment state of a thread that is already running</source>
+        <target state="new">'{0}' cannot change the apartment state of a thread that is already running</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSetApartmentStateOfRunningThreadTitle">
+        <source>Do not set the apartment state of a running thread</source>
+        <target state="new">Do not set the apartment state of a running thread</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
         <source>Do Not Use Account Shared Access Signature</source>
         <target state="translated">Nepoužívat sdílený přístupový podpis účtu</target>
