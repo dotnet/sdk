@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package.Remove;
 using Microsoft.DotNet.Cli.Commands.Reference.Remove;
+using Microsoft.DotNet.Cli.Commands.Sdk.Remove;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
@@ -16,5 +17,6 @@ internal static class RemoveCommandParser
 
         command.PackageCommand.SetAction(parseResult => new PackageRemoveCommand(parseResult).Execute());
         command.ReferenceCommand.SetAction(parseResult => new ReferenceRemoveCommand(parseResult).Execute());
+        command.SdkCommand.SetAction(parseResult => new SdkRemoveCommand(parseResult).Execute());
     }
 }
