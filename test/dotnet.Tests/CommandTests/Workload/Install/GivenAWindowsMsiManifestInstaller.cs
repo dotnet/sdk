@@ -10,12 +10,13 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Configuration;
 using NuGet.Versioning;
+using Moq;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests;
 
 [TestClass]
-[SupportedOSPlatform("windows")]
 [OSCondition(OperatingSystems.Windows)]
+[SupportedOSPlatform("windows")]
 public class GivenAWindowsMsiManifestInstaller : SdkTest
 {
     [TestMethod]
@@ -75,6 +76,39 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
         callOrder.Should().Equal("verify", "install");
         verifiedMsiPath.Should().Be(downloader.MsiPath);
         installedMsiPath.Should().Be(downloader.MsiPath);
+    }
+        
+    public async Task ExtractManifestAsyncVerifiesTheResolvedMsiPathBeforeAdminInstall()
+    {
+        using var temporaryDirectory = new TemporaryDirectory();
+        string? expectedMsiPath = null;
+        var downloader = new Mock<INuGetPackageDownloader>();
+        downloader.Setup(d => d.ExtractPackageAsync(It.IsAny<string>(), It.IsAny<DirectoryPath>()))
+            .Returns((string _, DirectoryPath targetFolder) =>
+            {
+                string dataPath = Path.Combine(targetFolder.Value, "data");
+                Directory.CreateDirectory(dataPath);
+                expectedMsiPath = Path.Combine(dataPath, "payload.msi");
+                File.WriteAllText(Path.Combine(dataPath, "msi.json"), """{"Payload":"payload.msi"}""");
+                File.WriteAllText(expectedMsiPath, string.Empty);
+                return Task.FromResult<IEnumerable<string>>(Array.Empty<string>());
+            });
+
+        string? verifiedMsiPath = null;
+        var expectedException = new VerificationCallbackInvokedException();
+        var installer = new WindowsMsiManifestInstaller(
+            downloader.Object,
+            verifyPackageSignature: msiPath =>
+            {
+                verifiedMsiPath = msiPath;
+                throw expectedException;
+            });
+
+        var exception = await Assert.ThrowsExactlyAsync<VerificationCallbackInvokedException>(
+            () => installer.ExtractManifestAsync("manifest.nupkg", Path.Combine(temporaryDirectory.DirectoryPath, "target")));
+
+        Assert.AreSame(expectedException, exception);
+        Assert.AreEqual(expectedMsiPath, verifiedMsiPath);
     }
 
     // MSIs built with WiX v3 collapse the Program Files directory into the administrative install target.
@@ -174,4 +208,8 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
             PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
     }
 #nullable restore
+
+    private sealed class VerificationCallbackInvokedException : Exception
+    {
+    }
 }

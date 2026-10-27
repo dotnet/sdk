@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 public static class Product
 {
     public static readonly string Version;
-    public static readonly string TargetFrameworkVersion = "11.0";
+    public static readonly string TargetFrameworkVersion = FileBasedProgramDefaults.TargetFrameworkVersion;
 
     static Product()
     {
