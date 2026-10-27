@@ -1,12 +1,21 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project>
+
+  <PropertyGroup>
+    <SkipCurrentSourceBuiltPackageVersionOverrides Condition="'$(DotNetBuildFromVMR)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">true</SkipCurrentSourceBuiltPackageVersionOverrides>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
     <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
+    <!-- Runtime-excluded MSBuild dependencies must remain compatible with the bootstrap host. -->
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <IsAotCompatible>true</IsAotCompatible>
+    <EnableKnownPackVersionUpdatesForCurrentTargetFramework Condition="'$(DotNetBuildFromVMR)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">false</EnableKnownPackVersionUpdatesForCurrentTargetFramework>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,9 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.Versioning" />
@@ -31,5 +41,7 @@
      <!-- This causes conflicts with System.Threading.Tasks.Task. Giving it an alias to avoid the conflict. -->
     <Using Include="Microsoft.Build.Utilities.Task" Alias="Task" />
   </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>
