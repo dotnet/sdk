@@ -22,7 +22,7 @@ dotnetup runtime install 10.0.1    # Installs only .NET runtime 10.0.1
 ```
 
 ```bash
-dotnetup runtime install  # Installs latest .NET Core Runtime (or whatever is specified in global.json)
+dotnetup runtime install  # Installs latest .NET Core Runtime
 ```
 
 ### Component-Specific Install with `@` Syntax
@@ -43,36 +43,19 @@ dotnetup runtime install runtime@10.0.1           # Explicitly installs core run
 | `aspnetcore` | Microsoft.AspNetCore.App | ASP.NET Core runtime (includes core runtime) |
 | `windowsdesktop` | Microsoft.WindowsDesktop.App | Windows Desktop runtime for WPF/WinForms (includes core runtime) |
 
-### Multiple Components (Future)
+### Multiple Components
 
-We plan to support installing multiple components in a single command:
+Multiple components can be installed in a single command:
 
 ```bash
-# Future support - not yet implemented
 dotnetup runtime install windowsdesktop@10.0.1 aspnetcore@9.0.10
 ```
 
-This will install both specified components sequentially. For now, run separate install commands.
-
-### Global.json Integration (Future)
-
-We plan to support reading runtime requirements from `global.json`:
-
-```bash
-dotnetup runtime install    # Reads global.json and installs demanded runtime components
-```
-
-The `global.json` format for runtime specification is TBD, but will allow users to declaratively specify runtime dependencies for a repository.
-
-## `global.json` handling
-
-The `sdk` paths feature in [`global.json`](https://learn.microsoft.com/en-us/dotnet/core/tools/global-json) is, in theory, not meant to inform runtime installation.
-
-Essentially, we could remove `global.json` lookup from the chain of consideration when looking up where to install dotnet. However, we suggest that installing the SDK implies the user wants debugging and other features to work based on that .NET SDK. So, we will utilize the same logic and have `global.jsons` `sdk` feature also direct the location and install lookup of the .NET runtime for `dotnetup`, to at least the extent we control. The muxer itself does not respect this, but it does respect `DOTNET_ROOT`, which we can manipulate; admittedly, this may only be realistic for `dotnetup dotnet` or commands where we control the starting process, and we shouldn't set the entire user environment block to point to a repo specific location.
+This installs both specified components sequentially.
 
 ## Versions
 
-Runtime versions don't have a feature band. The version parsing handled by the [`Microsoft.Deployment.DotNet.Releases`](https://github.com/dotnet/deployment-tools/tree/main/src/Microsoft.Deployment.DotNet.Releases) library (see [`ChannelVersionResolver`](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/ChannelVersionResolver.cs)), however, should account for this. Minimal changes are expected.
+Runtime versions don't have a feature band. The version parsing handled by the [`Microsoft.Deployment.DotNet.Releases`](https://github.com/dotnet/deployment-tools/tree/main/src/Microsoft.Deployment.DotNet.Releases) library (see [`ChannelVersionResolver`](https://github.com/dotnet/sdk/blob/release/dnup/src/Installer/Microsoft.Dotnet.Installation/Internal/ChannelVersionResolver.cs)), however, should account for this. Minimal changes are expected.
 
 ## Muxer Handling
 
@@ -80,7 +63,7 @@ The .NET Runtime archives also include `dotnet.exe`. The host replacement logic 
 
 ## Runtime Component Selection
 
-There are 3 runtime archives produced: the runtime, aspnetcore runtime, and windows desktop runtime (see [`InstallComponent`](../../../../src/Installer/Microsoft.Dotnet.Installation/InstallComponent.cs)).
+There are 3 runtime archives produced: the runtime, aspnetcore runtime, and windows desktop runtime (see [`InstallComponent`](https://github.com/dotnet/sdk/blob/release/dnup/src/Installer/Microsoft.Dotnet.Installation/InstallComponent.cs)).
 
 The component is specified using the `<component>@<version>` syntax described above:
 
@@ -93,12 +76,11 @@ The component is specified using the `<component>@<version>` syntax described ab
 
 **Note:** The `--type` flag is **not** supported. Use the `<component>@<version>` syntax instead.
 
-### Future: Multiple Components
+### Multiple Components
 
-Support for installing multiple components in one command is planned but not yet implemented:
+Multiple component specifications can be passed to one command:
 
 ```bash
-# Planned - not yet supported
 dotnetup runtime install windowsdesktop@10.0.1 aspnetcore@9.0.10
 ```
 
@@ -114,7 +96,7 @@ The .NET SDK install may include the .NET Runtime.
 2. Explicit user actions (install commands) are tracked in the manifest
 3. Uninstall operations should not break other installed components
 
-What we will do is check `shared/{runtime-type}/{runtime-version}` and `host/fxr/{runtime-version}` in the hive location. We could also query the muxer itself (via [`HostFxrWrapper`](../../../../src/Installer/Microsoft.Dotnet.Installation/Internal/HostFxrWrapper.cs)) for a more concrete answer as to if the install exists on disk.
+What we will do is check `shared/{runtime-type}/{runtime-version}` and `host/fxr/{runtime-version}` in the hive location. We could also query the muxer itself (via [`HostFxrWrapper`](https://github.com/dotnet/sdk/blob/release/dnup/src/Installer/Microsoft.Dotnet.Installation/Internal/HostFxrWrapper.cs)) for a more concrete answer as to if the install exists on disk.
 
 Consider performance (folder check vs muxer invocation) vs accuracy (folder faking via rename) in this decision.
 

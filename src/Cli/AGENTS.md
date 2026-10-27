@@ -78,6 +78,21 @@ rest are supporting libraries:
 - `Common/` — shared option/argument factories.
 - `Help/` — help builder and localization.
 
+## Per-command services
+
+[`CommandServices`](dotnet/CommandServices.cs) holds immutable service dependencies.
+[`CommandBase`](dotnet/CommandBase.cs) retains them per instance. Build-family factories
+require callers to provide services explicitly; pass the same instance to subordinate commands, as
+[`RestoringCommand`](dotnet/Commands/Restore/RestoringCommand.cs) does for separate restore.
+CLI entry points that do not receive services create the production defaults explicitly.
+
+For in-process LLM tests, inject a detector through these services rather than changing
+the process environment or adding ambient overrides. Keep command-path tests entering
+through the real factory; see
+[`GivenCommandServices`](../../test/dotnet.Tests/CommandTests/MSBuild/GivenCommandServices.cs).
+Test the detector's environment-variable mapping separately with an `IEnvironmentProvider`.
+For subprocess tests, set environment variables on the child process instead.
+
 ## Verify (approval) snapshot tests
 
 Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):
@@ -90,3 +105,14 @@ Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):
   matching `*.verified.txt`.
 - Volatile lines (paths, timings, versions) are scrubbed via
   `settings.ScrubLinesContaining(...)` — scrub rather than hard-code them.
+
+## MTP process completion
+
+[`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs) distinguishes
+TestHost completion from orchestrator-only completion. An exit-0 `RefreshMappingsOrchestrator`
+in collection mode or `RunAffectedTestsOrchestrator` in affected-run mode can finish without
+a TestHost; legacy collection can omit handshakes entirely. Missing/unknown capabilities,
+controller-only or mixed partial handshakes, and explicit handshake rejections must not
+gain that exemption. Rejection and partial-handshake state must survive later accepted
+handshakes. Keep these boundaries covered by
+[`TestApplicationHandlerTests`](../../test/dotnet.Tests/CommandTests/Test/TestApplicationHandlerTests.cs).

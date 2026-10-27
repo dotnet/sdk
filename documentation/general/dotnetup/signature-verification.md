@@ -235,11 +235,9 @@ The verifier builds an `X509Chain` for the signer certificate with:
 - `VerificationTime` = the authoritative RFC 3161 TSA timestamp from §7
   (or current UTC when no TSA timestamp is available).
 - `VerificationFlags = NoFlag`. The verifier MUST NOT set
-  `IgnoreNotTimeValid`. Release artifacts are intended-fresh: an expired
-  signer certificate at time of consumption means the artifact is stale
-  even if the signature was valid at issuance. NuGet's package
-  verification path ignores `NotTimeValid` because packages are immutable
-  historical artifacts; release artifacts are not.
+  `IgnoreNotTimeValid`. The signer certificate MUST be valid at the
+  authoritative signing time. Current manifest freshness is enforced
+  separately by the JSON expiration policy in §9.
 
 After chain evaluation the verifier disposes every
 `X509ChainElement.Certificate` to avoid finalizer pressure on the OS
@@ -421,7 +419,9 @@ The verifier deliberately does not handle:
 - Counter-signatures other than RFC 3161 `signatureTimeStampToken` (which may itself
   appear multiple times for TSA renewal per RFC 3161 §2.4.2 — see §7).
 - Certificate revocation discovery via AIA fetch of intermediates.
-- Air-gapped / offline verification (see §1 / §6).
+- Guaranteed current revocation status while offline. `Offline` mode can use
+  cached revocation data and `NoCheck` can explicitly skip revocation, but
+  neither mode can establish current status from the network (see §1 / §6).
 
 ## 12. Unsigned-source policy (daily / blob feed)
 

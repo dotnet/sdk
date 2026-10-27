@@ -4,7 +4,7 @@ This is a forward-looking note, not a description of current behavior. As of
 today, **the .NET SDK knows nothing about `dotnetup`**: `dotnetup` is a separate,
 self-contained binary that ships its own copy of `Microsoft.Dotnet.Installation`,
 its own pinned trusted-root PEMs, and its own
-[`SignatureVerifier`](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/Signing/SignatureVerifier.cs)
+[`SignatureVerifier`](https://github.com/dotnet/sdk/blob/release/dnup/src/Installer/Microsoft.Dotnet.Installation/Internal/Signing/SignatureVerifier.cs)
 policy. Each released `dotnetup` is the policy authority for its own runs, and
 the user is always expected to be on the latest `dotnetup` (one of `dotnetup`'s
 first acts is to self-update; older builds are not a supported configuration).
@@ -99,7 +99,7 @@ are required:
   Y is always "today's standalone build" — so this test does not exist.
 - The expiration-window test added alongside this doc
   (`PinnedIssuerCertificates_HaveAtLeast90DaysUntilExpiration` in
-  [`test/dotnetup.Tests/SignatureVerifierTests.cs`](../../../test/dotnetup.Tests/SignatureVerifierTests.cs))
+  [`test/dotnetup.Tests/SignatureVerifierTests.cs`](https://github.com/dotnet/sdk/blob/release/dnup/test/dotnetup.Tests/SignatureVerifierTests.cs))
   becomes load-bearing rather than advisory: under the current model an
   expired issuer just means "ship a `dotnetup` update before customers
   notice"; under a bundled-`dotnetup` model it means "ship a servicing

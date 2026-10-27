@@ -1,5 +1,8 @@
 <Project>
   <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+    <PropertyGroup Condition="'$(NoDevicesTargetFramework)' != '' and '$(TargetFramework)' == '$(NoDevicesTargetFramework)'">
+      <NoDevices>true</NoDevices>
+    </PropertyGroup>
     <Error Condition="'$(ExpectedDeviceConfiguration)' != '' and '$(Configuration)' != '$(ExpectedDeviceConfiguration)'"
            Text="Expected device configuration '$(ExpectedDeviceConfiguration)', but found '$(Configuration)'." />
     <Error Condition="'$(ExpectedDevicePlatform)' != '' and '$(Platform)' != '$(ExpectedDevicePlatform)'"

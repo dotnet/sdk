@@ -13,18 +13,18 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Store;
 
 public sealed class StoreCommand : MSBuildForwardingApp
 {
-    private StoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
-        : base(msbuildArgs, msbuildPath)
+    private StoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath, CommandServices services)
+        : base(msbuildArgs, msbuildPath, services)
     {
     }
 
-    public static StoreCommand FromArgs(string[] args, string msbuildPath = null)
+    public static StoreCommand FromArgs(string[] args, string msbuildPath, CommandServices services)
     {
         var result = Parser.Parse(["dotnet", "store", .. args]);
-        return FromParseResult(result, msbuildPath);
+        return FromParseResult(result, msbuildPath, services);
     }
 
-    public static StoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
+    public static StoreCommand FromParseResult(ParseResult result, string msbuildPath, CommandServices services)
     {
         var definition = (StoreCommandDefinition)result.CommandResult.Command;
 
@@ -41,13 +41,13 @@ public sealed class StoreCommand : MSBuildForwardingApp
 
         msbuildArgs.AddRange(result.GetValue(definition.Argument) ?? []);
 
-        return new StoreCommand(msbuildArgs, msbuildPath);
+        return new StoreCommand(msbuildArgs, msbuildPath, services);
     }
 
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
     }
 }

@@ -101,6 +101,7 @@
       <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
       <ContainerPushNoCache Condition="'$(ContainerPushNoCache)' == ''">false</ContainerPushNoCache>
+      <ContainerArchiveNoIncremental Condition="'$(ContainerArchiveNoIncremental)' == ''">false</ContainerArchiveNoIncremental>
     </PropertyGroup>
 
     <ParseContainerProperties FullyQualifiedBaseImageName="$(ContainerBaseImage)"
@@ -252,6 +253,11 @@
   <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
        in a few different ways we can't express that dependency directly here. -->
   <Target Name="_PublishSingleContainer" Returns="@(GeneratedContainer)">
+    <PropertyGroup>
+      <_ContainerArchiveIncrementalCacheEnabled Condition="'$(ContainerArchiveNoIncremental)' == 'false' and '$(ContainerArchiveOutputPath)' != '' and '$(_IsSingleRIDBuild)' == 'true' and '$(_IsMultiRIDInnerBuild)' != 'true'">true</_ContainerArchiveIncrementalCacheEnabled>
+      <_ContainerArchiveIncrementalCachePath>$([System.IO.Path]::Combine('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'container', 'publish.cache.json'))</_ContainerArchiveIncrementalCachePath>
+    </PropertyGroup>
+
     <CreateNewImage BaseRegistry="$(ContainerBaseRegistry)"
                     BaseImageName="$(ContainerBaseName)"
                     BaseImageTag="$(ContainerBaseTag)"
@@ -281,7 +287,9 @@
                     NoCache="$(ContainerPushNoCache)"
                     GenerateLabels="$(ContainerGenerateLabels)"
                     GenerateCreatedLabels="$(ContainerGenerateLabelsImageCreated)"
-                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
+                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"
+                    EnableArchiveIncrementalCache="$(_ContainerArchiveIncrementalCacheEnabled)"
+                    ArchiveIncrementalCachePath="$(_ContainerArchiveIncrementalCachePath)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
@@ -342,6 +350,7 @@
           ContainerImageFormat=$(_SingleImageContainerFormat);
           _IsMultiRIDBuild=false;
           _IsSingleRIDBuild=true;
+          _IsMultiRIDInnerBuild=true;
           _InitialContainerBaseImage=$(_InitialContainerBaseImage)
         "/>
       <_rids Remove ="$(_rids)" />

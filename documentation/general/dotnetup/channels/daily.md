@@ -13,6 +13,8 @@ release.
 
 > [!CAUTION]
 > Daily builds can change frequently and are not supported releases. They are not code-signed.
+> For more information, see
+> [How dotnetup verifies downloads](../concepts/download-verification.md).
 
 ## Daily channel forms
 

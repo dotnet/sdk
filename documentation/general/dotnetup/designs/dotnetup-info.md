@@ -11,7 +11,7 @@ The `--info` option displays diagnostic information about the dotnetup tool, inc
 dotnetup --info
 
 # Machine-readable JSON output
-dotnetup --info --json
+dotnetup --info --format json
 
 # Skip listing installations (faster)
 dotnetup --info --no-list
@@ -21,7 +21,7 @@ dotnetup --info --no-list
 
 | Option | Description |
 |--------|-------------|
-| `--json` | Output information in JSON format |
+| `--format json` | Output information in JSON format |
 | `--no-list` | Skip listing installed SDKs (faster startup) |
 
 ## Output Information
@@ -57,9 +57,9 @@ Installed .NET (managed by dotnetup):
 Total: 3
 ```
 
-## JSON Output (`--json`)
+## JSON Output (`--format json`)
 
-The `--json` option outputs the information in a machine-readable JSON format, suitable for parsing by scripts and tools:
+The `--format json` option outputs the information in a machine-readable JSON format, suitable for parsing by scripts and tools:
 
 ```json
 {
@@ -174,12 +174,12 @@ Total: 0
 
 ```bash
 # PowerShell
-$info = dotnetup --info --json | ConvertFrom-Json
+$info = dotnetup --info --format json | ConvertFrom-Json
 Write-Host "Using dotnetup version $($info.version)"
 Write-Host "Installed SDKs: $($info.installations.Count)"
 
 # Bash with jq
-version=$(dotnetup --info --json | jq -r '.version')
+version=$(dotnetup --info --format json | jq -r '.version')
 echo "Using dotnetup version $version"
 ```
 

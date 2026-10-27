@@ -159,7 +159,7 @@ internal static class TelemetryCommonProperties
         try
         {
             // Reuse the SDK's LLM/agent detection
-            var detector = new LLMEnvironmentDetectorForTelemetry();
+            var detector = new LLMEnvironmentDetectorForTelemetry(environmentProvider: null);
             return detector.GetLLMEnvironment();
         }
         catch

@@ -94,6 +94,12 @@ See [TESTING_STRATEGY.md](.github/memory/TESTING_STRATEGY.md) and the
 
 These are hard boundaries for agents working in this repo. Treat them as "must not" rules.
 
+### Keep isolated SDK runs out of the user PATH
+
+When invoking an isolated SDK with a temporary `DOTNET_CLI_HOME`, set
+`DOTNET_ADD_GLOBAL_TOOLS_TO_PATH=0` before the first `dotnet` invocation to prevent
+first-run setup from modifying the Windows user PATH.
+
 ### Flag user-visible behavior
 
 Call out intentional user-visible behavior or contract changes in the final handoff.
