@@ -93,6 +93,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             initializerContent.Should().Contain($"const useRuntimeHotReloadAgent = {(expectRuntimeHotReloadAgent ? "true" : "false")};");
             initializerContent.Should().Contain($"const useSdkHotReloadAgent = {(expectSdkHotReloadAgent ? "true" : "false")};");
             initializerContent.Should().Contain("agent.applyHotReloadDeltas =");
+            initializerContent.Should().Contain("export async function afterWebStarted()");
+            initializerContent.Should().Contain("export function afterWebAssemblyStarted()");
+            initializerContent.Should().Contain("agent.pendingUpdates ??= [];");
+            initializerContent.Should().Contain("return hotReloadSettings ??= readHotReloadSettings();");
             initializerContent.Should().NotContain("window.Blazor._internal.applyHotReloadDeltas =");
             initializerContent.Should().NotContain("__RUNTIME_HOT_RELOAD_AGENT__");
             initializerContent.Should().NotContain("__SDK_HOT_RELOAD_AGENT__");
@@ -116,6 +120,53 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Where(asset => asset.AssetTraitValue == "JSLibraryModule")
                 .Select(asset => asset.RelativePath)
                 .ToArray();
+        }
+
+        [TestMethod]
+        public void Build_HostedApp_RegistersHotReloadInitializerForWebStartup()
+        {
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorHosted");
+            var build = CreateBuildCommand(ProjectDirectory, "blazorhosted");
+
+            ExecuteCommand(build).Should().Pass();
+
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(
+                build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
+                "staticwebassets.build.json")));
+            var initializer = manifest.Assets.Single(asset =>
+                asset.IsPrimaryAsset() &&
+                asset.AssetTraitValue == "JSLibraryModule" &&
+                asset.RelativePath.Contains("Microsoft.NET.Sdk.WebAssembly.HotReload"));
+
+            initializer.SourceId.Should().Be("blazorwasm");
+            initializer.IsBuildOnly().Should().BeTrue();
+
+            // Blazor Web imports this manifest before any interactive WebAssembly component starts.
+            var modules = File.ReadAllText(Path.Combine(
+                build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
+                "jsmodules",
+                "jsmodules.build.manifest.json"));
+            modules.Should().Contain("Microsoft.NET.Sdk.WebAssembly.HotReload");
+
+            var content = File.ReadAllText(initializer.Identity);
+            content.ReplaceLineEndings("\n").Should().Contain("""
+                export async function afterWebStarted() {
+                    const agent = hotReloadAgentSignal();
+                    if (!agent.isReady) {
+                        agent.pendingUpdates ??= [];
+                    }
+
+                    if (!await isHotReloadEnabled()) {
+                        return;
+                    }
+
+                    await import(new URL(configModulePath, import.meta.url).href);
+                }
+                """.ReplaceLineEndings("\n"));
+
+            new DirectoryInfo(Path.Combine(
+                build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
+                "HotReload")).Should().NotExist();
         }
 
         [TestMethod]
