@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Installer\Microsoft.Dotnet.Installation\Internal\ScopedLockFile.cs" Link="ScopedLockFile.cs" />
+  </ItemGroup>
+</Project>
