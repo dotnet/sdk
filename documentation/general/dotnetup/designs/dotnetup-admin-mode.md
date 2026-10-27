@@ -112,7 +112,7 @@ Rollout for other commands will be integrated later, such as:
 On Windows, `admin` can be selected from the interactive `dotnetup init` form or with
 `dotnetup env set admin`. When Admin is selected, the init form hides the SDK-channel
 and migration fields and offers to configure rather than install. It applies the
-policy and environment settings, saves the mode, and exits without resolving or
+environment settings, saves the mode, and exits without resolving or
 executing an installation. Init also only configures when changing from a saved
 Admin mode to another mode. A subsequent explicit install command uses the newly
 saved mode, so its command gate and telemetry agree about the installation mode.
@@ -126,30 +126,23 @@ The `BlockUnsignedDownloads` `REG_DWORD` value under `HKLM\SOFTWARE\Policies\Mic
 | --- | --- |
 | [`BlockUnsignedDownloads`](../signature-verification.md) | Blocks downloads that have no detached signature, such as daily builds. It applies in every mode. It does not block `self update` of an Authenticode-signed `dotnetup`, whose replacement must itself be Authenticode-signed. |
 
-IT administrators can set this value through Group Policy, Intune, or similar tools. `dotnetup env set admin` also sets it after elevation so unsigned installers are blocked by default.
+Administrators can set this value through Group Policy, Intune, or similar tools.
+dotnetup does not change it when selecting, reapplying, or leaving an access mode.
+Admin mode requires signature validation independently of this policy.
 
 #### Changing the Mode
 
-Selecting `admin` mode with `env set` or init ensures `BlockUnsignedDownloads` is
-`1` before applying environment changes and storing the user setting. Leaving
-`admin` mode ensures it is `0` and reports when unsigned executables are allowed
-again by default. A policy change requests UAC unless `dotnetup` is already
-elevated; an already-correct policy needs no elevation. If elevation is declined
-or verification fails, the mode change fails before environment or per-user
-configuration changes.
+Selecting `admin` mode with `env set` or init applies environment changes and
+stores the user setting without changing `BlockUnsignedDownloads`. Leaving
+`admin` mode also leaves the policy unchanged.
 
-`env set` without a mode reapplies the stored settings, including repairing the
-unsigned-download block and environment drift in Admin mode. `env clear` is
-equivalent to `env set none --dotnetup-on-path false`, including the policy step
-when leaving Admin. Neither command installs or uninstalls .NET. Init preserves
+`env set` without a mode reapplies the stored environment settings. `env clear` is
+equivalent to `env set none --dotnetup-on-path false`.
+Neither command installs or uninstalls .NET. Init preserves
 the configured dotnetup-on-PATH setting, defaulting to `true` on first setup.
 
-The policy, environment, and user config are not a single transaction. An
-environment or config write failure after a successful policy change is reported
-as a failure, not as successful setup. Existing Everywhere-mode PATH cleanup can
-also require elevation independently of the policy change.
-
-Elevation reuses the existing hidden-command pattern used for the system `PATH` ([`WindowsPathHelper.StartElevatedProcess`](../../../../src/Installer/dotnetup.Library/WindowsPathHelper.cs)). The elevated command accepts only the fixed `enableadminmode` and `disableadminmode` operations. It must not accept registry paths, value names, or data from its arguments. Because that pattern elevates `dotnetup.exe` from a user-writable location, a future alternative is to elevate `%SystemRoot%\System32\reg.exe` with fixed arguments instead.
+An environment or config write failure is reported as a failure, not as successful
+setup. Existing Everywhere-mode PATH cleanup can still require elevation.
 
 #### Limitations
 
@@ -167,13 +160,15 @@ Therefore, `dotnetup` and its commands will behave differently in `admin` mode, 
 
 ## Channels
 
-Channel semantics remain the same.
-
-`dotnetup sdk install daily`, or `11.0.1xx` would still install the same version regardless of the `mode`. The names for channels will remain the same. What a channel does however will be different.
-
-Enabling `admin` mode also sets `BlockUnsignedDownloads`, so unsigned installers are blocked by default.
-
-`daily` blobs exist but are not Authenticode signed (for example, https://aka.ms/dotnet/12.0.1xx/daily/dotnet-sdk-win-x64.exe). When `BlockUnsignedDownloads` is `0`, `admin` mode installs these `.exe` installers from the blob feed after verifying their published SHA-512 hash and printing the same unsigned-download warning used for archives. Authenticode is not checked for them. Installers resolved from the signed `releases.json` must always pass Authenticode verification chaining to a Microsoft root. IT administrators remain able to block unsigned installers via policy.
+Channel names and version selection remain the same, but admin mode requires
+signature validation. Unsigned daily or blob-feed builds are blocked even when
+`BlockUnsignedDownloads` is `0`, with the user error
+"Signature validation is required when using admin mode."
+Installers must pass Authenticode verification chaining to a Microsoft root.
+Archive installs selected through global.json `sdk.paths` must use signed release
+metadata. `dotnetup self update` may use its channel feed only when the replacement
+is validated with a Microsoft-rooted Authenticode signature; it cannot fall back
+to hash-only validation in admin mode.
 
 
 ### Channel Differentiators under `admin`

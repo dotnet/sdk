@@ -33,9 +33,9 @@ mode setting.  This can be controlled with
 `dotnetup env set --dotnetup-on-path <true|false>`.
 
 Admin is stored in the same per-user configuration as the other access modes.
-Entering it first ensures a machine-wide policy blocks unsigned downloads,
-elevating if needed; leaving it clears that policy before applying the new
-settings. Selecting Admin in `dotnetup init`, or using init to leave saved Admin,
+Changing modes does not change the machine-wide unsigned-download policy.
+Admin mode requires signature validation and blocks unsigned daily builds even
+when that policy allows them. Selecting Admin in `dotnetup init`, or using init to leave saved Admin,
 only configures the environment and mode. Install .NET afterwards with a separate
 command. The dotnetup-on-PATH setting remains independent in Admin mode too.
 

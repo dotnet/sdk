@@ -463,9 +463,10 @@ the policy with the platform-appropriate switch:
 
   Clear the policy by deleting the value (or setting it to `0`).
 
-  Enabling dotnetup `admin` mode also sets this value to `1`, and leaving
-  `admin` mode sets it back to `0` by default. In `admin` mode, the value controls
-  whether unsigned daily `.exe` installers may run; see
+  Selecting, reapplying, or leaving dotnetup `admin` mode does not change this
+  value. Admin mode independently requires signature validation, so unsigned
+  daily or blob-feed builds are blocked even when the policy allows them, with
+  "Signature validation is required when using admin mode." See
   [dotnetup admin mode](designs/dotnetup-admin-mode.md). The access mode itself
   is stored in the current user's dotnetup configuration.
 
