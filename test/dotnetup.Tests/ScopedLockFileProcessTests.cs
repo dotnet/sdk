@@ -28,10 +28,9 @@ public class ScopedLockFileProcessTests
         var outputDirectory = Path.Combine(s_buildDirectory, "out");
         var startInfo = new ProcessStartInfo(s_dotnetPath) { UseShellExecute = false, WorkingDirectory = repoRoot };
         startInfo.ArgumentList.Add("build");
-        startInfo.ArgumentList.Add(Path.Combine(repoRoot, "test", "TestAssets", "ScopedLockFileProcess", "ScopedLockFileProcess.csproj"));
+        startInfo.ArgumentList.Add(Path.Combine(repoRoot, "test", "TestAssets", "Dotnetup", "ScopedLockFileProcess", "ScopedLockFileProcess.csproj"));
         startInfo.ArgumentList.Add("--output");
         startInfo.ArgumentList.Add(outputDirectory);
-        startInfo.ArgumentList.Add("/p:CurrentTargetFramework=" + TestAssetFramework.Current);
         startInfo.ArgumentList.Add("/p:ArtifactsDir=" + s_buildDirectory + Path.DirectorySeparatorChar);
         startInfo.ArgumentList.Add("/p:BaseIntermediateOutputPath=" + Path.Combine(s_buildDirectory, "obj") + Path.DirectorySeparatorChar);
         startInfo.ArgumentList.Add("/nodeReuse:false");

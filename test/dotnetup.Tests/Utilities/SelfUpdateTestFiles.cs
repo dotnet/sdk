@@ -104,9 +104,8 @@ internal sealed class SelfUpdateTestFiles : IDisposable
         foreach (var argument in new[]
         {
             // The host is copied to the destination directory after publishing.
-            "publish", Path.Combine(repoRoot!, "test", "TestAssets", "SelfUpdateProcess", "SelfUpdateProcess.csproj"),
+            "publish", Path.Combine(repoRoot!, "test", "TestAssets", "Dotnetup", "SelfUpdateProcess", "SelfUpdateProcess.csproj"),
             "--output", output,
-            "/p:CurrentTargetFramework=" + TestAssetFramework.Current,
             "/p:AppHostRelativeDotNet=" + runtimePath,
             "/p:AssemblyName=" + assemblyName,
             "/p:Version=" + version,
