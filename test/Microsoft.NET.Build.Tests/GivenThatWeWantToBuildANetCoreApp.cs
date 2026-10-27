@@ -1074,7 +1074,7 @@ class Program
             testProject.PackageReferences.Add(package);
             testProject.AdditionalProperties["RestoreAdditionalProjectSources"] = Path.GetDirectoryName(package.NupkgPath);
             testProject.AdditionalProperties["RestorePackagesPath"] =
-                Path.Combine(TestContext.Current.TestExecutionDirectory, "no-framework-packages");
+                Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "no-framework-packages");
 
             // Disable implicit framework references and don't add any framework references.
             // This mimics the scenario of building runtime framework libraries. Since they are part of the
