@@ -11,6 +11,7 @@ using Microsoft.DotNet.Cli.Installer.Windows;
 namespace Microsoft.DotNet.Tests;
 
 [SupportedOSPlatform("windows5.1.2600")]
+[OSCondition(OperatingSystems.Windows)]
 [TestClass]
 public class TrustedMachinePathTests
 {

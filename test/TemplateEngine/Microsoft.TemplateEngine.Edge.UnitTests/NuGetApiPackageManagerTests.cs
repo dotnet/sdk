@@ -443,7 +443,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                   """
                 : string.Empty;
             File.WriteAllText(
-                Path.Join(settingsDirectory, "NuGet.config"),
+                Path.Combine(settingsDirectory, "NuGet.config"),
                 $"""
                 <?xml version="1.0" encoding="utf-8"?>
                 <configuration>
