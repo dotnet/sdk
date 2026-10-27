@@ -1214,7 +1214,9 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
-    public void Coverage_ForUnobservedSession_DoesNotClaimSingleSourceTotal()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Coverage_ForUnobservedSession_DoesNotClaimRunTotal(bool merged)
     {
         (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
         handler.OnHandshakeReceived(
@@ -1223,7 +1225,17 @@ public class TestApplicationHandlerTests : IDisposable
         handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "observed-session", "exec-1"));
         handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
             "exec-1", "inst-1", [new("unobserved-session", "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
+        if (merged)
+        {
+            ReportCoverageArtifact(handler, "exec-1", "inst-1", "observed-session", "first.coverage");
+            ReportCoverageArtifact(handler, "exec-1", "inst-1", "observed-session", "second.coverage");
+        }
+
         handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+        if (merged)
+        {
+            ApplyCoverageMerge(reporter, secondExecutionId: "exec-1");
+        }
 
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
 

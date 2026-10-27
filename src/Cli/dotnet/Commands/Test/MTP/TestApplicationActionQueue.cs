@@ -139,6 +139,7 @@ internal class TestApplicationActionQueue
                     }
                     catch (Exception ex)
                     {
+                        output.MarkCoverageIncomplete();
                         var exAsString = ex.ToString();
                         Logger.LogTrace($"Exception running test module {module.RunProperties?.Command} {module.RunProperties?.Arguments}: {exAsString}");
                         Reporter.Error.WriteLine(string.Format(CliCommandStrings.ErrorRunningTestModule, module.RunProperties?.Command, module.RunProperties?.Arguments, exAsString));

@@ -63,10 +63,15 @@ internal sealed partial class TerminalTestReporter
         // Aggregate and ignore policies can erase an individual application's truncation code.
         if (exitCode is ExitCode.TestSessionAborted or ExitCode.TestExecutionStoppedForMaxFailedTests or ExitCode.TestExecutionStoppedAtDeadline)
         {
-            lock (_coverageLock)
-            {
-                _coverageWasTruncated = true;
-            }
+            MarkCoverageIncomplete();
+        }
+    }
+
+    internal void MarkCoverageIncomplete()
+    {
+        lock (_coverageLock)
+        {
+            _coverageWasTruncated = true;
         }
     }
 
@@ -179,8 +184,8 @@ internal sealed partial class TerminalTestReporter
             foreach (CoverageSummaryKey key in applications.Select(entry => entry.Key))
             {
                 var measured = new CoverageInputOrigin(key.ExecutionId, key.InstanceId, key.SessionUid);
-                if (TryResolveCoverageOrigin(measured, testInstances, testSessions) is { } resolved
-                    && !expectedSources.Contains(resolved))
+                if (TryResolveCoverageOrigin(measured, testInstances, testSessions) is not { } resolved
+                    || !expectedSources.Contains(resolved))
                 {
                     completeLifecycle = false;
                 }

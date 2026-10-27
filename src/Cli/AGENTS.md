@@ -131,6 +131,11 @@ identity sets or input-file counts is insufficient. Preserve source origins inde
 of artifact-list replacement, reject ambiguous path reuse, and invalidate previous coverage
 metadata when a processed output path is replaced.
 
+Unresolved measurement origins and selected applications that fail to launch also make
+coverage incomplete, even when their exit codes are ignored. The
+[`application queue`](dotnet/Commands/Test/MTP/TestApplicationActionQueue.cs) must preserve
+that state when an exception prevents the normal handshake/session completion path.
+
 Controller coverage can arrive after `TestSessionEnd`; accept it until process completion.
 Negotiate coverage-summary support independently of the base protocol, without enabling the
 unimplemented 1.4 server-control channel. Keep producer, wire, artifact-acceptance, and
