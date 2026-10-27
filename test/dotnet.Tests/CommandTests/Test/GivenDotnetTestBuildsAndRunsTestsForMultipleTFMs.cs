@@ -153,6 +153,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("DOTNET_TEST_PARALLELIZATION_DIRECTORY", testInstance.Path)
                 .Execute([.. projectArguments, "--property", "TestTfmsInParallel=false"])
                 .Should()
                 .Pass();
