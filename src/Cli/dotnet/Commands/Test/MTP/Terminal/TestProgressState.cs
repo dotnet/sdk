@@ -268,6 +268,14 @@ internal sealed class TestProgressState(
         }
     }
 
+    internal IReadOnlySet<string> GetInstanceIds()
+    {
+        lock (_lock)
+        {
+            return new HashSet<string>(_instanceIdToAttemptNumber.Keys, StringComparer.Ordinal);
+        }
+    }
+
     internal void EnableRetry()
     {
         lock (_lock)

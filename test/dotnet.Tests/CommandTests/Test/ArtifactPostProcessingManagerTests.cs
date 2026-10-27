@@ -245,8 +245,14 @@ public class ArtifactPostProcessingManagerTests
         using var reporter = CreateReporter(console);
         reporter.AssemblyRunStarted("A.dll", "net10.0", "x64", "execution-1", "instance-1");
         reporter.AssemblyRunStarted("B.dll", "net10.0", "x64", "execution-2", "instance-2");
+        reporter.TestSessionStarted("execution-1", "session-1");
+        reporter.TestSessionEnded("execution-1", "session-1");
+        reporter.TestSessionStarted("execution-2", "session-2");
+        reporter.TestSessionEnded("execution-2", "session-2");
         ArtifactPostProcessingArtifact first = CreateArtifact("first.coverage", "microsoft.codecoverage") with { ExecutionId = "execution-1" };
         ArtifactPostProcessingArtifact second = CreateArtifact("second.coverage", "microsoft.codecoverage") with { ExecutionId = "execution-2" };
+        reporter.ArtifactAdded(false, "A.dll", "net10.0", "x64", "execution-1", null, first.Path, "instance-1", "session-1");
+        reporter.ArtifactAdded(false, "B.dll", "net10.0", "x64", "execution-2", null, second.Path, "instance-2", "session-2");
         ArtifactPostProcessingApplication application = CreateApplication();
         var group = new ArtifactPostProcessingGroup("microsoft.codecoverage", IsKind: true, [first, second], [application]);
         var job = new ArtifactPostProcessingJob(application, [group]);
@@ -272,6 +278,71 @@ public class ArtifactPostProcessingManagerTests
         {
             output.Should().NotContain(CliCommandStrings.CodeCoverageSummary);
         }
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void ApplyOutputs_ReplacedPathDoesNotRetainOldCoverage(bool separateJobs, bool invalidReplacement)
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        reporter.AssemblyRunStarted("A.dll", "net10.0", "x64", "execution-1", "instance-1");
+        reporter.AssemblyRunStarted("B.dll", "net10.0", "x64", "execution-2", "instance-2");
+        reporter.TestSessionStarted("execution-1", "session-1");
+        reporter.TestSessionEnded("execution-1", "session-1");
+        reporter.TestSessionStarted("execution-2", "session-2");
+        reporter.TestSessionEnded("execution-2", "session-2");
+        ArtifactPostProcessingArtifact[] coverageInputs =
+        [
+            CreateArtifact("first.coverage", "microsoft.codecoverage") with { ExecutionId = "execution-1" },
+            CreateArtifact("second.coverage", "microsoft.codecoverage") with { ExecutionId = "execution-2" },
+        ];
+        ArtifactPostProcessingArtifact[] otherInputs =
+        [
+            CreateArtifact("first.other", "example.other") with { ExecutionId = "execution-1" },
+            CreateArtifact("second.other", "example.other") with { ExecutionId = "execution-2" },
+        ];
+        foreach (ArtifactPostProcessingArtifact input in coverageInputs.Concat(otherInputs))
+        {
+            bool first = input.ExecutionId == "execution-1";
+            reporter.ArtifactAdded(
+                false, first ? "A.dll" : "B.dll", "net10.0", "x64", input.ExecutionId, null, input.Path,
+                first ? "instance-1" : "instance-2", first ? "session-1" : "session-2");
+        }
+
+        ArtifactPostProcessingApplication application = CreateApplication();
+        var coverageGroup = new ArtifactPostProcessingGroup("microsoft.codecoverage", true, coverageInputs, [application]);
+        var otherGroup = new ArtifactPostProcessingGroup("example.other", true, otherInputs, [application]);
+        ArtifactPostProcessingArtifact firstOutput = CreateArtifact(
+            "merged.coverage", "microsoft.codecoverage", [.. coverageInputs.Select(input => input.Path)]) with
+        {
+            CoverageSummary = [new(null, "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)],
+        };
+        ArtifactPostProcessingArtifact replacement = CreateArtifact(
+            "merged.coverage", "example.other", [.. otherInputs.Select(input => input.Path)]) with
+        {
+            CoverageSummary = invalidReplacement
+                ? [new(null, "collector", 0, null, (int)CoverageMetric.Line, null, -1, 186)]
+                : null,
+        };
+        if (separateJobs)
+        {
+            ArtifactPostProcessingManager.ApplyOutputs(reporter, new(application, [coverageGroup]), [firstOutput]);
+            ArtifactPostProcessingManager.ApplyOutputs(reporter, new(application, [otherGroup]), [replacement]);
+        }
+        else
+        {
+            ArtifactPostProcessingManager.ApplyOutputs(reporter, new(application, [coverageGroup, otherGroup]), [firstOutput, replacement]);
+        }
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("merged.coverage")
+            .And.NotContain("98.9%")
+            .And.NotContain("Total -");
     }
 
     private static void AssertFailedPostProcessingPreservesOriginalArtifacts(

@@ -786,7 +786,12 @@ internal sealed class TestApplication(
                         break;
 
                     case TestSessionEvent sessionEvent:
-                        OnSessionEvent(sessionEvent);
+                        string? sessionInstanceId = server is not null
+                            && _handshakes.TryGetValue(server, out HandshakeMessage? sessionHandshake)
+                            && sessionHandshake.Properties.TryGetValue(HandshakeMessagePropertyNames.InstanceId, out string? senderInstanceId)
+                                ? senderInstanceId
+                                : null;
+                        OnSessionEvent(sessionEvent, sessionInstanceId);
                         break;
 
                     case AzureDevOpsLogMessage azureDevOpsLogMessage:
@@ -965,8 +970,8 @@ internal sealed class TestApplication(
     private void OnTestInProgressMessages(TestInProgressMessages testInProgressMessages)
         => _handler.OnTestInProgressReceived(testInProgressMessages);
 
-    private void OnSessionEvent(TestSessionEvent sessionEvent)
-        => _handler.OnSessionEventReceived(sessionEvent);
+    private void OnSessionEvent(TestSessionEvent sessionEvent, string? instanceId)
+        => _handler.OnSessionEventReceived(sessionEvent, instanceId);
 
     private void OnAzureDevOpsLogMessage(AzureDevOpsLogMessage azureDevOpsLogMessage)
         => _handler.OnAzureDevOpsLogReceived(azureDevOpsLogMessage);

@@ -455,10 +455,7 @@ internal sealed class ArtifactPostProcessingManager
                     && representedGroups.SelectMany(group => group.Artifacts).All(artifact => consumedPaths.Contains(artifact.Path));
                 output.MergedCoverageSummaryAdded(
                     processedArtifact.Path,
-                    representedGroups.SelectMany(group => group.Artifacts)
-                        .Where(artifact => consumedPaths.Contains(artifact.Path))
-                        .Select(artifact => artifact.ExecutionId)
-                        .ToHashSet(StringComparer.Ordinal),
+                    consumedPaths,
                     complete,
                     coverageSummary);
             }

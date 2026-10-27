@@ -511,6 +511,7 @@ internal sealed class TestApplicationHandler
 
             if (_artifactPostProcessingInvocation is not null)
             {
+                _output.CoverageArtifactReplaced(fullPath);
                 _artifactPostProcessingInvocation.RecordOutput(
                     _module,
                     handshakeInfo.TargetFramework,
@@ -533,7 +534,7 @@ internal sealed class TestApplicationHandler
                 _output.ArtifactAdded(
                     outOfProcess: false,
                     _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
-                    artifact.TestDisplayName, fullPath);
+                    artifact.TestDisplayName, fullPath, fileArtifactMessages.InstanceId, artifact.SessionUid);
             }
         }
     }
@@ -545,7 +546,7 @@ internal sealed class TestApplicationHandler
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageInHelpMode, nameof(CoverageSummaryMessages)));
         }
 
-        if (!_handshakeInfo.HasValue || _handshakeRejected)
+        if (!_handshakeInfo.HasValue)
         {
             throw new InvalidOperationException(string.Format(CliCommandStrings.UnexpectedMessageWithoutHandshake, nameof(CoverageSummaryMessages)));
         }
@@ -572,7 +573,7 @@ internal sealed class TestApplicationHandler
         _output.CoverageSummaryAdded(_module.TargetPath, executionId, instanceId, message.Summaries);
     }
 
-    internal void OnSessionEventReceived(TestSessionEvent sessionEvent)
+    internal void OnSessionEventReceived(TestSessionEvent sessionEvent, string? instanceId = null)
     {
         lock (_lock)
         {
@@ -615,6 +616,7 @@ internal sealed class TestApplicationHandler
             if (sessionEvent.SessionType == SessionEventTypes.TestSessionStart)
             {
                 IncreaseTestSessionStart(sessionUid);
+                _output.TestSessionStarted(sessionExecutionId, sessionUid, instanceId);
             }
             else if (sessionEvent.SessionType == SessionEventTypes.TestSessionEnd)
             {
@@ -623,6 +625,8 @@ internal sealed class TestApplicationHandler
                 {
                     throw new InvalidOperationException(CliCommandStrings.UnexpectedTestSessionEnd);
                 }
+
+                _output.TestSessionEnded(sessionExecutionId, sessionUid, instanceId);
             }
             else
             {

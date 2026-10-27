@@ -12,6 +12,63 @@ internal sealed partial class TerminalTestReporter
     private readonly Lock _coverageLock = new();
     private readonly Dictionary<CoverageSummaryKey, ApplicationCoverageSummary> _coverageSummaries = [];
     private readonly Dictionary<string, MergedCoverageSummary> _mergedCoverageSummaries = new(FileUtilities.PathComparer);
+    private readonly Dictionary<CoverageInputOrigin, (int Started, int Ended)> _coverageTestSessions = [];
+    private readonly Dictionary<string, HashSet<CoverageInputOrigin>> _coverageInputOrigins = new(FileUtilities.PathComparer);
+    private bool _coverageWasTruncated;
+
+    internal void TestSessionStarted(string executionId, string sessionUid, string? instanceId = null)
+    {
+        lock (_coverageLock)
+        {
+            var key = new CoverageInputOrigin(executionId, instanceId, sessionUid);
+            (int started, int ended) = _coverageTestSessions.GetValueOrDefault(key);
+            _coverageTestSessions[key] = (started + 1, ended);
+        }
+    }
+
+    internal void TestSessionEnded(string executionId, string sessionUid, string? instanceId = null)
+    {
+        lock (_coverageLock)
+        {
+            var key = new CoverageInputOrigin(executionId, instanceId, sessionUid);
+            (int started, int ended) = _coverageTestSessions.GetValueOrDefault(key);
+            _coverageTestSessions[key] = (started, ended + 1);
+        }
+    }
+
+    internal void CoverageArtifactReplaced(string path)
+    {
+        lock (_coverageLock)
+        {
+            _mergedCoverageSummaries.Remove(path);
+        }
+    }
+
+    private void RecordCoverageInputOrigin(string path, string? executionId, string? instanceId, string? sessionUid)
+    {
+        lock (_coverageLock)
+        {
+            if (!_coverageInputOrigins.TryGetValue(path, out HashSet<CoverageInputOrigin>? origins))
+            {
+                origins = [];
+                _coverageInputOrigins.Add(path, origins);
+            }
+
+            origins.Add(new CoverageInputOrigin(executionId, instanceId, sessionUid));
+        }
+    }
+
+    private void RecordCoverageApplicationExit(int exitCode)
+    {
+        // Aggregate and ignore policies can erase an individual application's truncation code.
+        if (exitCode is ExitCode.TestSessionAborted or ExitCode.TestExecutionStoppedForMaxFailedTests or ExitCode.TestExecutionStoppedAtDeadline)
+        {
+            lock (_coverageLock)
+            {
+                _coverageWasTruncated = true;
+            }
+        }
+    }
 
     internal void CoverageSummaryAdded(string assembly, string executionId, string instanceId, CoverageSummaryMessage[] summaries)
     {
@@ -35,20 +92,27 @@ internal sealed partial class TerminalTestReporter
 
     internal void MergedCoverageSummaryAdded(
         string path,
-        IReadOnlySet<string> inputExecutionIds,
+        IReadOnlySet<string> inputPaths,
         bool complete,
         CoverageSummaryMessage[] summaries)
     {
-        if (summaries.Any(summary => !IsValidCoverageSummary(summary, merged: true)))
+        CoverageArtifactReplaced(path);
+        Dictionary<(string ProducerId, int Metric, string? CustomMetricName), CoverageSummaryMessage> metrics = [];
+        foreach (CoverageSummaryMessage summary in summaries)
         {
-            WriteWarningMessage(CliCommandStrings.InvalidCoverageSummary);
-            return;
+            if (!IsValidCoverageSummary(summary, merged: true))
+            {
+                WriteWarningMessage(CliCommandStrings.InvalidCoverageSummary);
+                return;
+            }
+
+            metrics[(summary.ProducerId!, summary.Metric!.Value, summary.CustomMetricName)] = summary;
         }
 
         lock (_coverageLock)
         {
             _mergedCoverageSummaries[path] = new MergedCoverageSummary(
-                path, new HashSet<string>(inputExecutionIds, StringComparer.Ordinal), complete, [.. summaries]);
+                path, new HashSet<string>(inputPaths, FileUtilities.PathComparer), complete, [.. metrics.Values]);
         }
     }
 
@@ -70,6 +134,12 @@ internal sealed partial class TerminalTestReporter
     {
         KeyValuePair<CoverageSummaryKey, ApplicationCoverageSummary>[] applications;
         MergedCoverageSummary[] merged;
+        MergedCoverageSummary[] completeMerges;
+        bool singleMeasurementSource;
+        bool wasTruncated;
+        bool completeLifecycle;
+        Dictionary<string, IReadOnlySet<string>> testInstances = _assemblies.ToDictionary(
+            entry => entry.Key, entry => entry.Value.GetInstanceIds(), StringComparer.Ordinal);
         lock (_coverageLock)
         {
             applications = [.. _coverageSummaries
@@ -83,24 +153,68 @@ internal sealed partial class TerminalTestReporter
                 .ThenBy(entry => entry.Key.CustomMetricName, StringComparer.Ordinal)
                 .ThenBy(entry => entry.Key.ProducerId, StringComparer.Ordinal)];
             merged = [.. _mergedCoverageSummaries.Values.OrderBy(summary => summary.Path, FileUtilities.PathComparer)];
+            wasTruncated = _coverageWasTruncated;
+            Dictionary<string, HashSet<string>> testSessions = _coverageTestSessions.Keys
+                .GroupBy(session => session.ExecutionId!, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.Select(session => session.SessionUid!).ToHashSet(StringComparer.Ordinal), StringComparer.Ordinal);
+            HashSet<CoverageInputOrigin> expectedSources = [];
+            completeLifecycle = _coverageTestSessions.Values.All(session => session.Started > 0 && session.Started == session.Ended);
+            foreach (CoverageInputOrigin source in _coverageTestSessions.Keys)
+            {
+                if (TryResolveCoverageOrigin(source, testInstances, testSessions) is { } resolved)
+                {
+                    expectedSources.Add(resolved);
+                }
+                else
+                {
+                    completeLifecycle = false;
+                }
+            }
+
+            Dictionary<string, HashSet<string>> observedInstances = expectedSources
+                .GroupBy(source => source.ExecutionId!, StringComparer.Ordinal)
+                .ToDictionary(group => group.Key, group => group.Select(source => source.InstanceId!).ToHashSet(StringComparer.Ordinal), StringComparer.Ordinal);
+            completeLifecycle &= testInstances.All(entry =>
+                observedInstances.TryGetValue(entry.Key, out HashSet<string>? observed) && entry.Value.SetEquals(observed));
+            foreach (CoverageSummaryKey key in applications.Select(entry => entry.Key))
+            {
+                var measured = new CoverageInputOrigin(key.ExecutionId, key.InstanceId, key.SessionUid);
+                if (TryResolveCoverageOrigin(measured, testInstances, testSessions) is { } resolved
+                    && !expectedSources.Contains(resolved))
+                {
+                    completeLifecycle = false;
+                }
+            }
+
+            CoverageInputOrigin[] measurementSources =
+            [
+                .. applications.Select(entry => new CoverageInputOrigin(entry.Key.ExecutionId, entry.Key.InstanceId, entry.Key.SessionUid)).Distinct(),
+            ];
+            singleMeasurementSource = expectedSources.Count == 1
+                && testInstances.Count == 1
+                && testInstances.Values.Single().Count == 1
+                && measurementSources.Length == 1
+                && TryResolveCoverageOrigin(measurementSources[0], testInstances, testSessions) is { } singleSource
+                && expectedSources.Contains(singleSource);
+            completeMerges =
+            [
+                .. merged.Where(summary => summary.Complete && CoversAllCoverageSources(summary.InputPaths, expectedSources, testInstances, testSessions)),
+            ];
         }
 
         bool canReportTotal = !_wasCancelled
+            && !wasTruncated
             && exitCode is not null
                 and not ExitCode.TestSessionAborted
                 and not ExitCode.TestExecutionStoppedForMaxFailedTests
                 and not ExitCode.TestExecutionStoppedAtDeadline
             && !HasHandshakeFailure
+            && completeLifecycle
             && !_assemblies.IsEmpty;
-        MergedCoverageSummary[] completeMerges =
-        [
-            .. merged.Where(summary => summary.Complete && _assemblies.Keys.All(summary.InputExecutionIds.Contains)),
-        ];
         bool useMergedTotal = canReportTotal && completeMerges.Length == 1;
         bool useApplicationTotal = canReportTotal
             && merged.Length == 0
-            && _assemblies.Count == 1
-            && applications.Select(entry => (entry.Key.ExecutionId, entry.Key.InstanceId, entry.Key.SessionUid)).Distinct().Count() == 1;
+            && singleMeasurementSource;
         List<(string Scope, CoverageSummaryMessage Summary)> rows = [];
 
         if (useMergedTotal)
@@ -114,8 +228,8 @@ internal sealed partial class TerminalTestReporter
                 string scope = key.ScopeLevel == 0
                     ? useApplicationTotal
                         ? CliCommandStrings.CoverageScopeOverall
-                        : $"{application.Assembly} ({key.SessionUid})"
-                    : $"{application.Assembly}: {key.ScopeName}";
+                        : $"{application.Assembly} ({key.InstanceId}|{key.SessionUid})"
+                    : $"{application.Assembly}: {key.ScopeName} ({key.InstanceId}|{key.SessionUid})";
                 rows.Add((scope, application.Summary));
             }
 
@@ -150,6 +264,77 @@ internal sealed partial class TerminalTestReporter
                 : CliCommandStrings.CoverageNoData;
             terminal.AppendLine($"{DoubleIndentation}{NormalizeCoverageLabel(scope)} - {metric}: {value}");
         }
+    }
+
+    private bool CoversAllCoverageSources(
+        IReadOnlySet<string> inputPaths,
+        IReadOnlySet<CoverageInputOrigin> expectedSources,
+        IReadOnlyDictionary<string, IReadOnlySet<string>> testInstances,
+        IReadOnlyDictionary<string, HashSet<string>> testSessions)
+    {
+        HashSet<CoverageInputOrigin> coveredSources = [];
+
+        foreach (string inputPath in inputPaths)
+        {
+            if (!_coverageInputOrigins.TryGetValue(inputPath, out HashSet<CoverageInputOrigin>? origins) || origins.Count == 0)
+            {
+                return false;
+            }
+
+            CoverageInputOrigin? resolvedOrigin = null;
+            foreach (CoverageInputOrigin origin in origins)
+            {
+                CoverageInputOrigin? normalized = TryResolveCoverageOrigin(origin, testInstances, testSessions);
+                if (normalized is null || !expectedSources.Contains(normalized))
+                {
+                    return false;
+                }
+
+                if (resolvedOrigin is not null && resolvedOrigin != normalized)
+                {
+                    // A reused path contains only its last contents, not both sessions' data.
+                    return false;
+                }
+
+                resolvedOrigin = normalized;
+            }
+
+            if (resolvedOrigin is null)
+            {
+                return false;
+            }
+
+            coveredSources.Add(resolvedOrigin);
+        }
+
+        return inputPaths.Count > 0
+            && expectedSources.Count > 0
+            && expectedSources.SetEquals(coveredSources);
+    }
+
+    private static CoverageInputOrigin? TryResolveCoverageOrigin(
+        CoverageInputOrigin origin,
+        IReadOnlyDictionary<string, IReadOnlySet<string>> testInstances,
+        IReadOnlyDictionary<string, HashSet<string>> testSessions)
+    {
+        if (origin.ExecutionId is not { } executionId
+            || !testInstances.TryGetValue(executionId, out IReadOnlySet<string>? instances)
+            || !testSessions.TryGetValue(executionId, out HashSet<string>? sessions))
+        {
+            return null;
+        }
+
+        // Controller/legacy messages can omit child identity. Only a genuinely single-source
+        // execution permits inference; matching separate instance/session projections is not proof.
+        string? instanceId = origin.InstanceId is { } reportedInstance && instances.Contains(reportedInstance)
+            ? reportedInstance
+            : instances.Count == 1 ? instances.Single() : null;
+        string? sessionUid = !string.IsNullOrEmpty(origin.SessionUid)
+            ? sessions.Contains(origin.SessionUid) ? origin.SessionUid : null
+            : sessions.Count == 1 ? sessions.Single() : null;
+        return instanceId is not null && sessionUid is not null
+            ? new CoverageInputOrigin(executionId, instanceId, sessionUid)
+            : null;
     }
 
     private static string GetCoverageMetricLabel(CoverageSummaryMessage summary)
@@ -195,6 +380,9 @@ internal sealed partial class TerminalTestReporter
         {
             _coverageSummaries.Clear();
             _mergedCoverageSummaries.Clear();
+            _coverageTestSessions.Clear();
+            _coverageInputOrigins.Clear();
+            _coverageWasTruncated = false;
         }
     }
 
@@ -210,9 +398,11 @@ internal sealed partial class TerminalTestReporter
 
     private sealed record ApplicationCoverageSummary(string Assembly, CoverageSummaryMessage Summary);
 
+    private sealed record CoverageInputOrigin(string? ExecutionId, string? InstanceId, string? SessionUid);
+
     private sealed record MergedCoverageSummary(
         string Path,
-        IReadOnlySet<string> InputExecutionIds,
+        IReadOnlySet<string> InputPaths,
         bool Complete,
         CoverageSummaryMessage[] Summaries);
 }

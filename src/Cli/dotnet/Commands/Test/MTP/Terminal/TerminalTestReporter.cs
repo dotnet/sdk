@@ -1119,6 +1119,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
+        RecordCoverageApplicationExit(exitCode);
         assemblyRun.ExitCode = exitCode;
         assemblyRun.Success = (exitCode == ExitCode.Success || exitCode == ExitCode.ZeroTests)
             && assemblyRun.FailedTests == 0;
@@ -1315,11 +1316,22 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     public void Dispose() => _terminalWithProgress.Dispose();
 
-    public void ArtifactAdded(bool outOfProcess, string? assembly, string? targetFramework, string? architecture, string? executionId, string? testName, string path)
+    public void ArtifactAdded(
+        bool outOfProcess, string? assembly, string? targetFramework, string? architecture,
+        string? executionId, string? testName, string path, string? instanceId = null, string? sessionUid = null)
     {
         lock (_artifactsLock)
         {
             _artifacts.Add(new TestRunArtifact(outOfProcess, assembly, targetFramework, architecture, executionId, testName, path));
+        }
+
+        if (!outOfProcess)
+        {
+            RecordCoverageInputOrigin(path, executionId, instanceId, sessionUid);
+        }
+        else
+        {
+            CoverageArtifactReplaced(path);
         }
     }
 

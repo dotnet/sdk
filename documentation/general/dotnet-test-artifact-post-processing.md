@@ -40,6 +40,13 @@ explicit input provenance represents every test application. Without such a merg
 measurements remain application- or artifact-scoped, not a purported run total. This includes
 `--no-artifact-post-processing`, partial or unsuccessful merges, and cancelled runs.
 
+Completeness includes balanced session lifecycle and the association between each execution,
+test-host instance, and session, not just matching their separate counts. Missing sibling
+coverage, ambiguous controller/legacy identity, or a path overwritten by another source
+keeps coverage scoped. Fallback labels retain instance/session identity. Replacing an output
+path also invalidates its previous coverage metadata, including when its new metadata is
+absent or invalid.
+
 Percentages use a decimal point and one decimal place, independently of the current numeric
 culture. Labels are localized. Set `DOTNET_CLI_UI_LANGUAGE=en` when a CI parser needs the
 English labels; for example, the following regular expression captures the line percentage:

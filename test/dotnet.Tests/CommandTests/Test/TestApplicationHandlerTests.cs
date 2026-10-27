@@ -976,6 +976,8 @@ public class TestApplicationHandlerTests : IDisposable
         (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
         handler.OnHandshakeReceived(
             BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "session", "exec-1"));
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "session", "exec-1"));
 
         handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
             "exec-1", "inst-1", [new("session", "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
@@ -1002,6 +1004,281 @@ public class TestApplicationHandlerTests : IDisposable
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
 
         console.GetOutput().Should().Contain("Total - Line: 98.9%");
+    }
+
+    [TestMethod]
+    public void OnCoverageSummaryReceived_AfterRejectedPeer_AcceptsNegotiatedInstanceWithoutLosingFailure()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run), gotSupportedVersion: false).Should().BeFalse();
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "session", "exec-1"));
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "session", "exec-1"));
+
+        Action receive = () => handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "inst-1", [new("session", "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
+
+        receive.Should().NotThrow();
+        reporter.HasHandshakeFailure.Should().BeTrue();
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.GenericFailure);
+        console.GetOutput().Should().Contain("Line: 98.9%").And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    public void OnCoverageSummaryReceived_WithUnmeasuredSiblingLifecycle_DoesNotClaimSingleSourceTotal(
+        bool additionalInstance, bool additionalSession)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "session", "exec-1"));
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "session", "exec-1"));
+        if (additionalInstance)
+        {
+            HandshakeMessage sibling = BuildHandshake(HandshakeMessageExecutionModes.Run);
+            sibling.Properties[HandshakeMessagePropertyNames.InstanceId] = "unmeasured-instance";
+            handler.OnHandshakeReceived(sibling, gotSupportedVersion: true).Should().BeTrue();
+        }
+
+        if (additionalSession)
+        {
+            handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "unmeasured-session", "exec-1"));
+            handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "unmeasured-session", "exec-1"));
+        }
+
+        handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "inst-1", [new("session", "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("Line: 98.9%").And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void MergedCoverage_WithUnrepresentedOrOverwrittenSiblingArtifact_DoesNotClaimTotal(bool reusedArtifactPath)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "first-session", "exec-1"), "inst-1");
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "first-session", "exec-1"), "inst-1");
+        ReportCoverageArtifact(handler, "exec-1", "inst-1", "first-session", "first.coverage");
+
+        HandshakeMessage sibling = BuildHandshake(HandshakeMessageExecutionModes.Run);
+        sibling.Properties[HandshakeMessagePropertyNames.InstanceId] = "sibling-instance";
+        handler.OnHandshakeReceived(sibling, gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "sibling-session", "exec-1"), "sibling-instance");
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "sibling-session", "exec-1"), "sibling-instance");
+        if (reusedArtifactPath)
+        {
+            ReportCoverageArtifact(handler, "exec-1", "sibling-instance", "sibling-session", "first.coverage");
+        }
+
+        TestApplicationHandler other = CreateAdditionalCoverageHandler(reporter);
+        other.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "other-session", "exec-2"));
+        other.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "other-session", "exec-2"));
+        ReportCoverageArtifact(other, "exec-2", "other-instance", "other-session", "second.coverage");
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+        other.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+        ApplyCoverageMerge(reporter);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("Merged coverage (merged.coverage) - Line: 98.9%")
+            .And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Coverage_WithUnfinishedSession_DoesNotClaimTotal(bool merged)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "unfinished-session", "exec-1"));
+        handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "inst-1", [new("unfinished-session", "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
+        ReportCoverageArtifact(handler, "exec-1", "inst-1", "unfinished-session", "first.coverage");
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+        handler.HasMismatchingTestSessionEventCount().Should().BeTrue();
+
+        if (merged)
+        {
+            TestApplicationHandler other = CreateAdditionalCoverageHandler(reporter);
+            other.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "other-session", "exec-2"));
+            other.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "other-session", "exec-2"));
+            ReportCoverageArtifact(other, "exec-2", "other-instance", "other-session", "second.coverage");
+            other.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+            ApplyCoverageMerge(reporter);
+        }
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.GenericFailure);
+
+        console.GetOutput().Should().Contain("Line: 98.9%").And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    public void MergedCoverage_WithEverySiblingOrigin_ClaimsTotal()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "first-session", "exec-1"), "inst-1");
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "first-session", "exec-1"), "inst-1");
+        ReportCoverageArtifact(handler, "exec-1", "inst-1", "first-session", "first.coverage");
+        HandshakeMessage sibling = BuildHandshake(HandshakeMessageExecutionModes.Run);
+        sibling.Properties[HandshakeMessagePropertyNames.InstanceId] = "sibling-instance";
+        handler.OnHandshakeReceived(sibling, gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "sibling-session", "exec-1"), "sibling-instance");
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "sibling-session", "exec-1"), "sibling-instance");
+        ReportCoverageArtifact(handler, "exec-1", "sibling-instance", "sibling-session", "second.coverage");
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+        ApplyCoverageMerge(reporter, secondExecutionId: "exec-1");
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("Total - Line: 98.9%");
+    }
+
+    [TestMethod]
+    public void MergedCoverage_MultipleFilesFromOneSessionDoNotRepresentAnotherSession()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "first-session", "exec-1"));
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "first-session", "exec-1"));
+        ReportCoverageArtifact(handler, "exec-1", "inst-1", "first-session", "first.coverage");
+        ReportCoverageArtifact(handler, "exec-1", "inst-1", "first-session", "second.coverage");
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "unmeasured-session", "exec-1"));
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "unmeasured-session", "exec-1"));
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+        ApplyCoverageMerge(reporter, secondExecutionId: "exec-1");
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("Merged coverage (merged.coverage) - Line: 98.9%")
+            .And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void MergedCoverage_RequiresEveryObservedInstanceSessionTuple(bool includeMissingArtifact)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        foreach (string session in new[] { "first-session", "second-session" })
+        {
+            handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, session, "exec-1"), "inst-1");
+            handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, session, "exec-1"), "inst-1");
+        }
+
+        handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "inst-1",
+            [
+                new("first-session", "collector", 0, null, (int)CoverageMetric.Line, null, 1, 2),
+                new("second-session", "collector", 0, null, (int)CoverageMetric.Line, null, 1, 2),
+            ]));
+        ReportCoverageArtifact(handler, "exec-1", "inst-1", "first-session", "first.coverage");
+        if (includeMissingArtifact)
+        {
+            ReportCoverageArtifact(handler, "exec-1", "inst-1", "second-session", "missing.coverage");
+        }
+
+        HandshakeMessage sibling = BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1");
+        sibling.Properties[HandshakeMessagePropertyNames.InstanceId] = "sibling-instance";
+        handler.OnHandshakeReceived(sibling, gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "second-session", "exec-1"), "sibling-instance");
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "second-session", "exec-1"), "sibling-instance");
+        handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "sibling-instance", [new("second-session", "collector", 0, null, (int)CoverageMetric.Line, null, 1, 2)]));
+        ReportCoverageArtifact(handler, "exec-1", "sibling-instance", "second-session", "second.coverage");
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+        ApplyCoverageMerge(reporter, secondExecutionId: "exec-1", includeMissingArtifact);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        string output = console.GetOutput();
+        output.Should().Contain("Line: 98.9%");
+        output.Contains("Total - Line: 98.9%", StringComparison.Ordinal).Should().Be(includeMissingArtifact);
+    }
+
+    [TestMethod]
+    public void Coverage_ForUnobservedSession_DoesNotClaimSingleSourceTotal()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(false, false);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1"), gotSupportedVersion: true).Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "observed-session", "exec-1"));
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "observed-session", "exec-1"));
+        handler.OnCoverageSummaryReceived(new CoverageSummaryMessages(
+            "exec-1", "inst-1", [new("unobserved-session", "collector", 0, null, (int)CoverageMetric.Line, null, 184, 186)]));
+        handler.OnTestProcessExited(TestExitCode.Success, string.Empty, string.Empty);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("Line: 98.9%").And.NotContain("Total -");
+    }
+
+    private static TestApplicationHandler CreateAdditionalCoverageHandler(TerminalTestReporter reporter)
+    {
+        const string targetPath = "OtherTests.dll";
+        var module = new TestModule(
+            new RunProperties("dotnet", targetPath, "/repo"), "OtherTests.csproj", TargetFramework,
+            IsTestingPlatformApplication: true, LaunchSettings: null, targetPath,
+            DotnetRootArchVariableName: null, EnvironmentVariables: new Dictionary<string, string>());
+        var handler = new TestApplicationHandler(reporter, module, new TestOptions(false, false, TestListFormat.Text));
+        HandshakeMessage handshake = BuildHandshake(HandshakeMessageExecutionModes.Run, coverageSummaryVersion: "1");
+        handshake.Properties[HandshakeMessagePropertyNames.ExecutionId] = "exec-2";
+        handshake.Properties[HandshakeMessagePropertyNames.InstanceId] = "other-instance";
+        handshake.Properties[HandshakeMessagePropertyNames.ModulePath] = targetPath;
+        handler.OnHandshakeReceived(handshake, gotSupportedVersion: true).Should().BeTrue();
+        return handler;
+    }
+
+    private static void ReportCoverageArtifact(
+        TestApplicationHandler handler, string executionId, string instanceId, string sessionUid, string path)
+        => handler.OnFileArtifactsReceived(new FileArtifactMessages(
+            executionId, instanceId,
+            [new(path, null, null, null, null, sessionUid, "microsoft.codecoverage")]));
+
+    private static void ApplyCoverageMerge(
+        TerminalTestReporter reporter, string secondExecutionId = "exec-2", bool includeMissingArtifact = false)
+    {
+        var module = new TestModule(
+            new RunProperties("dotnet", TargetPath, "/repo"), ProjectPath, TargetFramework,
+            IsTestingPlatformApplication: true, LaunchSettings: null, TargetPath,
+            DotnetRootArchVariableName: null, EnvironmentVariables: new Dictionary<string, string>());
+        var application = new ArtifactPostProcessingApplication(
+            module, TargetFramework, "x64", new HashSet<string> { "microsoft.codecoverage" },
+            new HashSet<string>(), new HashSet<string>(), new HashSet<string>());
+        List<ArtifactPostProcessingArtifact> inputs =
+        [
+            new("first.coverage", "microsoft.codecoverage", TargetPath, TargetFramework, "x64", "exec-1"),
+            new("second.coverage", "microsoft.codecoverage", secondExecutionId == "exec-1" ? TargetPath : "OtherTests.dll",
+                TargetFramework, "x64", secondExecutionId),
+        ];
+        if (includeMissingArtifact)
+        {
+            inputs.Add(new("missing.coverage", "microsoft.codecoverage", TargetPath, TargetFramework, "x64", "exec-1"));
+        }
+
+        var group = new ArtifactPostProcessingGroup("microsoft.codecoverage", IsKind: true, inputs, [application]);
+        var merged = new ArtifactPostProcessingArtifact(
+            "merged.coverage", "microsoft.codecoverage", TargetPath, TargetFramework, "x64", "merge-exec",
+            [.. inputs.Select(input => input.Path)],
+            [new(null, "collector.postprocessor", 0, null, (int)CoverageMetric.Line, null, 184, 186)]);
+        ArtifactPostProcessingManager.ApplyOutputs(reporter, new ArtifactPostProcessingJob(application, [group]), [merged]);
     }
 
     [TestMethod]

@@ -64,8 +64,8 @@ public class CoverageSummaryTests
 
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
 
-        console.GetOutput().Should().Contain("first.Tests.dll (session) - Line: 6.5%")
-            .And.Contain("second.Tests.dll (session) - Line: 98.9%")
+        console.GetOutput().Should().Contain("first.Tests.dll (instance|session) - Line: 6.5%")
+            .And.Contain("second.Tests.dll (instance|session) - Line: 98.9%")
             .And.NotContain("Total -");
     }
 
@@ -109,7 +109,7 @@ public class CoverageSummaryTests
         using var reporter = CreateReporter(console, "first", "second");
         AddMergedSummary(reporter, complete: true, "first", "second");
         reporter.MergedCoverageSummaryAdded(
-            "another.coverage", new HashSet<string> { "first", "second" }, complete: true,
+            "another.coverage", RecordCoverageInputs(reporter, "first", "second"), complete: true,
             [Summary(10, 100, sessionUid: null)]);
 
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
@@ -147,6 +147,69 @@ public class CoverageSummaryTests
 
         console.GetOutput().Should().Contain("Line: 50.0%")
             .And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    [DataRow(TestExitCode.TestSessionAborted, TestExitCode.GenericFailure)]
+    [DataRow(TestExitCode.TestExecutionStoppedForMaxFailedTests, TestExitCode.GenericFailure)]
+    [DataRow(TestExitCode.TestExecutionStoppedAtDeadline, TestExitCode.GenericFailure)]
+    [DataRow(TestExitCode.TestSessionAborted, TestExitCode.Success)]
+    public void MixedOrIgnoredAbortExit_DoesNotClaimMergedTotal(int applicationExitCode, int aggregateExitCode)
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console, "first", "second");
+        AddMergedSummary(reporter, complete: true, "first", "second");
+        reporter.AssemblyRunCompleted("first", applicationExitCode, null, null);
+        reporter.AssemblyRunCompleted("second", TestExitCode.AtLeastOneTestFailed, null, null);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, aggregateExitCode);
+
+        console.GetOutput().Should().Contain("Merged coverage (merged.coverage) - Line: 98.9%")
+            .And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    public void IgnoredApplicationAbort_DoesNotClaimSingleSourceTotal()
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console, "first");
+        AddSummary(reporter, "first", 1, 2);
+        reporter.AssemblyRunCompleted("first", TestExitCode.TestSessionAborted, null, null);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        console.GetOutput().Should().Contain("Line: 50.0%").And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void MergedMetricUpdates_UseLastWriteWinsWithoutCombiningProducers(bool differentProducer)
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console, "first", "second");
+        reporter.MergedCoverageSummaryAdded(
+            "merged.coverage", RecordCoverageInputs(reporter, "first", "second"), complete: true,
+            [
+                Summary(10, 100, sessionUid: null),
+                Summary(184, 186, sessionUid: null) with { ProducerId = differentProducer ? "another-collector" : "collector" },
+            ]);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        string output = console.GetOutput();
+        if (differentProducer)
+        {
+            output.Should().Contain("Total - Line (collector): 10.0%")
+                .And.Contain("Total - Line (another-collector): 98.9%")
+                .And.NotContain("Total - Line:");
+        }
+        else
+        {
+            output.Should().Contain("Total - Line: 98.9%")
+                .And.NotContain("10.0%")
+                .And.NotContain("Line (collector)");
+        }
     }
 
     [TestMethod]
@@ -211,6 +274,36 @@ public class CoverageSummaryTests
         console.GetOutput().Should().Contain("Line: 50.0%")
             .And.Contain("Line: 75.0%")
             .And.NotContain("Total -");
+    }
+
+    [TestMethod]
+    [DataRow((int)AnsiMode.NoAnsi, false)]
+    [DataRow((int)AnsiMode.SimpleAnsi, false)]
+    [DataRow((int)AnsiMode.NoAnsi, true)]
+    [DataRow((int)AnsiMode.SimpleAnsi, true)]
+    public void ScopedModuleMeasurements_RetainSessionAndInstanceIdentity(int ansiMode, bool sharedSession)
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console, (AnsiMode)ansiMode, "first");
+        reporter.CoverageSummaryAdded(
+            "first.Tests.dll", "first", "first-instance",
+            [Summary(1, 2, sharedSession ? "shared-session" : "first-session") with { ScopeLevel = 1, ScopeName = "Library" }]);
+        reporter.CoverageSummaryAdded(
+            "first.Tests.dll", "first", sharedSession ? "second-instance" : "first-instance",
+            [Summary(3, 4, sharedSession ? "shared-session" : "second-session") with { ScopeLevel = 1, ScopeName = "Library" }]);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        string output = console.GetOutput();
+        output.Should().Contain("50.0%").And.Contain("75.0%");
+        if (sharedSession)
+        {
+            output.Should().Contain("first-instance").And.Contain("second-instance");
+        }
+        else
+        {
+            output.Should().Contain("first-session").And.Contain("second-session");
+        }
     }
 
     [TestMethod]
@@ -280,6 +373,8 @@ public class CoverageSummaryTests
         foreach (string executionId in executionIds)
         {
             reporter.AssemblyRunStarted($"{executionId}.Tests.dll", "net10.0", "x64", executionId, "instance");
+            reporter.TestSessionStarted(executionId, "session");
+            reporter.TestSessionEnded(executionId, "session");
         }
 
         return reporter;
@@ -290,8 +385,22 @@ public class CoverageSummaryTests
 
     private static void AddMergedSummary(TerminalTestReporter reporter, bool complete, params string[] executions)
         => reporter.MergedCoverageSummaryAdded(
-            "merged.coverage", executions.ToHashSet(StringComparer.Ordinal), complete,
+            "merged.coverage", RecordCoverageInputs(reporter, executions), complete,
             [Summary(184, 186, sessionUid: null) with { ProducerId = "collector.postprocessor" }]);
+
+    private static IReadOnlySet<string> RecordCoverageInputs(TerminalTestReporter reporter, params string[] executions)
+    {
+        var paths = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string executionId in executions)
+        {
+            string path = $"{executionId}.coverage";
+            reporter.ArtifactAdded(
+                false, $"{executionId}.Tests.dll", "net10.0", "x64", executionId, null, path, "instance", "session");
+            paths.Add(path);
+        }
+
+        return paths;
+    }
 
     private static CoverageSummaryMessage Summary(long? covered, long? coverable, string? sessionUid = "session")
         => new(sessionUid, "collector", 0, null, (int)CoverageMetric.Line, null, covered, coverable);

@@ -126,6 +126,11 @@ reserves `Total` for a single source or an accepted, complete merged artifact wi
 input provenance. Failed, partial, unsupported, or cancelled processing must not fabricate a
 run total.
 
+Track complete execution/instance/session tuples and balanced starts/ends; matching separate
+identity sets or input-file counts is insufficient. Preserve source origins independently
+of artifact-list replacement, reject ambiguous path reuse, and invalidate previous coverage
+metadata when a processed output path is replaced.
+
 Controller coverage can arrive after `TestSessionEnd`; accept it until process completion.
 Negotiate coverage-summary support independently of the base protocol, without enabling the
 unimplemented 1.4 server-control channel. Keep producer, wire, artifact-acceptance, and
