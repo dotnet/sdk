@@ -1,4 +1,10 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project>
+  <!-- This process fixture targets the test assembly's framework and needs the repo's bootstrap SDK targeting support. -->
+  <PropertyGroup>
+    <DirectoryBuildPropsPath>$(MSBuildThisFileDirectory)..\..\..\Directory.Build.props</DirectoryBuildPropsPath>
+    <DirectoryBuildTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Directory.Build.targets</DirectoryBuildTargetsPath>
+  </PropertyGroup>
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
@@ -8,4 +14,5 @@
     <UseAppHost>true</UseAppHost>
     <AppHostDotNetSearch>AppRelative</AppHostDotNetSearch>
   </PropertyGroup>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
