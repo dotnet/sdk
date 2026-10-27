@@ -112,7 +112,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             config = config.WithSecurePort(null);
         }
 
-        return config; 
+        return config;
     }
 
     private static string GetBrowserLoggerName(int connectionId)

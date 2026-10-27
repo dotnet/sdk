@@ -61,11 +61,11 @@
     <MicrosoftWindowsCsWin32PackageVersion>0.3.264</MicrosoftWindowsCsWin32PackageVersion>
     <!-- When updating MicrosoftVisualStudioSolutionPersistenceVersion make sure to sync with dotnet/msbuild, dotnet/source-build-externals and NuGet/NuGet.Client -->
     <MicrosoftVisualStudioSolutionPersistenceVersion>1.0.52</MicrosoftVisualStudioSolutionPersistenceVersion>
-    <AzureMonitorOpenTelemetryExporterPackageVersion>1.4.0</AzureMonitorOpenTelemetryExporterPackageVersion>
-    <OpenTelemetryDotnetPackageVersion>1.16.0</OpenTelemetryDotnetPackageVersion>
+    <AzureMonitorOpenTelemetryExporterPackageVersion>1.10.0</AzureMonitorOpenTelemetryExporterPackageVersion>
+    <OpenTelemetryDotnetPackageVersion>1.18.0</OpenTelemetryDotnetPackageVersion>
     <OpenTelemetryDotnetContribPackageVersion>1.15.1</OpenTelemetryDotnetContribPackageVersion>
     <OpenTelemetryInstrumentationHttpPackageVersion>1.16.0</OpenTelemetryInstrumentationHttpPackageVersion>
-    <OpenTelemetryPersistentStoragePackageVersion>1.1.0</OpenTelemetryPersistentStoragePackageVersion>
+    <OpenTelemetryPersistentStoragePackageVersion>1.1.1</OpenTelemetryPersistentStoragePackageVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="MicroBuild.Core version">
@@ -90,12 +90,18 @@
     <SystemMemoryToolsetPackageVersion>4.6.3</SystemMemoryToolsetPackageVersion>
     <SystemReflectionMetadataLoadContextToolsetPackageVersion>10.0.10</SystemReflectionMetadataLoadContextToolsetPackageVersion>
     <SystemReflectionMetadataToolsetPackageVersion>10.0.10</SystemReflectionMetadataToolsetPackageVersion>
+    <SystemSecurityCryptographyPkcsToolsetPackageVersion>10.0.13</SystemSecurityCryptographyPkcsToolsetPackageVersion>
     <SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>10.0.10</SystemDiagnosticsDiagnosticSourceToolsetPackageVersion>
     <SystemTextEncodingCodePagesToolsetPackageVersion>10.0.10</SystemTextEncodingCodePagesToolsetPackageVersion>
     <SystemTextJsonToolsetPackageVersion>10.0.10</SystemTextJsonToolsetPackageVersion>
     <SystemThreadingTasksExtensionsToolsetPackageVersion>4.6.3</SystemThreadingTasksExtensionsToolsetPackageVersion>
     <SystemResourcesExtensionsToolsetPackageVersion>10.0.10</SystemResourcesExtensionsToolsetPackageVersion>
     <MicrosoftVisualStudioThreadingToolsetPackageVersion>18.7.23</MicrosoftVisualStudioThreadingToolsetPackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Preserve the SDK-declared dependency before VMR current-package overrides so task tests match the bootstrap task. -->
+    <MicrosoftDeploymentDotNetReleasesBootstrapPackageVersion>$(MicrosoftDeploymentDotNetReleasesPackageVersion)</MicrosoftDeploymentDotNetReleasesBootstrapPackageVersion>
   </PropertyGroup>
 
   <PropertyGroup>

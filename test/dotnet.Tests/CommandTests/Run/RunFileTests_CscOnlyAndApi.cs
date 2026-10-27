@@ -2264,7 +2264,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         result.ProjectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
 
         // TargetFramework can be evaluated.
-        (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.CurrentTargetFramework);
+        (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.SdkTargetFramework);
     }
 
     [TestMethod, CombinatorialData]

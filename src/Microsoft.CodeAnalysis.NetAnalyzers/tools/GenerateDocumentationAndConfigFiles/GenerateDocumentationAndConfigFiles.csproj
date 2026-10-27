@@ -7,6 +7,7 @@
     <UseAppHost>false</UseAppHost>
     <!-- This tool needs to run during the build.-->
     <EnableKnownPackVersionUpdatesForCurrentTargetFramework>false</EnableKnownPackVersionUpdatesForCurrentTargetFramework>
+    <SuppressTfmSupportBuildWarnings Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
   <ItemGroup>

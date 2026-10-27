@@ -6,7 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "Zastąpienie struktury docelowej",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/choices/net11.0/description": "Docelowa platforma net11.0",
-  "symbols/Framework/choices/net11.0/displayName": ".NET 10.0",
+  "symbols/Framework/choices/net11.0/displayName": ".NET 11.0",
   "symbols/Framework/choices/netstandard2.1/description": "Docelowy netstandard2.1",
   "symbols/Framework/choices/netstandard2.1/displayName": ".NET Standard 2.1",
   "symbols/Framework/choices/netstandard2.0/description": "Docelowy netstandard2.0",
