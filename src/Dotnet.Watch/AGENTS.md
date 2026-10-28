@@ -15,6 +15,15 @@ Reload).
 
 ## Conventions & gotchas
 
+- **File-based defaults are not the watch tool's runtime framework.** The CLI and
+  watch source-link [`FileBasedProgramDefaults`](../Common/FileBasedProgramDefaults.cs).
+  Keep [`ProjectGraphFactory`](Watch/Build/ProjectGraphFactory.cs) aligned with
+  [`Product.TargetFrameworkVersion`](../Cli/Microsoft.DotNet.Cli.CoreUtils/Product.cs)
+  so Hot Reload evaluates the same references that `dotnet build` compiled.
+- **Targeted Windows cancellation uses Ctrl+Break.**
+  [`ProcessUtilities`](Watch/Utilities/ProcessUtilities.cs) requires a positive process-group ID.
+  [Windows does not deliver Ctrl+C to a specified process group](https://learn.microsoft.com/windows/console/generateconsolectrlevent),
+  even when the native call reports success. Never broadcast a console signal to group zero.
 - **Shared source via `.projitems`.** Several folders share code through
   `*.projitems` imported into multiple projects (not NuGet packages). Before
   refactoring shared files, check every importer.
@@ -29,8 +38,9 @@ Reload).
 - **The browser-tools provider owns the browser protocol and replay
   state.** Its fixed `/_framework/dotnet-browser-tools` endpoints live under
   [`HotReloadClient/Web`](HotReloadClient/Web) and are reduced to `connect` (WebSocket)
-  and `clear-cache`; the provider serves no JavaScript, no session descriptor, no protocol
-  version, and no HTTP replay. Most application hosts reach it through the
+  `clear-cache`, and the non-executable `hot-reload-settings.json`; the provider serves no
+  JavaScript, no session descriptor, no protocol version, and no HTTP replay. Most
+  application hosts reach it through the
   shared-framework-only [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs)
   installed by the hosting-startup path. Standalone Blazor WebAssembly is the exception:
   it is served by the Blazor Gateway, a separate YARP host that does not activate ASP.NET
@@ -42,12 +52,12 @@ Reload).
   applications.
 - **The browser authenticates the provider, so the provider must not serve code.** The
   *build* owns the browser-tools RSA keypair:
-  [`EnsureDotNetWatchBrowserToolsKey`](../StaticWebAssetsSdk/Tasks/EnsureDotNetWatchBrowserToolsKey.cs)
+  [`EnsureHotReloadBrowserToolsKey`](../StaticWebAssetsSdk/Tasks/EnsureHotReloadBrowserToolsKey.cs)
   writes both halves to deterministic paths under the browser-facing project's intermediate
   output, and
   only the public half is pinned into an application-hosted configuration module. There is
   no watch-to-MSBuild property flow: `dotnet watch` reads the private half back through
-  [`BrowserToolsBuildOutputs`](Watch/Browser/BrowserToolsBuildOutputs.cs) when each browser
+  [`BrowserToolsBuildOutputs`](HotReloadClient/Web/BrowserToolsBuildOutputs.cs) when each browser
   connects. This lets the per-project provider bind before `dotnet run` builds the
   application, avoids a separate watcher build, and observes key rotation after `Clean`.
   The provider validates and imports the current matching pair only long enough to decrypt
@@ -63,7 +73,7 @@ Reload).
   WebAssembly uses the client as the browser-tools project even though the server remains
   the launching project.
   See
-  [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets).
+  [`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets).
   Never move executable browser-tools code back into the provider, never let the private
   key or the browser's shared secret reach a build property, an application asset or a log,
   and keep the generated assets build only.
@@ -71,7 +81,7 @@ Reload).
   the first message on an accepted connection and releases live messages for that
   connection only after the browser acknowledges it, so there is no wire-level generation
   id. The internal epoch in
-  [`AbstractBrowserRefreshServer`](HotReloadClient/Web/AbstractBrowserRefreshServer.cs)
+  [`BrowserRefreshServer`](HotReloadClient/Web/BrowserRefreshServer.cs)
   exists only to drop work produced by a superseded client; do not surface it on the wire.
 - **Activation is app-model-specific, but the browser client is shared.** MVC and Razor
   Pages use
@@ -82,7 +92,12 @@ Reload).
   initializer added by the WASM SDK for every supported target
   framework; from `onRuntimeConfigLoaded` it sets the watch-private activation variable
   `__DOTNET_WATCH_BROWSER_TOOLS` and `DOTNET_MODIFIABLE_ASSEMBLIES`, and from
-  `onRuntimeReady` it imports the application-hosted configuration module. Blazor guarantees
+  `onRuntimeReady` it imports the application-hosted configuration module. In hosted Blazor
+  Web apps, the same client-owned initializer also imports the configuration from
+  `afterWebStarted`: per-page static SSR must connect to browser tools even when no
+  WebAssembly component starts. Keep this Web-start activation independent of the runtime's
+  debug gate and preserve the single client-owned keypair. Share the settings request across
+  Web-start and runtime callbacks so they agree on activation. Blazor guarantees
   every `onRuntimeConfigLoaded`
   callback runs before any `onRuntimeReady` callback and passes the same config object to
   all initializers, so pass *activation state* between initializer modules through that
@@ -100,24 +115,29 @@ Reload).
   initializer requires user-provided activation; do not add build-time `index.html`
   rewriting. Apps that disable `StaticWebAssetsEnabled` or `JSModulesEnabled` cannot host
   the client and therefore cannot receive browser tools.
-- **The replay handshake waits for the Hot Reload agent through a `globalThis`
+- **Replay and deferred updates share the Hot Reload agent's `globalThis`
   rendezvous.** The provider sends the replay snapshot exactly once, so applying it before
   the agent is ready would drop those updates while the browser still acknowledged success.
-  The WebAssembly watch initializer publishes
-  `globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT = { ready, setReady }` before its first
-  `await`, attaches the SDK agent's apply functions directly to that shared object, and
-  resolves readiness in a `finally`; the browser tools client awaits it before replaying.
-  This is the one case that cannot use the runtime config object, because the value is a
-  promise that only exists once `onRuntimeReady` has started. Keep the rendezvous helpers in
-  the [WebAssembly initializer](../WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template)
-  and the Static Web Assets SDK's `dotnet-watch-browser-tools.js` in sync. The wait is
-  bounded and best effort for older runtimes that install the apply API through their own
-  bootstrap, or pages that never boot WebAssembly, so they degrade to a logged warning
-  instead of a reload loop.
-- **A browser that cannot apply an update must fail the acknowledgement.** `dotnet watch`
+  The WebAssembly watch initializer stores its readiness promise and the SDK agent's apply
+  functions on `globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT`, and
+  resolves readiness in a `finally`. For early Web activation, `afterWebStarted` also
+  creates `pendingUpdates` synchronously before checking provider settings, unless the
+  agent is already ready. The browser
+  client retains both replayed and live updates there until runtime readiness, then
+  drains them in order at runtime readiness without blocking SSR refresh. Older runtimes
+  release readiness from `afterWebAssemblyStarted`, after Blazor configures its interop
+  dispatcher; deferred apply failures are reported in
+  the browser console. This state cannot use the runtime config object because it must
+  exist before WebAssembly starts. Keep the rendezvous helpers in
+  the [WebAssembly initializer](../WasmSdk/Sdk/HotReload/Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js.template)
+  and the Static Web Assets SDK's `HotReload-browser-tools.js` in sync. The wait is
+  bounded and best effort for activation paths without a deferred WebAssembly queue, so
+  they degrade to a logged warning instead of a reload loop.
+- **A started agent that cannot apply an update must fail the acknowledgement.** `dotnet watch`
   treats an acknowledged update as applied, so any path that answers with an empty log is
   indistinguishable from a successful apply and produces "C# and Razor changes applied"
-  while nothing changed. [`WebAssemblyHotReload`](HotReloadAgent.WebAssembly.Browser/WebAssemblyHotReload.cs)
+  while nothing changed. Updates received before WebAssembly starts are acknowledged
+  only after being retained for deferred application. [`WebAssemblyHotReload`](HotReloadAgent.WebAssembly.Browser/WebAssemblyHotReload.cs)
   therefore records why the agent was not created and throws that reason from
   `ApplyHotReloadDeltas` instead of returning an empty log; the throw surfaces through
   `[JSExport]`, the client reports `success: false`, and
@@ -130,9 +150,9 @@ Reload).
   `__ASPNETCORE_BROWSER_TOOLS`.** Its `WebAssemblyHotReload` creates the Hot Reload agent
   only inside `InitializeAsync`, which the runtime calls only when that variable is set, so
   without it nothing is applied. The
-  [initializer template](../WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template)
+  [initializer template](../WasmSdk/Sdk/HotReload/Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js.template)
   therefore has a `__RUNTIME_HOT_RELOAD_AGENT__` placeholder that
-  [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets)
+  [`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets)
   substitutes with `true` only when `TargetFrameworkVersion` equals `9.0`. .NET 8 must not
   get it (it would import the removed `blazor-hotreload.js`) and .NET 10+ must not get it
   (the SDK ships its own agent). That initialization path also fetches
@@ -152,6 +172,13 @@ Reload).
   members are .NET 7+ while the
   assembly targets `net6.0`, so they are reached through cached reflection. Do not widen this
   into a blanket status mapping and do not swallow genuine transport failures.
+- **Browser-tools forwarding must observe application shutdown.**
+  [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs) links
+  `RequestAborted` with `IHostApplicationLifetime.ApplicationStopping` for both WebSocket
+  pumps. Kestrel waits for upgraded requests during
+  graceful shutdown before aborting them, so `RequestAborted` alone can keep the application
+  alive past watch's process-cleanup deadline. Expected shutdown cancellation disposes both
+  sockets without logging an application error.
 - **Server hosting startup is intentionally thin.**
   [`HostingStartup.cs`](Web.Middleware/HostingStartup.cs) registers only the MVC/Razor
   TagHelper component and the reserved forwarder for the modern path. The BrowserRefresh

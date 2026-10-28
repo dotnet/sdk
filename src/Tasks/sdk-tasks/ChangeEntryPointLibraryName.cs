@@ -15,9 +15,13 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required]
         public string NewName { get; set; }
 
+        public string DestinationFile { get; set; }
+
+        public bool RemoveResources { get; set; }
+
         public override bool Execute()
         {
-            PublishMutationUtilities.ChangeEntryPointLibraryName(DepsFile, NewName);
+            PublishMutationUtilities.ChangeEntryPointLibraryName(DepsFile, NewName, DestinationFile, RemoveResources);
 
             return true;
         }

@@ -15,9 +15,10 @@ namespace Microsoft.NET.Build.Containers;
 public class ManifestV2
 {
     /// <summary>
-    /// The digest of this manifest, as provided by the registry via the
-    /// <c>Docker-Content-Digest</c> response header. This value follows the
-    /// OCI descriptor digest format.
+    /// The digest of this manifest. For pulled manifests, this is a requested or
+    /// registry-provided digest that was verified against the response content.
+    /// Locally created manifests compute this value on demand. This value follows
+    /// the OCI descriptor digest format.
     /// <see href="https://github.com/opencontainers/image-spec/blob/a4c6ade7bb82b316d45391f572727a63e268b252/descriptor.md#digests"/>
     /// </summary>
     [JsonIgnore]

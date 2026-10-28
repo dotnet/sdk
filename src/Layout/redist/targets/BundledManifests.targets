@@ -17,11 +17,13 @@
     <BuiltinManifests Include="microsoft.net.workload.emscripten.net8" />
     <BuiltinManifests Include="microsoft.net.workload.emscripten.net9" />
     <BuiltinManifests Include="microsoft.net.workload.emscripten.net10" />
+    <BuiltinManifests Include="microsoft.net.workload.emscripten.net11" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net6" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net7" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net8" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net9" />
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net10" />
+    <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net11" />
   </ItemGroup>
 
   <!-- Calculate NuGet package IDs for bundled manifests -->

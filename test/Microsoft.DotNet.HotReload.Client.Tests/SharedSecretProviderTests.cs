@@ -35,27 +35,12 @@ public class SharedSecretProviderTests
 
         // The secret is encrypted using public key and sent
         // as subprotocol when client connects to the server over WebSocket:
-        var encrypted = GetEncryptedSecret(publicKey, publicKeyParameters, secret);
+        var encrypted = CryptoExtensions.GetEncryptedSecret(publicKey, publicKeyParameters, secret);
 
         // The server decrypts the secret using private key.
         // The secret is sent over to the client with every request over WebSocket.
         // The client validates that the secrete matches the one it generated.
         var decrypted = provider.DecryptSecret(encrypted);
         Assert.AreEqual(secretBase64, decrypted);
-    }
-
-    // Equivalent to the browser tools client's shared-secret encryption:
-    public static string GetEncryptedSecret(string key, RSAParameters publicKeyParameters, byte[] secret)
-    {
-        // Import server key for RSA-OAEP
-#if NET
-        using var rsa = RSA.Create();
-        rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(key), out _);
-#else
-        using var rsa = new RSACng();
-        rsa.ImportParameters(publicKeyParameters);
-#endif
-        // Encrypt using RSA-OAEP
-        return Convert.ToBase64String(rsa.Encrypt(secret, RSAEncryptionPadding.OaepSHA256));
     }
 }

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.WebSockets;
 using System.Text;
@@ -10,7 +11,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh;
 
@@ -163,6 +164,77 @@ public class BrowserToolsForwarderTest
     }
 
     [TestMethod]
+    [DataRow(1)]
+    [DataRow(2)]
+    public async Task ForwardWebSocketAsync_ApplicationShutdownTerminatesOpenConnections(int browserCount)
+    {
+        var providerDisconnected = new TaskCompletionSource(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var disconnectedCount = 0;
+
+        await using var provider = await StartApplicationAsync(async context =>
+        {
+            using var socket = await context.WebSockets.AcceptWebSocketAsync();
+            try
+            {
+                await socket.ReceiveAsync(new byte[128], context.RequestAborted);
+            }
+            catch (WebSocketException) when (socket.State == WebSocketState.Aborted)
+            {
+                // Application shutdown aborts the forwarded connection without a close handshake.
+            }
+            finally
+            {
+                if (Interlocked.Increment(ref disconnectedCount) == browserCount)
+                {
+                    providerDisconnected.SetResult();
+                }
+            }
+        });
+
+        await using var application = await StartForwarderAsync(GetAddress(provider));
+        var errorLogger = new ErrorLoggerProvider();
+        application.Services.GetRequiredService<ILoggerFactory>().AddProvider(errorLogger);
+        var browserSockets = new List<ClientWebSocket>();
+        Task? shutdown = null;
+        try
+        {
+            var webSocketAddress = new UriBuilder(GetAddress(application))
+            {
+                Scheme = "ws",
+                Path = "/_framework/dotnet-browser-tools/connect",
+            }.Uri;
+
+            for (var i = 0; i < browserCount; i++)
+            {
+                var socket = new ClientWebSocket();
+                browserSockets.Add(socket);
+                await socket.ConnectAsync(webSocketAddress, TestContext.CancellationToken);
+            }
+
+            shutdown = application.StopAsync(TestContext.CancellationToken);
+            await shutdown.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+            await providerDisconnected.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+
+            Assert.IsTrue(application.Lifetime.ApplicationStopped.IsCancellationRequested);
+            Assert.IsEmpty(errorLogger.Errors);
+        }
+        finally
+        {
+            foreach (var socket in browserSockets)
+            {
+                socket.Abort();
+                socket.Dispose();
+            }
+
+            if (shutdown != null)
+            {
+                await shutdown.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken);
+            }
+        }
+    }
+
+    [TestMethod]
     public async Task PumpWebSocketAsync_IgnoresPeerAbortWhilePropagatingClose()
     {
         using var source = new CloseReceivingWebSocket();
@@ -186,7 +258,7 @@ public class BrowserToolsForwarderTest
     {
         await using var provider = await StartApplicationAsync(context =>
         {
-            // Mirrors AbstractBrowserRefreshServer.AcceptBrowserConnectionAsync: status only, no upgrade.
+            // Mirrors BrowserRefreshServer.AcceptBrowserConnectionAsync: status only, no upgrade.
             context.Response.StatusCode = providerStatusCode;
             return Task.CompletedTask;
         });
@@ -262,18 +334,18 @@ public class BrowserToolsForwarderTest
 
     private static async Task<WebApplication> StartForwarderAsync(Uri providerAddress)
     {
-        var forwarder = new BrowserToolsForwarder(providerAddress, NullLogger<BrowserToolsForwarder>.Instance);
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseKestrel().UseUrls("http://127.0.0.1:0");
+        new HostingStartup().ConfigureServices(builder.Services, providerAddress);
 
-        return await StartApplicationAsync(async context =>
+        var application = builder.Build();
+        application.Run(context =>
         {
-            if (context.Request.Path.StartsWithSegments(ApplicationPaths.BrowserTools))
-            {
-                await forwarder.ForwardAsync(context);
-                return;
-            }
-
             context.Response.StatusCode = StatusCodes.Status404NotFound;
+            return Task.CompletedTask;
         });
+        await application.StartAsync();
+        return application;
     }
 
     private static async Task<WebApplication> StartApplicationAsync(RequestDelegate requestDelegate)
@@ -297,6 +369,24 @@ public class BrowserToolsForwarderTest
             .Addresses;
 
         return new Uri(addresses.Single());
+    }
+
+    private sealed class ErrorLoggerProvider : ILoggerProvider, ILogger
+    {
+        public ConcurrentQueue<string> Errors { get; } = new();
+
+        public ILogger CreateLogger(string categoryName) => this;
+        public bool IsEnabled(LogLevel logLevel) => logLevel >= LogLevel.Error;
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public void Dispose() { }
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (IsEnabled(logLevel))
+            {
+                Errors.Enqueue(formatter(state, exception));
+            }
+        }
     }
 
     private sealed class CloseReceivingWebSocket : WebSocket

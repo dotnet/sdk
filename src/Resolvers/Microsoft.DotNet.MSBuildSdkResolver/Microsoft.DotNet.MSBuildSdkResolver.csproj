@@ -57,6 +57,7 @@
   <!-- To reduce dll load (cause RPS perf regression). Directly compile files from Microsoft.DotNet.NativeWrapper, Microsoft.DotNet.SdkResolver, and the workload resolver -->
   <ItemGroup>
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Installer\Windows\TrustedMachinePath.cs" LinkBase="Cli" />
     <Compile Include="..\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
     <Compile Include="..\Microsoft.DotNet.SdkResolver\**\*.cs" LinkBase="Microsoft.DotNet.SdkResolver" />
     <Compile Include="..\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\CachingWorkloadResolver.cs" LinkBase="Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver" />
@@ -68,6 +69,7 @@
 
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\PathComponentUtilities.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
@@ -77,7 +79,7 @@
     <!-- Netfx version builds against the lowest version of these dependencies that's guaranteed to be shipped with MSBuild in VS -->
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)" />
     <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" VersionOverride="$(MicrosoftDeploymentDotNetReleasesToolsetPackageVersion)" />
     <PackageReference Include="System.Collections.Immutable" VersionOverride="$(SystemCollectionsImmutableToolsetPackageVersion)" />
     <PackageReference Include="System.Text.Json" VersionOverride="$(SystemTextJsonToolsetPackageVersion)" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" VersionOverride="$(SystemDiagnosticsDiagnosticSourceToolsetPackageVersion)" />
@@ -121,13 +123,14 @@
          You can find the MSBuild.exe binding redirects here: https://github.com/dotnet/msbuild/blob/<msbuild version branch>/src/MSBuild/app.amd64.config  -->
     <ItemGroup>
       <ExpectedDependencies Include="Microsoft.Deployment.DotNet.Releases, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
-      <ExpectedDependencies Include="System.Text.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
-      <ExpectedDependencies Include="System.Text.Encodings.Web, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Text.Json, Version=10.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Text.Encodings.Web, Version=10.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
       <ExpectedDependencies Include="Microsoft.Build.Framework, Version=15.1.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-      <ExpectedDependencies Include="System.Collections.Immutable, Version=9.0.0.11, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-      <ExpectedDependencies Include="System.IO.Pipelines, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Collections.Immutable, Version=10.0.0.10, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+      <ExpectedDependencies Include="System.IO.Pipelines, Version=10.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
       <ExpectedDependencies Include="System.Memory, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
-      <ExpectedDependencies Include="Microsoft.Bcl.AsyncInterfaces, Version=9.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="System.Threading.Tasks.Extensions, Version=4.2.4.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
+      <ExpectedDependencies Include="Microsoft.Bcl.AsyncInterfaces, Version=10.0.0.10, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
       <ExpectedDependencies Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.3.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
       <ExpectedDependencies Include="System.Numerics.Vectors, Version=4.1.6.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
       <ExpectedDependencies Include="System.Buffers, Version=4.0.5.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
@@ -138,7 +141,9 @@
     <PropertyGroup>
       <ResolvedDependenciesList>@(ResolvedDependencies->'%(FusionName)')</ResolvedDependenciesList>
       <ExpectedDependenciesList>@(ExpectedDependencies->'%(Identity)')</ExpectedDependenciesList>
-      <DependencyMismatchErrorText>This may have consequences for MSBuild.exe binding redirects, please get signoff from the MSBuild team.</DependencyMismatchErrorText>
+      <ResolvedDependenciesDisplayList>@(ResolvedDependencies->'%(FusionName)', '&#xA;')</ResolvedDependenciesDisplayList>
+      <ExpectedDependenciesDisplayList>@(ExpectedDependencies->'%(Identity)', '&#xA;')</ExpectedDependenciesDisplayList>
+      <DependencyMismatchErrorText>This may have consequences for MSBuild.exe binding redirects, please get signoff from the MSBuild team.&#xA;&#xA;Expected dependencies:&#xA;$(ExpectedDependenciesDisplayList)&#xA;&#xA;Actual dependencies:&#xA;$(ResolvedDependenciesDisplayList)</DependencyMismatchErrorText>
     </PropertyGroup>
 
     <Error Text="$(AssemblyName) is expected to depend on %(ExpectedDependencies.Identity). $(DependencyMismatchErrorText)"
