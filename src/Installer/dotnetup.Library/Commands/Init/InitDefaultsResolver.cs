@@ -108,8 +108,7 @@ internal static class InitDefaultsResolver
         InstallCommand command,
         List<ResolvedInstallRequest>? requests)
     {
-        return requests ?? GenerateInstallRequests(
-            command, [new MinimalInstallSpec(InstallComponent.SDK, null)]);
+        return requests ?? GenerateSdkInstallRequests(command, channel: null);
     }
 
     /// <summary>
