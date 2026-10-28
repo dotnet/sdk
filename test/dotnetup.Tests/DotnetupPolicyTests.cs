@@ -13,28 +13,6 @@ public class DotnetupPolicyTests
     private readonly FakeDotnetupPolicyStore _store = new();
 
     [TestMethod]
-    public void BlockUnsignedDownloads_WritesTrue()
-    {
-        new DotnetupPolicy(_store).BlockUnsignedDownloads();
-
-        _store.Writes.Should().ContainSingle().Which.Should().BeEquivalentTo(new Dictionary<string, bool>
-        {
-            [DotnetupPolicy.BlockUnsignedDownloadsValueName] = true,
-        });
-    }
-
-    [TestMethod]
-    public void AllowUnsignedDownloads_WritesFalse()
-    {
-        new DotnetupPolicy(_store).AllowUnsignedDownloads();
-
-        _store.Writes.Should().ContainSingle().Which.Should().BeEquivalentTo(new Dictionary<string, bool>
-        {
-            [DotnetupPolicy.BlockUnsignedDownloadsValueName] = false,
-        });
-    }
-
-    [TestMethod]
     public void IsUnsignedDownloadBlocked_ReadsStore()
     {
         var policy = new DotnetupPolicy(_store);

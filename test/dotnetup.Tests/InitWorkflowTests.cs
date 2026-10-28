@@ -253,7 +253,6 @@ public class InitWorkflowTests : IDisposable
             () => workflows.InitWalkthrough(command, requests: []));
 
         requests.Should().BeEmpty();
-        policyStore.Writes.Should().BeEmpty();
         policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read().Should().BeEquivalentTo(new DotnetupConfigData
         {
@@ -291,7 +290,6 @@ public class InitWorkflowTests : IDisposable
             () => workflows.InitWalkthrough(command));
 
         requests.Should().BeEmpty();
-        policyStore.Writes.Should().BeEmpty();
         policy.IsUnsignedDownloadBlocked().Should().BeTrue();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
     }

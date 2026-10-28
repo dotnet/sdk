@@ -9,9 +9,8 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// block exists as a sentinel file.
 /// </summary>
 /// <remarks>
-/// The policy reads its <see cref="IDotnetupPolicyStore"/> on every query, so a change made by an
-/// elevated child process is observed by the parent. Construct it with a store to supply policy
-/// values from somewhere other than the machine.
+/// The policy reads its <see cref="IDotnetupPolicyStore"/> on every query. Construct it with a store
+/// to supply policy values from somewhere other than the machine.
 /// </remarks>
 internal sealed class DotnetupPolicy
 {
@@ -38,20 +37,6 @@ internal sealed class DotnetupPolicy
     /// </summary>
     public bool IsUnsignedDownloadBlocked() =>
         _store.ReadFlag(BlockUnsignedDownloadsValueName);
-
-    /// <summary>Blocks unsigned downloads.</summary>
-    public void BlockUnsignedDownloads() =>
-        _store.WriteFlags(new Dictionary<string, bool>
-        {
-            [BlockUnsignedDownloadsValueName] = true,
-        });
-
-    /// <summary>Allows unsigned downloads when no external policy overrides the value.</summary>
-    public void AllowUnsignedDownloads() =>
-        _store.WriteFlags(new Dictionary<string, bool>
-        {
-            [BlockUnsignedDownloadsValueName] = false,
-        });
 
     private static IDotnetupPolicyStore CreateMachineStore() =>
         OperatingSystem.IsWindows() ? new WindowsRegistryPolicyStore() : new UnixPolicyStore();

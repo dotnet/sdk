@@ -50,7 +50,6 @@ public class AdminModeInitTests : IDisposable
 
         DotnetupConfig.Read()!.AccessMode.Should().Be(selectedMode);
         DotnetupConfig.Read()!.UpdateNotifications.Should().BeFalse();
-        _environment.Store.Writes.Should().BeEmpty();
         environment.ApplyDotnetupOnUserPathCallCount.Should().Be(1);
         environment.LastIncludeDotnetForTerminalProfileModifications.Should()
             .Be(selectedMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere);
@@ -72,7 +71,6 @@ public class AdminModeInitTests : IDisposable
         string output = Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
-        _environment.Store.Writes.Should().BeEmpty();
         environment.ApplyDotnetupOnUserPathCallCount.Should().Be(1);
         output.Should().Contain(Strings.AdminModeEnabled);
     }
@@ -97,7 +95,6 @@ public class AdminModeInitTests : IDisposable
         string output = Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
         DotnetupConfig.Read().Should().BeEquivalentTo(previous);
-        _environment.Store.Writes.Should().BeEmpty();
         environment.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
         output.Should().Contain(Strings.InitConfigureOnlyDescription);
         output.Should().NotContain("SDK channel");
@@ -136,7 +133,6 @@ public class AdminModeInitTests : IDisposable
 
         Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
-        _environment.Store.Writes.Should().BeEmpty();
         _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
         environment.LastDotnetupOnUserPathEnabled.Should().BeFalse();
@@ -179,7 +175,6 @@ public class AdminModeInitTests : IDisposable
             .NotContain("Setup complete!");
 
         DotnetupConfig.Exists().Should().BeFalse();
-        _environment.Store.Writes.Should().BeEmpty();
         environment.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
     }
 

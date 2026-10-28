@@ -165,7 +165,6 @@ public class EnvCommandTests : IDisposable
         int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
-        _store.Writes.Should().BeEmpty();
         _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
         _env.LastDotnetupOnUserPathEnabled.Should().BeTrue();
@@ -193,7 +192,6 @@ public class EnvCommandTests : IDisposable
         int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
-        _store.Writes.Should().BeEmpty();
         _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
         DotnetupConfig.Read()!.DotnetupOnPath.Should().BeFalse();
@@ -210,7 +208,6 @@ public class EnvCommandTests : IDisposable
         int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
-        _store.Writes.Should().BeEmpty();
         _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
     }
@@ -223,7 +220,6 @@ public class EnvCommandTests : IDisposable
         int exitCode = new EnvSetCommand(Parser.Parse(["env", "set", "--shell", "bash"]), _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
-        _store.Writes.Should().BeEmpty();
         _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
         _env.ApplyEnvironmentModificationsCallCount.Should().Be(0);
@@ -269,7 +265,6 @@ public class EnvCommandTests : IDisposable
         {
             environment.LastIncludeDotnetForTerminalProfileModifications.Should().BeFalse();
         }
-        _store.Writes.Should().BeEmpty();
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
@@ -296,7 +291,6 @@ public class EnvCommandTests : IDisposable
         int exitCode = new EnvSetCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
-        _store.Writes.Should().BeEmpty();
     }
 
     private void AssertNoEnvironmentOrConfigChanges()
@@ -353,7 +347,6 @@ public class EnvCommandTests : IDisposable
                 environment, _inspector).Execute();
 
         exitCode.Should().Be(0);
-        _store.Writes.Should().BeEmpty();
         DotnetupConfig.Read().Should().BeEquivalentTo(new DotnetupConfigData
         {
             AccessMode = DotnetAccessMode.None,

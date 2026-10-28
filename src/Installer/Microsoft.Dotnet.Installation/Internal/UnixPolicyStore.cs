@@ -4,9 +4,9 @@
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
-/// Read-only policy store used off Windows. The only machine policy there is the unsigned download
+/// Policy store used off Windows. The only machine policy there is the unsigned download
 /// block, which is enforced when the sentinel file <see cref="UnsignedSourcePolicy.UnixPolicyFile"/>
-/// exists (its content is ignored). Admin mode is Windows-only, so writes are not supported.
+/// exists (its content is ignored).
 /// </summary>
 internal sealed class UnixPolicyStore : IDotnetupPolicyStore
 {
@@ -40,7 +40,4 @@ internal sealed class UnixPolicyStore : IDotnetupPolicyStore
             return false;
         }
     }
-
-    public void WriteFlags(IReadOnlyDictionary<string, bool> values) =>
-        throw new PlatformNotSupportedException("dotnetup machine policy is only supported on Windows.");
 }
