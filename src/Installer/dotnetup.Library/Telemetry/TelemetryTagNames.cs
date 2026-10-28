@@ -47,6 +47,9 @@ internal static class TelemetryTagNames
     public const string AccessMode = "dotnetup.access_mode";
     public const string AccessModeSource = "dotnetup.access_mode_source";
 
+    /// <summary>The access mode selected in the init form, which can differ from the saved mode in <see cref="AccessMode"/>.</summary>
+    public const string InitSelectedAccessMode = "init.selected_access_mode";
+
     // Environment / config tags
     public const string ConfigCorrupted = "config.corrupted";
     public const string ConfigCorruptedError = "config.corrupted_error";

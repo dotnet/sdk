@@ -106,9 +106,10 @@ internal static class InitDefaultsResolver
     /// </summary>
     public static List<ResolvedInstallRequest> ResolveDefaultRequests(
         InstallCommand command,
-        List<ResolvedInstallRequest>? requests)
+        List<ResolvedInstallRequest>? requests,
+        DotnetAccessMode? selectedAccessMode = null)
     {
-        return requests ?? GenerateSdkInstallRequests(command, channel: null);
+        return requests ?? GenerateSdkInstallRequests(command, channel: null, selectedAccessMode);
     }
 
     /// <summary>

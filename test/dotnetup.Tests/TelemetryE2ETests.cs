@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using FluentAssertions;
+using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -63,6 +64,25 @@ public class TelemetryE2ETests
         rootRecord!.Attributes.Should().ContainKey("error.type", "root record should have error.type attribute");
         rootRecord.Attributes.Should().ContainKey("error.category", "root record should have error.category attribute");
         rootRecord.Attributes["error.category"].Should().Be("user", "requesting a nonexistent SDK version should be a user error");
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void Init_RecordsSelectedAccessMode_OnCommandLogRecord()
+    {
+        using var adminEnvironment = new AdminModeTestEnvironment();
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });
+        var envVars = GetTelemetryEnvVars(adminEnvironment.TempRoot);
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            ["init", "--dry-run", "--interactive", "false"], captureOutput: true,
+            workingDirectory: adminEnvironment.TempRoot, environmentVariables: envVars);
+
+        exitCode.Should().Be(0, output);
+        var commandRecord = ParseLogRecords(output).FirstOrDefault(s => s.DisplayName == "command");
+        commandRecord.Should().NotBeNull("a `dotnetup/command` LogRecord should be emitted");
+        commandRecord!.Attributes.Should().ContainKey("init.selected_access_mode");
+        commandRecord.Attributes["init.selected_access_mode"].Should().Be("admin");
     }
 
     [TestMethod]

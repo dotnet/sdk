@@ -463,11 +463,6 @@ Or open a new terminal.</target>
         <target state="new">Accept and install</target>
         <note />
       </trans-unit>
-      <trans-unit id="InitAdminModeNextSteps">
-        <source>No .NET was installed. Run 'dotnetup sdk install &lt;version&gt; --untracked' afterwards to install .NET with the Windows installer.</source>
-        <target state="new">No .NET was installed. Run 'dotnetup sdk install &lt;version&gt; --untracked' afterwards to install .NET with the Windows installer.</target>
-        <note>{Locked="dotnetup sdk install"}{Locked="--untracked"}</note>
-      </trans-unit>
       <trans-unit id="InitCommandDescription">
         <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
         <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
@@ -483,11 +478,6 @@ Or open a new terminal.</target>
         <target state="new">Configures dotnetup and your environment without installing or migrating .NET.</target>
         <note>{Locked="dotnetup"}</note>
       </trans-unit>
-      <trans-unit id="InitConfiguredModeNextSteps">
-        <source>No .NET was installed. Run 'dotnetup sdk install' afterwards to install .NET using the configured mode.</source>
-        <target state="new">No .NET was installed. Run 'dotnetup sdk install' afterwards to install .NET using the configured mode.</target>
-        <note>{Locked="dotnetup sdk install"}</note>
-      </trans-unit>
       <trans-unit id="InitInstallConfirmation">
         <source>Install .NET with these settings?</source>
         <target state="new">Install .NET with these settings?</target>
@@ -497,6 +487,11 @@ Or open a new terminal.</target>
         <source>dotnetup will install .NET SDKs and runtimes in {0}.</source>
         <target state="new">dotnetup will install .NET SDKs and runtimes in {0}.</target>
         <note>{Locked="dotnetup"}{Locked=".NET"} {0} is the install directory path.</note>
+      </trans-unit>
+      <trans-unit id="InitMigrationNotSupportedInAdminMode">
+        <source>Not supported in admin mode</source>
+        <target state="new">Not supported in admin mode</target>
+        <note />
       </trans-unit>
       <trans-unit id="InstallCancelledBeforeStart">
         <source>Installation was cancelled before {0} {1} was installed.</source>

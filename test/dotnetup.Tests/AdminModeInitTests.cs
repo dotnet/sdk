@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using FluentAssertions;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
@@ -27,52 +28,64 @@ public class AdminModeInitTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
     [ResourceLock(WellKnownResources.Console)]
+    [DataRow(null, DotnetAccessMode.Admin)]
     [DataRow(DotnetAccessMode.None, DotnetAccessMode.Admin)]
+    [DataRow(DotnetAccessMode.Everywhere, DotnetAccessMode.Admin)]
     [DataRow(DotnetAccessMode.Admin, DotnetAccessMode.Admin)]
     [DataRow(DotnetAccessMode.Admin, DotnetAccessMode.None)]
     [DataRow(DotnetAccessMode.Admin, DotnetAccessMode.Shell)]
     [DataRow(DotnetAccessMode.Admin, DotnetAccessMode.Everywhere)]
-    internal void AdminTransitions_ConfigureBeforeSavingWithoutResolvingInstalls(
-        DotnetAccessMode previousMode, DotnetAccessMode selectedMode)
+    internal void AdminTransitions_InstallForSelectedModeAndSave(
+        DotnetAccessMode? previousMode, DotnetAccessMode selectedMode)
     {
-        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = previousMode, UpdateNotifications = false });
-        _environment.Store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = previousMode == DotnetAccessMode.Admin;
-        var environment = CreateEnvironment();
-        environment.BeforeEnvironmentChange = () =>
+        if (previousMode is DotnetAccessMode saved)
         {
-            _environment.Policy.IsUnsignedDownloadBlocked().Should().Be(previousMode == DotnetAccessMode.Admin);
-            DotnetupConfig.Read()!.AccessMode.Should().Be(previousMode);
-        };
-        var workflows = CreateWorkflows(environment, selectedMode);
+            DotnetupConfig.Write(new DotnetupConfigData { AccessMode = saved, UpdateNotifications = false });
+        }
+        var environment = CreateEnvironment();
+        List<ResolvedInstallRequest>? installed = null;
+        var workflows = CreateWorkflows(environment, selectedMode, requests => installed = requests);
         var command = new InitCommand(Parser.Parse(["init", "--shell", "bash"]), _environment.Policy);
 
-        string output = Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
+        string output = Run(() => workflows.InitWalkthrough(command));
 
+        bool admin = selectedMode == DotnetAccessMode.Admin;
+        var request = installed.Should().ContainSingle().Subject.Request;
+        request.Options.InstallMechanism.Should().Be(admin ? InstallMechanism.WindowsInstallerBundle : InstallMechanism.Archive);
+        request.Options.Untracked.Should().Be(admin);
+        request.Options.RequireSignature.Should().Be(admin);
+        InstallPathClassifier.IsAdminInstallPath(request.InstallRoot.Path).Should().Be(admin);
         DotnetupConfig.Read()!.AccessMode.Should().Be(selectedMode);
-        DotnetupConfig.Read()!.UpdateNotifications.Should().BeFalse();
-        environment.ApplyDotnetupOnUserPathCallCount.Should().Be(1);
         environment.LastIncludeDotnetForTerminalProfileModifications.Should()
             .Be(selectedMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere);
-        output.Should().Contain("No .NET was installed.");
-        output.Should().NotContain("Migrate system installs");
+        output.Should().Contain("Setup complete!");
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
     [ResourceLock(WellKnownResources.Console)]
-    public void AdminSetup_LeavesPolicyUnchanged()
+    public void AdminSelection_DoesNotMigrateSystemInstalls()
     {
-        var previous = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false };
-        DotnetupConfig.Write(previous);
-        var environment = CreateEnvironment();
-        var workflows = CreateWorkflows(environment, DotnetAccessMode.Admin);
-        var command = new InitCommand(Parser.Parse(["init", "--shell", "bash"]), _environment.Policy);
+        var architecture = InstallerUtilities.GetDefaultInstallArchitecture();
+        var defaults = new InitFormDefaults(
+            new DotnetInstallRoot(_environment.TempRoot, architecture),
+            DotnetAccessMode.Shell,
+            MigrateSystemInstalls: true,
+            Migrations: [new MigrationWorkflow.MigrationSelection(
+                InstallComponent.SDK, new UpdateChannel("9.0.1xx"), new ReleaseVersion(PinnedVersion), architecture)],
+            new DefaultChannelDisplay("latest", GlobalJsonPath: null),
+            [new MinimalInstallSpec(InstallComponent.SDK, "latest")],
+            ShellProvider: null,
+            InstallRootGlobalJsonPath: null);
+        var command = new InitCommand(Parser.Parse(["init"]), _environment.Policy);
+        InitExecutionPlan? plan = null;
 
-        string output = Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
+        Run(() => plan = InitWorkflows.ResolveExecutionPlan(
+            command, requests: null, defaults,
+            new InitFormSelection(PinnedVersion, DotnetAccessMode.Admin, MigrateSystemInstalls: true)));
 
-        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
-        environment.ApplyDotnetupOnUserPathCallCount.Should().Be(1);
-        output.Should().Contain(Strings.AdminModeEnabled);
+        plan!.Migrations.Should().BeEmpty();
+        plan.AccessMode.Should().Be(DotnetAccessMode.Admin);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
@@ -80,7 +93,7 @@ public class AdminModeInitTests : IDisposable
     [ResourceLock(WellKnownResources.Console)]
     [DataRow(false)]
     [DataRow(true)]
-    public void DryRun_DoesNotChangePolicyEnvironmentOrConfig(bool leavingAdmin)
+    public void DryRun_DoesNotInstallOrChangeEnvironmentOrConfig(bool leavingAdmin)
     {
         var previous = new DotnetupConfigData
         {
@@ -88,51 +101,65 @@ public class AdminModeInitTests : IDisposable
         };
         DotnetupConfig.Write(previous);
         var environment = CreateEnvironment();
+        bool installed = false;
         var workflows = CreateWorkflows(environment,
-            leavingAdmin ? DotnetAccessMode.Shell : DotnetAccessMode.Admin);
+            leavingAdmin ? DotnetAccessMode.Shell : DotnetAccessMode.Admin, _ => installed = true);
         var command = new InitCommand(Parser.Parse(["init", "--dry-run"]), _environment.Policy);
 
         string output = Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
+        installed.Should().BeFalse();
         DotnetupConfig.Read().Should().BeEquivalentTo(previous);
         environment.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
-        output.Should().Contain(Strings.InitConfigureOnlyDescription);
-        output.Should().NotContain("SDK channel");
-        output.Should().NotContain("Migrate system installs");
-        output.Should().NotContain("Installs in");
+        output.Should().Contain("SDK channel");
+        output.Should().Contain("Installs in");
+        if (!leavingAdmin)
+        {
+            output.Should().Contain(Strings.InitMigrationNotSupportedInAdminMode);
+        }
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
     [ResourceLock(WellKnownResources.Console)]
-    public void FirstUseInstall_SelectingAdmin_DoesNotContinueToGlobalJsonUpdate()
+    public void FirstUseInstall_SelectingAdmin_InstallsWithInstallerBundle()
     {
         var environment = CreateEnvironment();
+        List<ResolvedInstallRequest>? installed = null;
         var command = new UpdatingInstallCommand(
-            Parser.Parse(["sdk", "install", "--interactive", "true", "--shell", "bash"]),
+            Parser.Parse(["sdk", "install", PinnedVersion, "--interactive", "true", "--shell", "bash"]),
             _environment.Policy, environment);
         var workflow = new InstallWorkflow(command, new AdminInstallRootResolver(),
-            CreateWorkflows(environment, DotnetAccessMode.Admin));
+            CreateWorkflows(environment, DotnetAccessMode.Admin, requests => installed = requests, channel: null));
 
-        Run(() => workflow.Execute([new MinimalInstallSpec(InstallComponent.SDK, null)]));
+        Run(() => workflow.Execute([new MinimalInstallSpec(InstallComponent.SDK, PinnedVersion)]));
 
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
-        environment.ApplyGlobalJsonModificationsCallCount.Should().Be(0);
-        File.Exists(Path.Combine(_environment.TempRoot, "global.json")).Should().BeFalse();
+        installed.Should().ContainSingle().Which.Request.Options.InstallMechanism
+            .Should().Be(InstallMechanism.WindowsInstallerBundle);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
     [ResourceLock(WellKnownResources.Console)]
-    public void StoredAdmin_NonInteractiveSetup_LeavesPolicyUnchangedWithoutInstalling()
+    public void StoredAdmin_DefaultSelection_InstallsWithInstallerBundle()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin, DotnetupOnPath = false });
         var environment = CreateEnvironment();
-        var workflows = new InitWorkflows(environment, new FakeEnvironmentStateInspector());
+        List<ResolvedInstallRequest>? installed = null;
+        var workflows = new InitWorkflows(environment, new FakeEnvironmentStateInspector())
+        {
+            // Accept the defaults, as non-interactive init does, with a pinned version to avoid network access.
+            FormSelectionOverride = (_, defaults) => new InitFormSelection(
+                PinnedVersion, defaults.AccessMode, defaults.MigrateSystemInstalls),
+            InstallRequestsOverride = requests => installed = requests,
+        };
         var command = new InitCommand(Parser.Parse(["init", "--interactive", "false"]), _environment.Policy);
 
-        Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
+        Run(() => workflows.InitWalkthrough(command));
 
+        installed.Should().ContainSingle().Which.Request.Options.InstallMechanism
+            .Should().Be(InstallMechanism.WindowsInstallerBundle);
         _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
         environment.LastDotnetupOnUserPathEnabled.Should().BeFalse();
@@ -141,12 +168,12 @@ public class AdminModeInitTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
     [ResourceLock(WellKnownResources.Console)]
-    public void EnvironmentFailure_DoesNotSaveModeOrReportSuccess()
+    public void EnvironmentFailure_DoesNotReportSuccess()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false });
         var environment = CreateEnvironment();
         environment.BeforeEnvironmentChange = () => throw new IOException("Environment write failed");
-        var workflows = CreateWorkflows(environment, DotnetAccessMode.Admin);
+        var workflows = CreateWorkflows(environment, DotnetAccessMode.Admin, _ => { });
         var command = new InitCommand(Parser.Parse(["init"]), _environment.Policy);
 
         string output = Run(() =>
@@ -155,8 +182,6 @@ public class AdminModeInitTests : IDisposable
             initialize.Should().Throw<IOException>();
         });
 
-        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Shell);
-        output.Should().NotContain(Strings.AdminModeEnabled);
         output.Should().NotContain("Setup complete!");
     }
 
@@ -235,12 +260,18 @@ public class AdminModeInitTests : IDisposable
 
     private MockDotnetInstallManager CreateEnvironment() => new(_environment.TempRoot, existingSystemInstalls: []);
 
+    // An exact version resolves without network access.
+    private const string PinnedVersion = "9.0.100";
+
     private InitWorkflows CreateWorkflows(
-        MockDotnetInstallManager environment, DotnetAccessMode selectedMode) =>
+        MockDotnetInstallManager environment,
+        DotnetAccessMode selectedMode,
+        Action<List<ResolvedInstallRequest>> install,
+        string? channel = PinnedVersion) =>
         new(environment, new FakeEnvironmentStateInspector())
         {
-            FormSelectionOverride = (_, _) => new InitFormSelection(
-                "invalid-channel-that-must-not-be-resolved", selectedMode, MigrateSystemInstalls: true),
+            FormSelectionOverride = (_, _) => new InitFormSelection(channel, selectedMode, MigrateSystemInstalls: true),
+            InstallRequestsOverride = install,
         };
 
     private static InitFormModel CreateModel(DotnetAccessMode mode) =>

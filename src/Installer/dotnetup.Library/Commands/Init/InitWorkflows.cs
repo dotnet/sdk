@@ -4,10 +4,10 @@
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
@@ -36,6 +36,11 @@ internal class InitWorkflows
     /// selection, or <c>null</c> when the user exits without changes.
     /// </summary>
     internal Func<InstallCommand, InitFormDefaults, InitFormSelection?>? FormSelectionOverride { get; init; }
+
+    /// <summary>
+    /// Replaces running the resolved install requests (and the cache predownload) in tests.
+    /// </summary>
+    internal Action<List<ResolvedInstallRequest>>? InstallRequestsOverride { get; init; }
 
     // ── Init Flow Orchestrators ──
 
@@ -90,8 +95,9 @@ internal class InitWorkflows
     }
 
     /// <summary>
-    /// Applies the accepted selection. Setup involving admin mode only configures the environment;
-    /// other selections install and configure the selected setup.
+    /// Applies the accepted selection: installs the selected setup and configures the environment for
+    /// the selected access mode. Requests are resolved for the selected mode, not the saved one, so
+    /// selecting admin mode installs with the Windows installer and leaving it installs archives.
     /// </summary>
     private List<ResolvedInstallRequest> ApplySelection(
         InstallCommand command,
@@ -100,28 +106,15 @@ internal class InitWorkflows
         InitFormSelection formSelection,
         DotnetupConfigData? previousConfig)
     {
-        bool configureOnly = formSelection.AccessMode == DotnetAccessMode.Admin
-            || previousConfig?.AccessMode == DotnetAccessMode.Admin;
+        // The process-wide access mode tag records the mode saved when dotnetup started; this records
+        // the mode the user chose for this setup.
+        command.SetCommandTag(
+            TelemetryTagNames.InitSelectedAccessMode,
+            TelemetryCommonProperties.GetAccessModeTelemetryValue(formSelection.AccessMode));
+
         if (command.DryRun)
         {
-            PrintDryRunPreview(defaults, formSelection, configureOnly);
-            return [];
-        }
-
-        if (configureOnly)
-        {
-            EnvSettingsWriter.ApplyAndPersist(
-                formSelection.AccessMode,
-                InitDefaultsResolver.GetDefaultDotnetupOnPath(previousConfig),
-                _dotnetEnvironment,
-                command.ShellProvider,
-                _environmentInspector,
-                previousConfig?.AccessMode);
-            DisplaySetupResult(formSelection.AccessMode, previousConfig?.AccessMode);
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
-                formSelection.AccessMode == DotnetAccessMode.Admin
-                    ? Strings.InitAdminModeNextSteps
-                    : Strings.InitConfiguredModeNextSteps));
+            PrintDryRunPreview(defaults, formSelection);
             return [];
         }
 
@@ -164,7 +157,8 @@ internal class InitWorkflows
     /// <summary>
     /// Turns the user's <see cref="InitFormSelection"/> into an <see cref="InitExecutionPlan"/>,
     /// resolving concrete install requests only now (this may resolve versions / hit the network),
-    /// which is why dry-run and configuration-only setup stop before this step.
+    /// which is why dry-run stops before this step. Requests are resolved for the selected access mode,
+    /// and admin mode never migrates system installs.
     /// </summary>
     internal static InitExecutionPlan ResolveExecutionPlan(
         InstallCommand command,
@@ -172,23 +166,41 @@ internal class InitWorkflows
         InitFormDefaults defaults,
         InitFormSelection formSelection)
     {
+        DotnetAccessMode selectedMode = formSelection.AccessMode;
         List<ResolvedInstallRequest> installRequests;
         if (SelectedChannelDiffersFromDefault(formSelection.Channel, defaults.ChannelDisplay.ChannelLabel))
         {
             installRequests = InitDefaultsResolver.GenerateInstallRequests(
                 command,
-                BuildChangedChannelSpecs(requests, formSelection.Channel));
+                BuildChangedChannelSpecs(requests, formSelection.Channel),
+                selectedMode);
+        }
+        else if (requests is not null && !WereResolvedForMode(requests, selectedMode))
+        {
+            // Requests resolved before the form used the saved access mode; resolve them again for the selected one.
+            installRequests = InitDefaultsResolver.GenerateInstallRequests(command, BuildOriginalSpecs(requests), selectedMode);
         }
         else
         {
-            installRequests = InitDefaultsResolver.ResolveDefaultRequests(command, requests);
+            installRequests = InitDefaultsResolver.ResolveDefaultRequests(command, requests, selectedMode);
         }
 
-        List<MigrationWorkflow.MigrationSelection> migrations = formSelection.MigrateSystemInstalls
+        List<MigrationWorkflow.MigrationSelection> migrations = selectedMode != DotnetAccessMode.Admin && formSelection.MigrateSystemInstalls
             ? MigrationWorkflow.FilterMigrationSelections(defaults.Migrations, installRequests)
             : [];
-        return new InitExecutionPlan(installRequests, formSelection.AccessMode, migrations);
+        return new InitExecutionPlan(installRequests, selectedMode, migrations);
     }
+
+    // Admin mode requests always require signatures, and other modes never do.
+    private static bool WereResolvedForMode(List<ResolvedInstallRequest> requests, DotnetAccessMode mode) =>
+        requests.All(request => request.Request.Options.RequireSignature == (mode == DotnetAccessMode.Admin));
+
+    // Rebuilds the specs behind already-resolved requests. Requests whose channel came from global.json
+    // pass no channel so global.json is consulted again.
+    private static MinimalInstallSpec[] BuildOriginalSpecs(List<ResolvedInstallRequest> requests) =>
+        [.. requests.Select(request => new MinimalInstallSpec(
+            request.Request.Component,
+            request.Request.Options.InstallSource == InstallRequestSource.GlobalJson ? null : request.Request.Channel.Name))];
 
     internal static MinimalInstallSpec[] BuildChangedChannelSpecs(
         List<ResolvedInstallRequest>? requests,
@@ -205,34 +217,32 @@ internal class InitWorkflows
     /// </summary>
     private static void PrintDryRunPreview(
         InitFormDefaults defaults,
-        InitFormSelection formSelection,
-        bool configureOnly)
+        InitFormSelection formSelection)
     {
         string dim = DotnetupTheme.Current.Dim;
         string accent = DotnetupTheme.Current.Accent;
+        bool admin = formSelection.AccessMode == DotnetAccessMode.Admin;
 
         SpectreAnsiConsole.MarkupLine($"[{dim}](dry run \u2014 no changes were made to your machine)[/]");
-
-        if (configureOnly)
-        {
-            PrintPreviewLine("Access mode", formSelection.AccessMode.ToString(), accent);
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(Strings.InitConfigureOnlyDescription));
-            return;
-        }
 
         string channelText =
             formSelection.Channel ?? defaults.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
         List<MigrationWorkflow.MigrationSelection> migrations = MigrationWorkflow.FilterMigrationSelections(
             defaults.Migrations,
             BuildSelectedInstallSpecs(defaults, formSelection));
-        string migrateText = formSelection.MigrateSystemInstalls
-            ? string.Format(CultureInfo.InvariantCulture, "Yes ({0} install(s))", migrations.Count)
-            : "No";
+        string migrateText = admin
+            ? Strings.InitMigrationNotSupportedInAdminMode
+            : formSelection.MigrateSystemInstalls
+                ? string.Format(CultureInfo.InvariantCulture, "Yes ({0} install(s))", migrations.Count)
+                : "No";
+        string installRoot = admin
+            ? new AdminInstallRootResolver().Resolve(defaults.InstallRoot.Architecture).Path
+            : defaults.InstallRoot.Path;
 
         PrintPreviewLine("SDK channel", channelText, accent);
         PrintPreviewLine("Access mode", formSelection.AccessMode.ToString(), accent);
         PrintPreviewLine("Migrate system installs", migrateText, accent);
-        PrintPreviewLine("Installs in", defaults.InstallRoot.Path, accent);
+        PrintPreviewLine("Installs in", installRoot, accent);
     }
 
     private static void PrintPreviewLine(string label, string value, string accent)
@@ -272,7 +282,7 @@ internal class InitWorkflows
 
         // Start the predownload now that the install requests are known, so the cache populates
         // while the config is written.
-        Task? predownloadTask = effectiveRequests.Count > 0
+        Task? predownloadTask = InstallRequestsOverride is null && effectiveRequests.Count > 0
             ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(effectiveRequests[0])
             : null;
 
@@ -288,7 +298,11 @@ internal class InitWorkflows
         ExceptionDispatchInfo? installFailure = null;
         try
         {
-            if (plan.Migrations.Count > 0)
+            if (InstallRequestsOverride is { } runInstalls)
+            {
+                runInstalls(effectiveRequests);
+            }
+            else if (plan.Migrations.Count > 0)
             {
                 effectiveRequests = RunInstallsWithMigration(
                     command, effectiveRequests, plan.Migrations, installRoot, manifestPath, predownloadTask);
