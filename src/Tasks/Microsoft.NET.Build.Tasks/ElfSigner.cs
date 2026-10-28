@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         private static readonly string[] s_nonExecutableExtensions =
         {
-            ".hap", ".zip", ".nupkg", ".pdb", ".json", ".xml", ".txt",
+            ".hap", ".zip", ".nupkg", ".dll", ".pdb", ".json", ".xml", ".txt",
         };
 
         /// <summary>
