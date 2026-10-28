@@ -20,6 +20,12 @@ Copyright (c) .NET Foundation. All rights reserved.
          Microsoft.DotNet.HotReload.BrowserToolsProtocol.RoutePrefix. -->
     <HotReloadBrowserToolsRoutePrefix Condition="'$(HotReloadBrowserToolsRoutePrefix)' == ''">/_framework/dotnet-browser-tools</HotReloadBrowserToolsRoutePrefix>
     <HotReloadBrowserToolsSettingsPath Condition="'$(HotReloadBrowserToolsSettingsPath)' == ''">$(HotReloadBrowserToolsRoutePrefix)/hot-reload-settings.json</HotReloadBrowserToolsSettingsPath>
+
+    <!-- Imported after the opting-in SDK sets its browser tools properties so this is available during evaluation. -->
+    <HotReloadBrowserToolsEnabled>false</HotReloadBrowserToolsEnabled>
+    <HotReloadBrowserToolsEnabled Condition="'$(EnableHotReloadInRuntimeConfigDevFile)' == 'true' and
+                                             '$(HotReloadBrowserToolsAssetPrefix)' != '' and
+                                             '$(JSModulesEnabled)' == 'true'">true</HotReloadBrowserToolsEnabled>
   </PropertyGroup>
 
   <!--
@@ -46,17 +52,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_DefineHotReloadBrowserToolsAssets"
           BeforeTargets="ResolveProjectStaticWebAssets"
-          DependsOnTargets="ResolveWebAssemblyProjectReferences;_SetHotReloadBrowserToolsEnabled;_DefineHotReloadBrowserToolsAssetsCore" />
-
-  <Target Name="_SetHotReloadBrowserToolsEnabled">
-    <PropertyGroup>
-      <HotReloadBrowserToolsEnabled>false</HotReloadBrowserToolsEnabled>
-      <HotReloadBrowserToolsEnabled Condition="'$(EnableHotReloadInRuntimeConfigDevFile)' == 'true' and
-                                               '$(HotReloadBrowserToolsAssetPrefix)' != '' and
-                                               '$(StaticWebAssetsEnabled)' == 'true' and
-                                               '$(JSModulesEnabled)' == 'true'">true</HotReloadBrowserToolsEnabled>
-    </PropertyGroup>
-  </Target>
+          DependsOnTargets="ResolveWebAssemblyProjectReferences;_DefineHotReloadBrowserToolsAssetsCore" />
 
   <Target Name="_DefineHotReloadBrowserToolsAssetsCore"
           DependsOnTargets="ResolveStaticWebAssetsConfiguration"
