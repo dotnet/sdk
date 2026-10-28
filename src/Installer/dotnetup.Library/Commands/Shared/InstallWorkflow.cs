@@ -167,11 +167,13 @@ internal class InstallWorkflow
     /// <param name="PathResolution">How the root was chosen, for telemetry.</param>
     /// <param name="Mechanism">Whether .NET is extracted from an archive or installed by the Windows installer bundle.</param>
     /// <param name="Untracked">Whether the target forces untracked installs regardless of <c>--untracked</c>.</param>
+    /// <param name="RequireSignature">Whether downloads trusted only by their hash are rejected.</param>
     private sealed record InstallTarget(
         DotnetInstallRoot InstallRoot,
         InstallPathResolver.InstallPathResolutionResult PathResolution,
         InstallMechanism Mechanism,
-        bool Untracked);
+        bool Untracked,
+        bool RequireSignature);
 
     private InstallTarget ResolveUserInstallTarget(GlobalJsonInfo? globalJson)
     {
@@ -183,7 +185,7 @@ internal class InstallWorkflow
             pathResolution.ResolvedInstallPath,
             InstallerUtilities.GetDefaultInstallArchitecture());
 
-        return new InstallTarget(installRoot, pathResolution, InstallMechanism.Archive, Untracked: false);
+        return new InstallTarget(installRoot, pathResolution, InstallMechanism.Archive, Untracked: false, RequireSignature: false);
     }
 
     /// <summary>
@@ -210,12 +212,12 @@ internal class InstallWorkflow
             var pathResolution = _installPathResolver.Resolve(explicitInstallPath: null, globalJson);
             ValidateInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource, _command.ManifestPath);
             var localRoot = new DotnetInstallRoot(pathResolution.ResolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-            return new InstallTarget(localRoot, pathResolution, InstallMechanism.Archive, Untracked: true);
+            return new InstallTarget(localRoot, pathResolution, InstallMechanism.Archive, Untracked: true, RequireSignature: true);
         }
 
         var installRoot = _adminInstallRootResolver.Resolve(InstallerUtilities.GetDefaultInstallArchitecture());
         var systemPathResolution = new InstallPathResolver.InstallPathResolutionResult(installRoot.Path, InstallPathFromGlobalJson: null, PathSource.Default);
-        return new InstallTarget(installRoot, systemPathResolution, InstallMechanism.WindowsInstallerBundle, Untracked: true);
+        return new InstallTarget(installRoot, systemPathResolution, InstallMechanism.WindowsInstallerBundle, Untracked: true, RequireSignature: true);
     }
 
     internal static bool ShouldRunFirstUseOnboarding(EffectiveAccessMode accessMode, bool interactive, string? installPath, bool migrateFromSystem = false)
@@ -274,6 +276,7 @@ internal class InstallWorkflow
                 Untracked = _command.Untracked || target.Untracked,
                 Verbosity = _command.Verbosity,
                 InstallMechanism = target.Mechanism,
+                RequireSignature = target.RequireSignature,
             });
 
         var resolvedVersion = _command.ChannelVersionResolver.GetLatestVersionForChannel(request.Channel, request.Component, request.InstallRoot.Architecture);

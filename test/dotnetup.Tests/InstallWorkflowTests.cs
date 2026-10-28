@@ -212,6 +212,7 @@ public class InstallWorkflowTests : IDisposable
         InstallPathClassifier.IsAdminInstallPath(request.InstallRoot.Path).Should().BeTrue();
         request.Options.Untracked.Should().BeTrue();
         request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+        request.Options.RequireSignature.Should().BeTrue();
         File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
     }
 
@@ -230,6 +231,7 @@ public class InstallWorkflowTests : IDisposable
         resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
         resolved.Request.Options.Untracked.Should().BeTrue();
+        resolved.Request.Options.RequireSignature.Should().BeTrue();
         File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
     }
 
@@ -299,6 +301,19 @@ public class InstallWorkflowTests : IDisposable
 
         resolved.Request.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()));
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_NonAdminMode_DoesNotRequireSignature()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None });
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install"]);
+
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        resolved.Request.Options.RequireSignature.Should().BeFalse();
     }
 
     /// <summary>Writes a global.json pinning SDK 9.0.100 with the given <c>sdk.paths</c> JSON array (omitted when null).</summary>

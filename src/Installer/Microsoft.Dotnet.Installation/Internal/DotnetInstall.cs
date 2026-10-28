@@ -92,6 +92,12 @@ internal record InstallRequestOptions()
     /// admin mode requests use <see cref="InstallMechanism.WindowsInstallerBundle"/>.
     /// </summary>
     public InstallMechanism InstallMechanism { get; init; } = InstallMechanism.Archive;
+
+    /// <summary>
+    /// If true, downloads trusted only by their hash (such as daily builds) are rejected.
+    /// Set for admin mode installs, which require signature validation.
+    /// </summary>
+    public bool RequireSignature { get; init; }
 }
 
 /// <summary>
