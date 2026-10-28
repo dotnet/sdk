@@ -116,7 +116,7 @@
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">18.7.1</MicrosoftBuildMinimumVersion>
-    <MinimumVSVersion>18.7</MinimumVSVersion>
+    <MinimumVSVersion>18.11</MinimumVSVersion>
   </PropertyGroup>
 
   <PropertyGroup>
