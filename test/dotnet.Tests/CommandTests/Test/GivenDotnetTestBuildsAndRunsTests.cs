@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Tests;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
@@ -120,6 +121,46 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [Theory]
+        [InlineData(null, null, false)]
+        [InlineData("COPILOT_CLI", "1", true)]
+        [InlineData("COPILOT_AGENT", "1", true)]
+        [InlineData("AI_AGENT", "github_copilot_vscode_agent", true)]
+        [InlineData("AI_AGENT", "github_copilot_app_agent", true)]
+        [InlineData("AI_AGENT", "some_other_agent", false)]
+        [InlineData("COPILOT_AGENT", "", false)]
+        public void CopilotEnvironmentsDisableAnsiOutput(string? variable, string? value, bool expectedNoAnsi)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            var command = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path);
+
+            foreach (var name in TelemetryCommonPropertiesTests._allLLMEnvVars)
+            {
+                command.WithEnvironmentVariable(name, "");
+            }
+
+            // CI mode emits simple ANSI even when output is redirected, unless an agent is detected.
+            command.WithEnvironmentVariable("GITHUB_ACTIONS", "true");
+            if (variable is not null && value is not null)
+            {
+                command.WithEnvironmentVariable(variable, value);
+            }
+
+            CommandResult result = command.Execute();
+            result.ExitCode.Should().Be(ExitCodes.Success);
+            if (expectedNoAnsi)
+            {
+                result.StdOut.Should().NotContain("\x1b[");
+            }
+            else
+            {
+                result.StdOut.Should().Contain("\x1b[");
+            }
         }
 
         [Theory, CombinatorialData]
