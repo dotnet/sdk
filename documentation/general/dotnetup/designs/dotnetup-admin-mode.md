@@ -120,7 +120,7 @@ The `BlockUnsignedDownloads` `REG_DWORD` value under `HKLM\SOFTWARE\Policies\Mic
 
 | Value | Purpose |
 | --- | --- |
-| [`BlockUnsignedDownloads`](../signature-verification.md) | Blocks downloads that have no detached signature, such as daily builds. It applies in every mode. It does not block `self update` of an Authenticode-signed `dotnetup`, because the replacement must pass Authenticode validation. |
+| [`BlockUnsignedDownloads`](../signature-verification.md) | Blocks downloads that have no detached signature, such as daily builds. It applies in every mode and also blocks `dotnetup self update`. |
 
 Administrators can set this value through Group Policy, Intune, or similar tools.
 dotnetup does not change it when selecting, reapplying, or leaving an access mode.
