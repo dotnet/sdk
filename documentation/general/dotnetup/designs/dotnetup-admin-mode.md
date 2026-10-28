@@ -112,13 +112,7 @@ Rollout for other commands will be integrated later, such as:
 `admin`, like the other access modes, is stored in the current user's existing `dotnetup` configuration. Different users can select different access modes. This setting does not grant administrative privileges: the official installer still requests administrator approval when it performs a machine-wide installation.
 
 On Windows, `admin` can be selected from the interactive `dotnetup init` form or with
-`dotnetup env set admin`. When Admin is selected, init installs like the other modes:
-it builds its install requests for the selected mode rather than the saved mode, so
-the SDK is installed with the official Windows installer to the shared system location
-(or to a global.json `paths` directory, see [`global.json`](#globaljson)). Selecting Admin
-in init acknowledges the untracked system install, so `--untracked` is not required.
-Init saves the mode before applying the environment, and records the selected mode in
-the `init.selected_access_mode` command telemetry tag. There is no `init --mode` option.
+`dotnetup env set admin`. There is no `init --mode` option.
 
 #### Registry Values (Windows only)
 
