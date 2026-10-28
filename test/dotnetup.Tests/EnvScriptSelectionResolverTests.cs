@@ -5,7 +5,6 @@ using FluentAssertions;
 using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
-using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -36,6 +35,8 @@ public class EnvScriptSelectionResolverTests
     [DataRow(DotnetAccessMode.None, true, false, true)]
     [DataRow(DotnetAccessMode.Shell, false, true, false)]
     [DataRow(DotnetAccessMode.None, false, false, false)]
+    [DataRow(DotnetAccessMode.Admin, true, false, true)]
+    [DataRow(DotnetAccessMode.Admin, false, false, false)]
     internal void NoFlags_WithConfig_FollowsConfig(DotnetAccessMode accessMode, bool dotnetupOnPath, bool expectedDotnet, bool expectedDotnetup)
     {
         var result = Resolve(config: Config(accessMode, dotnetupOnPath));
@@ -69,74 +70,5 @@ public class EnvScriptSelectionResolverTests
     {
         Action act = () => Resolve(dotnet: true, dotnetupOnly: true);
         act.Should().Throw<DotnetInstallException>();
-    }
-
-    [TestMethod]
-    public void AdminMode_NoConfig_WiresOnlyDotnetup()
-    {
-        var result = EnvScriptSelectionResolver.Resolve(false, false, false, config: null, isAdminMode: true);
-
-        result.Should().Be(new EnvScriptSelection(IncludeDotnet: false, IncludeDotnetup: true));
-    }
-
-    [TestMethod]
-    [DataRow(DotnetAccessMode.Shell, true)]
-    [DataRow(DotnetAccessMode.Everywhere, false)]
-    [DataRow(DotnetAccessMode.None, true)]
-    internal void AdminMode_PreservesDotnetupSettingWithoutActivatingDotnet(DotnetAccessMode mode, bool dotnetupOnPath)
-    {
-        var result = EnvScriptSelectionResolver.Resolve(false, false, false, Config(mode, dotnetupOnPath), isAdminMode: true);
-
-        result.Should().Be(new EnvScriptSelection(IncludeDotnet: false, IncludeDotnetup: dotnetupOnPath));
-    }
-
-    [TestMethod]
-    [DataRow(true, false, false, false)]
-    [DataRow(true, true, false, true)]
-    [DataRow(false, true, false, true)]
-    [DataRow(false, false, true, true)]
-    public void AdminMode_ProfileFlagsNeverActivateDotnet(bool dotnet, bool dotnetup, bool dotnetupOnly, bool expectedDotnetup)
-    {
-        var result = EnvScriptSelectionResolver.Resolve(dotnet, dotnetup, dotnetupOnly, config: null, isAdminMode: true);
-
-        result.Should().Be(new EnvScriptSelection(IncludeDotnet: false, IncludeDotnetup: expectedDotnetup));
-    }
-
-    [TestMethod]
-    public void AdminMode_StillRejectsConflictingFlags()
-    {
-        Action act = () => EnvScriptSelectionResolver.Resolve(true, false, true, config: null, isAdminMode: true);
-
-        act.Should().Throw<DotnetInstallException>();
-    }
-
-    [TestMethod]
-    public void LeavingAdminMode_ResumesPreservedConfiguration()
-    {
-        var config = Config(DotnetAccessMode.Shell, dotnetupOnPath: true);
-
-        EnvScriptSelectionResolver.Resolve(false, false, false, config, isAdminMode: true).IncludeDotnet.Should().BeFalse();
-        EnvScriptSelectionResolver.Resolve(false, false, false, config, isAdminMode: false)
-            .Should().Be(new EnvScriptSelection(IncludeDotnet: true, IncludeDotnetup: true));
-        config.AccessMode.Should().Be(DotnetAccessMode.Shell);
-    }
-
-    [TestMethod]
-    [DataRow("bash")]
-    [DataRow("zsh")]
-    [DataRow("fish")]
-    [DataRow("pwsh")]
-    public void AdminMode_ScriptDoesNotEmitManagedDotnetPathOrDotnetRoot(string shell)
-    {
-        var parseResult = Parser.Parse(["env", "script", "--shell", shell, "--dotnet", "--dotnetup"]);
-        parseResult.Errors.Should().BeEmpty();
-        IEnvShellProvider provider = parseResult.GetValue(EnvScriptCommandParser.ShellOption)!;
-        var selection = EnvScriptSelectionResolver.Resolve(true, true, false, config: null, isAdminMode: true);
-        const string dotnetPath = "managed-dotnet-must-not-be-activated";
-        const string dotnetupPath = "dotnetup-tool-directory";
-
-        string script = provider.GenerateEnvScript(dotnetPath, selection.IncludeDotnetup ? dotnetupPath : "", selection.IncludeDotnet);
-
-        script.Should().Contain(dotnetupPath).And.NotContain(dotnetPath).And.NotContain("DOTNET_ROOT");
     }
 }
