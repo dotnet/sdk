@@ -186,7 +186,7 @@ internal class DotnetDownloader : IArchiveDownloader
 
     public ResolvedDownload ResolveDotnetupDownload(string channel, string rid)
     {
-        ThrowIfUnsignedDownloadBlocked("dotnetup", channel, expectReleasesJsonSignature: false);
+        ThrowIfReleasesJsonSignatureRequired("dotnetup", channel, expectReleasesJsonSignature: false);
         using var resolver = new DailyChannelResolver(_releaseManifest, _httpClient);
         ResolvedDotnetupArtifact resolved = resolver.ResolveDotnetupArtifact(channel, rid);
         var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(resolved.Version, rid);
@@ -250,7 +250,7 @@ internal class DotnetDownloader : IArchiveDownloader
         }
         if (download.IsUnsigned || download.IsDotnetup)
         {
-            ThrowIfUnsignedDownloadBlocked(download.IsDotnetup ? "dotnetup" : ".NET", download.Version.ToString(), expectReleasesJsonSignature);
+            ThrowIfReleasesJsonSignatureRequired(download.IsDotnetup ? "dotnetup" : ".NET", download.Version.ToString(), expectReleasesJsonSignature);
         }
 
         if (download.IsDotnetup)
@@ -445,7 +445,7 @@ internal class DotnetDownloader : IArchiveDownloader
         // unsigned downloads is emitted up-front by the CLI workflow layer (see
         // InstallExecutor.ExecuteInstalls / UpdateWorkflow.InstallVersion via
         // UnsignedSourcePolicy.MayDownloadUnsigned), so no per-fallback warning is needed here.
-        ThrowIfUnsignedDownloadBlocked(installRequest.Component.ToString(), resolvedVersion.ToString(),
+        ThrowIfReleasesJsonSignatureRequired(installRequest.Component.ToString(), resolvedVersion.ToString(),
             installRequest.Options.ExpectReleasesJsonSignature);
 
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
@@ -490,10 +490,11 @@ internal class DotnetDownloader : IArchiveDownloader
     }
 
     /// <summary>
-    /// Downloads and parses a .sha512 hash file. Returns null if the URL 404s
-    /// (the version is not published to the blob feed). Throws for any other error.
+    /// Call before a download that is not covered by the signed releases.json manifest (trusted only by
+    /// its published hash). Throws when the request expects the releases.json signature (admin mode) or
+    /// the machine BlockUnsignedDownloads policy requires it. Authenticode is verified elsewhere.
     /// </summary>
-    private void ThrowIfUnsignedDownloadBlocked(string component, string version, bool expectReleasesJsonSignature)
+    private void ThrowIfReleasesJsonSignatureRequired(string component, string version, bool expectReleasesJsonSignature)
     {
         // Admin mode expects the releases.json signature independently of the machine policy; this may change in the future.
         if (expectReleasesJsonSignature)
@@ -518,6 +519,10 @@ internal class DotnetDownloader : IArchiveDownloader
         }
     }
 
+    /// <summary>
+    /// Downloads and parses a .sha512 hash file. Returns null if the URL 404s
+    /// (the version is not published to the blob feed). Throws for any other error.
+    /// </summary>
     private string? TryGetHashFromUrl(string checksumUrl, ReleaseVersion resolvedVersion, string component, bool requirePinnedUri = false)
     {
         try
