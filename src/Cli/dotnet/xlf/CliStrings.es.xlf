@@ -465,6 +465,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Servidor de MSBuild</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManagedFallbackCouldNotBeLocated">
+        <source>The managed fallback could not be located. Expected '{0}' and '{1}'.</source>
+        <target state="translated">No se encontró la reserva administrada. Se esperaban '{0}' y '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestHasMarkOfTheWeb">
         <source>File {0} came from another computer and might be blocked to help protect this computer. For more information, including how to unblock, see https://aka.ms/motw</source>
         <target state="translated">El archivo {0} procedía de otro equipo y podría bloquearse para ayudar a proteger este equipo. Para obtener más información, y cómo desbloquearlo, consulte https://aka.ms/motw</target>
@@ -496,8 +501,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="MissingToolSettingsFile">
-        <source>Settings file 'DotnetToolSettings.xml' was not found in the package.</source>
-        <target state="translated">El archivo de configuración "DotnetToolSettings.xml" no se encontró en el paquete.</target>
+        <source>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</source>
+        <target state="translated">No se encontró el archivo de configuración 'DotnetToolSettings.xml' en el paquete '{0}@{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOnePackagedShimAvailable">
@@ -691,6 +696,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">No se proporcionó el comando requerido.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ResolvedPathEscapesTargetDirectory">
+        <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
+        <target state="translated">La ruta de acceso resuelta "{0}" se aplica al directorio de destino "{1}".</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
         <source>{0}: resolving commandspec from {1} Tool Libraries.</source>
         <target state="translated">{0}: resolviendo commandspec desde las bibliotecas de herramientas de {1}.</target>
@@ -711,6 +721,16 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="SDKDiagnosticsCommandDefinition">
         <source>Enable diagnostic output.</source>
         <target state="translated">Habilita la salida de diagnóstico.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkDirectoryCouldNotBeDetermined">
+        <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
+        <target state="translated">advertencia: no se pudo determinar el directorio del SDK; no se proporcionó sdk_dir y dotnet-aot no pudo localizar su propio módulo; la resolución relativa al SDK puede ser incorrecta.</target>
+        <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
+      </trans-unit>
+      <trans-unit id="SdkRootDirectoryDoesNotExist">
+        <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
+        <target state="translated">El directorio raíz del SDK "{0}" proporcionado a través de la configuración "{1}" no existe.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -753,6 +773,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">El archivo de solución {0} especificado no existe, o bien no hay ningún archivo de solución en el directorio.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="translated">La carpeta de solución "{0}" ya contiene un proyecto con el nombre de archivo "{1}".</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
         <source>PROJECT | SOLUTION</source>
         <target state="translated">PROJECT | SOLUTION</target>
@@ -773,6 +798,21 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Debe especificar al menos una referencia para quitarla.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallationTimeout">
+        <source>Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</source>
+        <target state="new">Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallationWaiting">
+        <source>Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</source>
+        <target state="new">Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallationWaitingWithProcess">
+        <source>Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</source>
+        <target state="new">Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: se encontró biblioteca de herramientas {1}</target>
@@ -788,9 +828,34 @@ setx PATH "%PATH%;{0}"
         <target state="translated">La herramienta "{0}" (versión "{1}") ya está instalada.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageMutationTimeout">
+        <source>Timed out waiting for another operation on tool '{0}' to complete.</source>
+        <target state="new">Timed out waiting for another operation on tool '{0}' to complete.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageMutationWaiting">
+        <source>Another operation on tool '{0}' is in progress. Waiting for it to complete...</source>
+        <target state="new">Another operation on tool '{0}' is in progress. Waiting for it to complete...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageMutationWaitingWithProcess">
+        <source>Process {1} ({2}) is modifying tool '{0}'. Waiting for it to complete...</source>
+        <target state="new">Process {1} ({2}) is modifying tool '{0}'. Waiting for it to complete...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">El paquete {0} no es una herramienta de .NET.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="translated">La herramienta '{0}' requiere una versión de .NET superior a la instalada actualmente. La herramienta tiene como destino {1}, pero el entorno de ejecución actual es {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="translated">Para usar esta herramienta, actualice a .NET {0} o posterior, o bien use una versión de la herramienta que sea compatible con .NET {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

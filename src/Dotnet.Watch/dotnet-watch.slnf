@@ -33,6 +33,7 @@
       "test\\dotnet-watch-test-browser\\dotnet-watch-test-browser.csproj",
       "test\\Microsoft.DotNet.HotReload.Test.Utilities\\Microsoft.DotNet.HotReload.Test.Utilities.csproj",
       "test\\Microsoft.DotNet.HotReload.Watch.Aspire.Tests\\Microsoft.DotNet.HotReload.Watch.Aspire.Tests.csproj",
+      "test\\Microsoft.DotNet.Test.MSTest.Utilities\\Microsoft.DotNet.Test.MSTest.Utilities.csproj",
       "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",
       "test\\dotnet-watch.Tests\\dotnet-watch.Tests.csproj"
     ]

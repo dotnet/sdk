@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net10.0;net472</TargetFrameworks>
+    <TargetFrameworks>$(NetCurrent);$(NetFrameworkToolCurrent)</TargetFrameworks>
     <Description>Benchmarks for Microsoft.NET.Sdk.StaticWebAssets</Description>
     <RootNamespace>Microsoft.NET.Sdk.StaticWebAssets.Benchmarks</RootNamespace>
     <IsPackable>false</IsPackable>
@@ -13,7 +13,7 @@
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
   </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net472'">
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>

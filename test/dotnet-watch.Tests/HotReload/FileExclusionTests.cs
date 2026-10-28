@@ -3,7 +3,8 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class FileExclusionTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class FileExclusionTests : DotNetWatchTestBase
 {
     public enum DirectoryKind
     {
@@ -13,7 +14,7 @@ public class FileExclusionTests(ITestOutputHelper logger) : DotNetWatchTestBase(
         Obj,
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -6,9 +6,10 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class BrowserTests : DotNetWatchTestBase
 {
-    [Fact]
+    [TestMethod]
     public async Task LaunchesBrowserOnStart()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBrowserLaunchApp")
@@ -25,9 +26,10 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage("https://localhost:5001"));
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
-    [InlineData("")]
-    [InlineData("https://nonlocal")]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/53061
+    [DataRow("")]
+    [DataRow("https://nonlocal")]
     public async Task OriginValidation(string origin)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps", identifier: origin)
@@ -43,7 +45,8 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitUntilOutputContains(new Regex("🧪 Error connecting to 'ws://localhost:.*': The server returned status code '403' when status code '101' was expected."));
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/53061
     public async Task OriginValidation_Environment()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -59,13 +62,14 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         App.Start(testAsset, ["--urls", kestrelUrl], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
 
         // Verify that the connection has been rejected:
-        await App.WaitUntilOutputContains($"🧪 Fetching '{kestrelUrl}/_framework/aspnetcore-browser-refresh.js'");
+        await App.WaitUntilOutputContains($"🧪 Request for '{kestrelUrl}/_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js' succeeded");
         await App.WaitUntilOutputContains($"🧪 Setting Origin header to '{browserUrl}'.");
 
         await App.WaitUntilOutputContains(MessageDescriptor.ConnectedToRefreshServer, "Browser #1");
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/53061
     public async Task BrowserDiagnostics()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -83,11 +87,12 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // Verify the browser has been launched.
-        await App.WaitUntilOutputContains($"🧪 Fetching '{kestrelUrl}/_framework/aspnetcore-browser-refresh.js'");
+        await App.WaitUntilOutputContains($"🧪 Request for '{kestrelUrl}/_framework/Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js' succeeded");
         await App.WaitUntilOutputContains($"🧪 Setting Origin header to '{kestrelUrl}'.");
 
         // Verify the browser connected to the refresh server.
         await App.WaitUntilOutputContains(MessageDescriptor.ConnectedToRefreshServer, "Browser #1");
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
 
         App.Process.ClearOutput();
 
@@ -120,8 +125,11 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
             🧪 Received: {"type":"Reload"}
             """);
 
-        // no other browser refresh messages sent:
-        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
+
+        // no other browser message sent:
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
+        Assert.DoesNotContain("An unhandled exception was thrown by the application.", string.Join(Environment.NewLine, App.Process.Output));
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
@@ -133,16 +141,16 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         errorMessage = $"[{projectDisplay}] [auto-restart] {homePagePath}(11,5): error ENC0033: Deleting method 'F()' requires restarting the application.";
         await App.WaitUntilOutputContains(errorMessage);
 
-        await App.WaitUntilOutputContains($$"""
-            🧪 Received: {"type":"ReportDiagnostics","diagnostics":["Restarting application to apply changes ..."]}
-            """);
-
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-        // browser page was reloaded after the app restarted:
+        // Shutdown may interrupt the restart diagnostic, so wait for the reloaded browser instead.
         await App.WaitUntilOutputContains("""
             🧪 Received: {"type":"Reload"}
             """);
+
+        await App.WaitUntilOutputContains("🧪 Session initialized with 0 update(s).");
+
+        Assert.DoesNotContain("An unhandled exception was thrown by the application.", string.Join(Environment.NewLine, App.Process.Output));
 
         App.Process.ClearOutput();
 
@@ -159,7 +167,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
             🧪 Received: {"type":"RefreshBrowser"}
             """);
 
-        // no other browser refresh messages sent:
-        Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
+        // no other browser message sent:
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
     }
 }

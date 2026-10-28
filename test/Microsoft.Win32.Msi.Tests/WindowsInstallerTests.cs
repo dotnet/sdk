@@ -3,26 +3,29 @@
 
 namespace Microsoft.Win32.Msi.Tests
 {
+    [TestClass]
     public class WindowsInstallerTests
     {
-        [WindowsOnlyTheory]
-        [InlineData("", "", Error.INVALID_PARAMETER)]
-        [InlineData("{807215B4-F42F-4E5F-BFEE-9817D7F2CEA5}", "ProductVersion", Error.UNKNOWN_PRODUCT)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("", "", Error.INVALID_PARAMETER)]
+        [DataRow("{807215B4-F42F-4E5F-BFEE-9817D7F2CEA5}", "ProductVersion", Error.UNKNOWN_PRODUCT)]
         public void InstallProductReturnsAnError(string productCode, string property, uint expectedError)
         {
             uint error = WindowsInstaller.GetProductInfo(productCode, property, out string propertyValue);
 
-            Assert.Equal(error, expectedError);
+            Assert.AreEqual(expectedError, error);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("", InstallState.INVALIDARG)]
-        [InlineData("{807215B4-F42F-4E5F-BFEE-9817D7F2CEA5}", InstallState.UNKNOWN)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("", InstallState.INVALIDARG)]
+        [DataRow("{807215B4-F42F-4E5F-BFEE-9817D7F2CEA5}", InstallState.UNKNOWN)]
         public void QueryProductStateReturnsAnError(string productCode, InstallState expectedState)
         {
             InstallState state = WindowsInstaller.QueryProduct(productCode);
 
-            Assert.Equal(state, expectedState);
+            Assert.AreEqual(expectedState, state);
         }
     }
 }

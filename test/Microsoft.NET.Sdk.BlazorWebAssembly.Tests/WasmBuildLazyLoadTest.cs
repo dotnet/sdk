@@ -5,14 +5,16 @@
 
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
+    [TestClass]
     public class WasmBuildLazyLoadTest : AspNetSdkTest
     {
-        public WasmBuildLazyLoadTest(ITestOutputHelper log) : base(log) { }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_LazyLoadExplicitAssembly_Debug_Works()
         {
             // Arrange
@@ -40,13 +42,18 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(DefaultTfm);
 
             // Assert
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
             var expectedFiles = new[]
             {
                 $"wwwroot/_framework/{WasmBootConfigFileName}",
+            };
+            var unexpectedFiles = new[]
+            {
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
+            outputDirectory.Should().NotHaveFiles(unexpectedFiles);
 
             var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
@@ -64,7 +71,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_LazyLoadExplicitAssembly_Release_Works()
         {
             // Arrange
@@ -92,13 +100,18 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var outputDirectory = buildCommand.GetOutputDirectory(DefaultTfm, "Release");
 
             // Assert
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
             var expectedFiles = new[]
             {
                 $"wwwroot/_framework/{WasmBootConfigFileName}",
+            };
+            var unexpectedFiles = new[]
+            {
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
+            outputDirectory.Should().NotHaveFiles(unexpectedFiles);
 
             var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
@@ -116,7 +129,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_LazyLoadExplicitAssembly_Debug_Works()
         {
             // Arrange
@@ -168,7 +182,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_LazyLoadExplicitAssembly_Release_Works()
         {
             // Arrange
@@ -220,7 +235,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             assemblies.Keys.Should().Contain("blazorwasm.wasm");
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_LazyLoadExplicitAssembly_InvalidAssembly()
         {
             // Arrange
@@ -241,7 +257,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             ExecuteCommand(buildCommand).Should().Fail().And.HaveStdOutContaining("BLAZORSDK1001");
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_LazyLoadExplicitAssembly_InvalidAssembly()
         {
             // Arrange

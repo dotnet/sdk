@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForNaNCorrectlyAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class TestForNaNCorrectlyTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForEqualityWithFloatNaNAsync()
         {
             var code = @"
@@ -29,7 +30,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForEqualityWithFloatNaNAsync()
         {
             var code = @"
@@ -42,7 +43,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForInequalityWithFloatNaNAsync()
         {
             var code = @"
@@ -57,7 +58,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForInEqualityWithFloatNaNAsync()
         {
             var code = @"
@@ -70,7 +71,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForGreaterThanFloatNaNAsync()
         {
             var code = @"
@@ -85,7 +86,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForGreaterThanFloatNaNAsync()
         {
             var code = @"
@@ -98,7 +99,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForGreaterThanOrEqualToFloatNaNAsync()
         {
             var code = @"
@@ -113,7 +114,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForGreaterThanOrEqualToFloatNaNAsync()
         {
             var code = @"
@@ -126,7 +127,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForLessThanFloatNaNAsync()
         {
             var code = @"
@@ -141,7 +142,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForLessThanFloatNaNAsync()
         {
             var code = @"
@@ -154,7 +155,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForLessThanOrEqualToFloatNaNAsync()
         {
             var code = @"
@@ -169,7 +170,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForLessThanOrEqualToFloatNaNAsync()
         {
             var code = @"
@@ -182,7 +183,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithDoubleNaNAsync()
         {
             var code = @"
@@ -197,7 +198,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForComparisonWithDoubleNaNAsync()
         {
             var code = @"
@@ -210,7 +211,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNOnLeftAsync()
         {
             var code = @"
@@ -225,7 +226,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForComparisonWithNaNOnLeftAsync()
         {
             var code = @"
@@ -238,7 +239,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(4, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForComparisonWithBadExpressionAsync()
         {
             var code = @"
@@ -253,7 +254,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForComparisonWithBadExpressionAsync()
         {
             var code = @"
@@ -266,7 +267,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForComparisonWithFunctionReturningNaNAsync()
         {
             var code = @"
@@ -286,7 +287,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForComparisonWithFunctionReturningNaNAsync()
         {
             var code = @"
@@ -303,7 +304,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForEqualityWithNonNaNAsync()
         {
             var code = @"
@@ -318,7 +319,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForEqualityWithNonNaNAsync()
         {
             var code = @"
@@ -331,7 +332,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForNonComparisonOperationWithNaNAsync()
         {
             var code = @"
@@ -346,7 +347,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForNonComparisonOperationWithNonNaNAsync()
         {
             var code = @"
@@ -359,7 +360,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpOnlyOneDiagnosticForComparisonWithNaNOnBothSidesAsync()
         {
             var code = @"
@@ -374,7 +375,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(6, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicOnlyOneDiagnosticForComparisonWithNonNaNOnBothSidesAsync()
         {
             var code = @"
@@ -394,7 +395,7 @@ End Class
         // that "binary operator expressions" are present in places we expect them to be --
         // than they are about the correctness of our treatment of these expressions once
         // we find them.
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInFunctionArgumentAsync()
         {
             var code = @"
@@ -413,7 +414,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 11));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForComparisonWithNaNInFunctionArgumentAsync()
         {
             var code = @"
@@ -431,7 +432,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(6, 11));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInTernaryOperatorAsync()
         {
             var code = @"
@@ -448,7 +449,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForComparisonWithNaNInIfOperatorAsync()
         {
             // VB doesn't have the ternary operator, but we add this test for symmetry.
@@ -464,7 +465,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code, GetBasicResultAt(6, 19));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInThrowStatementAsync()
         {
             var code = @"
@@ -481,7 +482,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 15));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInCatchFilterClauseAsync()
         {
             var code = @"
@@ -505,7 +506,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(13, 36));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInYieldReturnStatementAsync()
         {
             var code = @"
@@ -524,7 +525,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(10, 22));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInSwitchStatementAsync()
         {
             var code = @"
@@ -545,7 +546,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 17));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInForLoopAsync()
         {
             var code = @"
@@ -565,7 +566,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInWhileLoopAsync()
         {
             var code = @"
@@ -584,7 +585,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code, GetCSharpResultAt(8, 16));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForComparisonWithNaNInDoWhileLoopAsync()
         {
             var code = @"

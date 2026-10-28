@@ -15,15 +15,8 @@
     <WorkloadPacksSource>$(WorkloadIntermediateOutputPath)packs</WorkloadPacksSource>
 
     <VSTemp>$(WorkloadIntermediateOutputPath)VS/</VSTemp>
-    <!-- Temp directory for light command layouts -->
-    <LightCommandObjDir>$(WorkloadIntermediateOutputPath)/LightCommandPackages</LightCommandObjDir>
-    <!-- Directory for the zipped up light command package -->
-    <LightCommandPackagesDir>$(ArtifactsNonShippingPackagesDir)</LightCommandPackagesDir>
 
     <RunAnalyzers>false</RunAnalyzers>
-    <!-- LGHT1105: Warning generated from MSI creation process. -->
-    <!-- See: https://github.com/orgs/wixtoolset/discussions/6715 -->
-    <NoWarn>$(NoWarn);LGHT1105</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -32,17 +25,36 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildWorkloads)' == 'true'">
+    <PackageReference Include="vswhere" Version="$(VSWhereVersion)" IsImplicitlyDefined="true" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Workloads" GeneratePathProperty="true" />
-    <PackageReference Include="Microsoft.Signed.WiX" GeneratePathProperty="true" />
-    <PackageReference Include="MicroBuild.Plugins.SwixBuild.Dotnet" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.VisualStudioEng.MicroBuild.Plugins.SwixBuild" GeneratePathProperty="true"/>
+
+    <!-- Acquire the WiX CLI -->
+    <!-- WiX toolset CLI is a tool package so we need to set ExcludeAssets. -->
+    <PackageReference Include="Microsoft.Wix" ExcludeAssets="all" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Heat" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.Util.wixext" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.WixToolset.UI.wixext" GeneratePathProperty="true" />
   </ItemGroup>
 
   <PropertyGroup>
-    <WixToolsetPath>$(PkgMicrosoft_Signed_Wix)\tools</WixToolsetPath>
-    <SwixPluginPath>$(PkgMicroBuild_Plugins_SwixBuild_Dotnet)</SwixPluginPath>
-    <SwixBuildTargets>$(SwixPluginPath)\build\MicroBuild.Plugins.SwixBuild.targets</SwixBuildTargets>
+    <SwixBuildTargets>$(PkgMicrosoft_VisualStudioEng_MicroBuild_Plugins_SwixBuild)\build\Microsoft.VisualStudioEng.MicroBuild.Plugins.SwixBuild.targets</SwixBuildTargets>
+
+    <WixExe>$(PkgMicrosoft_Wix)\tools\net6.0\any\wix.exe</WixExe>
+    <HeatExe>$(PkgMicrosoft_WixToolset_Heat)\tools\net472\x64\heat.exe</HeatExe>
+    <WixExtensionsDir>wixext6</WixExtensionsDir>
+    <WixUIExtensionDir>$(PkgMicrosoft_WixToolset_UI_wixext)\$(WixExtensionsDir)\</WixUIExtensionDir>
+    <WixDependencyExtensionDir>$(PkgMicrosoft_WixToolset_Dependency_wixext)\$(WixExtensionsDir)\</WixDependencyExtensionDir>
+    <WixUtilExtensionDir>$(PkgMicrosoft_WixToolset_Util_wixext)\$(WixExtensionsDir)\</WixUtilExtensionDir>
   </PropertyGroup>
+
+  <ItemGroup>
+    <WixExtensions Include="$(WixUIExtensionDir)\WixToolset.UI.wixext.dll" />
+    <WixExtensions Include="$(WixDependencyExtensionDir)\WixToolset.Dependency.wixext.dll" />
+    <WixExtensions Include="$(WixUtilExtensionDir)\WixToolset.Util.wixext.dll" />
+  </ItemGroup>
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
 
@@ -50,7 +62,7 @@
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.MonoAOTCompiler.Task" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.MonoTargets.Sdk" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Sdk" />
-    <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Templates.net10" />
+    <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Templates.net11" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Runtime.WebAssembly.Wasi.Sdk" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NET.Sdk.WebAssembly.Pack" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.AOT.win-arm64.Cross.android-arm" />
@@ -79,6 +91,7 @@
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.tvossimulator-x64" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.browser-wasm" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.multithread.browser-wasm" />
+    <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.browser-wasm" />
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.Mono.wasi-wasm" />
     <!-- Windows runtime packages don't need MSI wrappers - they're included in the SDK, not installed as workloads -->
     <RuntimeWorkloadPacksToDownload Include="Microsoft.NETCore.App.Runtime.win-arm64" ExcludeAsMsi="true" />
@@ -103,9 +116,10 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' != 'true'">
-    <!-- we use MicrosoftNETCoreAppRuntimePackageVersion for both runtime and emsdk packages since they're aligned in VMR builds -->
+    <!-- we use MicrosoftNETCoreAppRuntimePackageVersion for the runtime packages, and the Emscripten.Internal
+         version for the emsdk packages, whose own IDs contain the Emscripten version and the RID -->
     <PackageDownload Include="@(RuntimeWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
-    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="@(EmsdkWorkloadPacksToDownload)" Version="[$(MicrosoftNETRuntimeEmscriptenInternalPackageVersion)]" />
   </ItemGroup>
 
   <Target Name="_AddMsiPackageDownloads"
@@ -189,6 +203,7 @@
             _GenerateMsiVersionString;
             _CollectDownloadedWorkloadPacks;
             _CollectDownloadedWorkloadMsis;
+            _FindMSBuild;
             BuildWorkloadMsis"
           Condition="'$(BuildWorkloads)' == 'true'">
   </Target>
@@ -208,6 +223,20 @@
           UseHardlinksIfPossible="true" />
   </Target>
 
+  <Target Name="_FindMSBuild">
+    <PropertyGroup>
+      <VSWherePath>$([MSBuild]::NormalizePath('$(Pkgvswhere)','tools','vswhere.exe'))</VSWherePath>
+    </PropertyGroup>
+
+    <Exec Command="&quot;$(VSWherePath)&quot; -latest -prerelease -property installationPath -requires Microsoft.Component.MSBuild" ConsoleToMsBuild="true" StandardErrorImportance="high">
+      <Output TaskParameter="ConsoleOutput" PropertyName="_VSInstallDir" />
+    </Exec>
+
+    <PropertyGroup>
+      <_DesktopMSBuildPath>$(_VSInstallDir)\MSBuild\Current\Bin\msbuild.exe</_DesktopMSBuildPath>
+    </PropertyGroup>
+  </Target>
+
   <Target Name="BuildWorkloadMsis"
           Condition="'$(BuildWorkloads)' == 'true' and '$(DownloadWorkloadMsis)' != 'true'">
     <ItemGroup>
@@ -216,39 +245,76 @@
 
       <!-- runtime components -->
       <_RuntimeComponentResources Include="microsoft-net-runtime-mono-tooling"
-                                  Title=".NET 10.0 Shared Mobile Build Tools"
+                                  Title=".NET 11.0 Shared Mobile Build Tools"
                                   Description="Shared build tasks for mobile platform development."/>
       <_RuntimeComponentResources Include="wasm-tools"
-                                  Title=".NET 10.0 WebAssembly Build Tools"
+                                  Title=".NET 11.0 WebAssembly Build Tools"
                                   Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking."/>
       <_RuntimeComponentResources Include="wasm-experimental"
-                                  Title=".NET 10.0 WebAssembly Experimental Tools"
-                                  Description=".NET 10.0 WebAssembly experimental tooling"/>
+                                  Title=".NET 11.0 WebAssembly Experimental Tools"
+                                  Description=".NET 11.0 WebAssembly experimental tooling"/>
       <_RuntimeComponentResources Include="wasi-experimental"
-                                  Title=".NET 10.0 Wasi Experimental"
-                                  Description=".NET 10.0 Experimental SDK and tooling for WASI"/>
+                                  Title=".NET 11.0 Wasi Experimental"
+                                  Description=".NET 11.0 Experimental SDK and tooling for WASI"/>
       <_RuntimeComponentResources Include="microsoft-net-runtime-android"
-                                  Title=".NET 10.0 Android Build Tools"
+                                  Title=".NET 11.0 Android Build Tools"
                                   Description="Build tools for Android compilation and native linking."/>
       <_RuntimeComponentResources Include="microsoft-net-runtime-android-aot"
-                                  Title=".NET 10.0 Android Build Tools (AoT)"
+                                  Title=".NET 11.0 Android Build Tools (AoT)"
                                   Description="Build tools for Android ahead-of-time (AoT) compilation and native linking."/>
       <_RuntimeComponentResources Include="microsoft-net-runtime-ios"
-                                  Title=".NET 10.0 iOS Build Tools"
+                                  Title=".NET 11.0 iOS Build Tools"
                                   Description="Build tools for iOS compilation and native linking."/>
       <_RuntimeComponentResources Include="microsoft-net-runtime-tvos"
-                                  Title=".NET 10.0 tvOS Build Tools"
+                                  Title=".NET 11.0 tvOS Build Tools"
                                   Description="Build tools for tvOS compilation and native linking."/>
       <_RuntimeComponentResources Include="microsoft-net-runtime-maccatalyst"
-                                  Title=".NET 10.0 Mac Catalyst Build Tools"
+                                  Title=".NET 11.0 Mac Catalyst Build Tools"
                                   Description="Build tools for Mac Catalyst compilation and native linking."/>
       <_RuntimeComponentResources Include="runtimes-ios"
+                                  Title=".NET 11.0 iOS Runtimes"
+                                  Description=".NET 11.0 runtime components for iOS execution."/>
+      <_RuntimeComponentResources Include="runtimes-tvos"
+                                  Title=".NET 11.0 tvOS Build Tools"
+                                  Description=".NET 11.0 runtime components for tvOS execution."/>
+      <_RuntimeComponentResources Include="runtimes-maccatalyst"
+                                  Title=".NET 11.0 Mac Catalyst Build Tools"
+                                  Description=".NET 11.0 runtime components for Mac Catalyst execution."/>
+
+      <_RuntimeComponentResources Include="microsoft-net-runtime-mono-tooling-net10"
+                                  Title=".NET 10.0 Shared Mobile Build Tools"
+                                  Description="Shared build tasks for mobile platform development."/>
+      <_RuntimeComponentResources Include="wasm-tools-net10"
+                                  Title=".NET 10.0 WebAssembly Build Tools"
+                                  Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking."/>
+      <_RuntimeComponentResources Include="wasm-experimental-net10"
+                                  Title=".NET 10.0 WebAssembly Experimental Tools"
+                                  Description=".NET 10.0 WebAssembly experimental tooling"/>
+      <_RuntimeComponentResources Include="wasi-experimental-net10"
+                                  Title=".NET 10.0 Wasi Experimental"
+                                  Description=".NET 10.0 Experimental SDK and tooling for WASI"/>
+      <_RuntimeComponentResources Include="microsoft-net-runtime-android-net10"
+                                  Title=".NET 10.0 Android Build Tools"
+                                  Description="Build tools for Android compilation and native linking."/>
+      <_RuntimeComponentResources Include="microsoft-net-runtime-android-aot-net10"
+                                  Title=".NET 10.0 Android Build Tools (AoT)"
+                                  Description="Build tools for Android ahead-of-time (AoT) compilation and native linking."/>
+      <_RuntimeComponentResources Include="microsoft-net-runtime-ios-net10"
+                                  Title=".NET 10.0 iOS Build Tools"
+                                  Description="Build tools for iOS compilation and native linking."/>
+      <_RuntimeComponentResources Include="microsoft-net-runtime-tvos-net10"
+                                  Title=".NET 10.0 tvOS Build Tools"
+                                  Description="Build tools for tvOS compilation and native linking."/>
+      <_RuntimeComponentResources Include="microsoft-net-runtime-maccatalyst-net10"
+                                  Title=".NET 10.0 Mac Catalyst Build Tools"
+                                  Description="Build tools for Mac Catalyst compilation and native linking."/>
+      <_RuntimeComponentResources Include="runtimes-ios-net10"
                                   Title=".NET 10.0 iOS Runtimes"
                                   Description=".NET 10.0 runtime components for iOS execution."/>
-      <_RuntimeComponentResources Include="runtimes-tvos"
+      <_RuntimeComponentResources Include="runtimes-tvos-net10"
                                   Title=".NET 10.0 tvOS Build Tools"
                                   Description=".NET 10.0 runtime components for tvOS execution."/>
-      <_RuntimeComponentResources Include="runtimes-maccatalyst"
+      <_RuntimeComponentResources Include="runtimes-maccatalyst-net10"
                                   Title=".NET 10.0 Mac Catalyst Build Tools"
                                   Description=".NET 10.0 runtime components for Mac Catalyst execution."/>
 
@@ -401,6 +467,9 @@
       <_EmsdkComponentResources Include="microsoft-net-sdk-emscripten"
                                 Title=".NET WebAssembly Build Tools (Emscripten)"
                                 Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking."/>
+      <_EmsdkComponentResources Include="microsoft-net-sdk-emscripten-net10"
+                                Title=".NET WebAssembly Build Tools for .NET 10 (Emscripten)"
+                                Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking on .NET 10"/>
       <_EmsdkComponentResources Include="microsoft-net-sdk-emscripten-net9"
                                 Title=".NET WebAssembly Build Tools for .NET 9 (Emscripten)"
                                 Description="Build tools for WebAssembly ahead-of-time (AoT) compilation and native linking on .NET 9"/>
@@ -457,31 +526,35 @@
            Condition="'@(RuntimeManifestPackages)' == '' or '@(EmsdkManifestPackages)' == ''" />
 
     <CreateVisualStudioWorkload
-          BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"
           AllowMissingPacks="True"
+          BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"
           BaseOutputPath="$(WorkloadOutputPath)"
-          EnableSideBySideManifests="true"
           ComponentResources="@(RuntimeComponentResources)"
+          EnableSideBySideManifests="true"
+          HeatExe="$(HeatExe)"
+          ManifestMsiVersion="$(MsiVersion)"
           PackageSource="$(WorkloadPacksSource)"
           ShortNames="@(ShortNames)"
-          WorkloadManifestPackageFiles="@(RuntimeManifestPackages)"
-          WixToolsetPath="$(WixToolsetPath)"
-          ManifestMsiVersion="$(MsiVersion)">
+          WixExe="$(WixExe)"
+          WixExtensions="@(WixExtensions)"
+          WorkloadManifestPackageFiles="@(RuntimeManifestPackages)">
       <Output TaskParameter="SwixProjects" ItemName="RuntimeSwixProjects" />
       <Output TaskParameter="Msis" ItemName="RuntimeMsis" />
     </CreateVisualStudioWorkload>
 
     <CreateVisualStudioWorkload
-          BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"
           AllowMissingPacks="True"
+          BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"
           BaseOutputPath="$(WorkloadOutputPath)"
-          EnableSideBySideManifests="true"
           ComponentResources="@(EmsdkComponentResources)"
+          EnableSideBySideManifests="true"
+          HeatExe="$(HeatExe)"
+          ManifestMsiVersion="$(MsiVersion)"
           PackageSource="$(WorkloadPacksSource)"
           ShortNames="@(ShortNames)"
-          WorkloadManifestPackageFiles="@(EmsdkManifestPackages)"
-          WixToolsetPath="$(WixToolsetPath)"
-          ManifestMsiVersion="$(MsiVersion)">
+          WixExe="$(WixExe)"
+          WixExtensions="@(WixExtensions)"
+          WorkloadManifestPackageFiles="@(EmsdkManifestPackages)">
       <Output TaskParameter="SwixProjects" ItemName="EmsdkSwixProjects" />
       <Output TaskParameter="Msis" ItemName="EmsdkMsis" />
     </CreateVisualStudioWorkload>
@@ -514,8 +587,9 @@
       <PartitionedSwixProjects Include="@(SwixWorkloadPackProjects);@(SwixComponentsAndManifests);@(SwixPreviewComponentsAndManifests)" />
     </ItemGroup>
 
-    <!-- Can't build in parallel to the same output folder because of a shared file from the SWIX compiler. -->
-    <MSBuild Projects="@(PartitionedSwixProjects)" Properties="SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=%(ManifestOutputPath)"/>
+    <!-- Can't build in parallel to the same output folder because of a shared file from the SWIX compiler. For now, this needs to build with .NET Framework copy
+         of MSBuild until VS releases an update SWIX toolset that uses a compatible task host factory. -->
+    <Exec Command="&quot;$(_DesktopMSBuildPath)&quot; %(PartitionedSwixProjects.Identity) /p:SwixBuildTargets=$(SwixBuildTargets);ManifestOutputPath=%(ManifestOutputPath)"/>
 
     <!-- Create the zip files used for VSDROP creation. -->
     <ItemGroup>
@@ -542,8 +616,9 @@
       <Msis Include="@(EmsdkMsis)" />
     </ItemGroup>
 
-    <!-- Gather .wixobj files for post-build signing. We'll have to batch since we generated multiple MSIs in the previous step. -->
-    <MSBuild Projects="$(MSBuildProjectFile)" Properties="_WixObjDir=%(Msis.WixObj);_Msi=%(Msis.Identity)" Targets="CreateWixPack" />
+    <!-- Copy the generated wixpacks to the expected folder -->
+    <Copy SourceFiles="%(RuntimeMsis.WixPack)" DestinationFolder="$(ArtifactsNonShippingPackagesDir)" />
+    <Copy SourceFiles="%(EmsdkMsis.WixPack)" DestinationFolder="$(ArtifactsNonShippingPackagesDir)" />
 
     <!-- Build all the MSI payload packages for NuGet. -->
     <ItemGroup>
@@ -551,25 +626,6 @@
     </ItemGroup>
 
     <MSBuild Projects="@(MsiPackageProjects)" Properties="IsShippingPackage=true;IncludeSymbols=false" Targets="Restore;Pack" />
-  </Target>
-
-  <!-- Target to create a single wixpack for signing -->
-  <Target Name="CreateWixPack">
-    <ItemGroup>
-      <_WixObj Include="$(_WixObjDir)\**\*.wixobj" />
-    </ItemGroup>
-
-    <CreateLightCommandPackageDrop
-      LightCommandWorkingDir="$(LightCommandObjDir)"
-      OutputFolder="$(LightCommandPackagesDir)"
-      NoLogo="true"
-      Cultures="en-us"
-      InstallerFile="$(_Msi)"
-      SuppressValidation="true"
-      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
-      WixSrcFiles="@(_WixObj)">
-      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
-    </CreateLightCommandPackageDrop>
   </Target>
 
   <!-- These are just individual targets for testing local builds. -->

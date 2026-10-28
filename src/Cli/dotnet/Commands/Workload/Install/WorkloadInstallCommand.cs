@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -126,14 +127,10 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
 
         if (_printDownloadLinkOnly)
         {
-            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
+            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
                 TempPackagesDirectory,
-                filePermissionSetter: null,
-                new FirstPartyNuGetPackageSigningVerifier(),
-                new NullLogger(),
-                NullReporter.Instance,
-                restoreActionConfig: RestoreActionConfiguration,
-                verifySignatures: VerifySignatures);
+                VerifySignatures,
+                restoreActionConfig: RestoreActionConfiguration);
 
             ValidateWorkloadIdsInput(filteredWorkloadIds);
 
@@ -145,7 +142,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
 
             var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
 
-            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, new JsonSerializerOptions() { WriteIndented = true }));
+            Reporter.WriteLine(JsonSerializer.Serialize(packageUrls, WorkloadInstallJsonSerializerContext.Default.IEnumerableString));
         }
         else if (!string.IsNullOrWhiteSpace(_downloadToCacheOption))
         {
@@ -355,3 +352,7 @@ internal sealed class WorkloadInstallCommand : InstallingWorkloadCommand
         }.Run(context => a(context));
     }
 }
+
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(IEnumerable<string>))]
+internal partial class WorkloadInstallJsonSerializerContext : JsonSerializerContext;

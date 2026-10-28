@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -131,7 +132,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                                 break;
                             default:
-                                foreach (var childOperation in operation.Children)
+                                foreach (var childOperation in operation.ChildOperations)
                                 {
                                     visitInitializerValue(childOperation);
                                 }

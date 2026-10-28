@@ -1,0 +1,9 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <DefineConstants Condition="'$(ForceBreakingChange)' == 'true'">$(DefineConstants);ForceBreakingChange</DefineConstants>
+    <DefineConstants Condition="'$(AddNewMember)' == 'true'">$(DefineConstants);AddNewMember</DefineConstants>
+  </PropertyGroup>
+
+</Project>

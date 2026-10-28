@@ -1,5 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -62,46 +62,140 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         )
     {
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
+        var expectedIdentity = new PackageIdentity(packageId.ToString(), packageVersion);
+        string targetNupkgPath = versionFolderPathResolver.GetPackageFilePath(expectedIdentity.Id, expectedIdentity.Version);
+        string hashPath = versionFolderPathResolver.GetHashPath(expectedIdentity.Id, expectedIdentity.Version);
+        string metadataPath = versionFolderPathResolver.GetNupkgMetadataPath(expectedIdentity.Id, expectedIdentity.Version);
+        string packageDirectory = versionFolderPathResolver.GetInstallPath(expectedIdentity.Id, expectedIdentity.Version);
 
-        string? folderToDeleteOnFailure = null;
-        return TransactionalAction.Run(() =>
+        ConcurrencyUtilities.ExecuteWithFileLocked(targetNupkgPath, () =>
         {
-            var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
-                        includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
-
-            folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
-
-            // look for package on disk and read the version
-            NuGetVersion version;
-
-            using (FileStream packageStream = File.OpenRead(packagePath))
+            if (File.Exists(metadataPath))
             {
-                PackageArchiveReader reader = new(packageStream);
-                version = new NuspecReader(reader.GetNuspec()).GetVersion();
-
-                var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
-                var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
-                Directory.CreateDirectory(Path.GetDirectoryName(hashPath)!);
-                File.WriteAllText(hashPath, packageHash);
+                return;
             }
 
-            if (verbosity.IsDetailedOrDiagnostic())
+            if (File.Exists(hashPath))
             {
-                Reporter.Output.WriteLine($"Extracting package {packageId}@{packageVersion} to {packagePath}");
+                string packageHash = File.ReadAllText(hashPath);
+                using FileStream packageStream = File.OpenRead(targetNupkgPath);
+                using PackageArchiveReader reader = new(packageStream);
+                string contentHash = reader.GetContentHash(CancellationToken.None, () => packageHash);
+                PublishPackageMetadata(metadataPath, contentHash);
+                return;
             }
-            // Extract the package
-            var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
-            nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
 
-            return version;
-        }, rollback: () =>
-        {
-            //  If something fails, don't leave a folder with partial contents (such as a .nupkg but no hash or extracted contents)
-            if (folderToDeleteOnFailure != null && Directory.Exists(folderToDeleteOnFailure))
+            try
             {
-                Directory.Delete(folderToDeleteOnFailure, true);
+                var _downloadActivity = Activities.Source.StartActivity("download-tool");
+                _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
+                string packagePath = nugetPackageDownloader.DownloadPackageAsync(
+                    packageId,
+                    packageVersion,
+                    packageSourceLocation,
+                    includeUnlisted: includeUnlisted,
+                    downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
+                _downloadActivity?.Stop();
+
+                string packageHash;
+                string contentHash;
+                using (FileStream packageStream = File.OpenRead(packagePath))
+                {
+                    packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(packageStream));
+                    packageStream.Position = 0;
+                    using PackageArchiveReader reader = new(packageStream);
+                    PackageIdentity actualIdentity = reader.GetIdentity();
+                    if (!PackageIdentityComparer.Default.Equals(expectedIdentity, actualIdentity))
+                    {
+                        throw new PackagingException(
+                            $"The downloaded package identity '{actualIdentity}' does not match the requested package identity '{expectedIdentity}'.");
+                    }
+
+                    contentHash = reader.GetContentHash(CancellationToken.None, () => packageHash);
+                }
+
+                if (verbosity.IsDetailedOrDiagnostic())
+                {
+                    Reporter.Output.WriteLine($"Extracting package {packageId}@{packageVersion} to {packagePath}");
+                }
+
+                var _extractActivity = Activities.Source.StartActivity("extract-tool");
+                nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(packageDirectory)).ConfigureAwait(false).GetAwaiter().GetResult();
+                _extractActivity?.Stop();
+
+                // NuGet readers treat these files as completion markers, so publish them only after extraction succeeds.
+                PublishPackageHash(hashPath, packageHash);
+                PublishPackageMetadata(metadataPath, contentHash);
+            }
+            catch
+            {
+                // If something fails, don't leave a folder with partial contents.
+                if (Directory.Exists(packageDirectory))
+                {
+                    Directory.Delete(packageDirectory, true);
+                }
+
+                throw;
             }
         });
+
+        return packageVersion;
+    }
+
+    /// <summary>
+    /// Makes the package completion marker visible only after its complete contents have been written to a closed file.
+    /// </summary>
+    /// <remarks>The temporary file must be a sibling so the final move is atomic on the package file system.</remarks>
+    private void PublishPackageHash(string hashPath, string packageHash)
+    {
+        string hashDirectory = Path.GetDirectoryName(hashPath)!;
+        Directory.CreateDirectory(hashDirectory);
+        string temporaryHashPath = Path.Combine(hashDirectory, Path.GetRandomFileName());
+
+        try
+        {
+            File.WriteAllText(temporaryHashPath, packageHash);
+            MovePackageHash(temporaryHashPath, hashPath);
+        }
+        finally
+        {
+            File.Delete(temporaryHashPath);
+        }
+    }
+
+    /// <summary>
+    /// Defines the atomic publication point so tests can pause while only the completed temporary marker is visible.
+    /// </summary>
+    /// <remarks>The source and destination are sibling files; overrides must preserve that same-file-system move.</remarks>
+    protected virtual void MovePackageHash(string temporaryHashPath, string hashPath)
+    {
+        File.Move(temporaryHashPath, hashPath, overwrite: true);
+    }
+
+    /// <summary>
+    /// Publishes NuGet's canonical completion marker so other NuGet writers preserve the completed package.
+    /// </summary>
+    /// <remarks>The metadata is written to a sibling temporary file and moved last while the NuGet package lock is held.</remarks>
+    private static void PublishPackageMetadata(string metadataPath, string contentHash)
+    {
+        string metadataDirectory = Path.GetDirectoryName(metadataPath)!;
+        Directory.CreateDirectory(metadataDirectory);
+        string temporaryMetadataPath = Path.Combine(metadataDirectory, Path.GetRandomFileName());
+
+        try
+        {
+            NupkgMetadataFileFormat.Write(
+                temporaryMetadataPath,
+                new NupkgMetadataFile
+                {
+                    ContentHash = contentHash
+                });
+            File.Move(temporaryMetadataPath, metadataPath, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporaryMetadataPath);
+        }
     }
 
     protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)

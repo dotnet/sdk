@@ -12,16 +12,8 @@ internal static class AssetToCompress
 {
     public static bool TryFindInputFilePath(ITaskItem assetToCompress, TaskLoggingHelper log, out string fullPath)
     {
-        var relatedAssetOriginalItemSpec = assetToCompress.GetMetadata("RelatedAssetOriginalItemSpec");
-        if (File.Exists(relatedAssetOriginalItemSpec))
-        {
-            log.LogMessage(MessageImportance.Low, "Asset '{0}' found at original item spec '{1}'.",
-                assetToCompress.ItemSpec,
-                relatedAssetOriginalItemSpec);
-            fullPath = relatedAssetOriginalItemSpec;
-            return true;
-        }
-
+        // Check RelatedAsset first (the asset's Identity path) as it's more reliable.
+        // RelatedAssetOriginalItemSpec may point to a project file (e.g., .esproj) rather than the actual asset.
         var relatedAsset = assetToCompress.GetMetadata("RelatedAsset");
         if (File.Exists(relatedAsset))
         {
@@ -32,10 +24,20 @@ internal static class AssetToCompress
             return true;
         }
 
+        var relatedAssetOriginalItemSpec = assetToCompress.GetMetadata("RelatedAssetOriginalItemSpec");
+        if (File.Exists(relatedAssetOriginalItemSpec))
+        {
+            log.LogMessage(MessageImportance.Low, "Asset '{0}' found at original item spec '{1}'.",
+                assetToCompress.ItemSpec,
+                relatedAssetOriginalItemSpec);
+            fullPath = relatedAssetOriginalItemSpec;
+            return true;
+        }
+
         log.LogError("The asset '{0}' can not be found at any of the searched locations '{1}' and '{2}'.",
             assetToCompress.ItemSpec,
-            relatedAssetOriginalItemSpec,
-            relatedAsset);
+            relatedAsset,
+            relatedAssetOriginalItemSpec);
         fullPath = null;
         return false;
     }

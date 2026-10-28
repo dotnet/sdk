@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+
+  <PropertyGroup>
+    <CurrentTargetFramework Condition="'$(CurrentTargetFramework)' == ''">net$(NETCoreAppMaximumVersion)</CurrentTargetFramework>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <OverrideHtmlAssetPlaceholders>true</OverrideHtmlAssetPlaceholders>
+    <StaticWebAssetSpaFallbackEnabled>true</StaticWebAssetSpaFallbackEnabled>
+
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <GenerateTestingPlatformEntryPoint>false</GenerateTestingPlatformEntryPoint>
+
+    <_BlazorBrotliCompressionLevel>NoCompression</_BlazorBrotliCompressionLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Gateway" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" PrivateAssets="all" />
+    <PackageReference Include="MSTest" Version="$(MSTestVersion)" />
+  </ItemGroup>
+</Project>

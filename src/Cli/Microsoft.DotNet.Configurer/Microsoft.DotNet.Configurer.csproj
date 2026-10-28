@@ -5,10 +5,16 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">true</PublicSign>
+    <PublicSign Condition="'$([MSBuild]::IsOSPlatform(`Windows`))' == 'false'">true</PublicSign>
     <RepositoryType>git</RepositoryType>
     <DefineConstants Condition="'$(IncludeAspNetCoreRuntime)' == 'false'">$(DefineConstants);EXCLUDE_ASPNETCORE</DefineConstants>
     <IsPackable>true</IsPackable>
+
+    <!--
+      Mark as Native AOT compatible. This will enable relevant analyzers.
+      https://learn.microsoft.com/dotnet/core/deploying/native-aot/#aot-compatibility-analyzers
+    -->
+    <IsAotCompatible>true</IsAotCompatible>
   </PropertyGroup>
 
   <ItemGroup>

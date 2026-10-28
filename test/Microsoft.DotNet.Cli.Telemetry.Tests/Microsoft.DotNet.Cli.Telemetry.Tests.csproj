@@ -1,0 +1,17 @@
+﻿<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <!-- Exporter shutdown switches and SDK stats configuration are process-wide. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <Nullable>enable</Nullable>
+    <!-- Strong naming deprecated on .NET Core -->
+    <NoWarn>$(NoWarn);CS8002</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
+  </ItemGroup>
+
+</Project>

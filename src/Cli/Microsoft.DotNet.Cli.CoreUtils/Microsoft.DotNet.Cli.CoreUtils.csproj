@@ -6,4 +6,12 @@
     <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="dotnet" />
+    <InternalsVisibleTo Include="dotnet-aot" />
+    <InternalsVisibleTo Include="dotnet-aot.Tests" />
+    <InternalsVisibleTo Include="Microsoft.DotNet.Cli.Utils" />
+    <InternalsVisibleTo Include="Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver" Key="$(MicrosoftSharedPublicKey)" />
+  </ItemGroup>
 </Project>

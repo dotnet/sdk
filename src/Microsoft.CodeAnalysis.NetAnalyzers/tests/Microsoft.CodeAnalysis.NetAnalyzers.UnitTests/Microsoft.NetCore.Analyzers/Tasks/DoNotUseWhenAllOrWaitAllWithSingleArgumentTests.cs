@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Tasks.DoNotUseWhenAllOrWaitAllWithSingleArgument,
     Microsoft.NetCore.Analyzers.Tasks.DoNotUseWhenAllOrWaitAllWithSingleArgumentFixer>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {
+    [TestClass]
     public class DoNotUseWhenAllOrWaitAllWithSingleArgumentTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -92,7 +93,7 @@ namespace Test
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_VBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -167,7 +168,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_FixApplies_WhenAll_CSharpAsync()
         {
             var source = @"
@@ -251,10 +252,10 @@ class C
                 }
             };
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_FixApplies_WhenAll_VBAsync()
         {
             var code = @"
@@ -331,10 +332,10 @@ End Class";
                 }
             };
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_FixApplies_WaitAll_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -379,7 +380,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_FixApplies_WaitAll_VBAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

@@ -4,6 +4,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <DefaultItemExcludes>$(DefaultItemExcludes);src\**</DefaultItemExcludes>
   </PropertyGroup>
 
 </Project>

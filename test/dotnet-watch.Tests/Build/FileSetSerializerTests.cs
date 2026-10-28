@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias MSTestFramework;
+
 #nullable disable
 
 using System.Runtime.Serialization.Json;
@@ -10,9 +12,14 @@ using Microsoft.NET.Build.Tasks.UnitTests;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class FileSetSerializerTests(ITestOutputHelper output)
+[TestClass]
+public class FileSetSerializerTests
 {
-    private readonly TestAssetsManager _testAssetManager = new (output);
+    public TestContext TestContext { get; set; } = null!;
+    private DualOutputHelper _output;
+    private DualOutputHelper Output => _output ??= new(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
+    private TestAssetsManager _testAssetManager;
+    private TestAssetsManager TestAssetManager => _testAssetManager ??= new(Output);
 
     private static string Serialize(MSBuildFileSetResult fileSetResult, Stream stream)
     {
@@ -36,7 +43,7 @@ public class FileSetSerializerTests(ITestOutputHelper output)
         return reader.ReadToEnd();
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Roundtrip()
     {
         var result1 = new MSBuildFileSetResult()
@@ -101,10 +108,10 @@ public class FileSetSerializerTests(ITestOutputHelper output)
             """.Replace("\r\n", "\n"), serialized1.Replace("\r\n", "\n"));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Task()
     {
-        var dir = _testAssetManager.CreateTestDirectory().Path;
+        var dir = TestAssetManager.CreateTestDirectory().Path;
         var outputPath = Path.Combine(dir, "output.txt");
 
         var engine = new MockBuildEngine();
@@ -150,7 +157,7 @@ public class FileSetSerializerTests(ITestOutputHelper output)
         };
 
         var result = task.Execute();
-        Assert.True(result);
+        Assert.IsTrue(result);
 
         AssertEx.Equal("""
             {

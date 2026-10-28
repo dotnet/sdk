@@ -3,9 +3,11 @@
 
 namespace Microsoft.DotNet.Configurer.UnitTests
 {
+    [TestClass]
     public class GivenAPathCalculator
     {
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void It_does_not_return_same_path_for_tools_package_and_tool_shim()
         {
             // shim name will conflict with the folder that is PackageId, if commandName and packageId are the same.

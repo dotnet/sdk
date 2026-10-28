@@ -1,0 +1,66 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+using Microsoft.Build.Framework;
+
+namespace Microsoft.NET.Build.Tasks.UnitTests
+{
+    [TestClass]
+    public class GivenAGenerateToolsSettingsFile
+    {
+        private XDocument _generatedDocument = null;
+        public GivenAGenerateToolsSettingsFile()
+        {
+            _generatedDocument = GenerateToolsSettingsFile.GenerateDocument("tool.dll", "mytool",
+                commandRunner: null, runtimeIdentifier: null, toolPackageId: "mytool", toolPackageVersion: "1.0.0", Array.Empty<ITaskItem>());
+        }
+
+        [TestMethod]
+        public void It_puts_command_name_in_correct_place_of_the_file()
+        {
+            _generatedDocument
+                .Element("DotNetCliTool")
+                .Element("Commands")
+                .Element("Command")
+                .Attribute("Name")
+                .Value
+                .Should().Be("mytool");
+        }
+
+        [TestMethod]
+        public void It_puts_entryPoint_in_correct_place_of_the_file()
+        {
+            _generatedDocument
+                .Element("DotNetCliTool")
+                .Element("Commands")
+                .Element("Command")
+                .Attribute("EntryPoint")
+                .Value
+                .Should().Be("tool.dll");
+        }
+
+        [TestMethod]
+        public void It_puts_runner_as_dotnet()
+        {
+            _generatedDocument
+                .Element("DotNetCliTool")
+                .Element("Commands")
+                .Element("Command")
+                .Attribute("Runner")
+                .Value
+                .Should().Be("dotnet");
+        }
+
+        [TestMethod]
+        public void It_puts_format_version_in_correct_place_of_the_file()
+        {
+            _generatedDocument
+                .Element("DotNetCliTool")
+                .Attribute("Version")
+                .Value
+                .Should().Be("1");
+        }
+    }
+}

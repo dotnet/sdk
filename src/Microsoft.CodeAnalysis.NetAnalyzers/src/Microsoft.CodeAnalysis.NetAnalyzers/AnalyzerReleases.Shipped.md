@@ -284,7 +284,7 @@ CA2258 | Usage | Warning | DynamicInterfaceCastableImplementationUnsupported, [D
 
 Rule ID | Category | Severity | Notes
 --------|----------|----------|-------
-CA1801 | Usage | Disabled | ReviewUnusedParametersAnalyzer, [Documentation](https://learn.microsoft.com/visualstudio/code-quality/ca1801)
+CA1801 | Usage | Disabled | ReviewUnusedParametersAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1801)
 IL3000 | Publish | Disabled | Moved analyzer to mono/linker
 IL3001 | Publish | Disabled | Moved analyzer to mono/linker
 
@@ -309,8 +309,8 @@ CA2019 | Reliability | Info | UseThreadStaticCorrectly, [Documentation](https://
 CA2020 | Reliability | Info | PreventNumericIntPtrUIntPtrBehavioralChanges, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2020)
 CA2259 | Usage | Warning | UseThreadStaticCorrectly, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2259)
 CA2260 | Usage | Warning | ImplementGenericMathInterfacesCorrectly, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2260)
-CA5404 | Security | Disabled | DoNotDisableTokenValidationChecks, [Documentation](https://learn.microsoft.com/visualstudio/code-quality/ca5404)
-CA5405 | Security | Disabled | DoNotAlwaysSkipTokenValidationInDelegates, [Documentation](https://learn.microsoft.com/visualstudio/code-quality/ca5405)
+CA5404 | Security | Disabled | DoNotDisableTokenValidationChecks, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5404)
+CA5405 | Security | Disabled | DoNotAlwaysSkipTokenValidationInDelegates, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca5405)
 
 ## Release 8.0
 
@@ -322,7 +322,7 @@ CA1865 | Performance | Info | UseStringMethodCharOverloadWithSingleCharacters, [
 CA1866 | Performance | Info | UseStringMethodCharOverloadWithSingleCharacters, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1866)
 CA1867 | Performance | Disabled | UseStringMethodCharOverloadWithSingleCharacters, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1867)
 CA1868 | Performance | Info | DoNotGuardSetAddOrRemoveByContains, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1868)
-CA1869 | Performance | Info | AvoidSingleUseOfLocalJsonSerializerOptions, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/CA1869)
+CA1869 | Performance | Info | AvoidSingleUseOfLocalJsonSerializerOptions, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1869)
 CA2261 | Usage | Warning | DoNotUseConfigureAwaitWithSuppressThrowing, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2261)
 CA1510 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1510)
 CA1511 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1511)
@@ -330,14 +330,14 @@ CA1512 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](http
 CA1513 | Maintainability | Info | UseExceptionThrowHelpers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1513)
 CA1856 | Performance | Error | ConstantExpectedAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1856)
 CA1857 | Performance | Warning | ConstantExpectedAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1857)
-CA1858 | Performance | Info | UseStartsWithInsteadOfIndexOfComparisonWithZero, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858)
+CA1858 | Performance | Info | UseStartsWithInsteadOfIndexOfComparisonWithZero, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1858)
 CA1859 | Performance | Info | UseConcreteTypeAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859)
 CA1860 | Performance | Info | PreferLengthCountIsEmptyOverAnyAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860)
 CA1861 | Performance | Info | AvoidConstArrays, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1861)
 CA1862 | Performance | Info | RecommendCaseInsensitiveStringComparison, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1862)
 CA1863 | Performance | Hidden | UseCompositeFormatAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1863)
-CA1864 | Performance | Info | PreferDictionaryTryAddValueOverGuardedAddAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864)
-CA1870 | Performance | Info | UseSearchValuesAnalyzer, [Documentation](https://docs.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870)
+CA1864 | Performance | Info | PreferDictionaryTryAddValueOverGuardedAddAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864)
+CA1870 | Performance | Info | UseSearchValuesAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1870)
 CA2021 | Reliability | Warning | DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2021)
 
 ### Removed Rules
@@ -375,4 +375,4 @@ CA1875 | Performance | Info | UseRegexMembers, [Documentation](https://learn.mic
 CA2023 | Reliability | Warning | LoggerMessageDefineAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2023)
 CA2024 | Reliability | Warning | DoNotUseEndOfStreamInAsyncMethods, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2024)
 CA2025 | Reliability | Disabled | DoNotPassDisposablesIntoUnawaitedTasksAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2025)
-CA2266 | Usage | Warning | MissingShebangInFileBasedProgram
+CA2266 | Usage | Warning | MissingShebangInFileBasedProgram, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2266)

@@ -19,14 +19,13 @@ namespace Microsoft.NET.TestFramework
     /// starve the blame hang-dump collector's inactivity timer and trigger a spurious timeout.
     /// </para>
     /// <para>
-    /// Tail eviction is line-oriented: whole buffered lines (oldest first) are dropped to stay within
-    /// <c>maxTailCharacters</c>, so the retained tail is rounded to line boundaries rather than an exact
-    /// character count. To avoid the degenerate case where a short final line would otherwise evict a
-    /// much larger immediately-preceding line (collapsing the tail to almost nothing), the single oldest
-    /// line that straddles the budget boundary is trimmed from its front instead of dropped — its
-    /// trailing (most recent) portion is kept. A single <see cref="WriteLine(string)"/> larger than the
-    /// tail budget likewise keeps only its final <c>maxTailCharacters</c> characters. The net effect is
-    /// that the tail always retains close to <c>maxTailCharacters</c> of the most recent output.
+    /// Tail eviction is write-oriented: whole buffered writes (oldest first) are dropped to stay within
+    /// <c>maxTailCharacters</c>. To avoid the degenerate case where a short final write would otherwise
+    /// evict a much larger immediately-preceding write (collapsing the tail to almost nothing), the single
+    /// oldest write that straddles the budget boundary is trimmed from its front instead of dropped — its
+    /// trailing (most recent) portion is kept. A single write larger than the tail budget likewise keeps
+    /// only its final <c>maxTailCharacters</c> characters. The net effect is that the tail always retains
+    /// close to <c>maxTailCharacters</c> of the most recent output.
     /// </para>
     /// </remarks>
     public sealed class TruncatingTestOutputHelper : ITestOutputHelper, IDisposable
@@ -38,7 +37,7 @@ namespace Microsoft.NET.TestFramework
         private readonly int _maxHeadCharacters;
         private readonly int _maxTailCharacters;
         private readonly object _lock = new();
-        private readonly LinkedList<string> _tail = new();
+        private readonly LinkedList<(string Message, bool AppendNewLine)> _tail = new();
 
         private int _headCharactersWritten;
         private bool _headFull;
@@ -54,7 +53,17 @@ namespace Microsoft.NET.TestFramework
             _maxTailCharacters = maxTailCharacters;
         }
 
-        public void WriteLine(string message)
+        public string Output => _inner.Output;
+
+        public void Write(string message) => WriteCore(message, appendNewLine: false);
+
+        public void Write(string format, params object[] args) => Write(string.Format(format, args));
+
+        public void WriteLine(string message) => WriteCore(message, appendNewLine: true);
+
+        public void WriteLine(string format, params object[] args) => WriteLine(string.Format(format, args));
+
+        private void WriteCore(string message, bool appendNewLine)
         {
             message ??= string.Empty;
 
@@ -67,7 +76,7 @@ namespace Microsoft.NET.TestFramework
                     {
                         // Still within the head budget: forward immediately so the start of the output
                         // is preserved even if the test later throws before the tail is flushed.
-                        _inner.WriteLine(message);
+                        WriteToInner(message, appendNewLine);
                         _headCharactersWritten += message.Length;
                         if (_headCharactersWritten >= _maxHeadCharacters)
                         {
@@ -83,7 +92,7 @@ namespace Microsoft.NET.TestFramework
                     // tail below.
                     if (remainingHead > 0)
                     {
-                        _inner.WriteLine(message.Substring(0, remainingHead));
+                        WriteToInner(message.Substring(0, remainingHead), appendNewLine);
                         message = message.Substring(remainingHead);
                     }
 
@@ -91,11 +100,11 @@ namespace Microsoft.NET.TestFramework
                 }
 
                 // Past the head budget: keep only the most recent characters within the tail budget.
-                EnqueueTail(message);
+                EnqueueTail(message, appendNewLine);
             }
         }
 
-        private void EnqueueTail(string message)
+        private void EnqueueTail(string message, bool appendNewLine)
         {
             // If a single message is on its own larger than the entire tail budget, keep only its
             // final portion so the buffered tail can never exceed the bound.
@@ -105,31 +114,34 @@ namespace Microsoft.NET.TestFramework
                 message = message.Substring(message.Length - _maxTailCharacters);
             }
 
-            _tail.AddLast(message);
+            _tail.AddLast((message, appendNewLine));
             _tailCharacters += message.Length;
 
-            // Evict the oldest content to stay within the tail budget. Whole lines are dropped while a
-            // whole line can be removed without going under budget. The single oldest line that straddles
+            // Evict the oldest content to stay within the tail budget. Whole writes are dropped while a
+            // whole write can be removed without going under budget. The single oldest write that straddles
             // the boundary is trimmed from its front (keeping its most recent, trailing portion) rather
-            // than dropped, so a short final line can never discard a much larger recent line and leave
+            // than dropped, so a short final write can never discard a much larger recent write and leave
             // the tail nearly empty.
             while (_tailCharacters > _maxTailCharacters && _tail.Count > 0)
             {
-                string oldest = _tail.First!.Value;
+                (string Message, bool AppendNewLine) oldest = _tail.First!.Value;
                 int overBy = _tailCharacters - _maxTailCharacters;
 
-                if (oldest.Length <= overBy)
+                if (oldest.Message.Length <= overBy)
                 {
                     _tail.RemoveFirst();
-                    _tailCharacters -= oldest.Length;
-                    _omittedCharacters += oldest.Length;
-                    _omittedLines++;
+                    _tailCharacters -= oldest.Message.Length;
+                    _omittedCharacters += oldest.Message.Length;
+                    if (oldest.AppendNewLine)
+                    {
+                        _omittedLines++;
+                    }
                 }
                 else
                 {
-                    // Dropping this whole line would remove more than necessary, discarding recent
+                    // Dropping this whole write would remove more than necessary, discarding recent
                     // output. Trim just its leading (oldest) characters instead.
-                    _tail.First.Value = oldest.Substring(overBy);
+                    _tail.First.Value = (oldest.Message.Substring(overBy), oldest.AppendNewLine);
                     _tailCharacters -= overBy;
                     _omittedCharacters += overBy;
                     break;
@@ -137,7 +149,17 @@ namespace Microsoft.NET.TestFramework
             }
         }
 
-        public void WriteLine(string format, params object[] args) => WriteLine(string.Format(format, args));
+        private void WriteToInner(string message, bool appendNewLine)
+        {
+            if (appendNewLine)
+            {
+                _inner.WriteLine(message);
+            }
+            else
+            {
+                _inner.Write(message);
+            }
+        }
 
         /// <summary>
         /// Emits the buffered tail (see <see cref="WriteBufferedTail"/>). Disposing in a <c>using</c>
@@ -166,9 +188,9 @@ namespace Microsoft.NET.TestFramework
                     _inner.WriteLine($"... [{_omittedLines} lines / {_omittedCharacters} characters of output omitted by {nameof(TruncatingTestOutputHelper)}] ...");
                 }
 
-                foreach (string line in _tail)
+                foreach ((string Message, bool AppendNewLine) entry in _tail)
                 {
-                    _inner.WriteLine(line);
+                    WriteToInner(entry.Message, entry.AppendNewLine);
                 }
 
                 _tail.Clear();

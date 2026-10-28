@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
@@ -72,7 +73,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
             var installed = installedList.Select(id => id.ToString()).ToArray();
             ListOutput listOutput = new(installed, [.. updateAvailable]);
 
-            Reporter.WriteLine(JsonSerializer.Serialize(listOutput, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
+            Reporter.WriteLine(JsonSerializer.Serialize(listOutput, WorkloadListJsonSerializerContext.Default.ListOutput));
         }
         else
         {
@@ -162,3 +163,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
     internal record UpdateAvailableEntry(string ExistingManifestVersion, string AvailableUpdateManifestVersion,
         string Description, string WorkloadId);
 }
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
+[JsonSerializable(typeof(WorkloadListCommand.ListOutput))]
+internal partial class WorkloadListJsonSerializerContext : JsonSerializerContext;

@@ -1,6 +1,5 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
-//
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Nodes;
 
@@ -20,5 +19,12 @@ internal interface IBlobOperations
 
     public Task<JsonNode> GetJsonAsync(string repositoryName, string digest, CancellationToken cancellationToken);
 
-    public Task<Stream> GetStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    /// <summary>
+    /// Fetches the blob for <paramref name="digest"/> as a stream.
+    /// </summary>
+    /// <remarks>
+    /// Callers are responsible for checking stream contents against <paramref name="digest"/>.
+    /// <see cref="StreamExtensions.CopyToAndVerifyAsync"/> exists to help with this.
+    /// </remarks>
+    public Task<Stream> GetUnvalidatedStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken);
 }

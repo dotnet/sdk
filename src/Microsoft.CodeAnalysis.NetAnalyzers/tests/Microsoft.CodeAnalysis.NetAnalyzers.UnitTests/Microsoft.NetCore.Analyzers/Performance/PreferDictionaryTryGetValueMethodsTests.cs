@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,7 +8,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpPreferDictionaryTryMethodsOverContainsKeyGuardFixer>;
@@ -17,6 +17,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class PreferDictionaryTryGetValueMethodsTests
     {
         #region C# Tests
@@ -1331,29 +1332,29 @@ End Namespace";
 
         #endregion
 
-        [Theory]
-        [InlineData(GuardedPrintValue, GuardedPrintValueFixed, 2)]
-        [InlineData(GuardedReturn, GuardedReturnFixed)]
-        [InlineData(GuardedWithUnrelatedStatements, GuardedWithUnrelatedStatementsFixed)]
-        [InlineData(GuardedOutReference, GuardedOutReferenceFixed)]
-        [InlineData(GuardedAndCondition, GuardedAndConditionFixed, 2)]
-        [InlineData(GuardedOrCondition, GuardedOrConditionFixed, 2)]
-        [InlineData(GuardedWithThrow, GuardedWithThrowFixed)]
-        [InlineData(GuardedNestedDictionaryAccess, GuardedNestedDictionaryAccessFixed)]
-        [InlineData(GuardedTernary, GuardedTernaryTernaryFixed)]
-        [InlineData(GuardedTernaryTernarySquared, GuardedTernarySquaredFixed, 2)]
-        [InlineData(GuardedWithKeyLiteral, GuardedWithKeyLiteralFixed, 2)]
-        [InlineData(GuardedAddBeforeUsage, GuardedAddBeforeUsageFixed, 3)]
-        [InlineData(GuardedIndexerSetBeforeUsage, GuardedIndexerSetBeforeUsageFixed, 3)]
-        [InlineData(GuardedIndexerPostIncrement, GuardedIndexerPostIncrementFixed)]
-        [InlineData(GuardedIndexerPreIncrement, GuardedIndexerPreIncrementFixed)]
-        [InlineData(GuardedIndexerInSimpleAssignment, GuardedIndexerInSimpleAssignmentFixed)]
-        [InlineData(GuardedIndexerInCompoundAssignment, GuardedIndexerInCompoundAssignmentFixed)]
-        [InlineData(GuardedKeyInSimpleAssignment, GuardedKeyInSimpleAssignmentFixed)]
-        [InlineData(GuardedInlineVariable, GuardedInlineVariableFixed)]
-        [InlineData(GuardedInlineVariable2, GuardedInlineVariable2Fixed)]
-        [InlineData(GuardedReturnIdentifierUsed, GuardedReturnIdentifierUsedFixed)]
-        public Task ShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet, int additionalLocations = 1)
+        [TestMethod]
+        [DataRow(GuardedPrintValue, GuardedPrintValueFixed, 2)]
+        [DataRow(GuardedReturn, GuardedReturnFixed)]
+        [DataRow(GuardedWithUnrelatedStatements, GuardedWithUnrelatedStatementsFixed)]
+        [DataRow(GuardedOutReference, GuardedOutReferenceFixed)]
+        [DataRow(GuardedAndCondition, GuardedAndConditionFixed, 2)]
+        [DataRow(GuardedOrCondition, GuardedOrConditionFixed, 2)]
+        [DataRow(GuardedWithThrow, GuardedWithThrowFixed)]
+        [DataRow(GuardedNestedDictionaryAccess, GuardedNestedDictionaryAccessFixed)]
+        [DataRow(GuardedTernary, GuardedTernaryTernaryFixed)]
+        [DataRow(GuardedTernaryTernarySquared, GuardedTernarySquaredFixed, 2)]
+        [DataRow(GuardedWithKeyLiteral, GuardedWithKeyLiteralFixed, 2)]
+        [DataRow(GuardedAddBeforeUsage, GuardedAddBeforeUsageFixed, 3)]
+        [DataRow(GuardedIndexerSetBeforeUsage, GuardedIndexerSetBeforeUsageFixed, 3)]
+        [DataRow(GuardedIndexerPostIncrement, GuardedIndexerPostIncrementFixed)]
+        [DataRow(GuardedIndexerPreIncrement, GuardedIndexerPreIncrementFixed)]
+        [DataRow(GuardedIndexerInSimpleAssignment, GuardedIndexerInSimpleAssignmentFixed)]
+        [DataRow(GuardedIndexerInCompoundAssignment, GuardedIndexerInCompoundAssignmentFixed)]
+        [DataRow(GuardedKeyInSimpleAssignment, GuardedKeyInSimpleAssignmentFixed)]
+        [DataRow(GuardedInlineVariable, GuardedInlineVariableFixed)]
+        [DataRow(GuardedInlineVariable2, GuardedInlineVariable2Fixed)]
+        [DataRow(GuardedReturnIdentifierUsed, GuardedReturnIdentifierUsedFixed)]
+        public async Task ShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet, int additionalLocations = 1)
         {
             string testCode = CreateCSharpCode(codeSnippet);
             string fixedCode = CreateCSharpCode(fixedCodeSnippet);
@@ -1363,36 +1364,36 @@ End Namespace";
                 diagnostic = diagnostic.WithLocation(i);
             }
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = testCode,
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 ExpectedDiagnostics = { diagnostic },
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(InvalidModifiedBeforeUse)]
-        [InlineData(InvalidAddBeforeUse)]
-        [InlineData(InvalidRemoveBeforeUse)]
-        [InlineData(InvalidNonIDictionary)]
-        [InlineData(InvalidNotGuardedByContainsKey)]
-        [InlineData(InvalidModifyReference)]
-        [InlineData(InvalidDifferentKey)]
-        [InlineData(InvalidKeyChangedSimple)]
-        [InlineData(InvalidKeyChangedCompound)]
-        [InlineData(InvalidKeyChangedIncrement)]
-        [InlineData(InvalidOtherLiteral)]
-        [InlineData(InvalidEntryModified)]
-        [InlineData(InvalidEntryModifiedCoalesceAssignment, LanguageVersion.CSharp8)]
-        [InlineData(InvalidNotGuarded)]
-        [InlineData(InvalidArrayIndexerChanged)]
-        [InlineData(InvalidKeyChangedInCondition)]
-        [InlineData(InvalidKeyChangedAfterAdd)]
-        [InlineData(InvalidComplexPostIncrement)]
-        public Task ShouldNotReportDiagnostic(string codeSnippet, LanguageVersion version = LanguageVersion.Default)
+        [TestMethod]
+        [DataRow(InvalidModifiedBeforeUse)]
+        [DataRow(InvalidAddBeforeUse)]
+        [DataRow(InvalidRemoveBeforeUse)]
+        [DataRow(InvalidNonIDictionary)]
+        [DataRow(InvalidNotGuardedByContainsKey)]
+        [DataRow(InvalidModifyReference)]
+        [DataRow(InvalidDifferentKey)]
+        [DataRow(InvalidKeyChangedSimple)]
+        [DataRow(InvalidKeyChangedCompound)]
+        [DataRow(InvalidKeyChangedIncrement)]
+        [DataRow(InvalidOtherLiteral)]
+        [DataRow(InvalidEntryModified)]
+        [DataRow(InvalidEntryModifiedCoalesceAssignment, LanguageVersion.CSharp8)]
+        [DataRow(InvalidNotGuarded)]
+        [DataRow(InvalidArrayIndexerChanged)]
+        [DataRow(InvalidKeyChangedInCondition)]
+        [DataRow(InvalidKeyChangedAfterAdd)]
+        [DataRow(InvalidComplexPostIncrement)]
+        public async Task ShouldNotReportDiagnostic(string codeSnippet, LanguageVersion version = LanguageVersion.Default)
         {
             string testCode = CreateCSharpCode(codeSnippet);
 
@@ -1405,29 +1406,29 @@ End Namespace";
             if (version != default)
                 test.LanguageVersion = version;
 
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VbGuardedPrintValue, VbGuardedPrintValueFixed, 2)]
-        [InlineData(VbGuardedReturn, VbGuardedReturnFixed)]
-        [InlineData(VbGuardedWithUnrelatedStatements, VbGuardedWithUnrelatedStatementsFixed)]
-        [InlineData(VbGuardedAndCondition, VbGuardedAndConditionFixed, 2)]
-        [InlineData(VbGuardedOrCondition, VbGuardedOrConditionFixed, 2)]
-        [InlineData(VbGuardedNestedDictionaryAccess, VbGuardedNestedDictionaryAccessFixed)]
-        [InlineData(VbGuardedTernary, VbGuardedTernaryFixed)]
-        [InlineData(VbGuardedTernarySquared, VbGuardedTernarySquaredFixed, 2)]
-        [InlineData(VbGuardedWithKeyLiteral, VbGuardedWithKeyLiteralFixed, 2)]
-        [InlineData(VbGuardedWithKeyLiteralAndAccessWithExclamation, VbGuardedWithKeyLiteralAndAccessWithExclamationFixed)]
-        [InlineData(VbGuardedAddBeforeUsage, VbGuardedAddBeforeUsageFixed, 3)]
-        [InlineData(VbGuardedIndexerSetBeforeUsage, VbGuardedIndexerSetBeforeUsageFixed, 3)]
-        [InlineData(VbGuardedIndexerInSimpleAssignment, VbGuardedIndexerInSimpleAssignmentFixed)]
-        [InlineData(VbGuardedIndexerInCompoundAssignment, VbGuardedIndexerInCompoundAssignmentFixed)]
-        [InlineData(VbGuardedKeyInSimpleAssignment, VbGuardedKeyInSimpleAssignmentFixed)]
-        [InlineData(VbGuardedInlineVariable, VbGuardedInlineVariableFixed)]
-        [InlineData(VbGuardedInlineVariable2, VbGuardedInlineVariable2Fixed)]
-        [InlineData(VbGuardedReturnIdentifierUsed, VbGuardedReturnIdentifierUsedFixed)]
-        public Task VbShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet, int additionalLocations = 1)
+        [TestMethod]
+        [DataRow(VbGuardedPrintValue, VbGuardedPrintValueFixed, 2)]
+        [DataRow(VbGuardedReturn, VbGuardedReturnFixed)]
+        [DataRow(VbGuardedWithUnrelatedStatements, VbGuardedWithUnrelatedStatementsFixed)]
+        [DataRow(VbGuardedAndCondition, VbGuardedAndConditionFixed, 2)]
+        [DataRow(VbGuardedOrCondition, VbGuardedOrConditionFixed, 2)]
+        [DataRow(VbGuardedNestedDictionaryAccess, VbGuardedNestedDictionaryAccessFixed)]
+        [DataRow(VbGuardedTernary, VbGuardedTernaryFixed)]
+        [DataRow(VbGuardedTernarySquared, VbGuardedTernarySquaredFixed, 2)]
+        [DataRow(VbGuardedWithKeyLiteral, VbGuardedWithKeyLiteralFixed, 2)]
+        [DataRow(VbGuardedWithKeyLiteralAndAccessWithExclamation, VbGuardedWithKeyLiteralAndAccessWithExclamationFixed)]
+        [DataRow(VbGuardedAddBeforeUsage, VbGuardedAddBeforeUsageFixed, 3)]
+        [DataRow(VbGuardedIndexerSetBeforeUsage, VbGuardedIndexerSetBeforeUsageFixed, 3)]
+        [DataRow(VbGuardedIndexerInSimpleAssignment, VbGuardedIndexerInSimpleAssignmentFixed)]
+        [DataRow(VbGuardedIndexerInCompoundAssignment, VbGuardedIndexerInCompoundAssignmentFixed)]
+        [DataRow(VbGuardedKeyInSimpleAssignment, VbGuardedKeyInSimpleAssignmentFixed)]
+        [DataRow(VbGuardedInlineVariable, VbGuardedInlineVariableFixed)]
+        [DataRow(VbGuardedInlineVariable2, VbGuardedInlineVariable2Fixed)]
+        [DataRow(VbGuardedReturnIdentifierUsed, VbGuardedReturnIdentifierUsedFixed)]
+        public async Task VbShouldReportDiagnostic(string codeSnippet, string fixedCodeSnippet, int additionalLocations = 1)
         {
             string testCode = CreateVbCode(codeSnippet);
             string fixedCode = CreateVbCode(fixedCodeSnippet);
@@ -1437,39 +1438,39 @@ End Namespace";
                 diagnostic = diagnostic.WithLocation(i);
             }
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = testCode,
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 ExpectedDiagnostics = { diagnostic },
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VbInvalidModifiedBeforeUse)]
-        [InlineData(VbInvalidRemoveBeforeUse)]
-        [InlineData(VbInvalidNonIDictionary)]
-        [InlineData(VbInvalidNotGuardedByContainsKey)]
-        [InlineData(VbInvalidModifyReference)]
-        [InlineData(VbInvalidDifferentKey)]
-        [InlineData(VbInvalidKeyChangedSimple)]
-        [InlineData(VbInvalidKeyChangedCompound)]
-        [InlineData(VbInvalidOtherLiteral)]
-        [InlineData(VbInvalidNotGuarded)]
-        [InlineData(VbInvalidArrayIndexerChanged)]
-        [InlineData(VbInvalidKeyChangedAfterAdd)]
-        public Task VbShouldNotReportDiagnostic(string codeSnippet)
+        [TestMethod]
+        [DataRow(VbInvalidModifiedBeforeUse)]
+        [DataRow(VbInvalidRemoveBeforeUse)]
+        [DataRow(VbInvalidNonIDictionary)]
+        [DataRow(VbInvalidNotGuardedByContainsKey)]
+        [DataRow(VbInvalidModifyReference)]
+        [DataRow(VbInvalidDifferentKey)]
+        [DataRow(VbInvalidKeyChangedSimple)]
+        [DataRow(VbInvalidKeyChangedCompound)]
+        [DataRow(VbInvalidOtherLiteral)]
+        [DataRow(VbInvalidNotGuarded)]
+        [DataRow(VbInvalidArrayIndexerChanged)]
+        [DataRow(VbInvalidKeyChangedAfterAdd)]
+        public async Task VbShouldNotReportDiagnostic(string codeSnippet)
         {
             string testCode = CreateVbCode(codeSnippet);
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static readonly string[] s_DictionaryRefs = {
@@ -1489,9 +1490,9 @@ End Namespace";
             return from first in s_DictionaryRefs from second in s_DictionaryRefs select new object[] { first, second };
         }
 
-        [Theory]
-        [MemberData(nameof(GetDictionaryCombinations))]
-        public Task TestDictionaryReferences(string containsKeyRef, string indexerRef)
+        [TestMethod]
+        [DynamicData(nameof(GetDictionaryCombinations))]
+        public async Task TestDictionaryReferences(string containsKeyRef, string indexerRef)
         {
             string testCode = CreateCSharpCode($$"""
             string key = "key";
@@ -1505,11 +1506,12 @@ End Namespace";
 """);
             if (containsKeyRef != indexerRef)
             {
-                return new VerifyCS.Test
+                await new VerifyCS.Test
                 {
                     TestCode = testCode,
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-                }.RunAsync();
+                }.RunAsync(CancellationToken.None);
+                return;
             }
 
             string fixedCode = CreateCSharpCode($$"""
@@ -1524,18 +1526,18 @@ End Namespace";
 """);
 
             var diagnostic = VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(0).WithLocation(1);
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = testCode,
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(GetDictionaryCombinations))]
-        public Task VbTestDictionaryReferences(string containsKeyRef, string indexerRef)
+        [TestMethod]
+        [DynamicData(nameof(GetDictionaryCombinations))]
+        public async Task VbTestDictionaryReferences(string containsKeyRef, string indexerRef)
         {
             containsKeyRef = containsKeyRef.Replace('[', '(').Replace(']', ')');
             indexerRef = indexerRef.Replace('[', '(').Replace(']', ')');
@@ -1551,11 +1553,12 @@ End Namespace";
 """);
             if (containsKeyRef != indexerRef)
             {
-                return new VerifyVB.Test
+                await new VerifyVB.Test
                 {
                     TestCode = testCode,
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net60
-                }.RunAsync();
+                }.RunAsync(CancellationToken.None);
+                return;
             }
 
             string fixedCode = CreateVbCode($$"""
@@ -1573,16 +1576,16 @@ End Namespace";
 """);
 
             var diagnostic = VerifyVB.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(0).WithLocation(1);
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = testCode,
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, CombinatorialData]
+        [TestMethod, CombinatorialData]
         [WorkItem(6022, "https://github.com/dotnet/roslyn-analyzers/issues/6022")]
         public async Task TestVarPreference(bool preferVar)
         {
@@ -1632,14 +1635,14 @@ class C
     }}
 }}
 ",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("disable")]
-        [InlineData("enable")]
-        [InlineData("enable warnings")]
-        [InlineData("enable annotations")]
+        [TestMethod]
+        [DataRow("disable")]
+        [DataRow("enable")]
+        [DataRow("enable warnings")]
+        [DataRow("enable annotations")]
         public async Task TestReferenceNullableHandling(string nullableMode)
         {
             var useNullable = nullableMode is "enable" or "enable annotations";
@@ -1695,12 +1698,12 @@ class C
     }}
 }}",
                 LanguageVersion = LanguageVersion.CSharp8,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6589, "https://github.com/dotnet/roslyn-analyzers/issues/6589")]
-        public Task MultipleConditionsInIfStatement()
+        public async Task MultipleConditionsInIfStatement()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -1733,10 +1736,10 @@ namespace UnitTests {
                 .WithLocation(0)
                 .WithLocation(1);
 
-            return VerifyCS.VerifyCodeFixAsync(code, diagnostic, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, diagnostic, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(7098, "https://github.com/dotnet/roslyn-analyzers/issues/7098")]
         public async Task CodeFixPreservesStyle()
         {
@@ -1782,11 +1785,11 @@ namespace UnitTests {
                         .WithLocation(0)
                         .WithLocation(1),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7217, "https://github.com/dotnet/roslyn-analyzers/issues/7217")]
-        public Task WhenIndexerInIndirectContainsKeyClause_NoDiagnostic()
+        [TestMethod, WorkItem(7217, "https://github.com/dotnet/roslyn-analyzers/issues/7217")]
+        public async Task WhenIndexerInIndirectContainsKeyClause_NoDiagnostic()
         {
             const string code = """
                                 using System.Collections.Generic;
@@ -1818,11 +1821,11 @@ namespace UnitTests {
                                 }
                                 """;
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
-        public Task WhenDifferentPropertyInstanceContainingDictionary_NoDiagnostic()
+        [TestMethod, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
+        public async Task WhenDifferentPropertyInstanceContainingDictionary_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -1842,11 +1845,11 @@ namespace UnitTests {
                                 }
                                 """;
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
-        public Task WhenDifferentFieldInstanceContainingDictionary_NoDiagnostic()
+        [TestMethod, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
+        public async Task WhenDifferentFieldInstanceContainingDictionary_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -1866,11 +1869,11 @@ namespace UnitTests {
                                 }
                                 """;
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
-        public Task WhenDifferentLocalInstancesContainingDictionary_NoDiagnostic()
+        [TestMethod, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
+        public async Task WhenDifferentLocalInstancesContainingDictionary_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -1891,11 +1894,11 @@ namespace UnitTests {
                                 }
                                 """;
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
-        public Task WhenReferencingSameInstanceWithThisQualifier_Diagnostic()
+        [TestMethod, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
+        public async Task WhenReferencingSameInstanceWithThisQualifier_Diagnostic()
         {
             const string code = """
                                 using System;
@@ -1935,7 +1938,99 @@ namespace UnitTests {
                     .WithLocation(0)
                     .WithLocation(1);
 
-            return VerifyCS.VerifyCodeFixAsync(code, result, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, result, fixedCode);
+        }
+
+        [TestMethod]
+        public async Task NestedGuards_CSharp_FixAllIntroducesDistinctLocals()
+        {
+            string testCode = CreateCSharpCode(@"
+            string key = ""key"";
+            if ({|#0:parameter.ContainsKey(key)|})
+            {
+                if ({|#2:memberField.ContainsKey(key)|})
+                {
+                    Console.WriteLine({|#3:memberField[key]|});
+                }
+
+                Console.WriteLine({|#1:parameter[key]|});
+            }
+
+            return 0;");
+
+            string fixedCode = CreateCSharpCode(@"
+            string key = ""key"";
+            if (parameter.TryGetValue(key, out int value))
+            {
+                if (memberField.TryGetValue(key, out int value1))
+                {
+                    Console.WriteLine(value1);
+                }
+
+                Console.WriteLine(value);
+            }
+
+            return 0;");
+
+            await new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(0).WithLocation(1),
+                    VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(2).WithLocation(3)
+                },
+                DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NestedGuards_VisualBasic_FixAllIntroducesDistinctLocals()
+        {
+            string testCode = CreateVbCode(@"
+            Dim key As String = ""key""
+
+            If {|#0:parameter.ContainsKey(key)|} Then
+
+                If {|#2:memberField.ContainsKey(key)|} Then
+                    Console.WriteLine({|#3:memberField(key)|})
+                End If
+
+                Console.WriteLine({|#1:parameter(key)|})
+            End If
+
+            Return 0");
+
+            string fixedCode = CreateVbCode(@"
+            Dim key As String = ""key""
+
+            Dim value As Integer = Nothing
+            If parameter.TryGetValue(key, value) Then
+
+                Dim value1 As Integer = Nothing
+                If memberField.TryGetValue(key, value1) Then
+                    Console.WriteLine(value1)
+                End If
+
+                Console.WriteLine(value)
+            End If
+
+            Return 0");
+
+            await new VerifyVB.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(0).WithLocation(1),
+                    VerifyVB.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(2).WithLocation(3)
+                },
+                DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
+            }.RunAsync(CancellationToken.None);
         }
 
         private static string CreateCSharpCode(string content)

@@ -97,7 +97,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Imposta il valore di una variabile di ambiente. 
@@ -107,7 +107,7 @@ Crea la variabile se non esiste e la sostituisce se esiste.
 Esempi:
 -e VARIABLE=abc
 -e VARIABLE="valore con spazi"
--e VARIABLE="valore;delimitato da;punti e virgola"
+-e VARIABLE="valore;delimitato da punti e virgola"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -126,18 +126,18 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Imposta il valore di una variabile di ambiente. 
 Crea la variabile se non esiste e la sostituisce se esiste. 
 In questo modo forza l'esecuzione dei test in un processo isolato. 
-È possibile specificare più volte questo argomento per fornire più variabili.
+È possibile specificare più volte l'argomento per fornire più variabili.
 
 Esempi:
 -e VARIABLE=abc
 -e VARIABLE="valore con spazi"
--e VARIABLE="valore;delimitato da;punti e virgola"
+-e VARIABLE="valore; delimitato da punti e virgola"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />

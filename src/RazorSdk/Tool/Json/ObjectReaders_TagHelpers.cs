@@ -10,9 +10,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool.Json;
 
 internal static partial class ObjectReaders
 {
-    public static TagHelperDescriptor ReadTagHelper(JsonDataReader reader)
-        => reader.ReadNonNullObject(ReadTagHelperFromProperties);
-
     public static TagHelperDescriptor ReadTagHelperFromProperties(JsonDataReader reader)
     {
         var flags = (TagHelperFlags)reader.ReadByte(nameof(TagHelperDescriptor.Flags));
@@ -232,6 +229,7 @@ internal static partial class ObjectReaders
                 MetadataKind.Component => reader.ReadNonNullObjectOrDefault(propertyName, ReadComponentMetadata, defaultValue: ComponentMetadata.Default),
                 MetadataKind.EventHandler => reader.ReadNonNullObject(propertyName, ReadEventHandlerMetadata),
                 MetadataKind.ViewComponent => reader.ReadNonNullObject(propertyName, ReadViewComponentMetadata),
+                MetadataKind.AssetPath => reader.ReadNonNullObject(propertyName, ReadAssetPathMetadata),
                 _ => Assumed.Unreachable<MetadataObject>($"Unexpected MetadataKind '{metadataKind}'."),
             };
         }
@@ -258,7 +256,19 @@ internal static partial class ObjectReaders
                 IsDelegateSignature = reader.ReadBooleanOrFalse(nameof(PropertyMetadata.IsDelegateSignature)),
                 IsDelegateWithAwaitableResult = reader.ReadBooleanOrFalse(nameof(PropertyMetadata.IsDelegateWithAwaitableResult)),
                 IsGenericTyped = reader.ReadBooleanOrFalse(nameof(PropertyMetadata.IsGenericTyped)),
-                IsInitOnlyProperty = reader.ReadBooleanOrFalse(nameof(PropertyMetadata.IsInitOnlyProperty))
+                IsInitOnlyProperty = reader.ReadBooleanOrFalse(nameof(PropertyMetadata.IsInitOnlyProperty)),
+                AcceptsAssetPath = reader.ReadBooleanOrFalse(nameof(PropertyMetadata.AcceptsAssetPath))
+            };
+
+            return builder.Build();
+        }
+
+        static AssetPathMetadata ReadAssetPathMetadata(JsonDataReader reader)
+        {
+            var builder = new AssetPathMetadata.Builder
+            {
+                Element = reader.ReadNonNullString(nameof(AssetPathMetadata.Element)),
+                Attribute = reader.ReadNonNullString(nameof(AssetPathMetadata.Attribute))
             };
 
             return builder.Build();

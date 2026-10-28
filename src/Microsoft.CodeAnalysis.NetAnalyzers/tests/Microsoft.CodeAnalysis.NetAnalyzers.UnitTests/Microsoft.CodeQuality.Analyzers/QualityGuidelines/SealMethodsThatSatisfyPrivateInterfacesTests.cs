@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.SealMethodsThatSatisfyPrivateInterfacesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class SealMethodsThatSatisfyPrivateInterfacesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ClassesThatCannotBeSubClassedOutsideThisAssembly_HasNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -46,7 +47,7 @@ public class D : IFace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_VirtualImplicit_HasDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -64,7 +65,7 @@ public class C : IFace
 ", GetCSharpResultAt(9, 25));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_AbstractImplicit_HasDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -80,7 +81,7 @@ public abstract class C : IFace
 ", GetCSharpResultAt(9, 26));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_Explicit_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -98,7 +99,7 @@ public class C : IFace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_NoInterface_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -111,7 +112,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_StructImplicit_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -129,7 +130,7 @@ public class C : IFace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_PublicInterface_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -147,7 +148,7 @@ public class C : IFace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_OverriddenFromBase_HasDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -170,7 +171,7 @@ public class C : B, IFace
 ", GetCSharpResultAt(14, 26));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_OverriddenFromBaseButMethodIsSealed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -193,7 +194,7 @@ public class C : B, IFace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_OverriddenFromBaseButClassIsSealed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -216,7 +217,7 @@ public sealed class C : B, IFace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ImplicitlyImplementedFromBaseMember_HasDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -238,7 +239,7 @@ public class C : B, IFace
 ", GetCSharpResultAt(14, 14));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ImplicitlyImplementedFromBaseMember_Public_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -260,7 +261,7 @@ class C : B, IFace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVB_Overridable_HasDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -277,7 +278,7 @@ End Class
 ", GetBasicResultAt(9, 28));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVB_MustOverride_HasDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -293,7 +294,7 @@ End Class
 ", GetBasicResultAt(9, 29));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVB_OverridenFromBase_HasDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -315,7 +316,7 @@ End Class
 ", GetBasicResultAt(14, 26));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVB_OverridenFromBaseButNotOverridable_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -337,7 +338,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVB_NotExplicit_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -356,7 +357,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVB_PrivateMethod_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -373,7 +374,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVB_PublicMethod_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -390,7 +391,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVB_FriendMethod_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -407,7 +408,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestVB_PublicInterface_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -424,7 +425,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(4406, "https://github.com/dotnet/roslyn-analyzers/issues/4406")]
+        [TestMethod, WorkItem(4406, "https://github.com/dotnet/roslyn-analyzers/issues/4406")]
         public async Task CA2119_ExtendedInterfaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -467,7 +468,7 @@ End Namespace");
 
         // sealed overrides - no diagnostic
 
-        [Fact, WorkItem(4566, "https://github.com/dotnet/roslyn-analyzers/issues/4566")]
+        [TestMethod, WorkItem(4566, "https://github.com/dotnet/roslyn-analyzers/issues/4566")]
         public async Task CA2119_BaseClassInterface_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

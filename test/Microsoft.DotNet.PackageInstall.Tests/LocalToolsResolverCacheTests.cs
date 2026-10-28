@@ -10,11 +10,10 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
+    [TestClass]
     public class LocalToolsResolverCacheTests : SdkTest
     {
-        public LocalToolsResolverCacheTests(ITestOutputHelper log) : base(log)
-        {
-        }
+        public LocalToolsResolverCacheTests() { }
 
         private static
             (DirectoryPath nuGetGlobalPackagesFolder,
@@ -33,7 +32,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             return (nuGetGlobalPackagesFolder, localToolsResolverCache);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenExecutableIdentifierItCanSaveAndCannotLoadWithMismatches()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -73,7 +72,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenExecutableIdentifierItCanSaveAndLoad()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -107,7 +106,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             tool2.Should().BeEquivalentTo(restoredCommands[1]);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenExecutableIdentifierItCanSaveMultipleSameAndLoadContainsOnlyOne()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -147,7 +146,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             tool2.Should().BeEquivalentTo(restoredCommands[1]);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenExecutableIdentifierItCanSaveMultipleVersionAndLoad()
         {
             (DirectoryPath nuGetGlobalPackagesFolder, LocalToolsResolverCache localToolsResolverCache) = Setup();
@@ -197,7 +196,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             tool2Newer.Should().BeEquivalentTo(restoredCommandsNewer[1]);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTheCacheIsCorruptedByAppendingLineItShouldLoadAsEmpty()
         {
             WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
@@ -207,7 +206,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTheCacheIsCorruptedByNotAJsonItShouldLoadAsEmpty()
         {
             WhenTheCacheIsCorruptedItShouldLoadAsEmpty(
@@ -219,7 +218,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTheCacheIsCorruptedItShouldNotAffectNextSaveAndLoad()
         {
             IFileSystem fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();

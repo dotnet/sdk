@@ -9,8 +9,18 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
     /// Implements the composite pattern, group the list of <see cref="ISymbol"/> and interact with them
     /// the same way as a single instance of a <see cref="ISymbol"/> object.
     /// </summary>
-    public sealed class CompositeSymbolFilter(params IEnumerable<ISymbolFilter> filters) : ISymbolFilter
+    /// <param name="mode">Determines how the inner filters are combined. Defaults to <see cref="CompositeSymbolFilterMode.And"/>.</param>
+    /// <param name="filters">The inner filters to combine.</param>
+    public sealed class CompositeSymbolFilter(CompositeSymbolFilterMode mode = CompositeSymbolFilterMode.And,
+        params IEnumerable<ISymbolFilter> filters) : ISymbolFilter
     {
+        /// <summary>
+        /// Determines how the inner filters are combined. <see cref="CompositeSymbolFilterMode.And"/> requires all
+        /// filters to include a symbol, while <see cref="CompositeSymbolFilterMode.Or"/> includes a symbol if any
+        /// filter includes it.
+        /// </summary>
+        public CompositeSymbolFilterMode Mode { get; } = mode;
+
         /// <summary>
         /// List on inner filters.
         /// </summary>
@@ -21,7 +31,12 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         /// </summary>
         /// <param name="symbol"><see cref="ISymbol"/> to evaluate.</param>
         /// <returns>True to include the <paramref name="symbol"/> or false to filter it out.</returns>
-        public bool Include(ISymbol symbol) => Filters.All(f => f.Include(symbol));
+        public bool Include(ISymbol symbol) => Mode switch
+        {
+            CompositeSymbolFilterMode.And => Filters.All(f => f.Include(symbol)),
+            CompositeSymbolFilterMode.Or => Filters.Any(f => f.Include(symbol)),
+            _ => throw new InvalidOperationException()
+        };
 
         /// <summary>
         /// Add a filter object to a list of filters.
@@ -33,5 +48,21 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
             Filters.Add(filter);
             return this;
         }
+    }
+
+    /// <summary>
+    /// Determines how the inner filters of a <see cref="CompositeSymbolFilter"/> are combined.
+    /// </summary>
+    public enum CompositeSymbolFilterMode
+    {
+        /// <summary>
+        /// All filters must include a symbol for it to be included.
+        /// </summary>
+        And,
+
+        /// <summary>
+        /// Any filter can include a symbol for it to be included.
+        /// </summary>
+        Or
     }
 }

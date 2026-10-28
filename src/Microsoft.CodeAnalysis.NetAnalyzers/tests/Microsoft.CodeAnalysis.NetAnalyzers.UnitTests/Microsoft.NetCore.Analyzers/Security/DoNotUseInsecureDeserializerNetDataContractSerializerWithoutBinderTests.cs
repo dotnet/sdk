@@ -1,10 +1,10 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureDeserializerNetDataContractSerializerWithoutBinder,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,7 +14,8 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestClass]
     public class DoNotUseInsecureDeserializerNetDataContractSerializerWithoutBinderTests
     {
         private static readonly DiagnosticDescriptor BinderNotSetRule = DoNotUseInsecureDeserializerNetDataContractSerializerWithoutBinder.RealBinderDefinitelyNotSetDescriptor;
@@ -58,10 +59,10 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -103,7 +104,7 @@ public class ExampleClass
                 GetCSharpResultAt(33, 33, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
@@ -140,7 +141,7 @@ End Class",
                 GetBasicResultAt(28, 26, BinderNotSetRule, "Function NetDataContractSerializer.Deserialize(stream As Stream) As Object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Solution_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -202,7 +203,7 @@ public class ExampleClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Solution_NoDiagnosticAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
@@ -256,7 +257,7 @@ Public Class ExampleClass
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -299,7 +300,7 @@ public class ExampleClass
                 GetCSharpResultAt(34, 33, BinderMaybeNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_VB_Violation_DiagnosticAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
@@ -337,7 +338,7 @@ End Class",
                 GetBasicResultAt(29, 26, BinderMaybeNotSetRule, "Function NetDataContractSerializer.Deserialize(stream As Stream) As Object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -405,7 +406,7 @@ public class ExampleClass
                 GetCSharpResultAt(59, 33, BinderMaybeNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_VB_Violation_DiagnosticAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
@@ -465,7 +466,7 @@ End Class",
                 GetBasicResultAt(51, 26, BinderMaybeNotSetRule, "Function NetDataContractSerializer.Deserialize(stream As Stream) As Object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_CSharp_Solution_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -535,7 +536,7 @@ public class ExampleClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_VB_Solution_NoDiagnosticAsync()
         {
             await VerifyBasicAnalyzerAsync(@"
@@ -596,7 +597,7 @@ Public Class ExampleClass
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -618,7 +619,7 @@ namespace Blah
         }
 
         // Ideally, we'd detect that serializer.Binder is always null.
-        [Fact]
+        [TestMethod]
         public async Task DeserializeWithInstanceField_Diagnostic_NotIdealAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -640,7 +641,7 @@ namespace Blah
             GetCSharpResultAt(13, 20, BinderMaybeNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_BinderMaybeSet_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -667,7 +668,7 @@ namespace Blah
             GetCSharpResultAt(18, 20, BinderMaybeNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_BinderSet_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -689,7 +690,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TwoDeserializersOneBinderOnFirst_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -719,7 +720,7 @@ namespace Blah
                 GetCSharpResultAt(20, 24, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TwoDeserializersOneBinderOnSecond_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -748,7 +749,7 @@ namespace Blah
 
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TwoDeserializersNoBinder_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -778,7 +779,7 @@ namespace Blah
 
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BinderSetInline_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -798,7 +799,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serialize_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -820,7 +821,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_InvokedAsDelegate_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -844,7 +845,7 @@ namespace Blah
                 GetCSharpResultAt(15, 20, BinderNotSetRule, "object NetDataContractSerializer.Deserialize(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadObject_Stream_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -865,7 +866,7 @@ namespace Blah
             GetCSharpResultAt(12, 20, BinderNotSetRule, "object XmlObjectSerializer.ReadObject(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadObject_Stream_BinderMaybeSet_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -892,7 +893,7 @@ namespace Blah
             GetCSharpResultAt(18, 20, BinderMaybeNotSetRule, "object XmlObjectSerializer.ReadObject(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadObject_Stream_BinderSet_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -914,7 +915,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadObject_Stream_InvokedAsDelegate_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -938,7 +939,7 @@ namespace Blah
                 GetCSharpResultAt(15, 20, BinderNotSetRule, "object XmlObjectSerializer.ReadObject(Stream stream)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadObject_XmlReader_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -960,7 +961,7 @@ namespace Blah
             GetCSharpResultAt(13, 20, BinderNotSetRule, "object NetDataContractSerializer.ReadObject(XmlReader reader)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadObject_XmlReader_BinderMaybeSet_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -988,7 +989,7 @@ namespace Blah
             GetCSharpResultAt(19, 20, BinderMaybeNotSetRule, "object NetDataContractSerializer.ReadObject(XmlReader reader)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadObject_XmlReader_BinderSet_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerWithMyBinderDefinedAsync(@"
@@ -1011,7 +1012,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadObject_XmlReader_InvokedAsDelegate_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -1049,7 +1050,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyBasicAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -1065,7 +1066,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

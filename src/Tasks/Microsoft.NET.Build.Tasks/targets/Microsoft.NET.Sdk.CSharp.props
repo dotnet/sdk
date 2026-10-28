@@ -29,6 +29,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <Using Include="System.IO" />
     <Using Include="System.Linq" />
     <Using Include="System.Net.Http" Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'"/>
+    <Using Include="System.Net.Http.Json" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' And $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))" />
     <Using Include="System.Threading" />
     <Using Include="System.Threading.Tasks" />
   </ItemGroup>

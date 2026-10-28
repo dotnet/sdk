@@ -5,7 +5,6 @@
 
 using System.Diagnostics;
 using System.IO.Pipes;
-using System.Reflection;
 using System.Runtime.Versioning;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
@@ -37,8 +36,10 @@ internal sealed class InstallClientElevationContext(ISynchronizingLogger logger)
 
             // Use the path of the current host, otherwise we risk resolving against the wrong SDK version.
             // To trigger UAC, UseShellExecute must be true and Verb must be "runas".
-            ProcessStartInfo startInfo = new($@"""{Environment.ProcessPath}""",
-                    $@"""{Assembly.GetExecutingAssembly().Location}"" workload elevate --client-temp ""{clientTemp}""")
+            string currentProcessPath = Environment.ProcessPath
+                ?? throw new InvalidOperationException("Unable to determine the path to the current dotnet process.");
+
+            ProcessStartInfo startInfo = new(currentProcessPath, $@"workload elevate --client-temp ""{clientTemp}""")
             {
                 Verb = "runas",
                 UseShellExecute = true,

@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.Cli.Utils
 {
+    [TestClass]
     public class DotDefaultPathCorrectorTests
     {
-        [Fact]
+        [TestMethod]
         public void ItCanCorrectDotDefaultPath()
         {
             var existingPath = @"C:\Users\myname\AppData\Local\Microsoft\WindowsApps;C:\Users\myname\.dotnet\tools";
@@ -13,21 +14,21 @@ namespace Microsoft.DotNet.Cli.Utils
             correctPath.Should().Be(@"%USERPROFILE%\AppData\Local\Microsoft\WindowsApps");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanTellNoCorrectionNeeded()
         {
             var existingPath = @"C:\Users\myname\AppData\Local\Microsoft\WindowsApps;";
             DotDefaultPathCorrector.NeedCorrection(existingPath, out string _).Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenEmptyItCanTellNoCorrectionNeeded()
         {
             var existingPath = "";
             DotDefaultPathCorrector.NeedCorrection(existingPath, out string _).Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenSubsequencePathItCanCorrectDotDefaultPath()
         {
             var existingPath =
@@ -36,7 +37,7 @@ namespace Microsoft.DotNet.Cli.Utils
             correctPath.Should().Be(@"%USERPROFILE%\AppData\Local\Microsoft\WindowsApps;%USERPROFILE%\other");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenSubsequencePathWithExtraFormatItCanCorrectDotDefaultPath()
         {
             var existingPath =
@@ -45,14 +46,14 @@ namespace Microsoft.DotNet.Cli.Utils
             correctPath.Should().Be(@"%USERPROFILE%\AppData\Local\Microsoft\WindowsApps;%USERPROFILE%\other");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoToolPathItCanTellNoCorrectionNeeded()
         {
             var existingPath = @"C:\Users\myname\AppData\Local\Microsoft\WindowsApps;C:\Users\myname\other";
             DotDefaultPathCorrector.NeedCorrection(existingPath, out string _).Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void Given2InstallationItCanCorrectDotDefaultPath()
         {
             var existingPath = @"C:\Users\user1\AppData\Local\Microsoft\WindowsApps;C:\Users\user2\AppData\otherapp;C:\Users\user1\.dotnet\tools;C:\Users\user2\.dotnet\tools";

@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumStorageShouldBeInt32Analyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpEnumStorageShouldBeInt32Fixer>;
@@ -11,10 +11,11 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EnumStorageShouldBeInt32FixerTests
     {
         #region CSharpUnitTests
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithNoTriviaAsync()
         {
             var code = @"
@@ -42,7 +43,7 @@ namespace Test
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithTriviaAsync()
         {
             var code = @"
@@ -73,7 +74,7 @@ namespace Test
 
         #region BasicUnitTests
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithNoTriviaAsync()
         {
             var code = @"
@@ -97,7 +98,7 @@ End Module
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithTriviaAsync()
         {
             var code = @"
@@ -117,6 +118,82 @@ Public Module Module1
         Value2 = 2
     End Enum
 End Module
+";
+            await VerifyVB.VerifyCodeFixAsync(code, fix);
+        }
+
+        [TestMethod]
+        public async Task CSharp_CA1028_FixAllRewritesEveryEnumAsync()
+        {
+            var code = @"
+using System;
+namespace Test
+{
+    public class Outer
+    {
+        public enum [|Nested|]: byte
+        {
+            Value1 = 1
+        }
+    }
+
+    public enum [|TopLevel|]: long
+    {
+        Value1 = 1
+    }
+}
+";
+            var fix = @"
+using System;
+namespace Test
+{
+    public class Outer
+    {
+        public enum Nested
+        {
+            Value1 = 1
+        }
+    }
+
+    public enum TopLevel
+    {
+        Value1 = 1
+    }
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(code, fix);
+        }
+
+        [TestMethod]
+        public async Task Basic_CA1028_FixAllRewritesEveryEnumAsync()
+        {
+            var code = @"
+Imports System
+Namespace Test
+    Public Class Outer
+        Public Enum [|Nested|] As Byte
+            Value1 = 1
+        End Enum
+    End Class
+
+    Public Enum [|TopLevel|] As Long
+        Value1 = 1
+    End Enum
+End Namespace
+";
+            var fix = @"
+Imports System
+Namespace Test
+    Public Class Outer
+        Public Enum Nested 
+            Value1 = 1
+        End Enum
+    End Class
+
+    Public Enum TopLevel 
+        Value1 = 1
+    End Enum
+End Namespace
 ";
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }

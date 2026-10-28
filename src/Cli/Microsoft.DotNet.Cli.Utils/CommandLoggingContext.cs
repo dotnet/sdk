@@ -12,12 +12,14 @@ public static class CommandLoggingContext
     {
         private const string Prefix = "DOTNET_CLI_CONTEXT_";
         public static readonly string Verbose = Prefix + "VERBOSE";
+        public static readonly string VerboseToStdErr = Prefix + "VERBOSE_TO_STDERR";
         internal static readonly string Output = Prefix + "OUTPUT";
         internal static readonly string Error = Prefix + "ERROR";
         internal static readonly string AnsiPassThru = Prefix + "ANSI_PASS_THRU";
     }
 
     private static Lazy<bool> s_verbose = new(() => Env.GetEnvironmentVariableAsBool(Variables.Verbose));
+    private static Lazy<bool> s_verboseToStdErr = new(() => Env.GetEnvironmentVariableAsBool(Variables.VerboseToStdErr));
     private static Lazy<bool> s_output = new(() => Env.GetEnvironmentVariableAsBool(Variables.Output, true));
     private static Lazy<bool> s_error = new(() => Env.GetEnvironmentVariableAsBool(Variables.Error, true));
     private static readonly Lazy<bool> s_ansiPassThru = new(() => Env.GetEnvironmentVariableAsBool(Variables.AnsiPassThru));
@@ -26,6 +28,11 @@ public static class CommandLoggingContext
     /// True if the verbose output is enabled.
     /// </summary>
     public static bool IsVerbose => s_verbose.Value;
+
+    /// <summary>
+    /// True if verbose output should go to stderr instead of stdout.
+    /// </summary>
+    public static bool IsVerboseToStdErr => s_verboseToStdErr.Value;
 
     public static bool ShouldPassAnsiCodesThrough => s_ansiPassThru.Value;
 
@@ -38,6 +45,17 @@ public static class CommandLoggingContext
     public static void SetVerbose(bool value)
     {
         s_verbose = new Lazy<bool>(() => value);
+    }
+
+    /// <summary>
+    /// Sets or resets the verbose-to-stderr output.
+    /// </summary>
+    /// <remarks>
+    /// After calling, consider calling <see cref="Reporter.Reset()"/> to apply change to reporter.
+    /// </remarks>
+    public static void SetVerboseToStdErr(bool value)
+    {
+        s_verboseToStdErr = new Lazy<bool>(() => value);
     }
 
     /// <summary>

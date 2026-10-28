@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.Maintainability.AvoidLengthCalculationWhenSlicingToEndAnalyzer,
     Microsoft.CodeQuality.Analyzers.Maintainability.AvoidLengthCalculationWhenSlicingToEndFixer>;
@@ -12,13 +12,14 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
+    [TestClass]
     public class AvoidLengthCalculationWhenSlicingToEndTests
     {
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task ConstantLiteralSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -46,11 +47,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task ConstantLiteralsSumEqualSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -78,11 +79,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task ConstantSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -114,11 +115,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task FieldSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -150,11 +151,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task FieldWithInstanceReferenceSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -186,11 +187,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task LocalSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -220,11 +221,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task ParameterSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -252,11 +253,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task AutoPropertySubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -288,11 +289,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task AutoPropertyWithInstanceReferenceSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -324,11 +325,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task ExplicitPropertySubtracted_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -352,11 +353,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task MethodSubtracted_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -378,11 +379,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task SupportedUnaryOperator_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -410,11 +411,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task UnsupportedUnaryOperator_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -431,11 +432,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task SupportedBinaryOperator_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -483,11 +484,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task UnsupportedBinaryOperator_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -511,11 +512,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentConstantLiteralSubtracted_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -532,11 +533,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentConstantSubtracted_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -556,11 +557,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentFieldSubtracted_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -580,11 +581,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentLocalSubtracted_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -603,11 +604,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentParameterSubtracted_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -624,11 +625,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentAutoPropertySubtracted_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -648,11 +649,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentLengthPropertySubtracted_NoDiagnostic_CS(string type)
         {
             string source = $$"""
@@ -669,11 +670,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task ZeroAsStartNothingSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -701,11 +702,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task AdditionalParenthesis_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -733,11 +734,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task NestedConstantsSubtracted_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -769,10 +770,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task NamedArguments_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -800,10 +801,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task NamedArgumentsSwapped_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -831,10 +832,10 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("System.Span<char>")]
-        [InlineData("System.ReadOnlySpan<char>")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("System.Span<char>")]
+        [DataRow("System.ReadOnlySpan<char>")]
+        [DataRow("System.Memory<char>")]
         public async Task TriviaIsPreserved_OffersFixer_CS(string type)
         {
             string source = $$"""
@@ -864,7 +865,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StringLiteralSubstring_OffersFixer_CS()
         {
             string source = $$"""
@@ -890,9 +891,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task ConstantLiteralSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -916,9 +917,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task ConstantLiteralsSumEqualSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -942,9 +943,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task ConstantSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -972,9 +973,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task FieldSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1002,9 +1003,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task FieldWithInstanceReferenceSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1032,9 +1033,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task LocalSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1060,9 +1061,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task ParameterSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1086,9 +1087,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task AutoPropertySubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1116,9 +1117,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task AutoPropertyWithInstanceReferenceSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1146,9 +1147,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task ExplicitPropertySubtracted_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1171,9 +1172,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task MethodSubtracted_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1194,9 +1195,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task SupportedUnaryOperator_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1220,9 +1221,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task SupportedBinaryOperator_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1266,9 +1267,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task UnsupportedBinaryOperator_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1293,9 +1294,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentConstantLiteralSubtracted_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1310,9 +1311,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentConstantSubtracted_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1330,9 +1331,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentFieldSubtracted_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1350,9 +1351,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentLocalSubtracted_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1370,9 +1371,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentParameterSubtracted_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1387,9 +1388,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentAutoPropertySubtracted_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1407,9 +1408,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task DifferentLengthPropertySubtracted_NoDiagnostic_VB(string type)
         {
             string source = $$"""
@@ -1424,9 +1425,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task ZeroAsStartNothingSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1450,9 +1451,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task AdditionalParenthesis_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1476,9 +1477,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task NestedConstantsSubtracted_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1502,7 +1503,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArguments_OffersFixer_VB()
         {
             string source = $$"""
@@ -1526,7 +1527,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NamedArgumentsSwapped_OffersFixer_VB()
         {
             string source = $$"""
@@ -1550,9 +1551,9 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Theory]
-        [InlineData("string")]
-        [InlineData("System.Memory<char>")]
+        [TestMethod]
+        [DataRow("string")]
+        [DataRow("System.Memory<char>")]
         public async Task TriviaIsPreserved_OffersFixer_VB(string type)
         {
             string source = $$"""
@@ -1578,7 +1579,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StringLiteralSubstring_OffersFixer_VB()
         {
             string source = $$"""

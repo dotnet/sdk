@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.Commands.Tool.List;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolListLocalCommandTests
     {
         private readonly ParseResult _parseResult;
@@ -54,7 +55,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenManifestInspectorItPrintsTheTable()
         {
             _defaultToolListLocalCommand.Execute();
@@ -69,7 +70,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Contain(l => l.Contains("foo-bar"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenManifestInspectorItPrintsJson()
         {
             new ToolListLocalCommand(
@@ -94,7 +95,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             versionedData.Data[1].Manifest.Should().Be(_testManifestPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenManifestInspectorWhenCalledFromRedirectCommandItPrintsTheTable()
         {
             var command = new ToolListCommand(result: _parseResult,
@@ -111,7 +112,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Contain(l => l.Contains("foo-bar"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenPackageIdArgumentItPrintsTheCorrectPackageInfo()
         {
             CreateCommandWithArg("package.id").Execute().Should().Be(0);
@@ -122,7 +123,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Contain(l => l.Contains("package-name"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNotInstalledPackageItPrintsEmpty()
         {
             CreateCommandWithArg("not-installed-package").Execute().Should().Be(1);

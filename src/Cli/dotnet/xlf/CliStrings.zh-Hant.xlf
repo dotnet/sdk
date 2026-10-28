@@ -465,6 +465,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">MSBuild 伺服器</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManagedFallbackCouldNotBeLocated">
+        <source>The managed fallback could not be located. Expected '{0}' and '{1}'.</source>
+        <target state="translated">找不到受控後援。預期為 '{0}' 和 '{1}'。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestHasMarkOfTheWeb">
         <source>File {0} came from another computer and might be blocked to help protect this computer. For more information, including how to unblock, see https://aka.ms/motw</source>
         <target state="translated">檔案 {0} 來自另一部電腦，但此電腦可能已封鎖而加以保護。如需詳細資訊，包括如何解除封鎖，請參閱 https://aka.ms/motw</target>
@@ -496,8 +501,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="MissingToolSettingsFile">
-        <source>Settings file 'DotnetToolSettings.xml' was not found in the package.</source>
-        <target state="translated">無法在套件中找到設定檔 'DotnetToolSettings.xml'。</target>
+        <source>Settings file 'DotnetToolSettings.xml' was not found in package '{0}@{1}'.</source>
+        <target state="translated">無法在套件 '{0}@{1}' 中找到設定檔 'DotnetToolSettings.xml'。</target>
         <note />
       </trans-unit>
       <trans-unit id="MoreThanOnePackagedShimAvailable">
@@ -691,6 +696,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">未提供所需的命令。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ResolvedPathEscapesTargetDirectory">
+        <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
+        <target state="translated">已解決的路徑 '{0}' 逸出目標目錄 '{1}'。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
         <source>{0}: resolving commandspec from {1} Tool Libraries.</source>
         <target state="translated">{0}: 正在從 {1} 工具程式庫解析 commandspec。</target>
@@ -711,6 +721,16 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="SDKDiagnosticsCommandDefinition">
         <source>Enable diagnostic output.</source>
         <target state="translated">啟用診斷輸出。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkDirectoryCouldNotBeDetermined">
+        <source>warning: could not determine the SDK directory - no sdk_dir was provided and dotnet-aot could not locate its own module; SDK-relative resolution may be incorrect.</source>
+        <target state="translated">警告: 無法判定 SDK 目錄 - 未提供 sdk_dir，且 dotnet-aot 無法找到自己的模組；以 SDK 為基準的解析可能不正確。</target>
+        <note>{Locked="sdk_dir"}{Locked="dotnet-aot"}</note>
+      </trans-unit>
+      <trans-unit id="SdkRootDirectoryDoesNotExist">
+        <source>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</source>
+        <target state="translated">透過 '{1}' 設定提供的 SDK 根目錄 '{0}' 不存在。</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -753,6 +773,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">指定的方案檔 {0} 不存在，或目錄中沒有方案檔。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionFolderAlreadyContainsProjectWithFilename">
+        <source>Solution folder '{0}' already contains a project with the filename '{1}'.</source>
+        <target state="translated">解決方案資料夾 '{0}' 已經包含一個檔名為 '{1}' 的專案。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentName">
         <source>PROJECT | SOLUTION</source>
         <target state="translated">PROJECT | SOLUTION</target>
@@ -773,6 +798,21 @@ setx PATH "%PATH%;{0}"
         <target state="translated">您必須指定至少一個要刪除的參考。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallationTimeout">
+        <source>Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</source>
+        <target state="new">Timed out waiting for another installation of tool '{0}' version '{1}' to complete.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallationWaiting">
+        <source>Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</source>
+        <target state="new">Another installation of tool '{0}' version '{1}' is in progress. Waiting for it to complete...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallationWaitingWithProcess">
+        <source>Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</source>
+        <target state="new">Process {2} ({3}) is installing tool '{0}' version '{1}'. Waiting for it to complete...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolLibraryFound">
         <source>{0}: tool library found {1}</source>
         <target state="translated">{0}: 找到工具程式庫 {1}</target>
@@ -788,9 +828,34 @@ setx PATH "%PATH%;{0}"
         <target state="translated">工具 '{0}' ('{1}' 版) 已經安裝。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageMutationTimeout">
+        <source>Timed out waiting for another operation on tool '{0}' to complete.</source>
+        <target state="new">Timed out waiting for another operation on tool '{0}' to complete.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageMutationWaiting">
+        <source>Another operation on tool '{0}' is in progress. Waiting for it to complete...</source>
+        <target state="new">Another operation on tool '{0}' is in progress. Waiting for it to complete...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolPackageMutationWaitingWithProcess">
+        <source>Process {1} ({2}) is modifying tool '{0}'. Waiting for it to complete...</source>
+        <target state="new">Process {1} ({2}) is modifying tool '{0}'. Waiting for it to complete...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolPackageNotATool">
         <source>Package {0} is not a .NET tool.</source>
         <target state="translated">套件 {0} 不是 .NET 工具。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersion">
+        <source>Tool '{0}' requires a higher version of .NET than is currently installed. The tool targets {1}, but the current runtime is {2}.</source>
+        <target state="translated">工具 '{0}' 需要比目前安裝的 .NET 版本更高的版本。該工具的目標是 {1}，但目前的執行階段是 {2}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRequiresHigherDotNetVersionSuggestion">
+        <source>To use this tool, upgrade to .NET {0} or later, or use a version of the tool that is compatible with .NET {1}.</source>
+        <target state="translated">若要使用此工具，請升級至 .NET {0} 或更高版本，或使用與 .NET {1} 相容的工具版本。</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">

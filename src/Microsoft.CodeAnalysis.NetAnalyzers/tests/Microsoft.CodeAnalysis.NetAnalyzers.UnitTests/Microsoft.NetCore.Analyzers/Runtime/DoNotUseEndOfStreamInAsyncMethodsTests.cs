@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotUseEndOfStreamInAsyncMethodsAnalyzer,
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DoNotUseEndOfStreamInAsyncMethodsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task AsyncMethod_ReportsDiagnostic_CS()
         {
             string source = """
@@ -42,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncLocalMethodInAsyncMethod_ReportsDiagnostic_CS()
         {
             string source = """
@@ -73,7 +74,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncLocalMethodInSyncMethod_ReportsDiagnostic_CS()
         {
             string source = """
@@ -104,7 +105,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncLambdaExpressionInAsyncMethod_ReportsDiagnostic_CS()
         {
             string source = """
@@ -124,7 +125,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncLambdaExpressionInSyncMethod_ReportsDiagnostic_CS()
         {
             string source = """
@@ -144,7 +145,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncAnonymousMethodInAsyncMethod_ReportsDiagnostic_CS()
         {
             string source = """
@@ -167,7 +168,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncAnonymousMethodInSyncMethod_ReportsDiagnostic_CS()
         {
             string source = """
@@ -190,7 +191,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -208,7 +209,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncLocalMethodInAsyncMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -230,7 +231,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncLocalMethodInSyncMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -251,7 +252,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncLambdaExpressionInAsyncMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -271,7 +272,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncLambdaExpressionInSyncMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -290,7 +291,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncAnonymousMethodInAsyncMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -313,7 +314,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncAnonymousMethodInSyncMethod_NoDiagnostic_CS()
         {
             string source = """
@@ -335,7 +336,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotAStreamReaderProperty_NoDiagnostic_CS()
         {
             string source = """
@@ -358,7 +359,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncMethod_ReportsDiagnostic_VB()
         {
             string source = """
@@ -383,7 +384,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncLambdaExpressionInAsyncMethod_ReportsDiagnostic_VB()
         {
             string source = """
@@ -400,7 +401,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncLambdaExpressionInSyncMethod_ReportsDiagnostic_VB()
         {
             string source = """
@@ -416,7 +417,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncMethod_NoDiagnostic_VB()
         {
             string source = """
@@ -432,7 +433,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncLambdaExpressionInAsyncMethod_NoDiagnostic_VB()
         {
             string source = """
@@ -449,7 +450,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncLambdaExpressionInSyncMethod_NoDiagnostic_VB()
         {
             string source = """
@@ -466,7 +467,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotAStreamReaderProperty_NoDiagnostic_VB()
         {
             string source = """

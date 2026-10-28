@@ -39,11 +39,7 @@ namespace Microsoft.DotNet.PackageValidation.Filtering
             {
                 // Wildcard match
                 if (excludedTargetFramework.Length > 1 &&
-#if NET
                     excludedTargetFramework.EndsWith('*'))
-#else
-                    excludedTargetFramework[excludedTargetFramework.Length - 1] == '*')
-#endif
                 {
                     string excludedTargetFrameworkWithoutWildcard = excludedTargetFramework.Substring(0, excludedTargetFramework.Length - 1);
                     if (targetFramework.StartsWith(excludedTargetFrameworkWithoutWildcard, TargetFrameworkComparison))

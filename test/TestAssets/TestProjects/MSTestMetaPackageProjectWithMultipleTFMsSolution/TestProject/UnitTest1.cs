@@ -9,7 +9,7 @@ public class UnitTest1
 		Assert.AreEqual(1, 1);
 	}
 
-#if NET9_0
+#if NET10_0
 	[TestMethod]
 	public void TestMethod2()
 	{

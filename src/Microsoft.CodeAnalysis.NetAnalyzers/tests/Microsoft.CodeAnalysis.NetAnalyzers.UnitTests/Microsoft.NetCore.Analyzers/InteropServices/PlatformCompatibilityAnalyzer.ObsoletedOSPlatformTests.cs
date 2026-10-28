@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.PlatformCompatibilityAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -11,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
+    [TestClass]
     public partial class PlatformCompatabilityAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedMethodsCalledWarns()
         {
             var csSource = @"
@@ -68,7 +69,32 @@ End Class
                 .WithArguments("Public Sub ObsoletedOnLinux()", "'Linux' 4.1 and later", "'Linux'"));
         }
 
-        [Fact]
+        [TestMethod, Test.Utilities.WorkItem(54066, "https://github.com/dotnet/sdk/issues/54066")]
+        public async Task NameOfObsoletedMemberNotWarn()
+        {
+            var csSource = """
+                using System;
+                using System.Runtime.Versioning;
+                using Mock;
+
+                public class Test
+                {
+                    [SupportedOSPlatform("Linux")]
+                    public void M1()
+                    {
+                        Console.WriteLine(nameof(ObsoletedOnLinux4)); // 'nameof' does not read the property
+                        Console.WriteLine({|CA1422:ObsoletedOnLinux4|}); // This call site is reachable on: 'Linux'. 'Test.ObsoletedOnLinux4' is obsoleted on: 'Linux' 4.1 and later.
+                    }
+
+                    [Mock.ObsoletedOSPlatform("Linux4.1")]
+                    public string ObsoletedOnLinux4 => string.Empty;
+                }
+                """ + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(csSource);
+        }
+
+        [TestMethod]
         public async Task ObsoletedAndSupportedMixedDiagnostics()
         {
             var csSource = @"
@@ -157,7 +183,7 @@ public class Unsupported
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedWithMessageUrlCalledWarns()
         {
             var csSource = @"
@@ -189,7 +215,7 @@ public class Test
                     WithArguments("Test.ObsoletedWithUrl()", "'Windows' 10.1.1.1 and later (http://www/look.for.more.info)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedAPIsCAlledFromDifferentCallsite()
         {
             var csSource = @"
@@ -254,7 +280,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UnsuportedWithMessageCalledWarnsAsync()
         {
             var csSource = @"
@@ -290,7 +316,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedWarningsGuardedWithOperatingSystemAPIs()
         {
             var csSource = @"
@@ -338,7 +364,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedWarningsGuardedWithOperatingSystemAPIsFromDifferentCallsite()
         {
             var csSource = @"
@@ -396,7 +422,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObsoletedWarningsGuardedWithUnsupportedOSPlatformGuardAttribute()
         {
             var csSource = @"
@@ -453,7 +479,7 @@ public class Test
             await VerifyAnalyzerCSAsync(csSource, s_msBuildPlatforms);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CalledApiHasSupportedAndObsoletedAttributes_CallsiteSupressesSupportedAttributeWarnsForObsoletedOnly()
         {
             var source = @"

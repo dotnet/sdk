@@ -183,6 +183,18 @@ internal abstract class BaseSerializer
         WriteLong(stream, value.Value);
     }
 
+    protected static void WriteField(Stream stream, ushort id, int? value)
+    {
+        if (value is null)
+        {
+            return;
+        }
+
+        WriteUShort(stream, id);
+        WriteSize<int>(stream);
+        WriteInt(stream, value.Value);
+    }
+
     protected static void WriteField(Stream stream, string? value)
     {
         if (value is null)

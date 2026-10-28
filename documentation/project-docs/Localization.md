@@ -7,6 +7,17 @@ The local dev build automatically generates updates to the xlf files that contai
 
 When making string changes, update the resx, build, and check in all xlf file changes. Developers should never need to update the xlf files directly and should always rely on the local build for updates to those files. This will leave the files in english initially and they will get translated eventually.
 
+#### Automated XLF Updates via GitHub Actions
+
+If you've modified `.resx` files in a pull request and need to update the corresponding `.xlf` files but don't want to clone the branch locally, you can use the automated GitHub Action:
+
+**Comment `/updatexlf` on your pull request** and the workflow will:
+1. Check out your PR branch
+2. Run the UpdateXlf build target
+3. Commit any updated `.xlf` files directly to your PR branch
+
+This is particularly useful when CI is failing due to outdated XLF files.
+
 For internal folks, see https://aka.ms/allaboutloc
 
 ### Loc issues
@@ -22,7 +33,7 @@ https://github.com/dotnet/sdk/pulls?q=is%3Apr+author%3Adotnet-bot+onelocbuild
 ### Loc Builds
 We typically only localize the primary development branch. We move to vNext once we get to RC1 and only then, localize all new strings introduced in that release. That way we can continue to add messages in the 4xx release of an SDK.
 
-This is controlled https://github.com/dotnet/sdk/blob/main/eng/pipelines/templates/jobs/sdk-job-matrix.yml#L86 and requires a change both here and in the loc system to align branches.
+This is controlled by the OneLocBuild stage in [`.vsts-ci.yml`](../../.vsts-ci.yml) and requires a change both there and in the loc system to align branches.
 
 ### Translation directives
 There are a ton of translations directives our localization system understands. Here are some of the most common in this repo:

@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Utils;
+
 namespace Microsoft.DotNet.Cli;
 
 public class NuGetForwardingApp
@@ -35,10 +37,10 @@ public class NuGetForwardingApp
         return this;
     }
 
-    private static string GetNuGetExePath()
+    internal static string GetNuGetExePath()
     {
         return Path.Combine(
-            AppContext.BaseDirectory,
+            SdkPaths.SdkDirectory,
             s_nugetExeName);
     }
 }

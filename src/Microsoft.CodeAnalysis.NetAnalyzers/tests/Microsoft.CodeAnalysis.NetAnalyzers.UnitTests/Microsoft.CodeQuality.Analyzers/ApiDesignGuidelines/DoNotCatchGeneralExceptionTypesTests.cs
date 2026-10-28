@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotCatchGeneralExceptionTypesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
 {
+    [TestClass]
     public class DoNotCatchGeneralExceptionTypesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_GeneralCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -43,7 +44,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_Diagnostic_GeneralCatchAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -63,7 +64,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_GeneralCatchInGetAccessorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -95,7 +96,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_Diagnostic_GeneralCatchInGetAccessorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -118,7 +119,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_NoDiagnostic_GeneralCatchRethrowAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -147,7 +148,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_NoDiagnostic_GeneralCatchRethrowAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -168,7 +169,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_NoDiagnostic_GeneralCatchThrowNewAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -197,7 +198,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_NoDiagnostic_GeneralCatchThrowNewAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -218,7 +219,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_GeneralCatchWithRethrowFromSpecificCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -247,7 +248,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_Diagnostic_GeneralCatchWithRethrowFromSpecificCatchAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -268,7 +269,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_GenericExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -293,7 +294,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_Diagnostic_GenericExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -313,7 +314,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_NoDiagnostic_GenericExceptionRethrownAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -339,7 +340,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_NoDiagnostic_GenericExceptionRethrownAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -360,7 +361,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_NoDiagnostic_ThrowNewWrappedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -386,7 +387,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_NoDiagnostic_ThrowNewWrappedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -407,7 +408,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_SystemExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -432,7 +433,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_Diagnostic_SystemExceptionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -451,7 +452,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_GeneralCatchWithFilterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -475,7 +476,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_Diagnostic_GeneralCatchWithFilterAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -493,7 +494,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_GenericExceptionWithoutVariableWithFilterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -517,7 +518,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_NoDiagnostic_GenericExceptionWithVariableWithFilterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -541,7 +542,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_NoDiagnostic_GenericExceptionWithVariableWithFilterAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -560,7 +561,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_Diagnostic_GeneralCatchInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -588,7 +589,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_Diagnostic_GeneralCatchInLambdaExpressionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -629,7 +630,7 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             ");
         }
 
-        [Fact, WorkItem(2518, "https://github.com/dotnet/roslyn-analyzers/issues/2518")]
+        [TestMethod, WorkItem(2518, "https://github.com/dotnet/roslyn-analyzers/issues/2518")]
         public async Task CSharp_NoDiagnostic_SpecificExceptionWithoutVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -650,16 +651,16 @@ namespace Microsoft.ApiDesignGuidelines.Analyzers.UnitTests
             }");
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2713, "https://github.com/dotnet/roslyn-analyzers/issues/2713")]
         // No configuration - validate no diagnostics in default configuration
-        [InlineData("")]
+        [DataRow("")]
         // Match by type name
-        [InlineData("dotnet_code_quality.disallowed_symbol_names = NullReferenceException")]
+        [DataRow("dotnet_code_quality.disallowed_symbol_names = NullReferenceException")]
         // Setting only for Rule ID
-        [InlineData("dotnet_code_quality." + DoNotCatchGeneralExceptionTypesAnalyzer.RuleId + ".disallowed_symbol_names = NullReferenceException")]
+        [DataRow("dotnet_code_quality." + DoNotCatchGeneralExceptionTypesAnalyzer.RuleId + ".disallowed_symbol_names = NullReferenceException")]
         // Match by type documentation ID
-        [InlineData(@"dotnet_code_quality.disallowed_symbol_names = T:System.NullReferenceException")]
+        [DataRow(@"dotnet_code_quality.disallowed_symbol_names = T:System.NullReferenceException")]
         public async Task EditorConfigConfiguration_DisallowedExceptionTypesAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -684,7 +685,7 @@ class Test
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -707,36 +708,36 @@ End Class"
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(3211, "https://github.com/dotnet/roslyn-analyzers/issues/3211")]
+        [TestMethod, WorkItem(3211, "https://github.com/dotnet/roslyn-analyzers/issues/3211")]
         // No configuration - validate no diagnostics in default configuration
-        [InlineData("")]
+        [DataRow("")]
         // Check with exact method signature
-        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M:SomeNamespace.Test.M1(System.String)")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M:SomeNamespace.Test.M1(System.String)")]
+        [DataRow("dotnet_code_quality.CA1031.excluded_symbol_names = M:SomeNamespace.Test.M1(System.String)")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M:SomeNamespace.Test.M1(System.String)")]
         // Check with wildcard method signature
-        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M:SomeNamespace.Test.M*")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M:SomeNamespace.Test.M*")]
+        [DataRow("dotnet_code_quality.CA1031.excluded_symbol_names = M:SomeNamespace.Test.M*")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M:SomeNamespace.Test.M*")]
         // Check with exact type signature
-        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = T:SomeNamespace.Test")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = T:SomeNamespace.Test")]
+        [DataRow("dotnet_code_quality.CA1031.excluded_symbol_names = T:SomeNamespace.Test")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = T:SomeNamespace.Test")]
         // Check with wildcard type signature
-        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = T:SomeNamespace.Tes*")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = T:SomeNamespace.Tes*")]
+        [DataRow("dotnet_code_quality.CA1031.excluded_symbol_names = T:SomeNamespace.Tes*")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = T:SomeNamespace.Tes*")]
         // Check with exact namespace signature
-        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = N:SomeNamespace")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = N:SomeNamespace")]
+        [DataRow("dotnet_code_quality.CA1031.excluded_symbol_names = N:SomeNamespace")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = N:SomeNamespace")]
         // Check with wildcard namespace signature
-        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = N:Some*")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = N:Some*")]
+        [DataRow("dotnet_code_quality.CA1031.excluded_symbol_names = N:Some*")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = N:Some*")]
         // Check with match all signature
-        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = Test")]
+        [DataRow("dotnet_code_quality.CA1031.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = Test")]
         // Check with wildcard signature
-        [InlineData("dotnet_code_quality.CA1031.excluded_symbol_names = M1*")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = Tes*")]
+        [DataRow("dotnet_code_quality.CA1031.excluded_symbol_names = M1*")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = Tes*")]
         public async Task CA1031_EditorConfig_ExcludedSymbolNamesAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -764,7 +765,7 @@ namespace SomeNamespace
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -789,7 +790,7 @@ End Namespace"
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

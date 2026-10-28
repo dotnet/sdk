@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Contoso",
+  "classifications": [ "Console" ], 
+  "name": "Contoso Sample 04",
+  "identity": "MyProject.04.Sample.CSharp",         
+  "groupIdentity":"MyProject.04.Sample",
+  "shortName": "sample04",
+  "tags": {
+    "language": "C#",
+    "type":"project"
+  },
+  "preferNameDirectory": true,
+  "sourceName": "MyProject.Con",
+  "symbols":{
+    "CopyrightName": {
+      "type": "parameter",
+      "defaultValue": "(c) Contoso",
+      "replaces":"(copyright)"
+    },
+    "Title": {
+      "type": "parameter",
+      "defaultValue": "Contoso Sample",
+      "replaces":"My App Title"
+    },
+    "EnableContactPage":{
+      "type": "parameter",
+      "dataType":"bool",
+      "defaultValue": "false"
+    },
+    "BackgroundColor":{
+      "type":"parameter",
+      "datatype": "choice",
+      "defaultValue":"aliceblue",
+      "choices": [
+        {
+          "choice": "aliceblue",
+          "description": "Alice Blue"
+        },
+        {
+          "choice": "dimgray",
+          "description":"dimgray"
+        },
+        {
+          "choice":"skyblue",
+          "description":"skyblue"
+        }
+      ],
+      "replaces":"skyblue"
+    }
+  },
+"sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(!EnableContactPage)",
+          "exclude": [
+            "contact.txt"
+          ]
+        }
+      ]
+    }
+  ]
+}

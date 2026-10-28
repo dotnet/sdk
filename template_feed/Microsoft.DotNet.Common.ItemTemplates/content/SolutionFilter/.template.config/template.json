@@ -21,8 +21,20 @@
       "displayName": "Parent solution file",
       "description": "The parent solution file (sln or slnx) that this filter references (default: same name with .slnx extension).",
       "datatype": "string",
-      "defaultValue": "SolutionFilter1.slnx",
+      "defaultValue": "SolutionFilter1.slnx"
+    },
+    "ParentSolutionNormalized": {
+      "type": "derived",
+      "valueSource": "ParentSolution",
+      "valueTransform": "backslashToForwardSlash",
       "replaces": "SolutionFilter1.slnx"
+    }
+  },
+  "forms": {
+    "backslashToForwardSlash": {
+      "identifier": "replace",
+      "pattern": "\\\\",
+      "replacement": "/"
     }
   },
   "defaultName": "SolutionFilter1"

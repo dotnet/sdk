@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.HotReload;
 /// </param>
 internal sealed class HotReloadClients(
     ImmutableArray<HotReloadClient> clients,
-    AbstractBrowserRefreshServer? browserRefreshServer,
+    BrowserRefreshServer? browserRefreshServer,
     bool useRefreshServerToApplyStaticAssets) : IDisposable
 {
     /// <summary>
@@ -55,7 +55,7 @@ internal sealed class HotReloadClients(
     public bool UseRefreshServerToApplyStaticAssets
         => useRefreshServerToApplyStaticAssets;
 
-    public AbstractBrowserRefreshServer? BrowserRefreshServer
+    public BrowserRefreshServer? BrowserRefreshServer
         => browserRefreshServer;
 
     public ImmutableArray<HotReloadClient> Clients
@@ -90,7 +90,7 @@ internal sealed class HotReloadClients(
             client.ConfigureLaunchEnvironment(environmentBuilder);
         }
 
-        browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: true);
+        browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
     }
 
     /// <param name="environmentVariables">Environment variable to be set by the agent in the target process.</param>
@@ -110,31 +110,33 @@ internal sealed class HotReloadClients(
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public async ValueTask<ImmutableArray<string>> GetUpdateCapabilitiesAsync(CancellationToken cancellationToken)
+    public async ValueTask<ImmutableArray<HotReloadAgentInfo>> GetConnectedAgentsInfoAsync(CancellationToken cancellationToken)
     {
         if (!IsManagedAgentSupported)
         {
-            // empty capabilities will cause rude edit ENC0097: NotSupportedByRuntime.
             return [];
         }
 
         if (clients is [var singleClient])
         {
-            return await singleClient.GetUpdateCapabilitiesAsync(cancellationToken);
+            return [await singleClient.GetConnectedAgentInfoAsync(cancellationToken)];
         }
 
-        var results = await Task.WhenAll(clients.Select(c => c.GetUpdateCapabilitiesAsync(cancellationToken)));
-
-        // Allow updates that are supported by at least one process.
-        // When applying changes we will filter updates applied to a specific process based on their required capabilities.
-        return [.. results.SelectMany(r => r).Distinct(StringComparer.Ordinal).OrderBy(c => c)];
+        return [.. await Task.WhenAll(clients.Select(c => c.GetConnectedAgentInfoAsync(cancellationToken)))];
     }
 
+    /// <summary>
+    /// Applies managed code updates to all clients.
+    /// </summary>
+    /// <param name="updates">Updates for each client. Must be of the same length as <see cref="Clients"/>.</param>
+    /// <param name="applyOperationCancellationToken">Cancellation token for the apply operation that starts but not necessarily completes when this method returns.</param>
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public async Task<Task> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
+    /// <returns></returns>
+    public async Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<ImmutableArray<HotReloadManagedCodeUpdate>> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
         // shouldn't be called if there are no clients
         Debug.Assert(IsManagedAgentSupported);
+        Debug.Assert(updates.Length == clients.Length);
 
         // Apply to all processes.
         // The module the change is for does not need to be loaded to any of the processes, yet we still consider it successful if the application does not fail.
@@ -142,17 +144,21 @@ internal sealed class HotReloadClients(
         // An error is only reported if the delta application fails, which would be a bug either in the runtime (applying valid delta incorrectly),
         // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
 
-        var applyTasks = await Task.WhenAll(clients.Select(c => c.ApplyManagedCodeUpdatesAsync(updates, applyOperationCancellationToken, cancellationToken)));
+        var applyTasks = await Task.WhenAll(
+            clients.Zip(updates, (client, clientUpdates) => client.ApplyManagedCodeUpdatesAsync(clientUpdates, applyOperationCancellationToken, cancellationToken)));
 
         return CompleteApplyOperationAsync();
 
-        async Task CompleteApplyOperationAsync()
+        async Task<bool> CompleteApplyOperationAsync()
         {
             var results = await Task.WhenAll(applyTasks);
-            if (browserRefreshServer != null && results.All(isSuccess => isSuccess))
+            var success = results.All(isSuccess => isSuccess);
+            if (browserRefreshServer != null && success)
             {
                 await browserRefreshServer.RefreshBrowserAsync(cancellationToken);
             }
+
+            return success;
         }
     }
 
@@ -217,4 +223,13 @@ internal sealed class HotReloadClients(
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     public ValueTask ReportCompilationErrorsInApplicationAsync(ImmutableArray<string> compilationErrors, CancellationToken cancellationToken)
         => browserRefreshServer?.ReportCompilationErrorsInBrowserAsync(compilationErrors, cancellationToken) ?? ValueTask.CompletedTask;
+
+    /// <summary>
+    /// Returns union of capabilities reported by each agent.
+    /// When applying changes the updates applied to a specific process will be filtered based on their required capabilities.
+    /// </summary>
+    public static ImmutableArray<string> UnionCapabilities(ImmutableArray<HotReloadAgentInfo> agentInfos)
+        => agentInfos is [var singleInfo]
+            ? singleInfo.ManagedCodeUpdateCapabilities
+            : [.. agentInfos.SelectMany(r => r.ManagedCodeUpdateCapabilities).Distinct(StringComparer.Ordinal).OrderBy(c => c)];
 }

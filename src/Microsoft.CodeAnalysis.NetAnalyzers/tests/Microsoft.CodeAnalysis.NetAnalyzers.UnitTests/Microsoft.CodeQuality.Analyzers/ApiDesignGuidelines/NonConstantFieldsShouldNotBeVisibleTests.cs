@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.NonConstantFieldsShouldNotBeVisibleAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class NonConstantFieldsShouldNotBeVisibleTests
     {
-        [Fact]
+        [TestMethod]
         public async Task DefaultVisibilityCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -25,7 +26,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DefaultVisibilityVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -34,7 +35,7 @@ Public Class A
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -44,7 +45,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -53,7 +54,7 @@ Public Class A
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExternallyVisibleStaticVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -63,7 +64,7 @@ public class A
 }", GetCSharpResultAt(4, 26));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task PublicNotExternallyVisibleStaticVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -82,7 +83,7 @@ public class B
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExternallyVisibleStaticVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -91,7 +92,7 @@ Public Class A
 End Class", GetBasicResultAt(3, 19));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task PublicNotExternallyVisibleStaticVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -107,7 +108,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicStaticReadonlyVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -117,7 +118,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicStaticReadonlyVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -126,7 +127,7 @@ Public Class A
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicConstVariableCSAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -136,7 +137,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicConstVariableVBAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

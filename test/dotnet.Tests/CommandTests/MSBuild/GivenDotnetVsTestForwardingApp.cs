@@ -1,20 +1,21 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Test;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
+    [TestClass]
     public class GivenDotnetVsTestForwardingApp
     {
-        [Fact]
+        [TestMethod]
         public void ItRunsVsTestApp()
         {
             new VSTestForwardingApp(new string[0])
                 .GetProcessStartInfo().Arguments.Should().EndWith("vstest.console.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCanUseEnvironmentVariableToForceCustomPathToVsTestApp()
         {
             string vsTestConsolePath = "VSTEST_CONSOLE_PATH";
@@ -33,3 +34,4 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
+

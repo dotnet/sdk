@@ -51,6 +51,16 @@ namespace Microsoft.DotNet.GenAPI.Task
         public string[]? ExcludeAttributesFiles { get; set; }
 
         /// <summary>
+        /// The path to one or more api inclusion files with types in DocId format.
+        /// </summary>
+        public string[]? IncludeApiFiles { get; set; }
+
+        /// <summary>
+        /// If true, opts out of emitting the curated set of internal compiler attributes.
+        /// </summary>
+        public bool ExcludeInternalCompilerAttributes { get; set; }
+
+        /// <summary>
         /// If true, includes both internal and public API.
         /// </summary>
         public bool RespectInternals { get; set; }
@@ -66,15 +76,19 @@ namespace Microsoft.DotNet.GenAPI.Task
             Debug.Assert(Assemblies != null, "Assemblies cannot be null.");
 
             GenAPIApp.Run(new MSBuildLog(Log),
-                          Assemblies,
-                          AssemblyReferences,
-                          OutputPath,
-                          HeaderFile,
-                          ExceptionMessage,
-                          ExcludeApiFiles,
-                          ExcludeAttributesFiles,
-                          RespectInternals,
-                          IncludeAssemblyAttributes);
+                new GenAPIOptions(Assemblies)
+                {
+                    AssemblyReferencesPaths = AssemblyReferences,
+                    OutputPath = OutputPath,
+                    HeaderFile = HeaderFile,
+                    ExceptionMessage = ExceptionMessage,
+                    ExcludeApiFiles = ExcludeApiFiles,
+                    ExcludeAttributesFiles = ExcludeAttributesFiles,
+                    IncludeApiFiles = IncludeApiFiles,
+                    ExcludeInternalCompilerAttributes = ExcludeInternalCompilerAttributes,
+                    RespectInternals = RespectInternals,
+                    IncludeAssemblyAttributes = IncludeAssemblyAttributes,
+                });
         }
     }
 }

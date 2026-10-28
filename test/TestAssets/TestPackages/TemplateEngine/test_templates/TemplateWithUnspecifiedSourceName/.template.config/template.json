@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TemplateWithUnspecifiedSourceName",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithUnspecifiedSourceName",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithUnspecifiedSourceName",
+  "shortName": "TestAssets.TemplateWithUnspecifiedSourceName",
+  "primaryOutputs": [
+    {
+      "path": "bar.cs"
+    },
+    {
+      "path": "bar/bar.cs"
+    }
+  ]
+}

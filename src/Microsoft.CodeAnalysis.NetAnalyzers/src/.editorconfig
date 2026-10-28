@@ -1,0 +1,13 @@
+[*.{cs,vb}]
+
+# Microsoft.CodeAnalysis.Analyzers (referenced in Directory.Build.props) ships six rule
+# categories. Every one of them is clean across this tree, so all six are enforced to keep
+# it that way. RS1024, RS1036 and RS1038 are the exceptions and stay suppressed through
+# NoWarn in Directory.Build.props, each against a tracking issue.
+dotnet_analyzer_diagnostic.category-MicrosoftCodeAnalysisCompatibility.severity = warning
+dotnet_analyzer_diagnostic.category-MicrosoftCodeAnalysisCorrectness.severity = warning
+dotnet_analyzer_diagnostic.category-MicrosoftCodeAnalysisDesign.severity = warning
+dotnet_analyzer_diagnostic.category-MicrosoftCodeAnalysisDocumentation.severity = warning
+dotnet_analyzer_diagnostic.category-MicrosoftCodeAnalysisLocalization.severity = warning
+dotnet_analyzer_diagnostic.category-MicrosoftCodeAnalysisPerformance.severity = warning
+dotnet_analyzer_diagnostic.category-MicrosoftCodeAnalysisReleaseTracking.severity = warning

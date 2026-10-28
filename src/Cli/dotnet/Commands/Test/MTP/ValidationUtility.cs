@@ -16,7 +16,7 @@ internal static class ValidationUtility
         ValidatePathOptions(pathOptions);
         ValidateOptionsIrrelevantToModulesFilter(parseResult, pathOptions.TestModules);
 
-        void ValidatePathOptions(PathOptions pathOptions)
+        static void ValidatePathOptions(PathOptions pathOptions)
         {
             var count = 0;
             if (pathOptions.TestModules is not null)
@@ -45,7 +45,8 @@ internal static class ValidationUtility
                 parseResult.HasOption(definition.ConfigurationOption) ||
                 parseResult.HasOption(definition.FrameworkOption) ||
                 parseResult.HasOption(definition.TargetPlatformOptions.OperatingSystemOption) ||
-                parseResult.HasOption(definition.TargetPlatformOptions.RuntimeOption))
+                parseResult.HasOption(definition.TargetPlatformOptions.RuntimeOption) ||
+                parseResult.HasOption(definition.UseCurrentRuntimeOption))
             {
                 throw new GracefulException(CliCommandStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
             }

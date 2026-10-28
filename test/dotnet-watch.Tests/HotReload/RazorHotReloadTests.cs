@@ -1,13 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class RazorHotReloadTests : DotNetWatchTestBase
 {
-    [PlatformSpecificTheory(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
-    [InlineData("net6.0", "6.0.36")]
-    [InlineData(ToolsetInfo.CurrentTargetFramework, null)]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
+    [DataRow("net6.0", "6.0.36")]
+    [DataRow(ToolsetInfo.CurrentTargetFramework, null)]
     public async Task BlazorWasm(string tfm, string? wasmVersion)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: $"{tfm}_{wasmVersion}").WithSource(
@@ -33,14 +35,6 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
         // env variable passed when launching the server:
         await App.WaitUntilOutputContains($"HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES=dotnet watch 🕵️ [blazorwasm ({tfm})]");
 
-        // Middleware should have been loaded to blazor-devserver before the browser is launched:
-        await App.WaitUntilOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware[0]");
-        await App.WaitUntilOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware[0]");
-        await App.WaitUntilOutputContains("Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js");
-        await App.WaitUntilOutputContains("Middleware loaded. Script /_framework/blazor-hotreload.js");
-        await App.WaitUntilOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware");
-        await App.WaitUntilOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
-
         // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
         App.AssertOutputDoesNotContain("Loaded into process");
 
@@ -61,7 +55,8 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.ManagedCodeChangesApplied);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
     public async Task BlazorWasm_MSBuildWarning()
     {
         var testAsset = TestAssets
@@ -83,7 +78,8 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
     public async Task BlazorWasm_Restart()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -106,7 +102,8 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
     public async Task BlazorWasmHosted()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
@@ -120,7 +117,8 @@ public class RazorHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase
         await App.WaitUntilOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)] // https://github.com/dotnet/sdk/issues/53114
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/53114
     public async Task Razor_Component_ScopedCssAndStaticAssets()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")

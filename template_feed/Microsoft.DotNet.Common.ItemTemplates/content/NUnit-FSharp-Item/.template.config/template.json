@@ -3,7 +3,7 @@
   "author": "Aleksei Kharlov aka halex2005 (codeofclimber.ru)",
   "classifications": [ "Test", "NUnit" ],
   "name": "NUnit Test Item",
-  "defaultName": "NUnitTestItem",
+  "defaultName": "UnitTest1",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "Creates a new NUnit test class",
   "groupIdentity": "NUnit3.DotNetNew.ItemTemplate",
@@ -15,7 +15,7 @@
     "type": "item"
   },
   "sourceName": "UnitTest1",
-  "preferNameDirectory": true,
+  "preferDefaultName": true,
   "primaryOutputs": [
     { "path": "UnitTest1.fs" }
   ],

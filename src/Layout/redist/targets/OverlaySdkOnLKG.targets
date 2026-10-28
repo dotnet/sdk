@@ -9,7 +9,7 @@
 
     <!-- Get stage 0 SDK version without having to duplicate the LKG SDK property between the global.json
     and a property. -->
-    <Exec Command="&quot;$(DotnetTool)&quot; --version" ConsoleToMsbuild="true">
+    <Exec Command="&quot;$(DotNetTool)&quot; --version" ConsoleToMsbuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="Stage0SdkVersion"/>
     </Exec>
 
@@ -54,9 +54,17 @@
       <_BuiltAspNetCoreSharedFxFile Include="$(TestHostDotNetRoot)shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)/**/*" />
     </ItemGroup>
 
+    <ItemGroup>
+      <_Stage0MonoToolchainManifestTargets Include="$(_DotNetHiveRoot)sdk-manifests/**/microsoft.net.workload.mono.toolchain.current/*/WorkloadManifest.targets" />
+      <_BuiltMonoToolchainManifestTargets Include="$(RedistInstallerLayoutPath)sdk-manifests/**/microsoft.net.workload.mono.toolchain.current/*/WorkloadManifest.targets" />
+      <_Stage2MonoToolchainManifestTargets Include="@(_BuiltMonoToolchainManifestTargets->'$(TestHostDotNetRoot)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
     <OverrideAndCreateBundledNETCoreAppPackageVersion
       Stage0BundledVersionsPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
-      Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
+      Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"
+      Stage0MonoToolchainManifestTargetsPaths="@(_Stage0MonoToolchainManifestTargets)"
+      Stage2MonoToolchainManifestTargetsPaths="@(_Stage2MonoToolchainManifestTargets)"/>
   
     <!-- Pass the credential provider plugin path to the subprocess so it can authenticate
          with internal NuGet feeds. DOTNET_CLI_HOME redirection causes NuGet to look for
@@ -71,6 +79,35 @@
       <_OverlaySdkEnvVars Condition="Exists('$(_CredentialProviderPath)')"
                           Include="NUGET_PLUGIN_PATHS=$(_CredentialProviderPath)" />
     </ItemGroup>
+  </Target>
+
+  <!-- Use target batching to avoid qualified metadata references inside item transforms (MSB4043).
+       Each target runs once per stage0 shared framework directory, capturing its Identity in a
+       property that can be safely used inside the item transform. -->
+  <Target Name="OverwriteStage0SharedFxForCrossCompilation"
+          AfterTargets="OverlaySdkOnLKG"
+          Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)' AND '@(_Stage0NETCoreSharedFxDir)' != ''"
+          Outputs="%(_Stage0NETCoreSharedFxDir.Identity)">
+    <PropertyGroup>
+      <_CurrentStage0FxDir>%(_Stage0NETCoreSharedFxDir.Identity)</_CurrentStage0FxDir>
+    </PropertyGroup>
+
+    <Copy SourceFiles="@(_BuiltNETCoreSharedFxFile)"
+          DestinationFiles="@(_BuiltNETCoreSharedFxFile->'$(_CurrentStage0FxDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="false" />
+  </Target>
+
+  <Target Name="OverwriteStage0AspNetCoreSharedFxForCrossCompilation"
+          AfterTargets="OverlaySdkOnLKG"
+          Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)' AND '@(_Stage0AspNetCoreSharedFxDir)' != ''"
+          Outputs="%(_Stage0AspNetCoreSharedFxDir.Identity)">
+    <PropertyGroup>
+      <_CurrentStage0FxDir>%(_Stage0AspNetCoreSharedFxDir.Identity)</_CurrentStage0FxDir>
+    </PropertyGroup>
+
+    <Copy SourceFiles="@(_BuiltAspNetCoreSharedFxFile)"
+          DestinationFiles="@(_BuiltAspNetCoreSharedFxFile->'$(_CurrentStage0FxDir)/%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="false" />
   </Target>
 
   <!-- Use target batching to avoid qualified metadata references inside item transforms (MSB4043).

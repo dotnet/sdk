@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotCallDangerousMethodsInDeserialization,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,6 +12,7 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotCallDangerousMethodsInDeserializationTests
     {
 #if NETCOREAPP
@@ -20,7 +21,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         private const string NullableSuffixOnNetCoreApp = "";
 #endif
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializingDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -72,7 +73,7 @@ End Namespace",
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializedDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -124,7 +125,7 @@ End Namespace",
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnMultiAttributesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -178,7 +179,7 @@ End Namespace",
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializedMediateInvocationDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -245,7 +246,7 @@ End Namespace",
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializedMultiMediateInvocationsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -321,7 +322,7 @@ End Namespace",
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationImplicitlyDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -351,7 +352,7 @@ public class TestClass : IDeserializationCallback
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationWriteAllBytesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -405,7 +406,7 @@ End Namespace",
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationWriteAllLinesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -462,7 +463,7 @@ End Namespace",
                 "Sub File.WriteAllLines(path As String, contents As String(), encoding As Encoding)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationWriteAllTextDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -519,7 +520,7 @@ End Namespace",
                 "Sub File.WriteAllText(path As String, contents As String)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationCopyDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -576,7 +577,7 @@ End Namespace",
                 "Sub File.Copy(sourceFileName As String, destFileName As String)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationMoveDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -634,7 +635,7 @@ End Namespace",
                 "Sub File.Move(sourceFileName As String, destFileName As String)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationAppendAllLinesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -690,7 +691,7 @@ End Namespace",
                 "Sub File.AppendAllLines(path As String, contents As IEnumerable(Of String))"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationAppendAllTextDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -746,7 +747,7 @@ End Namespace",
                 "Sub File.AppendAllText(path As String, contents As String)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationAppendTextDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -800,7 +801,7 @@ End Namespace",
                 "Function File.AppendText(path As String) As StreamWriter"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationDeleteDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -854,7 +855,7 @@ End Namespace",
                 "Sub File.Delete(path As String)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationDeleteOfDirectoryDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -908,7 +909,7 @@ End Namespace",
                 "Sub Directory.Delete(path As String)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationDeleteOfFileInfoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -960,7 +961,7 @@ End Namespace",
                 "Sub FileInfo.Delete()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationDeleteOfDirectoryInfoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1012,7 +1013,7 @@ End Namespace",
                 "Sub DirectoryInfo.Delete()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationDeleteOfLogStoreDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1093,7 +1094,7 @@ End Namespace",
                 "Sub LogStore.Delete(path As String)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationGetLoadedModulesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1147,7 +1148,7 @@ End Namespace",
                 "Function Assembly.GetLoadedModules() As [Module]()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationLoadDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1206,7 +1207,7 @@ End Namespace",
                 "Function Assembly.Load(assemblyRef As AssemblyName) As Assembly"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationLoadFileDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1261,7 +1262,7 @@ End Namespace",
                 "Function Assembly.LoadFile(path As String) As Assembly"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationLoadFromDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1316,7 +1317,7 @@ End Namespace",
                 "Function Assembly.LoadFrom(assemblyFile As String) As Assembly"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationLoadModuleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1375,7 +1376,7 @@ End Namespace",
                 "Function Assembly.LoadModule(moduleName As String, rawModule As Byte()) As [Module]"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationLoadWithPartialNameDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1429,7 +1430,7 @@ End Namespace",
                 "Function Assembly.LoadWithPartialName(partialName As String) As Assembly"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationReflectionOnlyLoadDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1483,7 +1484,7 @@ End Namespace",
                 "Function Assembly.ReflectionOnlyLoad(rawAssembly As Byte()) As Assembly"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationReflectionOnlyLoadFromDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1538,7 +1539,7 @@ End Namespace",
                 "Function Assembly.ReflectionOnlyLoadFrom(assemblyFile As String) As Assembly"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationUnsafeLoadFromDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1593,7 +1594,7 @@ End Namespace",
                 "Function Assembly.UnsafeLoadFrom(assemblyFile As String) As Assembly"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUsingGenericwithTypeSpecifiedDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1634,7 +1635,7 @@ public class TestClass : IDeserializationCallback
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUsingInterfaceDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1678,7 +1679,7 @@ public class TestClass : IDeserializationCallback
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestStaticDelegateFieldDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1717,7 +1718,7 @@ public class TestClass : IDeserializationCallback
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateFieldDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1758,7 +1759,7 @@ public class TestClass : IDeserializationCallback
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUsingAbstractClassDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1802,7 +1803,7 @@ public class TestClass : IDeserializationCallback
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFinalizeDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1852,7 +1853,7 @@ End Namespace",
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDisposeDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1952,7 +1953,7 @@ End Namespace",
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFinalizeWhenSubClassWithSerializableDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2021,7 +2022,7 @@ End Namespace",
                 "Sub File.WriteAllBytes(path As String, bytes As Byte())"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializingNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2066,7 +2067,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializedNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2111,7 +2112,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2156,7 +2157,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializingWithoutSerializableNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2194,7 +2195,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationWithoutSerializableNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2231,7 +2232,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializationWithoutIDeserializationCallbackNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2252,7 +2253,7 @@ public class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnDeserializedWithEmptyMethodBodyNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2287,7 +2288,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutOnDeserializingAttributesNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2325,7 +2326,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOnSerializedNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2364,7 +2365,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFinalizeNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2409,7 +2410,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestFinalizeWhenSubClassWithoutSerializableNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2464,7 +2465,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDisposeNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2542,7 +2543,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDisposeWithoutSerializableNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2611,7 +2612,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDisposeNotImplementIDisposableNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2679,7 +2680,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUsingGenericwithTypeSpecifiedNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2730,7 +2731,7 @@ public class TestClass : IDisposable
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUsingInterfaceNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2787,7 +2788,7 @@ public class TestClass : IDisposable
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUsingAbstractClassNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2844,7 +2845,7 @@ public class TestClass : IDisposable
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLocalFunctionDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2877,7 +2878,7 @@ public class TestClass
                 "void File.WriteAllBytes(string path, byte[] bytes)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLocalFunctionNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -3,8 +3,7 @@
 
 #nullable disable
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -12,7 +11,6 @@ namespace Microsoft.NET.Build.Tasks
     {
         public string Tfm { get; set; }
 
-        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Ignore)]
         public string RollForward { get; set; }
 
         public RuntimeConfigFramework Framework { get; set; }
@@ -23,8 +21,7 @@ namespace Microsoft.NET.Build.Tasks
 
         public List<string> AdditionalProbingPaths { get; set; }
 
-        [JsonExtensionData]
-        public IDictionary<string, JToken> RawOptions { get; } = new Dictionary<string, JToken>();
+        public IDictionary<string, JsonNode> RawOptions { get; } = new Dictionary<string, JsonNode>();
 
         public RuntimeOptions()
         {

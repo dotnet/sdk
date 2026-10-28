@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable enable
 
@@ -10,17 +11,55 @@ namespace Microsoft.DotNet.HotReload;
 
 internal sealed class SharedSecretProvider : IDisposable
 {
-    private readonly RSA _rsa = RSA.Create(2048);
+    public RSA RSA { get; }
+
+    /// <summary>
+    /// Creates a provider with a fresh key pair. Only used where no application pins a key, such as
+    /// in tests; a provider that has to authenticate against an application is created from the key
+    /// pair the application's build produced.
+    /// </summary>
+    public SharedSecretProvider()
+        => RSA = CreateRsa(keySize: 2048);
+
+    private static RSA CreateRsa(int keySize = 0)
+    {
+        // RSA.Create() returns RSACryptoServiceProvider on .NET Framework, which doesn't support OAEP with SHA-256. RSACng does.
+#if NET
+        return keySize == 0 ? RSA.Create() : RSA.Create(keySize);
+#else
+        return keySize == 0 ? new RSACng() : new RSACng(keySize);
+#endif
+    }
+
+    /// <summary>
+    /// Creates a provider from an existing key pair, which is how <c>dotnet watch</c> keys a
+    /// provider from the private key half the build wrote next to the application's build outputs.
+    /// </summary>
+    public SharedSecretProvider(RSAParameters parameters)
+    {
+        var rsa = CreateRsa();
+        try
+        {
+            rsa.ImportParameters(parameters);
+        }
+        catch
+        {
+            rsa.Dispose();
+            throw;
+        }
+
+        RSA = rsa;
+    }
 
     public void Dispose()
-        => _rsa.Dispose();
+        => RSA.Dispose();
 
     internal string DecryptSecret(string secret)
-        => Convert.ToBase64String(_rsa.Decrypt(Convert.FromBase64String(secret), RSAEncryptionPadding.OaepSHA256));
+        => Convert.ToBase64String(RSA.Decrypt(Convert.FromBase64String(secret), RSAEncryptionPadding.OaepSHA256));
 
     internal string GetPublicKey()
 #if NET
-        => Convert.ToBase64String(_rsa.ExportSubjectPublicKeyInfo());
+        => Convert.ToBase64String(RSA.ExportSubjectPublicKeyInfo());
 #else
         => ExportPublicKeyNetFramework();
 #endif
@@ -39,7 +78,7 @@ internal sealed class SharedSecretProvider : IDisposable
     }
 
     internal RSAParameters ExportPublicKeyParameters()
-        => _rsa.ExportParameters(includePrivateParameters: false);
+        => RSA.ExportParameters(includePrivateParameters: false);
 
     private static void ExportPublicKey(RSAParameters parameters, TextWriter outputStream)
     {

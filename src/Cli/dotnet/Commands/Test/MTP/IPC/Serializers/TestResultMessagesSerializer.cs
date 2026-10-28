@@ -102,6 +102,14 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
       |---FailedTestMessageList[0].SessionUid Id---| (2 bytes)
       |---FailedTestMessageList[0].SessionUid Size---| (4 bytes)
       |---FailedTestMessageList[0].SessionUid Value---| (n bytes)
+
+      |---FailedTestMessageList[0].Expected Id---| (2 bytes)
+      |---FailedTestMessageList[0].Expected Size---| (4 bytes)
+      |---FailedTestMessageList[0].Expected Value---| (n bytes)
+
+      |---FailedTestMessageList[0].Actual Id---| (2 bytes)
+      |---FailedTestMessageList[0].Actual Size---| (4 bytes)
+      |---FailedTestMessageList[0].Actual Value---| (n bytes)
   */
 
 internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeSerializer
@@ -225,7 +233,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
         int length = ReadInt(stream);
         for (int i = 0; i < length; i++)
         {
-            string? uid = null, displayName = null, reason = null, sessionUid = null, standardOutput = null, errorOutput = null;
+            string? uid = null, displayName = null, reason = null, sessionUid = null, standardOutput = null, errorOutput = null, expected = null, actual = null;
             ExceptionMessage[] exceptionMessages = [];
             byte? state = null;
             long? duration = null;
@@ -275,13 +283,21 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
                         sessionUid = ReadStringValue(stream, fieldSize);
                         break;
 
+                    case FailedTestResultMessageFieldsId.Expected:
+                        expected = ReadStringValue(stream, fieldSize);
+                        break;
+
+                    case FailedTestResultMessageFieldsId.Actual:
+                        actual = ReadStringValue(stream, fieldSize);
+                        break;
+
                     default:
                         SetPosition(stream, stream.Position + fieldSize);
                         break;
                 }
             }
 
-            failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, duration, reason, exceptionMessages, standardOutput, errorOutput, sessionUid));
+            failedTestResultMessages.Add(new FailedTestResultMessage(uid, displayName, state, duration, reason, exceptionMessages, standardOutput, errorOutput, sessionUid, expected, actual));
         }
 
         return failedTestResultMessages;
@@ -403,6 +419,8 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
             WriteField(stream, FailedTestResultMessageFieldsId.StandardOutput, failedTestResultMessage.StandardOutput);
             WriteField(stream, FailedTestResultMessageFieldsId.ErrorOutput, failedTestResultMessage.ErrorOutput);
             WriteField(stream, FailedTestResultMessageFieldsId.SessionUid, failedTestResultMessage.SessionUid);
+            WriteField(stream, FailedTestResultMessageFieldsId.Expected, failedTestResultMessage.Expected);
+            WriteField(stream, FailedTestResultMessageFieldsId.Actual, failedTestResultMessage.Actual);
         }
 
         // NOTE: We are able to seek only if we are using a MemoryStream
@@ -464,7 +482,9 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
         (IsNullOrEmpty(failedTestResultMessage.Exceptions) ? 0 : 1) +
         (failedTestResultMessage.StandardOutput is null ? 0 : 1) +
         (failedTestResultMessage.ErrorOutput is null ? 0 : 1) +
-        (failedTestResultMessage.SessionUid is null ? 0 : 1));
+        (failedTestResultMessage.SessionUid is null ? 0 : 1) +
+        (failedTestResultMessage.Expected is null ? 0 : 1) +
+        (failedTestResultMessage.Actual is null ? 0 : 1));
 
     private static ushort GetFieldCount(ExceptionMessage exceptionMessage) =>
         (ushort)((exceptionMessage.ErrorMessage is null ? 0 : 1) +

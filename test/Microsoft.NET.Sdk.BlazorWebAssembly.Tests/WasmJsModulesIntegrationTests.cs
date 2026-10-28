@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -6,12 +6,15 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.NET.Sdk.WebAssembly;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmJsModulesIntegrationTests(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
+    [TestClass]
+    public class WasmJsModulesIntegrationTests : BlazorWasmBaselineTests
     {
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
@@ -52,7 +55,122 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorwasm-minimal.modules.json")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [DataRow("net8.0", false, false)]
+        [DataRow("net9.0", false, true)]
+        [DataRow("net10.0", true, false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true, false)]
+        public void Build_AddsHotReloadInitializer_WhenBrowserToolsAreEnabled(string targetFramework, bool expectSdkHotReloadAgent, bool expectRuntimeHotReloadAgent)
+        {
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal")
+                .WithTargetFramework(targetFramework);
+
+            var build = CreateBuildCommand(ProjectDirectory);
+
+            // Browser tools assets are part of every Hot Reload-enabled build: the build owns the
+            // key pair and Hot Reload reads the private half when the browser connects.
+            ExecuteCommand(build).Should().Pass();
+
+            var initializers = GetLibraryInitializers(build, targetFramework);
+
+            // The watch activation initializer is added for all target frameworks. It activates the browser tools
+            // client, which applies updates via the Hot Reload agent shipped by the SDK on .NET 10+, via the
+            // runtime's own agent on .NET 9.0, and via window.Blazor._internal.applyHotReload on .NET 8.0.
+            initializers.Should().ContainMatch("*Microsoft.NET.Sdk.WebAssembly.HotReload*.lib.module.js");
+
+            initializers.Should().NotContainMatch("*Microsoft.DotNet.HotReload.WebAssembly.Browser*.lib.module.js");
+
+            // .NET 9.0 only creates its built-in WebAssembly Hot Reload agent when __ASPNETCORE_BROWSER_TOOLS
+            // is set, and without that agent every apply entry point silently applies nothing. .NET 8.0 must
+            // not set it because its InitializeAsync imports a blazor-hotreload.js module the SDK no longer
+            // produces, and .NET 10.0 and later ship their own agent instead.
+            var initializerPath = Path.Combine(
+                build.GetIntermediateDirectory(targetFramework, "Debug").ToString(),
+                "HotReload",
+                "Microsoft.NET.Sdk.WebAssembly.HotReload.lib.module.js");
+            var initializerContent = File.ReadAllText(initializerPath);
+
+            initializerContent.Should().Contain($"const useRuntimeHotReloadAgent = {(expectRuntimeHotReloadAgent ? "true" : "false")};");
+            initializerContent.Should().Contain($"const useSdkHotReloadAgent = {(expectSdkHotReloadAgent ? "true" : "false")};");
+            initializerContent.Should().Contain("agent.applyHotReloadDeltas =");
+            initializerContent.Should().Contain("export async function afterWebStarted()");
+            initializerContent.Should().Contain("export function afterWebAssemblyStarted()");
+            initializerContent.Should().Contain("agent.pendingUpdates ??= [];");
+            initializerContent.Should().Contain("return hotReloadSettings ??= readHotReloadSettings();");
+            initializerContent.Should().NotContain("window.Blazor._internal.applyHotReloadDeltas =");
+            initializerContent.Should().NotContain("__RUNTIME_HOT_RELOAD_AGENT__");
+            initializerContent.Should().NotContain("__SDK_HOT_RELOAD_AGENT__");
+        }
+
+        [TestMethod]
+        public void Build_DoesNotAddHotReloadInitializer_WhenBrowserToolsAreDisabled()
+        {
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal");
+
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build, "/p:EnableHotReloadInRuntimeConfigDevFile=false").Should().Pass();
+
+            GetLibraryInitializers(build, DefaultTfm).Should().NotContainMatch("*Microsoft.NET.Sdk.WebAssembly.HotReload*");
+        }
+
+        private static string[] GetLibraryInitializers(BuildCommand build, string targetFramework)
+        {
+            var manifestPath = Path.Combine(build.GetIntermediateDirectory(targetFramework, "Debug").ToString(), "staticwebassets.build.json");
+            return StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath)).Assets
+                .Where(asset => asset.AssetTraitValue == "JSLibraryModule")
+                .Select(asset => asset.RelativePath)
+                .ToArray();
+        }
+
+        [TestMethod]
+        public void Build_HostedApp_RegistersHotReloadInitializerForWebStartup()
+        {
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorHosted");
+            var build = CreateBuildCommand(ProjectDirectory, "blazorhosted");
+
+            ExecuteCommand(build).Should().Pass();
+
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(Path.Combine(
+                build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
+                "staticwebassets.build.json")));
+            var initializer = manifest.Assets.Single(asset =>
+                asset.IsPrimaryAsset() &&
+                asset.AssetTraitValue == "JSLibraryModule" &&
+                asset.RelativePath.Contains("Microsoft.NET.Sdk.WebAssembly.HotReload"));
+
+            initializer.SourceId.Should().Be("blazorwasm");
+            initializer.IsBuildOnly().Should().BeTrue();
+
+            // Blazor Web imports this manifest before any interactive WebAssembly component starts.
+            var modules = File.ReadAllText(Path.Combine(
+                build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
+                "jsmodules",
+                "jsmodules.build.manifest.json"));
+            modules.Should().Contain("Microsoft.NET.Sdk.WebAssembly.HotReload");
+
+            var content = File.ReadAllText(initializer.Identity);
+            content.ReplaceLineEndings("\n").Should().Contain("""
+                export async function afterWebStarted() {
+                    const agent = hotReloadAgentSignal();
+                    if (!agent.isReady) {
+                        agent.pendingUpdates ??= [];
+                    }
+
+                    if (!await isHotReloadEnabled()) {
+                        return;
+                    }
+
+                    await import(new URL(configModulePath, import.meta.url).href);
+                }
+                """.ReplaceLineEndings("\n"));
+
+            new DirectoryInfo(Path.Combine(
+                build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),
+                "HotReload")).Should().NotExist();
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void JSModules_ManifestIncludesModuleTargetPaths()
         {
             // Arrange
@@ -100,7 +218,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(outputPath, "wwwroot", "blazorhosted.modules.json")).Should().NotExist();
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Publish_DoesNotGenerateManifestJson_IncludesJSModulesOnBlazorBootJsonManifest()
         {
             // Arrange
@@ -149,7 +268,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void JsModules_CanHaveDifferentBuildAndPublishModules()
         {
             // Arrange
@@ -202,7 +322,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void JsModules_CanCustomizeBlazorInitialization()
         {
             // Arrange
@@ -267,7 +387,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void JsModules_Hosted_CanCustomizeBlazorInitialization()
         {
             // Arrange

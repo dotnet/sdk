@@ -12,11 +12,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="xunit" />
     <PackageReference Include="Microsoft.Build" />
   </ItemGroup>
 

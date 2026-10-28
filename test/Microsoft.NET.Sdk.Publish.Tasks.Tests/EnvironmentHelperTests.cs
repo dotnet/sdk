@@ -1,22 +1,23 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 {
+    [TestClass]
     public class EnvironmentHelperTests
     {
         private const string TelemetryOptout = "DOTNET_CLI_TELEMETRY_OPTOUT";
 
-        [Theory]
-        [InlineData("true", true)]
-        [InlineData("1", true)]
-        [InlineData("yes", true)]
-        [InlineData("false", false)]
-        [InlineData("0", false)]
-        [InlineData("no", false)]
-        [InlineData("anyothervalue", false)]
+        [TestMethod]
+        [DataRow("true", true)]
+        [DataRow("1", true)]
+        [DataRow("yes", true)]
+        [DataRow("false", false)]
+        [DataRow("0", false)]
+        [DataRow("no", false)]
+        [DataRow("anyothervalue", false)]
         public void WebConfigTelemetry_RemovesProjectGuid_IfCLIOptedOutEnvVariableIsSet(string value, bool expectedOutput)
         {
             // Arrange
@@ -28,7 +29,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests
 
 
             // Assert
-            Assert.Equal<bool>(expectedOutput, actualOutput);
+            Assert.AreEqual<bool>(expectedOutput, actualOutput);
 
             // reset the value back to the original value
             Environment.SetEnvironmentVariable(TelemetryOptout, originalValue);

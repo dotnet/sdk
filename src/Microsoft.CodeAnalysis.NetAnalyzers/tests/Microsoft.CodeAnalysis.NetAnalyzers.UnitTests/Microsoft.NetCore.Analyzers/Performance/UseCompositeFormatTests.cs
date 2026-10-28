@@ -1,16 +1,17 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseCompositeFormatAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public partial class UseCompositeFormatTests
     {
-        [Fact]
+        [TestMethod]
         public async Task LacksTargetTypes_NoDiagnostics()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -27,7 +28,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ValidateAnalyzer()
         {
             await new VerifyCS.Test
@@ -208,7 +209,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                         }
                     }
                     """,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private const string Preamble = """

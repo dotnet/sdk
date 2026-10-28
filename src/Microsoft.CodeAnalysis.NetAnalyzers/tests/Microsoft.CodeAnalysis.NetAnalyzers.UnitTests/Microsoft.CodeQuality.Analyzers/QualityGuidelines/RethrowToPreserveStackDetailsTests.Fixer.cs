@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsFixer>;
@@ -11,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
 {
+    [TestClass]
     public class RethrowToPreserveStackDetailsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_RethrowExplicitlyToThrowImplicitlyAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -64,7 +65,7 @@ class Program
     }
 }");
         }
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_RethrowExplicitlyToThrowImplicitlyAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -95,6 +96,86 @@ Class Program
 End Class
 "
     );
+        }
+
+        [TestMethod]
+        public async Task TestCSharp_MultipleCatchClauses_FixAllRewritesEveryRethrowAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(
+@"
+using System;
+class Program
+{
+    void CatchAndRethrowExplicitly()
+    {
+        try
+        {
+            throw new ArithmeticException();
+        }
+        catch (ArithmeticException e)
+        {
+            [|throw e;|]
+        }
+        catch (Exception e)
+        {
+            [|throw e;|]
+        }
+    }
+}",
+@"
+using System;
+class Program
+{
+    void CatchAndRethrowExplicitly()
+    {
+        try
+        {
+            throw new ArithmeticException();
+        }
+        catch (ArithmeticException e)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            throw;
+        }
+    }
+}");
+        }
+
+        [TestMethod]
+        public async Task TestBasic_MultipleCatchClauses_FixAllRewritesEveryRethrowAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(
+@"
+Imports System
+Class Program
+    Sub CatchAndRethrowExplicitly()
+        Try
+            Throw New ArithmeticException()
+        Catch e As ArithmeticException
+            [|Throw e|]
+        Catch ex As Exception
+            [|Throw ex|]
+        End Try
+    End Sub
+End Class
+",
+@"
+Imports System
+Class Program
+    Sub CatchAndRethrowExplicitly()
+        Try
+            Throw New ArithmeticException()
+        Catch e As ArithmeticException
+            Throw
+        Catch ex As Exception
+            Throw
+        End Try
+    End Sub
+End Class
+");
         }
     }
 }

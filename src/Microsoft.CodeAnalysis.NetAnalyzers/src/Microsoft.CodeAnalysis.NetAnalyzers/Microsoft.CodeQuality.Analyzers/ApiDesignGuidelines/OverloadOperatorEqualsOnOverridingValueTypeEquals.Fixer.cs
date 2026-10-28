@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -7,9 +8,9 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -17,60 +18,40 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// CA2231: Overload operator equals on overriding ValueType.Equals
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class OverloadOperatorEqualsOnOverridingValueTypeEqualsFixer : CodeFixProvider
+    public sealed class OverloadOperatorEqualsOnOverridingValueTypeEqualsFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer.RuleId);
 
-        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        public override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
-            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-
-            SyntaxNode declaration = root.FindNode(context.Span);
-            declaration = generator.GetDeclaration(declaration);
-            if (declaration == null)
-            {
-                return;
-            }
-
-            SemanticModel model = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            if (model.GetDeclaredSymbol(declaration, context.CancellationToken) is not INamedTypeSymbol typeSymbol)
-            {
-                return;
-            }
-
             string title = MicrosoftCodeQualityAnalyzersResources.OverloadOperatorEqualsOnOverridingValueTypeEqualsTitle;
-            context.RegisterCodeFix(
-                CodeAction.Create(title,
-                    async ct => await ImplementOperatorEqualsAsync(context.Document, declaration, typeSymbol, ct).ConfigureAwait(false),
-                    equivalenceKey: title), context.Diagnostics);
+            RegisterCodeFix(context, title, title);
+            return Task.CompletedTask;
         }
 
-        private static async Task<Document> ImplementOperatorEqualsAsync(Document document, SyntaxNode declaration, INamedTypeSymbol typeSymbol, CancellationToken cancellationToken)
+        protected override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            var generator = editor.Generator;
+            SyntaxNode? declaration = editor.Generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
+            if (declaration is null)
+            {
+                return;
+            }
+
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            if (model.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol typeSymbol)
+            {
+                return;
+            }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.EqualityOperatorName))
             {
-                var equalityOperator = generator.DefaultOperatorEqualityDeclaration(typeSymbol);
-
-                editor.AddMember(declaration, equalityOperator);
+                editor.AddMember(declaration, editor.Generator.DefaultOperatorEqualityDeclaration(typeSymbol));
             }
 
             if (!typeSymbol.ImplementsOperator(WellKnownMemberNames.InequalityOperatorName))
             {
-                var inequalityOperator = generator.DefaultOperatorInequalityDeclaration(typeSymbol);
-
-                editor.AddMember(declaration, inequalityOperator);
+                editor.AddMember(declaration, editor.Generator.DefaultOperatorInequalityDeclaration(typeSymbol));
             }
-
-            return editor.GetChangedDocument();
-        }
-
-        public override FixAllProvider GetFixAllProvider()
-        {
-            return WellKnownFixAllProviders.BatchFixer;
         }
     }
 }

@@ -1,6 +1,13 @@
-# Pipeline: https://dev.azure.com/dnceng-public/public/_build?definitionId=101
+# This yml is used by these pipelines:
+# - dotnet-sdk-public-ci
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=101
+#   Triggers: CI batch and PR
 
-trigger: none
+trigger:
+  batch: true
+  branches:
+    include:
+    - main
 
 pr:
   branches:
@@ -13,42 +20,55 @@ pr:
     - eng
     - build
     - src
+    - template_feed
     - test
+    - .config
     - '*.yml'
     - '*.props'
     - '*.targets'
+    - global.json
     exclude:
+    - .github/ISSUE_TEMPLATE/*
     - documentation/*
     - README.md
     - CODEOWNERS
-
-parameters:
-- name: enableArm64Job
-  displayName: Enables the ARM64 job
-  type: boolean
-  default: true
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngPublicBuildPool
 - template: /eng/common/templates/variables/pool-providers.yml
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
 
 resources:
   containers:
   - container: azureLinux30Amd64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-build-amd64
+  # Cross-compilation prereq image (clang + /crossrootfs/arm64 sysroot) used by the Linux arm64
+  # AOT leg. NativeAOT cross-links dotnet-aot for linux-arm64 from an x64 host; the container
+  # provides the native toolchain + sysroot and sets ROOTFS_DIR, and the leg passes
+  # /p:CrossBuild=true so ILC emits --sysroot/--target.
+  - container: azureLinuxCrossArm64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-cross-arm64
+    env:
+      ROOTFS_DIR: /crossrootfs/arm64
 
 stages:
 ############### BUILD STAGE ###############
 - stage: build
   displayName: Build
   jobs:
+  ############### HELIX JOB MONITOR ###############
+  - template: /eng/common/core-templates/job/helix-job-monitor.yml
+    parameters:
+      useFullyQualifiedTestName: true
+
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
+        demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
 
@@ -68,20 +88,16 @@ stages:
         name: Azure Pipelines
         vmImage: macOS-latest
         os: macOS
-      helixTargetQueue: osx.15.amd64.open
-  ### ARM64 ###
-  - ${{ if eq(parameters.enableArm64Job, true) }}:
+      helixTargetQueue: osx.15.arm64.open
+  ### x64 (CI only) ###
+  - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
       parameters:
         pool:
           name: Azure Pipelines
           vmImage: macOS-latest
           os: macOS
-        helixTargetQueue: osx.15.arm64.open
+        helixTargetQueue: osx.15.amd64.open
         macOSJobParameterSets:
-        - categoryName: TestBuild
-          targetArchitecture: arm64
-          runtimeIdentifier: osx-arm64
+        - runtimeIdentifier: osx-x64
 
-  ############### DOTNET-FORMAT ###############
-  - template: /eng/dotnet-format/dotnet-format-integration.yml

@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.InterfaceMethodsShouldBeCallableByChildTypesFixer>;
@@ -12,11 +12,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class InterfaceMethodsShouldBeCallableByChildTypesFixerTests
     {
         #region CSharp
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesCSharp_MakeProtectedAsync()
         {
             var code = @"
@@ -111,7 +112,7 @@ public class ImplementsGeneralThree : IGeneral
             await VerifyCS.VerifyCodeFixAsync(code, expectedFixedCode);
         }
 
-        [Fact, WorkItem(2616, "https://github.com/dotnet/roslyn/issues/2616")]
+        [TestMethod, WorkItem(2616, "https://github.com/dotnet/roslyn/issues/2616")]
         public async Task CA1033SimpleDiagnosticCasesCSharp_ImplicitImplAsync()
         {
             var code = @"
@@ -176,7 +177,7 @@ public class ImplementsGeneral  : IGeneral
             await VerifyCS.VerifyCodeFixAsync(code, expectedFixedCode);
         }
 
-        [Fact, WorkItem(2616, "https://github.com/dotnet/roslyn/issues/2616")]
+        [TestMethod, WorkItem(2616, "https://github.com/dotnet/roslyn/issues/2616")]
         public async Task CA1033SimpleDiagnosticCasesCSharp_IndexerAsync()
         {
             var code = @"
@@ -269,10 +270,10 @@ public class ImplementsGeneralThree : IGeneral
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesCSharp_MakeSealedAsync()
         {
             var code = @"
@@ -365,10 +366,10 @@ public sealed class ImplementsGeneral  : IGeneral
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesCSharp_MakeSealed_2Async()
         {
             var code = @"
@@ -515,10 +516,10 @@ public sealed class ImplementsGeneralThree : IGeneral
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesCSharp_EventsAsync()
         {
             var code = @"
@@ -585,7 +586,7 @@ public class NestedExplicitInterfaceImplementation
         }
 
         [WorkItem(2654, "https://github.com/dotnet/roslyn/issues/2654")]
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesCSharp_PropertyAsync()
         {
             var code = @"
@@ -661,7 +662,7 @@ public class NestedExplicitInterfaceImplementation
 
         #region VisualBasic
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesBasic_MakeProtectedAsync()
         {
             var code = @"
@@ -742,7 +743,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, expectedFixedCode);
         }
 
-        [Fact, WorkItem(2616, "https://github.com/dotnet/roslyn/issues/2616")]
+        [TestMethod, WorkItem(2616, "https://github.com/dotnet/roslyn/issues/2616")]
         public async Task CA1033SimpleDiagnosticCasesBasic_ImplicitImplAsync()
         {
             var code = @"
@@ -795,7 +796,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, expectedFixedCode);
         }
 
-        [Fact, WorkItem(2650, "https://github.com/dotnet/roslyn/issues/2650")]
+        [TestMethod, WorkItem(2650, "https://github.com/dotnet/roslyn/issues/2650")]
         public async Task CA1033SimpleDiagnosticCasesBasic_IndexerAsync()
         {
             var code = @"
@@ -875,10 +876,10 @@ End Class
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { expectedFixedCode } },
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesBasic_MakeSealedAsync()
         {
             var code = @"
@@ -947,10 +948,10 @@ End Class
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesBasic_MakeSealed_2Async()
         {
             var code = @"
@@ -1063,10 +1064,10 @@ End Class
                 FixedState = { Sources = { expectedFixedCode } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = MicrosoftCodeQualityAnalyzersResources.InterfaceMethodsShouldBeCallableByChildTypesFix3,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesBasic_EventsAsync()
         {
             var code = @"
@@ -1145,7 +1146,7 @@ End Class
         }
 
         [WorkItem(2654, "https://github.com/dotnet/roslyn/issues/2654")]
-        [Fact]
+        [TestMethod]
         public async Task CA1033SimpleDiagnosticCasesBasic_PropertyAsync()
         {
             var code = @"

@@ -68,7 +68,7 @@ function Invoke-DotnetupNativeCommand([scriptblock]$Command) {
     $ErrorActionPreference = 'Continue'
     $PSNativeCommandUseErrorActionPreference = $false
     try {
-        # Write command output to the host and prevent it from being returned alongside the exit code
+        # Write command output to the host and prevent it from being returned alongside the exit code 
         & $Command | Out-Host
         return $LASTEXITCODE
     }

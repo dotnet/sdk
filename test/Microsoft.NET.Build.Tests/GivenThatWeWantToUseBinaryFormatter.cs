@@ -1,13 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToUseBinaryFormatter : SdkTest
     {
-        public GivenThatWeWantToUseBinaryFormatter(ITestOutputHelper log) : base(log)
-        {
-        }
 
         private const string SourceWithPragmaSuppressions = @"
 using System;
@@ -47,10 +45,10 @@ namespace BinaryFormatterTests
     }
 }";
 
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netstandard2.0")]
-        [InlineData("net472")]
+        [TestMethod]
+        [DataRow("netcoreapp3.1")]
+        [DataRow("netstandard2.0")]
+        [DataRow("net472")]
         public void It_does_not_warn_when_targeting_downlevel_frameworks(string targetFramework)
         {
             var testProject = new TestProject()
@@ -62,7 +60,7 @@ namespace BinaryFormatterTests
 
             testProject.SourceFiles.Add("TestClass.cs", SourceWithoutPragmaSuppressions);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand
@@ -73,13 +71,13 @@ namespace BinaryFormatterTests
                 .NotHaveStdOutContaining("SYSLIB0011");
         }
 
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netstandard2.0")]
-        [InlineData("net472")]
-        [InlineData("net5.0")]
-        [InlineData("net6.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("netcoreapp3.1")]
+        [DataRow("netstandard2.0")]
+        [DataRow("net472")]
+        [DataRow("net5.0")]
+        [DataRow("net6.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_does_not_warn_on_any_framework_when_using_pragma_suppressions(string targetFramework)
         {
             var testProject = new TestProject()
@@ -91,7 +89,7 @@ namespace BinaryFormatterTests
 
             testProject.SourceFiles.Add("TestClass.cs", SourceWithPragmaSuppressions);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand
@@ -104,9 +102,9 @@ namespace BinaryFormatterTests
                 .NotHaveStdOutContaining("error SYSLIB0011");
         }
 
-        [Theory]
-        [InlineData("net5.0")]
-        [InlineData("net6.0")]
+        [TestMethod]
+        [DataRow("net5.0")]
+        [DataRow("net6.0")]
         public void It_warns_when_targeting_certain_frameworks_and_not_using_pragma_suppressions(string targetFramework)
         {
             var testProject = new TestProject()
@@ -118,7 +116,7 @@ namespace BinaryFormatterTests
 
             testProject.SourceFiles.Add("TestClass.cs", SourceWithoutPragmaSuppressions);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand
@@ -131,9 +129,9 @@ namespace BinaryFormatterTests
                 .NotHaveStdOutContaining("error SYSLIB0011");
         }
 
-        [Theory]
-        [InlineData("net9.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("net9.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_errors_when_targeting_certain_frameworks_and_not_using_pragma_suppressions(string targetFramework)
         {
             var testProject = new TestProject()
@@ -145,7 +143,7 @@ namespace BinaryFormatterTests
 
             testProject.SourceFiles.Add("TestClass.cs", SourceWithoutPragmaSuppressions);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand
@@ -158,9 +156,9 @@ namespace BinaryFormatterTests
                 .HaveStdOutContaining("error SYSLIB0011");
         }
 
-        [Theory]
-        [InlineData("net9.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow("net9.0")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_allows_downgrading_errors_to_warnings_via_project_config(string targetFramework)
         {
             var testProject = new TestProject()
@@ -173,7 +171,7 @@ namespace BinaryFormatterTests
             testProject.SourceFiles.Add("TestClass.cs", SourceWithoutPragmaSuppressions);
             testProject.AdditionalProperties["EnableUnsafeBinaryFormatterSerialization"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
             var buildCommand = new BuildCommand(testAsset, "BinaryFormatterTests");
 
             buildCommand

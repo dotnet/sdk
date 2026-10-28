@@ -27,19 +27,7 @@ internal static class EnvironmentVariables
         public const string SuppressBrowserRefresh = "DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH";
     }
 
-    public static LogLevel? CliLogLevel
-    {
-        get
-        {
-            var value = Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE");
-            return string.Equals(value, "trace", StringComparison.OrdinalIgnoreCase)
-                ? LogLevel.Trace
-                : ParseBool(value)
-                ? LogLevel.Debug
-                : null;
-        }
-    }
-
+    public static bool CliContextVerbose => ReadBool("DOTNET_CLI_CONTEXT_VERBOSE");
     public static bool IsPollingEnabled => ReadBool("DOTNET_USE_POLLING_FILE_WATCHER");
     public static bool SuppressEmojis => ReadBool("DOTNET_WATCH_SUPPRESS_EMOJIS");
     public static bool RestartOnRudeEdit => ReadBool("DOTNET_WATCH_RESTART_ON_RUDE_EDIT");
@@ -67,7 +55,7 @@ internal static class EnvironmentVariables
     /// allowed as origins of connections to the broser refresh web socket.
     /// Use when the browser opens the app on a custom domain.
     /// </summary>
-    public static ImmutableArray<string> DotNetWatchWebSocketAllowedOrigins = ReadList("DOTNET_WATCH_AUTO_RELOAD_WS_ORIGINS", separators: [';', ',']);
+    public static ImmutableArray<string> DotNetWatchWebSocketAllowedOrigins => ReadList("DOTNET_WATCH_AUTO_RELOAD_WS_ORIGINS", separators: [';', ',']);
 
     /// <summary>
     /// Port used for browser WebSocket communication. Defaults to 0 (auto-assign) if not specified.

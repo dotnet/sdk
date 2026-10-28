@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpForwardCancellationTokenToInvocationsAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpForwardCancellationTokenToInvocationsFixer>;
@@ -13,14 +13,15 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class ForwardCancellationTokenToInvocationsTests
     {
         #region No Diagnostic - C#
 
-        [Fact]
-        public Task CS_NoDiagnostic_NoParentToken_AsyncNoTokenAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_NoParentToken_AsyncNoTokenAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -34,10 +35,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_NoParentToken_SyncNoTokenAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_NoParentToken_SyncNoTokenAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 class C
 {
     void M()
@@ -49,10 +50,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_NoParentToken_TokenDefaultAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_NoParentToken_TokenDefaultAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -66,10 +67,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_NoTokenAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_NoTokenAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -83,10 +84,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_OverloadArgumentsDontMatchAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_OverloadArgumentsDontMatchAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -101,10 +102,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_Overload_AlreadyPassingTokenAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_Overload_AlreadyPassingTokenAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -119,10 +120,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_Default_AlreadyPassingTokenAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_Default_AlreadyPassingTokenAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 class C
 {
@@ -135,10 +136,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_PassingTokenFromSourceAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_PassingTokenFromSourceAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -154,10 +155,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_PassingExplicitDefaultAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_PassingExplicitDefaultAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -172,10 +173,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_PassingExplicitDefaultCancellationTokenAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_PassingExplicitDefaultCancellationTokenAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -190,10 +191,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_PassingExplicitCancellationTokenNoneAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_PassingExplicitCancellationTokenNoneAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -208,10 +209,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_OverloadTokenNotLastParameterAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_OverloadTokenNotLastParameterAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -226,10 +227,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_OverloadWithMultipleTokensAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_OverloadWithMultipleTokensAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -244,10 +245,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_OverloadWithMultipleTokensSeparatedAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_OverloadWithMultipleTokensSeparatedAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -262,10 +263,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_NamedTokenUnorderedAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_NamedTokenUnorderedAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -279,10 +280,10 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_Overload_NamedTokenUnorderedAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_Overload_NamedTokenUnorderedAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System.Threading;
 using System.Threading.Tasks;
 class C
@@ -297,8 +298,8 @@ class C
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_CancellationTokenSource_ParamsUsed_OrderAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_CancellationTokenSource_ParamsUsed_OrderAsync()
         {
             /*
             CancellationTokenSource has 3 different overloads that take CancellationToken arguments.
@@ -311,7 +312,7 @@ class C
                 public static CancellationTokenSource CreateLinkedTokenSource(params CancellationToken[] tokens);
             }
             */
-            return CS8VerifyAnalyzerAsync(@"
+            await CS8VerifyAnalyzerAsync(@"
 using System.Threading;
 class C
 {
@@ -329,8 +330,8 @@ class CTS
             ");
         }
 
-        [Fact]
-        public Task CS_NoDiagnostic_ExtensionMethodTakesTokenAsync()
+        [TestMethod]
+        public async Task CS_NoDiagnostic_ExtensionMethodTakesTokenAsync()
         {
             // The extension method is in another class, make sure the object mc is not substituted with the static class name
             string originalCode = @"
@@ -353,14 +354,14 @@ public static class Extensions
     public static void MyMethod(this MyClass mc, CancellationToken c) { }
 }
             ";
-            return CS8VerifyAnalyzerAsync(originalCode);
+            await CS8VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_NoDiagnostic_ParametersDifferMoreThanOneAsync()
+        public async Task CS_NoDiagnostic_ParametersDifferMoreThanOneAsync()
         {
-            return CS8VerifyAnalyzerAsync(@"
+            await CS8VerifyAnalyzerAsync(@"
 using System;
 using System.Threading;
 class C
@@ -377,13 +378,13 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambdaAsync()
+        public async Task CS_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambdaAsync()
         {
             // Only for local methods will we look for the ct in the top-most ancestor
             // For anonymous methods we will only look in the immediate ancestor
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading;
 public static class Extensions
@@ -405,13 +406,13 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegateAsync()
+        public async Task CS_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegateAsync()
         {
             // Only for local methods will we look for the ct in the top-most ancestor
             // For anonymous methods we will only look in the immediate ancestor
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading;
 public static class Extensions
@@ -434,11 +435,11 @@ class C
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task CS_NoDiagnostic_ReturnTypesDifferAsync()
+        public async Task CS_NoDiagnostic_ReturnTypesDifferAsync()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -457,7 +458,7 @@ class P
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5965, "https://github.com/dotnet/roslyn-analyzers/issues/5965")]
         public async Task CS_ArgList()
         {
@@ -478,11 +479,11 @@ class P
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6819, "https://github.com/dotnet/roslyn-analyzers/issues/6819")]
-        public Task ObsoleteOverload()
+        public async Task ObsoleteOverload()
         {
-            return VerifyCS.VerifyAnalyzerAsync(@"
+            await VerifyCS.VerifyAnalyzerAsync(@"
 using System;
 using System.Threading;
 
@@ -504,8 +505,8 @@ class Test
 
         #region Diagnostics with no fix = C#
 
-        [Fact]
-        public Task CS_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnorderedAsync()
+        [TestMethod]
+        public async Task CS_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnorderedAsync()
         {
             // This is a special case that will get a diagnostic but will not get a fix
             // because the fixer does not currently have a way to know the overload's ct parameter name
@@ -524,11 +525,11 @@ class C
     Task MethodAsync(int x, bool y = default, string z = """", CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyAnalyzerAsync(originalCode);
+            await VerifyCS.VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
-        public Task CS_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmptyAsync()
+        [TestMethod]
+        public async Task CS_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmptyAsync()
         {
             /*
             CancellationTokenSource has 3 different overloads that take CancellationToken arguments.
@@ -553,12 +554,12 @@ class C
     }
 }
             ";
-            return CS8VerifyAnalyzerAsync(originalCode);
+            await CS8VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_AnalyzerOnlyDiagnostic_StaticLocalMethodAsync()
+        public async Task CS_AnalyzerOnlyDiagnostic_StaticLocalMethodAsync()
         {
             // Local static functions are available in C# >= 8.0
             // The user should fix convert the static local method into a non-static local method,
@@ -579,12 +580,12 @@ class C
     }
 }
             ";
-            return CS8VerifyAnalyzerAsync(originalCode);
+            await CS8VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_AnalyzerOnlyDiagnostic_LocalMethod_InsideOf_StaticLocalMethod_TokenInTopParentAsync()
+        public async Task CS_AnalyzerOnlyDiagnostic_LocalMethod_InsideOf_StaticLocalMethod_TokenInTopParentAsync()
         {
             // Local static functions are available in C# >= 8.0
             // The user should fix convert the static local method into a non-static local method,
@@ -609,15 +610,15 @@ class C
     }
 }
             ";
-            return CS8VerifyAnalyzerAsync(originalCode);
+            await CS8VerifyAnalyzerAsync(originalCode);
         }
 
         #endregion
 
         #region Diagnostics with fix = C#
 
-        [Fact]
-        public Task CS_Diagnostic_Class_TokenDefaultAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Class_TokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -641,11 +642,11 @@ class C
     int MyMethod(CancellationToken c = default) => 1;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Class_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Class_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -671,11 +672,11 @@ class C
     Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_NoAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_NoAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -701,11 +702,11 @@ class C
     Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_SaveTaskAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_SaveTaskAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -731,11 +732,11 @@ class C
     Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_ClassStaticMethod_TokenDefaultAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_ClassStaticMethod_TokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -761,11 +762,11 @@ class C
     static Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -791,11 +792,11 @@ class C
     static Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OtherClass_TokenDefaultAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OtherClass_TokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -827,11 +828,11 @@ class O
     public int MyMethod(CancellationToken c = default) => 1;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OtherClass_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OtherClass_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -867,11 +868,11 @@ class O
     public Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OtherClassStaticMethod_TokenDefaultAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OtherClassStaticMethod_TokenDefaultAsync()
         {
             // The invocation for a static method includes the type and the dot
             string originalCode = @"
@@ -904,11 +905,11 @@ class O
     public static Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             // The invocation for a static method includes the type and the dot
             string originalCode = @"
@@ -943,11 +944,11 @@ class O
     static public Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Struct_TokenDefaultAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Struct_TokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -973,11 +974,11 @@ struct S
     Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Struct_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Struct_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1003,11 +1004,11 @@ struct S
     Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OverloadTokenAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OverloadTokenAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1035,11 +1036,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OverloadToken_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OverloadToken_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1067,11 +1068,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OverloadTokenDefaultAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OverloadTokenDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1099,11 +1100,11 @@ class C
     Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OverloadTokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OverloadTokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1131,11 +1132,11 @@ class C
     Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OverloadsArgumentsMatchAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OverloadsArgumentsMatchAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1167,11 +1168,11 @@ class C
     Task MethodAsync(int x, string s, CancellationToken ct) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1203,11 +1204,11 @@ class C
     Task MethodAsync(int x, string s, CancellationToken ct) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_ActionDelegateAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_ActionDelegateAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1239,11 +1240,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_ActionDelegateNoAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_ActionDelegateNoAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1275,11 +1276,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_ActionDelegateAwait_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_ActionDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1311,11 +1312,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_FuncDelegateAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_FuncDelegateAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1355,11 +1356,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_FuncDelegateAwait_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_FuncDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1399,11 +1400,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_FuncDelegateAwaitOutsideAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_FuncDelegateAwaitOutsideAsync()
         {
             string originalCode = @"
 using System;
@@ -1435,11 +1436,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_NestedFunctionAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_NestedFunctionAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1477,11 +1478,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_NestedFunctionNoAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_NestedFunctionNoAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1519,11 +1520,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_NestedFunctionAwaitOutsideAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_NestedFunctionAwaitOutsideAsync()
         {
             string originalCode = @"
 using System;
@@ -1561,11 +1562,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_NestedFunctionAwait_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_NestedFunctionAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 using System;
@@ -1603,11 +1604,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_AliasTokenInDefaultAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_AliasTokenInDefaultAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1635,11 +1636,11 @@ class C
     Task MethodAsync(TokenAlias c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_AliasTokenInOverloadAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_AliasTokenInOverloadAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1669,11 +1670,11 @@ class C
     Task MethodAsync(TokenAlias c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Default_AliasTokenInMethodParameterAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Default_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1701,11 +1702,11 @@ class C
     Task MethodAsync(CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Overload_AliasTokenInMethodParameterAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Overload_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1735,11 +1736,11 @@ class C
     Task MethodAsync(CancellationToken c) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Default_AliasTokenInDefaultAndMethodParameterAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Default_AliasTokenInDefaultAndMethodParameterAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1767,11 +1768,11 @@ class C
     Task MethodAsync(TokenAlias c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Default_WithAllDefaultParametersImplicitAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Default_WithAllDefaultParametersImplicitAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1803,11 +1804,11 @@ class C
     }
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Default_WithSomeDefaultParametersAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Default_WithSomeDefaultParametersAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1833,11 +1834,11 @@ class C
     Task MethodAsync(int x, bool y = default, CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Default_WithNamedParametersAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Default_WithNamedParametersAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1863,11 +1864,11 @@ class C
     Task MethodAsync(int x, bool y = default, CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Default_WithAncestorAliasAndNamedParametersAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Default_WithAncestorAliasAndNamedParametersAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1895,11 +1896,11 @@ class C
     Task MethodAsync(int x, bool y = default, CancellationToken c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Default_WithMethodArgumentAliasAndNamedParametersAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Default_WithMethodArgumentAliasAndNamedParametersAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1927,11 +1928,11 @@ class C
     Task MethodAsync(int x, bool y = default, TokenAlias c = default) => Task.CompletedTask;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_Default_WithNamedParametersUnorderedAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_Default_WithNamedParametersUnorderedAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1956,11 +1957,11 @@ class C
     int MyMethod(int x, bool y = default, string z = """", CancellationToken c = default) => 1;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_WithLockAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_WithLockAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -1996,11 +1997,11 @@ class C
     int MyMethod(int x, CancellationToken c = default) => 1;
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_DereferencePossibleNullReferenceAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_DereferencePossibleNullReferenceAsync()
         {
             string originalCode = @"
 #nullable enable
@@ -2043,11 +2044,11 @@ class O
 }
             ";
             // Nullability is available in C# 8.0+
-            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+            await CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task CS_Diagnostic_WithTriviaAsync()
+        [TestMethod]
+        public async Task CS_Diagnostic_WithTriviaAsync()
         {
             string originalCode = @"
 using System.Threading;
@@ -2109,12 +2110,12 @@ class C
     void MethodOverloadWithArguments(int x, CancellationToken c) {}
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_Diagnostic_MultiNesting_TopMethodAsync()
+        public async Task CS_Diagnostic_MultiNesting_TopMethodAsync()
         {
             string originalCode = @"
 using System;
@@ -2158,12 +2159,12 @@ class C
     void TokenMethod(CancellationToken ct = default) {}
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_Diagnostic_MultiNesting_LocalMethodAsync()
+        public async Task CS_Diagnostic_MultiNesting_LocalMethodAsync()
         {
             string originalCode = @"
 using System;
@@ -2207,12 +2208,12 @@ class C
     void TokenMethod(CancellationToken ct = default) {}
 }
             ";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task CS_Diagnostic_LocalMethod_InsideOf_StaticLocalMethodPassingTokenAsync()
+        public async Task CS_Diagnostic_LocalMethod_InsideOf_StaticLocalMethodPassingTokenAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -2255,12 +2256,12 @@ class C
     }
 }
             ";
-            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+            await CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
-        public Task CS_Diagnostic_GenericTypeParamOnInstanceMethodAsync()
+        public async Task CS_Diagnostic_GenericTypeParamOnInstanceMethodAsync()
         {
             string originalCode = @"
 using System;
@@ -2294,12 +2295,12 @@ class C
     }
 }
             ";
-            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+            await CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
-        public Task CS_Diagnostic_GenericTypeParamOnStaticMethodAsync()
+        public async Task CS_Diagnostic_GenericTypeParamOnStaticMethodAsync()
         {
             string originalCode = @"
 using System;
@@ -2327,12 +2328,12 @@ class C
     }
 }
             ";
-            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+            await CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
-        public Task CS_Diagnostic_NullCoalescedDelegatesAsync()
+        public async Task CS_Diagnostic_NullCoalescedDelegatesAsync()
         {
             string originalCode = @"
 using System;
@@ -2366,12 +2367,12 @@ class C
     }
 }
             ";
-            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+            await CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
-        public Task CS_Diagnostic_NullCoalescedDelegatesWithInvokeAsync()
+        public async Task CS_Diagnostic_NullCoalescedDelegatesWithInvokeAsync()
         {
             string originalCode = @"
 using System;
@@ -2405,12 +2406,12 @@ class C
     }
 }
             ";
-            return CS8VerifyCodeFixAsync(originalCode, fixedCode);
+            await CS8VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task CS_Diagnostic_ReturnTypeIsConvertableAsync()
+        public async Task CS_Diagnostic_ReturnTypeIsConvertableAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -2445,12 +2446,12 @@ class P
 
     static int M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
 }";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task CS_SpecialCaseTaskLikeReturnTypesAsync()
+        public async Task CS_SpecialCaseTaskLikeReturnTypesAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -2485,12 +2486,12 @@ class P
 
     static ValueTask<int> M2(string s, CancellationToken cancellationToken) { throw new NotImplementedException(); }
 }";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4842, "https://github.com/dotnet/roslyn-analyzers/issues/4842")]
-        public Task CS_ParamsArrayAsync()
+        public async Task CS_ParamsArrayAsync()
         {
             string originalCode = @"
 using System;
@@ -2526,17 +2527,17 @@ public class B {
         var result = await c.FindAsync(new object[] { 5 }, cancellationToken: token);
     }
 }";
-            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
         #endregion
 
         #region No Diagnostic - VB
 
-        [Fact]
-        public Task VB_NoDiagnostic_NoParentToken_AsyncNoTokenAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_NoParentToken_AsyncNoTokenAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2550,10 +2551,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_NoParentToken_SyncNoTokenAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_NoParentToken_SyncNoTokenAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Class C
     Private Sub M()
         MyMethod()
@@ -2564,10 +2565,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_NoParentToken_TokenDefaultAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_NoParentToken_TokenDefaultAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2581,10 +2582,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_NoTokenAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_NoTokenAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2598,10 +2599,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_OverloadArgumentsDontMatchAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_OverloadArgumentsDontMatchAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2618,10 +2619,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_Overload_AlreadyPassingTokenAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_Overload_AlreadyPassingTokenAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2638,10 +2639,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_Default_AlreadyPassingTokenAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_Default_AlreadyPassingTokenAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Class C
     Private Sub M(ByVal ct As CancellationToken)
@@ -2653,10 +2654,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_PassingTokenFromSourceAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_PassingTokenFromSourceAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2676,10 +2677,10 @@ End Class
 
         // There is no default keyword in VB, must use Nothing instead.
         // The following test method covers the two cases for: `default` and `default(CancellationToken)`
-        [Fact]
-        public Task VB_NoDiagnostic_PassingExplicitNothingAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_PassingExplicitNothingAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2696,10 +2697,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_PassingExplicitCancellationTokenNoneAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_PassingExplicitCancellationTokenNoneAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2716,10 +2717,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_OverloadTokenNotLastParameterAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_OverloadTokenNotLastParameterAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2736,10 +2737,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_OverloadWithMultipleTokensAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_OverloadWithMultipleTokensAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2756,10 +2757,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_OverloadWithMultipleTokensSeparatedAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_OverloadWithMultipleTokensSeparatedAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2776,10 +2777,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_NamedTokenUnorderedAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_NamedTokenUnorderedAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2793,10 +2794,10 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_Overload_NamedTokenUnorderedAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_Overload_NamedTokenUnorderedAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System.Threading
 Imports System.Threading.Tasks
 Class C
@@ -2813,8 +2814,8 @@ End Class
             ");
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_CancellationTokenSource_ParamsUsedAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_CancellationTokenSource_ParamsUsedAsync()
         {
             /*
             CancellationTokenSource has 3 different overloads that take CancellationToken arguments.
@@ -2837,11 +2838,11 @@ Class C
     End Sub
 End Class
             ";
-            return VB16VerifyAnalyzerAsync(originalCode);
+            await VB16VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
-        public Task VB_NoDiagnostic_ExtensionMethodTakesTokenAsync()
+        [TestMethod]
+        public async Task VB_NoDiagnostic_ExtensionMethodTakesTokenAsync()
         {
             // The extension method is in another class, make sure the object mc is not substituted with the static class name
             string originalCode = @"
@@ -2864,12 +2865,12 @@ Module Extensions
     End Sub
 End Module
             ";
-            return VB16VerifyAnalyzerAsync(originalCode);
+            await VB16VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task VB_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambdaAsync()
+        public async Task VB_NoDiagnostic_LambdaAndExtensionMethod_NoTokenInLambdaAsync()
         {
             // Only for local methods will we look for the ct in the top-most ancestor
             // For anonymous methods we will only look in the immediate ancestor
@@ -2897,16 +2898,16 @@ Class C
     End Sub
 End Class
             ";
-            return VerifyVB.VerifyAnalyzerAsync(originalCode);
+            await VerifyVB.VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task VB_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegateAsync()
+        public async Task VB_NoDiagnostic_AnonymousDelegateAndExtensionMethod_NoTokenInAnonymousDelegateAsync()
         {
             // Only for local methods will we look for the ct in the top-most ancestor
             // For anonymous methods we will only look in the immediate ancestor
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading
 Imports System.Runtime.CompilerServices
@@ -2930,11 +2931,11 @@ End Class
             ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task VB_NoDiagnostic_ReturnTypesDifferAsync()
+        public async Task VB_NoDiagnostic_ReturnTypesDifferAsync()
         {
-            return VerifyVB.VerifyAnalyzerAsync(@"
+            await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
 Imports System.Threading
 Imports System.Threading.Tasks
@@ -2959,8 +2960,8 @@ End Module
 
         #region Diagnostics with no fix = VB
 
-        [Fact]
-        public Task VB_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnorderedAsync()
+        [TestMethod]
+        public async Task VB_AnalyzerOnlyDiagnostic_OverloadWithNamedParametersUnorderedAsync()
         {
             // This is a special case that will get a diagnostic but will not get a fix
             // because the fixer does not currently have a way to know the overload's ct parameter name
@@ -2982,11 +2983,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyAnalyzerAsync(originalCode);
+            await VerifyVB.VerifyAnalyzerAsync(originalCode);
         }
 
-        [Fact]
-        public Task VB_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmptyAsync()
+        [TestMethod]
+        public async Task VB_AnalyzerOnlyDiagnostic_CancellationTokenSource_ParamsEmptyAsync()
         {
             /*
             CancellationTokenSource has 3 different overloads that take CancellationToken arguments.
@@ -3010,15 +3011,15 @@ Class C
     End Sub
 End Class
             ";
-            return VB16VerifyAnalyzerAsync(originalCode);
+            await VB16VerifyAnalyzerAsync(originalCode);
         }
 
         #endregion
 
         #region Diagnostics with fix = VB
 
-        [Fact]
-        public Task VB_Diagnostic_Class_TokenDefaultAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Class_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3042,11 +3043,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Class_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Class_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3072,11 +3073,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_NoAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_NoAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3102,11 +3103,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_SaveTaskAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_SaveTaskAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3134,11 +3135,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_ClassStaticMethod_TokenDefaultAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_ClassStaticMethod_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3164,11 +3165,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_ClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3194,11 +3195,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OtherClass_TokenDefaultAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OtherClass_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3228,11 +3229,11 @@ Class O
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OtherClass_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OtherClass_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3270,11 +3271,11 @@ Class O
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OtherClassStaticMethod_TokenDefaultAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OtherClassStaticMethod_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3304,11 +3305,11 @@ Class O
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OtherClassStaticMethod_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3346,11 +3347,11 @@ Class O
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Struct_TokenDefaultAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Struct_TokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3376,11 +3377,11 @@ Structure S
     End Function
 End Structure
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Struct_TokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Struct_TokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3406,11 +3407,11 @@ Structure S
     End Function
 End Structure
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OverloadTokenAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OverloadTokenAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3442,11 +3443,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OverloadToken_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OverloadToken_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3478,11 +3479,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OverloadTokenDefaultAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OverloadTokenDefaultAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3514,11 +3515,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OverloadTokenDefault_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OverloadTokenDefault_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3550,11 +3551,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OverloadsArgumentsMatchAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OverloadsArgumentsMatchAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3598,11 +3599,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_OverloadsArgumentsMatch_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3646,11 +3647,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_ActionDelegateAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_ActionDelegateAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3686,11 +3687,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_ActionDelegateNoAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_ActionDelegateNoAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3726,11 +3727,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_ActionDelegateAwait_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_ActionDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3766,11 +3767,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_FuncDelegateAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_FuncDelegateAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3812,11 +3813,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_FuncDelegateNoAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_FuncDelegateNoAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3858,11 +3859,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_FuncDelegateAwaitOutsideAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_FuncDelegateAwaitOutsideAsync()
         {
             string originalCode = @"
 Imports System
@@ -3898,11 +3899,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_FuncDelegateAwait_WithConfigureAwaitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_FuncDelegateAwait_WithConfigureAwaitAsync()
         {
             string originalCode = @"
 Imports System
@@ -3944,7 +3945,7 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
         // Nested functions not available in VB:
@@ -3953,8 +3954,8 @@ End Class
         // VB_Diagnostic_NestedFunctionAwaitOutside
         // VB_Diagnostic_NestedFunctionAwait_WithConfigureAwait
 
-        [Fact]
-        public Task VB_Diagnostic_AliasTokenInOverloadAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_AliasTokenInOverloadAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -3988,11 +3989,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Default_AliasTokenInMethodParameterAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Default_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4020,11 +4021,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Overload_AliasTokenInMethodParameterAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Overload_AliasTokenInMethodParameterAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4058,11 +4059,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Default_AliasTokenInDefaultAndMethodParameterAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Default_AliasTokenInDefaultAndMethodParameterAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4090,11 +4091,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Overload_AliasTokenInOverloadAndMethodParameterAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Overload_AliasTokenInOverloadAndMethodParameterAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4128,11 +4129,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Default_WithAllDefaultParametersImplicitAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Default_WithAllDefaultParametersImplicitAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4158,11 +4159,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Default_WithSomeDefaultParametersAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Default_WithSomeDefaultParametersAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4188,11 +4189,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Default_WithNamedParametersAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Default_WithNamedParametersAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4218,11 +4219,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Default_WithAncestorAliasAndNamedParametersAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Default_WithAncestorAliasAndNamedParametersAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4250,11 +4251,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Default_WithMethodArgumentAliasAndNamedParametersAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Default_WithMethodArgumentAliasAndNamedParametersAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4282,11 +4283,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_Default_WithNamedParametersUnorderedAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_Default_WithNamedParametersUnorderedAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4311,11 +4312,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_WithLockAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_WithLockAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4349,11 +4350,11 @@ Class C
     End Function
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_DereferencePossibleNullReferenceAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_DereferencePossibleNullReferenceAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4390,11 +4391,11 @@ Structure O
 End Structure
             ";
             // Nullability is available in C# 8.0+
-            return VB16VerifyCodeFixAsync(originalCode, fixedCode);
+            await VB16VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
-        public Task VB_Diagnostic_WithTriviaAsync()
+        [TestMethod]
+        public async Task VB_Diagnostic_WithTriviaAsync()
         {
             string originalCode = @"
 Imports System.Threading
@@ -4480,12 +4481,12 @@ Class C
     End Sub
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(3786, "https://github.com/dotnet/roslyn-analyzers/issues/3786")]
-        public Task VB_Diagnostic_MultiNesting_TopMethodAsync()
+        public async Task VB_Diagnostic_MultiNesting_TopMethodAsync()
         {
             // Local methods do not exist in VB, it's the only difference with the CS mirror test
             string originalCode = $@"
@@ -4522,12 +4523,12 @@ Class C
     End Sub
 End Class
             ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
-        public Task VB_Diagnostic_GenericTypeParamOnInstanceMethodAsync()
+        public async Task VB_Diagnostic_GenericTypeParamOnInstanceMethodAsync()
         {
             string originalCode = @"
 Imports System
@@ -4559,12 +4560,12 @@ Class C
     End Function
 End Class
 ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4870, "https://github.com/dotnet/roslyn-analyzers/issues/4870")]
-        public Task VB_Diagnostic_GenericTypeParamOnStaticMethodAsync()
+        public async Task VB_Diagnostic_GenericTypeParamOnStaticMethodAsync()
         {
             string originalCode = @"
 Imports System
@@ -4592,12 +4593,12 @@ Class C
     End Function
 End Class
 ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task VB_Diagnostic_ReturnTypeIsConvertableAsync()
+        public async Task VB_Diagnostic_ReturnTypeIsConvertableAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -4638,12 +4639,12 @@ Module Program
     End Function
 End Module
 ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4985, "https://github.com/dotnet/roslyn-analyzers/issues/4985")]
-        public Task VB_SpecialCaseTaskLikeReturnTypesAsync()
+        public async Task VB_SpecialCaseTaskLikeReturnTypesAsync()
         {
             // Local static functions are available in C# >= 8.0
             string originalCode = @"
@@ -4684,12 +4685,12 @@ Module Program
     End Function
 End Module
 ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4842, "https://github.com/dotnet/roslyn-analyzers/issues/4842")]
-        public Task VB_ParamsArrayAsync()
+        public async Task VB_ParamsArrayAsync()
         {
             string originalCode = @"
 Imports System
@@ -4731,11 +4732,74 @@ Public Class C
     End Function
 End Class
 ";
-            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
         }
 
         #endregion
 
+        [TestMethod]
+        public async Task CS_Diagnostic_NestedInvocations_FixAllForwardsBothAsync()
+        {
+            string originalCode = @"
+using System.Threading;
+class C
+{
+    void M(CancellationToken ct)
+    {
+        [|Outer|]([|Inner|]());
+    }
+    int Inner(CancellationToken c = default) => 1;
+    int Outer(int value, CancellationToken c = default) => 1;
+}
+            ";
+            string fixedCode = @"
+using System.Threading;
+class C
+{
+    void M(CancellationToken ct)
+    {
+        Outer(Inner(ct), ct);
+    }
+    int Inner(CancellationToken c = default) => 1;
+    int Outer(int value, CancellationToken c = default) => 1;
+}
+            ";
+            await VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [TestMethod]
+        public async Task VB_Diagnostic_NestedInvocations_FixAllForwardsBothAsync()
+        {
+            string originalCode = @"
+Imports System.Threading
+Class C
+    Private Sub M(ByVal ct As CancellationToken)
+        [|Outer|]([|Inner|]())
+    End Sub
+    Private Function Inner(ByVal Optional c As CancellationToken = Nothing) As Integer
+        Return 1
+    End Function
+    Private Function Outer(ByVal value As Integer, ByVal Optional c As CancellationToken = Nothing) As Integer
+        Return 1
+    End Function
+End Class
+            ";
+            string fixedCode = @"
+Imports System.Threading
+Class C
+    Private Sub M(ByVal ct As CancellationToken)
+        Outer(Inner(ct), ct)
+    End Sub
+    Private Function Inner(ByVal Optional c As CancellationToken = Nothing) As Integer
+        Return 1
+    End Function
+    Private Function Outer(ByVal value As Integer, ByVal Optional c As CancellationToken = Nothing) As Integer
+        Return 1
+    End Function
+End Class
+            ";
+            await VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
         #region Helpers
 
         private static async Task CS8VerifyCodeFixAsync(string originalCode, string fixedCode)
@@ -4749,7 +4813,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task CS8VerifyAnalyzerAsync(string originalCode)
@@ -4762,7 +4826,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VB16VerifyCodeFixAsync(string originalCode, string fixedCode)
@@ -4776,7 +4840,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VB16VerifyAnalyzerAsync(string originalCode)
@@ -4789,7 +4853,7 @@ End Class
             };
 
             test.ExpectedDiagnostics.AddRange(DiagnosticResult.EmptyDiagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         #endregion

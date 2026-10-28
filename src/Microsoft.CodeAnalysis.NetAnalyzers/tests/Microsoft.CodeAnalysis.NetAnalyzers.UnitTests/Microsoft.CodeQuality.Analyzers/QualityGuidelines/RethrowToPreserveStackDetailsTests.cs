@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class RethrowToPreserveStackDetailsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForRethrowAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -50,7 +51,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForThrowAnotherExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -90,7 +91,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4280, "https://github.com/dotnet/roslyn-analyzers/issues/4280")]
         public async Task CA2200_NoDiagnosticsForThrowAnotherExceptionInWhenClauseAsync()
         {
@@ -113,7 +114,7 @@ public abstract class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4280, "https://github.com/dotnet/roslyn-analyzers/issues/4280")]
         public async Task CA2200_NoDiagnosticsForThrowAnotherExceptionInWhenClauseWithoutVariableDeclaratorAsync()
         {
@@ -138,9 +139,9 @@ public abstract class C
 ");
         }
 
-        [Theory]
-        [InlineData(CodeAnalysis.CSharp.LanguageVersion.CSharp7)]
-        [InlineData(CodeAnalysis.CSharp.LanguageVersion.CSharp10)]
+        [TestMethod]
+        [DataRow(CodeAnalysis.CSharp.LanguageVersion.CSharp7)]
+        [DataRow(CodeAnalysis.CSharp.LanguageVersion.CSharp10)]
         public async Task CA2200_DiagnosticForThrowCaughtExceptionAsync(Microsoft.CodeAnalysis.CSharp.LanguageVersion languageVersion)
         {
             await new VerifyCS.Test
@@ -168,7 +169,7 @@ class Program
     }
 }",
                 LanguageVersion = languageVersion,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -185,7 +186,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForThrowCaughtReassignedExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -228,7 +229,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForEmptyBlockAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -269,7 +270,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForThrowCaughtExceptionInAnotherScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -297,7 +298,7 @@ class Program
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_SingleDiagnosticForThrowCaughtExceptionInSpecificScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -317,7 +318,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_MultipleDiagnosticsForThrowCaughtExceptionAtMultiplePlacesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -365,7 +366,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticForThrowOuterCaughtExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -413,7 +414,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForNestingWithCompileErrorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -477,7 +478,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForCatchWithoutIdentifierAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -500,7 +501,7 @@ class Program
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2167, "https://github.com/dotnet/roslyn-analyzers/issues/2167")]
         public async Task CA2200_NoDiagnosticsForCatchWithoutArgumentAsync()
         {
@@ -538,7 +539,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_DiagnosticsForThrowCaughtExceptionInLocalMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -565,7 +566,7 @@ class Program
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForThrowCaughtExceptionInLocalMethodAfterReassignmentAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -593,7 +594,7 @@ class Program
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForThrowCaughtExceptionInActionOrFuncAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -627,7 +628,7 @@ class Program
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2200_NoDiagnosticsForThrowVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

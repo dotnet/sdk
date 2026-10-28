@@ -179,11 +179,6 @@
         <target state="translated">已将映像索引“{0}”推送到注册表“{1}”。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">不支持为 Podman 创建映像索引。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: 未能从本地注册表加载映像。stdout: {0}</target>
@@ -194,6 +189,11 @@
         <target state="translated">CONTAINER1020: 未能加载映像，因为没有为 Docker 启用容器映像存储。提示: 可以通过在 Docker Desktop 设置中检查“使用容器拉取和存储映像”来启用它。</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="translated">CONTAINER1021: 多体系结构映像无法加载到 WSLC。请发布单平台映像，或将多体系结构映像发布到注册表。</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: 不支持从本地注册表拉取映像。</target>
@@ -203,6 +203,21 @@
         <source>Cannot create image index because no images were provided.</source>
         <target state="translated">无法创建映像索引，因为未提供映像。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_DisallowedScheme">
+        <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
+        <target state="translated">持有者领域“{0}”使用不允许的方案“{1}”；仅接受 "https" (当注册表配置为不安全时，接受 "http")</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
+        <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
+        <target state="translated">持有者领域“{0}”解析为“{1}”，该地址是专用、环回、链接本地或未指定的 IP 字面地址</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
+        <source>bearer realm '{0}' is not a valid absolute URI</source>
+        <target state="translated">持有者领域“{0}”不是有效的绝对 URI</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
@@ -253,6 +268,11 @@
         <source>CONTAINER2017: A ContainerPort item was provided with an invalid port type '{0}'. ContainerPort items must have an Include value that is an integer, and a Type value that is either 'tcp' or 'udp'.</source>
         <target state="translated">CONTAINER2017: 为 ContainerPort 项提供了无效的端口类型 "{0}"。ContainerPort 项必须具有作为整数的 Include 值，以及 "tcp" 或 "udp" 的 Type 值。</target>
         <note>{StrBegins="CONTAINER2017: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidRegistryAuthResponse">
+        <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
+        <target state="translated">CONTAINER1019: 注册表“{0}”返回了无效的身份验证响应: {1}</target>
+        <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
       </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
         <source>CONTAINER2018: Invalid SDK prerelease version '{0}' - only 'rc' and 'preview' are supported.</source>
@@ -378,6 +398,11 @@
         <source>Finished uploading layer '{0}' to '{1}'.</source>
         <target state="translated">已完成将层“{0}”上传到“{1}”。</target>
         <note>{0} is the layer digest, {1} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="Registry_ManifestExists">
+        <source>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</source>
+        <target state="translated">存储库“{1}”中已存在清单“{0}”。正在跳过层和配置上传。</target>
+        <note>{0} is the manifest digest, {1} is the repository name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">
         <source>Uploading manifest to registry '{0}' as blob '{1}'.</source>

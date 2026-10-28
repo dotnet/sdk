@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Tools.Analyzers;
 using Microsoft.CodeAnalysis.Tools.Formatters;
@@ -6,16 +7,12 @@ using Microsoft.CodeAnalysis.Tools.Tests.Formatters;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
+    [TestClass]
     public class CodeStyleAnalyzerFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => AnalyzerFormatter.CodeStyleFormatter;
 
-        public CodeStyleAnalyzerFormatterTests(ITestOutputHelper output)
-        {
-            TestOutputHelper = output;
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task TestUseVarCodeStyle_AppliesWhenNotUsingVar()
         {
             var testCode = @"
@@ -56,7 +53,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig, fixCategory: FixCategory.CodeStyle);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNonFixableCompilerDiagnostics_AreNotReported()
         {
             var testCode = @"

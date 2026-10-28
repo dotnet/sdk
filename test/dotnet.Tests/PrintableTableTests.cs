@@ -7,13 +7,14 @@ using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class PrintableTableTests : SdkTest
     {
-        public PrintableTableTests(ITestOutputHelper log) : base(log)
+        public PrintableTableTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoColumnsItPrintsNoLines()
         {
             var table = new PrintableTable<string[]>();
@@ -24,7 +25,7 @@ namespace Microsoft.DotNet.Tests
             lines.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnEmptyRowsCollectionItPrintsColumnHeaders()
         {
             RunTest(new TestData()
@@ -44,7 +45,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenASingleRowItPrintsCorrectly()
         {
             RunTest(new TestData()
@@ -70,7 +71,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenMultipleRowsItPrintsCorrectly()
         {
             RunTest(new TestData()
@@ -116,7 +117,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenARowWithEmptyStringsItPrintsCorrectly()
         {
             RunTest(new TestData()
@@ -162,7 +163,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenColumnsWithMaximumWidthsItPrintsCorrectly()
         {
             RunTest(new TestData()
@@ -215,7 +216,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenARowContainingUnicodeCharactersItPrintsCorrectly()
         {
             RunTest(new TestData()
@@ -237,7 +238,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenARowContainingUnicodeCharactersItWrapsCorrectly()
         {
             RunTest(new TestData()
@@ -264,7 +265,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenARowContainingUnicodeCombiningCharactersItPrintsCorrectly()
         {
             // The unicode string is "test" with "enclosing circle backslash" around each character
@@ -289,7 +290,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenARowContainingUnicodeCombiningCharactersItWrapsCorrectly()
         {
             // See comment for GivenARowContainingUnicodeCombiningCharactersItPrintsCorrectly regarding string content
@@ -317,7 +318,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnEmptyColumnHeaderItPrintsTheColumnHeaderAsEmpty()
         {
             RunTest(new TestData()
@@ -343,7 +344,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAllEmptyColumnHeadersItPrintsTheEntireHeaderAsEmpty()
         {
             RunTest(new TestData()
@@ -369,7 +370,7 @@ namespace Microsoft.DotNet.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenZeroWidthColumnsItSkipsTheColumns()
         {
             RunTest(new TestData()

@@ -1,14 +1,15 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableRequestValidation,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotDisableRequestValidationTests
     {
         private async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -34,10 +35,10 @@ namespace System.Web.Mvc
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralAtActionLevelDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -53,7 +54,7 @@ class TestControllerClass
             GetCSharpResultAt(7, 17, "TestActionMethod"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstAtActionLevelDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -71,7 +72,7 @@ class TestControllerClass
             GetCSharpResultAt(9, 17, "TestActionMethod"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralAtControllerLevelDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -87,7 +88,7 @@ class TestControllerClass
             GetCSharpResultAt(5, 7, "TestControllerClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSetBothControllerLevelAndActionLevelDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -104,7 +105,7 @@ class TestControllerClass
             GetCSharpResultAt(8, 17, "TestActionMethod"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralAtActionLevelNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -119,7 +120,7 @@ class TestControllerClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstAtActionLevelNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -136,7 +137,7 @@ class TestControllerClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLiteralAtControllerLevelNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -151,7 +152,7 @@ class TestControllerClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSetBothControllerLevelAndActionLevelNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -167,7 +168,7 @@ class TestControllerClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutValidateInputAttributeNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

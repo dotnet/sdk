@@ -1,0 +1,27 @@
+@page "/"
+@inject BrowserTestRunner TestRunner
+
+<PageTitle>Blazor browser tests</PageTitle>
+
+<h1>Blazor browser tests</h1>
+
+<button @onclick="RunTests" disabled="@_running">Run tests</button>
+<p role="status">@_status</p>
+
+@code {
+    private bool _running;
+    private string _status = "Tests have not run.";
+
+    protected override Task OnInitializedAsync() => RunTests();
+
+    private async Task RunTests()
+    {
+        _running = true;
+        _status = "Running...";
+
+        int exitCode = await TestRunner.RunAsync();
+
+        _status = exitCode == 0 ? "Passed" : $"Failed (exit code {exitCode})";
+        _running = false;
+    }
+}

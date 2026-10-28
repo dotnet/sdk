@@ -1,16 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToProduceReferenceAssembly : SdkTest
     {
-        public GivenThatWeWantToProduceReferenceAssembly(ITestOutputHelper log) : base(log)
-        { }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("netcoreapp3.1", false)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
+        [DataRow("netcoreapp3.1", false)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
         public void It_produces_ref_assembly_for_appropriate_frameworks(string targetFramework, bool expectedExists)
         {
             TestProject testProject = new()
@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = targetFramework,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute()

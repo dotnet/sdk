@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Console" ], 
+  "name": "Console Sample 05",
+  "identity": "MyProject.05.Sample.CSharp",         
+  "groupIdentity":"MyProject.05.Sample",
+  "shortName": "sample05",
+  "tags": {
+    "language": "C#",
+    "type":"project"
+  },
+  "sourceName": "MyProject.Console",
+  "preferNameDirectory": true,
+  "symbols":{
+    "includetest": {
+        "type": "parameter",
+        "datatype": "bool",
+        "defaultValue": "true"
+    }
+  },
+  "sources":[{
+    "modifiers": [{
+      "condition": "(!includetest)",
+      "exclude": [ "MyProject.Console.Test/**/*"]
+      }
+    ]
+  }]
+}

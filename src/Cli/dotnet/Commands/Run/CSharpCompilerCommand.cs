@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Text.Json.Serialization;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
@@ -21,6 +22,9 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed partial class CSharpCompilerCommand
 {
+    [JsonSerializable(typeof(string))]
+    private partial class CSharpCompilerCommandJsonSerializerContext : JsonSerializerContext;
+
     private static readonly SearchValues<char> s_additionalShouldSurroundWithQuotes = SearchValues.Create('=', ',');
 
     /// <summary>
@@ -106,6 +110,7 @@ internal sealed partial class CSharpCompilerCommand
             buildRequest,
             pipeName: pipeName,
             clientDirectory: ClientDirectory,
+            buildEnvironment: StandardBuildEnvironment.Instance,
             logger,
             cancellationToken: default);
 
@@ -253,7 +258,8 @@ internal sealed partial class CSharpCompilerCommand
             File.WriteAllText(editorconfig, GetGeneratedMSBuildEditorConfigContent());
         }
 
-        var apphostTarget = Path.Join(binDir, $"{FileNameWithoutExtension}{FileNameSuffixes.CurrentPlatform.Exe}");
+        var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(EntryPointFileFullPath, ArtifactsPath);
+        string apphostTarget = launchArtifacts.AppHost;
         if (ShouldEmit(apphostTarget))
         {
             var rid = RuntimeInformation.RuntimeIdentifier;
@@ -265,7 +271,7 @@ internal sealed partial class CSharpCompilerCommand
                 enableMacOSCodeSign: OperatingSystem.IsMacOS());
         }
 
-        var runtimeConfig = Path.Join(binDir, $"{FileNameWithoutExtension}{FileNameSuffixes.RuntimeConfigJson}");
+        string runtimeConfig = launchArtifacts.RuntimeConfig;
         if (ShouldEmit(runtimeConfig))
         {
             File.WriteAllText(runtimeConfig, GetRuntimeConfigContent());

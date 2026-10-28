@@ -1,23 +1,24 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureDeserializerJavaScriptSerializerWithSimpleTypeResolver,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestClass]
     public class DoNotUseInsecureDeserializerJavascriptSerializerWithSimpleTypeResolverTests
     {
         private static readonly DiagnosticDescriptor DefinitelyRule = DoNotUseInsecureDeserializerJavaScriptSerializerWithSimpleTypeResolver.DefinitelyWithSimpleTypeResolver;
         private static readonly DiagnosticDescriptor MaybeRule = DoNotUseInsecureDeserializerJavaScriptSerializerWithSimpleTypeResolver.MaybeWithSimpleTypeResolver;
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_Generic_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -38,7 +39,7 @@ namespace Blah
                 GetCSharpResultAt(12, 20, DefinitelyRule, "T JavaScriptSerializer.Deserialize<T>(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -59,7 +60,7 @@ namespace Blah
                 GetCSharpResultAt(12, 24, DefinitelyRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -80,7 +81,7 @@ namespace Blah
                 GetCSharpResultAt(12, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_AnyPath_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -105,7 +106,7 @@ namespace Blah
                 GetCSharpResultAt(16, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_FromArgument_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -125,7 +126,7 @@ namespace Blah
                 GetCSharpResultAt(11, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_TypeResolver_Unknown_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -147,7 +148,7 @@ namespace Blah
                 GetCSharpResultAt(13, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_TypeResolver_UnknownNotNull_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -170,7 +171,7 @@ namespace Blah
                 GetCSharpResultAt(14, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_TypeResolver_UnknownNull_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -192,7 +193,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_FromField_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -214,7 +215,7 @@ namespace Blah
                 GetCSharpResultAt(13, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_FromStaticField_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -236,7 +237,7 @@ namespace Blah
                 GetCSharpResultAt(13, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_NoTypeResolver_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -255,7 +256,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_CustomTypeResolver_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -288,7 +289,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_FromLocalFunction_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -310,7 +311,7 @@ namespace Blah
             GetCSharpResultAt(11, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_SimpleTypeResolverFromParameter_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -332,7 +333,7 @@ namespace Blah
                 GetCSharpResultAt(11, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_JavaScriptTypeResolverFromParameter_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -354,7 +355,7 @@ namespace Blah
                GetCSharpResultAt(11, 20, MaybeRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -376,7 +377,7 @@ namespace Blah
                GetCSharpResultAt(11, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Deserialize_InLocalFunction_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -401,7 +402,7 @@ namespace Blah
                GetCSharpResultAt(16, 37, DefinitelyRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_InLambda_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -425,7 +426,7 @@ namespace Blah
                   GetCSharpResultAt(12, 45, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_InLambda_CustomTypeResolver_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -461,7 +462,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_InOtherMethod_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -489,7 +490,7 @@ namespace Blah
                   GetCSharpResultAt(19, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_InOtherMethodThrice_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -520,7 +521,7 @@ namespace Blah
                   GetCSharpResultAt(22, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_InOtherMethod_OnceDefinitely_OnceMaybe_DefinitelyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -552,7 +553,7 @@ namespace Blah
                   GetCSharpResultAt(23, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DeserializeObject_InOtherMethod_CustomTypeResolver_MaybeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -593,14 +594,14 @@ namespace Blah
                   GetCSharpResultAt(19, 20, MaybeRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = Des")]
-        [InlineData(@"dotnet_code_quality.CA2321.excluded_symbol_names = Des
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = Des")]
+        [DataRow(@"dotnet_code_quality.CA2321.excluded_symbol_names = Des
                       dotnet_code_quality.CA2322.excluded_symbol_names = Des")]
-        [InlineData(@"dotnet_code_quality.CA2321.excluded_symbol_names = D*
+        [DataRow(@"dotnet_code_quality.CA2321.excluded_symbol_names = D*
                       dotnet_code_quality.CA2322.excluded_symbol_names = D*")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = Des")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = Des")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var test = new VerifyCS.Test
@@ -640,7 +641,7 @@ namespace Blah
                 test.ExpectedDiagnostics.Add(GetCSharpResultAt(12, 20, DefinitelyRule, "T JavaScriptSerializer.Deserialize<T>(string input)"));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyCSharpAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -656,7 +657,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

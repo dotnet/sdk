@@ -47,10 +47,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       Condition="'$(Language)'=='C#'"
       IsImplicitlyDefined="true" />
 
-    <Analyzer
-      Include="$([System.IO.Path]::GetFullPath($(MSBuildThisFileDirectory)..))\analyzers\cs\Microsoft.AspNetCore.Mvc.Api.Analyzers.dll"
-      Condition="'$(Language)'=='C#' AND '$(IncludeOpenAPIAnalyzers)' == 'true'"
-      IsImplicitlyDefined="true" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DisableImplicitComponentsAnalyzers)' != 'true' And '$(DisableImplicitAspNetCoreAnalyzers)' != 'true'

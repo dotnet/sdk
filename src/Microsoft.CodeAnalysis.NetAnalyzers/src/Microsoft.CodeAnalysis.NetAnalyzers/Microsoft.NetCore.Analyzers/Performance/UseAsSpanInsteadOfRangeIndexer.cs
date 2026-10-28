@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -116,7 +116,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                         indexerArgument = elementReference.Indices[0];
                         containingType = elementReference.ArrayReference.Type!;
                     }
-                    else if (operationContext.Operation.Kind is OperationKind.None or OperationKindEx.ImplicitIndexerReference)
+                    else if (operationContext.Operation.Kind is OperationKind.None or OperationKind.ImplicitIndexerReference)
                     {
                         // The forward support via the "None" operation kind is only available for C#.
                         if (operationContext.Compilation.Language != LanguageNames.CSharp)
@@ -130,7 +130,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             return;
                         }
 
-                        IEnumerator<IOperation> enumerator = operationContext.Operation.Children.GetEnumerator();
+                        IOperation.OperationList.Enumerator enumerator = operationContext.Operation.ChildOperations.GetEnumerator();
 
                         if (!enumerator.MoveNext())
                         {
@@ -209,7 +209,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 OperationKind.PropertyReference,
                 OperationKind.ArrayElementReference,
                 OperationKind.None,
-                OperationKindEx.ImplicitIndexerReference);
+                OperationKind.ImplicitIndexerReference);
         }
     }
 }

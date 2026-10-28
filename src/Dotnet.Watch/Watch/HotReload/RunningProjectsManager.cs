@@ -129,7 +129,8 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
         {
             // Wait for agent to create the named pipe and send capabilities over.
             // the agent blocks the app execution until initial updates are applied (if any).
-            var managedCodeUpdateCapabilities = await clients.GetUpdateCapabilitiesAsync(processCommunicationCancellationToken);
+            var managedCodeUpdateCapabilities = HotReloadClients.UnionCapabilities(
+                await clients.GetConnectedAgentsInfoAsync(processCommunicationCancellationToken));
 
             var runningProject = new RunningProject(
                 projectNode,
@@ -155,7 +156,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
                 if (updatesToApply.Any() && clients.IsManagedAgentSupported)
                 {
                     await await clients.ApplyManagedCodeUpdatesAsync(
-                        ToManagedCodeUpdates(updatesToApply),
+                        ToManagedCodeUpdates(clients, updatesToApply),
                         applyOperationCancellationToken: processExitedSource.Token,
                         cancellationToken: processCommunicationCancellationToken);
                 }
@@ -248,6 +249,10 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
         CancellationToken cancellationToken)
     {
         var applyTasks = new List<Task>();
+
+        // Tracked separately so that a browser or target process that reports a failed apply
+        // prevents dotnet-watch from reporting the changes as applied.
+        var managedCodeApplyTasks = new List<Task<bool>>();
         ImmutableDictionary<string, ImmutableArray<RunningProject>> projectsToUpdate = [];
 
         IReadOnlyList<RestartOperation> relaunchOperations;
@@ -310,11 +315,13 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
                     // Only cancel applying updates when the process exits. Canceling disables further updates since the state of the runtime becomes unknown.
                     var applyTask = await runningProject.Clients.ApplyManagedCodeUpdatesAsync(
-                        ToManagedCodeUpdates(builder.ManagedCodeUpdates),
+                        ToManagedCodeUpdates(runningProject.Clients, builder.ManagedCodeUpdates),
                         applyOperationCancellationToken: runningProject.Process.ExitedCancellationToken,
                         cancellationToken);
 
-                    applyTasks.Add(runningProject.CompleteApplyOperationAsync(applyTask));
+                    var managedCodeApplyTask = runningProject.CompleteApplyOperationAsync(applyTask);
+                    applyTasks.Add(managedCodeApplyTask);
+                    managedCodeApplyTasks.Add(managedCodeApplyTask);
                 }
             }
         }
@@ -345,7 +352,12 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
                 var elapsedMilliseconds = stopwatch.ElapsedMilliseconds;
 
-                if (builder.ManagedCodeUpdates.Count > 0)
+                // A client that could not apply the updates fails its apply task. Reporting the changes as
+                // applied in that case is a false positive, both in the console and on the notification
+                // channel that Aspire surfaces as a successful Hot Reload.
+                var managedCodeApplied = managedCodeApplyTasks.TrueForAll(static task => task.Result);
+
+                if (builder.ManagedCodeUpdates.Count > 0 && managedCodeApplied)
                 {
                     logger.Log(MessageDescriptor.ManagedCodeChangesApplied, elapsedMilliseconds);
                 }
@@ -355,9 +367,15 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
                     logger.Log(MessageDescriptor.StaticAssetsChangesApplied, elapsedMilliseconds);
                 }
 
-                logger.Log(MessageDescriptor.ChangesAppliedToProjectsNotification,
-                    projectsToUpdate.Select(e => e.Value.First().Options.Representation).Concat(
-                        builder.StaticAssetUpdates.Select(e => e.Key.Options.Representation)).Distinct());
+                var updatedProjects = (managedCodeApplied ? projectsToUpdate.Select(e => e.Value.First().Options.Representation) : [])
+                    .Concat(builder.StaticAssetUpdates.Select(e => e.Key.Options.Representation))
+                    .Distinct()
+                    .ToArray();
+
+                if (updatedProjects is not [])
+                {
+                    logger.Log(MessageDescriptor.ChangesAppliedToProjectsNotification, updatedProjects);
+                }
             }
             catch (OperationCanceledException)
             {
@@ -480,6 +498,11 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
         return relaunchOperations;
     }
 
-    private static ImmutableArray<HotReloadManagedCodeUpdate> ToManagedCodeUpdates(IEnumerable<HotReloadService.Update> updates)
-        => [.. updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities))];
+    private static ImmutableArray<ImmutableArray<HotReloadManagedCodeUpdate>> ToManagedCodeUpdates(HotReloadClients clients, IEnumerable<HotReloadService.Update> updates)
+    {
+        var updatesForClient = updates.Select(update => new HotReloadManagedCodeUpdate(update.ModuleId, update.MetadataDelta, update.ILDelta, update.PdbDelta, update.UpdatedTypes, update.RequiredCapabilities));
+
+        // The updates are the same for all clients since the debugger isn't attached:
+        return [.. Enumerable.Repeat(updatesForClient.ToImmutableArray(), clients.Clients.Length)];
+    }
 }

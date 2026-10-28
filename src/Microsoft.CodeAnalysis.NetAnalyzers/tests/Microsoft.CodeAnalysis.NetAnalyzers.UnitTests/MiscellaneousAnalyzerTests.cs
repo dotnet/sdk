@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Diagnostics;
@@ -6,10 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.CodeAnalysis.Diagnostics;
-using Xunit;
 
 namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
 {
+    [TestClass]
     public class MiscellaneousAnalyzerTests
     {
         private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
@@ -23,7 +24,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestGlobalizationAnalyzersSubclassAbstractGlobalizationDiagnosticAnalyzer()
         {
             // <repo_root>\artifacts\bin\Microsoft.CodeAnalysis.NetAnalyzers.UnitTests\Debug\netcoreapp3.1\Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.dll
@@ -34,7 +35,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             foreach (var assembly in new[] { "Microsoft.CodeAnalysis.NetAnalyzers.dll", "Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll", "Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll" })
             {
                 var path = Path.Combine(directory, assembly);
-                Assert.True(File.Exists(path), $"File {path} doesn't exist.");
+                Assert.IsTrue(File.Exists(path), $"File {path} doesn't exist.");
                 var analyzerFileReference = new AnalyzerFileReference(path, AnalyzerAssemblyLoader.Instance);
                 analyzerFileReference.AnalyzerLoadFailed += AnalyzerFileReference_AnalyzerLoadFailed;
                 var analyzers = analyzerFileReference.GetAnalyzersForAllLanguages();

@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.SetViewStateUserKey,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class SetViewStateUserKeyTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestSubclassWithoutOnInitMethodDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -44,7 +45,7 @@ End Class",
             GetBasicResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOverrideModifierWithoutSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -71,7 +72,7 @@ End Class",
             GetBasicResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNewModifierWithoutSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -87,7 +88,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNoModifierWithoutSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -103,7 +104,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOverloadOnInitWithSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -120,7 +121,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestStaticMethodWithSettingViewStateUserKeyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -138,7 +139,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSubclassWithSettingPropertyOfLocalObjectDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -156,7 +157,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSubclassWithSettingPropertyOfWrongClassDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -180,7 +181,7 @@ class TestClass : Page
             GetCSharpResultAt(10, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSubclassWithSettingWrongPropertyDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -199,7 +200,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSettingPropertyOfLocalObjectInPage_InitDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -217,7 +218,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TesthSettingPropertyOfWrongClassInPage_InitDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -241,7 +242,7 @@ class TestClass : Page
             GetCSharpResultAt(10, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithSettingWrongPropertyInPage_InitDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -260,7 +261,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInPage_InitWithObjectParameterDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -277,7 +278,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInPage_InitWithStringReturnTypeDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -295,7 +296,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNeitherOnInitNorInPage_InitNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -315,7 +316,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNewPageDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -334,7 +335,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOverridePageDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -353,7 +354,7 @@ class TestClass : Page
             GetCSharpResultAt(5, 7, "TestClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSubclassWithSettingViewStateUserKeyNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -369,7 +370,7 @@ class TestClass : Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNewModifierNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -385,7 +386,7 @@ class TestClass : Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutModifierNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -401,7 +402,7 @@ class TestClass : Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOrdinaryClassWithSettingViewStateUserKeyNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -418,7 +419,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSettingViewStateUserKeyInPage_InitNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -434,7 +435,7 @@ class TestClass : Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBothOnInitAndInPage_InitNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -455,7 +456,7 @@ class TestClass : Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNotAPage_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -476,7 +477,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInterface_NoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -493,7 +494,7 @@ interface ITestInterface
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSettingViewStateUserKeyOfPageNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -522,7 +523,7 @@ class TestClass : Page
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyBasicAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -538,7 +539,7 @@ class TestClass : Page
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

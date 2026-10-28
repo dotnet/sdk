@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Author1",
+  "classifications": [ "Test Asset" ],
+  "name": "Basic FSharp",
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateGrouping",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateGrouping.FSharpItemAuthor1",
+  "shortName": "template-grouping",
+  "sourceName": "bar",
+  "tags": {
+    "language": "F#",
+    "type": "item"
+  }
+}

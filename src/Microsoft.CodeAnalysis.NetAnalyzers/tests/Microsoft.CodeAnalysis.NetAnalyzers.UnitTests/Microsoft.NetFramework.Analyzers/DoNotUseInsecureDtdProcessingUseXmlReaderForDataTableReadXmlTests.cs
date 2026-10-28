@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -24,7 +24,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseDtdProcessingOverloads).WithLocation(line, column).WithArguments("ReadXml");
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataTableReadXmlShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -68,7 +68,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataTableReadXmlInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -110,7 +110,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataTableReadXmlInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -164,7 +164,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataTableReadXmlInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -212,7 +212,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataTableReadXmlInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -259,7 +259,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataTableReadXmlInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -307,7 +307,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataTableReadXmlInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -358,7 +358,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataTableReadXmlInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -398,7 +398,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseDataTableReadXmlWithXmlReaderShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(

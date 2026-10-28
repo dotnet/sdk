@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -380,7 +381,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                                         } declaration
                                     } declarator
                                 } init when init.Value == indexer:
-                                    usageContext.UsageLocations.Add(declaration.Children.Count() is 1
+                                    usageContext.UsageLocations.Add(declaration.ChildOperations.Count is 1
                                         ? declarationGroup.Syntax.GetLocation()
                                         : declarator.Syntax.GetLocation());
                                     continue;
@@ -520,8 +521,13 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static void FindUsageInOperationsAfterConditionBlock(IOperation sourceOperation, ref DictionaryUsageContext context, SearchContext searchContext)
         {
+            if (sourceOperation.Parent is not IOperation parent)
+            {
+                return;
+            }
+
             var testOperation = false;
-            foreach (var operation in sourceOperation.Parent!.Children)
+            foreach (var operation in parent.ChildOperations)
             {
                 if (!testOperation)
                 {
@@ -594,7 +600,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         private static IEnumerable<IOperation> GetNonConditionalDescendantsAndSelf(IOperation operation)
         {
-            var childOperations = operation.Children.SelectMany(c =>
+            var childOperations = operation.ChildOperations.SelectMany(c =>
             {
                 if (c is not IConditionalOperation)
                 {
