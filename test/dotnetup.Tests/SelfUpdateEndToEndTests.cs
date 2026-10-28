@@ -16,6 +16,15 @@ public class SelfUpdateEndToEndTests
     [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
     public void RidNamedNativeCopyUpdatesToDailyAndChangesVersion()
     {
+        // Daily dotnetup builds are unsigned. A machine that sets BlockUnsignedDownloads cannot run this
+        // scenario, so report it as inconclusive instead of failing on the machine's configuration.
+        if (new DotnetupPolicy().IsUnsignedDownloadBlocked())
+        {
+            Assert.Inconclusive(
+                $"Skipped: the machine policy {UnsignedSourcePolicy.GetPolicyLocationForDisplay()} blocks unsigned downloads, " +
+                "so dotnetup cannot self-update to an unsigned daily build. Clear the policy to run this test.");
+        }
+
         using var environment = new TestEnvironment();
         string source = DotnetupTestUtilities.GetDotnetupExecutablePath();
         string executable = CreateExecutablePath(environment);
