@@ -38,6 +38,8 @@ dotnetup will install .NET SDKs and runtimes in C:\Users\noahgilson\AppData\Loca
       Configure your shell profile so shell sessions use dotnetup's .NET installs.
     Everywhere  (default)
       Modify the system PATH so all apps use dotnetup's .NET installs (requires elevation).
+    Admin
+      Installs can be managed by other tools alongside dotnetup in a shared system folder.
 ```
 
 If the 'system' path is already pointed towards somewhere besides an expected program files location `dotnetup` will fail.
