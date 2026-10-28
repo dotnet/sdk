@@ -10,6 +10,10 @@
     <!-- For product build, this project only builds in the second build pass as it depends on assets from other
          verticals that are built in the first build pass. -->
     <ExcludeFromDotNetBuild Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' != '2'">true</ExcludeFromDotNetBuild>
+    <PublishWindowsPdb Condition="'$(TargetFramework)' == 'net472' and
+                                 '$(OS)' == 'Windows_NT' and
+                                 '$(OfficialBuild)' == 'true' and
+                                 '$(DotNetBuildSourceOnly)' != 'true'">true</PublishWindowsPdb>
 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 

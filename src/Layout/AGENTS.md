@@ -36,6 +36,20 @@ Two families of targets:
 - Producing the laid-out SDK requires the **full repo build** (so the components exist
   to copy), not just this project — see the root build/dogfood instructions.
 
+### Visual Studio transport symbols
+
+The [MSBuildExtensions](VS.Redist.Common.Net.Core.SDK.MSBuildExtensions/VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.proj)
+and [VSTemplateLocator](VS.Redist.Common.Net.Core.SDK.VSTemplateLocator/VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.proj)
+transports disable `IncludeSymbols`; do not rely on transport symbol packages.
+The [MSBuild SDK resolver](../Resolvers/Microsoft.DotNet.MSBuildSdkResolver/Microsoft.DotNet.MSBuildSdkResolver.csproj),
+[SDK resolver](../Resolvers/Microsoft.DotNet.SdkResolver/Microsoft.DotNet.SdkResolver.csproj),
+[native wrapper](../Resolvers/Microsoft.DotNet.NativeWrapper/Microsoft.DotNet.NativeWrapper.csproj),
+and [template locator](../Microsoft.DotNet.TemplateLocator/Microsoft.DotNet.TemplateLocator.csproj)
+opt into Arcade's loose-PDB archival with `PublishWindowsPdb` for official Windows
+.NET Framework builds, excluding source-only builds. Preserve the repository-wide opt-out.
+The [Build.Extensions task project](../Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj)
+continues to include its PDBs in its own symbol package.
+
 ### macOS tool signing
 
 `PublishRoslyn` and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with
