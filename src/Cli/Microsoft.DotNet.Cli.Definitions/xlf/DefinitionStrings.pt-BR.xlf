@@ -101,13 +101,13 @@ Examples:
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Define o valor de uma variável de ambiente. 
-Cria a variável se ela não existir, substitui se existir. 
-Este argumento pode ser especificado várias vezes para fornecer múltiplas variáveis.
+Cria a variável se ela não existir, e a substitui se existir. 
+Este argumento pode ser especificado várias vezes para fornecer várias variáveis.
 
 Exemplos:
--e VARIABLE=abc
--e VARIABLE="valor com espaços"
--e VARIABLE="valor;separado por;ponto e vírgula"
+-e VARIÁVEL=abc
+-e VARIÁVEL="valor com espaços"
+-e VARIÁVEL="valor;separado por;pontos e vírgulas"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
@@ -130,14 +130,14 @@ Examples:
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Define o valor de uma variável de ambiente. 
-Criará a variável quando ela não existir e a substituirá quando existir. 
+Cria a variável se ela não existir, e a substitui se existir. 
 Isso forçará a execução dos testes em um processo isolado. 
-Esse argumento pode ser especificado várias vezes para fornecer várias variáveis.
+Este argumento pode ser especificado várias vezes para fornecer várias variáveis.
 
 Exemplos:
--e VARIABLE=abc
--e VARIABLE="valor com espaços"
--e VARIABLE="valor;separado com;ponto e vírgula"
+-e VARIÁVEL=abc
+-e VARIÁVEL="valor com espaços"
+-e VARIÁVEL="valor;separado por;pontos e vírgulas"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />

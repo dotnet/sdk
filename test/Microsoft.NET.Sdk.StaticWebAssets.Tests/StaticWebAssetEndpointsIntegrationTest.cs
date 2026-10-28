@@ -544,7 +544,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineT
         var endpoints = manifest.Endpoints;
 
         // There should be endpoints for index.html (original + fingerprinted + default document + spa fallback)
-        var indexHtmlEndpoints = endpoints.Where(ep => ep.AssetFile.Contains("index.html") && !ep.AssetFile.Contains(".gz") && !ep.AssetFile.Contains(".br"));
+        var indexHtmlEndpoints = endpoints.Where(ep => Path.GetFileName(ep.AssetFile) == "index.html");
 
         // Original index.html endpoint
         indexHtmlEndpoints.Should().Contain(e => e.Route == "index.html");

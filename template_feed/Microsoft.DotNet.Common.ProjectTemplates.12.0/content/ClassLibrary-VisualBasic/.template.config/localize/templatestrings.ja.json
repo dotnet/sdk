@@ -4,7 +4,7 @@
   "description": ".NET または .NET Standard を対象とするクラス ライブラリを作成するためのプロジェクト",
   "symbols/TargetFrameworkOverride/description": "ターゲット フレームワークをオーバーライドします",
   "symbols/TargetFrameworkOverride/displayName": "ターゲット フレームワークのオーバーライド",
-  "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワーク。",
   "symbols/Framework/choices/net12.0/description": "ターゲット net12.0",
   "symbols/Framework/choices/net12.0/displayName": ".NET 12.0",
   "symbols/Framework/choices/netstandard2.1/description": "ターゲット netstandard2.1",

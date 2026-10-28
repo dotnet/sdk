@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-clean" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-clean" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet clean
 .PP
@@ -58,22 +58,19 @@ The path and filename of a file-based app.
 File-based apps are contained within a single file that is built and run without a corresponding project (\f[I].csproj\f[R]) file.
 For more information, see Build file-based C# apps.
 .SH OPTIONS
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
-.RS 2
 .PP
 All build output files from the executed command will go in subfolders under the specified path, separated by project.
 For more information see Artifacts Output Layout.
+This option and the value provided must be explicitly cascaded in any \f[V]dotnet\f[R] command that depends on the output of another \f[V]dotnet\f[R] command, for example, when using \f[V]dotnet build --no-restore\f[R] and \f[V]dotnet publish --no-build\f[R].
 Available since .NET 8 SDK.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-c|--configuration <CONFIGURATION>\f[B]\f[R]
-.RS 2
 .PP
 Defines the build configuration.
 The default for most projects is \f[V]Debug\f[R], but you can override the build configuration settings in your project.
 This option is only required when cleaning if you specified it during build time.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
 .RS 2
@@ -82,20 +79,15 @@ The framework that was specified at build time.
 The framework must be defined in the project file.
 If you specified the framework at build time, you must specify the framework when cleaning.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--interactive\f[B]\f[R]
-.RS 2
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-Available since .NET Core 3.0 SDK.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--nologo\f[B]\f[R]
 .RS 2
@@ -124,9 +116,8 @@ For more information, see Solution-level \f[V]--output\f[R] option no longer val
 Cleans the output folder of the specified runtime.
 This is used when a self-contained deployment was created.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
-.RS 2
 .PP
 Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
 The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
@@ -151,16 +142,13 @@ The primary output of that build (which is hyperlinked).
 Any diagnostics generated for that project.
 .PP
 This option is available starting in .NET 8.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]normal\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
 .SH EXAMPLES
 .IP \[bu] 2
 Clean a default build of the project:

@@ -1,7 +1,7 @@
 ﻿{
   "author": "Майкрософт",
   "name": "Консольное приложение",
-  "description": "Проект для создания приложения командной строки, которое может выполняться в среде .NET в Windows, Linux и macOS",
+  "description": "Проект для создания пустого приложения для командной строки, которое может выполняться в среде .NET под управлением Windows, Linux и macOS",
   "symbols/TargetFrameworkOverride/description": "Переопределяет целевую платформу",
   "symbols/TargetFrameworkOverride/displayName": "Переопределение целевой платформы",
   "symbols/Framework/description": "Целевая платформа для проекта.",

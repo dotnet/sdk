@@ -290,6 +290,7 @@ public class SdkJsonLayoutTests : SdkTest
             string testCli = Path.Combine(packages, "microsoft.testplatform.cli", "1.0.0", "contentFiles", "any", "net10.0");
             string format = Path.Combine(root, "bin", "dotnet-format", "Debug", "test-framework");
             Write(Path.Combine(roslyn, "csc.runtimeconfig.json"), RuntimeConfig);
+            Write(Path.Combine(testCli, "vstest.console.dll"), "synthetic");
             Write(Path.Combine(testCli, "vstest.console.runtimeconfig.json"), RuntimeConfig);
             Write(Path.Combine(format, "BuildHost-netcore", "BuildHost.runtimeconfig.json"), RuntimeConfig);
             TestHostInput = Write(Path.Combine(testCli, "testhost-latest.runtimeconfig.json"), RuntimeConfig);

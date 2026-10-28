@@ -1,7 +1,7 @@
 ﻿{
   "author": "Microsoft",
   "name": "Aplikacja konsoli",
-  "description": "Projekt służący do tworzenia aplikacji wiersza polecenia, która może działać na platformie .NET w systemach Windows, Linux i macOS",
+  "description": "Projekt służący do tworzenia pustej aplikacji wiersza polecenia, która może działać na platformie .NET w systemach Windows, Linux i macOS",
   "symbols/TargetFrameworkOverride/description": "Zastępuje platformę docelową",
   "symbols/TargetFrameworkOverride/displayName": "Zastąpienie struktury docelowej",
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
@@ -14,8 +14,8 @@
   "symbols/skipRestore/displayName": "Pomiń przywracanie",
   "symbols/UseProgramMain/description": "Określa, czy wygenerować jawną klasę Program i metodę Main zamiast instrukcji najwyższego poziomu.",
   "symbols/UseProgramMain/displayName": "Nie używaj ins_trukcji najwyższego poziomu",
-  "symbols/NativeAot/description": "Określa, czy włączyć publikowanie projektu jako native AOT.",
   "symbols/NativeAot/displayName": "Włącz publikowanie _native AOT",
+  "symbols/NativeAot/description": "Określa, czy włączyć publikowanie projektu jako native AOT.",
   "postActions/restore/description": "Przywróć pakiety NuGet wymagane przez ten projekt.",
   "postActions/restore/manualInstructions/default/text": "Uruchom polecenie „dotnet restore”",
   "postActions/open-file/description": "Otwiera plik Program.cs w edytorze"
