@@ -62,6 +62,16 @@
   <Import Project="AotDependencies.props" />
   <Import Project="AotSourceFiles.props" />
 
+  <Target Name="SetSystemCommandLineExecutableNameForOptimizedPublish"
+          BeforeTargets="WriteIlcRspFileForCompilation"
+          Condition="'$(_UseOptimizedPublish)' == 'true'">
+    <ItemGroup>
+      <RuntimeHostConfigurationOption Include="System.CommandLine.ExecutableName"
+                                      Value="$(_SystemCommandLineExecutableName)"
+                                      Trim="false" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <Compile Include="NativeEntryPoint.cs" />
     <Compile Include="MSBuildSdkResolverRegistration.cs" />

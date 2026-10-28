@@ -187,24 +187,26 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        [TestMethod]
-        public void RunWithProjectPathForwardedAsTestApplicationOptionValue_ShouldNotTreatItAsPositionalProject(bool useSeparator)
+        public void RunWithProjectPathForwardedAsTestApplicationOptionValue_ShouldNotTreatItAsPositionalProject(bool useArgumentSeparator)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
                 .WithSource();
             string testProjectDirectory = Path.Combine(testInstance.Path, "TestProject");
-
             var arguments = new List<string>
             {
                 "--project", "TestProject.csproj",
             };
-            if (useSeparator)
+
+            if (useArgumentSeparator)
             {
                 arguments.Add("--");
             }
-            arguments.AddRange([
+
+            arguments.AddRange(
+            [
                 "--filter", "TestProject.csproj",
                 "--ignore-exit-code", ExitCodes.ZeroTests.ToString(),
             ]);
