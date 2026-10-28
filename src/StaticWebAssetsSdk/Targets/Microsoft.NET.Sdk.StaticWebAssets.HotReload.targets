@@ -20,15 +20,6 @@ Copyright (c) .NET Foundation. All rights reserved.
          Microsoft.DotNet.HotReload.BrowserToolsProtocol.RoutePrefix. -->
     <HotReloadBrowserToolsRoutePrefix Condition="'$(HotReloadBrowserToolsRoutePrefix)' == ''">/_framework/dotnet-browser-tools</HotReloadBrowserToolsRoutePrefix>
     <HotReloadBrowserToolsSettingsPath Condition="'$(HotReloadBrowserToolsSettingsPath)' == ''">$(HotReloadBrowserToolsRoutePrefix)/hot-reload-settings.json</HotReloadBrowserToolsSettingsPath>
-
-    <!--
-      The browser tools assets are build only and never reach publish output. The existing
-      EnableHotReloadInRuntimeConfigDevFile property controls whether they are generated, matching
-      the rest of the SDK's Hot Reload build outputs. It defaults to true for Debug builds and can
-      be explicitly enabled or disabled by the build host.
-    -->
-    <_HotReloadBrowserToolsEnabled>$(EnableHotReloadInRuntimeConfigDevFile)</_HotReloadBrowserToolsEnabled>
-    <_HotReloadBrowserToolsEnabled Condition="'$(_HotReloadBrowserToolsEnabled)' == '' and '$(Configuration)' == 'Debug'">true</_HotReloadBrowserToolsEnabled>
   </PropertyGroup>
 
   <!--
@@ -55,17 +46,24 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="_DefineHotReloadBrowserToolsAssets"
           BeforeTargets="ResolveProjectStaticWebAssets"
-          DependsOnTargets="ResolveWebAssemblyProjectReferences;_DefineHotReloadBrowserToolsAssetsCore" />
+          DependsOnTargets="ResolveWebAssemblyProjectReferences;_SetHotReloadBrowserToolsEnabled;_DefineHotReloadBrowserToolsAssetsCore" />
+
+  <Target Name="_SetHotReloadBrowserToolsEnabled">
+    <PropertyGroup>
+      <HotReloadBrowserToolsEnabled>false</HotReloadBrowserToolsEnabled>
+      <HotReloadBrowserToolsEnabled Condition="'$(EnableHotReloadInRuntimeConfigDevFile)' == 'true' and
+                                               '$(HotReloadBrowserToolsAssetPrefix)' != '' and
+                                               '$(StaticWebAssetsEnabled)' == 'true' and
+                                               '$(JSModulesEnabled)' == 'true'">true</HotReloadBrowserToolsEnabled>
+    </PropertyGroup>
+  </Target>
 
   <Target Name="_DefineHotReloadBrowserToolsAssetsCore"
           DependsOnTargets="ResolveStaticWebAssetsConfiguration"
-          Condition="'$(DesignTimeBuild)' != 'true'
-            and '$(_HotReloadBrowserToolsEnabled)' == 'true'
-            and '$(HotReloadBrowserToolsAssetPrefix)' != ''
-            and '$(StaticWebAssetsEnabled)' == 'true'
-            and '$(JSModulesEnabled)' == 'true'
-            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-            and '@(WebAssemblyProjectReference)' == ''">
+          Condition="'$(DesignTimeBuild)' != 'true' and
+                     '$(HotReloadBrowserToolsEnabled)' == 'true' and
+                     '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
+                     '@(WebAssemblyProjectReference)' == ''">
 
     <PropertyGroup>
       <!-- These paths are a Hot Reload contract. Keep them in sync with
