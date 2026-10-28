@@ -82,8 +82,22 @@ internal static class TelemetryCommonProperties
         return attributes;
     }
 
+    // Reports the recorded mode as-is, even one the platform ignores, so hand-edited configs are visible.
     private static void AddAccessModeAttributes(Dictionary<string, object> attributes)
-        => attributes[TelemetryTagNames.AccessMode] = GetAccessModeTelemetryValue(DotnetupConfig.ReadEffectiveAccessMode());
+        => attributes[TelemetryTagNames.AccessMode] = GetAccessModeTelemetryValue(ReadRecordedAccessModeSafely());
+
+    private static DotnetAccessMode? ReadRecordedAccessModeSafely()
+    {
+        try
+        {
+            return DotnetupConfig.ReadAccessModeSilently();
+        }
+        catch
+        {
+            // Telemetry must never crash the app.
+            return null;
+        }
+    }
 
     internal static string GetAccessModeTelemetryValue(DotnetAccessMode? mode) => mode switch
     {

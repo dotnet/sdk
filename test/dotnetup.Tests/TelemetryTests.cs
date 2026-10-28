@@ -109,10 +109,6 @@ public class TelemetryCommonPropertiesTests
     [DataRow(null, "unset")]
     internal void GetCommonAttributes_TagsResolvedAccessMode(DotnetAccessMode? mode, string expectedMode)
     {
-        if (mode == DotnetAccessMode.Admin && !OperatingSystem.IsWindows())
-        {
-            Assert.Inconclusive("Admin mode is only supported on Windows.");
-        }
 
         using var environment = new AdminModeTestEnvironment();
         if (mode is DotnetAccessMode configuredMode)

@@ -183,17 +183,18 @@ internal static class DotnetupConfig
 
     /// <summary>
     /// Returns the access mode dotnetup operates under: the recorded mode, or <c>null</c> when none is
-    /// recorded or it cannot be read. A recorded admin mode is ignored on platforms that do not support
-    /// it. Writes no output and never throws.
+    /// recorded, it cannot be read, or the current platform does not support it (admin and everywhere
+    /// outside Windows). Use the raw <see cref="ReadAccessModeSilently"/> only for reporting.
+    /// Writes no output and never throws.
     /// </summary>
     internal static DotnetAccessMode? ReadEffectiveAccessMode()
     {
         try
         {
             DotnetAccessMode? mode = ReadAccessModeSilently();
-            return mode == DotnetAccessMode.Admin && !DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(DotnetAccessMode.Admin)
-                ? null
-                : mode;
+            return mode is DotnetAccessMode configured && DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(configured)
+                ? configured
+                : null;
         }
         catch
         {

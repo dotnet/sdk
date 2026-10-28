@@ -39,6 +39,18 @@ public class EffectiveAccessModeTests : IDisposable
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
+    [DataRow(DotnetAccessMode.Admin)]
+    [DataRow(DotnetAccessMode.Everywhere)]
+    internal void ReadEffectiveAccessMode_IgnoresModeUnsupportedOnPlatform(DotnetAccessMode mode)
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = mode });
+
+        DotnetupConfig.ReadEffectiveAccessMode().Should().BeNull();
+        DotnetupConfig.ReadAccessModeSilently().Should().Be(mode);
+    }
+
+    [TestMethod]
     public void ReadEffectiveAccessMode_ReturnsUnsetWithoutWarning_WhenUserConfigIsCorrupt()
     {
         File.WriteAllText(DotnetupPaths.ConfigPath, "{ not json");
