@@ -271,6 +271,203 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
         [Fact]
+        public void ItHonorsDefaultPatchRollForwardWhenSelectingAnMSBuildCompatibleSdk()
+        {
+            var environment = new TestEnvironment(TestAssetsManager);
+
+            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.104", new Version(20, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.105", new Version(21, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.200", new Version(20, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.100", new Version(20, 0, 0, 0));
+
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateGlobalJson(environment.TestDirectory, "10.0.100");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(20, 0, 0, 0),
+                    ProjectFileDirectory = environment.TestDirectory,
+                },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("10.0.104");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void ItHonorsGlobalJsonSettingsThatHostfxrUsesWithoutFallingBack()
+        {
+            var environment = new TestEnvironment(TestAssetsManager);
+
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0", new Version(21, 0, 0, 0));
+            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.1", new Version(20, 0, 0, 0));
+
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateGlobalJson(environment.TestDirectory, "10.0.0");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(20, 0, 0, 0),
+                    ProjectFileDirectory = environment.TestDirectory,
+                },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("10.0.1");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void ItHonorsGlobalJsonPathsWhenSelectingAnMSBuildCompatibleSdk()
+        {
+            var environment = new TestEnvironment(TestAssetsManager);
+            var localSdkRoot = Path.Combine("local", "sdk");
+            var localDotnetRoot = Path.Combine(environment.TestDirectory.FullName, localSdkRoot, "dotnet");
+
+            var expected = environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "10.0.100", new Version(20, 0, 0, 0));
+            environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "11.0.100", new Version(21, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "12.0.100", new Version(20, 0, 0, 0));
+
+            environment.CreateMuxer(localSdkRoot);
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateGlobalJson(
+                environment.TestDirectory,
+                "10.0.100",
+                rollForward: "latestMajor",
+                paths:
+                [
+                    localDotnetRoot,
+                    123,
+                    Path.Combine(environment.GetProgramFilesDirectory(ProgramFiles.X64).FullName, "dotnet")
+                ]);
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(20, 0, 0, 0),
+                    ProjectFileDirectory = environment.TestDirectory,
+                },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("10.0.100");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void ItChecksLaterGlobalJsonPathsWhenAnEarlierPathHasNoMSBuildCompatibleSdk()
+        {
+            var environment = new TestEnvironment(TestAssetsManager);
+            var localSdkRoot = Path.Combine("local", "sdk");
+            var localDotnetRoot = Path.Combine(environment.TestDirectory.FullName, localSdkRoot, "dotnet");
+
+            environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "11.0.100", new Version(21, 0, 0, 0));
+            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "12.0.100", new Version(20, 0, 0, 0));
+
+            environment.CreateMuxer(localSdkRoot);
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateGlobalJson(
+                environment.TestDirectory,
+                "10.0.100",
+                rollForward: "latestMajor",
+                paths: [localDotnetRoot, Path.Combine(environment.GetProgramFilesDirectory(ProgramFiles.X64).FullName, "dotnet")]);
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(20, 0, 0, 0),
+                    ProjectFileDirectory = environment.TestDirectory,
+                },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("12.0.100");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void ItHonorsExplicitPrereleasePolicyWhenSelectingAnMSBuildCompatibleSdk()
+        {
+            var environment = new TestEnvironment(TestAssetsManager)
+            {
+                DisallowPrereleaseByDefault = true
+            };
+
+            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.100-preview.2", new Version(20, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.100-preview.3", new Version(21, 0, 0, 0));
+
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateGlobalJson(
+                environment.TestDirectory,
+                "10.0.100-preview.1",
+                rollForward: "latestPatch",
+                allowPrerelease: true);
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(20, 0, 0, 0),
+                    ProjectFileDirectory = environment.TestDirectory,
+                },
+                new MockFactory());
+
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("10.0.100-preview.2");
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().BeNullOrEmpty();
+        }
+
+        [Fact]
+        public void ItDoesNotRollForwardWhenGlobalJsonDisablesRollForward()
+        {
+            var environment = new TestEnvironment(TestAssetsManager);
+
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.100", new Version(21, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.104", new Version(20, 0, 0, 0));
+
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateGlobalJson(environment.TestDirectory, "10.0.100", rollForward: "disable");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(20, 0, 0, 0),
+                    ProjectFileDirectory = environment.TestDirectory,
+                },
+                new MockFactory());
+
+            result.Success.Should().BeFalse();
+            result.Path.Should().BeNull();
+            result.Version.Should().BeNull();
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().ContainSingle().Which.Should().Contain("Version 10.0.100 of the .NET SDK requires at least version 21.0.0.0 of MSBuild");
+        }
+
+        [Fact]
         public void WhenALocalSdkIsResolvedItReturnsHostFromThatSDKInsteadOfAmbientGlobalSdk()
         {
             // create a test that sets up a TestEnvironment with
@@ -852,7 +1049,12 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     minimumMSBuildVersion.ToString());
             }
 
-            public void CreateGlobalJson(DirectoryInfo directory, string version, string? rollForward = null, string[]? paths = null)
+            public void CreateGlobalJson(
+                DirectoryInfo directory,
+                string version,
+                string? rollForward = null,
+                bool? allowPrerelease = null,
+                object[]? paths = null)
             {
                 var builder = new StringBuilder();
                 builder.AppendLine("{");
@@ -863,19 +1065,32 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     builder.AppendLine(",");
                     builder.Append($"\t\"rollForward\": \"{rollForward}\"");
                 }
+                if (allowPrerelease is not null)
+                {
+                    builder.AppendLine(",");
+                    builder.Append($"\t\"allowPrerelease\": {allowPrerelease.Value.ToString().ToLowerInvariant()}");
+                }
                 if (paths is not null)
                 {
                     builder.Append(',');
                     builder.AppendLine("\t\"paths\" : [");
                     var first = true;
-                    foreach (var path in paths)
+                    foreach (object? path in paths)
                     {
                         if (!first)
                         {
                             builder.Append(',');
                             builder.AppendLine();
                         }
-                        builder.Append($"\t\t\"{path.Replace("\\", "\\\\")}\"");
+                        builder.Append("\t\t");
+                        if (path is string pathString)
+                        {
+                            builder.Append($"\"{pathString.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"");
+                        }
+                        else
+                        {
+                            builder.Append(path?.ToString() ?? "null");
+                        }
                         if (first)
                         {
                             first = false;
