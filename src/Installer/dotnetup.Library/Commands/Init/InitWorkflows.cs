@@ -298,19 +298,8 @@ internal class InitWorkflows
         ExceptionDispatchInfo? installFailure = null;
         try
         {
-            if (InstallRequestsOverride is { } runInstalls)
-            {
-                runInstalls(effectiveRequests);
-            }
-            else if (plan.Migrations.Count > 0)
-            {
-                effectiveRequests = RunInstallsWithMigration(
-                    command, effectiveRequests, plan.Migrations, installRoot, manifestPath, predownloadTask);
-            }
-            else
-            {
-                RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress, command);
-            }
+            effectiveRequests = RunPlannedInstalls(
+                command, effectiveRequests, plan.Migrations, installRoot, manifestPath, predownloadTask);
         }
         catch (DotnetInstallException ex)
         {
@@ -340,6 +329,29 @@ internal class InitWorkflows
         DisplaySetupResult(accessMode, previousConfig?.AccessMode);
 
         return effectiveRequests;
+    }
+
+    private List<ResolvedInstallRequest> RunPlannedInstalls(
+        InstallCommand command,
+        List<ResolvedInstallRequest> requests,
+        List<MigrationWorkflow.MigrationSelection> migrations,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        Task? predownloadTask)
+    {
+        if (InstallRequestsOverride is { } runInstalls)
+        {
+            runInstalls(requests);
+            return requests;
+        }
+
+        if (migrations.Count > 0)
+        {
+            return RunInstallsWithMigration(command, requests, migrations, installRoot, manifestPath, predownloadTask);
+        }
+
+        RunInstallRequests(requests, predownloadTask, command.NoProgress, command);
+        return requests;
     }
 
     /// <summary>
