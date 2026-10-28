@@ -65,7 +65,7 @@ internal class InstallWorkflow
             // (in which case the walkthrough generates them after the prompt).
             var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs);
             var workflows = _initWorkflows
-                ?? new InitWorkflows(_command.DotnetEnvironment, new AdminModeSwitcher(_command.Policy));
+                ?? new InitWorkflows(_command.DotnetEnvironment);
             requests = workflows.InitWalkthrough(_command, initialRequests);
             if (requests.Count == 0)
             {

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
@@ -28,7 +27,6 @@ internal class EnvSetCommand : CommandBase
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
-        AdminSwitcher = adminModeSwitcher;
         _modeArg = result.GetValue(EnvSetCommandParser.ModeArgument);
         _dotnetupOnPathArg = result.GetValue(EnvSetCommandParser.DotnetupOnPathOption);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
@@ -79,10 +77,7 @@ internal class EnvSetCommand : CommandBase
 
         EnvSettingsWriter.ApplyAndPersist(
             targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector,
-            previous?.AccessMode, AdminSwitcher);
+            previous?.AccessMode);
     }
-
-    [AllowNull]
-    private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher(Policy);
 
 }

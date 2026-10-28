@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation.Internal;
@@ -26,16 +25,11 @@ internal class InitWorkflows
 
     public InitWorkflows(
         IDotnetEnvironmentManager dotnetEnvironment,
-        AdminModeSwitcher? adminModeSwitcher = null,
         IEnvironmentStateInspector? environmentInspector = null)
     {
         _dotnetEnvironment = dotnetEnvironment;
         _environmentInspector = environmentInspector ?? new EnvironmentStateInspector(dotnetEnvironment);
-        AdminSwitcher = adminModeSwitcher;
     }
-
-    [AllowNull]
-    private AdminModeSwitcher AdminSwitcher => field ?? new AdminModeSwitcher();
 
     /// <summary>
     /// Replaces the interactive form (or the non-interactive defaults) in tests. Returns the
@@ -122,8 +116,7 @@ internal class InitWorkflows
                 _dotnetEnvironment,
                 command.ShellProvider,
                 _environmentInspector,
-                previousConfig?.AccessMode,
-                AdminSwitcher);
+                previousConfig?.AccessMode);
             DisplaySetupResult(formSelection.AccessMode, previousConfig?.AccessMode);
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
                 formSelection.AccessMode == DotnetAccessMode.Admin

@@ -18,7 +18,6 @@ internal class EnvClearCommand : CommandBase
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
-    private readonly AdminModeSwitcher _adminModeSwitcher;
 
     public EnvClearCommand(
         ParseResult result,
@@ -30,7 +29,6 @@ internal class EnvClearCommand : CommandBase
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
-        _adminModeSwitcher = adminModeSwitcher ?? new AdminModeSwitcher(Policy);
     }
 
     internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
@@ -43,7 +41,6 @@ internal class EnvClearCommand : CommandBase
             _dotnetEnvironment,
             _shellProvider,
             _inspector,
-            DotnetupConfig.ReadAccessMode(),
-            _adminModeSwitcher);
+            DotnetupConfig.ReadAccessMode());
     }
 }

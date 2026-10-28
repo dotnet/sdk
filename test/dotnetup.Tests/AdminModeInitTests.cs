@@ -61,23 +61,17 @@ public class AdminModeInitTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
     [ResourceLock(WellKnownResources.Console)]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void AdminSetup_DoesNotRequestPolicyElevation(bool cancelled)
+    public void AdminSetup_LeavesPolicyUnchanged()
     {
         var previous = new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = false };
         DotnetupConfig.Write(previous);
         var environment = CreateEnvironment();
-        var elevator = _environment.CreateElevator(
-            failure: cancelled ? new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled") : null,
-            appliesChange: false);
-        var workflows = CreateWorkflows(environment, DotnetAccessMode.Admin, elevator);
+        var workflows = CreateWorkflows(environment, DotnetAccessMode.Admin);
         var command = new InitCommand(Parser.Parse(["init", "--shell", "bash"]), _environment.Policy);
 
         string output = Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
-        elevator.Operations.Should().BeEmpty();
         _environment.Store.Writes.Should().BeEmpty();
         environment.ApplyDotnetupOnUserPathCallCount.Should().Be(1);
         output.Should().Contain(Strings.AdminModeEnabled);
@@ -96,15 +90,13 @@ public class AdminModeInitTests : IDisposable
         };
         DotnetupConfig.Write(previous);
         var environment = CreateEnvironment();
-        var elevator = _environment.CreateElevator();
         var workflows = CreateWorkflows(environment,
-            leavingAdmin ? DotnetAccessMode.Shell : DotnetAccessMode.Admin, elevator);
+            leavingAdmin ? DotnetAccessMode.Shell : DotnetAccessMode.Admin);
         var command = new InitCommand(Parser.Parse(["init", "--dry-run"]), _environment.Policy);
 
         string output = Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
         DotnetupConfig.Read().Should().BeEquivalentTo(previous);
-        elevator.Operations.Should().BeEmpty();
         _environment.Store.Writes.Should().BeEmpty();
         environment.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
         output.Should().Contain(Strings.InitConfigureOnlyDescription);
@@ -139,14 +131,11 @@ public class AdminModeInitTests : IDisposable
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin, DotnetupOnPath = false });
         var environment = CreateEnvironment();
-        var elevator = _environment.CreateElevator();
-        var workflows = new InitWorkflows(environment, _environment.CreateSwitcher(elevator),
-            new FakeEnvironmentStateInspector());
+        var workflows = new InitWorkflows(environment, new FakeEnvironmentStateInspector());
         var command = new InitCommand(Parser.Parse(["init", "--interactive", "false"]), _environment.Policy);
 
         Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
-        elevator.Operations.Should().BeEmpty();
         _environment.Store.Writes.Should().BeEmpty();
         _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
@@ -252,9 +241,8 @@ public class AdminModeInitTests : IDisposable
     private MockDotnetInstallManager CreateEnvironment() => new(_environment.TempRoot, existingSystemInstalls: []);
 
     private InitWorkflows CreateWorkflows(
-        MockDotnetInstallManager environment, DotnetAccessMode selectedMode, FakeAdminModeElevator? elevator = null) =>
-        new(environment, _environment.CreateSwitcher(elevator ?? _environment.CreateElevator()),
-            new FakeEnvironmentStateInspector())
+        MockDotnetInstallManager environment, DotnetAccessMode selectedMode) =>
+        new(environment, new FakeEnvironmentStateInspector())
         {
             FormSelectionOverride = (_, _) => new InitFormSelection(
                 "invalid-channel-that-must-not-be-resolved", selectedMode, MigrateSystemInstalls: true),

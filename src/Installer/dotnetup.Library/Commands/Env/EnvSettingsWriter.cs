@@ -20,8 +20,7 @@ internal static class EnvSettingsWriter
         IDotnetEnvironmentManager environment,
         IEnvShellProvider? shellProvider,
         IEnvironmentStateInspector inspector,
-        DotnetAccessMode? previousAccessMode,
-        AdminModeSwitcher adminModeSwitcher)
+        DotnetAccessMode? previousAccessMode)
     {
         IEnvShellProvider? resolvedShellProvider = shellProvider ?? ShellDetection.GetCurrentShellProvider();
 

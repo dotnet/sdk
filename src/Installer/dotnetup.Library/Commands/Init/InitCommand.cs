@@ -18,7 +18,7 @@ internal class InitCommand(ParseResult result, DotnetupPolicy? policy = null) : 
 
     protected override void ExecuteCore()
     {
-        var workflows = new InitWorkflows(DotnetEnvironment, new AdminModeSwitcher(Policy));
+        var workflows = new InitWorkflows(DotnetEnvironment);
         workflows.InitWalkthrough(this);
     }
 }

@@ -233,14 +233,8 @@ public class InitWorkflowTests : IDisposable
     {
         var policyStore = new FakeDotnetupPolicyStore();
         var policy = new DotnetupPolicy(policyStore);
-        var elevator = new FakeAdminModeElevator(policy);
-        var switcher = new AdminModeSwitcher(
-            policy,
-            elevator,
-            () => false,
-            AdminModeSwitcherTests.CreateConsole(new StringWriter()));
         var environment = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: []);
-        var workflows = new InitWorkflows(environment, switcher, new FakeEnvironmentStateInspector())
+        var workflows = new InitWorkflows(environment, new FakeEnvironmentStateInspector())
         {
             FormSelectionOverride = (_, _) => new InitFormSelection(
                 Channel: null,
@@ -259,7 +253,6 @@ public class InitWorkflowTests : IDisposable
             () => workflows.InitWalkthrough(command, requests: []));
 
         requests.Should().BeEmpty();
-        elevator.Operations.Should().BeEmpty();
         policyStore.Writes.Should().BeEmpty();
         policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read().Should().BeEquivalentTo(new DotnetupConfigData
@@ -281,14 +274,8 @@ public class InitWorkflowTests : IDisposable
         var policyStore = new FakeDotnetupPolicyStore();
         policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
         var policy = new DotnetupPolicy(policyStore);
-        var elevator = new FakeAdminModeElevator(policy);
-        var switcher = new AdminModeSwitcher(
-            policy,
-            elevator,
-            () => false,
-            AdminModeSwitcherTests.CreateConsole(new StringWriter()));
         var environment = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: []);
-        var workflows = new InitWorkflows(environment, switcher, new FakeEnvironmentStateInspector())
+        var workflows = new InitWorkflows(environment, new FakeEnvironmentStateInspector())
         {
             FormSelectionOverride = (_, _) => new InitFormSelection(
                 Channel: null,
@@ -304,7 +291,7 @@ public class InitWorkflowTests : IDisposable
             () => workflows.InitWalkthrough(command));
 
         requests.Should().BeEmpty();
-        elevator.Operations.Should().BeEmpty();
+        policyStore.Writes.Should().BeEmpty();
         policy.IsUnsignedDownloadBlocked().Should().BeTrue();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
     }
