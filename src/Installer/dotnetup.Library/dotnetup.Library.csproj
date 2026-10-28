@@ -70,7 +70,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Dotnet.Installation\Microsoft.Dotnet.Installation.csproj" />
-    <ProjectReference Include="..\..\Cli\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj" />
   </ItemGroup>
 
   <ItemGroup>

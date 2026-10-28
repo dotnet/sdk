@@ -64,6 +64,17 @@ When a command fails, telemetry can include the error type, category, code,
 HTTP status, HResult, sanitized details, and stack trace. Exception messages
 and path-bearing values are excluded or sanitized before transmission.
 
+## Delivery
+
+On local runs, the Azure Monitor exporter persists queued telemetry during orderly
+shutdown. `dotnetup` and the SDK use the same `dotnet-cli` storage partition, so
+either can upload records saved by the other. A detached `dotnetup` process also
+attempts delivery after most commands, without delaying the foreground process;
+the shell-startup command leaves delivery to a later invocation. Delivery is
+best-effort: abrupt termination or an exhausted shutdown budget can lose queued
+records. Files from the previous SDK-owned exporter's unpartitioned store are not
+migrated or deleted.
+
 ## Related environment variables
 
 | Variable | Description |

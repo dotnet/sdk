@@ -18,7 +18,7 @@ public class BrowserRefreshServerReplayTests
         => new([new BrowserToolsManagedCodeUpdate(moduleId, [1], [2], [3], [4])]);
 
     private static ValueTask<bool> SendAsync(TestBrowserRefreshServer server, int epoch, BrowserToolsUpdateBatch batch)
-        => server.SendManagedCodeUpdateAsync(epoch, batch, static _ => new byte[] { 1 }.AsMemory(), CancellationToken.None);
+        => server.SendManagedCodeUpdateAsync(epoch, batch, static _ => (ReadOnlyMemory<byte>)new byte[] { 1 }, CancellationToken.None);
 
     /// <summary>
     /// An update produced while no browser is connected is retained and replayed to the next one.

@@ -16,7 +16,7 @@ internal static class BrowserToolsBuildOutputsExtensions
     {
         /// <summary>
         /// Returns the build outputs of <paramref name="projectNode"/>, or null when the project does
-        /// not produce browser tools assets at all. 
+        /// not produce browser tools assets at all.
         /// </summary>
         public static BrowserToolsBuildOutputs? FromProject(ProjectInstance projectInstance, ILogger logger)
         {

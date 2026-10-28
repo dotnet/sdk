@@ -39,6 +39,9 @@ never reach publish output. Its generated watch initializer also initializes the
 Reload agent on .NET 10+; older target frameworks use the runtime's apply API. Do not add a
 second Hot Reload agent initializer—the shared browser-tools rendezvous carries the SDK
 agent's apply functions directly.
+For client-owned early Web activation, the initializer creates `pendingUpdates` on that
+rendezvous. Retain both replayed and live updates there until the runtime publishes
+readiness, without blocking SSR refresh; do not create this queue for server-only apps.
 Browser-tools UI must remain self-contained and compatible with strict Content Security
 Policy: isolate it in Shadow DOM, use constructable stylesheets, and do not require
 application stylesheets, inline styles, nonces, or `style-src 'unsafe-inline'`.

@@ -4,7 +4,7 @@
   "description": "Windows、Linux、MacOS 上の .NET で実行できる、NUnit テスト フレームワークを使用した Playwright テストを含むプロジェクト。",
   "symbols/TargetFrameworkOverride/description": "ターゲット フレームワークをオーバーライドします",
   "symbols/TargetFrameworkOverride/displayName": "ターゲット フレームワークのオーバーライド",
-  "symbols/Framework/description": "プロジェクトのターゲット フレームワークです。",
+  "symbols/Framework/description": "プロジェクトのターゲット フレームワーク。",
   "symbols/Framework/displayName": "フレームワーク",
   "symbols/Framework/choices/net11.0/description": "ターゲット net11.0",
   "symbols/EnablePack/description": "(\"dotnet pack\" を使用して) プロジェクトのパッケージ化を有効にするかどうか。",

@@ -8,6 +8,10 @@
 
   <ItemGroup>
     <PackageReference Include="NuGet.Packaging" ExcludeAssets="Runtime" />
+    <!-- Pin NuGet's crypto dependency explicitly without enabling transitive pinning. -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" ExcludeAssets="Runtime">
+      <VersionOverride Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(SystemSecurityCryptographyPkcsToolsetPackageVersion)</VersionOverride>
+    </PackageReference>
     <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
   </ItemGroup>
 

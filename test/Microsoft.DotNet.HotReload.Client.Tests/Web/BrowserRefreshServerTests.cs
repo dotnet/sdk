@@ -10,6 +10,87 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 [TestClass]
 public class BrowserRefreshServerTests
 {
+    private sealed class RecordingBrowserRefreshServer()
+        : TestBrowserRefreshServer(Path.GetTempPath(), useGatewayProxy: false)
+    {
+        public List<string> Messages { get; } = [];
+
+        internal override ValueTask<TResult?> SendAndReceiveAsync<TRequest, TResult>(
+            IReadOnlyCollection<BrowserConnection> openConnections,
+            Func<string?, TRequest>? request,
+            ResponseFunc<TResult>? response,
+            CancellationToken cancellationToken)
+            where TResult : struct
+        {
+            var value = request!(null);
+            var bytes = value is ReadOnlyMemory<byte> message ? message : SerializeJson(value);
+            Messages.Add(Encoding.UTF8.GetString(bytes.ToArray()));
+            return ValueTask.FromResult<TResult?>(null);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("Wait")]
+    [DataRow("Reload")]
+    [DataRow("RefreshBrowser")]
+    public async Task SerializeControlMessage(string type)
+    {
+        await using var server = new RecordingBrowserRefreshServer();
+
+        await (type switch
+        {
+            "Wait" => server.SendWaitMessageAsync(CancellationToken.None),
+            "Reload" => server.SendReloadMessageAsync(CancellationToken.None),
+            _ => server.RefreshBrowserAsync(CancellationToken.None),
+        });
+
+        Assert.AreEqual($$"""{"type":"{{type}}"}""", server.Messages.Single());
+    }
+
+    [TestMethod]
+    public async Task SerializeDiagnosticsAndStaticAssetMessages()
+    {
+        await using var server = new RecordingBrowserRefreshServer();
+
+        await server.ReportCompilationErrorsInBrowserAsync(["error"], CancellationToken.None);
+        await server.UpdateStaticAssetsAsync(["/site.css"], CancellationToken.None);
+
+        Assert.AreSequenceEqual(
+        [
+            """{"type":"ReportDiagnostics","diagnostics":["error"]}""",
+            """{"type":"UpdateStaticFile","path":"/site.css"}""",
+        ], server.Messages);
+    }
+
+    [TestMethod]
+    public void SerializeManagedCodeUpdate()
+    {
+        var request = new WebAssemblyHotReloadClient.JsonApplyManagedCodeUpdatesRequest
+        {
+            SharedSecret = "secret",
+            Deltas = [new BrowserToolsManagedCodeUpdate(Guid.Empty, [1], [2], [3], [4])],
+            ResponseLoggingLevel = 1,
+        };
+
+        var json = Encoding.UTF8.GetString(BrowserRefreshServer.SerializeJson(request).ToArray());
+
+        Assert.AreEqual(
+            """{"type":"ApplyManagedCodeUpdates","sharedSecret":"secret","deltas":[{"moduleId":"00000000-0000-0000-0000-000000000000","metadataDelta":"AQ==","ilDelta":"Ag==","pdbDelta":"Aw==","updatedTypes":[4]}],"responseLoggingLevel":1}""",
+            json);
+    }
+
+    [TestMethod]
+    public void DeserializeResponse_UsesWebDefaults()
+    {
+        var response = BrowserRefreshServer.DeserializeJson<BrowserRefreshServer.JsonApplyDeltasResponse>(
+            """{"SUCCESS":true,"LOG":[{"MESSAGE":"message","SEVERITY":"1"}]}"""u8);
+
+        Assert.IsTrue(response.Success);
+        var entry = response.Log.Single();
+        Assert.AreEqual("message", entry.Message);
+        Assert.AreEqual(1, entry.Severity);
+    }
+
     private class TestListener : IAsyncDisposable
     {
         public ValueTask DisposeAsync()

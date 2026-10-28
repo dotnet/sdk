@@ -200,6 +200,11 @@ public class ReferencedExeProgram
         [TestMethod]
         public void ReferencedExeWithLowerTargetFrameworkCanRun()
         {
+            if (!EnvironmentInfo.SupportsTargetFramework("netcoreapp3.1"))
+            {
+                return;
+            }
+
             MainSelfContained = false;
             ReferencedSelfContained = false;
 

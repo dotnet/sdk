@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Globalization;
+using System.IO.Compression;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -27,6 +29,7 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
     }
 
     public string IngestionEndpoint { get; }
+    public ConcurrentQueue<string> Payloads { get; } = new();
 
     public Task WaitForRequestAsync(TimeSpan timeout) => _requestReceived.Task.WaitAsync(timeout);
 
@@ -62,13 +65,32 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
         }
     }
 
-    private static async Task ServeRequestAsync(TcpClient client)
+    private async Task ServeRequestAsync(TcpClient client)
     {
         using NetworkStream stream = client.GetStream();
-        if (await ReadHeadersAsync(stream))
+        var headers = await ReadHeadersAsync(stream);
+        using var body = new MemoryStream();
+        if (headers.TryGetValue("Transfer-Encoding", out string? encoding)
+            && encoding.Equals("chunked", StringComparison.OrdinalIgnoreCase))
         {
-            await ReadChunkedBodyAsync(stream);
+            await ReadChunkedBodyAsync(stream, body);
         }
+        else if (headers.TryGetValue("Content-Length", out string? length))
+        {
+            int contentLength = int.Parse(length, CultureInfo.InvariantCulture);
+            if (contentLength < 0 || contentLength > MaxBodyBytes)
+            {
+                throw new InvalidDataException("Invalid telemetry content length.");
+            }
+            await ReadExactlyAsync(stream, contentLength, body);
+        }
+
+        body.Position = 0;
+        using Stream decoded = headers.TryGetValue("Content-Encoding", out string? compression)
+            && compression.Equals("gzip", StringComparison.OrdinalIgnoreCase)
+            ? new GZipStream(body, CompressionMode.Decompress) : body;
+        using var reader = new StreamReader(decoded, Encoding.UTF8);
+        Payloads.Enqueue(await reader.ReadToEndAsync());
 
         byte[] response = Encoding.ASCII.GetBytes(
             "HTTP/1.1 200 OK\r\nContent-Length: 0\r\nConnection: close\r\n\r\n");
@@ -77,7 +99,7 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
         client.Client.Shutdown(SocketShutdown.Send);
     }
 
-    private static async Task<bool> ReadHeadersAsync(NetworkStream stream)
+    private static async Task<Dictionary<string, string>> ReadHeadersAsync(NetworkStream stream)
     {
         string requestLine = await ReadLineAsync(stream, 1024);
         if (!requestLine.Equals("POST /v2.1/track HTTP/1.1", StringComparison.Ordinal))
@@ -85,7 +107,7 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
             throw new InvalidDataException($"Unexpected telemetry request line: '{requestLine}'.");
         }
 
-        bool chunked = false;
+        var headers = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         int bytesRead = Encoding.ASCII.GetByteCount(requestLine) + 2;
         while (true)
         {
@@ -93,14 +115,19 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
             bytesRead += Encoding.ASCII.GetByteCount(line) + 2;
             if (line.Length == 0)
             {
-                return chunked;
+                return headers;
             }
 
-            chunked |= line.Equals("Transfer-Encoding: chunked", StringComparison.OrdinalIgnoreCase);
+            int separator = line.IndexOf(':');
+            if (separator <= 0)
+            {
+                throw new InvalidDataException("Invalid telemetry HTTP header.");
+            }
+            headers.Add(line[..separator], line[(separator + 1)..].Trim());
         }
     }
 
-    private static async Task ReadChunkedBodyAsync(NetworkStream stream)
+    private static async Task ReadChunkedBodyAsync(NetworkStream stream, MemoryStream body)
     {
         int totalBytes = 0;
         while (true)
@@ -121,7 +148,7 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
                 throw new InvalidDataException($"Telemetry request exceeded {MaxBodyBytes} bytes.");
             }
 
-            await ReadExactlyAsync(stream, size);
+            await ReadExactlyAsync(stream, size, body);
             await ReadLineAsync(stream, 2);
         }
     }
@@ -153,7 +180,7 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
         return read == 0 ? throw new EndOfStreamException() : buffer[0];
     }
 
-    private static async Task ReadExactlyAsync(NetworkStream stream, int length)
+    private static async Task ReadExactlyAsync(NetworkStream stream, int length, MemoryStream body)
     {
         byte[] buffer = new byte[Math.Min(length, 8192)];
         while (length > 0)
@@ -165,6 +192,7 @@ internal sealed class MockTelemetryIngestionServer : IDisposable
             }
 
             length -= read;
+            body.Write(buffer, 0, read);
         }
     }
 }

@@ -142,8 +142,8 @@ Açıklamalar:
         <source>
       Show trace output
     </source>
-        <target state="new">
-      Show trace output
+        <target state="translated">
+      İzleme çıktısını göster
     </target>
         <note />
       </trans-unit>

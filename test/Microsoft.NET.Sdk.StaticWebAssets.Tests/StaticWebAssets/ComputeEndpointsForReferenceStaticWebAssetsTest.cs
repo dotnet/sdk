@@ -95,9 +95,55 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
 
         // Assert
         result.Should().Be(true);
-        task.Endpoints.Where(e => e != null).Should().ContainSingle();
+        task.Endpoints.Should().ContainSingle();
         task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
         task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void DoesNotModifyCandidateEndpoints(bool alreadyPrefixed)
+    {
+        var route = alreadyPrefixed ? "base/candidate.js" : "candidate.js";
+        var matching = CreateCandidateEndpoint(route, Path.Combine("wwwroot", "candidate.js"), addLabel: true);
+        var missing = CreateCandidateEndpoint("missing.js", Path.Combine("wwwroot", "missing.js"));
+        ITaskItem[] candidates = [missing, matching, missing];
+        var originalItems = candidates.ToArray();
+        var originalProperties = matching.GetMetadata("EndpointProperties");
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = new Mock<IBuildEngine>().Object,
+            Assets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All")],
+            CandidateEndpoints = candidates
+        };
+
+        task.Execute().Should().BeTrue();
+
+        candidates.Should().Equal(originalItems);
+        matching.ItemSpec.Should().Be(route);
+        matching.GetMetadata("EndpointProperties").Should().Be(originalProperties);
+        missing.ItemSpec.Should().Be("missing.js");
+        task.Endpoints.Should().ContainSingle();
+        task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
+    }
+
+    [TestMethod]
+    public void ReturnsEmptyEndpointsWhenNoAssetsMatch()
+    {
+        ITaskItem[] candidates = [CreateCandidateEndpoint("missing.js", Path.Combine("wwwroot", "missing.js"))];
+        var original = candidates[0];
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = new Mock<IBuildEngine>().Object,
+            Assets = [],
+            CandidateEndpoints = candidates
+        };
+
+        task.Execute().Should().BeTrue();
+
+        task.Endpoints.Should().BeEmpty();
+        candidates.Should().Equal(original);
     }
 
     [TestMethod]
