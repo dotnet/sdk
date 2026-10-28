@@ -542,9 +542,6 @@ Or open a new terminal.</value>
   <data name="AdminModeArgumentDisplayName" xml:space="preserve">
     <value>The argument '&lt;{0}&gt;'</value>
   </data>
-  <data name="AdminModeWindowsOnly" xml:space="preserve">
-    <value>Admin mode is only supported on Windows.</value>
-  </data>
   <data name="AdminModeAlreadyEnabled" xml:space="preserve">
     <value>Admin mode is already enabled.</value>
   </data>
@@ -553,33 +550,6 @@ Or open a new terminal.</value>
   </data>
   <data name="AdminModeDisabled" xml:space="preserve">
     <value>Admin mode is disabled.</value>
-  </data>
-  <data name="AdminModeUnsignedDownloadsAllowed" xml:space="preserve">
-    <value>Unsigned executables will be allowed again by default.</value>
-  </data>
-  <data name="AdminModeEnablingNotice" xml:space="preserve">
-    <value>Enabling admin mode changes a machine-wide policy that affects all users on this computer.</value>
-  </data>
-  <data name="AdminModeDisablingNotice" xml:space="preserve">
-    <value>Disabling admin mode changes a machine-wide policy that affects all users on this computer.</value>
-  </data>
-  <data name="AdminModeElevationNotice" xml:space="preserve">
-    <value>Windows will ask for administrator permission.</value>
-  </data>
-  <data name="AdminModeChangeCancelled" xml:space="preserve">
-    <value>Elevation was cancelled. Admin mode was not changed.</value>
-  </data>
-  <data name="AdminModeEnableFailed" xml:space="preserve">
-    <value>Failed to enable admin mode: {0}</value>
-  </data>
-  <data name="AdminModeDisableFailed" xml:space="preserve">
-    <value>Failed to disable admin mode: {0}</value>
-  </data>
-  <data name="AdminModeNotEnabled" xml:space="preserve">
-    <value>Admin mode was not enabled. The machine policy did not change, which can happen when it is managed by Group Policy.</value>
-  </data>
-  <data name="AdminModeNotDisabled" xml:space="preserve">
-    <value>Admin mode was not disabled. The machine policy did not change, which can happen when it is managed by Group Policy.</value>
   </data>
   <data name="InitInstallLocation" xml:space="preserve">
     <value>dotnetup will install .NET SDKs and runtimes in {0}.</value>
@@ -618,25 +588,6 @@ Or open a new terminal.</value>
     <value>Requires elevation.
 Install .NET afterwards with 'dotnetup sdk install &lt;version&gt; --untracked'.</value>
     <comment>{Locked="dotnetup sdk install"}{Locked="--untracked"}</comment>
-  </data>
-  <data name="ElevatedSystemPathOperationDescription" xml:space="preserve">
-    <value>The operation to perform: 'insertdotnet', 'removedotnet', 'enableadminmode', or 'disableadminmode'</value>
-    <comment>{Locked="insertdotnet"}{Locked="removedotnet"}{Locked="enableadminmode"}{Locked="disableadminmode"}</comment>
-  </data>
-  <data name="ElevatedSystemPathOutputFileDescription" xml:space="preserve">
-    <value>A file where any output that should be displayed to the user should be written.</value>
-  </data>
-  <data name="ElevatedSystemPathDotnetDirDescription" xml:space="preserve">
-    <value>The dotnet directory to insert into or remove from the system PATH. Required for 'insertdotnet' and 'removedotnet' because the elevated process may run under a different account and cannot recompute the invoking user's directory.</value>
-    <comment>{Locked="PATH"}{Locked="insertdotnet"}{Locked="removedotnet"}</comment>
-  </data>
-  <data name="ElevatedSystemPathCommandDescription" xml:space="preserve">
-    <value>Modifies the machine-wide system PATH (requires elevated privileges)</value>
-    <comment>{Locked="PATH"}</comment>
-  </data>
-  <data name="ElevatedSystemPathDotnetDirRequired" xml:space="preserve">
-    <value>The '{0}' operation requires the --dotnet-dir option.</value>
-    <comment>{Locked="--dotnet-dir"}</comment>
   </data>
   <data name="WindowsInstallerDownloadFailed" xml:space="preserve">
     <value>Failed to download the .NET installer for version {0}: {1}</value>

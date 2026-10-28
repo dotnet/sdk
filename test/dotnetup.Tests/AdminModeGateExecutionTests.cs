@@ -69,7 +69,7 @@ public class AdminModeGateExecutionTests : IDisposable
         using var output = new StringWriter();
         try
         {
-            AnsiConsole.Console = AdminModeSwitcherTests.CreateConsole(output);
+            AnsiConsole.Console = AdminModeTestEnvironment.CreateConsole(output);
             action();
             return output.ToString();
         }

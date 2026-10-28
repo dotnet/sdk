@@ -44,7 +44,6 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.AdminModeCommandNotSupported => ErrorCategory.User,
             DotnetInstallErrorCode.AdminModeSymbolNotSupported => ErrorCategory.User,
             DotnetInstallErrorCode.AdminModeRequiresUntracked => ErrorCategory.User,
-            DotnetInstallErrorCode.AdminModeChangeFailed => ErrorCategory.User,
             DotnetInstallErrorCode.InstallerBusy => ErrorCategory.User,
             DotnetInstallErrorCode.InstallerFailed => ErrorCategory.Product,
             DotnetInstallErrorCode.InstallerPostInstallVerificationFailed => ErrorCategory.Product,

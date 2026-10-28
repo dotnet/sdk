@@ -48,7 +48,6 @@ public class AdminAccessModeTests
     [DataRow(DotnetInstallErrorCode.AdminModeCommandNotSupported, ErrorCategory.User)]
     [DataRow(DotnetInstallErrorCode.AdminModeSymbolNotSupported, ErrorCategory.User)]
     [DataRow(DotnetInstallErrorCode.AdminModeRequiresUntracked, ErrorCategory.User)]
-    [DataRow(DotnetInstallErrorCode.AdminModeChangeFailed, ErrorCategory.User)]
     [DataRow(DotnetInstallErrorCode.InstallerBusy, ErrorCategory.User)]
     [DataRow(DotnetInstallErrorCode.InstallerFailed, ErrorCategory.Product)]
     [DataRow(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed, ErrorCategory.Product)]

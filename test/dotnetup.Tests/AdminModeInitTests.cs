@@ -262,7 +262,7 @@ public class AdminModeInitTests : IDisposable
         try
         {
             Environment.CurrentDirectory = _environment.TempRoot;
-            AnsiConsole.Console = AdminModeSwitcherTests.CreateConsole(output);
+            AnsiConsole.Console = AdminModeTestEnvironment.CreateConsole(output);
             action();
             return output.ToString();
         }

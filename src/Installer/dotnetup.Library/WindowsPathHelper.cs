@@ -592,19 +592,6 @@ internal sealed partial class WindowsPathHelper : IDisposable
     /// <exception cref="DotnetInstallException">Thrown when the user declines the UAC elevation prompt.</exception>
     /// <exception cref="InvalidOperationException">Thrown when the process cannot be started or returns a non-zero exit code.</exception>
     public static void StartElevatedProcess(string operation, string dotnetDir)
-        => StartElevatedProcessCore(operation, $" --dotnet-dir \"{dotnetDir}\"");
-
-    /// <summary>
-    /// Starts an elevated process for an operation that needs no dotnet directory (for example
-    /// <c>enableadminmode</c>/<c>disableadminmode</c>) and waits for it to complete.
-    /// </summary>
-    /// <param name="operation">The fixed elevated operation token to perform.</param>
-    /// <exception cref="DotnetInstallException">Thrown when the user declines the UAC elevation prompt.</exception>
-    /// <exception cref="InvalidOperationException">Thrown when the process cannot be started or returns a non-zero exit code.</exception>
-    public static void StartElevatedProcess(string operation)
-        => StartElevatedProcessCore(operation, extraArguments: string.Empty);
-
-    private static void StartElevatedProcessCore(string operation, string extraArguments)
     {
         var processPath = DotnetupProcessInfo.ExecutablePath;
         if (string.IsNullOrEmpty(processPath))
@@ -619,7 +606,7 @@ internal sealed partial class WindowsPathHelper : IDisposable
 
         try
         {
-            string arguments = $"elevatedsystempath {operation} \"{outputFilePath}\"{extraArguments}";
+            string arguments = $"elevatedsystempath {operation} \"{outputFilePath}\" --dotnet-dir \"{dotnetDir}\"";
 
             var startInfo = new ProcessStartInfo
             {

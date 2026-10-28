@@ -4,13 +4,13 @@
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 /// <summary>
 /// A temporary dotnetup data directory plus a machine policy backed by an in-memory store. Pass
-/// <see cref="Policy"/> (or a switcher built by <see cref="CreateSwitcher"/>) to the code under test;
-/// nothing here replaces process-wide policy state.
+/// <see cref="Policy"/> to the code under test; nothing here replaces process-wide policy state.
 /// </summary>
 internal sealed class AdminModeTestEnvironment : IDisposable
 {
@@ -30,13 +30,12 @@ internal sealed class AdminModeTestEnvironment : IDisposable
     /// <summary>The policy over <see cref="Store"/>.</summary>
     public DotnetupPolicy Policy { get; }
 
-    /// <summary>Creates an elevator whose elevated operation writes <see cref="Policy"/>.</summary>
-    public FakeAdminModeElevator CreateElevator(Exception? failure = null, bool appliesChange = true) =>
-        new(Policy) { Failure = failure, AppliesChange = appliesChange };
-
-    /// <summary>Creates a switcher over <see cref="Policy"/> that runs as an unprivileged process.</summary>
-    public AdminModeSwitcher CreateSwitcher(IAdminModeElevator elevator, bool privileged = false, StringWriter? output = null) =>
-        new(Policy, elevator, () => privileged, AdminModeSwitcherTests.CreateConsole(output ?? new StringWriter()));
+    /// <summary>Creates a non-ANSI console that writes to <paramref name="output"/>.</summary>
+    public static IAnsiConsole CreateConsole(StringWriter output) => AnsiConsole.Create(new AnsiConsoleSettings
+    {
+        Out = new AnsiConsoleOutput(output),
+        Ansi = AnsiSupport.No,
+    });
 
     public void Dispose()
     {
