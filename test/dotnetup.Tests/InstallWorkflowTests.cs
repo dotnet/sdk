@@ -412,7 +412,7 @@ public class InstallWorkflowTests : IDisposable
 
     private void UseAdminMode() => DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });
 
-    private EffectiveAccessMode ResolveAccessMode() => AccessModeResolver.Resolve();
+    private static DotnetAccessMode? ResolveAccessMode() => DotnetupConfig.ReadEffectiveAccessMode();
 
     #endregion
 }

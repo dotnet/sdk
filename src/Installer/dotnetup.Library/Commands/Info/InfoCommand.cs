@@ -56,7 +56,7 @@ internal class InfoCommand : CommandBase
 
         if (!_noList)
         {
-            if (AccessModeResolver.Resolve().IsAdmin)
+            if (DotnetupConfig.ReadEffectiveAccessMode() == DotnetAccessMode.Admin)
             {
                 installationsMessage = Strings.AdminModeInfoInstallationsNotShown;
             }

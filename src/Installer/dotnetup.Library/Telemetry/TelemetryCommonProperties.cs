@@ -83,24 +83,7 @@ internal static class TelemetryCommonProperties
     }
 
     private static void AddAccessModeAttributes(Dictionary<string, object> attributes)
-    {
-        var effective = ResolveAccessModeSafely();
-        attributes[TelemetryTagNames.AccessMode] = GetAccessModeTelemetryValue(effective.Mode);
-        attributes[TelemetryTagNames.AccessModeSource] = GetAccessModeSourceTelemetryValue(effective.Source);
-    }
-
-    private static EffectiveAccessMode ResolveAccessModeSafely()
-    {
-        try
-        {
-            return AccessModeResolver.Resolve();
-        }
-        catch
-        {
-            // Telemetry must never crash the app.
-            return EffectiveAccessMode.Unset;
-        }
-    }
+        => attributes[TelemetryTagNames.AccessMode] = GetAccessModeTelemetryValue(DotnetupConfig.ReadEffectiveAccessMode());
 
     internal static string GetAccessModeTelemetryValue(DotnetAccessMode? mode) => mode switch
     {
@@ -110,13 +93,6 @@ internal static class TelemetryCommonProperties
         DotnetAccessMode.Everywhere => "everywhere",
         DotnetAccessMode.Admin => "admin",
         _ => "unknown",
-    };
-
-    internal static string GetAccessModeSourceTelemetryValue(AccessModeSource source) => source switch
-    {
-        AccessModeSource.UserConfig => "user_config",
-
-        _ => "unset",
     };
 
     /// <summary>

@@ -182,6 +182,26 @@ internal static class DotnetupConfig
         => TryLoad(out var config, out _) == ConfigFileState.Loaded ? config!.ConfiguredAccessMode : null;
 
     /// <summary>
+    /// Returns the access mode dotnetup operates under: the recorded mode, or <c>null</c> when none is
+    /// recorded or it cannot be read. A recorded mode the current platform does not support (admin
+    /// outside Windows) is ignored. Writes no output and never throws.
+    /// </summary>
+    internal static DotnetAccessMode? ReadEffectiveAccessMode()
+    {
+        try
+        {
+            DotnetAccessMode? mode = ReadAccessModeSilently();
+            return mode is DotnetAccessMode configured && DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(configured)
+                ? configured
+                : null;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
     /// Returns true if a config file records the init choices, or exists but cannot be read.
     /// A config holding only other settings does not indicate that init has been completed.
     /// </summary>

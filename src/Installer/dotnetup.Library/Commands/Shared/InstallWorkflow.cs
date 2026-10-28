@@ -54,7 +54,7 @@ internal class InstallWorkflow
     /// </summary>
     public void Execute(MinimalInstallSpec[] componentSpecs)
     {
-        bool runOnboarding = ShouldRunFirstUseOnboarding(AccessModeResolver.Resolve(), _command.Interactive, _command.InstallPath, _command.MigrateFromSystem)
+        bool runOnboarding = ShouldRunFirstUseOnboarding(DotnetupConfig.ReadEffectiveAccessMode(), _command.Interactive, _command.InstallPath, _command.MigrateFromSystem)
             && !InitWorkflows.HasLocalSdkPathGlobalJson();
         bool promptForStarterChannel = ShouldPromptForStarterChannel(runOnboarding, componentSpecs);
         List<ResolvedInstallRequest> requests;
@@ -154,7 +154,7 @@ internal class InstallWorkflow
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
-        DotnetAccessMode? accessMode = selectedAccessMode ?? AccessModeResolver.Resolve().Mode;
+        DotnetAccessMode? accessMode = selectedAccessMode ?? DotnetupConfig.ReadEffectiveAccessMode();
         var target = accessMode == DotnetAccessMode.Admin
             ? ResolveAdminModeInstallTarget(globalJson, untrackedAcknowledged: _command.Untracked || selectedAccessMode is not null)
             : ResolveUserInstallTarget(globalJson);
@@ -225,12 +225,12 @@ internal class InstallWorkflow
         return new InstallTarget(installRoot, systemPathResolution, InstallMechanism.WindowsInstallerBundle, Untracked: true, RequireSignature: true);
     }
 
-    internal static bool ShouldRunFirstUseOnboarding(EffectiveAccessMode accessMode, bool interactive, string? installPath, bool migrateFromSystem = false)
+    internal static bool ShouldRunFirstUseOnboarding(DotnetAccessMode? accessMode, bool interactive, string? installPath, bool migrateFromSystem = false)
     {
         return !migrateFromSystem &&
             interactive &&
             installPath is null &&
-            accessMode.Mode is null;
+            accessMode is null;
     }
 
     internal static bool ShouldPromptForStarterChannel(bool runOnboarding, MinimalInstallSpec[] componentSpecs)

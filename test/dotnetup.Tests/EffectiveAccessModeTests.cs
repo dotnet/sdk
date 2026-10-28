@@ -9,16 +9,16 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
 [DoNotParallelize]
-public class AccessModeResolverTests : IDisposable
+public class EffectiveAccessModeTests : IDisposable
 {
     private readonly AdminModeTestEnvironment _environment = new();
 
     public void Dispose() => _environment.Dispose();
 
     [TestMethod]
-    public void Resolve_ReturnsUnset_WhenNoConfig()
+    public void ReadEffectiveAccessMode_ReturnsUnset_WhenNoConfig()
     {
-        AccessModeResolver.Resolve().Should().Be(EffectiveAccessMode.Unset);
+        DotnetupConfig.ReadEffectiveAccessMode().Should().BeNull();
     }
 
     [TestMethod]
@@ -26,7 +26,7 @@ public class AccessModeResolverTests : IDisposable
     [DataRow(DotnetAccessMode.Shell)]
     [DataRow(DotnetAccessMode.Everywhere)]
     [DataRow(DotnetAccessMode.Admin)]
-    internal void Resolve_ReturnsUserConfigMode(DotnetAccessMode mode)
+    internal void ReadEffectiveAccessMode_ReturnsUserConfigMode(DotnetAccessMode mode)
     {
         if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(mode))
         {
@@ -35,11 +35,11 @@ public class AccessModeResolverTests : IDisposable
 
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = mode });
 
-        AccessModeResolver.Resolve().Should().Be(new EffectiveAccessMode(mode, AccessModeSource.UserConfig));
+        DotnetupConfig.ReadEffectiveAccessMode().Should().Be(mode);
     }
 
     [TestMethod]
-    public void Resolve_ReturnsUnsetWithoutWarning_WhenUserConfigIsCorrupt()
+    public void ReadEffectiveAccessMode_ReturnsUnsetWithoutWarning_WhenUserConfigIsCorrupt()
     {
         File.WriteAllText(DotnetupPaths.ConfigPath, "{ not json");
         var originalOut = Console.Out;
@@ -47,7 +47,7 @@ public class AccessModeResolverTests : IDisposable
         Console.SetOut(output);
         try
         {
-            AccessModeResolver.Resolve().Should().Be(EffectiveAccessMode.Unset);
+            DotnetupConfig.ReadEffectiveAccessMode().Should().BeNull();
         }
         finally
         {

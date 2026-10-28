@@ -19,13 +19,12 @@ internal static class AdminModeGate
     /// and the parsed command or one of its explicitly supplied symbols is not allowed by
     /// <paramref name="support"/>. Does nothing outside admin mode.
     /// </summary>
-    public static void Enforce(ParseResult parseResult, AdminModeSupport support, EffectiveAccessMode accessMode)
+    public static void Enforce(ParseResult parseResult, AdminModeSupport support, DotnetAccessMode? accessMode)
     {
         ArgumentNullException.ThrowIfNull(parseResult);
         ArgumentNullException.ThrowIfNull(support);
-        ArgumentNullException.ThrowIfNull(accessMode);
 
-        if (!accessMode.IsAdmin)
+        if (accessMode != DotnetAccessMode.Admin)
         {
             return;
         }

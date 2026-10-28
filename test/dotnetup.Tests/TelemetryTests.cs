@@ -99,16 +99,15 @@ public class TelemetryCommonPropertiesTests
         Assert.Contains("dotnetup.version", attributes.Keys);
         Assert.Contains("dev.build", attributes.Keys);
         Assert.Contains("dotnetup.access_mode", attributes.Keys);
-        Assert.Contains("dotnetup.access_mode_source", attributes.Keys);
     }
 
     [TestMethod]
-    [DataRow(DotnetAccessMode.Admin, "admin", "user_config")]
-    [DataRow(DotnetAccessMode.Shell, "shell", "user_config")]
-    [DataRow(DotnetAccessMode.None, "none", "user_config")]
-    [DataRow(DotnetAccessMode.Everywhere, "everywhere", "user_config")]
-    [DataRow(null, "unset", "unset")]
-    internal void GetCommonAttributes_TagsResolvedAccessMode(DotnetAccessMode? mode, string expectedMode, string expectedSource)
+    [DataRow(DotnetAccessMode.Admin, "admin")]
+    [DataRow(DotnetAccessMode.Shell, "shell")]
+    [DataRow(DotnetAccessMode.None, "none")]
+    [DataRow(DotnetAccessMode.Everywhere, "everywhere")]
+    [DataRow(null, "unset")]
+    internal void GetCommonAttributes_TagsResolvedAccessMode(DotnetAccessMode? mode, string expectedMode)
     {
         if (mode == DotnetAccessMode.Admin && !OperatingSystem.IsWindows())
         {
@@ -125,7 +124,6 @@ public class TelemetryCommonPropertiesTests
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         Assert.AreEqual(expectedMode, attributes[TelemetryTagNames.AccessMode]);
-        Assert.AreEqual(expectedSource, attributes[TelemetryTagNames.AccessModeSource]);
     }
 
     [TestMethod]
@@ -138,7 +136,6 @@ public class TelemetryCommonPropertiesTests
             .ToDictionary(kv => kv.Key, kv => kv.Value);
 
         Assert.AreEqual("unset", attributes[TelemetryTagNames.AccessMode]);
-        Assert.AreEqual("unset", attributes[TelemetryTagNames.AccessModeSource]);
     }
 
     [TestMethod]

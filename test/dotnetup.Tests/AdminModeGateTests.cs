@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [TestClass]
 public class AdminModeGateTests
 {
-    private static readonly EffectiveAccessMode s_admin = new(DotnetAccessMode.Admin, AccessModeSource.UserConfig);
+    private static readonly DotnetAccessMode? s_admin = DotnetAccessMode.Admin;
 
     [TestMethod]
     [DataRow(null)]
@@ -31,9 +31,7 @@ public class AdminModeGateTests
     [DataRow((int)DotnetAccessMode.Everywhere)]
     public void Enforce_OutsideAdminMode_IsNoOp(int? accessMode)
     {
-        var mode = accessMode is int value
-            ? new EffectiveAccessMode((DotnetAccessMode)value, AccessModeSource.UserConfig)
-            : EffectiveAccessMode.Unset;
+        DotnetAccessMode? mode = accessMode is int value ? (DotnetAccessMode)value : null;
         var parseResult = Parser.Parse(["sdk", "install", "10.0", "--install-path", "C:\\x"]);
 
         AdminModeGate.Enforce(parseResult, AdminModeSupport.Unsupported, mode);

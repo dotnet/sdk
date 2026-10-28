@@ -28,7 +28,7 @@ internal class ListCommand : CommandBase
 
     protected override void ExecuteCore()
     {
-        if (AccessModeResolver.Resolve().IsAdmin)
+        if (DotnetupConfig.ReadEffectiveAccessMode() == DotnetAccessMode.Admin)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeCommandNotSupported,

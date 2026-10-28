@@ -38,8 +38,7 @@ Data collected includes:
 - Whether running in a CI environment
 - Whether running from an LLM agent (e.g., GitHub Copilot, Claude)
 - Access mode (`dotnetup.access_mode`: `none`, `shell`, `everywhere`, `admin`,
-  or `unset`) and where it came from (`dotnetup.access_mode_source`:
-  `user_config`, `policy`, or `unset`). Admin-mode runs are excluded from the
+  or `unset`). Admin-mode runs are excluded from the
   dotnetup ADX dashboard because they install through Windows `.exe` installers.
 - Exit code / success or failure status
 - For failures: error type, error category, sanitized error details
