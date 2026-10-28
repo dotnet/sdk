@@ -98,7 +98,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         VerifiedDownload download = _download ?? throw new InvalidOperationException("Prepare() must be called before Commit().");
         var installTask = _progress.BeginExtraction();
 
-        EnsureTrustedSignature(download);
+        EnsureMicrosoftAuthenticodeSignature(download);
         HandleExitCode(RunInstaller(download.Path));
 
         installTask.Value = installTask.MaxValue;
@@ -185,7 +185,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         }
     }
 
-    private void EnsureTrustedSignature(VerifiedDownload download)
+    private void EnsureMicrosoftAuthenticodeSignature(VerifiedDownload download)
     {
         InstallerSignatureResult result = _signatureVerifier.Verify(download.Path);
         if (result.IsTrusted)
