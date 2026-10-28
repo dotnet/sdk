@@ -374,7 +374,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "clear", "--shell", "bash"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvClearCommand(parseResult, _env, _inspector, _environment.Policy).Execute();
+        int exitCode = new EnvClearCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
         var config = DotnetupConfig.Read();
@@ -404,8 +404,7 @@ public class EnvCommandTests : IDisposable
         };
 
         int exitCode = clear
-            ? new EnvClearCommand(Parser.Parse(["env", "clear"]), environment, _inspector,
-                adminModeSwitcher: CreateSwitcher()).Execute()
+            ? new EnvClearCommand(Parser.Parse(["env", "clear"]), environment, _inspector).Execute()
             : new EnvSetCommand(Parser.Parse(["env", "set", "none", "--dotnetup-on-path", "false"]),
                 environment, _inspector, CreateSwitcher()).Execute();
 
@@ -419,27 +418,6 @@ public class EnvCommandTests : IDisposable
             UpdateNotifications = false,
         });
         environment.LastDotnetupOnUserPathEnabled.Should().BeFalse();
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    [DataRow(true)]
-    [DataRow(false)]
-    public void EnvClear_Admin_DoesNotRequestPolicyElevation(bool cancelled)
-    {
-        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });
-        _store.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
-        var elevator = _environment.CreateElevator(
-            failure: cancelled ? new DotnetInstallException(DotnetInstallErrorCode.PermissionDenied, "cancelled") : null,
-            appliesChange: false);
-
-        int exitCode = new EnvClearCommand(Parser.Parse(["env", "clear"]), _env, _inspector,
-            adminModeSwitcher: _environment.CreateSwitcher(elevator)).Execute();
-
-        exitCode.Should().Be(0);
-        DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.None);
-        elevator.Operations.Should().BeEmpty();
-        _store.Writes.Should().BeEmpty();
-        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeTrue();
     }
 
     // ── EnvShowCommand ──

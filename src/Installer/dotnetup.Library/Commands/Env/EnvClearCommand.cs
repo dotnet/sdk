@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
@@ -22,9 +21,7 @@ internal class EnvClearCommand : CommandBase
     public EnvClearCommand(
         ParseResult result,
         IDotnetEnvironmentManager? dotnetEnvironment = null,
-        IEnvironmentStateInspector? inspector = null,
-        DotnetupPolicy? policy = null,
-        AdminModeSwitcher? adminModeSwitcher = null) : base(result, "env clear", adminModeSwitcher?.Policy ?? policy)
+        IEnvironmentStateInspector? inspector = null) : base(result, "env clear")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
