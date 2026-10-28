@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Xml;
@@ -68,20 +67,35 @@ public static class BuildServiceExtensions
 sealed file class ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection inner) : IProjectCollection
 {
     /// <summary>
-    /// Keeps a strong reference to the latest virtual <see cref="IProjectRootElement"/> created for each entry point in this <see cref="IProjectCollection"/>,
+    /// Keeps a strong reference to the latest virtual <see cref="IProjectRootElement"/> registered for each entry point in this <see cref="IProjectCollection"/>,
     /// preventing it from being garbage collected when MSBuild's <c>ProjectRootElementCache</c> demotes it to a weak reference.
     /// Without this, nested <c>&lt;MSBuild&gt;</c> tasks that re-evaluate virtual projects with different properties
     /// would fail to find the <see cref="IProjectRootElement"/> in the cache and try to load it from disk,
     /// resulting in MSB4025 because the virtual project file does not exist on disk.
     /// See <see href="https://github.com/dotnet/sdk/issues/52714"/>.
     /// </summary>
-    private readonly ConcurrentDictionary<string, Microsoft.Build.Construction.ProjectRootElement> _projectRootElements = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, Microsoft.Build.Construction.ProjectRootElement> _projectRootElements = new(StringComparer.OrdinalIgnoreCase);
 
     public Microsoft.Build.Evaluation.ProjectCollection Inner => inner;
 
-    public void StoreProjectRootElement(string entryPointFilePath, Microsoft.Build.Construction.ProjectRootElement projectRootElement)
+    public void SetProjectRootElementFullPath(
+        string entryPointFilePath,
+        Microsoft.Build.Construction.ProjectRootElement projectRootElement,
+        string? fullPath)
     {
-        _projectRootElements[entryPointFilePath] = projectRootElement;
+        lock (_projectRootElements)
+        {
+            var previousFullPath = projectRootElement.FullPath;
+
+            // FullPath registers the root in MSBuild's cache, so registration and retention must share this lock.
+            projectRootElement.FullPath = fullPath;
+
+            // An unchanged FullPath does not replace MSBuild's cached root.
+            if (!string.Equals(previousFullPath, projectRootElement.FullPath, StringComparison.OrdinalIgnoreCase))
+            {
+                _projectRootElements[entryPointFilePath] = projectRootElement;
+            }
+        }
     }
 }
 
@@ -116,16 +130,22 @@ sealed file class ProjectInstance(Microsoft.Build.Execution.ProjectInstance inne
     public ValueTask<string> ExpandStringAsync(string value) => new(inner.ExpandString(value));
 }
 
-sealed file class ProjectRootElement(Microsoft.Build.Construction.ProjectRootElement inner) : IProjectRootElement
+sealed file class ProjectRootElement(
+    Microsoft.Build.Construction.ProjectRootElement inner,
+    ProjectCollection projectCollection,
+    string entryPointFilePath) : IProjectRootElement
 {
     public static ProjectRootElement Create(XmlReader xmlReader, ProjectCollection projectCollection, string entryPointFilePath)
     {
         var inner = Microsoft.Build.Construction.ProjectRootElement.Create(xmlReader, projectCollection.Inner);
-        projectCollection.StoreProjectRootElement(entryPointFilePath, inner);
-        return new(inner);
+        return new(inner, projectCollection, entryPointFilePath);
     }
 
     public Microsoft.Build.Construction.ProjectRootElement Inner => inner;
-    public string? FullPath { get => inner.FullPath; set => inner.FullPath = value; }
+    public string? FullPath
+    {
+        get => inner.FullPath;
+        set => projectCollection.SetProjectRootElementFullPath(entryPointFilePath, inner, value);
+    }
     public string GetRawXml() => inner.RawXml;
 }
