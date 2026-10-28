@@ -143,13 +143,20 @@ internal class InstallWorkflow
     /// (which requires <c>--untracked</c>), unless global.json sdk paths select a local, non-system
     /// directory; that directory receives an ordinary archive install instead.
     /// </summary>
+    /// <param name="componentSpecs">The components and channels to install.</param>
+    /// <param name="selectedAccessMode">
+    /// The access mode the user just selected in the init form, which takes precedence over the saved mode.
+    /// Accepting admin mode in the form stands in for <c>--untracked</c>. When null, the saved mode is used.
+    /// </param>
     public List<ResolvedInstallRequest> GenerateInstallRequests(
-        MinimalInstallSpec[] componentSpecs)
+        MinimalInstallSpec[] componentSpecs,
+        DotnetAccessMode? selectedAccessMode = null)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
-        var target = AccessModeResolver.Resolve().IsAdmin
-            ? ResolveAdminModeInstallTarget(globalJson)
+        DotnetAccessMode? accessMode = selectedAccessMode ?? AccessModeResolver.Resolve().Mode;
+        var target = accessMode == DotnetAccessMode.Admin
+            ? ResolveAdminModeInstallTarget(globalJson, untrackedAcknowledged: _command.Untracked || selectedAccessMode is not null)
             : ResolveUserInstallTarget(globalJson);
 
         var requests = new List<ResolvedInstallRequest>();
@@ -193,10 +200,10 @@ internal class InstallWorkflow
     /// system .NET location, .NET is extracted there from the archive, as in user mode, because the Windows
     /// installer bundle cannot install to that directory; that install is tracked unless <c>--untracked</c>
     /// is passed. Otherwise, including for the <c>$host$</c> sentinel, the bundle installs to the shared
-    /// Program Files location, which requires <c>--untracked</c>. Explicit install paths are rejected
-    /// earlier by the admin mode command gate.
+    /// Program Files location, which requires <c>--untracked</c> (or an admin selection in the init form).
+    /// Explicit install paths are rejected earlier by the admin mode command gate.
     /// </summary>
-    private InstallTarget ResolveAdminModeInstallTarget(GlobalJsonInfo? globalJson)
+    private InstallTarget ResolveAdminModeInstallTarget(GlobalJsonInfo? globalJson, bool untrackedAcknowledged)
     {
         if (globalJson?.GlobalJsonPath is not null
             && globalJson.SdkPath is string globalJsonSdkPath
@@ -205,7 +212,7 @@ internal class InstallWorkflow
             return ResolveUserInstallTarget(globalJson) with { RequireSignature = true };
         }
 
-        if (!_command.Untracked)
+        if (!untrackedAcknowledged)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeRequiresUntracked,

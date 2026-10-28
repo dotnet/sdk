@@ -325,6 +325,41 @@ public class InstallWorkflowTests : IDisposable
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_SelectedAdmin_OverridesSavedModeWithoutUntracked()
+    {
+        DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None });
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100"]), _policy));
+
+        var request = RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")], DotnetAccessMode.Admin))
+            .Should().ContainSingle().Subject.Request;
+
+        request.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()));
+        request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
+        request.Options.Untracked.Should().BeTrue();
+        request.Options.RequireSignature.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_SelectedNonAdmin_OverridesSavedAdmin()
+    {
+        UseAdminMode();
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100"]), _policy));
+
+        var request = RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")], DotnetAccessMode.Shell))
+            .Should().ContainSingle().Subject.Request;
+
+        request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        request.Options.Untracked.Should().BeFalse();
+        request.Options.RequireSignature.Should().BeFalse();
+    }
+
+    [TestMethod]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
     public void GenerateInstallRequests_NonAdminMode_DoesNotRequireSignature()
     {
