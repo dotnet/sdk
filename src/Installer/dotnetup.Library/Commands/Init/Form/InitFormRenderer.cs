@@ -35,9 +35,7 @@ internal static class InitFormRenderer
     {
         console ??= AnsiConsole.Console;
         ThemeColors theme = DotnetupTheme.Current;
-        IReadOnlyList<FormField> fields = state.Fields
-            .Where(field => model.IsVisibleFor(field, configureOnly: false) || model.IsVisibleFor(field, configureOnly: true))
-            .ToList();
+        IReadOnlyList<FormField> fields = state.VisibleFields;
         int labelWidth = MaxLabelWidth(fields);
         int windowWidth = PositiveOrFallback(console.Profile.Width, FallbackWindowWidth);
         int windowHeight = PositiveOrFallback(console.Profile.Height, FallbackWindowHeight);
@@ -74,9 +72,6 @@ internal static class InitFormRenderer
         InitFormModel model, InitFormState state, int highlightedChoice, IReadOnlyList<FormField> fields,
         int labelWidth, bool showArrow, ThemeColors theme, FormCompressionLevel compression)
     {
-        // Preview the highlighted mode without changing the committed fields used by navigation.
-        bool configureOnly = model.ConfigureOnlyFor(state.FocusedField, highlightedChoice);
-
         if (compression < FormCompressionLevel.WithoutWelcome)
         {
             yield return new Markup($"[bold {theme.Brand}]{WelcomeMessage.EscapeMarkup()}[/]");
@@ -89,14 +84,10 @@ internal static class InitFormRenderer
 
         if (compression < FormCompressionLevel.WithoutInstallLocation)
         {
-            // Both summaries share one row, sized for the taller one, so changing modes doesn't move the form.
-            string installPath = $"[{theme.Accent}]{model.UserInstallPath.EscapeMarkup()}[/]";
-            IRenderable installSummary = new Markup(
+            // Follow the committed access mode so highlighting a choice never re-wraps this line.
+            string installPath = $"[{theme.Accent}]{model.InstallPath.EscapeMarkup()}[/]";
+            yield return new Markup(
                 $"[{theme.Dim}]{string.Format(CultureInfo.CurrentCulture, Strings.InitInstallLocation.EscapeMarkup(), installPath)}[/]");
-            IRenderable configureSummary = new Markup($"[{theme.Dim}]{Strings.InitConfigureOnlyDescription.EscapeMarkup()}[/]");
-            yield return configureOnly
-                ? new ReservedHeight(configureSummary, installSummary)
-                : new ReservedHeight(installSummary, configureSummary);
             if (compression < FormCompressionLevel.WithoutSpacing)
             {
                 yield return Text.Empty;
@@ -107,14 +98,13 @@ internal static class InitFormRenderer
         {
             foreach (IRenderable row in RenderField(model, state, highlightedChoice, field, compression, labelWidth, showArrow, theme))
             {
-                yield return model.IsVisibleFor(field, configureOnly) ? row : new ReservedHeight(Text.Empty, row);
+                yield return row;
             }
         }
 
         if (compression < FormCompressionLevel.WithoutConfirmationPrompt)
         {
-            string confirmation = configureOnly ? Strings.InitConfigureConfirmation : Strings.InitInstallConfirmation;
-            yield return new Markup($"[white]{confirmation.EscapeMarkup()}[/]");
+            yield return new Markup($"[white]{Strings.InitInstallConfirmation.EscapeMarkup()}[/]");
         }
 
         // Show the accept row unless we're editing a field and need to save space.
@@ -122,7 +112,7 @@ internal static class InitFormRenderer
             && compression >= FormCompressionLevel.FocusedEdit;
         if (!focusedEdit)
         {
-            string accept = configureOnly ? Strings.InitAcceptAndConfigure : Strings.InitAcceptAndInstall;
+            string accept = Strings.InitAcceptAndInstall;
             string acceptStyle = state.IsAcceptFocused ? $"{theme.Success} bold" : theme.Dim;
             string acceptArrow = state.IsAcceptFocused && showArrow ? "> " : "  ";
             yield return new Markup(
@@ -188,8 +178,8 @@ internal static class InitFormRenderer
         }
         else
         {
-            // Highlight values that differ from their defaults.
-            string valueColor = field.IsChangedFromDefault ? theme.Warning : theme.Accent;
+            // Highlight values that differ from their defaults; dim values that do not apply.
+            string valueColor = field.IsLocked ? theme.Dim : field.IsChangedFromDefault ? theme.Warning : theme.Accent;
             yield return new Markup(
                 $"[{labelStyle}]{arrow.EscapeMarkup()}{label.EscapeMarkup()}[/]  " +
                 $"[{valueColor}]{field.DisplayValue.EscapeMarkup()}[/]");
@@ -204,7 +194,7 @@ internal static class InitFormRenderer
                 yield return row;
             }
         }
-        else if (showDetail && (focused || compression < FormCompressionLevel.Compact))
+        else if (showDetail && !field.IsLocked && (focused || compression < FormCompressionLevel.Compact))
         {
             //  Show the field details if there's room
             string? detailText = field.BrowseDetailShowsDescription
@@ -343,37 +333,6 @@ internal static class InitFormRenderer
 
     internal static int RenderedHeight(IRenderable renderable, RenderOptions renderOptions, int width) =>
         Segment.SplitLines(renderable.Render(renderOptions, width)).Count;
-
-    // Renders content padded with blank lines to the tallest alternative, so swapping between the
-    // alternatives (or hiding content by passing Text.Empty) doesn't move the rows below.
-    private sealed class ReservedHeight(IRenderable content, params IRenderable[] alternatives) : IRenderable
-    {
-        public Measurement Measure(RenderOptions options, int maxWidth) => content.Measure(options, maxWidth);
-
-        public IEnumerable<Segment> Render(RenderOptions options, int maxWidth)
-        {
-            List<SegmentLine> lines = Segment.SplitLines(content.Render(options, maxWidth));
-            int reserved = alternatives.Max(alternative => RenderedHeight(alternative, options, maxWidth));
-            while (lines.Count < reserved)
-            {
-                // An empty segment keeps the padding line from being dropped as a trailing line break.
-                lines.Add([new Segment(string.Empty)]);
-            }
-
-            for (int index = 0; index < lines.Count; index++)
-            {
-                if (index > 0)
-                {
-                    yield return Segment.LineBreak;
-                }
-
-                foreach (Segment segment in lines[index])
-                {
-                    yield return segment;
-                }
-            }
-        }
-    }
 
     private static int PositiveOrFallback(int value, int fallback) => value > 0 ? value : fallback;
 

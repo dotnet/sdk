@@ -31,7 +31,7 @@ internal enum FormMode
 /// </summary>
 internal sealed class InitFormState
 {
-    public IReadOnlyList<FormField> Fields { get; }
+    private IReadOnlyList<FormField> Fields { get; }
 
     public InitFormState(IReadOnlyList<FormField> fields)
     {
@@ -199,6 +199,12 @@ internal sealed class InitFormState
         }
 
         FormField field = VisibleFields[FocusedRow];
+        if (field.IsLocked)
+        {
+            // A locked field does not apply to the current selections, so it cannot be edited.
+            return;
+        }
+
         EditChoiceIndex = field.SelectedIndex;
         _customTextAtEditStart = field.LastCustomText;
         Mode = FormMode.EditingField;
@@ -224,7 +230,7 @@ internal sealed class InitFormState
             field.SelectChoice(EditChoiceIndex);
         }
 
-        CollapseToForm(field);
+        CollapseToForm();
     }
 
     // Remembers the in-progress text of a highlighted custom choice so returning to it restores it.
@@ -242,24 +248,11 @@ internal sealed class InitFormState
         CustomTextBuffer = IsCustomChoiceHighlighted ? VisibleFields[FocusedRow].LastCustomText : string.Empty;
     }
 
-    private void CollapseToForm(FormField? committedField = null)
+    private void CollapseToForm()
     {
         Mode = FormMode.Form;
         EditChoiceIndex = -1;
         CustomTextBuffer = string.Empty;
-
-        if (committedField is not null)
-        {
-            IReadOnlyList<FormField> visible = VisibleFields;
-            for (int index = 0; index < visible.Count; index++)
-            {
-                if (ReferenceEquals(visible[index], committedField))
-                {
-                    FocusedRow = index;
-                    return;
-                }
-            }
-        }
 
         // Committing a choice can change which conditional fields are visible; keep focus in range.
         if (FocusedRow > AcceptRow)

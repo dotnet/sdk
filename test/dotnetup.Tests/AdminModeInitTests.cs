@@ -204,14 +204,13 @@ public class AdminModeInitTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Form_AdminVisibilityChanges_PreserveFocusAndChannelSelection()
+    public void Form_AdminSelection_KeepsChannelVisibleAndFocus()
     {
         InitFormModel model = CreateModel(DotnetAccessMode.Shell);
         FormField channel = model.Fields.Single(field => field.Label == "SDK Channel");
         channel.SelectChoice(1);
         string? selectedChannel = model.SelectedChannel();
         FormField mode = model.Fields.Single(field => field.Label == "Access mode");
-        int shellIndex = mode.SelectedIndex;
         int adminIndex = mode.Choices.Select((choice, index) => (choice, index))
             .Single(item => item.choice.Title == "Admin").index;
         var state = new InitFormState(model.Fields);
@@ -226,36 +225,11 @@ public class AdminModeInitTests : IDisposable
         }
         state.Enter();
 
-        model.ConfigureOnly.Should().BeTrue();
-        channel.IsVisible.Should().BeFalse();
-        model.MigrateSelected().Should().BeFalse();
-        state.FocusedField.Should().BeSameAs(mode);
-        state.IsAcceptFocused.Should().BeFalse();
-        state.IsDone.Should().BeFalse();
-
-        state.Enter();
-        while (state.EditChoiceIndex > shellIndex)
-        {
-            state.MoveUp();
-        }
-        state.Enter();
-
-        model.ConfigureOnly.Should().BeFalse();
+        model.SelectedAccessMode().Should().Be(DotnetAccessMode.Admin);
         channel.IsVisible.Should().BeTrue();
         model.SelectedChannel().Should().Be(selectedChannel);
         state.FocusedField.Should().BeSameAs(mode);
-    }
-
-    [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void Form_LeavingSavedAdmin_RemainsConfigurationOnly()
-    {
-        InitFormModel model = CreateModel(DotnetAccessMode.Admin);
-        FormField mode = model.Fields.Single(field => field.Label == "Access mode");
-        mode.SelectChoice(mode.Choices.Select((choice, index) => (choice, index))
-            .Single(item => item.choice.Title == "Shell").index);
-
-        model.ConfigureOnly.Should().BeTrue();
-        model.Fields.Single(field => field.Label == "SDK Channel").IsVisible.Should().BeFalse();
+        state.IsDone.Should().BeFalse();
     }
 
     private MockDotnetInstallManager CreateEnvironment() => new(_environment.TempRoot, existingSystemInstalls: []);

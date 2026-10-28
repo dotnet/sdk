@@ -562,17 +562,6 @@ Or open a new terminal.</value>
   <data name="InitAcceptAndInstall" xml:space="preserve">
     <value>Accept and install</value>
   </data>
-  <data name="InitConfigureOnlyDescription" xml:space="preserve">
-    <value>Configures dotnetup and your environment without installing or migrating .NET.</value>
-    <comment>{Locked="dotnetup"}</comment>
-  </data>
-  <data name="InitConfigureConfirmation" xml:space="preserve">
-    <value>Configure dotnetup with these settings?</value>
-    <comment>{Locked="dotnetup"}</comment>
-  </data>
-  <data name="InitAcceptAndConfigure" xml:space="preserve">
-    <value>Accept and configure</value>
-  </data>
   <data name="InitMigrationNotSupportedInAdminMode" xml:space="preserve">
     <value>Not supported in admin mode</value>
   </data>
@@ -580,9 +569,7 @@ Or open a new terminal.</value>
     <value>Installs can be managed by other tools alongside dotnetup in a shared system folder.</value>
   </data>
   <data name="AccessModeAdminDetails" xml:space="preserve">
-    <value>Requires elevation.
-Install .NET afterwards with 'dotnetup sdk install &lt;version&gt; --untracked'.</value>
-    <comment>{Locked="dotnetup sdk install"}{Locked="--untracked"}</comment>
+    <value>Installs .NET with the official Windows installer, which asks for administrator approval.</value>
   </data>
   <data name="WindowsInstallerDownloadFailed" xml:space="preserve">
     <value>Failed to download the .NET installer for version {0}: {1}</value>

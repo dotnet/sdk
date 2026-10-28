@@ -8,11 +8,9 @@
         <note />
       </trans-unit>
       <trans-unit id="AccessModeAdminDetails">
-        <source>Requires elevation.
-Install .NET afterwards with 'dotnetup sdk install &lt;version&gt; --untracked'.</source>
-        <target state="new">Requires elevation.
-Install .NET afterwards with 'dotnetup sdk install &lt;version&gt; --untracked'.</target>
-        <note>{Locked="dotnetup sdk install"}{Locked="--untracked"}</note>
+        <source>Installs .NET with the official Windows installer, which asks for administrator approval.</source>
+        <target state="new">Installs .NET with the official Windows installer, which asks for administrator approval.</target>
+        <note />
       </trans-unit>
       <trans-unit id="AdminModeAlreadyEnabled">
         <source>Admin mode is already enabled.</source>
@@ -453,11 +451,6 @@ Or open a new terminal.</target>
         <target state="new">Display dotnetup information.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InitAcceptAndConfigure">
-        <source>Accept and configure</source>
-        <target state="new">Accept and configure</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InitAcceptAndInstall">
         <source>Accept and install</source>
         <target state="new">Accept and install</target>
@@ -467,16 +460,6 @@ Or open a new terminal.</target>
         <source>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</source>
         <target state="new">Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="InitConfigureConfirmation">
-        <source>Configure dotnetup with these settings?</source>
-        <target state="new">Configure dotnetup with these settings?</target>
-        <note>{Locked="dotnetup"}</note>
-      </trans-unit>
-      <trans-unit id="InitConfigureOnlyDescription">
-        <source>Configures dotnetup and your environment without installing or migrating .NET.</source>
-        <target state="new">Configures dotnetup and your environment without installing or migrating .NET.</target>
-        <note>{Locked="dotnetup"}</note>
       </trans-unit>
       <trans-unit id="InitInstallConfirmation">
         <source>Install .NET with these settings?</source>

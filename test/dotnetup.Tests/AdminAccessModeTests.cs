@@ -40,8 +40,8 @@ public class AdminAccessModeTests
     {
         InitFormModel.AccessModeDescription(DotnetAccessMode.Admin).Should().Be(
             "Installs can be managed by other tools alongside dotnetup in a shared system folder.");
-        Microsoft.DotNet.Tools.Bootstrapper.Strings.AccessModeAdminDetails.ReplaceLineEndings("\n").Should().Be(
-            "Requires elevation.\nInstall .NET afterwards with 'dotnetup sdk install <version> --untracked'.");
+        Microsoft.DotNet.Tools.Bootstrapper.Strings.AccessModeAdminDetails.Should().Be(
+            "Installs .NET with the official Windows installer, which asks for administrator approval.");
     }
 
     [TestMethod]

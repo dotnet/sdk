@@ -43,7 +43,6 @@ internal sealed class InitFormModel
 
     private readonly DotnetInstallRoot _installRoot;
     private readonly AdminInstallRootResolver _adminInstallRootResolver;
-    private readonly bool _wasAdmin;
     private readonly IReadOnlyList<string> _profilePaths;
 
     private InitFormModel(
@@ -59,7 +58,6 @@ internal sealed class InitFormModel
         IReadOnlyList<MinimalInstallSpec> defaultInstallSpecs,
         DotnetInstallRoot installRoot,
         AdminInstallRootResolver adminInstallRootResolver,
-        bool wasAdmin,
         IReadOnlyList<string> profilePaths)
     {
         Fields = fields;
@@ -74,7 +72,6 @@ internal sealed class InitFormModel
         _defaultInstallSpecs = defaultInstallSpecs;
         _installRoot = installRoot;
         _adminInstallRootResolver = adminInstallRootResolver;
-        _wasAdmin = wasAdmin;
         _profilePaths = profilePaths;
     }
 
@@ -97,34 +94,9 @@ internal sealed class InitFormModel
     /// <summary>The access mode the user chose.</summary>
     public DotnetAccessMode SelectedAccessMode() => _accessModes[_accessModeField.SelectedIndex];
 
-    public bool ConfigureOnly => ConfigureOnlyFor(previewField: null, previewChoiceIndex: -1);
-
-    public bool ConfigureOnlyFor(FormField? previewField, int previewChoiceIndex)
-    {
-        DotnetAccessMode mode = ReferenceEquals(previewField, _accessModeField) && previewChoiceIndex >= 0
-            ? _accessModes[previewChoiceIndex]
-            : SelectedAccessMode();
-        return _wasAdmin || mode == DotnetAccessMode.Admin;
-    }
-
-    public bool IsVisibleFor(FormField field, bool configureOnly)
-    {
-        if (ReferenceEquals(field, _channelField))
-        {
-            return !configureOnly;
-        }
-
-        if (ReferenceEquals(field, _migrateField))
-        {
-            return !configureOnly && CurrentMigrations().Count > 0;
-        }
-
-        return field.IsVisible;
-    }
-
-    /// <summary>Whether the user chose to migrate existing system installs.</summary>
+    /// <summary>Whether the user chose to migrate existing system installs. Admin mode never migrates.</summary>
     public bool MigrateSelected() =>
-        _migrateField is { IsVisible: true } && _migrateField.SelectedIndex == YesIndex;
+        _migrateField is { IsVisible: true, IsLocked: false } && _migrateField.SelectedIndex == YesIndex;
 
     /// <summary>
     /// Where the selected access mode installs .NET. Keep the user's root so leaving Admin mode
@@ -133,8 +105,6 @@ internal sealed class InitFormModel
     public string InstallPath => SelectedAccessMode() == DotnetAccessMode.Admin
         ? _adminInstallRootResolver.Resolve(_installRoot.Architecture).Path
         : _installRoot.Path;
-
-    public string UserInstallPath => _installRoot.Path;
 
     /// <summary>
     /// Computes the derived informational lines for the given field's value at
@@ -259,11 +229,8 @@ internal sealed class InitFormModel
         (FormField accessModeField, IReadOnlyList<DotnetAccessMode> accessModes) =
             BuildAccessModeField(defaults.AccessMode);
 
-        bool ConfigureOnly() => defaults.AccessMode == DotnetAccessMode.Admin
-            || accessModes[accessModeField.SelectedIndex] == DotnetAccessMode.Admin;
-
         (FormField channelField, IReadOnlyList<string?> channelTokens, int globalJsonChannelIndex) =
-            BuildChannelField(defaults.ChannelDisplay, isVisible: () => !ConfigureOnly());
+            BuildChannelField(defaults.ChannelDisplay);
 
         FormField? migrateField = null;
         if (defaults.Migrations.Count > 0)
@@ -272,11 +239,14 @@ internal sealed class InitFormModel
                 defaults.MigrateSystemInstalls,
                 isVisible: () =>
                 {
-                    return !ConfigureOnly()
-                        && MigrationWorkflow.FilterMigrationSelections(
+                    return MigrationWorkflow.FilterMigrationSelections(
                         defaults.Migrations,
                         GetCurrentInstallSpecs(channelField, channelTokens, defaults.DefaultInstallSpecs)).Count > 0;
-                });
+                },
+                // Admin installs go to the shared system location, so there is nothing to migrate.
+                lockedValue: () => accessModes[accessModeField.SelectedIndex] == DotnetAccessMode.Admin
+                    ? Strings.InitMigrationNotSupportedInAdminMode
+                    : null);
         }
 
         var fields = new List<FormField> { channelField, accessModeField };
@@ -298,13 +268,11 @@ internal sealed class InitFormModel
             defaults.DefaultInstallSpecs,
             defaults.InstallRoot,
             adminInstallRootResolver ?? new AdminInstallRootResolver(),
-            defaults.AccessMode == DotnetAccessMode.Admin,
             shellProvider?.GetProfilePaths() ?? []);
     }
 
     private static (FormField Field, IReadOnlyList<string?> Tokens, int GlobalJsonIndex) BuildChannelField(
-        DefaultChannelDisplay channelDisplay,
-        Func<bool> isVisible)
+        DefaultChannelDisplay channelDisplay)
     {
         var choices = new List<FieldChoice>();
         var tokens = new List<string?>();
@@ -342,8 +310,7 @@ internal sealed class InitFormModel
             defaultIndex,
             description: "Determines which version of .NET to install and how it stays updated \u2014 'latest', 'lts', 'preview', 'daily', or a version like '10.0'.",
             inlineHelp: true,
-            browseDetailShowsDescription: true,
-            isVisible: isVisible);
+            browseDetailShowsDescription: true);
         return (field, tokens, globalJsonIndex);
 
         void AddChannelChoice(string channel, string helperText)
@@ -400,7 +367,7 @@ internal sealed class InitFormModel
         _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
     };
 
-    private static FormField BuildMigrateField(bool migrateByDefault, Func<bool> isVisible)
+    private static FormField BuildMigrateField(bool migrateByDefault, Func<bool> isVisible, Func<string?> lockedValue)
     {
         var choices = new List<FieldChoice>
         {
@@ -412,7 +379,8 @@ internal sealed class InitFormModel
             "Migrate system installs",
             choices,
             defaultIndex: migrateByDefault ? YesIndex : NoIndex,
-            isVisible: isVisible);
+            isVisible: isVisible,
+            lockedValue: lockedValue);
     }
 
     private static string? GetSelectedChannel(
