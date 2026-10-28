@@ -179,16 +179,11 @@ In `admin` mode, channels strictly relate to shorthands for specific versions to
 
 ## `dotnetup` Manifest Behavior
 
-The manifest will be ignored and there will be no `admin` dotnetup manifest.
+The dotnetup manifest records install specs (requests for installs) to use for updates and garbage collection, and the actual installations installed in each install root.
 
-The dotnetup manifest exists to speed up checks, such as whether or not the install already exists, and to inform `dotnetup` of what is managed on the machine across numerous locations, and what to update.
+For admin mode installs, we will not use the dotnetup manifest to record the installations.  Admin installs can be installed and updated outside of dotnetup so the manifest would not be an accurate source of truth.
 
-Initial designs may consider a separate manifest file for `admin` installs, or `admin` installed baked into the manifest. However, the manifest will never be correct and it will always need revalidation, because other software on the machine may manipulate or change installations or install policy. In addition, update and retention policies outside of `dotnetup` influence `.exe` behavior.
-
-
-### Future Manifest Behavior
-
-We may add later support for an `admin` based manifest to allow updating everything tracked by `dotnetup` to provide a more similar experience.
+In the MVP, we don't record install specs or support updating admin installs.  When we do add that support we will likely record admin install specs in the dotnetup manifest, while using other sources of truth (such as the Registry) to determine what is currently installed.
 
 ### Install Lookup
 
