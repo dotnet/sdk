@@ -45,7 +45,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
         var invocation = SelfUpdateInvocation.Current ?? throw new DotnetInstallException(
             DotnetInstallErrorCode.ContextResolutionFailed, Strings.SelfUpdateUnsupportedHost);
         var channel = _channel ?? SelfUpdateDefaultChannel.FromLoadedVersion(invocation.LoadedVersion);
-        var downloader = _createDownloader?.Invoke() ?? new DotnetDownloader(ReleaseManifest.Default, policy: Policy);
+        var downloader = _createDownloader?.Invoke() ?? new DotnetDownloader(ReleaseManifest.Default);
         var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
         var coordinator = new SelfUpdateCoordinator(onWaiting: lockKind => Console.Error.WriteLine(
             lockKind == SelfUpdateLockKind.Update

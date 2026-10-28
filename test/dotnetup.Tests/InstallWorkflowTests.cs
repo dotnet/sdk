@@ -25,8 +25,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class InstallWorkflowTests : IDisposable
 {
     private readonly string _tempDir;
-    private readonly FakeDotnetupPolicyStore _policyStore = new();
-    private readonly DotnetupPolicy _policy;
 
     public InstallWorkflowTests()
     {
@@ -34,7 +32,6 @@ public class InstallWorkflowTests : IDisposable
         Directory.CreateDirectory(_tempDir);
 
         DotnetupPaths.SetTestDataDirectoryOverride(_tempDir);
-        _policy = new DotnetupPolicy(_policyStore);
     }
 
     public void Dispose()
@@ -171,7 +168,7 @@ public class InstallWorkflowTests : IDisposable
     public void GenerateInstallRequests_AdminModeWithoutUntracked_ThrowsAdminModeRequiresUntracked(string[] arguments)
     {
         UseAdminMode();
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments), _policy));
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments)));
 
         // Run outside the repository so its global.json sdk paths do not redirect to a local archive install.
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => RunInDirectory(_tempDir, () =>
@@ -187,7 +184,7 @@ public class InstallWorkflowTests : IDisposable
     public void GenerateInstallRequests_AdminModeRuntimeInstallWithoutUntracked_ThrowsAdminModeRequiresUntracked()
     {
         UseAdminMode();
-        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"]), _policy));
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"])));
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => RunInDirectory(_tempDir, () =>
             workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")])));
@@ -202,7 +199,7 @@ public class InstallWorkflowTests : IDisposable
     public void GenerateInstallRequests_AdminModeWithUntracked_TargetsSystemRootWithInstallerBundle()
     {
         UseAdminMode();
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100", "--untracked"]), _policy));
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100", "--untracked"])));
         var expectedRoot = new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture());
 
         // The admin root is under Program Files, which ValidateInstallPath would reject with AdminPathBlocked.
@@ -261,7 +258,7 @@ public class InstallWorkflowTests : IDisposable
     {
         UseAdminMode();
         string projectDir = WriteGlobalJson("""[".dotnet"]""");
-        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0", "--untracked"]), _policy));
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0", "--untracked"])));
 
         var request = RunInDirectory(projectDir, () =>
             workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")]))
@@ -279,7 +276,7 @@ public class InstallWorkflowTests : IDisposable
     {
         UseAdminMode();
         string projectDir = WriteGlobalJson("""[".dotnet"]""");
-        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"]), _policy));
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"])));
 
         var request = RunInDirectory(projectDir, () =>
             workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")]))
@@ -330,7 +327,7 @@ public class InstallWorkflowTests : IDisposable
     public void GenerateInstallRequests_SelectedAdmin_OverridesSavedModeWithoutUntracked()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None });
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100"]), _policy));
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100"])));
 
         var request = RunInDirectory(_tempDir, () =>
             workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")], DotnetAccessMode.Admin))
@@ -348,7 +345,7 @@ public class InstallWorkflowTests : IDisposable
     public void GenerateInstallRequests_SelectedNonAdmin_OverridesSavedAdmin()
     {
         UseAdminMode();
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100"]), _policy));
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install", "9.0.100"])));
 
         var request = RunInDirectory(_tempDir, () =>
             workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")], DotnetAccessMode.Shell))
@@ -391,7 +388,7 @@ public class InstallWorkflowTests : IDisposable
 
     private ResolvedInstallRequest GenerateSdkRequestFromGlobalJson(string projectDir, string[] arguments)
     {
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments), _policy));
+        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments)));
         return RunInDirectory(projectDir, () => workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, null)]))
             .Should().ContainSingle().Subject;
     }

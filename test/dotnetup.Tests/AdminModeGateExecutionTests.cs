@@ -22,7 +22,7 @@ public class AdminModeGateExecutionTests : IDisposable
     public void Execute_AdminModeInUserConfig_RejectsUnsupportedCommand()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Admin });
-        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, _environment.Policy);
+        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported);
 
         command.Execute().Should().Be(1);
         command.Executed.Should().BeFalse();
@@ -32,7 +32,7 @@ public class AdminModeGateExecutionTests : IDisposable
     public void Execute_OutsideAdminMode_RunsUnsupportedCommand()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
-        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, _environment.Policy);
+        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported);
 
         command.Execute().Should().Be(0);
         command.Executed.Should().BeTrue();
@@ -43,7 +43,7 @@ public class AdminModeGateExecutionTests : IDisposable
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
         var failure = new InvalidOperationException("boom");
-        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, _environment.Policy, failure);
+        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, failure);
 
         string output = CaptureOutput(() => command.Execute().Should().Be(1));
 
@@ -56,7 +56,7 @@ public class AdminModeGateExecutionTests : IDisposable
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell });
         var failure = new InvalidOperationException("boom");
         failure.MarkReportedToUser();
-        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, _environment.Policy, failure);
+        var command = new ProbeCommand(Parser.Parse(["list"]), AdminModeSupport.Unsupported, failure);
 
         string output = CaptureOutput(() => command.Execute().Should().Be(1));
 
@@ -79,8 +79,8 @@ public class AdminModeGateExecutionTests : IDisposable
         }
     }
 
-    private sealed class ProbeCommand(ParseResult parseResult, AdminModeSupport support, DotnetupPolicy policy, Exception? failure = null)
-        : CommandBase(parseResult, "probe", policy)
+    private sealed class ProbeCommand(ParseResult parseResult, AdminModeSupport support, Exception? failure = null)
+        : CommandBase(parseResult, "probe")
     {
         public bool Executed { get; private set; }
 

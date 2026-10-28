@@ -16,8 +16,7 @@ internal class EnvShowCommand : CommandBase
     public EnvShowCommand(
         ParseResult result,
         IDotnetEnvironmentManager? dotnetEnvironment = null,
-        IEnvironmentStateInspector? inspector = null,
-        DotnetupPolicy? policy = null) : base(result, "env show", policy)
+        IEnvironmentStateInspector? inspector = null) : base(result, "env show")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);

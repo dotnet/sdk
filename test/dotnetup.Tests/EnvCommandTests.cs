@@ -364,7 +364,7 @@ public class EnvCommandTests : IDisposable
         var parseResult = Parser.Parse(["env", "show"]);
         parseResult.Errors.Should().BeEmpty();
 
-        int exitCode = new EnvShowCommand(parseResult, _env, _inspector, _environment.Policy).Execute();
+        int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
     }
@@ -375,7 +375,7 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
-        int exitCode = new EnvShowCommand(parseResult, _env, _inspector, _environment.Policy).Execute();
+        int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
     }
@@ -386,7 +386,7 @@ public class EnvCommandTests : IDisposable
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.Shell, DotnetupOnPath = true });
 
         var parseResult = Parser.Parse(["env", "show"]);
-        int exitCode = new EnvShowCommand(parseResult, _env, _inspector, _environment.Policy).Execute();
+        int exitCode = new EnvShowCommand(parseResult, _env, _inspector).Execute();
 
         exitCode.Should().Be(0);
     }

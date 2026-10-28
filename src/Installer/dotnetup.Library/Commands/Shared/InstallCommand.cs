@@ -37,9 +37,8 @@ internal abstract class InstallCommand : CommandBase
     protected InstallCommand(
         ParseResult parseResult,
         string commandName,
-        DotnetupPolicy? policy = null,
         IDotnetEnvironmentManager? dotnetEnvironment = null)
-        : base(parseResult, commandName, policy)
+        : base(parseResult, commandName)
     {
         InstallPath = parseResult.GetValue(CommonOptions.InstallPathOption);
         ManifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);

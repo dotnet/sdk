@@ -16,7 +16,7 @@ internal class ListCommand : CommandBase
     private readonly string? _manifestPath;
     private readonly string? _installPath;
 
-    public ListCommand(ParseResult parseResult, DotnetupPolicy? policy = null) : base(parseResult, "list", policy)
+    public ListCommand(ParseResult parseResult) : base(parseResult, "list")
     {
         _format = parseResult.GetValue(CommonOptions.FormatOption);
         _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);

@@ -45,7 +45,7 @@ public class AdminModeInitTests : IDisposable
         var environment = CreateEnvironment();
         List<ResolvedInstallRequest>? installed = null;
         var workflows = CreateWorkflows(environment, selectedMode, requests => installed = requests);
-        var command = new InitCommand(Parser.Parse(["init", "--shell", "bash"]), _environment.Policy);
+        var command = new InitCommand(Parser.Parse(["init", "--shell", "bash"]));
 
         string output = Run(() => workflows.InitWalkthrough(command));
 
@@ -77,7 +77,7 @@ public class AdminModeInitTests : IDisposable
             [new MinimalInstallSpec(InstallComponent.SDK, "latest")],
             ShellProvider: null,
             InstallRootGlobalJsonPath: null);
-        var command = new InitCommand(Parser.Parse(["init"]), _environment.Policy);
+        var command = new InitCommand(Parser.Parse(["init"]));
         InitExecutionPlan? plan = null;
 
         Run(() => plan = InitWorkflows.ResolveExecutionPlan(
@@ -104,7 +104,7 @@ public class AdminModeInitTests : IDisposable
         bool installed = false;
         var workflows = CreateWorkflows(environment,
             leavingAdmin ? DotnetAccessMode.Shell : DotnetAccessMode.Admin, _ => installed = true);
-        var command = new InitCommand(Parser.Parse(["init", "--dry-run"]), _environment.Policy);
+        var command = new InitCommand(Parser.Parse(["init", "--dry-run"]));
 
         string output = Run(() => workflows.InitWalkthrough(command).Should().BeEmpty());
 
@@ -128,7 +128,7 @@ public class AdminModeInitTests : IDisposable
         List<ResolvedInstallRequest>? installed = null;
         var command = new UpdatingInstallCommand(
             Parser.Parse(["sdk", "install", PinnedVersion, "--interactive", "true", "--shell", "bash"]),
-            _environment.Policy, environment);
+            environment);
         var workflow = new InstallWorkflow(command, new AdminInstallRootResolver(),
             CreateWorkflows(environment, DotnetAccessMode.Admin, requests => installed = requests, channel: null));
 
@@ -154,13 +154,12 @@ public class AdminModeInitTests : IDisposable
                 PinnedVersion, defaults.AccessMode, defaults.MigrateSystemInstalls),
             InstallRequestsOverride = requests => installed = requests,
         };
-        var command = new InitCommand(Parser.Parse(["init", "--interactive", "false"]), _environment.Policy);
+        var command = new InitCommand(Parser.Parse(["init", "--interactive", "false"]));
 
         Run(() => workflows.InitWalkthrough(command));
 
         installed.Should().ContainSingle().Which.Request.Options.InstallMechanism
             .Should().Be(InstallMechanism.WindowsInstallerBundle);
-        _environment.Policy.IsUnsignedDownloadBlocked().Should().BeFalse();
         DotnetupConfig.Read()!.AccessMode.Should().Be(DotnetAccessMode.Admin);
         environment.LastDotnetupOnUserPathEnabled.Should().BeFalse();
     }
@@ -174,7 +173,7 @@ public class AdminModeInitTests : IDisposable
         var environment = CreateEnvironment();
         environment.BeforeEnvironmentChange = () => throw new IOException("Environment write failed");
         var workflows = CreateWorkflows(environment, DotnetAccessMode.Admin, _ => { });
-        var command = new InitCommand(Parser.Parse(["init"]), _environment.Policy);
+        var command = new InitCommand(Parser.Parse(["init"]));
 
         string output = Run(() =>
         {
@@ -274,8 +273,8 @@ public class AdminModeInitTests : IDisposable
     }
 
     private sealed class UpdatingInstallCommand(
-        ParseResult result, DotnetupPolicy policy, IDotnetEnvironmentManager environment)
-        : InstallCommand(result, "sdk/install", policy, environment)
+        ParseResult result, IDotnetEnvironmentManager environment)
+        : InstallCommand(result, "sdk/install", environment)
     {
         public override bool UpdateGlobalJson => true;
 
