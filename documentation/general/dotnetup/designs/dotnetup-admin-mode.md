@@ -84,7 +84,7 @@ This removes dotnetup-managed user-level .NET environment wiring and stores `adm
 
 To rapidly support an emerging C#DK release, `dotnetup` will rollout `admin` support over time per command.
 
-`dotnetup sdk install` and `dotnetup runtime install` are the functional install commands in `admin` mode. `init`, `env set`, `env clear`, `env show`, `--info`, and `self update` remain available so users can change or inspect their mode and update `dotnetup`. [`env script`](../reference/dotnetup-env-script.md) and its hidden `print-env-script` compatibility alias also remain available so existing shell profiles can run without errors, but never activate user-level .NET in `admin` mode. Every other command, including bare `dotnetup`, fails with `AdminModeCommandNotSupported`; `list` uses an admin-specific unsupported message.
+`dotnetup sdk install` and `dotnetup runtime install` are the functional install commands in `admin` mode. `init`, `env set`, `env clear`, `env show`, `--info`, and `self update` remain available so users can change or inspect their mode and update `dotnetup`. [`env script`](../reference/dotnetup-env-script.md) and its hidden `print-env-script` compatibility alias also remain available so shell profiles keep working. Every other command, including bare `dotnetup`, fails with `AdminModeCommandNotSupported`; `list` uses an admin-specific unsupported message.
 
 Commands are blocked by default: a command runs in `admin` mode only when its command class declares `admin` support, and that declaration lists the options and arguments it accepts there. Any other option or argument that the user supplies fails with `AdminModeSymbolNotSupported`.
 
@@ -148,7 +148,7 @@ setup. Existing Everywhere-mode PATH cleanup can still require elevation.
 
 #### Limitations
 
-While `admin` mode is active, `env script` can add `dotnetup` to `PATH` but never adds the user-level .NET root or sets `DOTNET_ROOT`, including when an existing profile explicitly requests `--dotnet`. Existing archive installs remain on disk. Open terminals may retain their previous environment until restarted.
+Selecting `admin` mode rewrites the dotnetup shell profile block so it calls `env script` with only the parameters for that mode, which do not add the user-level .NET root or set `DOTNET_ROOT`. `env script` has no admin-specific logic and honors the parameters it is given. Existing archive installs remain on disk. Open terminals may retain their previous environment until restarted.
 
 No equivalent exists on other platforms because `admin` mode is Windows-only.
 
