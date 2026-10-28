@@ -139,9 +139,9 @@ internal class InstallWorkflow
     /// Generates resolved install requests for the given component specifications.
     /// Handles path resolution, global.json channel inference (for SDK when no channel specified),
     /// install path validation, and version resolution via the channel version resolver.
-    /// In admin mode, requests target the shared system location and use the Windows installer bundle,
-    /// unless global.json sdk paths select a local, non-system directory; that directory receives an
-    /// archive install instead. Admin mode requires <c>--untracked</c>.
+    /// In admin mode, requests target the shared system location and use the Windows installer bundle
+    /// (which requires <c>--untracked</c>), unless global.json sdk paths select a local, non-system
+    /// directory; that directory receives an ordinary archive install instead.
     /// </summary>
     public List<ResolvedInstallRequest> GenerateInstallRequests(
         MinimalInstallSpec[] componentSpecs)
@@ -189,30 +189,28 @@ internal class InstallWorkflow
     }
 
     /// <summary>
-    /// Resolves the target in admin mode, which requires <c>--untracked</c>. When global.json sdk paths name a
-    /// literal directory outside the system .NET location, .NET is extracted there from the archive, as in
-    /// user mode, because the Windows installer bundle cannot install to that directory. Otherwise, including
-    /// for the <c>$host$</c> sentinel, the bundle installs to the shared Program Files location. Explicit
-    /// install paths are rejected earlier by the admin mode command gate.
+    /// Resolves the target in admin mode. When global.json sdk paths name a literal directory outside the
+    /// system .NET location, .NET is extracted there from the archive, as in user mode, because the Windows
+    /// installer bundle cannot install to that directory; that install is tracked unless <c>--untracked</c>
+    /// is passed. Otherwise, including for the <c>$host$</c> sentinel, the bundle installs to the shared
+    /// Program Files location, which requires <c>--untracked</c>. Explicit install paths are rejected
+    /// earlier by the admin mode command gate.
     /// </summary>
     private InstallTarget ResolveAdminModeInstallTarget(GlobalJsonInfo? globalJson)
     {
+        if (globalJson?.GlobalJsonPath is not null
+            && globalJson.SdkPath is string globalJsonSdkPath
+            && !InstallPathClassifier.IsAdminInstallPath(globalJsonSdkPath))
+        {
+            return ResolveUserInstallTarget(globalJson) with { RequireSignature = true };
+        }
+
         if (!_command.Untracked)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeRequiresUntracked,
                 "dotnetup is in admin mode, which installs .NET system-wide with the official Windows installers and does not track those installations. " +
                 "Run the command again with --untracked.");
-        }
-
-        if (globalJson?.GlobalJsonPath is not null
-            && globalJson.SdkPath is string globalJsonSdkPath
-            && !InstallPathClassifier.IsAdminInstallPath(globalJsonSdkPath))
-        {
-            var pathResolution = _installPathResolver.Resolve(explicitInstallPath: null, globalJson);
-            ValidateInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource, _command.ManifestPath);
-            var localRoot = new DotnetInstallRoot(pathResolution.ResolvedInstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-            return new InstallTarget(localRoot, pathResolution, InstallMechanism.Archive, Untracked: true, RequireSignature: true);
         }
 
         var installRoot = _adminInstallRootResolver.Resolve(InstallerUtilities.GetDefaultInstallArchitecture());

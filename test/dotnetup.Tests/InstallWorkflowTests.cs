@@ -165,6 +165,7 @@ public class InstallWorkflowTests : IDisposable
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     [DataRow(new[] { "sdk", "install", "9.0.100" })]
     [DataRow(new[] { "sdk", "install", "9.0.100", "--untracked", "false" })]
     public void GenerateInstallRequests_AdminModeWithoutUntracked_ThrowsAdminModeRequiresUntracked(string[] arguments)
@@ -172,8 +173,9 @@ public class InstallWorkflowTests : IDisposable
         UseAdminMode();
         var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(arguments), _policy));
 
-        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
-            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")]));
+        // Run outside the repository so its global.json sdk paths do not redirect to a local archive install.
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, "9.0.100")])));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
         ex.Message.Should().Contain("--untracked");
@@ -181,13 +183,14 @@ public class InstallWorkflowTests : IDisposable
 
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public void GenerateInstallRequests_AdminModeRuntimeInstallWithoutUntracked_ThrowsAdminModeRequiresUntracked()
     {
         UseAdminMode();
         var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"]), _policy));
 
-        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
-            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")]));
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => RunInDirectory(_tempDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")])));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
         File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
@@ -219,15 +222,31 @@ public class InstallWorkflowTests : IDisposable
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
-    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPath_UsesUntrackedArchiveInstallThere()
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPath_UsesTrackedArchiveInstallThere()
+    {
+        UseAdminMode();
+        string projectDir = WriteGlobalJson("""[".dotnet"]""");
+
+        var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install"]);
+
+        resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
+        resolved.Request.Options.InstallSource.Should().Be(InstallRequestSource.GlobalJson);
+        resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
+        resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        resolved.Request.Options.Untracked.Should().BeFalse();
+        resolved.Request.Options.RequireSignature.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPathWithUntracked_IsUntracked()
     {
         UseAdminMode();
         string projectDir = WriteGlobalJson("""[".dotnet"]""");
 
         var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install", "--untracked"]);
 
-        resolved.ResolvedVersion.ToString().Should().Be("9.0.100");
-        resolved.Request.Options.InstallSource.Should().Be(InstallRequestSource.GlobalJson);
         resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
         resolved.Request.Options.Untracked.Should().BeTrue();
@@ -256,16 +275,18 @@ public class InstallWorkflowTests : IDisposable
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
-    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPathWithoutUntracked_ThrowsAdminModeRequiresUntracked()
+    public void GenerateInstallRequests_AdminMode_GlobalJsonLocalPathWithoutUntracked_DoesNotRequireUntracked()
     {
         UseAdminMode();
         string projectDir = WriteGlobalJson("""[".dotnet"]""");
-        var workflow = new InstallWorkflow(new SdkInstallCommand(Parser.Parse(["sdk", "install"]), _policy));
+        var workflow = new InstallWorkflow(new RuntimeInstallCommand(Parser.Parse(["runtime", "install", "9.0.0"]), _policy));
 
-        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
-            RunInDirectory(projectDir, () => workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.SDK, null)])));
+        var request = RunInDirectory(projectDir, () =>
+            workflow.GenerateInstallRequests([new MinimalInstallSpec(InstallComponent.Runtime, "9.0.0")]))
+            .Should().ContainSingle().Subject.Request;
 
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeRequiresUntracked);
+        request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
+        request.Options.Untracked.Should().BeFalse();
     }
 
     [TestMethod]
