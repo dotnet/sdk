@@ -94,10 +94,11 @@ internal record InstallRequestOptions()
     public InstallMechanism InstallMechanism { get; init; } = InstallMechanism.Archive;
 
     /// <summary>
-    /// If true, downloads trusted only by their hash (such as daily builds) are rejected.
-    /// Set for admin mode installs, which require signature validation.
+    /// If true, the download must be covered by the signed releases.json manifest; downloads trusted
+    /// only by a published hash (such as daily or blob-feed builds) are rejected. This is separate from
+    /// Authenticode verification and from the machine BlockUnsignedDownloads policy. Set for admin mode installs.
     /// </summary>
-    public bool RequireSignature { get; init; }
+    public bool ExpectReleasesJsonSignature { get; init; }
 }
 
 /// <summary>

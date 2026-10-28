@@ -56,7 +56,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         _downloader = downloader ?? new DotnetDownloader(
             releaseManifest ?? ReleaseManifest.Default,
             policy: policy,
-            requireSignature: true);
+            expectReleasesJsonSignature: true);
     }
 
     /// <summary>

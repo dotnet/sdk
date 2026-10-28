@@ -975,7 +975,7 @@ public class DotnetDownloaderBlobFeedTests
         const string version = "10.0.100-preview.4.25216.37";
         var (handler, history) = BuildHandler(new());
         using var http = new HttpClient(handler);
-        var downloader = CreateDownloader(http, DotnetInstallErrorCode.VersionNotFound, requireSignature: true);
+        var downloader = CreateDownloader(http, DotnetInstallErrorCode.VersionNotFound, expectReleasesJsonSignature: true);
         var request = bundle ? BuildBundleRequest(version, InstallComponent.SDK) : BuildRequest(version, InstallComponent.SDK);
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
@@ -1044,12 +1044,12 @@ public class DotnetDownloaderBlobFeedTests
             new InstallRequestOptions { Untracked = true, InstallMechanism = InstallMechanism.WindowsInstallerBundle });
     }
 
-    private DotnetDownloader CreateDownloader(HttpClient http, DotnetInstallErrorCode manifestThrows, bool requireSignature = false)
+    private DotnetDownloader CreateDownloader(HttpClient http, DotnetInstallErrorCode manifestThrows, bool expectReleasesJsonSignature = false)
     {
         var manifest = new ThrowingReleaseManifest(manifestThrows);
         // Use a per-test cache directory so we don't pollute the user cache.
         var cacheDir = Path.Combine(Path.GetTempPath(), "dotnetup-test-cache-" + Guid.NewGuid().ToString("N"));
-        return new DotnetDownloader(manifest, http, cacheDir, policy: _policy, requireSignature: requireSignature);
+        return new DotnetDownloader(manifest, http, cacheDir, policy: _policy, expectReleasesJsonSignature: expectReleasesJsonSignature);
     }
 
     private static (string DownloadUrl, string ExpectedHash) InvokeResolveManifestEntry(

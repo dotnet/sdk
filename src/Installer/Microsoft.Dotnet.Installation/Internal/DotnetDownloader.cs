@@ -19,7 +19,7 @@ internal class DotnetDownloader : IArchiveDownloader
     private readonly ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
     private readonly DotnetupPolicy _policy;
-    private readonly bool _requireSignature;
+    private readonly bool _expectReleasesJsonSignature;
 
     public DotnetDownloader()
         : this(ReleaseManifest.Default)
@@ -30,15 +30,15 @@ internal class DotnetDownloader : IArchiveDownloader
     /// <param name="httpClient">The HTTP client to use; defaults to the shared process-wide client.</param>
     /// <param name="cacheDirectory">The download cache directory; defaults to the per-user cache.</param>
     /// <param name="policy">The machine policy that may block unsigned downloads; defaults to the machine policy.</param>
-    /// <param name="requireSignature">Whether admin mode forbids downloads trusted only by their hash.</param>
-    public DotnetDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null, DotnetupPolicy? policy = null, bool requireSignature = false)
+    /// <param name="expectReleasesJsonSignature">Whether downloads must be covered by the signed releases.json manifest, rejecting downloads trusted only by their hash.</param>
+    public DotnetDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null, DotnetupPolicy? policy = null, bool expectReleasesJsonSignature = false)
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
         _downloadCache = new DownloadCache(cacheDirectory);
         // The HttpClient is either the shared process-wide singleton or supplied by the caller; we never own it.
         _httpClient = httpClient ?? DefaultHttpClient.Instance;
         _policy = policy ?? new DotnetupPolicy();
-        _requireSignature = requireSignature;
+        _expectReleasesJsonSignature = expectReleasesJsonSignature;
     }
 
     /// <summary>
@@ -489,8 +489,8 @@ internal class DotnetDownloader : IArchiveDownloader
     /// </summary>
     private void ThrowIfUnsignedDownloadBlocked(string component, string version)
     {
-        // Admin mode requires signatures independently of the machine policy, but this will change in the future. 
-        if (_requireSignature)
+        // Admin mode expects the releases.json signature independently of the machine policy; this may change in the future.
+        if (_expectReleasesJsonSignature)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeSignatureRequired,

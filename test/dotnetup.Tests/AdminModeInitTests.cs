@@ -53,7 +53,7 @@ public class AdminModeInitTests : IDisposable
         var request = installed.Should().ContainSingle().Subject.Request;
         request.Options.InstallMechanism.Should().Be(admin ? InstallMechanism.WindowsInstallerBundle : InstallMechanism.Archive);
         request.Options.Untracked.Should().Be(admin);
-        request.Options.RequireSignature.Should().Be(admin);
+        request.Options.ExpectReleasesJsonSignature.Should().Be(admin);
         InstallPathClassifier.IsAdminInstallPath(request.InstallRoot.Path).Should().Be(admin);
         DotnetupConfig.Read()!.AccessMode.Should().Be(selectedMode);
         environment.LastIncludeDotnetForTerminalProfileModifications.Should()

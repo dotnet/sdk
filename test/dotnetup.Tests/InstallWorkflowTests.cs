@@ -212,7 +212,7 @@ public class InstallWorkflowTests : IDisposable
         InstallPathClassifier.IsAdminInstallPath(request.InstallRoot.Path).Should().BeTrue();
         request.Options.Untracked.Should().BeTrue();
         request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
-        request.Options.RequireSignature.Should().BeTrue();
+        request.Options.ExpectReleasesJsonSignature.Should().BeTrue();
         File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
     }
 
@@ -231,7 +231,7 @@ public class InstallWorkflowTests : IDisposable
         resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
         resolved.Request.Options.Untracked.Should().BeFalse();
-        resolved.Request.Options.RequireSignature.Should().BeTrue();
+        resolved.Request.Options.ExpectReleasesJsonSignature.Should().BeTrue();
     }
 
     [TestMethod]
@@ -247,7 +247,7 @@ public class InstallWorkflowTests : IDisposable
         resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
         resolved.Request.Options.Untracked.Should().BeTrue();
-        resolved.Request.Options.RequireSignature.Should().BeTrue();
+        resolved.Request.Options.ExpectReleasesJsonSignature.Should().BeTrue();
         File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
     }
 
@@ -336,7 +336,7 @@ public class InstallWorkflowTests : IDisposable
         request.InstallRoot.Should().Be(new AdminInstallRootResolver().Resolve(InstallerUtilities.GetDefaultInstallArchitecture()));
         request.Options.InstallMechanism.Should().Be(InstallMechanism.WindowsInstallerBundle);
         request.Options.Untracked.Should().BeTrue();
-        request.Options.RequireSignature.Should().BeTrue();
+        request.Options.ExpectReleasesJsonSignature.Should().BeTrue();
     }
 
     [TestMethod]
@@ -353,12 +353,12 @@ public class InstallWorkflowTests : IDisposable
 
         request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
         request.Options.Untracked.Should().BeFalse();
-        request.Options.RequireSignature.Should().BeFalse();
+        request.Options.ExpectReleasesJsonSignature.Should().BeFalse();
     }
 
     [TestMethod]
     [ResourceLock(WellKnownResources.CurrentDirectory)]
-    public void GenerateInstallRequests_NonAdminMode_DoesNotRequireSignature()
+    public void GenerateInstallRequests_NonAdminMode_DoesNotExpectReleasesJsonSignature()
     {
         DotnetupConfig.Write(new DotnetupConfigData { AccessMode = DotnetAccessMode.None });
         string projectDir = WriteGlobalJson("""[".dotnet"]""");
@@ -366,7 +366,7 @@ public class InstallWorkflowTests : IDisposable
         var resolved = GenerateSdkRequestFromGlobalJson(projectDir, ["sdk", "install"]);
 
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
-        resolved.Request.Options.RequireSignature.Should().BeFalse();
+        resolved.Request.Options.ExpectReleasesJsonSignature.Should().BeFalse();
     }
 
     /// <summary>Writes a global.json pinning SDK 9.0.100 with the given <c>sdk.paths</c> JSON array (omitted when null).</summary>

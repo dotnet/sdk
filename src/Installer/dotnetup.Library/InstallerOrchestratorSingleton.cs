@@ -350,7 +350,7 @@ internal class InstallerOrchestratorSingleton
             InstallMechanism.WindowsInstallerBundle => new WindowsBundleArtifact(request, version, batchContext, releaseManifest: releaseManifest),
             _ => new DotnetArchiveExtractor(request, version, releaseManifest, batchContext,
                 archiveDownloader: new DotnetDownloader(releaseManifest, cacheDirectory: DotnetupPaths.DownloadCacheDirectory,
-                    requireSignature: request.Options.RequireSignature)),
+                    expectReleasesJsonSignature: request.Options.ExpectReleasesJsonSignature)),
         };
     }
 
