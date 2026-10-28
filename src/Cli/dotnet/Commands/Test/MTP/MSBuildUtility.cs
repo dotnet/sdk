@@ -250,7 +250,14 @@ internal static class MSBuildUtility
             otherArgs = otherArgs.Add("--no-banner");
         }
 
-        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(positionalArgumentCount, ref otherArgs);
+        var projectOrSolutionOptionValue = parseResult.GetValue(definition.ProjectOrSolutionOption);
+        var solutionOptionValue = parseResult.GetValue(definition.SolutionOption);
+        var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
+        bool hasExplicitBuildPathOption = projectOrSolutionOptionValue is not null ||
+            solutionOptionValue is not null ||
+            testModulesFilterOptionValue is not null;
+
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(positionalArgumentCount, ref otherArgs, hasExplicitBuildPathOption);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
             .Concat(msbuildOnlyArgs);
@@ -273,9 +280,6 @@ internal static class MSBuildUtility
             diagnosticOutputDirectory = Path.GetFullPath(diagnosticOutputDirectory);
         }
 
-        var projectOrSolutionOptionValue = parseResult.GetValue(definition.ProjectOrSolutionOption);
-        var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
-
         if ((projectOrSolutionOptionValue is not null && positionalProjectOrSolution is not null) ||
             (testModulesFilterOptionValue is not null && positionalTestModules is not null))
         {
@@ -283,9 +287,9 @@ internal static class MSBuildUtility
         }
 
         PathOptions pathOptions = new(
-            positionalProjectOrSolution ?? parseResult.GetValue(definition.ProjectOrSolutionOption),
-            parseResult.GetValue(definition.SolutionOption),
-            positionalTestModules ?? parseResult.GetValue(definition.TestModulesFilterOption),
+            positionalProjectOrSolution ?? projectOrSolutionOptionValue,
+            solutionOptionValue,
+            positionalTestModules ?? testModulesFilterOptionValue,
             resultsDirectory,
             parseResult.GetValue(definition.ResultsDirectoryLayoutOption) == "per-module"
                 ? ResultsDirectoryLayout.PerModule
@@ -309,7 +313,7 @@ internal static class MSBuildUtility
     }
 
     private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(
-        int positionalArgumentCount, ref ImmutableArray<string> otherArgs)
+        int positionalArgumentCount, ref ImmutableArray<string> otherArgs, bool hasExplicitBuildPathOption)
     {
         string? positionalProjectOrSolution = null;
         string? positionalTestModules = null;
@@ -317,7 +321,9 @@ internal static class MSBuildUtility
         // In case there is a valid case, users can opt-out.
         // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
         // So, disabling validation is okay if the user scenario is valid.
-        bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument = Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
+        bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument =
+            !hasExplicitBuildPathOption &&
+            Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
 
         for (int i = 0; i < positionalArgumentCount; i++)
         {
