@@ -15,15 +15,10 @@ internal class EnvSetCommand : CommandBase
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
-    /// <remarks>
-    /// The policy of <paramref name="adminModeSwitcher"/> is also the policy this command reads. Without a
-    /// switcher, the command uses the machine policy.
-    /// </remarks>
     public EnvSetCommand(
         ParseResult result,
         IDotnetEnvironmentManager? dotnetEnvironment = null,
-        IEnvironmentStateInspector? inspector = null,
-        AdminModeSwitcher? adminModeSwitcher = null) : base(result, "env set", adminModeSwitcher?.Policy)
+        IEnvironmentStateInspector? inspector = null) : base(result, "env set")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
