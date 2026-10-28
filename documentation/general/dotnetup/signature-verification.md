@@ -485,10 +485,10 @@ When the policy is in effect, attempts to install from the daily channel
 (or any version that is not present in the signed releases manifest)
 fail with a clear `UnsignedDownloadBlockedByPolicy` message directing
 the user to choose a released version or escalate to their administrator.
-The policy also blocks `dotnetup self update` and suppresses its update notice, because
-dotnetup builds are not covered by the signed releases manifest. Independently of the policy,
-`self update` on Windows requires a Microsoft-rooted Authenticode signature on the replacement
-when the installed `dotnetup` is Authenticode-signed.
+`dotnetup self update` is exempt from this specific signature verification (detached PKCS#7
+`releases.json` `.sig`) until `stable`, but not Authenticode verification, so it will check the
+Authenticode signature even if the policy is off. That policy however *would* block self update if
+it is set to true and dotnetup is not yet signed.
 Admin mode does not change self-update signature verification or its handling of
 the unsigned-download policy; the admin-mode signature requirement applies only
 to .NET installs, not dotnetup itself.
