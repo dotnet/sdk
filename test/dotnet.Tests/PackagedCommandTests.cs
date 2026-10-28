@@ -82,11 +82,10 @@ namespace Microsoft.DotNet.Tests
 
             NuGetConfigWriter.Write(testInstance.Path, SdkTestContext.Current.TestPackages);
 
-            string projectFolder = null;
+            var packagesDirectory = _testAssetsManager.CreateTestDirectory("ToolPkgs").Path;
 
-            testInstance = testInstance.WithProjectChanges((projectPath, project) =>
+            testInstance = testInstance.WithProjectChanges(project =>
             {
-                projectFolder = Path.GetDirectoryName(projectPath);
                 var ns = project.Root.Name.Namespace;
 
                 //  Remove reference to tool that won't restore on 1.x
@@ -104,17 +103,11 @@ namespace Microsoft.DotNet.Tests
                 project.Root.Element(ns + "PropertyGroup")
                     .Add(new XElement(ns + "DotnetCliToolTargetFramework", "netcoreapp1.1"));
 
-                //  Use project-specific global packages folder
+                // Keep the test-specific packages path short for FullFramework NuGet.
                 project.Root.Element(ns + "PropertyGroup")
-                    .Add(new XElement(ns + "RestorePackagesPath", @"$(MSBuildProjectDirectory)\packages"));
+                    .Add(new XElement(ns + "RestorePackagesPath", packagesDirectory));
 
             });
-
-            var toolFolder = Path.Combine(projectFolder,
-                                          "packages",
-                                          ".tools",
-                                          toolName);
-
 
             new RestoreCommand(testInstance)
                 .Execute()
