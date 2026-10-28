@@ -376,50 +376,6 @@ public class DotnetDownloaderBlobFeedTests
     }
 
     [TestMethod]
-    public void ResolveDotnetupDownload_BlockedPolicyWithoutEnforcedSignatureMakesNoRequests()
-    {
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var (handler, history) = BuildHandler(new());
-        using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, testEnv.TempRoot, policy: _policy);
-        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
-
-        var exception = Assert.ThrowsExactly<DotnetInstallException>(
-            () => downloader.ResolveDotnetupDownload("daily", "win-x64", replacementSignatureEnforced: false));
-
-        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy);
-        history.Should().BeEmpty();
-    }
-
-    [TestMethod]
-    public void ResolveDotnetupDownload_BlockedPolicyWithEnforcedSignatureResolvesAndDownloads()
-    {
-        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        const string content = "signature-verified executable";
-        string hash = Convert.ToHexString(System.Security.Cryptography.SHA512.HashData(Encoding.UTF8.GetBytes(content)));
-        var history = new List<string>();
-        using var handler = new RecordingHandler(new()
-        {
-            [DotnetupDailyUrl] = (HttpStatusCode.OK, ""),
-            [DotnetupChecksumUrl] = (HttpStatusCode.OK, hash),
-            [DotnetupUrl] = (HttpStatusCode.OK, content),
-        }, history, new() { [DotnetupDailyUrl] = DotnetupUrl });
-        using var http = new HttpClient(handler);
-        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"), policy: _policy);
-        string destination = Path.Combine(testEnv.TempRoot, "dotnetup.exe.new");
-        _policyStore.Values[DotnetupPolicy.BlockUnsignedDownloadsValueName] = true;
-
-        var download = downloader.ResolveDotnetupDownload("daily", "win-x64", replacementSignatureEnforced: true);
-        downloader.DownloadWithVerification(download, destination).Should().Be(destination);
-
-        download.IsUnsigned.Should().BeFalse();
-        download.IsDotnetup.Should().BeTrue();
-        download.ExpectedHash.Should().BeEquivalentTo(hash);
-        history.Should().Equal(DotnetupDailyUrl, DotnetupChecksumUrl, DotnetupUrl);
-        File.ReadAllText(destination).Should().Be(content);
-    }
-
-    [TestMethod]
     public void DownloadWithVerification_PolicyBlocksCachedDotnetup()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();

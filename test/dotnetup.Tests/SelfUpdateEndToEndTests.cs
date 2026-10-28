@@ -16,14 +16,12 @@ public class SelfUpdateEndToEndTests
     [OSCondition(OperatingSystems.Windows | OperatingSystems.Linux)]
     public void RidNamedNativeCopyUpdatesToDailyAndChangesVersion()
     {
-        // The copy under test is an unsigned local build, so self-update verifies the replacement by hash
-        // only, which BlockUnsignedDownloads rejects. Signed installs are exempt but are not covered here.
+        // BlockUnsignedDownloads blocks dotnetup self update, so this scenario cannot run on such a machine.
         if (new DotnetupPolicy().IsUnsignedDownloadBlocked())
         {
             Assert.Inconclusive(
-                $"Skipped: the machine policy {UnsignedSourcePolicy.GetPolicyLocationForDisplay()} blocks unsigned downloads. " +
-                "The dotnetup under test is an unsigned local build, so self update can only verify the daily replacement by hash. " +
-                "Clear the policy to run this test.");
+                $"Skipped: the machine policy {UnsignedSourcePolicy.GetPolicyLocationForDisplay()} blocks unsigned downloads, " +
+                "including dotnetup self update. Clear the policy to run this test.");
         }
 
         using var environment = new TestEnvironment();

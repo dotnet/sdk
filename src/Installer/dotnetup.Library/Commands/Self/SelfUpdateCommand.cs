@@ -52,8 +52,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
                 ? Strings.SelfUpdateWaitingForUpdate
                 : Strings.SelfUpdateWaitingForCommand));
         var workflow = new SelfUpdateWorkflow(invocation.Paths,
-            () => downloader.ResolveDotnetupDownload(channel, rid,
-                replacementSignatureEnforced: SelfUpdateSignature.RequiresSignedReplacement(invocation.Paths.InstalledPath)),
+            () => downloader.ResolveDotnetupDownload(channel, rid),
             (release, destination) =>
             {
                 AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
