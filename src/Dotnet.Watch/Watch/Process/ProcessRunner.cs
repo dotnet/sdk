@@ -156,6 +156,11 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
 
         var state = new ProcessState(process);
 
+        if (!processSpec.UseShellExecute)
+        {
+            process.StartInfo.InheritedHandles = [];
+        }
+
         if (processSpec.IsUserApplication && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
             process.StartInfo.CreateNewProcessGroup = true;
@@ -257,10 +262,6 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
 
     private static async ValueTask<bool> WaitForExitAsync(Process process, ProcessState state, TimeSpan? timeout, ILogger logger)
     {
-        // On Linux simple call WaitForExitAsync does not work reliably (it may hang).
-        // As a workaround we poll for HasExited.
-        // See also https://github.com/dotnet/runtime/issues/109434.
-
         if (timeout.HasValue)
         {
             using var cancellationSource = new CancellationTokenSource();
@@ -269,7 +270,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
             try
             {
                 logger.Log(MessageDescriptor.WaitingForProcessToExitWithin, state.ProcessId, (int)timeout.Value.TotalSeconds);
-                await process.WaitForExitAsync(cancellationSource.Token);
+                await process.WaitForExitStatusAsync(cancellationSource.Token);
             }
             catch (OperationCanceledException)
             {
@@ -285,34 +286,9 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         }
         else
         {
-            int i = 1;
-            while (true)
-            {
-                try
-                {
-                    if (process.HasExited)
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                }
-
-                logger.Log(MessageDescriptor.WaitingForProcessToExit, state.ProcessId, i++);
-
-                using var cancellationSource = new CancellationTokenSource();
-                cancellationSource.CancelAfter(TimeSpan.FromSeconds(1));
-
-                try
-                {
-                    await process.WaitForExitAsync(cancellationSource.Token);
-                    break;
-                }
-                catch (OperationCanceledException)
-                {
-                }
-            }
+            // Status waits observe termination independently of descendant-held output pipes.
+            logger.Log(MessageDescriptor.WaitingForProcessToExit, state.ProcessId, 1);
+            await process.WaitForExitStatusAsync();
         }
 
         return true;

@@ -34,6 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="CommandLine\ArgumentEscaper.cs" />
+    <Compile Remove="ServerProtocol\NativeMethods.cs" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common"/>
   </ItemGroup>
 

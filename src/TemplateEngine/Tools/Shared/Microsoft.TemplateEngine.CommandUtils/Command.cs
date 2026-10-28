@@ -40,6 +40,13 @@ namespace Microsoft.TemplateEngine.CommandUtils
 
             _process.EnableRaisingEvents = true;
 
+#if NET11_0_OR_GREATER
+            if (!_process.StartInfo.UseShellExecute)
+            {
+                _process.StartInfo.InheritedHandles ??= [];
+            }
+#endif
+
 #if DEBUG
             var sw = Stopwatch.StartNew();
 
@@ -55,7 +62,11 @@ namespace Microsoft.TemplateEngine.CommandUtils
 
                 var taskOut = _stdOut?.BeginRead(_process.StandardOutput);
                 var taskErr = _stdErr?.BeginRead(_process.StandardError);
+#if NET11_0_OR_GREATER
+                _process.WaitForExitStatus();
+#else
                 _process.WaitForExit();
+#endif
 
                 taskOut?.Wait();
                 taskErr?.Wait();

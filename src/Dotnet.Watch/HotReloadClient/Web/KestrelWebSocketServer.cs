@@ -89,12 +89,15 @@ internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> 
 
         try
         {
-            using var process = Process.Start(dotnetPath, "dev-certs https --check --quiet");
-            await process
-                .WaitForExitAsync(cancellationToken)
-                .WaitAsync(suppressTimeouts ? TimeSpan.MaxValue : TimeSpan.FromSeconds(10), cancellationToken);
-
-            result = process.ExitCode == 0;
+            using CancellationTokenSource timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            if (!suppressTimeouts)
+            {
+                timeout.CancelAfter(TimeSpan.FromSeconds(10));
+            }
+            ProcessExitStatus status = await Process.RunAsync(
+                new ProcessStartInfo(dotnetPath, ["dev-certs", "https", "--check", "--quiet"]) { InheritedHandles = [] },
+                cancellationToken: timeout.Token);
+            result = status.ExitCode == 0;
         }
         catch
         {

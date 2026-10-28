@@ -50,30 +50,30 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 Reporter.Output.WriteLine(LocalizableStrings.RunningCommand, command);
                 string resolvedExecutablePath = ResolveExecutableFilePath(environment.Host.FileSystem, executable, outputBasePath);
 
-                Process? commandResult = System.Diagnostics.Process.Start(new ProcessStartInfo
+                ProcessStartInfo startInfo = new()
                 {
                     RedirectStandardError = redirectStandardError,
                     RedirectStandardOutput = redirectStandardOutput,
-                    UseShellExecute = false,
-                    CreateNoWindow = false,
+                    InheritedHandles = [],
                     WorkingDirectory = outputBasePath,
                     FileName = resolvedExecutablePath,
                     Arguments = args
-                });
+                };
 
-                if (commandResult == null)
+                using Process process = System.Diagnostics.Process.Start(startInfo)!;
+                (string? standardOutput, string? standardError) = (redirectStandardOutput, redirectStandardError) switch
+                {
+                    (true, true) => process.ReadAllText(),
+                    (true, false) => (process.StandardOutput.ReadToEnd(), null),
+                    (false, true) => (null, process.StandardError.ReadToEnd()),
+                    (false, false) => (null, null)
+                };
+                int exitCode = process.WaitForExitStatus().ExitCode;
+
+                if (exitCode != 0)
                 {
                     Reporter.Error.WriteLine(LocalizableStrings.CommandFailed);
-                    Reporter.Verbose.WriteLine("Unable to start sub-process.");
-                    return false;
-                }
-
-                commandResult.WaitForExit();
-
-                if (commandResult.ExitCode != 0)
-                {
-                    Reporter.Error.WriteLine(LocalizableStrings.CommandFailed);
-                    Reporter.Error.WriteCommandOutput(commandResult);
+                    Reporter.Error.WriteCommandOutput(standardOutput, standardError);
                     Reporter.Error.WriteLine(string.Empty);
                     return false;
                 }

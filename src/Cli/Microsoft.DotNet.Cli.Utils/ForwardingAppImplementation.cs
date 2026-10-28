@@ -75,7 +75,7 @@ internal class ForwardingAppImplementation
         {
             FileName = GetHostExeName(),
             Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(_allArgs),
-            UseShellExecute = false
+            InheritedHandles = []
         };
 
         foreach (var entry in _environmentVariables)

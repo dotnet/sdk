@@ -125,13 +125,13 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
             var startInfo = new ProcessStartInfo
             {
                 FileName = new Muxer().MuxerPath,
-                Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
-                [
+                ArgumentList =
+                {
                     CleanCommandDefinition.Name,
                     CleanFileBasedAppArtifactsCommandDefinition.Name,
                     CleanFileBasedAppArtifactsCommandDefinition.AutomaticOptionName,
-                ]),
-                UseShellExecute = false,
+                },
+                InheritedHandles = [],
                 CreateNoWindow = true,
             };
 
