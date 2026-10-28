@@ -194,8 +194,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         }
 
         throw CreateException(
-            DotnetInstallErrorCode.AdminModeSignatureRequired,
-            Microsoft.Dotnet.Installation.Strings.AdminModeSignatureRequired);
+            DotnetInstallErrorCode.SignatureVerificationFailed,
+            Format(Strings.WindowsInstallerSignatureVerificationFailed, Describe(), result.FailureReason));
     }
 
     private int RunInstaller(string bundlePath)

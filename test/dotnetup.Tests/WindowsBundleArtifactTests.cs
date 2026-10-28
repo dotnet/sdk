@@ -99,8 +99,8 @@ public class WindowsBundleArtifactTests : IDisposable
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
 
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSignatureRequired);
-        ex.Message.Should().Be("Signature validation is required when using admin mode.");
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
+        ex.Message.Should().Be($"The installer for .NET SDK 10.0.100 failed Authenticode signature verification: {FakeVerifier.UntrustedReason}");
         runner.Calls.Should().BeEmpty();
     }
 
@@ -115,7 +115,7 @@ public class WindowsBundleArtifactTests : IDisposable
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
 
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSignatureRequired);
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
         runner.Calls.Should().BeEmpty();
     }
 
@@ -131,8 +131,8 @@ public class WindowsBundleArtifactTests : IDisposable
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
 
-        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSignatureRequired);
-        exception.Message.Should().Be("Signature validation is required when using admin mode.");
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
+        exception.Message.Should().Be($"The installer for .NET SDK 10.0.100 failed Authenticode signature verification: {FakeVerifier.UntrustedReason}");
         runner.Calls.Should().BeEmpty();
     }
 
@@ -146,7 +146,7 @@ public class WindowsBundleArtifactTests : IDisposable
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(artifact.Commit);
 
-        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.AdminModeSignatureRequired);
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
         runner.Calls.Should().BeEmpty();
     }
 

@@ -160,7 +160,8 @@ Channel names and version selection remain the same, but admin mode requires
 signature validation. Unsigned daily or blob-feed builds are blocked even when
 `BlockUnsignedDownloads` is `0`, with the user error
 "Signature validation is required when using admin mode."
-Installers must pass Authenticode verification chaining to a Microsoft root.
+Installers must also pass Authenticode verification chaining to a Microsoft root;
+a failure is reported as `SignatureVerificationFailed` and the installer is not run.
 Archive installs selected through global.json `sdk.paths` must use signed release
 metadata. This admin-mode requirement applies to .NET installs, not dotnetup
 itself. `dotnetup self update` is unaffected by access mode: it retains its
