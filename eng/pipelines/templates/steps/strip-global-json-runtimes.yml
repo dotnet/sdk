@@ -1,0 +1,29 @@
+# Strips the "runtimes" entries from global.json so that Arcade SDK's
+# InstallDotNetCore MSBuild target (which runs AfterTargets="Restore" with no
+# Condition) finds nothing to install.  These runtimes are only needed for
+# running tests and waste disk space on space-constrained cross-build containers.
+
+parameters:
+  os: ''
+
+steps:
+- ${{ if eq(parameters.os, 'windows') }}:
+  - powershell: |
+      $json = Get-Content global.json -Raw | ConvertFrom-Json
+      $json.tools.runtimes = [PSCustomObject]@{}
+      $json | ConvertTo-Json -Depth 10 | Set-Content global.json
+    displayName: 🗑️ Strip test runtimes from global.json
+
+- ${{ if ne(parameters.os, 'windows') }}:
+  - script: |
+      python3 -c "
+      import json
+      with open('global.json', 'r') as f:
+          data = json.load(f)
+      if 'tools' in data and 'runtimes' in data['tools']:
+          data['tools']['runtimes'] = {}
+      with open('global.json', 'w') as f:
+          json.dump(data, f, indent=2)
+          f.write('\\n')
+      "
+    displayName: 🗑️ Strip test runtimes from global.json

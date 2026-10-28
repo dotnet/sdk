@@ -106,6 +106,11 @@ and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.c
   `Azure.Monitor.OpenTelemetry.Exporter.StorageSubDirectory` AppContext value to `dotnet-cli` (see
   [Azure/azure-sdk-for-net#62997](https://github.com/Azure/azure-sdk-for-net/issues/62997)). Every entry point
   for a given user then shares one sub directory and drains telemetry that the others persisted.
+  `dotnetup` sets the same override and resolves the same storage root in
+  [DotnetupTelemetry](../../src/Installer/dotnetup.Library/Telemetry/DotnetupTelemetry.cs) and
+  [DotnetupPaths](../../src/Installer/dotnetup.Library/DotnetupPaths.cs).
+  Its log exporter and detached drainer can therefore consume the SDK trace exporter's backlog
+  and vice versa. The override still isolates different users and instrumentation keys.
 3. **CI invocations.** The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown` to true and
   calls `Shutdown` with a finite timeout because another invocation may never run. The default CI
   wait budget is five seconds, shared across trace and metric providers. A positive

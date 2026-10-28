@@ -68,6 +68,8 @@
     href: reference/dotnetup-env-script.md
   - name: dotnetup dotnet
     href: reference/dotnetup-dotnet.md
+  - name: dotnetup self update
+    href: reference/dotnetup-self-update.md
 - name: Scenarios
   items:
   - name: Manage repository SDK requirements

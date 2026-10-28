@@ -1,0 +1,607 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!--
+    Microsoft ResX Schema
+
+    Version 2.0
+
+    The primary goals of this format is to allow a simple XML format
+    that is mostly human readable. The generation and parsing of the
+    various data types are done through the TypeConverter classes
+    associated with the data types.
+
+    Example:
+
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+
+    There are any number of "resheader" rows that contain simple
+    name/value pairs.
+
+    Each data row contains a name, and value. The row also contains a
+    type or mimetype. Type corresponds to a .NET class that support
+    text/value conversion through the TypeConverter architecture.
+    Classes that don't support this are serialized and stored with the
+    mimetype set.
+
+    The mimetype is used for serialized objects, and tells the
+    ResXResourceReader how to depersist the object. This is currently not
+    extensible. For a given mimetype the value must be set accordingly:
+
+    Note - application/x-microsoft.net.object.binary.base64 is the format
+    that the ResXResourceWriter will generate, however the reader can
+    read any of the formats listed below.
+
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="CommandInteractiveOptionDescription" xml:space="preserve">
+    <value>Allows the command to stop and wait for user input or action.</value>
+  </data>
+  <data name="SelfCommandDescription" xml:space="preserve">
+    <value>Manage the dotnetup executable.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateCommandDescription" xml:space="preserve">
+    <value>Update dotnetup to the latest release in a channel.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateChannelOptionDescription" xml:space="preserve">
+    <value>The dotnetup release channel to update from (daily, preview, or stable). The default is the channel of the running dotnetup build.</value>
+    <comment>{Locked="dotnetup"} {Locked="daily"} {Locked="preview"} {Locked="stable"}</comment>
+  </data>
+  <data name="SelfUpdateDownloading" xml:space="preserve">
+    <value>Downloading dotnetup</value>
+    <comment>{Locked="dotnetup"} Download progress task description.</comment>
+  </data>
+  <data name="SelfUpdateAlreadyUpToDate" xml:space="preserve">
+    <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. No newer update is available.</value>
+    <comment>{Locked="Dotnetup"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
+  </data>
+  <data name="SelfUpdateCurrentVersionNewer" xml:space="preserve">
+    <value>Dotnetup was not updated. Current version: {0}. Available version: {1}. The current version is newer. Use --force to install the available version anyway.</value>
+    <comment>{Locked="Dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the available dotnetup version.</comment>
+  </data>
+  <data name="SelfUpdateMaybeDailyBuild" xml:space="preserve">
+    <value>Official daily dotnetup builds also use the 'preview' label, so this build might be from the daily channel. To update from daily builds, run 'dotnetup self update --channel daily'.</value>
+    <comment>{Locked="dotnetup"} {Locked="'preview'"} {Locked="dotnetup self update --channel daily"}</comment>
+  </data>
+  <data name="SelfUpdateSignatureInvalid" xml:space="preserve">
+    <value>The downloaded dotnetup executable does not have a valid Microsoft Authenticode signature, so dotnetup was not updated. {0}</value>
+    <comment>{Locked="dotnetup"} {Locked="Authenticode"} {0} is the operating system's signature verification error.</comment>
+  </data>
+  <data name="SelfUpdateCertificateChainPolicyUnavailable" xml:space="preserve">
+    <value>The requested certificate chain policy could not be checked: {0}</value>
+    <comment>{0} is the name of the certificate chain policy.</comment>
+  </data>
+  <data name="SelfUpdateForceOptionDescription" xml:space="preserve">
+    <value>Install the channel's latest dotnetup build even when it is not newer than the current version. This can downgrade dotnetup.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateForcedWarning" xml:space="preserve">
+    <value>Installing dotnetup {1} because --force was specified, even though it is not newer than the current version {0}.</value>
+    <comment>{Locked="dotnetup"} {Locked="--force"} {0} is the installed dotnetup version. {1} is the version that will be installed.</comment>
+  </data>
+  <data name="SelfUpdateCleanupWarning" xml:space="preserve">
+    <value>Dotnetup could not remove one or more old self-update backup files. A future update may remove them.</value>
+    <comment>{Locked="Dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateAvailableNotice" xml:space="preserve">
+    <value>An update to dotnetup is available! Run 'dotnetup self update' to update. Hide future update notifications via 'dotnetup self update --update-notifications false'.</value>
+    <comment>{Locked="dotnetup"} {Locked="'dotnetup self update'"} {Locked="'dotnetup self update --update-notifications false'"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsOptionDescription" xml:space="preserve">
+    <value>Set whether install and update commands mention available dotnetup updates, without updating dotnetup.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsConflict" xml:space="preserve">
+    <value>'--update-notifications' only changes the update notification setting and cannot be combined with '--channel' or '--force'.</value>
+    <comment>{Locked="'--update-notifications'"} {Locked="'--channel'"} {Locked="'--force'"}</comment>
+  </data>
+  <data name="SelfUpdateNotificationsConfigUnreadable" xml:space="preserve">
+    <value>The update notification setting was not changed because the dotnetup config file at {0} could not be read. Fix or delete the file, and then try again.</value>
+    <comment>{Locked="dotnetup"} {0} is the path to the dotnetup config file.</comment>
+  </data>
+  <data name="SelfUpdateSucceeded" xml:space="preserve">
+    <value>Dotnetup updated to {0}. To install another version: https://aka.ms/dotnet/dotnetup</value>
+    <comment>{Locked="Dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup version.</comment>
+  </data>
+  <data name="SelfUpdateInProgress" xml:space="preserve">
+    <value>A dotnetup self-update is in progress. Run the command again after the update completes.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateExecutableChanged" xml:space="preserve">
+    <value>The dotnetup executable has changed. Run the command again to use the updated executable.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateIdentityUnavailable" xml:space="preserve">
+    <value>The dotnetup executable's version metadata could not be read. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateBusyUpdate" xml:space="preserve">
+    <value>Dotnetup is busy with another self-update. Try again after it completes.</value>
+    <comment>{Locked="Dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateBusyCommand" xml:space="preserve">
+    <value>Dotnetup is busy with another command. Try self-update again after that command completes.</value>
+    <comment>{Locked="Dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateWaitingForUpdate" xml:space="preserve">
+    <value>Waiting for another dotnetup self-update to finish...</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateWaitingForCommand" xml:space="preserve">
+    <value>Waiting for another dotnetup command to finish...</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateStagedIdentityMismatch" xml:space="preserve">
+    <value>The downloaded dotnetup executable's version metadata does not match the release. The executable was not updated.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateRollbackFailed" xml:space="preserve">
+    <value>Dotnetup self-update failed and the previous executable could not be restored. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateVerificationFailed" xml:space="preserve">
+    <value>The updated dotnetup executable failed verification.</value>
+    <comment>{Locked="dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateAccessFailed" xml:space="preserve">
+    <value>Dotnetup could not safely access the self-update files. Check the installation directory's permissions and try again.</value>
+    <comment>{Locked="Dotnetup"}</comment>
+  </data>
+  <data name="SelfUpdateUnsupportedHost" xml:space="preserve">
+    <value>Self-update requires the native dotnetup executable. Run the installed dotnetup executable directly.</value>
+    <comment>{Locked="dotnetup"} Managed development hosts cannot update themselves.</comment>
+  </data>
+  <data name="SelfUpdateUnsupportedLocation" xml:space="preserve">
+    <value>The dotnetup path '{0}' contains a symbolic link, junction, or other reparse point, so dotnetup cannot safely coordinate self-updates. Run dotnetup from a path without links, or reinstall it to such a directory from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the file or directory path that is a link or reparse point.</comment>
+  </data>
+  <data name="SelfUpdateDirectoryAccessDenied" xml:space="preserve">
+    <value>Dotnetup could not access its installation directory '{0}'. Make sure you can read the dotnetup executable and create files in that directory, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</comment>
+  </data>
+  <data name="SelfUpdateDirectoryUnavailable" xml:space="preserve">
+    <value>Dotnetup could not inspect its installation directory '{0}'. Make sure the directory exists and is accessible, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the directory containing the dotnetup executable.</comment>
+  </data>
+  <data name="SelfUpdateActivityLockAccessDenied" xml:space="preserve">
+    <value>Dotnetup could not open or create its self-update coordination file '{0}'. Make sure the installation directory is writable, or reinstall dotnetup to a writable directory from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the dotnetup activity lock file.</comment>
+  </data>
+  <data name="SelfUpdateActivityLockUnavailable" xml:space="preserve">
+    <value>Dotnetup could not use its self-update coordination file '{0}'. Make sure the installation directory exists and is accessible, and then try again.</value>
+    <comment>{Locked="Dotnetup"} {0} is the dotnetup activity lock file.</comment>
+  </data>
+  <data name="SelfUpdateExecutableAccessDenied" xml:space="preserve">
+    <value>Dotnetup could not read the installed executable '{0}'. Make sure the executable is readable, or reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="Dotnetup"} {Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup executable.</comment>
+  </data>
+  <data name="SelfUpdateExecutableUnavailable" xml:space="preserve">
+    <value>The installed dotnetup executable '{0}' could not be inspected. Reinstall dotnetup from https://aka.ms/dotnet/dotnetup.</value>
+    <comment>{Locked="dotnetup"} {Locked="https://aka.ms/dotnet/dotnetup"} {0} is the installed dotnetup executable.</comment>
+  </data>
+  <data name="CommandNonInteractiveOptionDescription" xml:space="preserve">
+    <value>Proceed without prompting for confirmation.</value>
+  </data>
+  <data name="InfoOptionDescription" xml:space="preserve">
+    <value>Display dotnetup information.</value>
+  </data>
+  <data name="InfoCommandDescription" xml:space="preserve">
+    <value>Display dotnetup information.</value>
+  </data>
+  <data name="FormatOptionDescription" xml:space="preserve">
+    <value>Output format (text or json).</value>
+  </data>
+  <data name="InfoHeader" xml:space="preserve">
+    <value>dotnetup Information:</value>
+  </data>
+  <data name="InfoNoListOptionDescription" xml:space="preserve">
+    <value>Skip listing installed SDKs (faster).</value>
+  </data>
+  <data name="ListCommandDescription" xml:space="preserve">
+    <value>List installed .NET SDKs and runtimes managed by dotnetup.</value>
+  </data>
+  <data name="ListNoVerifyOptionDescription" xml:space="preserve">
+    <value>Skip verifying that each installation is valid.</value>
+  </data>
+  <data name="ListHeaderTitle" xml:space="preserve">
+    <value>Installations</value>
+  </data>
+  <data name="ListHeaderSubtitle" xml:space="preserve">
+    <value>(managed by dotnetup)</value>
+  </data>
+  <data name="ListNoInstallations" xml:space="preserve">
+    <value>(none)</value>
+  </data>
+  <data name="ListTotal" xml:space="preserve">
+    <value>Total</value>
+  </data>
+  <data name="RootCommandDescription" xml:space="preserve">
+    <value>.NET toolchain manager for user level installs.</value>
+  </data>
+  <data name="DotnetCommandDescription" xml:space="preserve">
+    <value>Run a command using the dotnetup-managed dotnet installation.</value>
+  </data>
+  <data name="DotnetCommandForwardedArgsDescription" xml:space="preserve">
+    <value>Arguments to forward to dotnet.</value>
+  </data>
+  <data name="DotnetCommandDotnetNotFound" xml:space="preserve">
+    <value>dotnet executable not found at '{0}'.</value>
+  </data>
+  <data name="DotnetCommandInstallFirst" xml:space="preserve">
+    <value>Run 'dotnetup install' to install a .NET SDK first.</value>
+  </data>
+  <data name="DotnetCommandDotnetStartFailed" xml:space="preserve">
+    <value>Error: Failed to start the dotnet process.</value>
+  </data>
+  <data name="TelemetryNotice" xml:space="preserve">
+    <value>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</value>
+  </data>
+  <data name="InitCommandDescription" xml:space="preserve">
+    <value>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</value>
+  </data>
+  <data name="PathGuidanceNone" xml:space="preserve">
+    <value>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</value>
+  </data>
+  <data name="PathGuidanceShell" xml:space="preserve">
+    <value>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</value>
+  </data>
+  <data name="PathGuidanceEverywhere" xml:space="preserve">
+    <value>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</value>
+  </data>
+  <data name="HelpOptionsTitle" xml:space="preserve">
+    <value>Options:</value>
+  </data>
+  <data name="HelpDescriptionLabel" xml:space="preserve">
+    <value>Description:</value>
+  </data>
+  <data name="HelpUsageLabel" xml:space="preserve">
+    <value>Usage:</value>
+  </data>
+  <data name="HelpInstallCommandsTitle" xml:space="preserve">
+    <value>Install Commands:</value>
+  </data>
+  <data name="HelpQueryCommandsTitle" xml:space="preserve">
+    <value>Query Commands:</value>
+  </data>
+  <data name="HelpConfigCommandsTitle" xml:space="preserve">
+    <value>Configuration Commands:</value>
+  </data>
+  <data name="HelpUtilityCommandsTitle" xml:space="preserve">
+    <value>Utility Commands:</value>
+  </data>
+  <data name="EnvScriptCommandDescription" xml:space="preserve">
+    <value>Generates a shell script that configures the environment for .NET. With no selection flags it follows your configured env settings; pass --dotnet and/or --dotnetup to emit only those parts.</value>
+  </data>
+  <data name="EnvScriptDotnetInstallPathOptionDescription" xml:space="preserve">
+    <value>The path to the .NET installation directory. If not specified, uses the default user install path.</value>
+  </data>
+  <data name="EnvScriptDotnetOptionDescription" xml:space="preserve">
+    <value>Add the managed dotnet to PATH and set DOTNET_ROOT.</value>
+  </data>
+  <data name="EnvScriptDotnetupOptionDescription" xml:space="preserve">
+    <value>Add the dotnetup directory to PATH.</value>
+  </data>
+  <data name="EnvScriptDotnetupOnlyOptionDescription" xml:space="preserve">
+    <value>Only add dotnetup to PATH. Do not set DOTNET_ROOT or add the .NET install path.</value>
+  </data>
+  <data name="EnvOutcomeDotnetupOnlyOnPath" xml:space="preserve">
+    <value>dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet &lt;command&gt;'.</value>
+  </data>
+  <data name="EnvOutcomeNeitherOnPath" xml:space="preserve">
+    <value>Neither dotnet nor dotnetup is on your PATH.</value>
+  </data>
+  <data name="EnvOutcomeBothOnPath" xml:space="preserve">
+    <value>dotnet and dotnetup are on your PATH.</value>
+  </data>
+  <data name="EnvOutcomeDotnetOnlyOnPath" xml:space="preserve">
+    <value>dotnet is on your PATH. dotnetup is not.</value>
+  </data>
+  <data name="EnvApplyToTerminalPrompt" xml:space="preserve">
+    <value>To apply the change to this terminal now, run:
+  {0}
+Or open a new terminal.</value>
+  </data>
+  <data name="EnvOpenNewTerminalToTakeEffect" xml:space="preserve">
+    <value>Open a new terminal for the change to take effect.</value>
+  </data>
+  <data name="EnvOpenNewTerminalForOtherSurfaces" xml:space="preserve">
+    <value>Other open terminals and applications will pick up this change after they're restarted.</value>
+  </data>
+  <data name="EnvShellRequiredForProfile" xml:space="preserve">
+    <value>Could not detect the current shell, which is required to update the dotnetup profile entry. Re-run with --shell &lt;{0}&gt; to specify it explicitly.</value>
+    <comment>{Locked="--shell"}</comment>
+  </data>
+  <data name="EnvElevationCancelled" xml:space="preserve">
+    <value>Elevation was cancelled. The system PATH was not modified.</value>
+  </data>
+  <data name="EnvSetNoStoredConfig" xml:space="preserve">
+    <value>No mode specified and no stored configuration to re-apply. Specify a mode: none, shell, or everywhere.</value>
+    <comment>{Locked="none"}{Locked="shell"}{Locked="everywhere"}</comment>
+  </data>
+  <data name="EnvSetConfigUnreadable" xml:space="preserve">
+    <value>No mode specified and the existing configuration could not be read. Specify a mode explicitly: none, shell, or everywhere.</value>
+    <comment>{Locked="none"}{Locked="shell"}{Locked="everywhere"}</comment>
+  </data>
+  <data name="EnvModeWindowsOnly" xml:space="preserve">
+    <value>'{0}' mode is only supported on Windows. Use 'shell' on this platform.</value>
+    <comment>{Locked="shell"}</comment>
+  </data>
+  <data name="EnvSetUnknownMode" xml:space="preserve">
+    <value>Unknown env mode '{0}'. Expected one of: {1}.</value>
+  </data>
+  <data name="EnvSetModeArgumentDescription" xml:space="preserve">
+    <value>The dotnet access mode: {0}. Omit to re-apply the stored mode.</value>
+  </data>
+  <data name="EnvSetDotnetupOnPathOptionDescription" xml:space="preserve">
+    <value>Whether the dotnetup directory is on PATH ('true' or 'false'). Omit to leave unchanged.</value>
+    <comment>{Locked="true"}{Locked="false"}</comment>
+  </data>
+  <data name="EnvSetCommandDescription" xml:space="preserve">
+    <value>Apply (or re-sync) the configured env settings.</value>
+  </data>
+  <data name="EnvClearCommandDescription" xml:space="preserve">
+    <value>Remove all dotnetup environment wiring (equivalent to 'env set none --dotnetup-on-path false').</value>
+    <comment>{Locked="env set none --dotnetup-on-path false"}</comment>
+  </data>
+  <data name="EnvCommandDescription" xml:space="preserve">
+    <value>Manage the dotnetup environment configuration (PATH and DOTNET_ROOT wiring).</value>
+  </data>
+  <data name="EnvShowCommandDescription" xml:space="preserve">
+    <value>Show the configured env mode and report any detected drift.</value>
+  </data>
+  <data name="EnvDriftProfileBlockMissing" xml:space="preserve">
+    <value>Shell profile is missing the dotnetup managed block.</value>
+  </data>
+  <data name="EnvDriftProfileBlockUnexpected" xml:space="preserve">
+    <value>Shell profile contains a dotnetup managed block but neither dotnet access nor dotnetup-on-PATH is configured.</value>
+  </data>
+  <data name="EnvDriftEverywhereModeEnvVarsIncomplete" xml:space="preserve">
+    <value>Windows user PATH / DOTNET_ROOT / system PATH do not match 'everywhere' mode expectations.</value>
+  </data>
+  <data name="EnvDriftEverywhereModeEnvVarsUnexpected" xml:space="preserve">
+    <value>Windows user PATH / DOTNET_ROOT still has 'everywhere'-mode wiring (expected dotnet access: '{0}').</value>
+  </data>
+  <data name="EnvDriftDotnetupOnPathMissing" xml:space="preserve">
+    <value>dotnetup is configured to be on PATH but is missing from the user PATH.</value>
+  </data>
+  <data name="EnvDriftDotnetupOnPathUnexpected" xml:space="preserve">
+    <value>dotnetup is on the user PATH but is configured to be off.</value>
+  </data>
+  <data name="EnvShowNoConfiguration" xml:space="preserve">
+    <value>No dotnetup env configuration found. Run 'dotnetup env set &lt;mode&gt;' to configure.</value>
+  </data>
+  <data name="EnvShowHeader" xml:space="preserve">
+    <value>dotnetup environment:</value>
+  </data>
+  <data name="EnvShowLabelDotnetAccess" xml:space="preserve">
+    <value>dotnet access</value>
+  </data>
+  <data name="EnvShowLabelDotnetupOnPath" xml:space="preserve">
+    <value>dotnetup on PATH</value>
+  </data>
+  <data name="EnvShowInSync" xml:space="preserve">
+    <value>In sync.</value>
+  </data>
+  <data name="EnvShowInSyncNotActive" xml:space="preserve">
+    <value>In sync, but not yet active in this terminal.</value>
+  </data>
+  <data name="EnvShowApplyToTerminalPrompt" xml:space="preserve">
+    <value>To apply it to this terminal now, run:</value>
+  </data>
+  <data name="EnvShowOrOpenNewTerminal" xml:space="preserve">
+    <value>Or open a new terminal.</value>
+  </data>
+  <data name="EnvShowOpenNewTerminalToPickUp" xml:space="preserve">
+    <value>Open a new terminal to pick up the change.</value>
+  </data>
+  <data name="EnvShowDriftHeader" xml:space="preserve">
+    <value>Detected drift between configured settings and the current environment:</value>
+  </data>
+  <data name="EnvShowRunSetToResync" xml:space="preserve">
+    <value>Run 'dotnetup env set' to re-sync.</value>
+  </data>
+  <data name="EnvScriptShellNotDetected" xml:space="preserve">
+    <value>Error: Unable to detect current shell. The SHELL environment variable is not set.</value>
+  </data>
+  <data name="EnvScriptSpecifyShellWithSupported" xml:space="preserve">
+    <value>Please specify the shell using --shell option. Supported shells: {0}</value>
+    <comment>{Locked="--shell"}</comment>
+  </data>
+  <data name="EnvScriptUnsupportedShell" xml:space="preserve">
+    <value>Error: Unsupported shell '{0}'.</value>
+  </data>
+  <data name="EnvScriptSupportedShells" xml:space="preserve">
+    <value>Supported shells: {0}</value>
+  </data>
+  <data name="EnvScriptSpecifyShell" xml:space="preserve">
+    <value>Please specify the shell using --shell option.</value>
+    <comment>{Locked="--shell"}</comment>
+  </data>
+  <data name="EnvScriptShellNotSet" xml:space="preserve">
+    <value>SHELL environment variable is not set; cannot detect shell.</value>
+  </data>
+  <data name="EnvScriptUnsupportedShellError" xml:space="preserve">
+    <value>Unsupported shell '{0}'.</value>
+  </data>
+  <data name="EnvScriptDotnetupOnlyConflict" xml:space="preserve">
+    <value>--dotnetup-only cannot be combined with --dotnet or --dotnetup.</value>
+    <comment>{Locked="--dotnetup-only"}{Locked="--dotnet"}{Locked="--dotnetup"}</comment>
+  </data>
+  <data name="ConfirmationOptionsWithKeyboardHints" xml:space="preserve">
+    <value>([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)</value>
+    <comment>Confirmation hint. Y/N key bindings are not localized. {Locked="[bold underline]Y[/]/n"}</comment>
+  </data>
+  <data name="ConfirmationOptions" xml:space="preserve">
+    <value>([bold underline]Y[/]/n)</value>
+    <comment>Confirmation hint. Y/N key bindings are not localized. {Locked}</comment>
+  </data>
+  <data name="ConfirmationYes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="ConfirmationNo" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="ScrollMoreAbove" xml:space="preserve">
+    <value>{0} {1} more above</value>
+    <comment>{0} is an up-triangle symbol; {1} is the number of entries above the visible list.</comment>
+  </data>
+  <data name="ScrollMoreBelow" xml:space="preserve">
+    <value>{0} {1} more below (use {2}{3} arrows)</value>
+    <comment>{0} is a down-triangle symbol; {1} is the number of entries below the visible list; {2} and {3} are up/down arrow symbols.</comment>
+  </data>
+  <data name="ScrollContinue" xml:space="preserve">
+    <value>(Press Enter to continue)</value>
+  </data>
+  <data name="UninstallRetainedInstallation" xml:space="preserve">
+    <value>{0} will [bold]not[/] be uninstalled because it has other install specs that require it:</value>
+    <comment>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</comment>
+  </data>
+  <data name="UninstallUnexpectedRemoval" xml:space="preserve">
+    <value>{0} will be [bold]uninstalled[/] because it is no longer referenced by any install specs.</value>
+    <comment>{0} is a highlighted component name and installed version. {Locked="[bold]"}{Locked="[/]"}</comment>
+  </data>
+  <data name="UninstallUnexpectedAdditionalRemoval" xml:space="preserve">
+    <value>{0} will [bold]also[/] be [bold]uninstalled[/] because it is no longer referenced by any install specs.</value>
+    <comment>{0} is a highlighted component name and installed version. Used only when the operation also removes files for the requested component and channel. {Locked="[bold]"}{Locked="[/]"}</comment>
+  </data>
+  <data name="InstallSpecSource" xml:space="preserve">
+    <value>(source: {0})</value>
+    <comment>{0} is an install-source identifier or a global.json path.</comment>
+  </data>
+  <data name="UninstallRemovalSummary" xml:space="preserve">
+    <value>Install spec '{0}' ({1}; source: {2}) will be removed from tracking.</value>
+    <comment>{0} is a highlighted version or channel; {1} is a component name; {2} is an install-source identifier or a global.json path.</comment>
+  </data>
+  <data name="UninstallNoTrackedInstallations" xml:space="preserve">
+    <value>No tracked installations found at {0}.</value>
+    <comment>{0} is the installation root path.</comment>
+  </data>
+  <data name="UninstallNoMatchingInstallations" xml:space="preserve">
+    <value>No tracked installations matched component={0}, version='{1}', source={2} at {3}.</value>
+    <comment>{0} is a component identifier; {1} is a version or channel; {2} is an install-source identifier; {3} is the installation root path.</comment>
+  </data>
+  <data name="UninstallSourceNotFound" xml:space="preserve">
+    <value>No [bold]{0}[/] {1} install spec found for '{2}', but matching specs exist with other sources:</value>
+    <comment>{0} is an install-source identifier; {1} is a component name; {2} is a version or channel. {Locked="[bold]"}{Locked="[/]"}</comment>
+  </data>
+  <data name="UninstallSpecNotFoundWithOtherSources" xml:space="preserve">
+    <value>No {0} install spec found for '{1}', but matching specs exist with other sources:</value>
+    <comment>{0} is a component name; {1} is a version or channel.</comment>
+  </data>
+  <data name="UninstallSpecNotFound" xml:space="preserve">
+    <value>No {0} install spec found for '{1}' at {2}.</value>
+    <comment>{0} is a component name; {1} is a version or channel; {2} is the installation root path.</comment>
+  </data>
+  <data name="UninstallUseAllSources" xml:space="preserve">
+    <value>Use {0} {1} to target these specs.</value>
+    <comment>{0} is the source option name; {1} is the install-source value that selects every source.</comment>
+  </data>
+  <data name="UninstallConfirmationPrompt" xml:space="preserve">
+    <value>Proceed with uninstall?</value>
+  </data>
+  <data name="UninstallCancelled" xml:space="preserve">
+    <value>Uninstall cancelled. No install specs or files were removed.</value>
+  </data>
+  <data name="UninstallDereferencedSpec" xml:space="preserve">
+    <value>Dereferenced {0} {1} {2}</value>
+    <comment>{0} is a component name; {1} is a highlighted version or channel; {2} is the formatted install-source description.</comment>
+  </data>
+  <data name="CommandDone" xml:space="preserve">
+    <value>Done.</value>
+  </data>
+  <data name="GarbageCollectionRemovingInstallations" xml:space="preserve">
+    <value>Removing unused installations...</value>
+  </data>
+  <data name="GarbageCollectionRemovedPath" xml:space="preserve">
+    <value>  Removed {0}</value>
+    <comment>{0} is a highlighted relative directory path.</comment>
+  </data>
+  <data name="GarbageCollectionNoFilesRemoved" xml:space="preserve">
+    <value>No files were removed.</value>
+  </data>
+</root>

@@ -28,7 +28,16 @@ dotnetup --info
 
 ## Update dotnetup
 
-`dotnetup` doesn't have a command that updates itself. Run the download script
+Update the executable from its default release channel:
+
+```dotnetcli
+dotnetup self update
+```
+
+For channel selection, requirements, and update notifications, see
+[`dotnetup self update`](../reference/dotnetup-self-update.md).
+
+If your installed version doesn't support `self update`, run the download script
 again to replace the existing executable.
 
 On macOS or Linux, run:

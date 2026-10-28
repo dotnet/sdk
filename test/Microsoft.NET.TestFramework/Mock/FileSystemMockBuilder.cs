@@ -636,7 +636,7 @@ namespace Microsoft.Extensions.DependencyModel.Tests
                         throw new IOException($"Cannot create {destination} because a file or" +
                                               " directory with the same name already exists");
                     }
-                    if(sourceNode is not null)
+                    if (sourceNode is not null)
                     {
                         sourceNode = current.Subs.GetOrAdd(destinationPathModel.FileOrDirectoryName(), sourceNode);
                     }

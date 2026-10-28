@@ -1,0 +1,7 @@
+# Signature fixtures must be byte-exact: the detached CMS signature is computed over
+# the JSON's exact bytes, and the .p7s/.sig contain raw ASN.1 DER. Any line-ending
+# normalization on checkout (which would happen by default on Windows with the repo's
+# global text=auto policy) breaks signature verification.
+*.json -text
+*.p7s -text
+*.sig -text
