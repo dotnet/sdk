@@ -52,6 +52,18 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
+    public void Prepare_RequestWithoutExpectation_StillExpectsReleasesJsonSignature()
+    {
+        var downloader = CreateDownloader();
+        var artifact = CreateArtifact(StableChannel, downloader: downloader);
+
+        artifact.Prepare();
+
+        downloader.DownloadCalls.Should().ContainSingle()
+            .Which.Request.Options.ExpectReleasesJsonSignature.Should().BeTrue();
+    }
+
+    [TestMethod]
     public void Prepare_NonExeDownload_ThrowsWrongInstallerFileExtension()
     {
         var downloader = CreateDownloader();

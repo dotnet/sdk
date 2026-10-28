@@ -44,7 +44,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         ReleaseManifest? releaseManifest = null,
         DotnetupPolicy? policy = null)
     {
-        _request = request;
+        // Installer bundles are only trusted through the signed releases.json manifest.
+        _request = request with { Options = request.Options with { ExpectReleasesJsonSignature = true } };
         _version = version;
         _signatureVerifier = signatureVerifier ?? CreateDefaultSignatureVerifier();
         _processRunner = processRunner ?? new BundleProcessRunner();
@@ -53,10 +54,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         _progress = new ExtractorProgressTracker(batchContext.Reporter, request.Component, version.ToString(), batchContext.VersionDisplayWidth);
 
         ScratchDirectory = Directory.CreateTempSubdirectory().FullName;
-        _downloader = downloader ?? new DotnetDownloader(
-            releaseManifest ?? ReleaseManifest.Default,
-            policy: policy,
-            expectReleasesJsonSignature: true);
+        _downloader = downloader ?? new DotnetDownloader(releaseManifest ?? ReleaseManifest.Default, policy: policy);
     }
 
     /// <summary>

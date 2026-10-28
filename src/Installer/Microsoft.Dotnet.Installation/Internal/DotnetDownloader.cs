@@ -19,7 +19,6 @@ internal class DotnetDownloader : IArchiveDownloader
     private readonly ReleaseManifest _releaseManifest;
     private readonly DownloadCache _downloadCache;
     private readonly DotnetupPolicy _policy;
-    private readonly bool _expectReleasesJsonSignature;
 
     public DotnetDownloader()
         : this(ReleaseManifest.Default)
@@ -30,15 +29,13 @@ internal class DotnetDownloader : IArchiveDownloader
     /// <param name="httpClient">The HTTP client to use; defaults to the shared process-wide client.</param>
     /// <param name="cacheDirectory">The download cache directory; defaults to the per-user cache.</param>
     /// <param name="policy">The machine policy that may block unsigned downloads; defaults to the machine policy.</param>
-    /// <param name="expectReleasesJsonSignature">Whether downloads must be covered by the signed releases.json manifest, rejecting downloads trusted only by their hash.</param>
-    public DotnetDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null, DotnetupPolicy? policy = null, bool expectReleasesJsonSignature = false)
+    public DotnetDownloader(ReleaseManifest releaseManifest, HttpClient? httpClient = null, string? cacheDirectory = null, DotnetupPolicy? policy = null)
     {
         _releaseManifest = releaseManifest ?? throw new ArgumentNullException(nameof(releaseManifest));
         _downloadCache = new DownloadCache(cacheDirectory);
         // The HttpClient is either the shared process-wide singleton or supplied by the caller; we never own it.
         _httpClient = httpClient ?? DefaultHttpClient.Instance;
         _policy = policy ?? new DotnetupPolicy();
-        _expectReleasesJsonSignature = expectReleasesJsonSignature;
     }
 
     /// <summary>
@@ -189,7 +186,7 @@ internal class DotnetDownloader : IArchiveDownloader
 
     public ResolvedDownload ResolveDotnetupDownload(string channel, string rid)
     {
-        ThrowIfUnsignedDownloadBlocked("dotnetup", channel);
+        ThrowIfUnsignedDownloadBlocked("dotnetup", channel, expectReleasesJsonSignature: false);
         using var resolver = new DailyChannelResolver(_releaseManifest, _httpClient);
         ResolvedDotnetupArtifact resolved = resolver.ResolveDotnetupArtifact(channel, rid);
         var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(resolved.Version, rid);
@@ -228,7 +225,8 @@ internal class DotnetDownloader : IArchiveDownloader
             new Uri(downloadUrl), expectedHash,
             DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture), resolvedVersion,
             IsUnsigned: downloadUrl.StartsWith(BlobFeedUrlBuilder.ArchiveBaseUrl + "/", StringComparison.Ordinal));
-        string path = DownloadWithVerification(download, destinationBasePath + extension, progress);
+        string path = DownloadWithVerification(download, destinationBasePath + extension, progress,
+            installRequest.Options.ExpectReleasesJsonSignature);
         return new VerifiedDownload(path, expectedHash, download.IsUnsigned);
     }
 
@@ -236,6 +234,13 @@ internal class DotnetDownloader : IArchiveDownloader
     /// Downloads and verifies an artifact at the exact destination path, without appending an extension.
     /// </summary>
     public string DownloadWithVerification(ResolvedDownload download, string destinationPath, IProgress<DownloadProgress>? progress = null)
+        => DownloadWithVerification(download, destinationPath, progress, expectReleasesJsonSignature: false);
+
+    private string DownloadWithVerification(
+        ResolvedDownload download,
+        string destinationPath,
+        IProgress<DownloadProgress>? progress,
+        bool expectReleasesJsonSignature)
     {
         ArgumentNullException.ThrowIfNull(download);
         ArgumentException.ThrowIfNullOrEmpty(destinationPath);
@@ -245,7 +250,7 @@ internal class DotnetDownloader : IArchiveDownloader
         }
         if (download.IsUnsigned || download.IsDotnetup)
         {
-            ThrowIfUnsignedDownloadBlocked(download.IsDotnetup ? "dotnetup" : ".NET", download.Version.ToString());
+            ThrowIfUnsignedDownloadBlocked(download.IsDotnetup ? "dotnetup" : ".NET", download.Version.ToString(), expectReleasesJsonSignature);
         }
 
         if (download.IsDotnetup)
@@ -440,7 +445,8 @@ internal class DotnetDownloader : IArchiveDownloader
         // unsigned downloads is emitted up-front by the CLI workflow layer (see
         // InstallExecutor.ExecuteInstalls / UpdateWorkflow.InstallVersion via
         // UnsignedSourcePolicy.MayDownloadUnsigned), so no per-fallback warning is needed here.
-        ThrowIfUnsignedDownloadBlocked(installRequest.Component.ToString(), resolvedVersion.ToString());
+        ThrowIfUnsignedDownloadBlocked(installRequest.Component.ToString(), resolvedVersion.ToString(),
+            installRequest.Options.ExpectReleasesJsonSignature);
 
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var locationsChecked = new List<string>();
@@ -487,10 +493,10 @@ internal class DotnetDownloader : IArchiveDownloader
     /// Downloads and parses a .sha512 hash file. Returns null if the URL 404s
     /// (the version is not published to the blob feed). Throws for any other error.
     /// </summary>
-    private void ThrowIfUnsignedDownloadBlocked(string component, string version)
+    private void ThrowIfUnsignedDownloadBlocked(string component, string version, bool expectReleasesJsonSignature)
     {
         // Admin mode expects the releases.json signature independently of the machine policy; this may change in the future.
-        if (_expectReleasesJsonSignature)
+        if (expectReleasesJsonSignature)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeSignatureRequired,
