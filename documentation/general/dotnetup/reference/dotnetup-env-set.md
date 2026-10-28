@@ -28,18 +28,13 @@ The optional .NET access mode:
 | `none` | Does not modify these environment variables. Run .NET with `dotnetup dotnet`. |
 | `shell` | Modifies the shell profile to set these environment variables. Processes started from that shell use the .NET SDKs and Runtimes installed by dotnetup. |
 | `everywhere` | Modifies the system `PATH` and sets the user-level `DOTNET_ROOT` environment variable. Only available on Windows. |
-| `admin` | Stores `admin` as the current user's mode, removes dotnetup-managed user-level .NET environment wiring, and runs future installs through the official .NET installers into Program Files, except that a global.json `sdk.paths` directory receives an archive install. Requires signature validation or future interactive bypass agreement; unsigned daily builds are blocked. Only available on Windows. See [dotnetup admin mode](../designs/dotnetup-admin-mode.md). |
+| `admin` | Installs .NET with the official Windows installers into the shared system location and removes dotnetup-managed .NET environment changes. Only available on Windows. See [dotnetup admin mode](../designs/dotnetup-admin-mode.md). |
 
 For details about each mode and considerations for `everywhere`, see
 [dotnetup environment configuration](../concepts/environment.md).
 
 When you omit `MODE`, the command reapplies the stored mode. The command
-fails if no readable configuration exists. Selecting, reapplying, or leaving
-`admin` mode does not change the unsigned-download policy. This command does not
-install or uninstall .NET.
-
-The `--dotnetup-on-path` option applies independently in every mode, including
-Admin. Unrelated environment entries and installed SDKs and runtimes are preserved.
+fails if no readable configuration exists.
 
 ## Options
 
@@ -67,10 +62,4 @@ Correct drift by reapplying stored settings:
 
 ```dotnetcli
 dotnetup env set
-```
-
-Configure Admin mode while keeping dotnetup on `PATH`:
-
-```dotnetcli
-dotnetup env set admin --dotnetup-on-path true
 ```
