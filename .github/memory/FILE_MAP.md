@@ -86,3 +86,8 @@ The [stale-reference checker](../stale-reference-check/README.md) combines
 deterministic source collection and GitHub state checks with cached, bounded agent
 interpretation. Its [driver](../workflows/stale-reference-check.yml) creates
 revalidation tasks for potentially stale ignored tests, TODOs, and workarounds.
+
+The [CLI agent detection audit](../workflows/llm-detection-audit.README.md) checks
+current detection signals against public upstream evidence and researches missing
+harnesses. Its [workflow](../workflows/llm-detection-audit.md) maintains one
+evidence-report issue without changing CLI behavior.
