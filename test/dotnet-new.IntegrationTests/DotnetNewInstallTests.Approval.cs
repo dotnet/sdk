@@ -63,6 +63,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .AddScrubber(output =>
                 {
                     output.ScrubByRegex("   Microsoft\\.DotNet\\.Common\\.ItemTemplates@[A-Za-z0-9.-]+", "   Microsoft.DotNet.Common.ItemTemplates@%VERSION%");
+                    output.ScrubByRegex("   Microsoft\\.DotNet\\.Web\\.ItemTemplates@[A-Za-z0-9.-]+", "   Microsoft.DotNet.Web.ItemTemplates@%VERSION%");
                 });
         }
 
@@ -71,7 +72,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow("--install")]
         public Task CanShowDeprecationMessage_WhenLegacyCommandIsUsed(string commandName)
         {
-            CommandResult commandResult = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Web.ItemTemplates@5.0.0")
+            CommandResult commandResult = new DotnetNewCommand(_log, commandName, "Microsoft.DotNet.Web.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -88,7 +89,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [TestMethod]
         public Task DoNotShowDeprecationMessage_WhenNewCommandIsUsed()
         {
-            CommandResult commandResult = new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Web.ItemTemplates@5.0.0")
+            CommandResult commandResult = new DotnetNewCommand(_log, "install", "Microsoft.DotNet.Web.ProjectTemplates.5.0@5.0.0")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
