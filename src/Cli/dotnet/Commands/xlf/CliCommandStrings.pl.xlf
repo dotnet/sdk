@@ -2003,6 +2003,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="new">Installing workload version {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoAffectedTestsSelected">
+        <source>No affected tests selected</source>
+        <target state="new">No affected tests selected</target>
+        <note>Neutral module status when affected-test selection succeeds without starting a test host. This is not the skipped test outcome and no test count is known.</note>
+      </trans-unit>
       <trans-unit id="NoBinaryLogBecauseRunningJustCsc">
         <source>Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</source>
         <target state="new">Warning: Binary log option was specified but MSBuild will be skipped because running just csc is enough. Specify '--no-cache' to force full build.</target>

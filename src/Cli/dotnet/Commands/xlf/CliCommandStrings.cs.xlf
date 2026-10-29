@@ -382,6 +382,11 @@
         <target state="translated">Hostitel testu nahlásil typ hostitele {0}, ale dotnet test očekával {1}.</target>
         <note>{Locked="dotnet test"}</note>
       </trans-unit>
+      <trans-unit id="NoAffectedTestsSelected">
+        <source>No affected tests selected</source>
+        <target state="new">No affected tests selected</target>
+        <note>Neutral module status when affected-test selection succeeds without starting a test host. This is not the skipped test outcome and no test count is known.</note>
+      </trans-unit>
       <trans-unit id="NoLogoOptionDescription">
         <source>Do not display the startup banner or the copyright message.</source>
         <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>

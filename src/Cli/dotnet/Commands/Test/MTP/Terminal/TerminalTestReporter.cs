@@ -137,6 +137,27 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
     }
 
+    internal void AssemblyRunNotSelected(string assembly, string? targetFramework, string? architecture)
+    {
+        if (_isHelp || _isDiscovery || _wasCancelled)
+        {
+            return;
+        }
+
+        _terminalWithProgress.WriteToTerminal(terminal =>
+        {
+            terminal.SetColor(TerminalColor.Default);
+            if (_options.ShowAssembly)
+            {
+                AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture);
+                terminal.Append(' ');
+            }
+
+            terminal.AppendLine(CliCommandStrings.NoAffectedTestsSelected);
+            terminal.ResetColor();
+        });
+    }
+
     public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string executionId, string instanceId)
         => AssemblyRunStarted(assembly, targetFramework, architecture, executionId, instanceId, attemptNumber: null, settings: null);
 
@@ -346,17 +367,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
             }
         }
 
+        // The command already applied session failures, cancellation, and per-module exit-code policies.
         bool runFailed = exitCode is null || exitCode != ExitCode.Success;
+        bool ranZeroTests = totalTests == 0;
         bool zeroTestsFailure = exitCode == ExitCode.ZeroTests;
         bool minimumExpectedTestsFailure = exitCode == ExitCode.MinimumExpectedTestsPolicyViolation;
-        terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
+        terminal.SetColor(runFailed ? TerminalColor.DarkRed : ranZeroTests ? TerminalColor.Default : TerminalColor.DarkGreen);
 
         terminal.Append(CliCommandStrings.TestRunSummary);
         terminal.Append(' ');
 
         if (!runFailed)
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Passed));
+            terminal.Append(ranZeroTests
+                ? CliCommandStrings.ZeroTestsRan
+                : string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Passed));
         }
         else if (_wasCancelled)
         {

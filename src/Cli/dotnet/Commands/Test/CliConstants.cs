@@ -136,7 +136,9 @@ internal static class ProtocolConstants
     /// <summary>
     /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
     /// </summary>
-    // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding; 1.3.0 adds DisplayMessage (serializer id 12) forwarding.
+    // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding.
+    // 1.3.0 adds DisplayMessage (serializer id 12) forwarding, including GitHub Actions workflow commands
+    // sent at the Information level so the SDK writes their text verbatim without warning/error formatting.
     // NOTE: 1.4.0 (the reverse server-control pipe / server-initiated cancellation) is intentionally NOT advertised yet:
     // it is a separate, larger feature that is out of scope here.
     internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0";

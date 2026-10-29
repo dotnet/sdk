@@ -750,6 +750,13 @@ internal sealed class TestApplicationHandler
             // suppress all handshakes. Neither path excuses rejected or partial handshakes.
             _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
         }
+        else if (_options.AffectedTests)
+        {
+            _output.AssemblyRunNotSelected(
+                _module.TargetPath ?? _module.ProjectFullPath ?? string.Empty,
+                _handshakeInfo?.TargetFramework ?? _module.TargetFramework,
+                _handshakeInfo?.Architecture);
+        }
 
         LogTestProcessExit(exitCode, outputData, errorData);
     }

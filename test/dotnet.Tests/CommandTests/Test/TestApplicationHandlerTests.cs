@@ -665,8 +665,8 @@ public class TestApplicationHandlerTests : IDisposable
     public void OnTestProcessExited_WhenMatchingAffectedTestsOrchestratorSucceeds_DoesNotReportFailure(
         bool collectTestMap, string feature, string? executionMode)
     {
-        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
-            isHelp: false, isDiscovery: false, collectTestMap: collectTestMap, affectedTests: !collectTestMap);
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, showAssembly: true, collectTestMap: collectTestMap, affectedTests: !collectTestMap);
 
         handler.OnHandshakeReceived(
             BuildHandshake(executionMode, HandshakeMessageHostTypes.TestHostOrchestrator, orchestratorFeature: feature),
@@ -676,6 +676,15 @@ public class TestApplicationHandlerTests : IDisposable
 
         reporter.HasHandshakeFailure.Should().BeFalse();
         reporter.TotalTests.Should().Be(0);
+        reporter.SkippedTests.Should().Be(0);
+        if (collectTestMap)
+        {
+            console.GetOutput().Should().NotContain(CliCommandStrings.NoAffectedTestsSelected);
+        }
+        else
+        {
+            console.GetOutput().Should().Contain(CliCommandStrings.NoAffectedTestsSelected).And.Contain(TargetPath);
+        }
     }
 
     [TestMethod]
@@ -725,6 +734,26 @@ public class TestApplicationHandlerTests : IDisposable
 
         reporter.HasHandshakeFailure.Should().BeTrue();
         console.GetOutput().Should().Contain(TargetPath).And.Contain("orchestrator stdout").And.Contain("orchestrator stderr");
+        console.GetOutput().Should().NotContain(CliCommandStrings.NoAffectedTestsSelected);
+    }
+
+    [TestMethod]
+    public void OnTestProcessExited_WhenAffectedTestsWereCancelled_DoesNotReportNoSelection()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, affectedTests: true);
+        handler.OnHandshakeReceived(
+            BuildHandshake(
+                HandshakeMessageExecutionModes.Run,
+                HandshakeMessageHostTypes.TestHostOrchestrator,
+                orchestratorFeature: "RunAffectedTestsOrchestrator"),
+            gotSupportedVersion: true).Should().BeTrue();
+        reporter.MarkCancelled();
+
+        handler.OnTestProcessExited(exitCode: 0, outputData: string.Empty, errorData: string.Empty);
+
+        console.GetOutput().Should().NotContain(CliCommandStrings.NoAffectedTestsSelected);
+        reporter.HasHandshakeFailure.Should().BeFalse();
     }
 
     [TestMethod]
@@ -839,7 +868,7 @@ public class TestApplicationHandlerTests : IDisposable
     [DataRow(false)]
     public void OnTestProcessExited_WhenSuccessfulAffectedModuleFollowsFailedModule_PreservesAggregateFailure(bool collectTestMap)
     {
-        (TestApplicationHandler failedHandler, TerminalTestReporter reporter, _) = CreateHandler(
+        (TestApplicationHandler failedHandler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
             isHelp: false, isDiscovery: false, collectTestMap: collectTestMap, affectedTests: !collectTestMap);
         var successfulModule = new TestModule(
             RunProperties: new RunProperties("dotnet", "/repo/OtherTest.dll", "/repo"),
@@ -867,6 +896,8 @@ public class TestApplicationHandlerTests : IDisposable
         successfulHandler.OnTestProcessExited(exitCode: 0, outputData: string.Empty, errorData: string.Empty);
 
         reporter.HasHandshakeFailure.Should().BeTrue();
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: TestExitCode.GenericFailure);
+        console.GetOutput().Should().Contain("Test run summary: Failed!");
     }
 
     /// <summary>

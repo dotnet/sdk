@@ -2894,6 +2894,10 @@ Proceed?</value>
     <value> (Specified in '{0}')</value>
     <comment>{0} is the path to the global.json file.</comment>
   </data>
+  <data name="NoAffectedTestsSelected" xml:space="preserve">
+    <value>No affected tests selected</value>
+    <comment>Neutral module status when affected-test selection succeeds without starting a test host. This is not the skipped test outcome and no test count is known.</comment>
+  </data>
   <data name="CmdAffectedTestsFeatureDisabled" xml:space="preserve">
     <value>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</value>
   </data>
