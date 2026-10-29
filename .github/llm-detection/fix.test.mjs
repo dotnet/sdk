@@ -166,6 +166,7 @@ function patchFixture(t, mutate = () => {}) {
         writeFileSync(resolve(repo, path), text);
     };
     git("init", "--quiet"); git("config", "core.autocrlf", "false");
+    git("config", "core.filemode", "false");
     git("config", "user.name", "Fixer fixture"); git("config", "user.email", "fixture@example.invalid");
     write(detectorPath, detector.replaceAll("\r\n", "\n"));
     write(testsPath, tests.replaceAll("\r\n", "\n"));
@@ -243,5 +244,6 @@ test("rejects misleading base metadata", t => {
 
 test("rejects executable file modes", t => {
     const { root, artifacts } = patchFixture(t, ({ git }) => git("update-index", "--chmod=+x", detectorPath));
+    assert.match(readFileSync(join(artifacts, "aw-llm-detection-fix-opencode.patch"), "utf8"), /new mode 100755/);
     assert.throws(() => validateArtifact(root, artifacts, "12345", "opencode", "dotnet/sdk"), /Only the detector/);
 });
