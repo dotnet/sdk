@@ -40,6 +40,14 @@ test("preserves CRLF files", () => {
     assert.equal(validateContents(...before, result.detector, result.tests, "opencode"), "OPENCODE_FIXTURE");
 });
 
+test("publisher transport budget covers the complete generated file blobs", () => {
+    const workflow = readFileSync(".github/workflows/llm-detection-fix.md", "utf8");
+    const budget = workflow.match(/^\s+max-patch-size: (\d+)$/m);
+    assert.ok(budget);
+    const generated = prepareContents(detector, tests, "opencode", `OPENCODE_${"X".repeat(55)}`);
+    assert.ok(Buffer.byteLength(generated.detector) + Buffer.byteLength(generated.tests) <= Number(budget[1]) * 1024);
+});
+
 for (const [harness, variable] of [
     ["unknown", "UNKNOWN"], ["generic_agent", "AGENT"], ["opencode", "AGENT"],
     ["opencode", "OPENCODE_AI"], ["opencode", "OPENCODE_AI_EXTRA\""], ["aider", "AIDER"],
@@ -232,6 +240,19 @@ test("rejects a no-op that carries a patch", t => {
     assert.throws(() => validateArtifact(root, artifacts, "12345", "opencode", "dotnet/sdk"), /must not contain a patch/);
     rmSync(join(artifacts, "aw-llm-detection-fix-opencode.patch"));
     assert.equal(validateArtifact(root, artifacts, "12345", "opencode", "dotnet/sdk").hasProposal, false);
+});
+
+test("accepts an AM patch at 16 KiB and rejects one byte more", t => {
+    const { root, artifacts } = patchFixture(t);
+    const patch = join(artifacts, "aw-llm-detection-fix-opencode.patch");
+    const original = readFileSync(patch, "utf8");
+    const padding = "x".repeat(16 * 1024 - Buffer.byteLength(original) - 1);
+    const boundary = original.replace("\ndiff --git", `\n${padding}\ndiff --git`);
+    assert.equal(Buffer.byteLength(boundary), 16 * 1024);
+    writeFileSync(patch, boundary);
+    assert.equal(validateArtifact(root, artifacts, "12345", "opencode", "dotnet/sdk").hasProposal, true);
+    writeFileSync(patch, `${boundary}\n`);
+    assert.throws(() => validateArtifact(root, artifacts, "12345", "opencode", "dotnet/sdk"), /16 KiB/);
 });
 
 test("rejects misleading base metadata", t => {

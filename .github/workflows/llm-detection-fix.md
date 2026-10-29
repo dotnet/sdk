@@ -231,7 +231,8 @@ safe-outputs:
       - test/dotnet.Tests/TelemetryTests/TelemetryCommonPropertiesTests.cs
     protected-files: blocked
     max-patch-files: 2
-    max-patch-size: 16
+    # Signed publication counts full file blobs; the trusted AM guard still limits patches to 16 KiB.
+    max-patch-size: 32
   noop:
     report-as-issue: false
   steps:

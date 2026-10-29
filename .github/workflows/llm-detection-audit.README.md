@@ -118,7 +118,9 @@ It selects an immutable artifact ID from the current attempt and rejects stale a
 It accepts exactly one added variable and four generated test rows.
 All existing rules, labels, matching semantics, and tests must remain unchanged.
 It rejects bundles, multiple commits, extra files, mode changes, and transport overrides.
-The publisher also enforces two exact allowed paths, a two-file limit, and a 16 KiB patch limit.
+The trusted guard limits the AM patch to 16 KiB.
+The publisher also enforces two exact allowed paths and a two-file limit.
+Its 32 KiB transport budget accommodates [signed publication's complete file blobs](https://github.com/github/gh-aw/blob/v0.89.21/actions/setup/js/push_signed_commits.cjs), not a larger permitted diff.
 
 The validation job has only read permissions, no protected environment, no supplied secrets, and no persisted checkout credentials.
 It builds the patched redist SDK and runs the existing telemetry detection matrix through `scripts/RunTests.cs`.
