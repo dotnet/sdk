@@ -15,7 +15,6 @@
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
     <PublishWindowsPdb Condition="'$(TargetFramework)' == '$(NetFrameworkToolCurrent)' and
                                  '$(OS)' == 'Windows_NT' and
-                                 '$(OfficialBuild)' == 'true' and
                                  '$(DotNetBuildSourceOnly)' != 'true'">true</PublishWindowsPdb>
 
     <!--

@@ -45,8 +45,10 @@ The [MSBuild SDK resolver](../Resolvers/Microsoft.DotNet.MSBuildSdkResolver/Micr
 [SDK resolver](../Resolvers/Microsoft.DotNet.SdkResolver/Microsoft.DotNet.SdkResolver.csproj),
 [native wrapper](../Resolvers/Microsoft.DotNet.NativeWrapper/Microsoft.DotNet.NativeWrapper.csproj),
 and [template locator](../Microsoft.DotNet.TemplateLocator/Microsoft.DotNet.TemplateLocator.csproj)
-opt into Arcade's loose-PDB archival with `PublishWindowsPdb` for official Windows
-.NET Framework builds, excluding source-only builds. Preserve the repository-wide opt-out.
+opt into Arcade's loose-PDB archival with `PublishWindowsPdb` for Windows .NET
+Framework builds, excluding source-only builds. Arcade runs conversion/staging only
+in CI builds (`ContinuousIntegrationBuild=true`), including non-official builds.
+Preserve the repository-wide opt-out.
 The [Build.Extensions task project](../Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj)
 continues to include its PDBs in its own symbol package.
 

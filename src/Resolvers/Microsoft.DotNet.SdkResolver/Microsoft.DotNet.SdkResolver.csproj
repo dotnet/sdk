@@ -10,7 +10,6 @@
     <RootNamespace>Microsoft.DotNet.DotNetSdkResolver</RootNamespace>
     <PublishWindowsPdb Condition="'$(TargetFramework)' == 'net472' and
                                  '$(OS)' == 'Windows_NT' and
-                                 '$(OfficialBuild)' == 'true' and
                                  '$(DotNetBuildSourceOnly)' != 'true'">true</PublishWindowsPdb>
 
     <!--

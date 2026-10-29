@@ -5,7 +5,6 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishWindowsPdb Condition="'$(TargetFramework)' == 'net472' and
                                  '$(OS)' == 'Windows_NT' and
-                                 '$(OfficialBuild)' == 'true' and
                                  '$(DotNetBuildSourceOnly)' != 'true'">true</PublishWindowsPdb>
   </PropertyGroup>
 
