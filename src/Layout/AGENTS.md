@@ -36,6 +36,17 @@ Two families of targets:
 - Producing the laid-out SDK requires the **full repo build** (so the components exist
   to copy), not just this project — see the root build/dogfood instructions.
 
+[`TemplateFrameworkVersion`](Directory.Build.props) identifies a template installer
+group, not the target framework of every template in it.
+[`CalculateTemplateVersions`](../Tasks/sdk-tasks/CalculateTemplateVersions.cs) derives
+the group's install path and MSI version from the package marked
+`UseVersionForTemplateInstallPath` (the web project templates).
+Keep that version aligned with the group identity: both
+[`MSI staging`](redist/targets/BundledTemplates.targets) and
+[`latest MSI selection`](redist/targets/GenerateMSIs.targets) depend on it.
+Repo-built common templates and bundled desktop templates share this layout without
+changing their project contents or framework choices.
+
 Downlevel test runtimes are acquired by
 [`eng/restore-toolset.ps1`](../../eng/restore-toolset.ps1) and
 [`.sh`](../../eng/restore-toolset.sh) and overlaid by

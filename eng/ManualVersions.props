@@ -11,11 +11,8 @@
   <PropertyGroup>
     <!-- Downlevel .NET 11 packs and test runtimes must stay aligned during the net12 transition. -->
     <Net110PackageVersion>11.0.0-preview.7.26381.103</Net110PackageVersion>
-    <!-- NetTFMUpdate: Keep test dependencies and bundled templates on net11 until the SDK can target net12. -->
+    <!-- NetTFMUpdate: Keep ASP.NET test dependencies on net11 until the test apps are retargeted. -->
     <AspNetTestPackageVersion>11.0.0-rc.1.26453.118</AspNetTestPackageVersion>
-    <MicrosoftDotNetWebItemTemplates110PackageVersion>11.0.0-rc.1.26453.118</MicrosoftDotNetWebItemTemplates110PackageVersion>
-    <MicrosoftDotNetWebProjectTemplates110PackageVersion>11.0.0-rc.1.26453.118</MicrosoftDotNetWebProjectTemplates110PackageVersion>
-    <MicrosoftMcpServerProjectTemplates110PackageVersion>11.0.0-rc.1.26453.118</MicrosoftMcpServerProjectTemplates110PackageVersion>
     <MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>10.0.17763.87</MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>
     <MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>10.0.18362.87</MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>
     <MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>10.0.19041.87</MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>

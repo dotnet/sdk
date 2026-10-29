@@ -318,7 +318,9 @@ public class IncrementalLayoutTests : SdkTest
     }
 
     [TestMethod]
-    public void TemplateLayoutTargetsOwnOnlyTemplatePackages()
+    [DataRow("11.0")]
+    [DataRow("12.0")]
+    public void TemplateLayoutTargetsOwnOnlyTemplatePackages(string frameworkVersion)
     {
         string root = TestAssetsManager.CreateTestDirectory().Path;
         string bundledTemplate = CreateFile(root, "bundled-inputs", "bundled.nupkg", "bundled");
@@ -341,8 +343,8 @@ public class IncrementalLayoutTests : SdkTest
                   <UsingTask TaskName="Microsoft.Build.Tasks.WriteLinesToFile" AssemblyFile="{{Escape(msbuildTasksAssembly)}}" />
 
                   <PropertyGroup>
-                    <MajorMinorVersion>11.0</MajorMinorVersion>
-                    <TemplateFrameworkVersion>11.0</TemplateFrameworkVersion>
+                    <MajorMinorVersion>{{frameworkVersion}}</MajorMinorVersion>
+                    <TemplateFrameworkVersion>{{frameworkVersion}}</TemplateFrameworkVersion>
                     <ProductMonikerRid>win-x64</ProductMonikerRid>
                     <BundledInputRoot>{{Escape(Path.GetDirectoryName(bundledTemplate)!)}}</BundledInputRoot>
                     <IntermediateOutputPath>{{Escape(Path.Combine(root, "obj"))}}/</IntermediateOutputPath>
@@ -350,7 +352,7 @@ public class IncrementalLayoutTests : SdkTest
                   </PropertyGroup>
                   <ItemGroup>
                     <BundledTemplate Include="Test.Template">
-                      <TemplateFrameworkVersion>11.0</TemplateFrameworkVersion>
+                      <TemplateFrameworkVersion>{{frameworkVersion}}</TemplateFrameworkVersion>
                     </BundledTemplate>
                   </ItemGroup>
 
@@ -359,14 +361,14 @@ public class IncrementalLayoutTests : SdkTest
                   <Target Name="CalculateTemplatesVersions">
                     <ItemGroup>
                       <BundledTemplatesWithInstallPaths Include="$(BundledInputRoot)/*.nupkg">
-                        <BundledTemplateInstallPath>11.0</BundledTemplateInstallPath>
-                        <TemplateFrameworkVersion>11.0</TemplateFrameworkVersion>
+                        <BundledTemplateInstallPath>{{frameworkVersion}}</BundledTemplateInstallPath>
+                        <TemplateFrameworkVersion>{{frameworkVersion}}</TemplateFrameworkVersion>
                       </BundledTemplatesWithInstallPaths>
                       <BundledTemplatesWithInstallPaths Update="@(BundledTemplatesWithInstallPaths)">
                         <RestoredNupkgPath>%(FullPath)</RestoredNupkgPath>
                       </BundledTemplatesWithInstallPaths>
                       <TemplatesComponents Include="Test.Templates">
-                        <TemplatesMajorMinorVersion>11.0</TemplatesMajorMinorVersion>
+                        <TemplatesMajorMinorVersion>{{frameworkVersion}}</TemplatesMajorMinorVersion>
                       </TemplatesComponents>
                     </ItemGroup>
                   </Target>
@@ -380,8 +382,8 @@ public class IncrementalLayoutTests : SdkTest
 
         BuildProject(projectPath, "LayoutTemplates");
 
-        string sdkTemplates = Path.Combine(root, "sdk", "templates", "11.0");
-        string msiTemplates = Path.Combine(root, "obj", "templates-11.0", "templates", "11.0");
+        string sdkTemplates = Path.Combine(root, "sdk", "templates", frameworkVersion);
+        string msiTemplates = Path.Combine(root, "obj", $"templates-{frameworkVersion}", "templates", frameworkVersion);
         File.ReadAllText(Path.Combine(sdkTemplates, "bundled.nupkg")).Should().Be("bundled");
         File.ReadAllText(Path.Combine(sdkTemplates, "repo.template.nupkg")).Should().Be("repo");
         File.ReadAllText(Path.Combine(msiTemplates, "bundled.nupkg")).Should().Be("bundled");
