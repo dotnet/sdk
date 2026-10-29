@@ -324,6 +324,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var testProject = new TestProject("DBPSupportedOS")
             {
+                Name = "App",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0"
             };
 
