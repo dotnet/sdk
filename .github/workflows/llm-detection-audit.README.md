@@ -18,6 +18,14 @@ Each run inventories the
 and their
 [`matching semantics`](../../src/Cli/Microsoft.DotNet.Cli.Definitions/Telemetry/EnvironmentDetectionRule.cs).
 It checks each signal's name, value, scope, and propagation to agent-executed commands.
+For covered harnesses with public source, it independently inventories exported agent identity signals
+and compares them with the SDK rules. This can identify missing alternatives even when
+an existing rule is verified.
+Investigation follows environment construction, initialization, hooks, and command launch
+rather than stopping at an unsuccessful search for the SDK's variable name.
+Reports list these gaps separately from the SDK inventory and missing-harness candidates.
+Tracker lookup reads identity checks without exposing the previous report's narrative.
+The audit compares prior findings only after current research, to reduce anchoring on old source paths and conclusions.
 The report distinguishes stable releases from unreleased upstream changes.
 It also identifies false-positive risks, unsupported assumptions, and gaps in test coverage.
 
@@ -75,6 +83,8 @@ In gh-aw v0.89.21, `--clone-repo` and `--logical-repo` are mutually exclusive.
 Check the report issue, not only the workflow conclusion.
 A passing run must publish the expected report or emit an intentional no-op.
 Check all inventoried signal rows, upstream evidence, incomplete coverage, and the issue update behavior.
+For investigation changes, do not supply the expected missing variable or its source path to the trial.
+Inspect the execution trace and report to confirm independent discovery, assignment, and propagation evidence.
 
 ## Maintenance
 

@@ -235,6 +235,33 @@ Distinguish these cases:
 - The signal is internal, optional, deprecated, renamed, platform-specific, or mode-specific.
 
 Search exact variable names first, then inspect the environment construction and process launch.
+Do not limit upstream investigation to names already present in the SDK.
+For each covered harness with public source, build an independent inventory of agent identity signals exported to command children.
+Compare that inventory with the SDK rules, even when an existing SDK signal is Verified.
+Missing alternatives in an already covered harness are detection gaps, not duplicate harness candidates.
+Investigate one public harness to an evidence-based stopping point before moving to the next.
+Do not substitute one source window per harness for tracing its environment dependencies.
+
+Trace the command environment in both directions:
+
+1. Locate command launch paths, including shell, PTY, task, sandbox, and remote execution where applicable.
+2. Read the enclosing environment-construction code and its imports, not only matches for the SDK variable.
+3. Follow environment builders, merge helpers, provider interfaces, and plugin hooks to their implementations and registrations.
+4. If children inherit the process environment, inspect initialization, bootstrap, session setup, and tool invocation overrides.
+5. Identify assignments, filtering, deletion, and overrides between the agent context and the child launch.
+6. Record newly discovered identity variables, values, activation conditions, and the complete propagation chain.
+
+An inherited environment or a hook-provided map is an unresolved dependency, not a stopping point.
+Follow that dependency to the code that populates it.
+Search product-prefixed environment keys and their setters independently of the SDK inventory.
+Read imports and enclosing functions before choosing follow-up files.
+For each public harness, record the assignment-to-launch trace or the specific blocked edge and retrieval/budget reason.
+When code search is unavailable, use the repository tree to locate environment, execution, initialization, and extension code.
+Derive search terms from the upstream project and discovered symbols, not only the SDK's expected variable names.
+Treat a no-match search as a reason to expand the trace, not to stop.
+Before marking an open-source signal Unverifiable, explain which trace remains unresolved and why investigation stopped.
+Two files without an exact-name match do not establish that the current child-environment contract is unknown.
+Do not claim an old variable was removed merely because a different current signal was found.
 Do not accept an unrelated mention, telemetry field, sample configuration, or another detector as proof.
 For value rules, verify the exported value and SDK case comparison.
 For presence rules, assess non-empty values such as `0` and `false`.
@@ -325,8 +352,11 @@ Do not replace an existing report with a tool failure or an empty success report
 Use this structure:
 
 1. **Scope**: UTC date, audited SDK commit, workflow run link and attempt, source-only method, and overall coverage.
-2. **Summary**: harness and signal counts, status totals, material changes since the previous report, and highest-priority findings.
-3. **Existing signals**: one row per label-variable-value alternative, with SDK semantics, upstream release/SHA, status, scope, evidence references, and confidence.
+2. **Summary**: harness and signal counts, status totals, missing alternatives in covered harnesses, material changes, and highest-priority findings.
+3. **Existing signals**: one row per SDK label-variable-value alternative, with SDK semantics, upstream release/SHA, status, scope, evidence references, and confidence.
+   Include a separate **Coverage gaps in existing harnesses** table for upstream signals that the SDK does not recognize.
+   Give each gap its value, assignment and child-launch evidence, activation conditions, collision risks, and recommendation.
+   Do not add these gaps to the SDK inventory row count or the five missing-harness candidates.
 4. **Missing harnesses**: candidates, dated adoption/activity evidence, command relevance, proposed signal evidence, and recommendation or blocker.
 5. **Follow-up work**: evidence-backed changes and focused test cases, with priority and uncertainty.
 6. **Limitations**: unavailable sources, unreviewed modes/platforms/signals, retrieval limits, and discovery queries.
@@ -336,6 +366,7 @@ Give each row an evidence reference or an explicit reason evidence is unavailabl
 Use source reference IDs to avoid repeating URLs.
 Keep the issue body below 60,000 characters and use at most 40 unique evidence URLs.
 Reuse references when multiple signals share a source.
+Prioritize assignment and propagation evidence over repository-root and release-metadata links.
 Compress prose rather than omitting inventory rows.
 Reconcile row counts and status totals with the inventory before publishing.
 Include this visible line in every report: `Workflow marker: gh-aw-workflow-id: llm-detection-audit`.
@@ -344,6 +375,8 @@ The report must say **Incomplete** when any signal is unreviewed or unverifiable
 Separate completed research with a known mismatch from incomplete research.
 Do not report "all valid" merely because no confirmed mismatch was found.
 Even an unchanged or entirely verified result must publish the full current report.
+Only after completing current research, read the previous report to summarize material changes.
+Do not use its findings, source paths, SHAs, or line windows as the investigation plan.
 
 ## 6. Maintain one tracking issue
 
@@ -352,7 +385,9 @@ Before publishing, find issues with the exact body marker
 Search open and closed issues and inspect candidate bodies, authors, labels, and titles.
 Start with this read-only listing, without `--label` or `--search`, which can fail through the CLI proxy:
 `gh issue list --repo ${{ github.repository }} --state all --limit 1000 --json number,title,state,author,labels --jq '{count:length,candidates:[.[]|select(.title=="[CLI agent detection] Evidence report")]}'`.
-Read each exact-title candidate with `gh issue view` and inspect its complete body.
+Read each exact-title candidate with `gh issue view`.
+Project its body to workflow-marker and current-run/attempt checks with `--jq`.
+Return only those checks and identity metadata during tracker lookup, not the previous report narrative or citations.
 If the listing reaches its limit, paginate the issues API before concluding that no tracker exists.
 If the listing fails, retry once through `gh api --method GET 'repos/${{ github.repository }}/issues?state=all&per_page=100'`.
 Follow pagination before treating that response as a complete issue listing.
@@ -363,7 +398,8 @@ GitHub API responses use `github-actions[bot]`.
 The `gh` CLI can expose the same bot as `app/github-actions` with `is_bot: true`.
 Accept either representation, but never a similarly named human account.
 Do not accept an issue based on its title or search snippet alone.
-Treat previous reports as historical context, not proof of current upstream behavior.
+Defer the previous report narrative until current upstream investigation is complete.
+Resolve current releases and source paths independently through repository metadata and trees.
 
 If exactly one matching issue is open, update only its body.
 Call `update_issue` once with its issue number, `operation: "replace"`, and the complete report.
