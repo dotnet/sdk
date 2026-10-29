@@ -8,6 +8,7 @@ export const detectorPath = "src/Cli/dotnet/Telemetry/LLMEnvironmentDetectorForT
 export const testsPath = "test/dotnet.Tests/TelemetryTests/TelemetryCommonPropertiesTests.cs";
 export const marker = "Workflow marker: gh-aw-workflow-id: llm-detection-fix";
 const auditMarker = "Workflow marker: gh-aw-workflow-id: llm-detection-audit";
+const sourcePattern = /https:\/\/github\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/blob\/([a-f0-9]{40})\/[a-zA-Z0-9_./-]+#L[1-9][0-9]*(?:-L[1-9][0-9]*)?/g;
 
 function requireCondition(condition, message) {
     if (!condition) {
@@ -15,29 +16,39 @@ function requireCondition(condition, message) {
     }
 }
 
-export function validateInputs(runId, harness) {
+export function validateInputs(runId, harness, variable = "") {
     requireCondition(/^[1-9][0-9]{0,15}$/.test(runId) && Number.isSafeInteger(Number(runId)),
         "Select a numeric audit run ID.");
     requireCondition(/^[a-z][a-z0-9-]{0,39}$/.test(harness), "Select one existing harness label, not free-form instructions.");
+    if (variable !== "") {
+        validateAlias(harness, variable);
+    }
 }
 
-export async function checkAudit(github, context, runId, harness) {
-    validateInputs(runId, harness);
-    const repo = context.repo;
-    const { data: run } = await github.rest.actions.getWorkflowRun({ ...repo, run_id: Number(runId) });
+export function validateAuditRun(run, repo) {
     requireCondition(run.path === ".github/workflows/llm-detection-audit.lock.yml" &&
-        run.repository.full_name === `${repo.owner}/${repo.repo}` &&
-        run.head_repository.full_name === `${repo.owner}/${repo.repo}` &&
+        run.repository?.full_name === `${repo.owner}/${repo.repo}` &&
+        run.head_repository?.full_name === `${repo.owner}/${repo.repo}` &&
         run.head_branch === "main" && ["schedule", "workflow_dispatch"].includes(run.event) &&
         run.status === "completed" && run.conclusion === "success",
     "The selected run must be a successful main-branch detection audit in this repository.");
+}
 
-    const issues = await github.paginate(github.rest.issues.listForRepo, { ...repo, state: "all", per_page: 100 });
-    const trackers = issues.filter(issue => !issue.pull_request &&
+export function auditTrackers(issues) {
+    return issues.filter(issue => !issue.pull_request &&
         issue.title === "[CLI agent detection] Evidence report" &&
         issue.user?.login === "github-actions[bot]" &&
         issue.labels.some(label => (typeof label === "string" ? label : label.name) === "agentic-workflows") &&
         issue.body?.split(/\r?\n/).includes(auditMarker));
+}
+
+export async function checkAudit(github, context, runId, harness, variable = "") {
+    validateInputs(runId, harness, variable);
+    const repo = context.repo;
+    const { data: run } = await github.rest.actions.getWorkflowRun({ ...repo, run_id: Number(runId) });
+    validateAuditRun(run, repo);
+    const issues = await github.paginate(github.rest.issues.listForRepo, { ...repo, state: "all", per_page: 100 });
+    const trackers = auditTrackers(issues);
     requireCondition(trackers.length === 1 && trackers[0].state === "open",
         "Exactly one open audit tracker is required. Resolve closed or duplicate trackers first.");
     const reportRuns = trackers[0].body.match(/https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/actions\/runs\/[0-9]+/g) ?? [];
@@ -66,15 +77,23 @@ function presenceRules(source) {
     return [...source.matchAll(/new EnvironmentDetectionRuleWithResult<string>\("([a-z0-9-]+)", new AnyPresentEnvironmentRule\(\s*getEnvironmentVariable, ((?:"[A-Z][A-Z0-9_]*"(?:,\s*)?)+)\)\)/g)];
 }
 
-export function prepareContents(detector, tests, harness, variable) {
+function validateAlias(harness, variable) {
     requireCondition(/^[a-z][a-z0-9-]{0,39}$/.test(harness) &&
         /^[A-Z][A-Z0-9_]{1,63}$/.test(variable), "Invalid harness or environment variable identifier.");
     const prefix = harness.replaceAll("-", "_").toUpperCase();
     requireCondition(variable === prefix || variable.startsWith(`${prefix}_`),
         "Only harness-prefixed identity variables are eligible.");
-    requireCondition(!detector.includes(`"${variable}"`), "This variable already appears in the detector.");
+}
+
+export function isEligibleAlias(detector, harness, variable) {
+    validateAlias(harness, variable);
+    return !detector.includes(`"${variable}"`) && presenceRules(detector).filter(rule => rule[1] === harness).length === 1;
+}
+
+export function prepareContents(detector, tests, harness, variable) {
+    requireCondition(isEligibleAlias(detector, harness, variable),
+        "Select a missing variable for exactly one existing presence-based harness rule.");
     const rules = presenceRules(detector).filter(rule => rule[1] === harness);
-    requireCondition(rules.length === 1, "The harness must have exactly one existing presence-based rule.");
     const rule = rules[0];
     const legacy = [...rule[2].matchAll(/"([^"]+)"/g)][0][1];
     const replacement = rule[0].replace(`${rule[2]}))`, `${rule[2]}, "${variable}"))`);
@@ -106,8 +125,16 @@ export function validateContents(beforeDetector, beforeTests, afterDetector, aft
     return expected.variable;
 }
 
-export function validateOutput(output, runId, harness, repo) {
-    validateInputs(runId, harness);
+export function validateEvidence(references) {
+    const matches = references.map(reference => typeof reference === "string" &&
+        reference.match(new RegExp(`^${sourcePattern.source}$`)));
+    requireCondition(new Set(references).size >= 2 && matches.every(match => match &&
+        match[1] === matches[0][1] && match[2] === matches[0][2]),
+    "Provide distinct assignment and propagation permalinks at the same upstream revision.");
+}
+
+export function validateOutput(output, runId, harness, repo, variable = "") {
+    validateInputs(runId, harness, variable);
     requireCondition(Array.isArray(output.items) && output.items.length === 1, "Exactly one terminal output is required.");
     const item = output.items[0];
     if (item.type === "noop") {
@@ -123,12 +150,11 @@ export function validateOutput(output, runId, harness, repo) {
     requireCondition(lines.includes(marker) &&
         lines.includes(`Audit run: https://github.com/${repo}/actions/runs/${runId}`),
     "The PR must identify this fixer and the approved audit run.");
+    requireCondition(!variable || lines.includes(`Automatic candidate: ${harness}/${variable}`),
+        "The PR must identify the automatically selected candidate.");
     requireCondition(!/\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+(?:#\d+|[\w.-]+\/[\w.-]+#\d+|https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/issues\/\d+)/i.test(item.body),
         "Do not close the persistent audit tracker through PR closing keywords.");
-    const references = [...item.body.matchAll(/https:\/\/github\.com\/([a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+)\/blob\/([a-f0-9]{40})\/[a-zA-Z0-9_./-]+#L[1-9][0-9]*(?:-L[1-9][0-9]*)?/g)];
-    requireCondition(new Set(references.map(match => match[0])).size >= 2 &&
-        references.every(match => match[1] === references[0][1] && match[2] === references[0][2]),
-    "Provide distinct assignment and propagation permalinks at the same upstream revision.");
+    validateEvidence([...item.body.matchAll(sourcePattern)].map(match => match[0]));
     return true;
 }
 
@@ -136,10 +162,10 @@ function git(root, ...args) {
     return execFileSync("git", ["--no-pager", "-c", "core.hooksPath=", ...args], { cwd: root, encoding: "utf8", maxBuffer: 1024 * 1024 });
 }
 
-export function validateArtifact(root, directory, runId, harness, repo, apply = false) {
+export function validateArtifact(root, directory, runId, harness, repo, apply = false, expectedVariable = "") {
     const outputBytes = readFileSync(resolve(directory, "agent_output.json"));
     const output = JSON.parse(outputBytes.toString("utf8"));
-    const hasProposal = validateOutput(output, runId, harness, repo);
+    const hasProposal = validateOutput(output, runId, harness, repo, expectedVariable);
     const files = readdirSync(directory);
     const patches = files.filter(name => /^aw-.*\.patch$/.test(name));
     requireCondition(!files.some(name => name.endsWith(".bundle")), "Bundle transport is forbidden. Only the validated AM patch can be published.");
@@ -170,6 +196,8 @@ export function validateArtifact(root, directory, runId, harness, repo, apply = 
     "Only the detector and telemetry test matrix may change, without mode changes, renames, additions, or deletions.");
     const variable = validateContents(beforeDetector, beforeTests,
         git(root, "show", `:${detectorPath}`), git(root, "show", `:${testsPath}`), harness);
+    requireCondition(!expectedVariable || variable === expectedVariable,
+        "The patch must use the automatically selected alias. Do not substitute another signal.");
     // Publication checks the same immutable artifact but never executes its code.
     if (!apply) {
         git(root, "apply", "--reverse", "--index", patchPath);
@@ -189,7 +217,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1]
     } else {
         requireCondition(command === "validate" || command === "check", "Use prepare, validate, or check.");
         const result = validateArtifact(root, args[0], process.env.AUDIT_RUN_ID, process.env.HARNESS,
-            process.env.GITHUB_REPOSITORY, command === "validate");
+            process.env.GITHUB_REPOSITORY, command === "validate", process.env.FIX_VARIABLE || "");
         if (command === "check") {
             requireCondition(result.hasProposal && /^[a-f0-9]{64}$/.test(process.env.VALIDATED_PAYLOAD_HASH) &&
                 result.payloadHash === process.env.VALIDATED_PAYLOAD_HASH,

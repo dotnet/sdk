@@ -91,6 +91,9 @@ The [CLI agent detection audit](../workflows/llm-detection-audit.README.md) chec
 current detection signals against public upstream evidence and researches missing
 harnesses. Its [workflow](../workflows/llm-detection-audit.md) maintains one
 evidence-report issue without changing CLI behavior.
-Its separate [manual fixer](../workflows/llm-detection-fix.md) can propose one additive
-alias through a draft PR. [Trusted guards](../llm-detection/fix.mjs) enforce patch
-scope before isolated build/test validation and separate PR publication.
+Its separate [fixer](../workflows/llm-detection-fix.md) can propose one additive
+alias through a draft PR. A [trusted dispatcher](../workflows/llm-detection-fix-dispatch.yml)
+can start it automatically from validated audit candidates, with closed-tracker,
+existing-PR, and previous-attempt guards in the [dispatch helper](../llm-detection/dispatch.mjs).
+[Trusted patch guards](../llm-detection/fix.mjs) enforce scope before isolated
+build/test validation and separate PR publication. Manual dispatch remains available.

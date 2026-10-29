@@ -51,7 +51,9 @@ The agent has read-only GitHub permissions. Separate safe-output jobs create or
 update the report. Update permission is restricted by title prefix and label.
 The workflow does not install harnesses, run their code, expose environment values,
 change CLI behavior, or create pull requests.
-The separate [manual fixer](llm-detection-fix.md) can propose a bounded draft PR after maintainer dispatch.
+The separate [fixer](llm-detection-fix.md) can propose a bounded draft PR.
+Its [trusted dispatcher](llm-detection-fix-dispatch.yml) can start it after a successful audit with eligible findings.
+Maintainers can also dispatch the fixer manually.
 
 Upstream lookup failures remain visible in the report. Checkout, inventory, and
 issue lookup failures stop publication instead of replacing the report with a
@@ -87,15 +89,49 @@ Check all inventoried signal rows, upstream evidence, incomplete coverage, and t
 For investigation changes, do not supply the expected missing variable or its source path to the trial.
 Inspect the execution trace and report to confirm independent discovery, assignment, and propagation evidence.
 
-## Proposing a fix
+## Automatic fix proposals
 
-The [fixer workflow](llm-detection-fix.md) does not run automatically after an audit.
-After both workflows reach `main`, a maintainer can dispatch it with a successful audit run ID and one existing harness label:
+After a successful main-branch audit, the [dispatcher](llm-detection-fix-dispatch.yml) reads the current tracking issue.
+It accepts only the report's bounded, versioned JSON candidate block.
+The [candidate guard](../llm-detection/dispatch.mjs) checks the run ID, attempt, field allowlist, and pinned assignment and propagation links.
+Candidates must identify a stable release and one harness-prefixed alias for an existing presence-based rule.
+An incomplete overall report can contain an independently evidenced eligible alias.
+Other findings remain report-only.
+
+The dispatcher starts at most one fixer, in report priority order.
+It checks the audit's repository, workflow path, main branch, successful completion, and tracker provenance through the GitHub API.
+It checks eligibility against the current SDK rather than the audited source alone.
+It never downloads or executes audit artifacts.
+It checks the tracker and open PRs again immediately before dispatch.
+The fixer independently investigates the selected alias and cannot substitute another signal.
+
+Only the separate trusted dispatcher has `actions: write` permission to dispatch the fixed workflow on `main`.
+The audit agent's permissions do not change.
+The dispatcher cannot create PRs, edit issues, push code, approve changes, or merge.
+The existing isolated validation and draft-only publisher remain the only path to a proposal.
+Merging the audit, dispatcher, fixer, trusted helpers, and generated lock files enables this automatic path.
+
+Automatic dispatch stops when the tracker is closed or a detection-fix PR is open.
+It also skips an alias referenced by a closed fix PR for the same harness.
+Fixer run titles record the selected harness and alias.
+The dispatcher skips a previously attempted pair, including failed, cancelled, or no-op attempts.
+Changes to the upstream release do not reset this automatic retry limit.
+This attempt memory depends on retained workflow run records.
+Maintainers can use manual dispatch for an intentional retry.
+Remaining candidates wait for a later successful audit and maintainer review of the outstanding PR.
+
+## Proposing a fix manually
+
+After the workflows reach `main`, a maintainer can dispatch the [fixer](llm-detection-fix.md) with a successful audit run ID and one existing harness label:
 
 ```shell
 gh workflow run llm-detection-fix.lock.yml --repo dotnet/sdk --ref main \
   -f audit_run_id=<successful-run-id> -f harness=opencode
 ```
+
+The optional `variable` input selects one audited alias and records that pair in the run title.
+Without that input, the fixer retains its manual investigation of one additive alias for the selected harness.
+Automatic dispatch always supplies the variable.
 
 The selected run must belong to this repository's main-branch audit workflow.
 Its report must still appear in the unique, open, bot-authored tracking issue.
@@ -144,7 +180,7 @@ Rule removal, exact-value changes, new harness labels, and ambiguous identity si
 Run the deterministic guard tests locally with:
 
 ```shell
-node --test .github/llm-detection/fix.test.mjs
+node --test .github/llm-detection/fix.test.mjs .github/llm-detection/dispatch.test.mjs
 gh aw compile llm-detection-fix --no-emit --strict --validate
 ```
 
@@ -155,6 +191,9 @@ Local guard and compilation checks do not prove a hosted build or draft-PR publi
 For a known-gap trial, require a proposal instead of accepting a no-op.
 Confirm the SDK build and telemetry matrix ran successfully.
 Inspect the resulting private draft PR and its two-file diff.
+Also check candidate schema failures, closed trackers, stale reports, existing PRs, and retry suppression.
+The local dispatcher tests use a mocked GitHub API and execute the actual audit publication guard.
+These tests do not establish that the hosted automatic event chain has run.
 
 ## Maintenance
 

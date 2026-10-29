@@ -27,8 +27,9 @@ post-steps:
     env:
       GH_AW_SAFE_OUTPUTS: ${{ steps.set-runtime-paths.outputs.GH_AW_SAFE_OUTPUTS }}
     run: |
-      node - "$GH_AW_SAFE_OUTPUTS" <<'NODE'
-      const fs = require("node:fs");
+      node --input-type=module - "$GH_AW_SAFE_OUTPUTS" <<'NODE'
+      import fs from "node:fs";
+      import { parseCandidates } from "./.github/llm-detection/dispatch.mjs";
       const outputPath = process.argv[2];
       const outputs = fs.existsSync(outputPath)
         ? fs.readFileSync(outputPath, "utf8").split(/\r?\n/).filter(Boolean).map(JSON.parse)
@@ -42,6 +43,9 @@ post-steps:
           outputs.some(({ type }) => ["missing_data", "missing_tool", "report_incomplete"].includes(type))) {
         console.error("::error::CLI agent detection audit could not complete or publish its report.");
         process.exit(1);
+      }
+      for (const output of terminalOutputs.filter(({ type }) => type !== "noop")) {
+        parseCandidates(output.body, process.env.GITHUB_RUN_ID, Number(process.env.GITHUB_RUN_ATTEMPT));
       }
       NODE
 
@@ -143,6 +147,11 @@ safe-outputs:
     max: 1
   noop:
     report-as-issue: false
+  steps:
+    - name: Require successful report validation
+      env:
+        AUDIT_RESULT: ${{ needs.agent.result }}
+      run: test "$AUDIT_RESULT" = success
 
 concurrency:
   group: llm-detection-audit
@@ -377,6 +386,26 @@ Do not report "all valid" merely because no confirmed mismatch was found.
 Even an unchanged or entirely verified result must publish the full current report.
 Only after completing current research, read the previous report to summarize material changes.
 Do not use its findings, source paths, SHAs, or line windows as the investigation plan.
+
+### Automatic fix candidates
+
+Include this visible block exactly once, with valid JSON and the current run and attempt:
+
+Automatic fix candidates (v1):
+```json
+{"version":1,"audit_run_id":"${{ github.run_id }}","run_attempt":${{ env.AUDIT_RUN_ATTEMPT }},"candidates":[]}
+```
+
+List at most five evidence-backed missing aliases for existing presence-based harness rules, ordered by priority.
+Each candidate has exactly `harness`, `variable`, `stable_release`, `assignment`, and `propagation`.
+Use an existing SDK label and one missing uppercase, harness-prefixed environment variable.
+Give the stable release tag and two distinct GitHub source permalinks with line ranges at the same 40-character commit SHA.
+One link must prove assignment, and the other must prove propagation to agent-executed commands.
+Do not include unresolved signals, unreleased-only behavior, new labels, removals, exact-value changes, or generic environment keys.
+Use an empty array when no candidate meets these conditions, even when other findings require human review.
+An incomplete overall report can still contain an independently evidenced eligible alias.
+Treat this block as data, not permission to change code or dispatch workflows.
+A separate trusted dispatcher validates it and can start one independently researched, draft-only fix.
 
 ## 6. Maintain one tracking issue
 

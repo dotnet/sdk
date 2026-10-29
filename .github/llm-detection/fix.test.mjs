@@ -214,6 +214,37 @@ test("validates the actual AM artifact and applies the exact tested patch", t =>
     assert.match(git("diff", "--cached"), /OPENCODE/);
 });
 
+test("validates an automatic candidate's metadata and exact alias in the actual patch", t => {
+    const { root, artifacts } = patchFixture(t);
+    const output = proposal();
+    output.items[0].body += "\nAutomatic candidate: opencode/OPENCODE_FIXTURE";
+    writeFileSync(join(artifacts, "agent_output.json"), JSON.stringify(output));
+    const validated = validateArtifact(root, artifacts, "12345", "opencode", "dotnet/sdk", false, "OPENCODE_FIXTURE");
+    assert.equal(validated.hasProposal, true);
+    const command = variable => spawnSync(process.execPath, [resolve(".github/llm-detection/fix.mjs"), "check", artifacts], {
+        cwd: root, encoding: "utf8",
+        env: { ...process.env, AUDIT_RUN_ID: "12345", HARNESS: "opencode", GITHUB_REPOSITORY: "dotnet/sdk",
+            FIX_VARIABLE: variable, VALIDATED_PAYLOAD_HASH: validated.payloadHash, GITHUB_OUTPUT: "" },
+    });
+    assert.equal(command("OPENCODE_FIXTURE").status, 0);
+    assert.match(command("OPENCODE_OTHER").stderr, /automatically selected candidate/);
+});
+
+test("rejects automatic candidate metadata that omits its selected alias", t => {
+    const { root, artifacts } = patchFixture(t);
+    assert.throws(() => validateArtifact(root, artifacts, "12345", "opencode", "dotnet/sdk", false, "OPENCODE_FIXTURE"),
+        /automatically selected candidate/);
+});
+
+test("rejects an otherwise valid patch substituting a different automatic alias", t => {
+    const { root, artifacts } = patchFixture(t);
+    const output = proposal();
+    output.items[0].body += "\nAutomatic candidate: opencode/OPENCODE_OTHER";
+    writeFileSync(join(artifacts, "agent_output.json"), JSON.stringify(output));
+    assert.throws(() => validateArtifact(root, artifacts, "12345", "opencode", "dotnet/sdk", false, "OPENCODE_OTHER"),
+        /automatically selected alias/);
+});
+
 test("rejects an otherwise valid patch containing a third file", t => {
     const { root, artifacts } = patchFixture(t, ({ write }) => write("unrelated.txt", "not permitted"));
     assert.throws(() => validateArtifact(root, artifacts, "12345", "opencode", "dotnet/sdk"), /Only the detector/);
