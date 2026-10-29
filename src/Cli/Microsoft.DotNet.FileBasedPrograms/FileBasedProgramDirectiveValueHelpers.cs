@@ -18,6 +18,12 @@ namespace Microsoft.DotNet.FileBasedPrograms;
 internal static class FileBasedProgramDirectiveValueHelpers
 {
     /// <summary>
+    /// Returns whether <paramref name="directiveKind"/> supports trailing item metadata.
+    /// </summary>
+    public static bool AllowsMetadata(string directiveKind)
+        => directiveKind is "package" or "project" or "ref" or "include";
+
+    /// <summary>
     /// Returns whether <paramref name="name"/> contains a character that is not allowed in a directive
     /// or metadata name (whitespace or one of the separator characters <c>@</c>, <c>=</c>, <c>/</c>).
     /// </summary>

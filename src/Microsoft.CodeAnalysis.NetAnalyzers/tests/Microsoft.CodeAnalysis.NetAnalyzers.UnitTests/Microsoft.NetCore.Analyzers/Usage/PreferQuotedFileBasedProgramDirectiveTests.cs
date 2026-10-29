@@ -245,6 +245,28 @@ public class PreferQuotedFileBasedProgramDirectiveTests
     }
 
     [TestMethod]
+    [DataRow("unknown")]
+    [DataRow("PACKAGE")]
+    [DataRow("INCLUDE")]
+    public async Task UnknownKind_NoDiagnosticAsync(string kind)
+    {
+        await new VerifyCS.Test
+        {
+            TestState =
+            {
+                Sources =
+                {
+                    ("Test0.cs", $$"""
+                        #:{{kind}} path with spaces
+                        class Program { static void Main() { } }
+                        """),
+                },
+            },
+            SolutionTransforms = { EnableFileBasedProgramFeature },
+        }.RunAsync(CancellationToken.None);
+    }
+
+    [TestMethod]
     public async Task UnfixableLegacyForm_WarningWithoutFixAsync()
     {
         await new VerifyCS.Test
