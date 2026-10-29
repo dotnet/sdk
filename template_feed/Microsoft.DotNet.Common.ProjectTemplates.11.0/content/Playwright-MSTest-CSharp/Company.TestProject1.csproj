@@ -1,5 +1,5 @@
 ﻿<!--#if (UseMSTestSdk)-->
-<Project Sdk="MSTest.Sdk/4.2.3">
+<Project Sdk="MSTest.Sdk/4.5.2">
 
   <PropertyGroup>
     <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">net11.0</TargetFramework>
@@ -9,6 +9,7 @@
     <ImplicitUsings Condition="'$(csharpFeature_ImplicitUsings)' == 'true'">enable</ImplicitUsings>
     <Nullable Condition="'$(csharpFeature_Nullable)' == 'true'">enable</Nullable>
     <EnablePlaywright>true</EnablePlaywright>
+    <MicrosoftPlaywrightVersion>1.64.1</MicrosoftPlaywrightVersion>
 <!--#if (TestRunner == "VSTest")-->
     <UseVSTest>true</UseVSTest>
   </PropertyGroup>
@@ -23,6 +24,12 @@
   </PropertyGroup>
 <!--#endif-->
 
+<!--#if (csharpFeature_ImplicitUsings)-->
+  <ItemGroup>
+    <Using Include="System.Text.RegularExpressions" />
+  </ItemGroup>
+
+<!--#endif-->
 </Project>
 <!--#else-->
 <Project Sdk="Microsoft.NET.Sdk">
@@ -44,8 +51,8 @@
 <!--#if (CoverageTool == "coverlet")-->
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
 <!--#endif-->
-    <PackageReference Include="Microsoft.Playwright.MSTest.v4" Version="1.55.0" />
-    <PackageReference Include="MSTest" Version="4.2.3" />
+    <PackageReference Include="Microsoft.Playwright.MSTest.v4" Version="1.64.1" />
+    <PackageReference Include="MSTest" Version="4.5.2" />
   </ItemGroup>
 
 <!--#if (csharpFeature_ImplicitUsings)-->
