@@ -40,27 +40,32 @@ public sealed class NuGetSourceConfiguration
             settings = NuGet.Configuration.Settings.LoadDefaultSettings(rootConfigDirectory ?? basePath);
         }
 
+        List<PackageSource> configuredSources =
+            [.. new PackageSourceProvider(settings).LoadPackageSources()];
         List<PackageSource> sources = sourceFeedOverrides?.Any() == true
-            ? CreatePackageSources(sourceFeedOverrides, basePath, invalidSource)
-            : [.. new PackageSourceProvider(settings).LoadPackageSources().Where(source => source.IsEnabled)];
+            ? CreatePackageSources(sourceFeedOverrides, configuredSources, basePath, invalidSource)
+            : [.. configuredSources.Where(source => source.IsEnabled)];
 
-        AddPackageSources(sources, additionalSourceFeeds, basePath, invalidSource);
+        AddPackageSources(sources, additionalSourceFeeds, configuredSources, basePath, invalidSource);
+        ValidateSources(sources);
         return new NuGetSourceConfiguration(settings, sources);
     }
 
     private static List<PackageSource> CreatePackageSources(
         IEnumerable<string> sourceFeeds,
+        IReadOnlyList<PackageSource> configuredSources,
         string basePath,
         Action<string>? invalidSource)
     {
         List<PackageSource> sources = [];
-        AddPackageSources(sources, sourceFeeds, basePath, invalidSource);
+        AddPackageSources(sources, sourceFeeds, configuredSources, basePath, invalidSource);
         return sources;
     }
 
     private static void AddPackageSources(
         List<PackageSource> sources,
         IEnumerable<string>? sourceFeeds,
+        IReadOnlyList<PackageSource> configuredSources,
         string basePath,
         Action<string>? invalidSource)
     {
@@ -68,10 +73,6 @@ public sealed class NuGetSourceConfiguration
         {
             return;
         }
-
-        HashSet<string> existingSources = new(
-            sources.Select(source => NormalizeSource(source.Source, basePath)),
-            StringComparer.OrdinalIgnoreCase);
 
         foreach (string sourceFeed in sourceFeeds)
         {
@@ -81,16 +82,58 @@ public sealed class NuGetSourceConfiguration
             }
 
             string source = NormalizeSource(sourceFeed, basePath);
-            PackageSource packageSource = new(source);
+            PackageSource packageSource = ResolveSource(configuredSources, sourceFeed, source);
             if (packageSource.TrySourceAsUri is null)
             {
                 invalidSource?.Invoke(sourceFeed);
                 continue;
             }
 
-            if (existingSources.Add(source))
+            if (!sources.Any(existingSource => SourcesEqual(existingSource, packageSource)))
             {
                 sources.Add(packageSource);
+            }
+        }
+    }
+
+    private static PackageSource ResolveSource(
+        IReadOnlyList<PackageSource> configuredSources,
+        string sourceFeed,
+        string normalizedSource)
+        => configuredSources.FirstOrDefault(source =>
+            source.Name.Equals(sourceFeed, StringComparison.OrdinalIgnoreCase) ||
+            SourcesEqual(source, new PackageSource(normalizedSource)))
+        ?? new PackageSource(normalizedSource);
+
+    private static bool SourcesEqual(PackageSource first, PackageSource second)
+    {
+        Uri? firstUri = first.TrySourceAsUri;
+        Uri? secondUri = second.TrySourceAsUri;
+        if (firstUri is not null && secondUri is not null)
+        {
+            if (firstUri.IsFile && secondUri.IsFile)
+            {
+                return GetPathComparer().Equals(firstUri.LocalPath, secondUri.LocalPath);
+            }
+
+            return firstUri.Equals(secondUri);
+        }
+
+        return GetPathComparer().Equals(first.Source, second.Source);
+    }
+
+    private static StringComparer GetPathComparer()
+        => OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+
+    private static void ValidateSources(IEnumerable<PackageSource> sources)
+    {
+        foreach (PackageSource source in sources)
+        {
+            if (source.IsHttp && !source.IsHttps && !source.AllowInsecureConnections)
+            {
+                throw new GracefulException(string.Format(
+                    LocalizableStrings.Error_NU1302_HttpSourceUsed,
+                    source.Source));
             }
         }
     }

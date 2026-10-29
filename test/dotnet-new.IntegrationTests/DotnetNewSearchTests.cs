@@ -63,6 +63,30 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
+        public void RejectsInsecureHttpSource()
+        {
+            string workingDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            string configPath = Path.Combine(workingDirectory, "NuGet.config");
+            File.WriteAllText(
+                configPath,
+                """
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <add key="insecure" value="http://example.test/v3/index.json" allowInsecureConnections="false" />
+                  </packageSources>
+                </configuration>
+                """);
+
+            new DotnetNewCommand(_log, "search", "console", "--configfile", configPath)
+                .WithCustomHive(_sharedHome.HomeDirectory)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining("allowInsecureConnections");
+        }
+
+        [TestMethod]
         [DataRow("--search fofofo", "'fofofo'")]
         [DataRow("search fofofo", "'fofofo'")]
         [DataRow("search fofofo --type item", "'fofofo', --type='item'")]

@@ -39,6 +39,32 @@ public class ToolSearchCommandTests : SdkTest
     }
 
     [TestMethod]
+    public async Task ExecuteRejectsInsecureHttpSourceBeforeQuerying()
+    {
+        string configPath = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, "NuGet.config");
+        File.WriteAllText(
+            configPath,
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <configuration>
+              <packageSources>
+                <add key="insecure" value="http://example.test/v3/index.json" allowInsecureConnections="false" />
+              </packageSources>
+            </configuration>
+            """);
+        var fake = new FakeNugetToolSearchApiRequest();
+
+        Func<Task> execute = async () => await RunToolSearchAsync(
+            ["dotnet", "tool", "search", "mytool", "--configfile", configPath],
+            fake,
+            cancellationToken: TestContext.CancellationToken);
+
+        await execute.Should().ThrowAsync<GracefulException>()
+            .WithMessage("*allowInsecureConnections*");
+        fake.RequestedSourceUrls.Should().BeEmpty();
+    }
+
+    [TestMethod]
     public async Task ExecutePassesTheSearchParametersAndCancellationTokenToEachSource()
     {
         const string source1 = "https://source1.example.test/v3/index.json";

@@ -126,6 +126,34 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [TestMethod]
+        public async Task GivenAdvertisingManifestUpdateItChecksInstalledManifestFeatureBandAsFallback()
+        {
+            const string installedFeatureBand = "6.0.200";
+            const string currentFeatureBand = "6.0.300";
+            string testDir = TestAssetsManager.CreateTestDirectory().Path;
+            (var manifestUpdater, var nugetDownloader, var sentinelPath, var workloadResolver) = GetTestUpdater(
+                testDir,
+                installedFeatureBand,
+                packageVersions: [new NuGetVersion("2.0.0")],
+                updaterFeatureBand: new SdkFeatureBand(currentFeatureBand));
+            foreach (ManifestId manifest in _installedManifests)
+            {
+                nugetDownloader.PackageIdsToNotFind.Add($"{manifest}.manifest-{currentFeatureBand}");
+            }
+            new WorkloadConfigCommand(
+                Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
+                workloadResolverFactory: new MockWorkloadResolverFactory(testDir, currentFeatureBand, workloadResolver))
+                .Execute().Should().Be(0);
+
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+
+            nugetDownloader.GetLatestPackageVersionCallParams.Should()
+                .Contain(call => call.id.ToString().EndsWith($".manifest-{installedFeatureBand}", StringComparison.Ordinal));
+            nugetDownloader.DownloadCallParams.Should().NotBeEmpty();
+            File.Exists(sentinelPath).Should().BeTrue();
+        }
+
+        [TestMethod]
         public async Task GivenAdvertisingManifestUpdateItHonorsDisablingEnvVar()
         {
             Func<string, string> getEnvironmentVariable = (envVar) => envVar.Equals(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE) ? "true" : string.Empty;
@@ -800,7 +828,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             [CallerMemberName] string testName = "",
             Func<string, string>? getEnvironmentVariable = null,
             PackageSourceLocation? packageSourceLocation = null,
-            IEnumerable<NuGetVersion>? packageVersions = null)
+            IEnumerable<NuGetVersion>? packageVersions = null,
+            SdkFeatureBand? updaterFeatureBand = null)
         {
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
@@ -825,9 +854,18 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
             var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot, packageVersions: packageVersions);
             var installationRepo = new MockInstallationRecordRepository();
-            var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, new MockPackWorkloadInstaller(dotnetRoot), packageSourceLocation: packageSourceLocation, getEnvironmentVariable: getEnvironmentVariable);
+            var manifestUpdater = new WorkloadManifestUpdater(
+                _reporter,
+                workloadResolver,
+                nugetDownloader,
+                testDir,
+                installationRepo,
+                new MockPackWorkloadInstaller(dotnetRoot),
+                packageSourceLocation: packageSourceLocation,
+                getEnvironmentVariable: getEnvironmentVariable,
+                sdkFeatureBand: updaterFeatureBand);
 
-            var sentinelPath = Path.Combine(testDir, _manifestSentinelFileName + featureBand);
+            var sentinelPath = Path.Combine(testDir, _manifestSentinelFileName + (updaterFeatureBand?.ToString() ?? featureBand));
             return (manifestUpdater, nugetDownloader, sentinelPath, workloadResolver);
         }
 

@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Net;
+using System.Net.Sockets;
+using System.Text;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.NugetSearch;
 using Moq;
@@ -145,6 +148,26 @@ public class NugetSearchApiRequestTests
         await FluentActions.Awaiting(() => action).Should().ThrowAsync<OperationCanceledException>();
     }
 
+    [TestMethod]
+    public async Task GetResultEscapesSearchTermForV3Request()
+    {
+        await using var server = new TestV3SearchServer();
+        var source = new PackageSource(server.ServiceIndexUri.AbsoluteUri)
+        {
+            AllowInsecureConnections = true,
+        };
+        var request = new NugetToolSearchApiRequest();
+
+        await request.GetResult(
+            new NugetSearchApiParameter("C# + &", skip: 3, take: 4, prerelease: true),
+            source,
+            TestContext.CancellationToken);
+
+        server.SearchRawUrl.Should().Contain("q=C%23%20%2B%20%26");
+        server.SearchRawUrl.Should().Contain("&skip=3&take=4&prerelease=true");
+        server.SearchRawUrl.Should().Contain("&packageType=DotnetTool");
+    }
+
     private sealed class CapturingPackageSearchResource : PackageSearchResource
     {
         private readonly IEnumerable<IPackageSearchMetadata>? _results;
@@ -201,5 +224,89 @@ public class NugetSearchApiRequestTests
             ILogger log,
             CancellationToken cancellationToken)
             => throw new InvalidOperationException("Search should not be called.");
+    }
+
+    private sealed class TestV3SearchServer : IAsyncDisposable
+    {
+        private readonly HttpListener _listener = new();
+        private readonly Task _serverTask;
+
+        public TestV3SearchServer()
+        {
+            int port;
+            using (var portReservation = new TcpListener(IPAddress.Loopback, 0))
+            {
+                portReservation.Start();
+                port = ((IPEndPoint)portReservation.LocalEndpoint).Port;
+            }
+
+            BaseUri = new Uri($"http://127.0.0.1:{port}/");
+            ServiceIndexUri = new Uri(BaseUri, "v3/index.json");
+            _listener.Prefixes.Add(BaseUri.AbsoluteUri);
+            _listener.Start();
+            _serverTask = ServeAsync();
+        }
+
+        private Uri BaseUri { get; }
+
+        public Uri ServiceIndexUri { get; }
+
+        public string? SearchRawUrl { get; private set; }
+
+        public async ValueTask DisposeAsync()
+        {
+            _listener.Stop();
+            _listener.Close();
+            await _serverTask.ConfigureAwait(false);
+        }
+
+        private async Task ServeAsync()
+        {
+            try
+            {
+                while (_listener.IsListening)
+                {
+                    HttpListenerContext context = await _listener.GetContextAsync().ConfigureAwait(false);
+                    string response;
+                    if (context.Request.Url?.AbsolutePath == ServiceIndexUri.AbsolutePath)
+                    {
+                        response =
+                            $$"""
+                            {
+                              "version": "3.0.0",
+                              "resources": [
+                                {
+                                  "@id": "{{new Uri(BaseUri, "query").AbsoluteUri}}",
+                                  "@type": "SearchQueryService/3.5.0"
+                                }
+                              ]
+                            }
+                            """;
+                    }
+                    else
+                    {
+                        SearchRawUrl = context.Request.RawUrl;
+                        response = """{"totalHits":0,"data":[]}""";
+                    }
+
+                    byte[] content = Encoding.UTF8.GetBytes(response);
+                    context.Response.ContentType = "application/json";
+                    context.Response.ContentLength64 = content.Length;
+                    await context.Response.OutputStream.WriteAsync(content).ConfigureAwait(false);
+                    context.Response.Close();
+
+                    if (SearchRawUrl is not null)
+                    {
+                        return;
+                    }
+                }
+            }
+            catch (HttpListenerException) when (!_listener.IsListening)
+            {
+            }
+            catch (ObjectDisposedException)
+            {
+            }
+        }
     }
 }

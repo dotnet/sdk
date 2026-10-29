@@ -60,7 +60,7 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
             };
 
             IEnumerable<IPackageSearchMetadata> metadata = await searchResource.SearchAsync(
-                nugetSearchApiParameter.SearchTerm ?? string.Empty,
+                Uri.EscapeDataString(nugetSearchApiParameter.SearchTerm ?? string.Empty),
                 searchFilter,
                 nugetSearchApiParameter.Skip ?? 0,
                 nugetSearchApiParameter.Take ?? 20,
