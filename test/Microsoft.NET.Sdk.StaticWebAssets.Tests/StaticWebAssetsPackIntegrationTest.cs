@@ -811,7 +811,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             result.Should().Pass();
 
-            var outputPath = pack.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = pack.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryTransitiveDependency.dll")).Should().Exist();
 
@@ -889,7 +889,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             result2.Should().Pass();
 
-            var outputPath = pack2.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = pack2.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryTransitiveDependency.dll")).Should().Exist();
 
@@ -963,7 +963,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
             result.Should().Pass();
 
-            var outputPath = pack.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = pack.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework, "Debug").ToString();
 
             new FileInfo(Path.Combine(outputPath, "PackageLibraryTransitiveDependency.dll")).Should().Exist();
 
