@@ -23,17 +23,17 @@ Lists the SDKs and runtimes managed by dotnetup. Each install spec is a requeste
 channel or version, shown alongside the installed version that satisfies it:
 
 ```text
-Component     Install spec  Source        Installed version
-------------  ------------  ------------  -----------------
-SDK           10.0          Command line  10.0.105
-SDK           10.0.1xx      Command line  10.0.105
-SDK           -             -             9.0.304
-.NET Runtime  10.0          Command line  10.0.5
+Component     Installed version  Install spec  Source
+------------  -----------------  ------------  ---------
+SDK           10.0.105           10.0          Command
+SDK           10.0.105           10.0.1xx      Command
+SDK           9.0.304            -             -
+.NET Runtime  10.0.5             10.0          Command
 
 3 install specs; 3 installations (2 SDKs, 1 runtime)
 ```
 
-The Source column identifies a command-line request or the `global.json` file
+The Source column identifies an install command request or the `global.json` file
 associated with a repository requirement. The Install spec column shows the
 channel or version recorded in the manifest. Matching uses the latest installed
 version that satisfies that recorded channel; listing does not reread global.json

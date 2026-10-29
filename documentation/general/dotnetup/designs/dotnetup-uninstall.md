@@ -358,7 +358,7 @@ approved plan to remove a different SDK or forget an additional live repository.
 ## Make the relationships visible in dotnetup list
 
 Use one table for SDKs and separately installed runtimes with columns in this
-order: Component, Install spec, Source, Installed version. Do not list runtimes
+order: Component, Installed version, Install spec, Source. Do not list runtimes
 that are only included with an SDK. Keep one row per install spec, plus
 installation-only rows for installations no current spec resolves to. Repeating a
 component/version pair shows that multiple independent specs select the same
@@ -375,27 +375,27 @@ Use these source labels rather than `Explicit`:
 
 | Source | Meaning |
 | --- | --- |
-| Command line | Added by a command such as `dotnetup sdk install 10.0.1xx`. |
+| Command | Added by a command such as `dotnetup sdk install 10.0.1xx`, whether invoked by a user or another tool. |
 | Migration | Added when bringing an existing SDK into dotnetup management, as in scenario 1. |
 | Repository file path | The registered `global.json` supplying the SDK requirement. |
 
 New migrations record a distinct origin. Existing `Explicit` specs, including
-older migrations whose origin cannot be recovered, remain command-line specs.
+older migrations whose origin cannot be recovered, retain the Command source label.
 
 ```text
-Component        Install spec                                                  Source                           Installed version
----------------  ------------------------------------------------------------  -------------------------------  -----------------
-SDK              10.0.100 (rollForward: latestPatch, allowPrerelease: false)   C:\src\app\global.json           10.0.105
-SDK              10.0.1xx                                                      Migration                        10.0.105
-SDK              10.0.103                                                      Command line                     10.0.103
-SDK              -                                                             -                                9.0.304
-SDK              10.0.300 (rollForward: disable)                               C:\src\other\global.json         Not installed
-SDK              Unavailable                                                   C:\src\tools\global.json         Unknown
-.NET Runtime     10.0                                                          Command line                     10.0.5
-ASP.NET Core     10.0                                                          Command line                     10.0.5
-Windows Desktop  10.0                                                          Command line                     10.0.3
-.NET Runtime     9.0                                                           Command line                     9.0.8
-ASP.NET Core     9.0                                                           Command line                     9.0.8
+Component        Installed version  Install spec                                                Source
+---------------  -----------------  ----------------------------------------------------------  -----------------------
+SDK              10.0.105           10.0.100 (rollForward: latestPatch, allowPrerelease: false)  C:\src\app\global.json
+SDK              10.0.105           10.0.1xx                                                    Migration
+SDK              10.0.103           10.0.103                                                    Command
+SDK              9.0.304            -                                                           -
+SDK              Not installed      10.0.300 (rollForward: disable)                             C:\src\other\global.json
+SDK              Unknown            Unavailable                                                 C:\src\tools\global.json
+.NET Runtime     10.0.5             10.0                                                        Command
+ASP.NET Core     10.0.5             10.0                                                        Command
+Windows Desktop  10.0.3             10.0                                                        Command
+.NET Runtime     9.0.8              9.0                                                         Command
+ASP.NET Core     9.0.8              9.0                                                         Command
 
 10 install specs; 8 installations (3 SDKs, 5 runtimes)
 

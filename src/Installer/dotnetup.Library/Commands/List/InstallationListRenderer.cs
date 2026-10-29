@@ -118,9 +118,9 @@ internal static class InstallationListRenderer
     {
         var table = new Table().Border(TableBorder.Simple);
         table.AddColumn(new TableColumn(new Text(Strings.ListComponentColumn)));
+        table.AddColumn(new TableColumn(new Text(Strings.ListInstalledVersionColumn)));
         table.AddColumn(new TableColumn(new Text(Strings.ListSpecColumn)));
         table.AddColumn(new TableColumn(new Text(Strings.ListSourceColumn)));
-        table.AddColumn(new TableColumn(new Text(Strings.ListInstalledVersionColumn)));
         foreach (var row in rows)
         {
             var version = row.Installation?.Version ?? (row.Error is null ? Strings.ListNotInstalled : Strings.ListUnknown);
@@ -128,8 +128,8 @@ internal static class InstallationListRenderer
             {
                 version = string.Format(CultureInfo.InvariantCulture, Strings.ListInvalidInstallation, version);
             }
-            table.AddRow(new Text(ComponentName(row.Component)), new Text(row.SpecDisplay),
-                new Text(row.SourceDisplay), new Text(version));
+            table.AddRow(new Text(ComponentName(row.Component)), new Text(version),
+                new Text(row.SpecDisplay), new Text(row.SourceDisplay));
         }
         return table;
     }

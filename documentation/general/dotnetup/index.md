@@ -64,9 +64,9 @@ To apply the change to this terminal now, run:
 Or open a new terminal.
 
 > dotnetup list
-Component  Install spec  Source        Installed version
----------  ------------  ------------  ------------------
-SDK        latest        Command line  <resolved-version>
+Component  Installed version   Install spec  Source
+---------  ------------------  ------------  -------
+SDK        <resolved-version>  latest        Command
 
 1 install spec; 1 installation (1 SDK, 0 runtimes)
 

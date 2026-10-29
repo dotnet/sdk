@@ -178,7 +178,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
 
         rows.Select(r => r.SpecDisplay).Should().Equal("10.0", "10.0.1xx", "10.0.103", "-", "11.0.1xx");
         rows.Select(r => r.Installation?.Version).Should().Equal("10.0.105", "10.0.105", "10.0.103", "9.0.304", null);
-        rows[0].SourceDisplay.Should().Be("Command line");
+        rows[0].SourceDisplay.Should().Be("Command");
         rows[3].SourceDisplay.Should().Be("-");
         rows[3].Spec.Should().BeNull();
         rows[4].Error.Should().BeNull();
@@ -231,7 +231,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
-    public void RelationshipTable_ShowsRepositoryAndCommandLineSources()
+    public void RelationshipTable_ShowsRepositoryAndCommandSources()
     {
         var repository = Spec("10.0.1xx");
         repository.Source = InstallSource.GlobalJson;
@@ -243,14 +243,39 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         };
 
         var rows = InstallationListRenderer.CreateRows(data.InstallSpecs, data.Installations);
-        rows.Select(r => r.SourceDisplay).Should().Contain("Command line").And.Contain(repository.GlobalJsonPath);
+        rows.Select(r => r.SourceDisplay).Should().Contain("Command").And.Contain(repository.GlobalJsonPath);
         rows.Should().OnlyContain(r => r.Installation == data.Installations[0]);
         InstallationListRenderer.Write(Output, data, width: 160);
-        Output.ToString().Should().Contain("Command line")
+        Output.ToString().Should().Contain("Command").And.NotContain("Command line")
             .And.Contain("2 install specs; 1 installation (1 SDK, 0 runtimes)");
 
         var json = JsonSerializer.Serialize(data, InstallationListJsonContext.Default.ListData);
         json.Should().Contain("\"GlobalJson\"").And.Contain("\"Explicit\"");
+    }
+
+    [TestMethod]
+    public void RelationshipTable_ShowsInstalledVersionBeforeSpecAndSource()
+    {
+        var data = new ListData
+        {
+            InstallSpecs = [Spec("10.0.1xx")],
+            Installations = [Installation("10.0.105")]
+        };
+
+        InstallationListRenderer.Write(Output, data, width: 160);
+
+        var lines = Output.ToString().Split('\n');
+        var header = lines.Single(line => line.Contains("Component", StringComparison.Ordinal));
+        header.IndexOf("Installed version", StringComparison.Ordinal).Should()
+            .BeGreaterThan(header.IndexOf("Component", StringComparison.Ordinal))
+            .And.BeLessThan(header.IndexOf("Install spec", StringComparison.Ordinal));
+        header.IndexOf("Source", StringComparison.Ordinal).Should()
+            .BeGreaterThan(header.IndexOf("Install spec", StringComparison.Ordinal));
+        var row = lines.Single(line => line.Contains("10.0.105", StringComparison.Ordinal));
+        row.IndexOf("10.0.105", StringComparison.Ordinal).Should()
+            .BeLessThan(row.IndexOf("10.0.1xx", StringComparison.Ordinal));
+        row.IndexOf("Command", StringComparison.Ordinal).Should()
+            .BeGreaterThan(row.IndexOf("10.0.1xx", StringComparison.Ordinal));
     }
 
     [TestMethod]

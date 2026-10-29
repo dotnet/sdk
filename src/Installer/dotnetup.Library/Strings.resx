@@ -304,7 +304,7 @@
     <value>Installed version</value>
   </data>
   <data name="ListCommandLineSource" xml:space="preserve">
-    <value>Command line</value>
+    <value>Command</value>
   </data>
   <data name="ListRuntimeComponent" xml:space="preserve">
     <value>.NET Runtime</value>
