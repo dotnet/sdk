@@ -20,9 +20,9 @@ variables:
 - name: ReleaseToolsDirectory
   value: $(Pipeline.Workspace)/dotnetup-release-tools
 - name: ESRPOwners
-  value: noahgilson@microsoft.com,marcpop@microsoft.com
+  value: noahgilson@microsoft.com;marcpop@microsoft.com
 - name: ESRPApprovers
-  value: noahgilson@microsoft.com,daplaist@microsoft.com,marcpop@microsoft.com,jorobich@microsoft.com
+  value: noahgilson@microsoft.com;daplaist@microsoft.com;marcpop@microsoft.com;jorobich@microsoft.com
 
 resources:
   repositories:
