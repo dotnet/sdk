@@ -23,6 +23,7 @@ Lists the SDKs and runtimes managed by dotnetup. Each install spec is a requeste
 channel or version, shown alongside the installed version that satisfies it:
 
 ```text
+C:\dotnet (x64)
 Component     Installed version  Install spec  Source
 ------------  -----------------  ------------  ---------
 .NET SDK      10.0.105           10.0          Command
@@ -51,7 +52,8 @@ that installation verification failed; the warning explains why.
 The list covers dotnetup-managed installations, not every SDK on your machine.
 For `global.json`, matching is limited to the associated dotnetup installation
 directory; additional `sdk.paths` locations are not searched. Multiple roots or
-architectures have separate labeled tables.
+architectures have separate labeled tables. Each table shows its installation
+directory and architecture, even when there is only one root.
 
 With `--format json`, output contains two arrays:
 

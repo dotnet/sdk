@@ -383,6 +383,7 @@ New migrations record a distinct origin. Existing `Explicit` specs, including
 older migrations whose origin cannot be recovered, retain the Command source label.
 
 ```text
+C:\dotnet (x64)
 Component             Installed version  Install spec                                                Source
 --------------------  -----------------  ----------------------------------------------------------  -----------------------
 .NET SDK              10.0.105           10.0.100 (rollForward: latestPatch, allowPrerelease: false)  C:\src\app\global.json

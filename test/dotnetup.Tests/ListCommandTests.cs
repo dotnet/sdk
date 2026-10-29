@@ -298,6 +298,22 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
+    public void RelationshipTable_ShowsDirectoryAndArchitectureForSingleRoot()
+    {
+        var installation = Installation("10.0.105");
+        installation.Architecture = InstallArchitecture.x64;
+        var data = new ListData { Installations = [installation] };
+
+        InstallationListRenderer.Write(Output, data, width: 160);
+
+        var output = Output.ToString();
+        var heading = $"{installation.InstallRoot} (x64)";
+        output.Should().Contain(heading);
+        output.IndexOf(heading, StringComparison.Ordinal).Should()
+            .BeLessThan(output.IndexOf("Component", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void RelationshipRows_DoNotResolveAcrossRootsOrArchitectures()
     {
         var spec = Spec("10.0.1xx");

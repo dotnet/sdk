@@ -64,6 +64,7 @@ To apply the change to this terminal now, run:
 Or open a new terminal.
 
 > dotnetup list
+C:\dotnet (x64)
 Component  Installed version   Install spec  Source
 ---------  ------------------  ------------  -------
 .NET SDK   <resolved-version>  latest        Command

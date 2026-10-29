@@ -75,10 +75,7 @@ internal static class InstallationListRenderer
             installationCount += installations.Count;
             sdkCount += installations.Count(i => i.Component == InstallComponent.SDK);
 
-            if (roots.Count > 1)
-            {
-                writer.WriteLine($"{root.InstallRoot} ({root.Architecture})");
-            }
+            writer.WriteLine($"{root.InstallRoot} ({root.Architecture})");
             if (rows.Count == 0)
             {
                 continue;
