@@ -7,6 +7,7 @@
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
   "symbols/Framework/displayName": "프레임워크",
   "symbols/Framework/choices/net12.0/description": "대상 net12.0",
+  "symbols/Framework/choices/net11.0/description": "대상 net11.0",
   "symbols/EnablePack/description": "프로젝트에 대해 패키징(\"dotnet pack\"을 통해)을 활성화할지 여부",
   "symbols/EnablePack/displayName": "팩 사용",
   "symbols/TestRunner/description": "실행기/플랫폼을 선택하세요.",

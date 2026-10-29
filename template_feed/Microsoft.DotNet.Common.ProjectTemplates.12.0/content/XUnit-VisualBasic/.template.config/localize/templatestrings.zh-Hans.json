@@ -7,6 +7,7 @@
   "symbols/Framework/description": "项目的目标框架。",
   "symbols/Framework/displayName": "框架",
   "symbols/Framework/choices/net12.0/description": "目标 net12.0",
+  "symbols/Framework/choices/net11.0/description": "目标 net11.0",
   "symbols/XUnitVersion/description": "要使用的 xUnit.net 版本。",
   "symbols/XUnitVersion/displayName": "xUnit.net 版本",
   "symbols/XUnitVersion/choices/v2/description": "使用 xUnit.net v2 (已弃用，仅为向后兼容而保留)。",

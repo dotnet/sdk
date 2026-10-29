@@ -7,6 +7,7 @@
   "symbols/Framework/description": "專案的目標架構。",
   "symbols/Framework/displayName": "架構",
   "symbols/Framework/choices/net12.0/description": " 目標 net12.0",
+  "symbols/Framework/choices/net11.0/description": " 目標 net11.0",
   "symbols/XUnitVersion/description": "要使用 xUnit.net 的版本。",
   "symbols/XUnitVersion/displayName": "xUnit.net 版本",
   "symbols/XUnitVersion/choices/v2/description": "使用 xUnit.net v2 (已淘汰，保留以維持向後相容性)。",

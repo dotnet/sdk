@@ -7,6 +7,7 @@
   "symbols/Framework/description": "Projenin hedef çerçevesi.",
   "symbols/Framework/displayName": "Çerçeve",
   "symbols/Framework/choices/net12.0/description": "Hedef net12.0",
+  "symbols/Framework/choices/net11.0/description": "Hedef net11.0",
   "symbols/XUnitVersion/description": "Kullanılacak xUnit.net sürümü.",
   "symbols/XUnitVersion/displayName": "xUnit.net sürümü",
   "symbols/XUnitVersion/choices/v2/description": "xUnit.net v2'yi kullanın (kullanım dışı, geriye dönük uyumluluk için tutulur).",

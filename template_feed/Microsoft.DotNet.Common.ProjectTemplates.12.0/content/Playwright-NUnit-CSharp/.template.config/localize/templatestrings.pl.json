@@ -7,6 +7,7 @@
   "symbols/Framework/description": "Platforma docelowa dla tego projektu.",
   "symbols/Framework/displayName": "Struktura",
   "symbols/Framework/choices/net12.0/description": "Docelowa platforma net12.0",
+  "symbols/Framework/choices/net11.0/description": "Docelowa platforma net11.0",
   "symbols/EnablePack/description": "Określa, czy włączyć pakowanie (za pośrednictwem „pakietu dotnet”) dla projektu.",
   "symbols/EnablePack/displayName": "Włącz pakiet",
   "symbols/skipRestore/description": "Jeśli ta opcja jest określona, pomija automatyczne przywracanie projektu podczas tworzenia.",

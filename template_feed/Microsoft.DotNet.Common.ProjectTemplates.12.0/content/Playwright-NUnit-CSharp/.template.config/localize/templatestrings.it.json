@@ -7,6 +7,7 @@
   "symbols/Framework/description": "Framework di destinazione per il progetto.",
   "symbols/Framework/displayName": "Framework",
   "symbols/Framework/choices/net12.0/description": "Destinazione net12.0",
+  "symbols/Framework/choices/net11.0/description": "Destinazione net11.0",
   "symbols/EnablePack/description": "Indica se abilitare o meno la creazione del pacchetto (tramite \"dotnet pack\") per il progetto.",
   "symbols/EnablePack/displayName": "Abilita pacchetto",
   "symbols/skipRestore/description": "Se specificato, ignora il ripristino automatico del progetto durante la creazione.",

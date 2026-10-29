@@ -7,6 +7,7 @@
   "symbols/Framework/description": "Целевая платформа для проекта.",
   "symbols/Framework/displayName": "Платформа",
   "symbols/Framework/choices/net12.0/description": "Целевая платформа .NET 12.0",
+  "symbols/Framework/choices/net11.0/description": "Целевая платформа .NET 11.0",
   "symbols/XUnitVersion/description": "Используемая версия xUnit.net.",
   "symbols/XUnitVersion/displayName": "Версия xUnit.net",
   "symbols/XUnitVersion/choices/v2/description": "Использовать xUnit.net v2 (устарело, сохранено для обратной совместимости).",

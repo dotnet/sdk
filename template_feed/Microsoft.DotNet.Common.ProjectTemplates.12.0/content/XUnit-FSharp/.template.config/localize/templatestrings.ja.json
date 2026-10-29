@@ -7,6 +7,7 @@
   "symbols/Framework/description": "プロジェクトのターゲット フレームワーク。",
   "symbols/Framework/displayName": "フレームワーク",
   "symbols/Framework/choices/net12.0/description": "ターゲット net12.0",
+  "symbols/Framework/choices/net11.0/description": "ターゲット net11.0",
   "symbols/XUnitVersion/description": "使用する xUnit.net のバージョン。",
   "symbols/XUnitVersion/displayName": "xUnit.net バージョン",
   "symbols/XUnitVersion/choices/v2/description": "xUnit.net v2 を使用します (非推奨ですが、下位互換性のために保持されています)。",

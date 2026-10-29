@@ -192,6 +192,43 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
+        [DataRow("mstest", Languages.CSharp)]
+        [DataRow("mstest", Languages.FSharp)]
+        [DataRow("mstest", Languages.VisualBasic)]
+        [DataRow("mstest-playwright", Languages.CSharp)]
+        [DataRow("nunit", Languages.CSharp)]
+        [DataRow("nunit", Languages.FSharp)]
+        [DataRow("nunit", Languages.VisualBasic)]
+        [DataRow("nunit-playwright", Languages.CSharp)]
+        [DataRow("xunit", Languages.CSharp)]
+        [DataRow("xunit", Languages.FSharp)]
+        [DataRow("xunit", Languages.VisualBasic)]
+        public void ProjectTemplate_CanTargetSdkFrameworkWithoutRestore(string projectTemplate, string language)
+        {
+            string outputDirectory = CreateTemporaryFolder(folderName: "Home");
+            string workingDirectory = CreateTemporaryFolder();
+
+            new DotnetNewCommand(_log, projectTemplate,
+                "-n", GenerateTestProjectName(),
+                "-f", ToolsetInfo.SdkTargetFramework,
+                "-lang", language,
+                "-o", outputDirectory,
+                "--no-restore")
+                .WithCustomHive(outputDirectory)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string projectFile = Directory.GetFiles(outputDirectory, "*.*proj").Should().ContainSingle().Which;
+            XDocument.Load(projectFile).Descendants("TargetFramework").Should().ContainSingle()
+                .Which.Value.Should().Be(ToolsetInfo.SdkTargetFramework);
+
+            DeleteDirectoryWithRetry(outputDirectory);
+            DeleteDirectoryWithRetry(workingDirectory);
+        }
+
+        [TestMethod]
         [DynamicData(nameof(GetTemplateProjectsToTest))]
         public void ProjectTemplate_CanBeInstalledAndTestsArePassing(string targetFramework, string projectTemplate, string language, bool runDotnetTest)
         {

@@ -7,6 +7,7 @@
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/displayName": "Framework",
   "symbols/Framework/choices/net12.0/description": "Ziel net12.0",
+  "symbols/Framework/choices/net11.0/description": "Ziel net11.0",
   "symbols/XUnitVersion/description": "Die Version von xUnit.net, die verwendet werden soll.",
   "symbols/XUnitVersion/displayName": "xUnit.net-Version",
   "symbols/XUnitVersion/choices/v2/description": "Verwenden Sie xUnit.net v2 (veraltet, aus Gründen der Abwärtskompatibilität beibehalten).",

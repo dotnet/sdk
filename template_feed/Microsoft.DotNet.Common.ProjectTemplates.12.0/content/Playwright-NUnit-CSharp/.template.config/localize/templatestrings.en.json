@@ -7,6 +7,7 @@
   "symbols/Framework/description": "The target framework for the project.",
   "symbols/Framework/displayName": "Framework",
   "symbols/Framework/choices/net12.0/description": "Target net12.0",
+  "symbols/Framework/choices/net11.0/description": "Target net11.0",
   "symbols/EnablePack/description": "Whether or not to enable packaging (via \"dotnet pack\") for the project.",
   "symbols/EnablePack/displayName": "Enable pack",
   "symbols/skipRestore/description": "If specified, skips the automatic restore of the project on create.",

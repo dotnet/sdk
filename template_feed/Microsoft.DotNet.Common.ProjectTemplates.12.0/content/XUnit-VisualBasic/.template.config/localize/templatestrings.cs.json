@@ -7,6 +7,7 @@
   "symbols/Framework/description": "Cílová architektura pro projekt.",
   "symbols/Framework/displayName": "Framework",
   "symbols/Framework/choices/net12.0/description": "Cílový net12.0",
+  "symbols/Framework/choices/net11.0/description": "Cílový net11.0",
   "symbols/XUnitVersion/description": "Verze xUnit.net, která se použije.",
   "symbols/XUnitVersion/displayName": "Verze xUnit.net",
   "symbols/XUnitVersion/choices/v2/description": "Použijte xUnit.net v2 (zastaralé, ponecháno kvůli zpětné kompatibilitě).",
