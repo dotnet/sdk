@@ -92,17 +92,18 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             return;
 
+            // Checks each transitive dependency once via the solution's cached dependency graph. Recursing
+            // through ProjectReferences instead revisits shared projects on every path through the graph,
+            // which is exponential in the graph's depth.
             static bool AllReferencedProjectsLoaded(Project project)
             {
-                // Use mscorlib to represent Runtime references being loaded.
-                if (!project.MetadataReferences.Any(reference => reference.Display?.EndsWith("mscorlib.dll") == true))
-                {
-                    return false;
-                }
+                var solution = project.Solution;
+                var dependencies = solution.GetProjectDependencyGraph().GetProjectsThatThisProjectTransitivelyDependsOn(project.Id);
 
-                return project.ProjectReferences
-                    .Select(projectReference => project.Solution.GetProject(projectReference.ProjectId))
-                    .All(referencedProject => referencedProject != null && AllReferencedProjectsLoaded(referencedProject));
+                return dependencies.Prepend(project.Id)
+                    .Select(solution.GetProject)
+                    // Use mscorlib to represent Runtime references being loaded.
+                    .All(dependency => dependency != null && dependency.MetadataReferences.Any(reference => reference.Display?.EndsWith("mscorlib.dll") == true));
             }
         }
     }
