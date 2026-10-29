@@ -36,15 +36,15 @@ env:
 steps:
   - name: Expose the trusted alias generator
     run: |
-      mkdir -p "$RUNNER_TEMP/llm-detection-bin"
-      cat > "$RUNNER_TEMP/llm-detection-bin/prepare-llm-detection" <<'SH'
+      # gh-aw mounts this directory read-only and adds it to the sandbox PATH.
+      mkdir -p "$RUNNER_TEMP/gh-aw/mcp-cli/bin"
+      cat > "$RUNNER_TEMP/gh-aw/mcp-cli/bin/prepare-llm-detection" <<'SH'
       #!/bin/sh
       set -eu
       cd "$GITHUB_WORKSPACE"
       exec node .github/llm-detection/fix.mjs prepare "$@"
       SH
-      chmod 755 "$RUNNER_TEMP/llm-detection-bin/prepare-llm-detection"
-      echo "$RUNNER_TEMP/llm-detection-bin" >> "$GITHUB_PATH"
+      chmod 555 "$RUNNER_TEMP/gh-aw/mcp-cli/bin/prepare-llm-detection"
 
 jobs:
   check_audit:

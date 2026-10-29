@@ -108,6 +108,7 @@ It must provide distinct assignment and propagation permalinks at the same commi
 The agent's editing tool is disabled, and its prompt prohibits builds and tests in the agent job.
 It invokes a [trusted generator](../llm-detection/fix.mjs) that changes only an existing presence-based rule and its regression matrix.
 Setup exposes only its `prepare` entry point as `prepare-llm-detection` in the agent's command path.
+The wrapper resides in [gh-aw's mounted CLI directory](https://github.com/github/gh-aw/blob/v0.89.21/actions/setup/js/mount_mcp_as_cli.cjs), which the sandbox can read but cannot modify.
 The shell allowlist names this command rather than granting general Node execution.
 A missing or denied generator is an execution failure, not a successful no-op.
 Git access permits local commit preparation, but agent GitHub permissions remain read-only.
