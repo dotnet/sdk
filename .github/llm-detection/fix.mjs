@@ -42,13 +42,19 @@ export function auditTrackers(issues) {
         issue.body?.split(/\r?\n/).includes(auditMarker));
 }
 
+export async function findAuditTrackers(github, repo) {
+    const issues = await github.paginate(github.rest.issues.listForRepo, {
+        ...repo, state: "all", creator: "github-actions[bot]", labels: "agentic-workflows", per_page: 100,
+    });
+    return auditTrackers(issues);
+}
+
 export async function checkAudit(github, context, runId, harness, variable = "") {
     validateInputs(runId, harness, variable);
     const repo = context.repo;
     const { data: run } = await github.rest.actions.getWorkflowRun({ ...repo, run_id: Number(runId) });
     validateAuditRun(run, repo);
-    const issues = await github.paginate(github.rest.issues.listForRepo, { ...repo, state: "all", per_page: 100 });
-    const trackers = auditTrackers(issues);
+    const trackers = await findAuditTrackers(github, repo);
     requireCondition(trackers.length === 1 && trackers[0].state === "open",
         "Exactly one open audit tracker is required. Resolve closed or duplicate trackers first.");
     const reportRuns = trackers[0].body.match(/https:\/\/github\.com\/[\w.-]+\/[\w.-]+\/actions\/runs\/[0-9]+/g) ?? [];

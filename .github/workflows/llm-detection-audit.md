@@ -412,15 +412,17 @@ A separate trusted dispatcher validates it and can start one independently resea
 Before publishing, find issues with the exact body marker
 `gh-aw-workflow-id: llm-detection-audit` in `${{ github.repository }}`.
 Search open and closed issues and inspect candidate bodies, authors, labels, and titles.
-Start with this read-only listing, without `--label` or `--search`, which can fail through the CLI proxy:
-`gh issue list --repo ${{ github.repository }} --state all --limit 1000 --json number,title,state,author,labels --jq '{count:length,candidates:[.[]|select(.title=="[CLI agent detection] Evidence report")]}'`.
+Start with this filtered REST listing, without `gh issue list --label` or `--search`, which can fail through the CLI proxy:
+`gh api --method GET --paginate 'repos/${{ github.repository }}/issues?state=all&creator=github-actions%5Bbot%5D&labels=agentic-workflows&per_page=100' --jq '{count:length,candidates:[.[]|select(.pull_request==null and .title=="[CLI agent detection] Evidence report")|{number,title,state,author:.user.login,labels}]}'`.
+Keep the bot-author and label filters on every page, including closed issues.
+Do not scan the repository's entire issue history or use a fixed-size result limit.
 Read each exact-title candidate with `gh issue view`.
 Project its body to workflow-marker and current-run/attempt checks with `--jq`.
 Return only those checks and identity metadata during tracker lookup, not the previous report narrative or citations.
-If the listing reaches its limit, paginate the issues API before concluding that no tracker exists.
-If the listing fails, retry once through `gh api --method GET 'repos/${{ github.repository }}/issues?state=all&per_page=100'`.
-Follow pagination before treating that response as a complete issue listing.
-Treat the lookup as unavailable only if neither approach can cover all candidates.
+Follow all filtered pages before concluding that no tracker exists.
+If the listing fails, retry the same filtered REST lookup once.
+Do not fall back to an unfiltered listing.
+Treat the lookup as unavailable if the filtered lookup cannot cover all candidates.
 Accept only issues authored by GitHub Actions with that marker, the
 `agentic-workflows` label, and the title `[CLI agent detection] Evidence report`.
 GitHub API responses use `github-actions[bot]`.

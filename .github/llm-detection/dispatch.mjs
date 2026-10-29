@@ -1,5 +1,5 @@
 import {
-    auditTrackers, checkAudit, isEligibleAlias, prepareContents, validateAuditRun, validateEvidence, validateInputs,
+    checkAudit, findAuditTrackers, isEligibleAlias, prepareContents, validateAuditRun, validateEvidence, validateInputs,
 } from "./fix.mjs";
 
 export const candidateHeading = "Automatic fix candidates (v1):";
@@ -57,8 +57,7 @@ export async function dispatchFix(github, context, detector, tests) {
     validateInputs(runId, "audit");
     const { data: run } = await github.rest.actions.getWorkflowRun({ ...repo, run_id: Number(runId) });
     validateAuditRun(run, repo);
-    const issues = await github.paginate(github.rest.issues.listForRepo, { ...repo, state: "all", per_page: 100 });
-    const trackers = auditTrackers(issues);
+    const trackers = await findAuditTrackers(github, repo);
     requireCondition(trackers.length === 1, "Resolve missing or duplicate audit trackers before automatic dispatch.");
     if (trackers[0].state !== "open") {
         return { reason: "The audit tracker is closed. Automatic fixes are suspended." };

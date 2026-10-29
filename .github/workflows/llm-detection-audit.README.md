@@ -46,6 +46,8 @@ The workflow locates its issue through the generated workflow marker, bot author
 label, and exact title. Closing the tracker suspends publication until a maintainer
 reopens it. Duplicate trackers require maintainer resolution.
 Reports also retain a visible workflow marker because issue updates can remove HTML comments.
+Tracker lookups filter by bot author and label before pagination, including closed issues.
+They still check exact titles, markers, and duplicates without scanning the repository's full issue history.
 
 The agent has read-only GitHub permissions. Separate safe-output jobs create or
 update the report. Update permission is restricted by title prefix and label.

@@ -83,6 +83,9 @@ function fixture() {
         paginate: async (method, args) => {
             reads.push({ method, args });
             if (method === github.rest.issues.listForRepo) {
+                assert.deepEqual(args, {
+                    ...repo, state: "all", creator: "github-actions[bot]", labels: "agentic-workflows", per_page: 100,
+                });
                 return issues;
             }
             if (method === github.rest.pulls.list) {
@@ -224,6 +227,12 @@ test("the actual audit post-step accepts valid reports and rejects invalid candi
     assert.equal(execute([{ type: "noop", message: "Tracker closed." }]).status, 0);
     assert.notEqual(execute([{ type: "create_issue", body: body(report()).replace('"version":1', '"version":0') }]).status, 0);
     assert.notEqual(execute([{ type: "create_issue", body: "Workflow marker: gh-aw-workflow-id: llm-detection-audit" }]).status, 0);
+    assert.notEqual(execute([{ type: "update_issue", body: body(report()).replace("Workflow marker:", "Missing marker:") }]).status, 0);
+    assert.notEqual(execute([{ type: "update_issue", body: body(report()) + "x".repeat(60000) }]).status, 0);
+    assert.notEqual(execute([{ type: "update_issue", body: body(report()) }, { type: "noop" }]).status, 0);
+    for (const type of ["missing_data", "missing_tool", "report_incomplete"]) {
+        assert.notEqual(execute([{ type: "update_issue", body: body(report()) }, { type }]).status, 0);
+    }
     assert.notEqual(execute([]).status, 0);
 });
 

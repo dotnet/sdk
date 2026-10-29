@@ -124,7 +124,15 @@ function auditFixture() {
             actions: { getWorkflowRun: async () => ({ data: run }) },
             issues: { listForRepo: Symbol("issues") }, pulls: { list: Symbol("pulls") },
         },
-        paginate: async method => method === github.rest.issues.listForRepo ? issues : pulls,
+        paginate: async (method, args) => {
+            if (method === github.rest.issues.listForRepo) {
+                assert.deepEqual(args, {
+                    ...repo, state: "all", creator: "github-actions[bot]", labels: "agentic-workflows", per_page: 100,
+                });
+                return issues;
+            }
+            return pulls;
+        },
     };
     return { github, context: { repo }, run, issue, issues, pulls };
 }
