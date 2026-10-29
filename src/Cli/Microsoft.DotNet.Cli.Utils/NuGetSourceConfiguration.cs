@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices;
 using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Cli.Utils;
@@ -123,7 +124,7 @@ public sealed class NuGetSourceConfiguration
     }
 
     private static StringComparer GetPathComparer()
-        => OperatingSystem.IsWindows() ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
+        => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
     private static void ValidateSources(IEnumerable<PackageSource> sources)
     {
