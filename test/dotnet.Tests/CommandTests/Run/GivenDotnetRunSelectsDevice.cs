@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security;
+using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli.Commands;
 using StructuredLoggerTarget = Microsoft.Build.Logging.StructuredLogger.Target;
@@ -27,6 +29,69 @@ public class GivenDotnetRunSelectsDevice : SdkTest
             target => target.Name == targetName);
         
         assertion(targets);
+    }
+
+    [TestMethod]
+    [DataRow("-mt", false)]
+    [DataRow("-mt:false", false)]
+    [DataRow(null, false)]
+    [DataRow("-mt", true)]
+    public void ItPassesMultiThreadingToRunTargets(string? argument, bool noBuild)
+    {
+        TestDirectory directory = TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString());
+        File.WriteAllText(Path.Combine(directory.Path, "App.csproj"), $"""
+            <Project DefaultTargets="Build">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+              <Target Name="Restore" />
+              <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+                <ItemGroup>
+                  <Devices Include="test-device" />
+                </ItemGroup>
+              </Target>
+              <Target Name="Build" />
+              <Target Name="DeployToDevice" />
+              <Target Name="ComputeRunArguments">
+                <PropertyGroup>
+                  <RunCommand>{SecurityElement.Escape(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)}</RunCommand>
+                  <RunArguments>--version</RunArguments>
+                  <RunWorkingDirectory>$(MSBuildProjectDirectory)</RunWorkingDirectory>
+                </PropertyGroup>
+              </Target>
+            </Project>
+            """);
+
+        List<string> args = ["run", "--no-launch-profile", "-bl"];
+        if (argument is not null)
+        {
+            args.Add(argument);
+        }
+        if (noBuild)
+        {
+            args.Add("--no-build");
+        }
+
+        new DotnetCommand(Log, args.ToArray())
+            .WithWorkingDirectory(directory.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDDISABLEFEATURESFROMVERSION", "")
+            .WithEnvironmentVariable("MSBUILDUSESERVER", "0")
+            .Execute()
+            .Should().Pass();
+
+        string[] expectedTargets = noBuild
+            ? ["ComputeAvailableDevices", "DeployToDevice", "ComputeRunArguments"]
+            : ["Restore", "ComputeAvailableDevices", "DeployToDevice", "ComputeRunArguments"];
+        var events = BinaryLog.ReadRecords(Path.Combine(directory.Path, "msbuild-dotnet-run.binlog"))
+            .Select(record => record.Args).ToArray();
+
+        events.OfType<TargetStartedEventArgs>().Select(target => target.TargetName).Should().Contain(expectedTargets);
+        events.OfType<BuildMessageEventArgs>().Count(message => message.Message?.StartsWith(
+            "Multi-threaded strict mode is enabled.", StringComparison.Ordinal) == true)
+            .Should().Be(argument == "-mt" ? expectedTargets.Length : 0);
     }
 
     [TestMethod]
