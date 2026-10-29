@@ -204,15 +204,25 @@
         <target state="translated">Impossible de créer l’index d’image, car aucune image n’a été fournie.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidAuthRealmAllowedAddress">
+        <source>CONTAINER2033: The {0} environment variable contains '{1}', which is not a valid IP address or CIDR range. Separate entries with semicolons.</source>
+        <target state="new">CONTAINER2033: The {0} environment variable contains '{1}', which is not a valid IP address or CIDR range. Separate entries with semicolons.</target>
+        <note>{StrBegins="CONTAINER2033: "} {0} is an environment variable name; {1} is the invalid entry.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthRealmPolicy">
+        <source>CONTAINER2034: The {0} environment variable has the value '{1}', which is not a valid policy. Valid values are 'Public', 'AllowlistOnly', and 'None'.</source>
+        <target state="new">CONTAINER2034: The {0} environment variable has the value '{1}', which is not a valid policy. Valid values are 'Public', 'AllowlistOnly', and 'None'.</target>
+        <note>{StrBegins="CONTAINER2034: "} {0} is an environment variable name; {1} is its value. Do not translate 'Public', 'AllowlistOnly', or 'None'.</note>
+      </trans-unit>
       <trans-unit id="InvalidAuthResponse_DisallowedScheme">
         <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
         <target state="translated">le realm bearer « {0} » utilise le schéma « {1} » qui n’est pas autorisé; seul « https » est accepté (ou « http » lorsque le registre est configuré comme non sécurisé)</target>
         <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
       </trans-unit>
-      <trans-unit id="InvalidAuthResponse_PrivateIpLiteralRealm">
-        <source>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</source>
-        <target state="translated">le realm bearer « {0} » se résout en « {1} », qui est une adresse IP littérale privée, de bouclage, locale de lien ou non spécifiée</target>
-        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</note>
+      <trans-unit id="InvalidAuthResponse_RealmBlockedBySsrfPolicy">
+        <source>the token request to bearer realm '{0}' was blocked by server-side request forgery (SSRF) protection: {1} If the realm is trusted, add its IP addresses to the {2} environment variable, or change the policy with the {3} environment variable</source>
+        <target state="new">the token request to bearer realm '{0}' was blocked by server-side request forgery (SSRF) protection: {1} If the realm is trusted, add its IP addresses to the {2} environment variable, or change the policy with the {3} environment variable</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is a non-localized detail message from the SSRF protection library; {2} and {3} are environment variable names and must not be translated.</note>
       </trans-unit>
       <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
         <source>bearer realm '{0}' is not a valid absolute URI</source>
