@@ -237,7 +237,7 @@ internal sealed class RunCommandSelector : IDisposable
 
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
         return CommonRunHelpers.BuildProject(projectInstance, Collection, targets,
-            CommonRunHelpers.GetBuildConcurrency(_projectFilePath, _msbuildArgs).MultiThreaded, GetLoggers(), out targetOutputs);
+            _msbuildArgs.IsMultiThreadedEnabled, GetLoggers(), out targetOutputs);
     }
 
     public void Dispose()

@@ -9,9 +9,6 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
-using MSBuildApp = Microsoft.Build.CommandLine.MSBuildApp;
-using MSBuildCommandLineParser = Microsoft.Build.CommandLine.Experimental.CommandLineParser;
-using MSBuildCommandLineSwitches = Microsoft.Build.CommandLine.Experimental.CommandLineSwitches;
 #endif
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -226,40 +223,6 @@ internal static class CommonRunHelpers
     }
 
 #if !CLI_AOT
-    internal static (bool MultiThreaded, int MaxNodeCount) GetBuildConcurrency(string projectOrEntryPointPath, MSBuildArgs args)
-    {
-        var parser = new MSBuildCommandLineParser();
-        parser.GatherAllSwitches(
-            ["MSBuild", "-maxcpucount", projectOrEntryPointPath, .. args.OtherMSBuildArgs],
-            [],
-            out var autoResponseSwitches,
-            out var explicitSwitches,
-            out var commandLine,
-            out _);
-
-        var switches = CombineSwitches();
-        // Parse() alone does not load project response files. Use the source path for file-based apps.
-        if (parser.CheckAndGatherProjectAutoResponseFile(autoResponseSwitches, switches, false, commandLine))
-        {
-            switches = CombineSwitches();
-        }
-
-        int maxNodeCount = MSBuildApp.ProcessMaxCPUCountSwitch(
-            switches[MSBuildCommandLineSwitches.ParameterizedSwitch.MaxCPUCount]);
-        bool multiThreaded = MSBuildApp.IsMultiThreadedEnabled(switches);
-
-        return (multiThreaded, multiThreaded ? maxNodeCount : 1);
-
-        MSBuildCommandLineSwitches CombineSwitches()
-        {
-            var result = new MSBuildCommandLineSwitches();
-            result.Append(autoResponseSwitches, commandLine);
-            result.Append(explicitSwitches, commandLine);
-            result.ThrowErrors();
-            return result;
-        }
-    }
-
     [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     internal static bool BuildProject(
         ProjectInstance project,
