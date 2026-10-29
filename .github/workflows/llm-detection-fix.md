@@ -33,6 +33,19 @@ permissions:
 env:
   DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
 
+steps:
+  - name: Expose the trusted alias generator
+    run: |
+      mkdir -p "$RUNNER_TEMP/llm-detection-bin"
+      cat > "$RUNNER_TEMP/llm-detection-bin/prepare-llm-detection" <<'SH'
+      #!/bin/sh
+      set -eu
+      cd "$GITHUB_WORKSPACE"
+      exec node .github/llm-detection/fix.mjs prepare "$@"
+      SH
+      chmod 755 "$RUNNER_TEMP/llm-detection-bin/prepare-llm-detection"
+      echo "$RUNNER_TEMP/llm-detection-bin" >> "$GITHUB_PATH"
+
 jobs:
   check_audit:
     if: github.repository == 'dotnet/sdk' && github.ref == 'refs/heads/main'
@@ -167,7 +180,7 @@ tools:
     - "git diff:*"
     - "git status:*"
     - "git switch:*"
-    - "node .github/llm-detection/fix.mjs prepare:*"
+    - "prepare-llm-detection:*"
     - "cat:*"
     - "find:*"
     - "grep:*"
@@ -273,10 +286,12 @@ An exact-value rule or a new harness requires a separate human-directed change.
 
 Use the trusted generator, replacing the uppercase placeholder with the discovered variable:
 
-`node .github/llm-detection/fix.mjs prepare <harness> <VARIABLE>`
+`prepare-llm-detection <harness> <VARIABLE>`
 
 The generator adds one alias and four data rows: a positive value, an empty value, a non-empty false value, and simultaneous legacy/new signals.
 It preserves every existing rule and test.
+Invoke this command directly, without chaining it to other shell commands.
+If the command is missing or denied, report `missing_tool` with the execution error instead of calling `noop`.
 Do not edit other files or alter the generated result.
 Review the diff, stage only the two generated C# files, and create exactly one commit.
 Use branch `llm-detection-fix/<harness>`.

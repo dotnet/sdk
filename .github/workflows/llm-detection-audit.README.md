@@ -107,6 +107,9 @@ The agent rechecks stable upstream source before proposing one harness-prefixed 
 It must provide distinct assignment and propagation permalinks at the same commit.
 The agent's editing tool is disabled, and its prompt prohibits builds and tests in the agent job.
 It invokes a [trusted generator](../llm-detection/fix.mjs) that changes only an existing presence-based rule and its regression matrix.
+Setup exposes only its `prepare` entry point as `prepare-llm-detection` in the agent's command path.
+The shell allowlist names this command rather than granting general Node execution.
+A missing or denied generator is an execution failure, not a successful no-op.
 Git access permits local commit preparation, but agent GitHub permissions remain read-only.
 
 An independent job checks the AM patch against a clean checkout of the workflow revision.
@@ -144,6 +147,9 @@ For pre-merge hosted testing, adapt the fixer only in a private trial repository
 Use that repository's successful audit and tracker, its own credential, and a pinned SDK revision with the trusted fixer files.
 Do not grant write credentials to the validation job or dispatch the production fixer from a feature branch.
 Local guard and compilation checks do not prove a hosted build or draft-PR publication succeeded.
+For a known-gap trial, require a proposal instead of accepting a no-op.
+Confirm the SDK build and telemetry matrix ran successfully.
+Inspect the resulting private draft PR and its two-file diff.
 
 ## Maintenance
 
