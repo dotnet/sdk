@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
@@ -17,6 +18,20 @@ namespace Microsoft.DotNet.Cli.Commands.Workload;
 internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefinition>
     where TDefinition : WorkloadCommandDefinitionBase
 {
+    protected static WorkloadId ParseWorkloadId(string workloadId)
+    {
+        try
+        {
+            return new WorkloadId(workloadId);
+        }
+        catch (ArgumentException)
+        {
+            throw new GracefulException(
+                string.Format(CliCommandStrings.WorkloadNotRecognized, workloadId),
+                isUserError: false);
+        }
+    }
+
     /// <summary>
     /// The package downloader to use for acquiring NuGet packages.
     /// </summary>
