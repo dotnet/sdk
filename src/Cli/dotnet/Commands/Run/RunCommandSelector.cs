@@ -228,7 +228,6 @@ internal sealed class RunCommandSelector : IDisposable
     /// command (so a binary log attached to it holds a single build) or, when no session was provided,
     /// in a build of its own.
     /// </summary>
-    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     private bool BuildTargets(ProjectInstance projectInstance, string[] targets, out IDictionary<string, TargetResult> targetOutputs)
     {
         if (_buildSession is { } buildSession)
@@ -237,7 +236,8 @@ internal sealed class RunCommandSelector : IDisposable
         }
 
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
-        return projectInstance.Build(targets, GetLoggers(), remoteLoggers: null, out targetOutputs);
+        return CommonRunHelpers.BuildProject(projectInstance, Collection, targets,
+            CommonRunHelpers.GetBuildConcurrency(_projectFilePath, _msbuildArgs).MultiThreaded, GetLoggers(), out targetOutputs);
     }
 
     public void Dispose()

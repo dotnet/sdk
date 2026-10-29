@@ -508,7 +508,8 @@ public class RunCommand
                 ProjectFileFullPath,
                 projectFactory ?? (EntryPointFileFullPath is null ? null : CreateProjectBuilder().CreateProjectInstance),
                 MSBuildArgs,
-                binaryLogger: null);
+                binaryLogger: null,
+                out _);
             return project.ExpandString(expression);
         }
     }
@@ -650,9 +651,9 @@ public class RunCommand
             Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
 
             using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
-            project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
+            project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger, out var collection);
             ValidatePreconditions(project);
-            bool hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);
+            bool hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, collection);
 
             var runProperties = RunProperties.FromProject(project).WithApplicationArguments(ApplicationArgs);
             command = CreateCommandFromRunProperties(runProperties);
@@ -752,31 +753,31 @@ public class RunCommand
             return command;
         }
 
-        [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
-        static bool InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
+        bool InvokeRunArgumentsTarget(ProjectInstance project, ProjectCollection collection)
         {
             // Only add environment variables as MSBuild items if the project has opted in via capability
             bool hasRuntimeEnvironmentVariableSupport = EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project);
             if (hasRuntimeEnvironmentVariableSupport)
             {
-                EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
+                EnvironmentVariablesToMSBuild.AddAsItems(project, EnvironmentVariables);
             }
 
             List<ILogger> loggersForBuild = [];
-            if (!LoggerUtility.HasNoConsoleLoggerArgument(buildArgs.OtherMSBuildArgs))
+            if (!LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs))
             {
                 loggersForBuild.Add(CommonRunHelpers.GetConsoleLogger(
-                    buildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..buildArgs.OtherMSBuildArgs]),
+                    MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", ..MSBuildArgs.OtherMSBuildArgs]),
                     CommandServices.CreateDefault()
                 ));
             }
 
-            if (binaryLogger is not null)
+            if (logger is not null)
             {
-                loggersForBuild.Add(binaryLogger);
+                loggersForBuild.Add(logger);
             }
 
-            if (!project.Build([Constants.ComputeRunArguments], loggers: loggersForBuild, remoteLoggers: null, out _))
+            bool multiThreaded = CommonRunHelpers.GetBuildConcurrency(ProjectOrEntryPointPath, MSBuildArgs).MultiThreaded;
+            if (!CommonRunHelpers.BuildProject(project, collection, [Constants.ComputeRunArguments], multiThreaded, loggersForBuild, out _))
             {
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, Constants.ComputeRunArguments);
             }
@@ -789,10 +790,11 @@ public class RunCommand
         string? projectFilePath,
         Func<ProjectCollection, ProjectInstance>? projectFactory,
         MSBuildArgs msbuildArgs,
-        ILogger? binaryLogger)
+        ILogger? binaryLogger,
+        out ProjectCollection collection)
     {
         var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
-        var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
         if (projectFactory != null)
         {
