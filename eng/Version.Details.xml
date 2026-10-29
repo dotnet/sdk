@@ -208,22 +208,22 @@
       <Uri>https://dev.azure.com/devdiv/DevDiv/_git/NuGet-NuGet.Client-Trusted</Uri>
       <Sha>13eeb32d62833984c9367f8f4e22a120ebc03b47</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.2-hotfix-26509-18">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.2-hotfix-26528-35">
       <Uri>https://dev.azure.com/dnceng/internal/_git/microsoft-vstest</Uri>
-      <Sha>469122275ab10159c247347172be51daa51f47c6</Sha>
+      <Sha>3e83117788ac12871e0b34ce1b2d8c2b9e75036d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.14.2-hotfix-26509-18">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.14.2-hotfix-26528-35">
       <Uri>https://dev.azure.com/dnceng/internal/_git/microsoft-vstest</Uri>
-      <Sha>469122275ab10159c247347172be51daa51f47c6</Sha>
+      <Sha>3e83117788ac12871e0b34ce1b2d8c2b9e75036d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.14.2-hotfix-26509-18">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.14.2-hotfix-26528-35">
       <Uri>https://dev.azure.com/dnceng/internal/_git/microsoft-vstest</Uri>
-      <Sha>469122275ab10159c247347172be51daa51f47c6</Sha>
+      <Sha>3e83117788ac12871e0b34ce1b2d8c2b9e75036d</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.14.2-hotfix-26509-18">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.14.2-hotfix-26528-35">
       <Uri>https://dev.azure.com/dnceng/internal/_git/microsoft-vstest</Uri>
-      <Sha>469122275ab10159c247347172be51daa51f47c6</Sha>
+      <Sha>3e83117788ac12871e0b34ce1b2d8c2b9e75036d</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.23">
