@@ -125,6 +125,8 @@ It builds the patched redist SDK and runs the existing telemetry detection matri
 The generated cases exercise a positive value, an empty value, a non-empty false value, and simultaneous legacy/new signals.
 Existing cases retain legacy coverage.
 Validation can take up to 90 minutes because the hosted runner needs a complete redist build.
+The disposable validation runner removes its unused Android, GHC, and CodeQL installations before the build.
+It requires at least 24 GiB of free space to reduce the risk of losing diagnostics to disk exhaustion.
 Missing prerequisites, build failures, test failures, or threat-detection failures block PR publication.
 Binlogs and test diagnostics remain in the validation artifact for seven days.
 

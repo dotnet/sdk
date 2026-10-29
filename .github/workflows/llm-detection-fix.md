@@ -123,6 +123,17 @@ jobs:
       - name: Enforce the additive patch and regression matrix
         id: patch
         run: node .github/llm-detection/fix.mjs validate "$RUNNER_TEMP/detection-fix"
+      - name: Reserve space for the isolated SDK build
+        if: steps.patch.outputs.has_proposal == 'true'
+        run: |
+          df -h "$GITHUB_WORKSPACE"
+          sudo rm -rf -- /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h "$GITHUB_WORKSPACE"
+          available_kib=$(df -Pk "$GITHUB_WORKSPACE" | awk 'NR == 2 { print $4 }')
+          if [ "$available_kib" -lt $((24 * 1024 * 1024)) ]; then
+            echo "::error::Insufficient space for isolated validation. Use a runner with at least 24 GiB free."
+            exit 1
+          fi
       - name: Build the patched SDK in an unprivileged job
         if: steps.patch.outputs.has_proposal == 'true'
         run: ./build.sh /bl:1.binlog
