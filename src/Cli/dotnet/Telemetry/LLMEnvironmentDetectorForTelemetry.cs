@@ -43,7 +43,7 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         // Droid
         new EnvironmentDetectionRuleWithResult<string>("droid", new AnyPresentEnvironmentRule("DROID_CLI")),
         // OpenCode
-        new EnvironmentDetectionRuleWithResult<string>("opencode", new AnyPresentEnvironmentRule("OPENCODE_AI")),
+        new EnvironmentDetectionRuleWithResult<string>("opencode", new AnyPresentEnvironmentRule("OPENCODE")),
         // Zed AI
         new EnvironmentDetectionRuleWithResult<string>("zed", new AnyPresentEnvironmentRule("ZED_ENVIRONMENT", "ZED_TERM")),
         // Kimi CLI
