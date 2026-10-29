@@ -253,13 +253,11 @@ internal static class MSBuildUtility
         var projectOrSolutionOptionValue = parseResult.GetValue(definition.ProjectOrSolutionOption);
         var solutionOptionValue = parseResult.GetValue(definition.SolutionOption);
         var testModulesFilterOptionValue = parseResult.GetValue(definition.TestModulesFilterOption);
+        bool hasExplicitBuildPathOption = projectOrSolutionOptionValue is not null ||
+            solutionOptionValue is not null ||
+            testModulesFilterOptionValue is not null;
 
-        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(
-            positionalArgumentCount,
-            projectOrSolutionOptionValue is not null ||
-                solutionOptionValue is not null ||
-                testModulesFilterOptionValue is not null,
-            ref otherArgs);
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(positionalArgumentCount, ref otherArgs, hasExplicitBuildPathOption);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
             .Concat(msbuildOnlyArgs);
@@ -315,9 +313,7 @@ internal static class MSBuildUtility
     }
 
     private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(
-        int positionalArgumentCount,
-        bool hasExplicitBuildPath,
-        ref ImmutableArray<string> otherArgs)
+        int positionalArgumentCount, ref ImmutableArray<string> otherArgs, bool hasExplicitBuildPathOption)
     {
         string? positionalProjectOrSolution = null;
         string? positionalTestModules = null;
@@ -326,7 +322,7 @@ internal static class MSBuildUtility
         // Note that the validation here is added to have a "better" error message for scenarios that will already fail.
         // So, disabling validation is okay if the user scenario is valid.
         bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument =
-            !hasExplicitBuildPath &&
+            !hasExplicitBuildPathOption &&
             Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
 
         for (int i = 0; i < positionalArgumentCount; i++)
