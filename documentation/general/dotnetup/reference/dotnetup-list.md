@@ -25,9 +25,9 @@ channel or version, shown alongside the installed version that satisfies it:
 ```text
 Component     Installed version  Install spec  Source
 ------------  -----------------  ------------  ---------
-SDK           10.0.105           10.0          Command
-SDK           10.0.105           10.0.1xx      Command
-SDK           9.0.304            -             -
+.NET SDK      10.0.105           10.0          Command
+.NET SDK      10.0.105           10.0.1xx      Command
+.NET SDK      9.0.304            -             -
 .NET Runtime  10.0.5             10.0          Command
 
 3 install specs; 3 installations (2 SDKs, 1 runtime)

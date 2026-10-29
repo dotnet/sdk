@@ -254,6 +254,25 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
+    [DataRow(InstallComponent.SDK, ".NET SDK")]
+    [DataRow(InstallComponent.Runtime, ".NET Runtime")]
+    [DataRow(InstallComponent.ASPNETCore, "ASP.NET Core Runtime")]
+    [DataRow(InstallComponent.WindowsDesktop, ".NET Desktop Runtime")]
+    public void RelationshipTable_UsesProductNames(InstallComponent component, string expectedName)
+    {
+        var data = new ListData
+        {
+            Installations = [Installation("10.0.105", component)]
+        };
+
+        InstallationListRenderer.Write(Output, data, width: 160);
+
+        var row = Output.ToString().Split('\n')
+            .Single(line => line.Contains("10.0.105", StringComparison.Ordinal));
+        row.TrimStart().Should().StartWith(expectedName + " ");
+    }
+
+    [TestMethod]
     public void RelationshipTable_ShowsInstalledVersionBeforeSpecAndSource()
     {
         var data = new ListData
@@ -363,7 +382,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         var output = Output.ToString();
         var withoutWhitespace = string.Concat(output.Where(c => !char.IsWhiteSpace(c)));
         withoutWhitespace.Should().Contain("[bold]10.0[/]").And.Contain("10.0.105(invalid)");
-        output.Should().Contain("Warning: SDK 10.0.105 is invalid: Missing [runtime] files");
+        output.Should().Contain("Warning: .NET SDK 10.0.105 is invalid: Missing [runtime] files");
     }
 
     [TestMethod]

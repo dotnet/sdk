@@ -145,10 +145,10 @@ internal static class InstallationListRenderer
 
     private static string ComponentName(InstallComponent component) => component switch
     {
-        InstallComponent.SDK => "SDK",
+        InstallComponent.SDK => ".NET SDK",
         InstallComponent.Runtime => Strings.ListRuntimeComponent,
-        InstallComponent.ASPNETCore => "ASP.NET Core",
-        InstallComponent.WindowsDesktop => "Windows Desktop",
+        InstallComponent.ASPNETCore => Strings.ListAspNetCoreRuntimeComponent,
+        InstallComponent.WindowsDesktop => Strings.ListDesktopRuntimeComponent,
         _ => component.GetDisplayName()
     };
 }

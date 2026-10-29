@@ -66,7 +66,7 @@ Or open a new terminal.
 > dotnetup list
 Component  Installed version   Install spec  Source
 ---------  ------------------  ------------  -------
-SDK        <resolved-version>  latest        Command
+.NET SDK   <resolved-version>  latest        Command
 
 1 install spec; 1 installation (1 SDK, 0 runtimes)
 

@@ -383,19 +383,19 @@ New migrations record a distinct origin. Existing `Explicit` specs, including
 older migrations whose origin cannot be recovered, retain the Command source label.
 
 ```text
-Component        Installed version  Install spec                                                Source
----------------  -----------------  ----------------------------------------------------------  -----------------------
-SDK              10.0.105           10.0.100 (rollForward: latestPatch, allowPrerelease: false)  C:\src\app\global.json
-SDK              10.0.105           10.0.1xx                                                    Migration
-SDK              10.0.103           10.0.103                                                    Command
-SDK              9.0.304            -                                                           -
-SDK              Not installed      10.0.300 (rollForward: disable)                             C:\src\other\global.json
-SDK              Unknown            Unavailable                                                 C:\src\tools\global.json
-.NET Runtime     10.0.5             10.0                                                        Command
-ASP.NET Core     10.0.5             10.0                                                        Command
-Windows Desktop  10.0.3             10.0                                                        Command
-.NET Runtime     9.0.8              9.0                                                         Command
-ASP.NET Core     9.0.8              9.0                                                         Command
+Component             Installed version  Install spec                                                Source
+--------------------  -----------------  ----------------------------------------------------------  -----------------------
+.NET SDK              10.0.105           10.0.100 (rollForward: latestPatch, allowPrerelease: false)  C:\src\app\global.json
+.NET SDK              10.0.105           10.0.1xx                                                    Migration
+.NET SDK              10.0.103           10.0.103                                                    Command
+.NET SDK              9.0.304            -                                                           -
+.NET SDK              Not installed      10.0.300 (rollForward: disable)                             C:\src\other\global.json
+.NET SDK              Unknown            Unavailable                                                 C:\src\tools\global.json
+.NET Runtime          10.0.5             10.0                                                        Command
+ASP.NET Core Runtime  10.0.5             10.0                                                        Command
+.NET Desktop Runtime  10.0.3             10.0                                                        Command
+.NET Runtime          9.0.8              9.0                                                         Command
+ASP.NET Core Runtime  9.0.8              9.0                                                         Command
 
 10 install specs; 8 installations (3 SDKs, 5 runtimes)
 

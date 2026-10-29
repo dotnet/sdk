@@ -306,6 +306,12 @@
   <data name="ListCommandLineSource" xml:space="preserve">
     <value>Command</value>
   </data>
+  <data name="ListAspNetCoreRuntimeComponent" xml:space="preserve">
+    <value>ASP.NET Core Runtime</value>
+  </data>
+  <data name="ListDesktopRuntimeComponent" xml:space="preserve">
+    <value>.NET Desktop Runtime</value>
+  </data>
   <data name="ListRuntimeComponent" xml:space="preserve">
     <value>.NET Runtime</value>
     <comment>{Locked=".NET"}</comment>
