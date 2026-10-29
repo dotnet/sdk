@@ -194,6 +194,8 @@ internal sealed class InternalMicrosoftDetectionContext
         IReadOnlyList<string> arguments,
         CancellationToken cancellationToken)
     {
+        // TODO: Replace this process execution and cleanup code with Process.RunAndCaptureTextAsync
+        // once https://github.com/dotnet/runtime/issues/136466 is implemented.
         using var process = new Process
         {
             StartInfo = new ProcessStartInfo

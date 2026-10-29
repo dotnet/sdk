@@ -60,7 +60,7 @@ internal static class ProcessStartInfoExtensions
 #if NET
             // Preserve the captured text as-is; callers do not require StreamForwarder's newline normalization.
             (stdOut, stdErr) = process.ReadAllText();
-            process.WaitForExitStatus();
+            return process.WaitForExitStatus().ExitCode;
 #else
             StreamForwarder outStream = new StreamForwarder().Capture();
             StreamForwarder errStream = new StreamForwarder().Capture();
@@ -73,9 +73,9 @@ internal static class ProcessStartInfoExtensions
             taskErr.Wait();
             stdOut = outStream.CapturedOutput;
             stdErr = errStream.CapturedOutput;
+            return process.ExitCode;
 #endif
         }
 
-        return process.ExitCode;
     }
 }
