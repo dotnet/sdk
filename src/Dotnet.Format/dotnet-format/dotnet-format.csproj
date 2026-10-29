@@ -6,7 +6,7 @@
     <RootNamespace>Microsoft.CodeAnalysis.Tools</RootNamespace>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <NoWarn>$(NoWarn);8002</NoWarn>
-    <Description>Command line tool for formatting C# and Visual Basic code files based on .editorconfig settings.</Description>
+    <Description>Command line tool for formatting C#, Visual Basic, and Razor code files based on .editorconfig settings.</Description>
     <RollForward>LatestMajor</RollForward>
 
     <IsPackable>true</IsPackable>
@@ -33,6 +33,8 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.Features" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.Features" />
+
+    <PackageReference Include="Microsoft.CodeAnalysis.Razor.DotNetFormat" />
 
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
