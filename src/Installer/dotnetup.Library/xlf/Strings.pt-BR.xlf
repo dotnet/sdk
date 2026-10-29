@@ -12,11 +12,6 @@
         <target state="new">Installs .NET with the official Windows installer, which asks for administrator approval.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AdminModeAlreadyEnabled">
-        <source>Admin mode is already enabled.</source>
-        <target state="new">Admin mode is already enabled.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AdminModeArgumentDisplayName">
         <source>The argument '&lt;{0}&gt;'</source>
         <target state="new">The argument '&lt;{0}&gt;'</target>
@@ -26,16 +21,6 @@
         <source>'{0}' is not available in admin mode. Run 'dotnetup env set &lt;mode&gt;' to leave admin mode.</source>
         <target state="new">'{0}' is not available in admin mode. Run 'dotnetup env set &lt;mode&gt;' to leave admin mode.</target>
         <note>{0} is the command name. {Locked="dotnetup env set"}</note>
-      </trans-unit>
-      <trans-unit id="AdminModeDisabled">
-        <source>Admin mode is disabled.</source>
-        <target state="new">Admin mode is disabled.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdminModeEnabled">
-        <source>Admin mode is enabled.</source>
-        <target state="new">Admin mode is enabled.</target>
-        <note />
       </trans-unit>
       <trans-unit id="AdminModeInfoInstallationsNotShown">
         <source>System installations are not yet listed by dotnetup in admin mode. Use 'dotnet --info' to view them.</source>

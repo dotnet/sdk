@@ -542,15 +542,6 @@ Or open a new terminal.</value>
   <data name="AdminModeArgumentDisplayName" xml:space="preserve">
     <value>The argument '&lt;{0}&gt;'</value>
   </data>
-  <data name="AdminModeAlreadyEnabled" xml:space="preserve">
-    <value>Admin mode is already enabled.</value>
-  </data>
-  <data name="AdminModeEnabled" xml:space="preserve">
-    <value>Admin mode is enabled.</value>
-  </data>
-  <data name="AdminModeDisabled" xml:space="preserve">
-    <value>Admin mode is disabled.</value>
-  </data>
   <data name="InitInstallLocation" xml:space="preserve">
     <value>dotnetup will install .NET SDKs and runtimes in {0}.</value>
     <comment>{Locked="dotnetup"}{Locked=".NET"} {0} is the install directory path.</comment>

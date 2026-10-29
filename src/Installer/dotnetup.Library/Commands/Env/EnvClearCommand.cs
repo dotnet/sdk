@@ -37,7 +37,6 @@ internal class EnvClearCommand : CommandBase
             targetDotnetupOnPath: false,
             _dotnetEnvironment,
             _shellProvider,
-            _inspector,
-            DotnetupConfig.ReadAccessMode());
+            _inspector);
     }
 }

@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
-using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
@@ -19,8 +18,7 @@ internal static class EnvSettingsWriter
         bool targetDotnetupOnPath,
         IDotnetEnvironmentManager environment,
         IEnvShellProvider? shellProvider,
-        IEnvironmentStateInspector inspector,
-        DotnetAccessMode? previousAccessMode)
+        IEnvironmentStateInspector inspector)
     {
         IEnvShellProvider? resolvedShellProvider = shellProvider ?? ShellDetection.GetCurrentShellProvider();
 
@@ -39,18 +37,6 @@ internal static class EnvSettingsWriter
             resolvedShellProvider);
 
         DotnetupConfigData newConfig = DotnetupConfig.WriteAccessSettings(targetEnv, targetDotnetupOnPath);
-
-        if (targetEnv == DotnetAccessMode.Admin)
-        {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Success(
-                previousAccessMode == DotnetAccessMode.Admin
-                    ? Strings.AdminModeAlreadyEnabled
-                    : Strings.AdminModeEnabled));
-        }
-        else if (previousAccessMode == DotnetAccessMode.Admin)
-        {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Success(Strings.AdminModeDisabled));
-        }
 
         Console.WriteLine(DescribeOutcome(targetEnv, targetDotnetupOnPath));
 

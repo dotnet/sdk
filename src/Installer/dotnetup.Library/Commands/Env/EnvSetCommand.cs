@@ -71,8 +71,7 @@ internal class EnvSetCommand : CommandBase
         bool targetDotnetupOnPath = _dotnetupOnPathArg ?? previous?.DotnetupOnPath ?? true;
 
         EnvSettingsWriter.ApplyAndPersist(
-            targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector,
-            previous?.AccessMode);
+            targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector);
     }
 
 }
