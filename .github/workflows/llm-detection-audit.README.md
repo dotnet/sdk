@@ -51,6 +51,7 @@ The agent has read-only GitHub permissions. Separate safe-output jobs create or
 update the report. Update permission is restricted by title prefix and label.
 The workflow does not install harnesses, run their code, expose environment values,
 change CLI behavior, or create pull requests.
+The separate [manual fixer](llm-detection-fix.md) can propose a bounded draft PR after maintainer dispatch.
 
 Upstream lookup failures remain visible in the report. Checkout, inventory, and
 issue lookup failures stop publication instead of replacing the report with a
@@ -86,15 +87,74 @@ Check all inventoried signal rows, upstream evidence, incomplete coverage, and t
 For investigation changes, do not supply the expected missing variable or its source path to the trial.
 Inspect the execution trace and report to confirm independent discovery, assignment, and propagation evidence.
 
+## Proposing a fix
+
+The [fixer workflow](llm-detection-fix.md) does not run automatically after an audit.
+After both workflows reach `main`, a maintainer can dispatch it with a successful audit run ID and one existing harness label:
+
+```shell
+gh workflow run llm-detection-fix.lock.yml --repo dotnet/sdk --ref main \
+  -f audit_run_id=<successful-run-id> -f harness=opencode
+```
+
+The selected run must belong to this repository's main-branch audit workflow.
+Its report must still appear in the unique, open, bot-authored tracking issue.
+An open detection-fix PR blocks another proposal, regardless of which harness it addresses.
+Closing the tracker prevents a new fix and stops publication when validation rechecks it.
+This workflow never approves or merges PRs.
+
+The agent rechecks stable upstream source before proposing one harness-prefixed alias.
+It must provide distinct assignment and propagation permalinks at the same commit.
+The agent's editing tool is disabled, and its prompt prohibits builds and tests in the agent job.
+It invokes a [trusted generator](../llm-detection/fix.mjs) that changes only an existing presence-based rule and its regression matrix.
+Git access permits local commit preparation, but agent GitHub permissions remain read-only.
+
+An independent job checks the AM patch against a clean checkout of the workflow revision.
+It selects an immutable artifact ID from the current attempt and rejects stale artifacts from earlier attempts.
+It accepts exactly one added variable and four generated test rows.
+All existing rules, labels, matching semantics, and tests must remain unchanged.
+It rejects bundles, multiple commits, extra files, mode changes, and transport overrides.
+The publisher also enforces two exact allowed paths, a two-file limit, and a 16 KiB patch limit.
+
+The validation job has only read permissions, no protected environment, no supplied secrets, and no persisted checkout credentials.
+It builds the patched redist SDK and runs the existing telemetry detection matrix through `scripts/RunTests.cs`.
+The generated cases exercise a positive value, an empty value, a non-empty false value, and simultaneous legacy/new signals.
+Existing cases retain legacy coverage.
+Validation can take up to 90 minutes because the hosted runner needs a complete redist build.
+Missing prerequisites, build failures, test failures, or threat-detection failures block PR publication.
+Binlogs and test diagnostics remain in the validation artifact for seven days.
+
+The separate publisher requires successful validation and rechecks the artifact without executing its C# code.
+It verifies a SHA-256 digest of both the patch and PR metadata against the validated payload.
+It rechecks duplicate PRs and refuses publication if `main` advanced during validation.
+It can open at most one draft PR, using the restricted safe output.
+Source references and an agent's semantic conclusions still require human review.
+Structural checks prove the patch's scope, not the truth of upstream claims.
+Tool restrictions and prompt instructions do not replace the sandbox or the separate publisher's enforced checks.
+Rule removal, exact-value changes, new harness labels, and ambiguous identity signals require a separate human-directed change.
+
+Run the deterministic guard tests locally with:
+
+```shell
+node --test .github/llm-detection/fix.test.mjs
+gh aw compile llm-detection-fix --no-emit --strict --validate
+```
+
+For pre-merge hosted testing, adapt the fixer only in a private trial repository.
+Use that repository's successful audit and tracker, its own credential, and a pinned SDK revision with the trusted fixer files.
+Do not grant write credentials to the validation job or dispatch the production fixer from a feature branch.
+Local guard and compilation checks do not prove a hosted build or draft-PR publication succeeded.
+
 ## Maintenance
 
 Change the workflow source, then regenerate its lock file:
 
 ```shell
 gh aw compile llm-detection-audit --schedule-seed dotnet/sdk
+gh aw compile llm-detection-fix
 ```
 
-Commit both files. Do not edit `llm-detection-audit.lock.yml` directly.
+Commit each changed source with its generated lock file. Do not edit lock files directly.
 The harness inventory comes from current CLI code, not a separate list.
 Add vendor domains to the network and safe-output allowlists only when needed.
 Do not broaden network access or add credentials to resolve missing evidence.
