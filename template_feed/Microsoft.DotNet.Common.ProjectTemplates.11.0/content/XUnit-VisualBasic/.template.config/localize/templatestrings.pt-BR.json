@@ -6,6 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "Substituição da estrutura de destino",
   "symbols/Framework/description": "A estrutura de destino para o projeto.",
   "symbols/Framework/displayName": "Estrutura",
+  "symbols/Framework/choices/net12.0/description": "Target net12.0",
   "symbols/Framework/choices/net11.0/description": "Net11.0 de destino",
   "symbols/XUnitVersion/description": "A versão do xUnit.net a ser usada.",
   "symbols/XUnitVersion/displayName": "Versão xUnit.net",
