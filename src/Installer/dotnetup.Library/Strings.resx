@@ -308,9 +308,11 @@
   </data>
   <data name="ListAspNetCoreRuntimeComponent" xml:space="preserve">
     <value>ASP.NET Core Runtime</value>
+    <comment>{Locked="ASP.NET Core"}</comment>
   </data>
   <data name="ListDesktopRuntimeComponent" xml:space="preserve">
     <value>.NET Desktop Runtime</value>
+    <comment>{Locked=".NET"}</comment>
   </data>
   <data name="ListRuntimeComponent" xml:space="preserve">
     <value>.NET Runtime</value>
