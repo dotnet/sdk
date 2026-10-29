@@ -3202,6 +3202,21 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    [DataRow("FileBasedProgramsFromRefDirective")]
+    [DataRow("filebasedprogramsfromrefdirective")]
+    public void Directives_RefMetadata_ReservedName(string name)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: $"#:ref Lib.cs {name}=false",
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.ConflictingDirectiveMetadata, name)),
+            ]);
+    }
+
+    [TestMethod]
     [DataRow("invalid")]
     [DataRow("SDK")]
     public void Directives_Unknown(string directive)

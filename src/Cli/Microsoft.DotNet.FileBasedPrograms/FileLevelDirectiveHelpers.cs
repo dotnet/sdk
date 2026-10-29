@@ -1159,7 +1159,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (ParseMetadata(context, tokens, start: 1) is not { IsDefault: false } metadata)
+            if (ParseMetadata(context, tokens, start: 1, conflictingName: VirtualProjectBuilder.FromRefDirectiveMetadataName) is not { IsDefault: false } metadata)
             {
                 return null;
             }
