@@ -8,6 +8,9 @@
     <!-- Create FileDefinitions items for ResolveHostfxrCopyLocalContent target -->
     <EmitLegacyAssetsFileItems>true</EmitLegacyAssetsFileItems>
     <RootNamespace>Microsoft.DotNet.DotNetSdkResolver</RootNamespace>
+    <PublishWindowsPdb Condition="'$(TargetFramework)' == 'net472' and
+                                 '$(OS)' == 'Windows_NT' and
+                                 '$(DotNetBuildSourceOnly)' != 'true'">true</PublishWindowsPdb>
 
     <!--
       Mark as Native AOT compatible. This will enable relevant analyzers.
