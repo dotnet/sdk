@@ -428,14 +428,6 @@ jobs:
           dockerVolumeArgs="-v $(sourcesPath):/vmr"
           customBuildArgs=''
           extraBuildProperties=''
-          if [[ '$(System.TeamProject)' == 'internal' && '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
-            # TODO: Remove this temporary hotfix version override after the 10.0.114 release.
-            testSdkHotfixVersion='18.0.2-hotfix-26507-109'
-            extraBuildProperties="$extraBuildProperties /p:SmokeTestsTestSdkVersion=$testSdkHotfixVersion"
-            if [[ -n '${{ parameters.reuseBuildArtifactsFrom }}' && '${{ parameters.withPreviousSDK }}' != 'True' ]]; then
-              extraBuildProperties="$extraBuildProperties /p:MicrosoftNETTestSdkVersion=$testSdkHotfixVersion"
-            fi
-          fi
 
           if [[ ! -z '${{ parameters.targetOS }}' ]]; then
             extraBuildProperties="$extraBuildProperties /p:TargetOS=${{ parameters.targetOS }}"
