@@ -406,20 +406,9 @@ namespace EndToEnd.Tests
 
         private static string DetectExpectedDefaultFramework(string template)
         {
-            // NetTFMUpdate: Use the current product-pack TFM while templates are staged to net11.
-            return ToolsetInfo.CurrentTargetFramework;
-
-            /*
-            string dotnetFolder = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
-            string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
-            int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 11)
-            {
-                return $"net{latestMajorVersion}.0";
-            }
-
-            throw new Exception("Unsupported version of SDK");
-            */
+            return template is "worker" or "web" or "mvc" or "webapi" or "webapp" or "razorclasslib" or "grpc"
+                ? ToolsetInfo.SdkTargetFramework
+                : ToolsetInfo.CurrentTargetFramework;
         }
 
         private void TestTemplateCreateAndBuild(
