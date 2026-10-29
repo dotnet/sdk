@@ -4,9 +4,10 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
-    <!-- Only content files are harvested from Microsoft.NET.ProjectData.Tasks, so don't pin its
-         transitive NuGet dependencies to this band's NuGet version. -->
-    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
+    <!-- The package's publish output includes runtime dependencies as well as the harvested content.
+         Keep those dependencies on source-built versions in source-build, but don't pin them to this
+         SDK band's NuGet versions in regular builds. -->
+    <CentralPackageTransitivePinningEnabled Condition="'$(DotNetBuildSourceOnly)' != 'true'">false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
   <ItemGroup>
