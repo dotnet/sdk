@@ -19,10 +19,11 @@ internal static class ImagePublisher
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        bool published;
         switch (destinationImageReference.Kind)
         {
             case DestinationImageReferenceKind.LocalRegistry:
-                await PushToLocalRegistryAsync(
+                published = await PushToLocalRegistryAsync(
                     singleArchImage,
                     sourceImageReference,
                     destinationImageReference,
@@ -32,7 +33,7 @@ internal static class ImagePublisher
                     destinationImageReference.LocalRegistry!.LoadAsync).ConfigureAwait(false);
                 break;
             case DestinationImageReferenceKind.RemoteRegistry:
-                await PushToRemoteRegistryAsync(
+                published = await PushToRemoteRegistryAsync(
                     singleArchImage,
                     sourceImageReference,
                     destinationImageReference,
@@ -50,7 +51,10 @@ internal static class ImagePublisher
                 throw new ArgumentOutOfRangeException();
         }
 
-        telemetry.LogPublishSuccess();
+        if (published)
+        {
+            telemetry.LogPublishSuccess();
+        }
     }
 
     public static async Task PublishImageAsync(
@@ -63,10 +67,11 @@ internal static class ImagePublisher
     {
         cancellationToken.ThrowIfCancellationRequested();
 
+        bool published;
         switch (destinationImageReference.Kind)
         {
             case DestinationImageReferenceKind.LocalRegistry:
-                await PushToLocalRegistryAsync(
+                published = await PushToLocalRegistryAsync(
                     multiArchImage,
                     sourceImageReference,
                     destinationImageReference,
@@ -76,7 +81,7 @@ internal static class ImagePublisher
                     destinationImageReference.LocalRegistry!.LoadAsync).ConfigureAwait(false);
                 break;
             case DestinationImageReferenceKind.RemoteRegistry:
-                await PushToRemoteRegistryAsync(
+                published = await PushToRemoteRegistryAsync(
                     multiArchImage,
                     sourceImageReference,
                     destinationImageReference,
@@ -89,10 +94,13 @@ internal static class ImagePublisher
                 throw new ArgumentOutOfRangeException();
         }
 
-        telemetry.LogPublishSuccess();
+        if (published)
+        {
+            telemetry.LogPublishSuccess();
+        }
     }
 
-    private static async Task PushToLocalRegistryAsync<T>(
+    private static async Task<bool> PushToLocalRegistryAsync<T>(
         T image,
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
@@ -106,42 +114,54 @@ internal static class ImagePublisher
         {
             telemetry.LogMissingLocalBinary();
             Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
-            return;
+            return false;
         }
         try
         {
             await loadFunc(image, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
             Log.LogMessage(MessageImportance.High, Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
+            return true;
         }
         catch (UnableToDownloadFromRepositoryException)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToDownloadFromRepository), sourceImageReference);
+            return false;
         }
         catch (InvalidAuthResponseException e)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidRegistryAuthResponse), e.Registry, e.Reason);
+            return false;
+        }
+        catch (InvalidAuthRealmConfigurationException e)
+        {
+            Log.LogErrorWithCodeFromResources(e.ResourceName, e.EnvironmentVariableName, e.InvalidValue);
+            return false;
         }
         catch (ContainerHttpException e)
         {
             Log.LogErrorFromException(e, true);
+            return false;
         }
         catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
         {
             telemetry.LogLocalLoadError();
             Log.LogErrorFromException(dle, showStackTrace: false);
+            return false;
         }
         catch (ArgumentException argEx)
         {
             Log.LogErrorFromException(argEx, showStackTrace: false);
+            return false;
         }
         catch (DockerLoadException dle)
         {
             telemetry.LogLocalLoadError();
             Log.LogErrorFromException(dle, showStackTrace: false);
+            return false;
         }
     }
 
-    private static async Task PushToRemoteRegistryAsync<T>(
+    private static async Task<bool> PushToRemoteRegistryAsync<T>(
         T image,
         SourceImageReference sourceImageReference,
         DestinationImageReference destinationImageReference,
@@ -158,23 +178,33 @@ internal static class ImagePublisher
                 destinationImageReference,
                 cancellationToken).ConfigureAwait(false);
             Log.LogMessage(MessageImportance.High, successMessage, destinationImageReference, destinationImageReference.RemoteRegistry!.RegistryName);
+            return true;
         }
         catch (UnableToAccessRepositoryException)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
+            return false;
         }
         catch (InvalidAuthResponseException e)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidRegistryAuthResponse), e.Registry, e.Reason);
+            return false;
+        }
+        catch (InvalidAuthRealmConfigurationException e)
+        {
+            Log.LogErrorWithCodeFromResources(e.ResourceName, e.EnvironmentVariableName, e.InvalidValue);
+            return false;
         }
         catch (ContainerHttpException e)
         {
             Log.LogErrorFromException(e, true);
+            return false;
         }
         catch (Exception e)
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
             Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
+            return false;
         }
     }
 }

@@ -7,6 +7,7 @@ using System.Web;
 using System.Net.Http.Headers;
 using System.Collections.Specialized;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.NET.Build.Containers.Tasks;
 using Moq;
@@ -77,7 +78,15 @@ namespace Microsoft.NET.Build.Containers.UnitTests
                 File.WriteAllText(authFile, authConf);
                 Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", authFile);
 
-                var authHandler = new AuthHandshakeMessageHandler(TestRegistryName, new Uri(RequestUrl), isInsecureRegistry: false, new ServerMessageHandler(server), NullLogger.Instance, RegistryMode.Push);
+                var authHandler = new AuthHandshakeMessageHandler(
+                    TestRegistryName,
+                    new Uri(RequestUrl),
+                    isInsecureRegistry: false,
+                    new ServerMessageHandler(server),
+                    NullLogger.Instance,
+                    RegistryMode.Push,
+                    // Serve token requests from the same fake server instead of the SSRF-protected network transport.
+                    realmHandlerFactory: _ => new ServerMessageHandler(server));
                 using var httpClient = new HttpClient(authHandler);
 
                 var response = await httpClient.GetAsync(RequestUrl, TestContext.CancellationToken);
@@ -985,6 +994,87 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             }
         }
 
+        /// <summary>
+        /// Verifies invalid auth realm settings encountered while pulling the base image are logged
+        /// by the MSBuild task boundary as their specific container diagnostics.
+        /// </summary>
+        [TestMethod]
+        [DataRow(true, "CONTAINER2034")]
+        [DataRow(false, "CONTAINER2033")]
+        public async Task CreateNewImage_ReportsInvalidAuthRealmConfiguration(bool invalidPolicy, string expectedDiagnosticCode)
+        {
+            using TcpListener registryListener = new(IPAddress.Loopback, 0);
+            registryListener.Start();
+            string registryName = $"127.0.0.1:{((IPEndPoint)registryListener.LocalEndpoint).Port}";
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+            string runtimeGraphPath = Path.GetTempFileName();
+            string? originalInsecureRegistries = Environment.GetEnvironmentVariable(RegistrySettings.EnvVariables.InsecureRegistries);
+            string? originalPolicy = Environment.GetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmPolicy);
+            string? originalAllowedAddresses = Environment.GetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmAllowedAddresses);
+            try
+            {
+                Environment.SetEnvironmentVariable(RegistrySettings.EnvVariables.InsecureRegistries, registryName);
+                Environment.SetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmPolicy, invalidPolicy ? "Strict" : null);
+                Environment.SetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmAllowedAddresses, invalidPolicy ? null : "not-an-ip");
+                File.WriteAllText(runtimeGraphPath, "{}");
+
+                Task<string> registryRequest = ServeRegistryChallengeAsync();
+                var errors = new List<BuildErrorEventArgs>();
+                var engine = new Mock<IBuildEngine>();
+                engine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>())).Callback<BuildErrorEventArgs>(errors.Add);
+                using var task = new CreateNewImage
+                {
+                    BuildEngine = engine.Object,
+                    BaseRegistry = registryName,
+                    BaseImageName = "base/image",
+                    BaseImageTag = "latest",
+                    OutputRegistry = "output.invalid",
+                    Repository = "test/image",
+                    ImageTags = ["latest"],
+                    PublishDirectory = Path.GetTempPath(),
+                    RuntimeIdentifierGraphPath = runtimeGraphPath,
+                    ContainerRuntimeIdentifier = "linux-x64",
+                };
+                using CancellationTokenRegistration cancellationRegistration = timeout.Token.Register(task.Cancel);
+
+                bool succeeded = await Task.Run(task.Execute).WaitAsync(timeout.Token);
+                await registryRequest;
+
+                Assert.IsFalse(succeeded);
+                Assert.HasCount(1, errors);
+                Assert.AreEqual(expectedDiagnosticCode, errors[0].Code);
+                Assert.DoesNotContain("MSB4018", errors[0].Message!);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(RegistrySettings.EnvVariables.InsecureRegistries, originalInsecureRegistries);
+                Environment.SetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmPolicy, originalPolicy);
+                Environment.SetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmAllowedAddresses, originalAllowedAddresses);
+                File.Delete(runtimeGraphPath);
+            }
+
+            async Task<string> ServeRegistryChallengeAsync()
+            {
+                using (TcpClient client = await registryListener.AcceptTcpClientAsync(timeout.Token))
+                {
+                    using NetworkStream stream = client.GetStream();
+                    await stream.ReadExactlyAsync(new byte[5], timeout.Token);
+                    await stream.WriteAsync(
+                        "HTTP/1.1 400 Bad Request\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"u8.ToArray(),
+                        timeout.Token);
+                }
+
+                return await SendResponseAsync(
+                    registryListener,
+                    "HTTP/1.1 401 Unauthorized\r\n"
+                        + "WWW-Authenticate: Bearer realm=\"https://auth.invalid/token\", service=\"registry\"\r\n"
+                        + "Content-Length: 0\r\nConnection: close\r\n\r\n",
+                    timeout.Token,
+                    stopListenerAfterResponse: true);
+            }
+        }
+
         private static async Task<string> SendResponseAsync(
             TcpListener listener,
             string response,
@@ -1073,7 +1163,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [TestMethod]
         [DataRow("https://auth.example.com/token", false)]
         [DataRow("https://auth.example.com:8443/token", false)]
-        [DataRow("https://203.0.113.10/token", false)]          // TEST-NET-3 doc IP, outside every blocked range, must be allowed
+        [DataRow("https://93.184.215.14/token", false)]         // public-routable IP literal, outside every blocked range, must be allowed
         [DataRow("http://auth.example.com/token", true)]        // downgrade permitted only when insecure
         public void ValidateRealmUri_AcceptsAllowedSchemes(string realm, bool isInsecureRegistry)
         {
@@ -1114,214 +1204,113 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         }
 
         /// <summary>
-        /// Verifies the IP-literal guard against the full set of reserved address ranges
-        /// (loopback, RFC 1918 private, link-local, link-local multicast, IPv6 unique- and
-        /// site-local, unspecified, and IPv4-mapped IPv6). Also verifies the canonicalization
-        /// hardening: Unicode-dot forms (U+FF0E, U+3002) that a runtime would resolve back to
-        /// a blocked IPv4 literal are rejected even though they appear as DNS-typed hosts.
+        /// End-to-end verification with the default token transport and policy (Public) that a
+        /// bearer realm resolving to an internal or special-use address makes
+        /// <see cref="AuthHandshakeMessageHandler.SendAsync"/> throw <see cref="InvalidAuthResponseException"/>
+        /// that names the configuration variables. The connection is refused before it is opened.
         /// </summary>
         [TestMethod]
-        // IPv4 ranges that must be blocked.
-        [DataRow("https://127.0.0.1/token")]                // loopback
-        [DataRow("https://127.5.6.7/token")]                // 127/8
-        [DataRow("https://0.0.0.0/token")]                  // unspecified
-        [DataRow("https://10.0.0.5/token")]                 // private
-        [DataRow("https://172.16.0.1/token")]               // private
-        [DataRow("https://172.31.255.255/token")]           // private edge
-        [DataRow("https://192.168.1.5/token")]              // private
-        [DataRow("https://169.254.169.254/token")]          // link-local (cloud metadata)
-        [DataRow("https://224.0.0.1/token")]                // link-local multicast
-        // IPv6 ranges that must be blocked.
-        [DataRow("https://[::1]/token")]                    // loopback
-        [DataRow("https://[::]/token")]                     // unspecified
-        [DataRow("https://[fe80::1]/token")]                // link-local
-        [DataRow("https://[ff02::1]/token")]                // link-local multicast
-        [DataRow("https://[fc00::1]/token")]                // unique-local (private)
-        [DataRow("https://[fec0::1]/token")]                // site-local (deprecated, still treated as private)
-        [DataRow("https://[::ffff:127.0.0.1]/token")]       // IPv4-mapped IPv6 of loopback
-        [DataRow("https://[::ffff:169.254.169.254]/token")] // IPv4-mapped IPv6 of metadata
-        // Unicode-dot canonicalization bypasses: U+FF0E (fullwidth full stop) and U+3002
-        // (ideographic full stop) appear as DNS to Uri.HostNameType but Uri.IdnHost canonicalizes
-        // them back to the underlying IPv4 literal that HttpClient actually connects to.
-        [DataRow("https://127\uFF0E0\uFF0E0\uFF0E1/token")]
-        [DataRow("https://169\uFF0E254\uFF0E169\uFF0E254/token")]
-        [DataRow("https://10\uFF0E0\uFF0E0\uFF0E1/token")]
-        [DataRow("https://127\u30020\u30020\u30021/token")]
-        // FQDN root-zone trailing dot: Uri.IdnHost preserves the trailing "." so neither
-        // IPAddress.TryParse nor a plain DNS name match would catch these without normalization,
-        // but every resolver treats "127.0.0.1." as equivalent to "127.0.0.1".
-        [DataRow("https://127.0.0.1./token")]
-        [DataRow("https://169.254.169.254./token")]
-        [DataRow("https://10.0.0.5./token")]
-        public void ValidateRealmUri_RejectsBlockedIpLiterals_OnSecureRegistry(string realm)
-        {
-            Assert.ThrowsExactly<InvalidAuthResponseException>(() =>
-                AuthHandshakeMessageHandler.ValidateRealmUri(realm, "registry.example.com", isInsecureRegistry: false));
-        }
-
-        /// <summary>
-        /// Verifies that the insecure-registry exception is narrowly scoped: blocked
-        /// IP-literal realms are still rejected when their host does not match the registry
-        /// host, and lookalike hostnames such as <c>localhost.example.com</c> do not trigger
-        /// the RFC 6761 localhost-loopback exception.
-        /// </summary>
-        [TestMethod]
-        // Even for insecure registries, IP-literal realm hosts are blocked unless they match the registry host.
-        [DataRow("https://169.254.169.254/token", "192.168.1.5:5000")]
-        [DataRow("https://10.0.0.5/token", "192.168.1.5:5000")]
-        [DataRow("https://[::1]/token", "192.168.1.5:5000")]
-        // The localhost exception only widens loopback (RFC 6761) - non-loopback blocked IPs
-        // are still rejected even when the registry name is "localhost".
-        [DataRow("https://169.254.169.254/token", "localhost:5000")]
-        [DataRow("https://192.168.1.5/token", "localhost:5000")]
-        // A name that merely contains "localhost" but isn't localhost or a *.localhost subdomain
-        // does not get the exception (e.g. "localhost.example.com" is a public DNS name).
-        [DataRow("https://127.0.0.1/token", "localhost.example.com:5000")]
-        public void ValidateRealmUri_RejectsBlockedIpLiterals_OnInsecureRegistryWhenHostsDiffer(string realm, string registryName)
-        {
-            Assert.ThrowsExactly<InvalidAuthResponseException>(() =>
-                AuthHandshakeMessageHandler.ValidateRealmUri(realm, registryName, isInsecureRegistry: true));
-        }
-
-        /// <summary>
-        /// Verifies the exception that allows an otherwise-blocked IP-literal realm when the
-        /// registry is insecure and the realm host refers to the same machine as the registry
-        /// host.
-        /// </summary>
-        [TestMethod]
-        // Exception: when registry is insecure AND realm host equals the registry host (port-independent),
-        // an otherwise-blocked IP literal is permitted to support legitimate private/on-prem dev registries.
-        [DataRow("http://192.168.1.5/auth", "192.168.1.5")]
-        [DataRow("http://192.168.1.5:6000/auth", "192.168.1.5:5000")] // same host, different port
-        [DataRow("https://192.168.1.5/auth", "192.168.1.5:5000")]
-        [DataRow("http://127.0.0.1:7000/auth", "127.0.0.1:5000")]
-        [DataRow("https://[::1]:7000/auth", "[::1]:5000")]
-        // RFC 6761: "localhost" (and *.localhost subdomains) are reserved for loopback, so a
-        // localhost-named registry returning a loopback IP-literal realm is legitimate.
-        [DataRow("http://127.0.0.1:5000/auth", "localhost:5000")]
-        [DataRow("http://127.0.0.1:5000/auth", "LocalHost:5000")]     // case-insensitive
-        [DataRow("http://[::1]:5000/auth", "localhost:5000")]
-        [DataRow("http://127.0.0.1:5000/auth", "registry.localhost:5000")]
-        public void ValidateRealmUri_AllowsMatchingIpLiteralWhenInsecure(string realm, string registryName)
-        {
-            Uri uri = AuthHandshakeMessageHandler.ValidateRealmUri(realm, registryName, isInsecureRegistry: true);
-            Assert.AreEqual(realm, uri.AbsoluteUri);
-        }
-
-        /// <summary>
-        /// Verifies that DNS realms whose host is a reserved loopback name (RFC 6761:
-        /// <c>localhost</c> or <c>*.localhost</c>) are rejected. These names resolve to
-        /// loopback regardless of the host file, so they carry the same risk as a literal
-        /// 127.0.0.1 even though they appear as DNS to <c>Uri.HostNameType</c>. Both the
-        /// secure-registry case and the insecure-but-non-matching-registry case are covered.
-        /// </summary>
-        [TestMethod]
-        // Secure registry: loopback-name realms are always rejected.
-        [DataRow("https://localhost/token", "registry.example.com", false)]
-        [DataRow("https://localhost:5000/token", "registry.example.com", false)]
-        [DataRow("https://foo.localhost/token", "registry.example.com", false)]
-        [DataRow("https://LOCALHOST/token", "registry.example.com", false)] // case-insensitive
-        // FQDN root-zone trailing dot: "localhost." is equivalent to "localhost" to every
-        // resolver. Uri.IdnHost preserves the dot so the validator must normalize it away.
-        [DataRow("https://localhost./token", "registry.example.com", false)]
-        [DataRow("https://foo.localhost./token", "registry.example.com", false)]
-        // Unicode trailing dot (U+3002 ideographic full stop) - Uri.IdnHost canonicalizes
-        // it to "localhost.", so it must be caught by the same trailing-dot normalization.
-        [DataRow("https://localhost\u3002/token", "registry.example.com", false)]
-        // Insecure registry: still rejected when registry isn't a loopback-equivalent host.
-        [DataRow("https://localhost/token", "192.168.1.5:5000", true)]
-        [DataRow("http://localhost/token", "192.168.1.5:5000", true)]
-        // Lookalike that isn't actually localhost: "localhost.example.com" is a public DNS
-        // name, so the registry doesn't match the loopback exception either.
-        [DataRow("http://localhost/token", "localhost.example.com:5000", true)]
-        public void ValidateRealmUri_RejectsLoopbackDnsNameRealm(string realm, string registryName, bool isInsecureRegistry)
-        {
-            Assert.ThrowsExactly<InvalidAuthResponseException>(() =>
-                AuthHandshakeMessageHandler.ValidateRealmUri(realm, registryName, isInsecureRegistry));
-        }
-
-        /// <summary>
-        /// Verifies that a realm whose host is a reserved loopback DNS name is permitted
-        /// when the registry is insecure and the registry host is itself loopback-equivalent
-        /// (a loopback IP literal, <c>localhost</c>, or a <c>*.localhost</c> subdomain).
-        /// Mirrors <see cref="ValidateRealmUri_AllowsMatchingIpLiteralWhenInsecure"/> for the
-        /// case where the realm side uses a DNS name instead of an IP literal.
-        /// </summary>
-        [TestMethod]
-        [DataRow("http://localhost:5000/auth", "localhost:5000")]
-        [DataRow("https://localhost:5000/auth", "localhost:5000")]
-        [DataRow("http://localhost:7000/auth", "localhost:5000")]           // port-independent
-        [DataRow("http://foo.localhost:5000/auth", "localhost:5000")]       // *.localhost realm
-        [DataRow("http://localhost:5000/auth", "registry.localhost:5000")]  // *.localhost registry
-        [DataRow("http://localhost:5000/auth", "127.0.0.1:5000")]           // registry is loopback IP literal
-        [DataRow("http://localhost:5000/auth", "[::1]:5000")]               // registry is IPv6 loopback literal
-        public void ValidateRealmUri_AllowsLoopbackDnsNameRealm_WhenInsecureAndRegistryIsLoopback(string realm, string registryName)
-        {
-            Uri uri = AuthHandshakeMessageHandler.ValidateRealmUri(realm, registryName, isInsecureRegistry: true);
-            Assert.AreEqual(realm, uri.AbsoluteUri);
-        }
-
-        /// <summary>
-        /// Verifies that public DNS-named realms (i.e. not RFC 6761 loopback names and not
-        /// IP literals) pass all guards regardless of the insecure flag - this is the
-        /// expected shape for any production token endpoint.
-        /// </summary>
-        [TestMethod]
-        [DataRow("https://auth.example.com/token", "registry.example.com", false)]
-        [DataRow("https://auth.docker.io/token", "registry-1.docker.io", false)]    // real Docker Hub realm shape
-        [DataRow("http://auth.example.com:8080/token", "registry.example.com:5000", true)]
-        public void ValidateRealmUri_AllowsPublicDnsRealms(string realm, string registryName, bool isInsecureRegistry)
-        {
-            Uri uri = AuthHandshakeMessageHandler.ValidateRealmUri(realm, registryName, isInsecureRegistry);
-            Assert.AreEqual(realm, uri.AbsoluteUri);
-        }
-
-        /// <summary>
-        /// End-to-end verification that an invalid bearer realm in a 401 challenge causes
-        /// <see cref="AuthHandshakeMessageHandler.SendAsync"/> to throw
-        /// <see cref="InvalidAuthResponseException"/> and dispatch zero requests to the
-        /// realm host.
-        /// </summary>
-        [TestMethod]
-        public async Task SendAsync_ThrowsOnInvalidBearerRealm_WithoutTokenRequest()
+        [DataRow("https://169.254.169.254/token")]
+        [DataRow("https://[fe80::1]/token")]
+        [DataRow("https://10.0.0.7/token")]
+        [DataRow("https://127.0.0.1/token")]
+        [DataRow("https://localhost/token")]
+        public async Task SendAsync_ThrowsOnInternalBearerRealm_WithDefaultPolicy(string realm)
         {
             // Use a unique registry name to avoid contamination from the static auth header cache.
-            string registryName = $"realm-validation-test-{Guid.NewGuid():N}.invalid";
+            string registryName = $"realm-policy-test-{Guid.NewGuid():N}.invalid";
             string requestUrl = $"https://{registryName}/v2";
-
-            int tokenRequestCount = 0;
+            int requestCount = 0;
             HttpResponseMessage Server(HttpRequestMessage request)
             {
-                if (request.RequestUri?.Host != registryName)
-                {
-                    // Any request to a host other than the registry would indicate the handler attempted a token fetch.
-                    // SendAsync is invoked sequentially by the auth retry loop, so no synchronization is needed.
-                    tokenRequestCount++;
-                    return new HttpResponseMessage(HttpStatusCode.OK);
-                }
-
-                // Return a 401 with a Bearer challenge whose realm points at the cloud metadata service.
+                requestCount++;
                 var response = new HttpResponseMessage(HttpStatusCode.Unauthorized);
-                response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue(
-                    "Bearer",
-                    "realm=\"https://169.254.169.254/token\", service=\"evil\""));
+                response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue("Bearer", $"realm=\"{realm}\", service=\"evil\""));
                 return response;
             }
 
-            var authHandler = new AuthHandshakeMessageHandler(
-                registryName,
-                new Uri(requestUrl),
-                isInsecureRegistry: false,
-                new ServerMessageHandler(Server),
-                NullLogger.Instance,
-                RegistryMode.Pull);
-            using var httpClient = new HttpClient(authHandler);
+            InvalidAuthResponseException exception = await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName,
+                    new Uri(requestUrl),
+                    isInsecureRegistry: false,
+                    new ServerMessageHandler(Server),
+                    NullLogger.Instance,
+                    RegistryMode.Pull);
+                using var httpClient = new HttpClient(authHandler);
 
-            await Assert.ThrowsExactlyAsync<InvalidAuthResponseException>(() =>
-                httpClient.GetAsync(requestUrl, TestContext.CancellationToken));
+                return await Assert.ThrowsExactlyAsync<InvalidAuthResponseException>(() =>
+                    httpClient.GetAsync(requestUrl, TestContext.CancellationToken));
+            });
 
-            // The handler must not have followed the malicious realm.
-            Assert.AreEqual(0, tokenRequestCount);
+            Assert.Contains("CONTAINER1019", exception.Message);
+            Assert.Contains(RegistrySettings.EnvVariables.AuthRealmAllowedAddresses, exception.Message);
+            Assert.Contains(RegistrySettings.EnvVariables.AuthRealmPolicy, exception.Message);
+            // The token request is never sent through the registry transport.
+            Assert.AreEqual(1, requestCount);
+        }
+
+        /// <summary>
+        /// Verifies that a realm on an allowed address gets the token request through the
+        /// SSRF-protected transport rather than the registry transport.
+        /// </summary>
+        [TestMethod]
+        public async Task SendAsync_RequestsTokenFromAllowedRealmThroughSsrfProtectedTransport()
+        {
+            using TcpListener realmListener = new(IPAddress.Loopback, 0);
+            realmListener.Start();
+            int realmPort = ((IPEndPoint)realmListener.LocalEndpoint).Port;
+            string registryName = $"127.0.0.1:{realmPort}";
+            Uri registryUri = new($"https://{registryName}/v2/");
+            using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
+            timeout.CancelAfter(TimeSpan.FromSeconds(30));
+
+            const string token = "realm-token";
+            string tokenJson = $$"""{"token":"{{token}}"}""";
+            Task<string> realmRequest = SendResponseAsync(
+                realmListener,
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n"
+                    + $"Content-Length: {tokenJson.Length}\r\nConnection: close\r\n\r\n{tokenJson}",
+                timeout.Token,
+                stopListenerAfterResponse: true);
+
+            HttpResponseMessage Server(HttpRequestMessage request)
+            {
+                // The registry transport must only see registry requests.
+                Assert.AreEqual(registryUri, request.RequestUri);
+                if (request.Headers.Authorization is { Scheme: "Bearer", Parameter: token })
+                {
+                    return new HttpResponseMessage(HttpStatusCode.OK);
+                }
+
+                return CreateRequestAuthenticateResponse("Bearer", $"realm=\"http://localhost:{realmPort}/token\"");
+            }
+
+            var environment = new Mock<IEnvironmentProvider>();
+            environment
+                .Setup(e => e.GetEnvironmentVariable(RegistrySettings.EnvVariables.AuthRealmAllowedAddresses))
+                .Returns("127.0.0.0/8;::1");
+
+            await WithRegistryCredentialsAsync(registryName, async () =>
+            {
+                var authHandler = new AuthHandshakeMessageHandler(
+                    registryName,
+                    registryUri,
+                    isInsecureRegistry: true,
+                    new ServerMessageHandler(Server),
+                    NullLogger.Instance,
+                    RegistryMode.Push,
+                    new AuthRealmHandlerFactory(registryName, registryUri, isInsecureRegistry: true, NullLogger.Instance, environment.Object).Create);
+                using var httpClient = new HttpClient(authHandler);
+
+                using HttpResponseMessage response = await httpClient.GetAsync(registryUri, timeout.Token);
+                Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            });
+
+            string realmRequestHeaders = await realmRequest;
+            Assert.StartsWith("GET /token", realmRequestHeaders);
+            Assert.Contains("Authorization: Basic ", realmRequestHeaders);
         }
     }
 }
