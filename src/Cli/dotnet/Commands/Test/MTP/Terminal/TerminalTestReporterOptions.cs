@@ -31,7 +31,7 @@ internal sealed class TerminalTestReporterOptions
     public int MinimumExpectedTests { get; init; }
 
     /// <summary>
-    /// Gets a value indicating whether a run with no selected tests is successful.
+    /// Gets a value indicating whether an otherwise-successful zero-test run is expected.
     /// </summary>
     public bool AllowZeroTests { get; init; }
 

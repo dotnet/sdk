@@ -164,6 +164,12 @@ The runner builds the selected test project incrementally and retains its TRX an
 binlog paths under `artifacts/log/test-runs/`. Pass `--repeat N` to build once and run
 the selected tests repeatedly, with separate TRX output and timing for each iteration.
 
+For process-output assertions, process exit does not imply that stdout and stderr
+callbacks have finished. Complete the output channel only after both streams reach EOF
+and drain queued lines before reporting missing output. Prefer deterministic tests that
+hold an output callback past process exit over sleeps or retries; see
+[the output-drain regression tests](../../test/dotnet-watch.Tests/TestUtilities/AwaitableProcessTests.cs).
+
 ## Run tests in Visual Studio
 
 Use developer command prompt for Visual Studio or put devenv on you PATH

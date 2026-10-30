@@ -29,6 +29,64 @@ public class TerminalTestReporterTests
         console.Verify(c => c.Write(It.Is<StringBuilder>(builder => builder.ToString() == "batched output")), Times.Once);
     }
 
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void AssemblyRunNotSelected_WritesNeutralStatusWithoutCountingTests(bool showAssembly)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowAssembly = showAssembly,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+
+        const string assembly = "Affected.Tests.dll";
+        reporter.AssemblyRunNotSelected(assembly, targetFramework: "net9.0", architecture: "x64");
+
+        string output = console.GetOutput();
+        output.Should().Contain($"{AnsiCodes.CSI}{(int)TerminalColor.Default}{AnsiCodes.SetColor}");
+        StripAnsi(output).Should().Contain(CliCommandStrings.NoAffectedTestsSelected);
+        if (showAssembly)
+        {
+            StripAnsi(output).Should().Contain($"{assembly} (net9.0|x64)");
+        }
+        else
+        {
+            StripAnsi(output).Should().NotContain(assembly);
+        }
+
+        StripAnsi(output).Should().NotContain("passed").And.NotContain("skipped").And.NotContain("[+");
+        reporter.TotalTests.Should().Be(0);
+        reporter.SkippedTests.Should().Be(0);
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(true, false, false)]
+    [DataRow(false, true, false)]
+    [DataRow(false, false, true)]
+    public void AssemblyRunNotSelected_WhenHelpDiscoveryOrCancellation_WritesNothing(
+        bool isHelp, bool isDiscovery, bool isCancelled)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowAssembly = true,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery, isHelp, isRetry: false);
+        if (isCancelled)
+        {
+            reporter.MarkCancelled();
+        }
+
+        reporter.AssemblyRunNotSelected("Affected.Tests.dll", targetFramework: "net9.0", architecture: "x64");
+
+        console.GetOutput().Should().BeEmpty();
+    }
+
     /// <summary>
     /// Regression test for https://github.com/dotnet/sdk/issues/51608: if a test host process exits
     /// before the test session was ever started (so the execution id is never registered with the
@@ -201,7 +259,7 @@ public class TerminalTestReporterTests
     }
 
     [TestMethod]
-    public void TestExecutionCompleted_WithAllowedZeroTests_PrintsPassingAssemblyAndRunSummary()
+    public void TestExecutionCompleted_WithAllowedZeroTests_PrintsPassingAssemblyAndNeutralRunSummary()
     {
         var capturingConsole = new CapturingConsole();
         var options = new TerminalTestReporterOptions
@@ -226,10 +284,32 @@ public class TerminalTestReporterTests
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.Success);
 
         string output = StripAnsi(capturingConsole.GetOutput());
-        output.Should().Contain("Test run summary: Passed!");
+        output.Should().Contain("Test run summary: Zero tests ran");
         GetAssemblySummaryLine(output, assembly).Should().Contain("passed");
-        output.Should().NotContain("Zero tests ran");
+        output.Should().NotContain("Test run summary: Passed!");
         output.Should().NotContain("Test run returned non-zero exit code");
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void TestExecutionCompleted_WithSuccessfulZeroTests_PrintsNeutralSummary(bool allowZeroTests)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AllowZeroTests = allowZeroTests,
+            AnsiMode = AnsiMode.SimpleAnsi,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: TestExitCode.Success);
+
+        string summary = $"{CliCommandStrings.TestRunSummary} {CliCommandStrings.ZeroTestsRan}";
+        string output = console.GetOutput();
+        output.Should().Contain($"{AnsiCodes.CSI}{(int)TerminalColor.Default}{AnsiCodes.SetColor}{summary}");
+        output.Should().NotContain($"{AnsiCodes.CSI}{(int)TerminalColor.DarkGreen}{AnsiCodes.SetColor}{summary}");
+        StripAnsi(output).Should().NotContain("Test run summary: Passed!");
     }
 
     [TestMethod]
@@ -265,7 +345,9 @@ public class TerminalTestReporterTests
     }
 
     [TestMethod]
-    public void TestExecutionCompleted_WithAllowedZeroTestsAndUnexpectedNonZeroExit_PrintsFailedSummary()
+    [DataRow(TestExitCode.GenericFailure)]
+    [DataRow(TestExitCode.TestAdapterTestSessionFailure)]
+    public void TestExecutionCompleted_WithAllowedZeroTestsAndUnexpectedNonZeroExit_PrintsFailedSummary(int exitCode)
     {
         var capturingConsole = new CapturingConsole();
         var options = new TerminalTestReporterOptions
@@ -279,9 +361,32 @@ public class TerminalTestReporterTests
         reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
         reporter.TestExecutionCompleted(
             DateTimeOffset.UtcNow,
-            exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.GenericFailure);
+            exitCode);
 
         StripAnsi(capturingConsole.GetOutput()).Should().Contain("Test run summary: Failed!");
+    }
+
+    [TestMethod]
+    public void TestExecutionCompleted_WithTestSessionFailureAndPassingTests_PrintsFailedSummary()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AllowZeroTests = true,
+            AnsiMode = AnsiMode.SimpleAnsi,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+        const string assembly = "SessionFailure.Tests.dll";
+        reporter.AssemblyRunStarted(assembly, "net9.0", "x64", executionId: "exec-1", instanceId: "inst-1");
+        ReportTest(reporter, assembly, executionId: "exec-1", instanceId: "inst-1", testUid: "passed-1", TestOutcome.Passed);
+        reporter.AssemblyRunCompleted("exec-1", TestExitCode.TestAdapterTestSessionFailure, outputData: null, errorData: null);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: TestExitCode.TestAdapterTestSessionFailure);
+
+        string output = console.GetOutput();
+        string summary = $"{CliCommandStrings.TestRunSummary} {CliCommandStrings.Failed}!";
+        output.Should().Contain($"{AnsiCodes.CSI}{(int)TerminalColor.DarkRed}{AnsiCodes.SetColor}{summary}");
+        StripAnsi(output).Should().Contain("failed: 0").And.NotContain("Test run summary: Passed!");
     }
 
     [TestMethod]

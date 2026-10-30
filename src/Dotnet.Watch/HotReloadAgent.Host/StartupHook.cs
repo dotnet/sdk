@@ -36,8 +36,9 @@ internal sealed class StartupHook
     {
         var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
         var processDir = Path.GetDirectoryName(processPath)!;
+        var processId = Environment.ProcessId;
 
-        Log($"Loaded into process: {processPath} ({typeof(StartupHook).Assembly.Location})");
+        Log($"Loaded into process {processId}: {processPath} ({typeof(StartupHook).Assembly.Location})");
 
         var transport = Transport.TryCreate(Log);
 
@@ -93,7 +94,7 @@ internal sealed class StartupHook
                 }
             });
 
-        listener = new Listener(transport, agent, Log);
+        listener = new Listener(transport, agent, processId, Log);
 
         // fire and forget:
         _ = listener.Listen(CancellationToken.None);

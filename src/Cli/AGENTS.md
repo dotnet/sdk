@@ -116,3 +116,12 @@ controller-only or mixed partial handshakes, and explicit handshake rejections m
 gain that exemption. Rejection and partial-handshake state must survive later accepted
 handshakes. Keep these boundaries covered by
 [`TestApplicationHandlerTests`](../../test/dotnet.Tests/CommandTests/Test/TestApplicationHandlerTests.cs).
+
+[`TerminalTestReporter`](dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs)
+renders a neutral no-selection status for a successful affected-run orchestrator that
+never starts a TestHost, without inventing skipped tests. Run summaries use the final
+aggregate exit code from
+[`MicrosoftTestingPlatformTestCommand`](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs),
+including session failures and ignored-exit policies, instead of upstream's in-process
+failure callback. A successful run with zero tests uses neutral "Zero tests ran" wording,
+not a green "Passed!" verdict.

@@ -119,6 +119,25 @@
     <Copy SourceFiles="@(BundledToolFiles)"
           DestinationFiles="@(BundledToolFiles->'$(OutputPath)DotnetTools\%(PackageToRestore)\%(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
+
+    <ItemGroup Condition="'$(OSName)' == 'osx' and '$(DotNetBuildUseMonoRuntime)' != 'true'">
+      <_BundledMacToolPackage Include="@(_SelectedBundledDotnetToolPackage)"
+                              Condition="'%(_SelectedBundledDotnetToolPackage.ToolId)' == 'aspnetcoretools'" />
+    </ItemGroup>
+    <ItemGroup Condition="'@(_BundledMacToolPackage)' != ''">
+      <_BundledMacToolHost Include="$(OutputPath)DotnetTools/%(_BundledMacToolPackage.ToolId)/%(_BundledMacToolPackage.ToolVersion)/tools/*/%(_BundledMacToolPackage.RuntimeIdentifier)/dotnet-dev-certs"
+                           SigningIdentifier="com.microsoft.dotnet.dotnet-dev-certs" />
+      <_BundledMacToolHost Include="$(OutputPath)DotnetTools/%(_BundledMacToolPackage.ToolId)/%(_BundledMacToolPackage.ToolVersion)/tools/*/%(_BundledMacToolPackage.RuntimeIdentifier)/dotnet-user-jwts"
+                           SigningIdentifier="com.microsoft.dotnet.dotnet-user-jwts" />
+      <_BundledMacToolHost Include="$(OutputPath)DotnetTools/%(_BundledMacToolPackage.ToolId)/%(_BundledMacToolPackage.ToolVersion)/tools/*/%(_BundledMacToolPackage.RuntimeIdentifier)/dotnet-user-secrets"
+                           SigningIdentifier="com.microsoft.dotnet.dotnet-user-secrets" />
+    </ItemGroup>
+
+    <Error Condition="'@(_BundledMacToolPackage)' != '' and @(_BundledMacToolHost->Count()) != 3"
+           Text="Expected the three native ASP.NET Core SDK tool hosts in the selected aspnetcoretools layout; found @(_BundledMacToolHost->Count())." />
+
+    <Exec Command="codesign --sign - --force --identifier '%(_BundledMacToolHost.SigningIdentifier)' --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints &quot;%(_BundledMacToolHost.FullPath)&quot;"
+          Condition="'@(_BundledMacToolHost)' != ''" />
   </Target>
 
 </Project>

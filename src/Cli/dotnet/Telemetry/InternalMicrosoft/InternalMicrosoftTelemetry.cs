@@ -21,14 +21,15 @@ internal sealed class InternalMicrosoftTelemetry
 
     /// <summary>
     /// Starts detection once. Later calls keep the first detector task.
+    /// Detector construction and execution are scheduled asynchronously and do not block this method.
     /// </summary>
     public void Start(
-        IInternalMicrosoftDetector detector,
+        Func<IInternalMicrosoftDetector> createDetector,
         CancellationToken cancellationToken)
     {
         lock (_lock)
         {
-            _completionTask ??= RunAsync(detector, cancellationToken);
+            _completionTask ??= RunAsync(createDetector, cancellationToken);
         }
     }
 
@@ -90,13 +91,17 @@ internal sealed class InternalMicrosoftTelemetry
     }
 
     private async Task RunAsync(
-        IInternalMicrosoftDetector detector,
+        Func<IInternalMicrosoftDetector> createDetector,
         CancellationToken cancellationToken)
     {
+        await Task.Yield();
+
         InternalMicrosoftDetectionResult result;
         try
         {
-            result = await detector.IsInternalMicrosoftMachineAsync(cancellationToken).ConfigureAwait(false);
+            result = await createDetector()
+                .IsInternalMicrosoftMachineAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
         catch
         {

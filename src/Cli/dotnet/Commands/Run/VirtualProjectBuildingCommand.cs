@@ -309,6 +309,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         CacheCscArguments(cache, buildResult);
                         WriteCscRsp(cache);
                         CollectAdditionalSources(cache, buildRequest.ProjectInstance);
+                        CollectBuildOutputs(cache, buildRequest.ProjectInstance);
 
                         MarkBuildSuccess(cache);
                     }
@@ -443,6 +444,23 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 return arg;
             }
+        }
+
+        void CollectBuildOutputs(FileBasedAppCacheInfo cache, ProjectInstance projectInstance)
+        {
+            string outputDirectory = projectInstance.GetPropertyValue("TargetDir");
+            if (string.IsNullOrEmpty(outputDirectory))
+            {
+                Reporter.Verbose.WriteLine("Not tracking build outputs because TargetDir is empty.");
+                return;
+            }
+
+            cache.CurrentEntry.BuildOutputs = projectInstance.GetItems("FileWrites")
+                .Concat(projectInstance.GetItems("FileWritesShareable"))
+                .Select(static item => item.GetMetadataValue(Constants.FullPath))
+                .Where(path => PathUtility.IsChildOfDirectory(outputDirectory, path) && File.Exists(path))
+                .Distinct(RunFileBuildCacheEntry.FilePathComparer)
+                .ToImmutableArray();
         }
 
         void ReuseInfoFromPreviousCacheEntry(FileBasedAppCacheInfo cache)
