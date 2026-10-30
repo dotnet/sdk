@@ -10,6 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -197,12 +198,14 @@ public class InitWorkflowTests : IDisposable
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void GetDefaultAccessMode_ReturnsConfiguredEverywhereModeOnWindows()
+    [DataRow(DotnetAccessMode.Everywhere)]
+    [DataRow(DotnetAccessMode.Admin)]
+    internal void GetDefaultAccessMode_ReturnsConfiguredWindowsMode(DotnetAccessMode accessMode)
     {
         InitDefaultsResolver.GetDefaultAccessMode(
             shellProvider: null,
-            configuredAccessMode: DotnetAccessMode.Everywhere)
-            .Should().Be(DotnetAccessMode.Everywhere);
+            configuredAccessMode: accessMode)
+            .Should().Be(accessMode);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]

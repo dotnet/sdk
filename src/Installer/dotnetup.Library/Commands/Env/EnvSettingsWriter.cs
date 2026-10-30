@@ -7,10 +7,9 @@ using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
 /// <summary>
-/// Shared apply path for the <c>env set</c> and <c>env clear</c> commands: inspects the live
-/// environment, applies the target settings via <see cref="EnvSettingsApplier"/>, persists the
-/// new config, and prints a short summary. Keeping this in one place ensures <c>env clear</c> and
-/// <c>env set none --dotnetup-on-path false</c> behave identically.
+/// Shared configuration path for env commands and configuration-only init. Applies the environment
+/// and persists the config without changing machine policy. Keeping this in one
+/// place ensures env clear and env set none --dotnetup-on-path false behave identically.
 /// </summary>
 internal static class EnvSettingsWriter
 {
@@ -91,9 +90,11 @@ internal static class EnvSettingsWriter
     /// from the terminal's perspective the available commands are the same; the difference is only
     /// that <c>full</c> also reaches cmd / GUI apps, which is not worth a distinct line here.
     /// </summary>
-    private static string DescribeOutcome(DotnetAccessMode accessMode, bool dotnetupOnPath) =>
+    internal static string DescribeOutcome(DotnetAccessMode accessMode, bool dotnetupOnPath) =>
         (accessMode, dotnetupOnPath) switch
         {
+            (DotnetAccessMode.Admin, true) => Strings.EnvOutcomeAdminDotnetupOnPath,
+            (DotnetAccessMode.Admin, false) => Strings.EnvOutcomeAdminDotnetupOffPath,
             (DotnetAccessMode.None, true) => Strings.EnvOutcomeDotnetupOnlyOnPath,
             (DotnetAccessMode.None, false) => Strings.EnvOutcomeNeitherOnPath,
             (_, true) => Strings.EnvOutcomeBothOnPath,

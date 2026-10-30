@@ -199,6 +199,12 @@ internal sealed class InitFormState
         }
 
         FormField field = VisibleFields[FocusedRow];
+        if (field.IsLocked)
+        {
+            // A locked field does not apply to the current selections, so it cannot be edited.
+            return;
+        }
+
         EditChoiceIndex = field.SelectedIndex;
         _customTextAtEditStart = field.LastCustomText;
         Mode = FormMode.EditingField;

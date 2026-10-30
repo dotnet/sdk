@@ -169,6 +169,35 @@
       "showOnPages": {
         "kind": "all"
       }
+    },
+    {
+      "kind": "string",
+      "id": "fe52e626-f891-47cb-82cf-ac594ff3ac3b",
+      "displayName": "Access mode",
+      "description": "Choose whether the dashboard shows admin or non-admin runs. Legacy rows without an access mode are treated as non-admin.",
+      "variableName": "_accessMode",
+      "selectionType": "scalar",
+      "includeAllOption": false,
+      "defaultValue": {
+        "kind": "value",
+        "value": "non-admin"
+      },
+      "dataSource": {
+        "kind": "static",
+        "values": [
+          {
+            "displayText": "Non-admin",
+            "value": "non-admin"
+          },
+          {
+            "displayText": "Admin",
+            "value": "admin"
+          }
+        ]
+      },
+      "showOnPages": {
+        "kind": "all"
+      }
     }
   ],
   "baseQueries": [
@@ -1256,7 +1285,7 @@
     {
       "id": "c7c2b254-517b-4a15-9e8e-a88b1ff330f9",
       "title": "Command Usage",
-      "description": "_dotnetupEvents applies the shared time, version, dev build, CI, output redirected, and LLM agent filters. _dotnetupCommands then accepts both stable dotnetup/command rows and legacy dotnetup/command/<sub> rows, falls back from command.name to the legacy Message suffix, and treats a command as successful only when exit.code is 0 and no error is attached.",
+      "description": "_dotnetupEvents applies the shared time, version, dev build, CI, output redirected, LLM agent, and access mode filters. _dotnetupCommands then accepts both stable dotnetup/command rows and legacy dotnetup/command/<sub> rows, falls back from command.name to the legacy Message suffix, and treats a command as successful only when exit.code is 0 and no error is attached.",
       "visualType": "markdownCard",
       "pageId": "db02633f-d182-4a41-bc0b-371f1a8d01f2",
       "layout": {
@@ -1473,7 +1502,7 @@
         "kind": "inline",
         "dataSourceId": "a9b0ad41-3a6a-4daa-8263-3bb2006d61eb"
       },
-      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| extend llm_agent = tostring(Properties[\"llm.agent\"])\n| extend is_llm_agent = isnotempty(llm_agent)\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend os_platform = tostring(Properties[\"os.platform\"])\n| extend os_type = tostring(Properties[\"os.type\"])\n| extend process_arch = tostring(Properties[\"process.arch\"])\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| where (isempty(['_llmAgent']) or is_llm_agent == tobool(['_llmAgent']))\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
+      "text": "RawEventsTraces\n| where TimeGenerated between (_startTime .. _endTime)\n| where TimeGenerated >= datetime(2026-04-30)\n| where Message startswith \"dotnetup/\"\n| extend is_dev = tobool(Properties[\"dev.build\"])\n| extend is_ci = tostring(Properties[\"ci.detected\"]) in (\"true\", \"True\")\n| extend is_output_redirected = tostring(Properties[\"output.redirected\"]) in (\"true\", \"True\")\n| extend llm_agent = tostring(Properties[\"llm.agent\"])\n| extend is_llm_agent = isnotempty(llm_agent)\n| extend version = tostring(Properties[\"dotnetup.version\"])\n| extend os_platform = tostring(Properties[\"os.platform\"])\n| extend os_type = tostring(Properties[\"os.type\"])\n| extend process_arch = tostring(Properties[\"process.arch\"])\n| extend access_mode = tostring(Properties[\"dotnetup.access_mode\"])\n// Admin mode installs via Windows .exe installers and is tracked separately; legacy rows lack access_mode.\n| where (_accessMode == \"admin\" and access_mode == \"admin\") or (_accessMode == \"non-admin\" and (isempty(access_mode) or access_mode != \"admin\"))\n| where (isempty(['_ci']) or is_ci == tobool(['_ci']))\n| where (isempty(['_outputRedirected']) or is_output_redirected == tobool(['_outputRedirected']))\n| where (isempty(['_llmAgent']) or is_llm_agent == tobool(['_llmAgent']))\n| where (isempty(_versionFilter) or version == _versionFilter)\n| where (isempty(['_devBuild']) or is_dev == tobool(['_devBuild']))",
       "usedVariables": [
         "_startTime",
         "_endTime",

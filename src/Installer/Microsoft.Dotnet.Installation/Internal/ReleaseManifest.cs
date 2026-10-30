@@ -364,7 +364,9 @@ internal class ReleaseManifest
     /// classifies the result. When no user-installable archive exists, distinguishes between
     /// a platform that has no files at all (<see cref="FindReleaseFileStatus.NoMatchingFile"/>)
     /// and one that publishes only non-installable artifacts such as .exe installers
-    /// (<see cref="FindReleaseFileStatus.NoUserInstallableArtifact"/>).
+    /// (<see cref="FindReleaseFileStatus.NoUserInstallableArtifact"/>). For
+    /// <see cref="InstallMechanism.WindowsInstallerBundle"/> requests the component's .exe installer
+    /// bundle is selected instead of an archive.
     /// </summary>
     /// <remarks>
     /// Some components (notably ASP.NET Core) include both regular and composite (AOT) archives
@@ -381,7 +383,9 @@ internal class ReleaseManifest
              .Where(f => !IsApphostPackArchive(f.Name))
              .ToList();
 
-        var match = SelectInstallableArchive(ridFiles);
+        var match = installRequest.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
+            ? SelectInstallerBundle(ridFiles, installRequest.Component)
+            : SelectInstallableArchive(ridFiles);
         if (match is not null)
         {
             return FindReleaseFileResult.FromFile(match);
@@ -413,6 +417,32 @@ internal class ReleaseManifest
         }
 
         return null;
+    }
+
+    /// <summary>
+    /// Selects the component's Windows installer bundle (.exe). Bundles are Windows-only, so
+    /// returns <c>null</c> on other platforms.
+    /// </summary>
+    private static ReleaseFile? SelectInstallerBundle(IReadOnlyList<ReleaseFile> ridFiles, InstallComponent component)
+    {
+        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return null;
+        }
+
+        return ridFiles.FirstOrDefault(f => IsInstallerBundleFor(f.Name, component));
+    }
+
+    /// <summary>
+    /// Determines whether a release file name is the Windows installer bundle for the component,
+    /// e.g. <c>dotnet-sdk-win-x64.exe</c>. Requiring the component's own archive prefix excludes
+    /// other installers listed alongside it, such as the ASP.NET Core hosting bundle
+    /// (<c>dotnet-hosting-win.exe</c>).
+    /// </summary>
+    internal static bool IsInstallerBundleFor(string fileName, InstallComponent component)
+    {
+        return fileName.StartsWith(BlobFeedUrlBuilder.GetArchivePrefix(component) + "-", StringComparison.OrdinalIgnoreCase)
+            && fileName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>

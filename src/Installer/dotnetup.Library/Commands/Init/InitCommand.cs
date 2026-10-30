@@ -12,6 +12,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// </summary>
 internal class InitCommand(ParseResult result) : InstallCommand(result, "init")
 {
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
         var workflows = new InitWorkflows(DotnetEnvironment);

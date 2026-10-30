@@ -41,6 +41,7 @@ internal static class TelemetryCommonProperties
     /// <summary>
     /// Gets common attributes for the OpenTelemetry resource.
     /// </summary>
+    /// <param name="sessionId">The telemetry session ID.</param>
     public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId)
     {
         var attributes = new Dictionary<string, object>
@@ -61,6 +62,8 @@ internal static class TelemetryCommonProperties
             ["dev.build"] = s_isDevBuild.Value
         };
 
+        AddAccessModeAttributes(attributes);
+
         // Mirror the .NET CLI's DOTNET_CLI_TELEMETRY_PROFILE (same env var
         // the SDK's TelemetryCommonProperties stamps as "Telemetry Profile").
         var telemetryProfile = Environment.GetEnvironmentVariable(TelemetryProfileEnvVar);
@@ -78,6 +81,33 @@ internal static class TelemetryCommonProperties
 
         return attributes;
     }
+
+    // Reports the recorded mode as-is, even one the platform ignores, so hand-edited configs are visible.
+    private static void AddAccessModeAttributes(Dictionary<string, object> attributes)
+        => attributes[TelemetryTagNames.AccessMode] = GetAccessModeTelemetryValue(ReadRecordedAccessModeSafely());
+
+    private static DotnetAccessMode? ReadRecordedAccessModeSafely()
+    {
+        try
+        {
+            return DotnetupConfig.ReadAccessModeSilently();
+        }
+        catch
+        {
+            // Telemetry must never crash the app.
+            return null;
+        }
+    }
+
+    internal static string GetAccessModeTelemetryValue(DotnetAccessMode? mode) => mode switch
+    {
+        null => "unset",
+        DotnetAccessMode.None => "none",
+        DotnetAccessMode.Shell => "shell",
+        DotnetAccessMode.Everywhere => "everywhere",
+        DotnetAccessMode.Admin => "admin",
+        _ => "unknown",
+    };
 
     /// <summary>
     /// Hashes a path for privacy-safe telemetry.

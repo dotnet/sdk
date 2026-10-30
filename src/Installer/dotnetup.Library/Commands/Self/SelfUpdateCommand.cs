@@ -20,7 +20,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
     private readonly bool? _updateNotifications = result.GetResult(SelfCommandParser.UpdateNotificationsOption) is { Implicit: false }
         ? result.GetValue(SelfCommandParser.UpdateNotificationsOption)
         : null;
-    private readonly Func<DotnetDownloader> _createDownloader = static () => new DotnetDownloader();
+    private readonly Func<DotnetDownloader>? _createDownloader;
 
     internal SelfUpdateCommand(ParseResult result, Func<DotnetDownloader> createDownloader) : this(result)
     {
@@ -30,6 +30,9 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
 
     /// <inheritdoc/>
     protected override bool CanRunDuringSelfUpdate => true;
+
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
 
     protected override void ExecuteCore()
     {
@@ -42,7 +45,7 @@ internal sealed class SelfUpdateCommand(ParseResult result) : CommandBase(result
         var invocation = SelfUpdateInvocation.Current ?? throw new DotnetInstallException(
             DotnetInstallErrorCode.ContextResolutionFailed, Strings.SelfUpdateUnsupportedHost);
         var channel = _channel ?? SelfUpdateDefaultChannel.FromLoadedVersion(invocation.LoadedVersion);
-        var downloader = _createDownloader();
+        var downloader = _createDownloader?.Invoke() ?? new DotnetDownloader(ReleaseManifest.Default);
         var rid = DotnetupUtilities.GetRuntimeIdentifier(InstallerUtilities.GetDefaultInstallArchitecture());
         var coordinator = new SelfUpdateCoordinator(onWaiting: lockKind => Console.Error.WriteLine(
             lockKind == SelfUpdateLockKind.Update

@@ -86,6 +86,31 @@ internal record InstallRequestOptions()
     /// Corresponds to the <c>--verbosity</c> CLI option.
     /// </summary>
     public Verbosity Verbosity { get; init; }
+
+    /// <summary>
+    /// How the installation is performed. Defaults to <see cref="InstallMechanism.Archive"/>;
+    /// admin mode requests use <see cref="InstallMechanism.WindowsInstallerBundle"/>.
+    /// </summary>
+    public InstallMechanism InstallMechanism { get; init; } = InstallMechanism.Archive;
+
+    /// <summary>
+    /// If true, the download must be covered by the signed releases.json manifest; downloads trusted
+    /// only by a published hash (such as daily or blob-feed builds) are rejected. This is separate from
+    /// Authenticode verification and from the machine BlockUnsignedDownloads policy. Set for admin mode installs.
+    /// </summary>
+    public bool RequireReleasesJsonSignature { get; init; }
+}
+
+/// <summary>
+/// The mechanism used to lay down a .NET installation.
+/// </summary>
+internal enum InstallMechanism
+{
+    /// <summary>Download an archive and extract it into the install root.</summary>
+    Archive = 0,
+
+    /// <summary>Run the Windows installer bundle (.exe) into the shared system folder.</summary>
+    WindowsInstallerBundle = 1,
 }
 
 /// <summary>

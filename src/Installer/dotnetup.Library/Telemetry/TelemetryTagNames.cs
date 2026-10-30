@@ -41,6 +41,13 @@ internal static class TelemetryTagNames
     public const string InstallMutexLockPhase = "install.mutex_lock_phase";
     public const string InstallMigratingFromAdmin = "install.migrating_from_admin";
     public const string InstallAdminVersionCopied = "install.admin_version_copied";
+    public const string InstallMechanism = "install.mechanism";
+
+    // Access mode tags
+    public const string AccessMode = "dotnetup.access_mode";
+
+    /// <summary>The access mode selected in the init form, which can differ from the saved mode in <see cref="AccessMode"/>.</summary>
+    public const string InitSelectedAccessMode = "init.selected_access_mode";
 
     // Environment / config tags
     public const string ConfigCorrupted = "config.corrupted";
