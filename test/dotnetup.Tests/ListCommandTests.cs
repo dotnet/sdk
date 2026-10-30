@@ -216,6 +216,24 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
+    public void RelationshipRows_PreserveUnparseableVersionsWithoutMatchingSpecs()
+    {
+        var installations = new List<InstallationInfo>
+        {
+            Installation("invalid"),
+            Installation("10.0.105"),
+            Installation("10.0.105", InstallComponent.Runtime)
+        };
+        var spec = Spec("10.0.1xx");
+
+        var rows = InstallationListRenderer.CreateRowsForRoot([spec], installations);
+
+        rows.Select(r => r.Installation?.Version).Should().Equal("10.0.105", "invalid", "10.0.105");
+        rows.Single(r => r.Spec == spec).Installation.Should().BeSameAs(installations[1]);
+        rows.Single(r => r.Installation == installations[0]).Spec.Should().BeNull();
+    }
+
+    [TestMethod]
     [DataRow("latest", "10.0.105")]
     [DataRow("lts", "10.0.105")]
     [DataRow("preview", "11.0.100-preview.2")]

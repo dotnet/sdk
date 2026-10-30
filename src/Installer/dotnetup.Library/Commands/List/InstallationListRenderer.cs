@@ -19,14 +19,16 @@ internal static class InstallationListRenderer
     /// </summary>
     internal static List<InstallationListRow> CreateRowsForRoot(IEnumerable<InstallSpecInfo> specs, List<InstallationInfo> installations)
     {
+        var versions = installations.Select(i => i.Version).Distinct(StringComparer.Ordinal)
+            .ToDictionary(v => v, v => ReleaseVersion.TryParse(v, out var version) ? version : null, StringComparer.Ordinal);
         var rows = new List<InstallationListRow>();
         foreach (var spec in specs)
         {
             var channel = new UpdateChannel(spec.VersionOrChannel);
             var selected = installations
                 .Where(i => i.Component == spec.Component
-                    && ReleaseVersion.TryParse(i.Version, out var version) && channel.Matches(version))
-                .OrderByDescending(i => new ReleaseVersion(i.Version))
+                    && versions[i.Version] is { } version && channel.Matches(version))
+                .OrderByDescending(i => versions[i.Version])
                 .FirstOrDefault();
             rows.Add(new InstallationListRow
             {
@@ -46,7 +48,7 @@ internal static class InstallationListRenderer
 
         return rows.OrderBy(r => r.Component == InstallComponent.SDK ? 0 : 1)
             .ThenBy(r => r.Installation is not null ? 0 : r.Error is null ? 1 : 2)
-            .ThenByDescending(r => ReleaseVersion.TryParse(r.Installation?.Version, out var version) ? version : null)
+            .ThenByDescending(r => r.Installation is { } installation ? versions[installation.Version] : null)
             .ThenBy(r => ComponentOrder(r.Component))
             .ThenBy(r => r.SpecDisplay, StringComparer.Ordinal)
             .ThenBy(r => r.SourceDisplay, StringComparer.Ordinal)
