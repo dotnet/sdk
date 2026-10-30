@@ -229,6 +229,132 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         }
 
         [TestMethod]
+        public void LoadNuGetSources_PackageSourceMappingEnabled_ReturnsMappedSources()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            ISettings settings = CreateSettingsWithPackageSourceMapping();
+
+            IEnumerable<PackageSource> sources = packageManager.LoadNuGetSources(
+                "Microsoft.TemplateEngine.TestTemplates",
+                Array.Empty<string>(),
+                settings);
+
+            sources.Should().ContainSingle()
+                .Which.Name.Should().Be("template-feed");
+        }
+
+        [TestMethod]
+        public void LoadNuGetSources_ExactPackageSourceMapping_ReturnsMappedSource()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            ISettings settings = CreateSettingsWithPackageSourceMapping();
+
+            IEnumerable<PackageSource> sources = packageManager.LoadNuGetSources(
+                "Exact.Templates",
+                Array.Empty<string>(),
+                settings);
+
+            sources.Should().ContainSingle()
+                .Which.Name.Should().Be("other-feed");
+        }
+
+        [TestMethod]
+        public void LoadNuGetSources_PackageMappedToMultipleSources_ReturnsAllMappedSources()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            ISettings settings = CreateSettingsWithPackageSourceMapping();
+
+            IEnumerable<PackageSource> sources = packageManager.LoadNuGetSources(
+                "Shared.Templates",
+                Array.Empty<string>(),
+                settings);
+
+            sources.Select(source => source.Name).Should().BeEquivalentTo("template-feed", "other-feed");
+        }
+
+        [TestMethod]
+        public void LoadNuGetSources_PackageSourceMappingEnabledAndPackageNotMapped_Throws()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            ISettings settings = CreateSettingsWithPackageSourceMapping();
+
+            Action action = () => packageManager.LoadNuGetSources(
+                "Contoso.Templates",
+                Array.Empty<string>(),
+                settings);
+
+            PackageNotFoundException exception = action.Should().Throw<PackageNotFoundException>().Which;
+            exception.PackageSourceMappingMatchNotFound.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void LoadNuGetSources_MappedSourceDisabled_Throws()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            ISettings settings = CreateSettingsWithPackageSourceMapping(disableTemplateSource: true);
+
+            Action action = () => packageManager.LoadNuGetSources(
+                "Microsoft.TemplateEngine.TestTemplates",
+                Array.Empty<string>(),
+                settings);
+
+            PackageNotFoundException exception = action.Should().Throw<PackageNotFoundException>().Which;
+            exception.PackageSourceMappingMatchNotFound.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void LoadNuGetSources_PackageSourceMappingDisabled_ReturnsAllSources()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            ISettings settings = CreateSettingsWithPackageSourceMapping(includePackageSourceMapping: false);
+
+            IEnumerable<PackageSource> sources = packageManager.LoadNuGetSources(
+                "Contoso.Templates",
+                Array.Empty<string>(),
+                settings);
+
+            sources.Select(source => source.Name).Should().BeEquivalentTo("template-feed", "other-feed");
+        }
+
+        [TestMethod]
+        public void LoadNuGetSources_AdditionalSourceSpecified_AllowsAdditionalSourceAndFiltersConfiguredSources()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            ISettings settings = CreateSettingsWithPackageSourceMapping();
+
+            IEnumerable<PackageSource> sources = packageManager.LoadNuGetSources(
+                "Contoso.Templates",
+                new[] { "https://additional.test/v3/index.json" },
+                settings);
+
+            sources.Should().ContainSingle()
+                .Which.Source.Should().Be("https://additional.test/v3/index.json");
+        }
+
+        [TestMethod]
+        public void LoadNuGetSources_ConfiguredAdditionalSource_DoesNotBypassPackageSourceMapping()
+        {
+            IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
+            ISettings settings = CreateSettingsWithPackageSourceMapping();
+
+            IEnumerable<PackageSource> sources = packageManager.LoadNuGetSources(
+                "Exact.Templates",
+                new[] { "https://templates.test/v3/index.json" },
+                settings);
+
+            sources.Should().ContainSingle()
+                .Which.Name.Should().Be("other-feed");
+        }
+
+        [TestMethod]
         public void RemoveInsecurePackages_AllInsecure()
         {
             IEngineEnvironmentSettings engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
@@ -287,6 +413,50 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             securePackages.Should().NotBeEmpty();
             securePackages.Should().Equal(expectedOutcome);
+        }
+
+        private ISettings CreateSettingsWithPackageSourceMapping(
+            bool disableTemplateSource = false,
+            bool includePackageSourceMapping = true)
+        {
+            string settingsDirectory = s_environmentSettingsHelper.CreateTemporaryFolder();
+            string disabledSources = disableTemplateSource
+                ? """
+                  <disabledPackageSources>
+                    <add key="template-feed" value="true" />
+                  </disabledPackageSources>
+                  """
+                : string.Empty;
+            string packageSourceMapping = includePackageSourceMapping
+                ? """
+                  <packageSourceMapping>
+                    <packageSource key="template-feed">
+                      <package pattern="Microsoft.TemplateEngine.*" />
+                      <package pattern="Shared.Templates" />
+                    </packageSource>
+                    <packageSource key="other-feed">
+                      <package pattern="Other.*" />
+                      <package pattern="Exact.Templates" />
+                      <package pattern="Shared.Templates" />
+                    </packageSource>
+                  </packageSourceMapping>
+                  """
+                : string.Empty;
+            File.WriteAllText(
+                Path.Combine(settingsDirectory, "NuGet.config"),
+                $"""
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <clear />
+                    <add key="template-feed" value="https://templates.test/v3/index.json" />
+                    <add key="other-feed" value="https://other.test/v3/index.json" />
+                  </packageSources>
+                {disabledSources}
+                {packageSourceMapping}
+                </configuration>
+                """);
+            return global::NuGet.Configuration.Settings.LoadSpecificSettings(settingsDirectory, "NuGet.config");
         }
     }
 }
