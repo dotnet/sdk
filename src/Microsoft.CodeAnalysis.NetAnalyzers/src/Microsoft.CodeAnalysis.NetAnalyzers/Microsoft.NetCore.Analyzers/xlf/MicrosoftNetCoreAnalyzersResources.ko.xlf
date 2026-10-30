@@ -2279,8 +2279,8 @@ Enumerable.OfType&lt;T&gt;에서 사용하는 제네릭 형식 검사(C# 'is' �
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddTitle">
-        <source>Prefer the 'IDictionary.TryAdd(TKey, TValue)' method</source>
-        <target state="translated">'IDictionary.TryAdd(TKey, TValue)' 메서드 선호</target>
+        <source>Prefer the 'Dictionary.TryAdd(TKey, TValue)' method</source>
+        <target state="needs-review-translation">'IDictionary.TryAdd(TKey, TValue)' 메서드 선호</target>
         <note />
       </trans-unit>
       <trans-unit id="PreferDictionaryTryAddValueCodeFixTitle">
