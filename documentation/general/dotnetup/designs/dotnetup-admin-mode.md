@@ -156,14 +156,16 @@ Therefore, `dotnetup` and its commands will behave differently in `admin` mode, 
 
 ## Channels
 
-Channel names and version selection remain the same, but admin mode requires
+Channel names and version selection remain the same, but system-wide admin installs require
 signature validation. Unsigned daily or blob-feed builds are blocked even when
 `BlockUnsignedDownloads` is `0`, with the user error
 "Signature validation is required when using admin mode."
 Installers must also pass Authenticode verification chaining to a Microsoft root;
 a failure is reported as `SignatureVerificationFailed` and the installer is not run.
-Archive installs selected through global.json `sdk.paths` must use signed release
-metadata. This admin-mode requirement applies to .NET installs, not dotnetup
+Archive installs into a repo-local directory selected through global.json
+`sdk.paths` follow ordinary archive signing rules: unsigned daily builds are
+allowed unless `BlockUnsignedDownloads` blocks them. This admin-mode requirement
+applies to system-wide .NET installs, not dotnetup
 itself. `dotnetup self update` is unaffected by access mode: it retains its
 existing hash verification, machine-policy checks, and requirement for a
 Microsoft-rooted Authenticode signature when the installed executable is signed.
@@ -249,7 +251,7 @@ A `global.json` file in the `cwd` influences the behavior of `dotnetup`. `global
 
 Because UAC is required, the user's intent will be assumed and respected, so `global.json` will still influence the channel/version if no `channel` is provided when running a command such as `dotnetup sdk install` or `dotnetup runtime install`. It will not influence update behavior.
 
-SDK `paths` are not respected by the `admin` installers, which always install to the shared system location, so they must not influence system level decisions. Instead, when the first meaningful `paths` entry is a literal directory outside the system .NET location, `dotnetup` installs into that directory with the same archive mechanism it uses outside `admin` mode, because the repository opted into a local SDK there. These installs require no elevation, are tracked in the dotnetup manifest like any other archive install unless `--untracked` is passed, and require signed release metadata regardless of `BlockUnsignedDownloads`. The access mode remains `admin` for the command gate and telemetry; the `install.mechanism` (`archive`) and `install.path_source` (`globaljson`) telemetry tags identify these installs. When the first entry is `$host$`, or the literal path is the system .NET location, the `.exe` installer installs to the system location as usual.
+SDK `paths` are not respected by the `admin` installers, which always install to the shared system location, so they must not influence system level decisions. Instead, when the first meaningful `paths` entry is a literal directory outside the system .NET location, `dotnetup` installs into that directory with the same archive mechanism it uses outside `admin` mode, because the repository opted into a local SDK there. These installs require no elevation, are tracked in the dotnetup manifest like any other archive install unless `--untracked` is passed, and allow unsigned daily builds unless `BlockUnsignedDownloads` blocks them. The access mode remains `admin` for the command gate and telemetry; the `install.mechanism` (`archive`) and `install.path_source` (`globaljson`) telemetry tags identify these installs. When the first entry is `$host$`, or the literal path is the system .NET location, the `.exe` installer installs to the system location as usual.
 
 ## `.exe` Installer Error Handling
 

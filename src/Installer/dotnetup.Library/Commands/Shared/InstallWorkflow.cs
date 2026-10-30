@@ -209,7 +209,7 @@ internal class InstallWorkflow
             && globalJson.SdkPath is string globalJsonSdkPath
             && !InstallPathClassifier.IsAdminInstallPath(globalJsonSdkPath))
         {
-            return ResolveUserInstallTarget(globalJson) with { RequireReleasesJsonSignature = true };
+            return ResolveUserInstallTarget(globalJson);
         }
 
         if (!untrackedAcknowledged)

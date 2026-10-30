@@ -231,7 +231,7 @@ public class InstallWorkflowTests : IDisposable
         resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
         resolved.Request.Options.Untracked.Should().BeFalse();
-        resolved.Request.Options.RequireReleasesJsonSignature.Should().BeTrue();
+        resolved.Request.Options.RequireReleasesJsonSignature.Should().BeFalse();
     }
 
     [TestMethod]
@@ -247,7 +247,7 @@ public class InstallWorkflowTests : IDisposable
         resolved.Request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
         resolved.Request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
         resolved.Request.Options.Untracked.Should().BeTrue();
-        resolved.Request.Options.RequireReleasesJsonSignature.Should().BeTrue();
+        resolved.Request.Options.RequireReleasesJsonSignature.Should().BeFalse();
         File.Exists(Path.Combine(_tempDir, "manifest.json")).Should().BeFalse();
     }
 
@@ -267,6 +267,7 @@ public class InstallWorkflowTests : IDisposable
         request.InstallRoot.Path.Should().Be(Path.Combine(projectDir, ".dotnet"));
         request.Options.InstallMechanism.Should().Be(InstallMechanism.Archive);
         request.Options.Untracked.Should().BeTrue();
+        request.Options.RequireReleasesJsonSignature.Should().BeFalse();
     }
 
     [TestMethod]

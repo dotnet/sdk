@@ -191,7 +191,6 @@ internal class InitWorkflows
         return new InitExecutionPlan(installRequests, selectedMode, migrations);
     }
 
-    // Admin mode requests always require signatures, and other modes never do.
     private static bool WereResolvedForMode(List<ResolvedInstallRequest> requests, DotnetAccessMode mode) =>
         requests.All(request => request.Request.Options.RequireReleasesJsonSignature == (mode == DotnetAccessMode.Admin));
 
