@@ -107,7 +107,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
 
         try
         {
-            _archivePath = _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, archiveBasePath, reporter);
+            _archivePath = _archiveDownloader.DownloadVerifiedArtifact(_request, _resolvedVersion, archiveBasePath, reporter).Path;
         }
         catch (DotnetInstallException)
         {

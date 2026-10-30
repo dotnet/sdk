@@ -6,29 +6,13 @@ using Microsoft.Deployment.DotNet.Releases;
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
-/// Interface for downloading .NET archives. Enables testing without network access.
+/// Interface for downloading .NET archives and installers. Enables testing without network access.
 /// </summary>
 internal interface IArchiveDownloader
 {
     /// <summary>
-    /// Downloads the archive for the specified installation request and verifies its hash.
-    /// The implementation resolves the appropriate archive format and appends the file extension
-    /// to the provided base path.
-    /// </summary>
-    /// <param name="installRequest">The installation request containing component and install root info.</param>
-    /// <param name="resolvedVersion">The resolved version to download.</param>
-    /// <param name="destinationBasePath">The local base path (without extension) to save the downloaded file.</param>
-    /// <param name="progress">Optional progress reporting.</param>
-    /// <returns>The full path of the downloaded archive, including the resolved file extension.</returns>
-    string DownloadArchiveWithVerification(
-        DotnetInstallRequest installRequest,
-        ReleaseVersion resolvedVersion,
-        string destinationBasePath,
-        IProgress<DownloadProgress>? progress = null);
-
-    /// <summary>
-    /// Downloads and verifies the artifact like <see cref="DownloadArchiveWithVerification"/>, and also returns the
-    /// expected hash the download was verified against and whether unsigned-download policy applies.
+    /// Downloads and verifies the artifact, returning its path, expected hash, and whether
+    /// unsigned-download policy applies. Appends the artifact's file extension to the base path.
     /// </summary>
     /// <param name="installRequest">The installation request containing component and install root info.</param>
     /// <param name="resolvedVersion">The resolved version to download.</param>

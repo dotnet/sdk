@@ -668,14 +668,14 @@ public class DotnetDownloaderBlobFeedTests
     /// <summary>
     /// End-to-end: parse a real Windows Desktop Runtime release (via the deployment library)
     /// whose manifest lists only .exe installers — no .tar.gz and no .zip — then drive the full
-    /// download entry point <see cref="DotnetDownloader.DownloadArchiveWithVerification"/>.
+    /// download entry point <see cref="DotnetDownloader.DownloadVerifiedArtifact"/>.
     /// The resolve-then-download path must surface the user-actionable
     /// <see cref="DotnetInstallErrorCode.NoUserInstallableArtifact"/> error and must NOT issue any
     /// HTTP download (it fails during manifest resolution, before touching the network).
     /// Windows-only because the RID and .zip fallback are Windows-specific.
     /// </summary>
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void DownloadArchiveWithVerification_WindowsDesktopRuntimeWithOnlyExeInstallers_FailsWithUserError_AndDoesNotDownload()
+    public void DownloadVerifiedArtifact_WindowsDesktopRuntimeWithOnlyExeInstallers_FailsWithUserError_AndDoesNotDownload()
     {
         const string version = "3.1.32";
 
@@ -692,7 +692,7 @@ public class DotnetDownloaderBlobFeedTests
         string destinationBase = Path.Combine(cacheDir, "windowsdesktop-runtime");
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
-            downloader.DownloadArchiveWithVerification(
+            downloader.DownloadVerifiedArtifact(
                 BuildRequest(version, InstallComponent.WindowsDesktop),
                 new ReleaseVersion(version),
                 destinationBase));

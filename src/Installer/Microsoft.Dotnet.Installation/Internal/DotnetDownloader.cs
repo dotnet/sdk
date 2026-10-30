@@ -195,23 +195,6 @@ internal class DotnetDownloader : IArchiveDownloader
         return new ResolvedDownload(resolved.ArchiveUri, hash, rid, resolved.Version, IsUnsigned: true, IsDotnetup: true);
     }
 
-    /// <summary>
-    /// Downloads the archive for the specified installation request and verifies its hash.
-    /// The implementation resolves the appropriate archive format and appends the file extension
-    /// to the provided base path.
-    /// </summary>
-    /// <param name="installRequest">The .NET installation request details</param>
-    /// <param name="resolvedVersion">The resolved version to download</param>
-    /// <param name="destinationBasePath">The local base path (without extension) to save the downloaded file</param>
-    /// <param name="progress">Optional progress reporting</param>
-    /// <returns>The full path of the downloaded archive, including the resolved file extension.</returns>
-    public string DownloadArchiveWithVerification(
-        DotnetInstallRequest installRequest,
-        ReleaseVersion resolvedVersion,
-        string destinationBasePath,
-        IProgress<DownloadProgress>? progress = null)
-        => DownloadVerifiedArtifact(installRequest, resolvedVersion, destinationBasePath, progress).Path;
-
     /// <inheritdoc/>
     public VerifiedDownload DownloadVerifiedArtifact(
         DotnetInstallRequest installRequest,

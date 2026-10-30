@@ -18,12 +18,12 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 internal class MockArchiveDownloader : IArchiveDownloader
 {
     /// <summary>
-    /// Records all calls to DownloadArchiveWithVerification for verification.
+    /// Records all calls to DownloadVerifiedArtifact for verification.
     /// </summary>
     public List<DownloadCall> DownloadCalls { get; } = new();
 
     /// <summary>
-    /// If set, DownloadArchiveWithVerification will throw this exception.
+    /// If set, DownloadVerifiedArtifact will throw this exception.
     /// </summary>
     public Exception? ExceptionToThrow { get; set; }
 
@@ -68,17 +68,6 @@ internal class MockArchiveDownloader : IArchiveDownloader
         string destinationBasePath,
         IProgress<DownloadProgress>? progress = null)
     {
-        string path = DownloadArchiveWithVerification(installRequest, resolvedVersion, destinationBasePath, progress);
-        string expectedHash = ExpectedHash ?? Convert.ToHexStringLower(SHA512.HashData(FakeArchiveContent));
-        return new VerifiedDownload(path, expectedHash, IsUnsigned);
-    }
-
-    public string DownloadArchiveWithVerification(
-        DotnetInstallRequest installRequest,
-        ReleaseVersion resolvedVersion,
-        string destinationBasePath,
-        IProgress<DownloadProgress>? progress = null)
-    {
         string destinationPath = destinationBasePath + ArchiveFileExtension;
         DownloadCalls.Add(new DownloadCall(installRequest, resolvedVersion, destinationPath, progress is not null));
 
@@ -103,6 +92,7 @@ internal class MockArchiveDownloader : IArchiveDownloader
         // Report progress completion
         progress?.Report(new DownloadProgress(100, 100));
 
-        return destinationPath;
+        string expectedHash = ExpectedHash ?? Convert.ToHexStringLower(SHA512.HashData(FakeArchiveContent));
+        return new VerifiedDownload(destinationPath, expectedHash, IsUnsigned);
     }
 }
