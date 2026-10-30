@@ -209,6 +209,7 @@ internal class InstallWorkflow
             && globalJson.SdkPath is string globalJsonSdkPath
             && !InstallPathClassifier.IsAdminInstallPath(globalJsonSdkPath))
         {
+            // The signed manifest is always preferred, and `BlockUnsignedDownloads` is enforced elsewhere - don't block a local repo with a daily SDK.
             return ResolveUserInstallTarget(globalJson);
         }
 
