@@ -125,3 +125,37 @@ aggregate exit code from
 including session failures and ignored-exit policies, instead of upstream's in-process
 failure callback. A successful run with zero tests uses neutral "Zero tests ran" wording,
 not a green "Passed!" verdict.
+
+Collection has a separate parent lifecycle: its bounded progress counts completed module
+attempts, and its final status follows the existing aggregate exit code without synthesizing
+test outcomes from discovery or mapping counts. Keep collection progress independent of
+TestHost handshakes, since suppression is intentional. Interrupted sessions label live counts
+as incomplete; never add recovered TRX counts to those live results.
+
+Artifact workers inherit only configuration and diagnostic options from the elected
+application, including response-file and launch-profile sources. Preserve `--diagnostic`
+with its directory, verbosity, prefix, and synchronous-write settings; do not weaken MTP
+validation or forward test-selection/retry/timeout arguments. Reporting degradation remains
+separate from the test verdict, with original artifacts retained.
+
+Required artifact processing is a per-invocation promise: advertise field 19 only when the
+SDK will honor field 18 singleton jobs and provide an authoritative, policy-aware
+`runSummary`. Preserve per-module fallback for opt-out, help/discovery/collection, and
+unsupported transports. Snapshot logical live counts after final test policies, before
+workers run; keep selected modules without fragments in the denominator. Preserve the
+handshake's producing-module identity separately from an apphost launch path, and never
+use a running framework as proof of the artifact's target framework. See the
+[contract decision](../../documentation/general/dotnet-test-artifact-post-processing.md#required-summary-contract-decision)
+and [real-worker regressions](../../test/dotnet.Tests/CommandTests/Test/GivenDotnetTestRunsRequiredArtifactProcessing.cs).
+Join worker reporting before applying outputs; a legal null result or a worker failure
+does not change test policy. Bound worker cancellation without expanding general test-host
+cancellation plumbing.
+
+The vendored non-cursor renderer measures **visible-output silence**, not silence between
+test completions. Its totals include completed modules after their worker slots are freed.
+Resolve parent progress from every selected module's effective arguments and working
+directory; any effective opt-out disables the shared heartbeat and slow-test display.
+Collection status must not override discovery formatting. Keep optional timer and warning
+writes exception-safe, without recounting an operation when its warning cannot be written.
+Keep SDK final-exit-code authority when reconciling upstream terminal code, and update
+[`eng/vendored-files.json`](../../eng/vendored-files.json) with exact upstream blob identities.

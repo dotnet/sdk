@@ -9,11 +9,13 @@ using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class ArtifactPostProcessingManager
+internal sealed class ArtifactPostProcessingManager(bool enabled = true, CancellationToken cancellationToken = default)
 {
     private readonly Lock _lock = new();
     private readonly Dictionary<TestModule, ApplicationState> _applications = [];
     private readonly List<ArtifactPostProcessingArtifact> _artifacts = [];
+
+    public bool IsEnabled => enabled && !cancellationToken.IsCancellationRequested;
 
     public void RecordCapabilities(
         TestModule module,
@@ -22,6 +24,9 @@ internal sealed class ArtifactPostProcessingManager
         HandshakeMessage handshakeMessage)
     {
         string[] kinds = ParseCapabilities(handshakeMessage, HandshakeMessagePropertyNames.SupportedPostProcessorKinds);
+        string[] requiredKinds = ParseCapabilities(handshakeMessage, HandshakeMessagePropertyNames.RequiredPostProcessorKinds)
+            .Intersect(kinds, StringComparer.Ordinal)
+            .ToArray();
         string[] extensions = ParseCapabilities(handshakeMessage, HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy)
             .Select(extension => extension.ToLowerInvariant())
             .ToArray();
@@ -51,9 +56,15 @@ internal sealed class ArtifactPostProcessingManager
             }
 
             application.SupportedKinds.UnionWith(kinds);
+            application.RequiredKinds.UnionWith(requiredKinds);
             application.SupportedExtensions.UnionWith(extensions);
             application.SupportedTruncatedRunKinds.UnionWith(truncatedRunKinds);
             application.SupportedTruncatedRunExtensions.UnionWith(truncatedRunExtensions);
+            if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ModulePath, out string? modulePath)
+                && !string.IsNullOrWhiteSpace(modulePath))
+            {
+                application.ProducingTestModule = modulePath;
+            }
         }
     }
 
@@ -62,14 +73,15 @@ internal sealed class ArtifactPostProcessingManager
         string? targetFramework,
         string? architecture,
         string executionId,
-        FileArtifactMessage artifact)
+        FileArtifactMessage artifact,
+        string? producingTestModule = null)
     {
         lock (_lock)
         {
             _artifacts.Add(new ArtifactPostProcessingArtifact(
                 artifact.FullPath!,
                 artifact.Kind,
-                module.TargetPath,
+                producingTestModule ?? module.TargetPath,
                 targetFramework,
                 architecture,
                 executionId,
@@ -81,11 +93,17 @@ internal sealed class ArtifactPostProcessingManager
         BuildOptions buildOptions,
         TerminalTestReporter output,
         CtrlCCancellationManager ctrlC,
-        TestRunCancellationReason cancellationReason)
+        TestRunCancellationReason cancellationReason,
+        ArtifactPostProcessingRunSummary runSummary)
     {
+        if (!IsEnabled)
+        {
+            return;
+        }
+
         try
         {
-            await ExecuteCoreAsync(buildOptions, output, ctrlC, cancellationReason);
+            await ExecuteCoreAsync(buildOptions, output, ctrlC, cancellationReason, runSummary);
         }
         catch (Exception ex)
         {
@@ -94,6 +112,14 @@ internal sealed class ArtifactPostProcessingManager
             // best-effort convenience layered on a finished run can escape and turn that run into a
             // CLI crash with a different exit code.
             Logger.LogTrace($"Artifact post-processing failed: {ex}");
+            if (!ctrlC.Token.IsCancellationRequested)
+            {
+                // The reporter itself may have failed; do not write to it again from this guard.
+                output.DeferArtifactPostProcessingFailure(string.Format(
+                    CultureInfo.CurrentCulture,
+                    CliCommandStrings.ArtifactPostProcessingUnexpectedFailure,
+                    ex.Message));
+            }
         }
     }
 
@@ -101,28 +127,29 @@ internal sealed class ArtifactPostProcessingManager
         BuildOptions buildOptions,
         TerminalTestReporter output,
         CtrlCCancellationManager ctrlC,
-        TestRunCancellationReason cancellationReason)
+        TestRunCancellationReason cancellationReason,
+        ArtifactPostProcessingRunSummary runSummary)
     {
-        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
-            SnapshotApplications(),
-            SnapshotArtifacts(),
-            cancellationReason);
-        ArtifactPostProcessingJob[] runnableJobs =
+        ArtifactPostProcessingApplication[] applications =
         [
-            .. plan.Jobs.Where(job =>
+            .. SnapshotApplications().Where(application =>
             {
-                bool supported = !TestApplication.RequiresHttpTransport(job.Application.Module);
+                bool supported = !TestApplication.RequiresHttpTransport(application.Module);
                 if (!supported)
                 {
                     Logger.LogTrace(
-                        $"Skipping artifact post-processing for WebAssembly module '{job.Application.Module.TargetPath}' because no browser-aware merge host is available.");
+                        $"Skipping artifact post-processing for WebAssembly module '{application.Module.TargetPath}' because no browser-aware merge host is available.");
                 }
 
                 return supported;
             }),
         ];
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            applications,
+            SnapshotArtifacts(),
+            cancellationReason);
 
-        if (runnableJobs.Length == 0)
+        if (plan.Jobs.Count == 0)
         {
             return;
         }
@@ -136,7 +163,7 @@ internal sealed class ArtifactPostProcessingManager
         int executedJobs = 0;
         int failedJobs = 0;
 
-        foreach (ArtifactPostProcessingJob job in runnableJobs)
+        foreach (ArtifactPostProcessingJob job in plan.Jobs)
         {
             if (ctrlC.Token.IsCancellationRequested)
             {
@@ -159,7 +186,8 @@ internal sealed class ArtifactPostProcessingManager
                     manifestPath,
                     outputDirectory,
                     job.Groups.SelectMany(group => group.Artifacts),
-                    cancellationReason);
+                    cancellationReason,
+                    runSummary);
 
                 var invocation = new ArtifactPostProcessingInvocation(manifestPath);
                 var toolOptions = new TestOptions(
@@ -168,7 +196,7 @@ internal sealed class ArtifactPostProcessingManager
                     ListTestsFormat: TestListFormat.Text,
                     IsArtifactPostProcessing: true);
 
-                using var application = new TestApplication(
+                var application = new TestApplication(
                     job.Application.Module,
                     buildOptions,
                     toolOptions,
@@ -180,7 +208,17 @@ internal sealed class ArtifactPostProcessingManager
                     artifactPostProcessingManager: this,
                     artifactPostProcessingInvocation: invocation);
 
-                int exitCode = await application.RunAsync(ctrlC);
+                int exitCode;
+                using (application)
+                {
+                    exitCode = await application.RunAsync(ctrlC);
+                }
+
+                if (application.HasFailureDuringDispose)
+                {
+                    invocation.RecordFailure(CliCommandStrings.ArtifactPostProcessingConnectionFailed);
+                }
+
                 string? failureMessage = invocation.FailureMessage;
                 if (ShouldApplyOutputs(failureMessage, exitCode))
                 {
@@ -255,7 +293,7 @@ internal sealed class ArtifactPostProcessingManager
             return false;
         }
 
-        output.WriteWarningMessage(message);
+        output.ArtifactPostProcessingFailed(message);
         return true;
     }
 
@@ -275,7 +313,11 @@ internal sealed class ArtifactPostProcessingManager
                     new HashSet<string>(application.SupportedKinds, StringComparer.Ordinal),
                     new HashSet<string>(application.SupportedExtensions, StringComparer.Ordinal),
                     new HashSet<string>(application.SupportedTruncatedRunKinds, StringComparer.Ordinal),
-                    new HashSet<string>(application.SupportedTruncatedRunExtensions, StringComparer.Ordinal)))
+                    new HashSet<string>(application.SupportedTruncatedRunExtensions, StringComparer.Ordinal))
+                {
+                    RequiredKinds = new HashSet<string>(application.RequiredKinds, StringComparer.Ordinal),
+                    ProducingTestModule = application.ProducingTestModule,
+                })
             ];
         }
     }
@@ -327,7 +369,7 @@ internal sealed class ArtifactPostProcessingManager
         // it advertises without having produced any of the inputs, so fall back to the first input
         // directory in path order.
         ArtifactPostProcessingArtifact preferredInput = inputs.FirstOrDefault(artifact =>
-            FileUtilities.PathComparer.Equals(artifact.ProducingTestModule, job.Application.Module.TargetPath))
+            FileUtilities.PathComparer.Equals(artifact.ProducingTestModule, job.Application.ProducingTestModule))
             ?? inputs[0];
 
         return Path.GetDirectoryName(Path.GetFullPath(preferredInput.Path))!;
@@ -337,7 +379,8 @@ internal sealed class ArtifactPostProcessingManager
         string manifestPath,
         string outputDirectory,
         IEnumerable<ArtifactPostProcessingArtifact> artifacts,
-        TestRunCancellationReason cancellationReason)
+        TestRunCancellationReason cancellationReason,
+        ArtifactPostProcessingRunSummary runSummary)
     {
         using FileStream stream = File.Create(manifestPath);
         using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
@@ -345,6 +388,15 @@ internal sealed class ArtifactPostProcessingManager
         writer.WriteStartObject();
         writer.WriteNumber("schemaVersion", 1);
         writer.WriteString("outputDirectory", outputDirectory);
+        writer.WriteStartObject("runSummary");
+        writer.WriteNumber("totalTests", runSummary.TotalTests);
+        writer.WriteNumber("passedTests", runSummary.PassedTests);
+        writer.WriteNumber("failedTests", runSummary.FailedTests);
+        writer.WriteNumber("skippedTests", runSummary.SkippedTests);
+        writer.WriteNumber("durationTicks", runSummary.Duration.Ticks);
+        writer.WriteNumber("exitCode", runSummary.ExitCode);
+        writer.WriteNumber("testModuleCount", runSummary.TestModuleCount);
+        writer.WriteEndObject();
         if (cancellationReason != TestRunCancellationReason.None)
         {
             writer.WriteString(
@@ -442,7 +494,9 @@ internal sealed class ArtifactPostProcessingManager
         public TestModule Module { get; } = module;
         public string? TargetFramework { get; } = targetFramework;
         public string? Architecture { get; } = architecture;
+        public string ProducingTestModule { get; set; } = module.TargetPath;
         public HashSet<string> SupportedKinds { get; } = new(StringComparer.Ordinal);
+        public HashSet<string> RequiredKinds { get; } = new(StringComparer.Ordinal);
         public HashSet<string> SupportedExtensions { get; } = new(StringComparer.Ordinal);
         public HashSet<string> SupportedTruncatedRunKinds { get; } = new(StringComparer.Ordinal);
         public HashSet<string> SupportedTruncatedRunExtensions { get; } = new(StringComparer.Ordinal);

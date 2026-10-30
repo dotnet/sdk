@@ -181,6 +181,108 @@ public class ArtifactPostProcessingPlannerTests
     }
 
     [TestMethod]
+    public void Plan_RequiredSingleton_DoesNotProcessOptionalSingleton()
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll", "net10.0", "x64", ["example.summary", "microsoft.testing.trx"], [],
+            requiredKinds: ["example.summary"]);
+        ArtifactPostProcessingArtifact[] artifacts =
+        [
+            CreateArtifact("A.summary", "example.summary", "A.dll", "x64"),
+            CreateArtifact("A.trx", "microsoft.testing.trx", "A.dll", "x64"),
+        ];
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan([application], artifacts);
+
+        ArtifactPostProcessingGroup group = plan.Jobs.Should().ContainSingle().Subject.Groups.Should().ContainSingle().Subject;
+        group.Key.Should().Be("example.summary");
+        group.Artifacts.Should().ContainSingle().Which.Path.Should().Be("A.summary");
+    }
+
+    [TestMethod]
+    public void Plan_RequiredGroup_ElectsApplicationAdvertisingRequiredSupport()
+    {
+        ArtifactPostProcessingApplication optional = CreateApplication(
+            "A.dll", "net11.0", "x64", ["example.summary"], []);
+        ArtifactPostProcessingApplication required = CreateApplication(
+            "B.dll", "net10.0", "x64", ["example.summary"], [], requiredKinds: ["example.summary"]);
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            [optional, required],
+            [CreateArtifact("A.summary", "example.summary", "A.dll", "x64")]);
+
+        plan.Jobs.Should().ContainSingle().Which.Application.Should().BeSameAs(required);
+    }
+
+    [TestMethod]
+    public void Plan_RequiredKindWithoutSupportedKind_DoesNotCreateJob()
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll", "net10.0", "x64", [], [], requiredKinds: ["example.summary"]);
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            [application],
+            [CreateArtifact("A.summary", "example.summary", "A.dll", "x64")]);
+
+        plan.Jobs.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Plan_RequiredKindWithoutInputs_DoesNotInventJob()
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll", "net10.0", "x64", ["example.summary"], [], requiredKinds: ["example.summary"]);
+
+        ArtifactPostProcessingPlanner.Plan([application], []).Jobs.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void Plan_DuplicateRequiredInput_IsProcessedOnce()
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll", "net10.0", "x64", ["example.summary"], [], requiredKinds: ["example.summary"]);
+        ArtifactPostProcessingArtifact artifact = CreateArtifact("A.summary", "example.summary", "A.dll", "x64");
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan([application], [artifact, artifact]);
+
+        plan.Jobs.Should().ContainSingle().Which.Groups.Should().ContainSingle().Which.Artifacts.Should().ContainSingle();
+    }
+
+    [TestMethod]
+    [DataRow((int)TestRunCancellationReason.MaximumFailedTests, false)]
+    [DataRow((int)TestRunCancellationReason.MaximumFailedTests, true)]
+    [DataRow((int)TestRunCancellationReason.Timeout, false)]
+    [DataRow((int)TestRunCancellationReason.Timeout, true)]
+    public void Plan_TruncatedSingleton_RequiresExplicitTruncationCapability(int reason, bool supportsTruncation)
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll", "net10.0", "x64", ["example.summary"], [],
+            truncatedRunKinds: supportsTruncation ? ["example.summary"] : [],
+            requiredKinds: ["example.summary"]);
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            [application],
+            [CreateArtifact("A.summary", "example.summary", "A.dll", "x64")],
+            (TestRunCancellationReason)reason);
+
+        plan.Jobs.Should().HaveCount(supportsTruncation ? 1 : 0);
+    }
+
+    [TestMethod]
+    public void Plan_TruncatedOptionalSingleton_UsesAdvertisedTruncationSupport()
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll", "net10.0", "x64", ["example.summary"], [], truncatedRunKinds: ["example.summary"]);
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            [application],
+            [CreateArtifact("A.summary", "example.summary", "A.dll", "x64")],
+            TestRunCancellationReason.Timeout);
+
+        plan.Jobs.Should().ContainSingle();
+    }
+
+    [TestMethod]
     public void Plan_CodeCoverage_RequiresArchitectureCompatibleApplication()
     {
         ArtifactPostProcessingApplication x64 = CreateApplication(
@@ -329,7 +431,8 @@ public class ArtifactPostProcessingPlannerTests
         string[] kinds,
         string[] extensions,
         string[]? truncatedRunKinds = null,
-        string[]? truncatedRunExtensions = null)
+        string[]? truncatedRunExtensions = null,
+        string[]? requiredKinds = null)
         => new(
             new TestModule(
                 new RunProperties("dotnet", targetPath, null),
@@ -345,7 +448,10 @@ public class ArtifactPostProcessingPlannerTests
             new HashSet<string>(kinds, StringComparer.Ordinal),
             new HashSet<string>(extensions, StringComparer.Ordinal),
             new HashSet<string>(truncatedRunKinds ?? [], StringComparer.Ordinal),
-            new HashSet<string>(truncatedRunExtensions ?? [], StringComparer.Ordinal));
+            new HashSet<string>(truncatedRunExtensions ?? [], StringComparer.Ordinal))
+        {
+            RequiredKinds = new HashSet<string>(requiredKinds ?? [], StringComparer.Ordinal),
+        };
 
     private static ArtifactPostProcessingArtifact CreateArtifact(
         string path,

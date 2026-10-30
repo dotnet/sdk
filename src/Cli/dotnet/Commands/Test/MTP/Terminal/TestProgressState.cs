@@ -238,6 +238,8 @@ internal sealed class TestProgressState(
 
     public int? ExitCode { get; internal set; }
 
+    public bool HasIncompleteTestResults { get; internal set; }
+
     public bool IsDiscovery { get; } = isDiscovery;
 
     public TestResultVisibility TestResultVisibility { get; } = testResultVisibility;

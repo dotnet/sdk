@@ -77,10 +77,20 @@
         <target state="translated">.NET ツール パッケージのインストール時にパッケージのダウングレードを許可します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArtifactPostProcessingConnectionFailed">
+        <source>The artifact worker's reporting connection did not complete successfully.</source>
+        <target state="new">The artifact worker's reporting connection did not complete successfully.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ArtifactPostProcessingFailed">
         <source>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</source>
         <target state="translated">'{0}' による成果物の後処理に失敗しました: {1} 元の成果物が報告されます。</target>
         <note>{0} is the test application path. {1} is the failure reason.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactPostProcessingMissingHandshake">
+        <source>The artifact worker exited without completing the expected handshake.</source>
+        <target state="new">The artifact worker exited without completing the expected handshake.</target>
+        <note />
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingProcessFailed">
         <source>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</source>
@@ -91,6 +101,16 @@
         <source>Merging compatible artifacts produced by different test applications...</source>
         <target state="translated">異なるテスト アプリケーションによって生成された互換性のあるアーティファクトをマージしています...</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ArtifactPostProcessingUnexpectedFailure">
+        <source>Artifact post-processing failed: {0} Original artifacts are preserved; the test exit code is unchanged.</source>
+        <target state="new">Artifact post-processing failed: {0} Original artifacts are preserved; the test exit code is unchanged.</target>
+        <note>{0} is the failure reason.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactReportingDegraded">
+        <source>Reporting: degraded ({0} artifact post-processing failure(s)). Original artifacts are preserved; the test verdict is unchanged.</source>
+        <target state="new">Reporting: degraded ({0} artifact post-processing failure(s)). Original artifacts are preserved; the test verdict is unchanged.</target>
+        <note>{0} is the number of failed post-processing operations.</note>
       </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
         <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
@@ -185,6 +205,11 @@
       <trans-unit id="DotnetTestMissingRequiredMessageProperty">
         <source>The required property '{0}' was missing or empty in the message of type '{1}'.</source>
         <target state="translated">種類 '{1}' のメッセージで、必要なプロパティ '{0}' が見つからないか、空でした。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ErroredAssembliesHeader">
+        <source>Errored assemblies:</source>
+        <target state="new">Errored assemblies:</target>
         <note />
       </trans-unit>
       <trans-unit id="ExitCodeAtLeastOneTestFailedDescription">
@@ -286,6 +311,11 @@
         <source>Handshake failures:</source>
         <target state="translated">ハンドシェイク エラー:</target>
         <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
+      </trans-unit>
+      <trans-unit id="IncompleteLiveTestResults">
+        <source>Live test results are incomplete for '{0}': {1} result(s) received. Artifact reports may contain additional recovered results; they are not added to these live counts.</source>
+        <target state="new">Live test results are incomplete for '{0}': {1} result(s) received. Artifact reports may contain additional recovered results; they are not added to these live counts.</target>
+        <note>{0} is the test module path. {1} is the number of results received live.</note>
       </trans-unit>
       <trans-unit id="MismatchingHandshakeExecutionMode">
         <source>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</source>
@@ -3322,6 +3352,31 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="translated">このコマンドに NuGet パッケージをダウンロードして抽出するための一時ディレクトリを指定します (セキュリティで保護する必要があります)。</target>
         <note />
       </trans-unit>
+      <trans-unit id="TerminalProgressHeartbeat">
+        <source>running... {0} completed, {1} failed, active modules: {2}</source>
+        <target state="new">running... {0} completed, {1} failed, active modules: {2}</target>
+        <note>{0} is the cumulative number of completed tests, {1} is the number of failed tests, {2} is the number of active test modules.</note>
+      </trans-unit>
+      <trans-unit id="TerminalProgressHeartbeatActiveSuffix">
+        <source> | active: {0}</source>
+        <target state="new"> | active: {0}</target>
+        <note>{0} is the active test name.</note>
+      </trans-unit>
+      <trans-unit id="TerminalProgressHeartbeatLastCompletionSuffix">
+        <source> | last completion: {0} ago</source>
+        <target state="new"> | last completion: {0} ago</target>
+        <note>{0} is the elapsed duration since the last test completion.</note>
+      </trans-unit>
+      <trans-unit id="TerminalProgressHeartbeatNoCompletionSuffix">
+        <source> | no tests completed yet</source>
+        <target state="new"> | no tests completed yet</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TerminalProgressSlowTest">
+        <source>[slow] still running after {0}: {1}</source>
+        <target state="new">[slow] still running after {0}: {1}</target>
+        <note>{0} is the elapsed duration, {1} is the test description. {Locked="[slow]"}</note>
+      </trans-unit>
       <trans-unit id="TestApplicationOutputTruncated">
         <source>... output truncated, {0} lines omitted ...</source>
         <target state="translated">... 出力が切り捨てられ、{0} 行が省略されました ...</target>
@@ -3395,6 +3450,46 @@ Your project targets multiple frameworks. Specify which framework to run using '
       <trans-unit id="TestFrameworkOptionDescription">
         <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
         <target state="translated">テストを実行する対象のターゲット フレームワーク。ターゲット フレームワークはプロジェクト ファイルでも指定する必要があります。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestMapCollectionAborted">
+        <source>Test map collection: Aborted.</source>
+        <target state="new">Test map collection: Aborted.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestMapCollectionCompleted">
+        <source>Test map collection: Completed.</source>
+        <target state="new">Test map collection: Completed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestMapCollectionFailed">
+        <source>Test map collection: Failed.</source>
+        <target state="new">Test map collection: Failed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestMapCollectionModules">
+        <source>  modules finished: {0}/{1}</source>
+        <target state="new">  modules finished: {0}/{1}</target>
+        <note>{0} is the number of finished module processes. {1} is the selected module count.</note>
+      </trans-unit>
+      <trans-unit id="TestMapCollectionNoTestVerdict">
+        <source>  Module completion is not a test verdict. Discovery and mapping counts do not represent executed test outcomes.</source>
+        <target state="new">  Module completion is not a test verdict. Discovery and mapping counts do not represent executed test outcomes.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestMapCollectionProgress">
+        <source>Collecting test maps: {0}/{1} module(s) finished. Current module: {2}</source>
+        <target state="new">Collecting test maps: {0}/{1} module(s) finished. Current module: {2}</target>
+        <note>{0} is the number of finished modules. {1} is the selected module count. {2} is the current module path or a waiting status.</note>
+      </trans-unit>
+      <trans-unit id="TestMapCollectionStarted">
+        <source>Collecting test maps for {0} module(s). Child test-result reporting is suppressed.</source>
+        <target state="new">Collecting test maps for {0} module(s). Child test-result reporting is suppressed.</target>
+        <note>{0} is the number of selected test modules.</note>
+      </trans-unit>
+      <trans-unit id="TestMapCollectionWaiting">
+        <source>waiting for the next module</source>
+        <target state="new">waiting for the next module</target>
         <note />
       </trans-unit>
       <trans-unit id="TestRunExitCode">

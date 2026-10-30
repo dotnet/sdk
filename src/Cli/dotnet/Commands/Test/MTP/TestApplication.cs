@@ -194,17 +194,25 @@ internal sealed class TestApplication(
             {
                 try
                 {
-                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout);
+                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout, ctrlC.Token);
                 }
-                catch (TimeoutException)
+                catch (Exception ex) when (ex is TimeoutException || (ex is OperationCanceledException && ctrlC.Token.IsCancellationRequested))
                 {
-                    if (!process.HasExited)
+                    try
                     {
-                        process.Kill(entireProcessTree: true);
-                        await process.WaitForExitAsync();
+                        if (!process.HasExited)
+                        {
+                            process.Kill(entireProcessTree: true);
+                        }
+                    }
+                    catch (InvalidOperationException killException)
+                    {
+                        // The worker exited between HasExited and Kill.
+                        Logger.LogTrace($"Artifact worker exited before it could be killed:\n{killException}");
                     }
 
-                    artifactPostProcessingTimedOut = true;
+                    await process.WaitForExitAsync();
+                    artifactPostProcessingTimedOut = ex is TimeoutException;
                 }
             }
 
@@ -360,6 +368,7 @@ internal sealed class TestApplication(
             return BuildArtifactPostProcessingArguments(
                 builder,
                 _buildOptions.PathOptions,
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationArguments(Module, _buildOptions),
                 _artifactPostProcessingInvocation.ManifestPath,
                 AppendTestHostTransportArguments);
         }
@@ -530,11 +539,13 @@ internal sealed class TestApplication(
     internal static string BuildArtifactPostProcessingArguments(
         StringBuilder builder,
         PathOptions pathOptions,
+        IReadOnlyList<string> testApplicationArguments,
         string manifestPath,
         string pipeName)
         => BuildArtifactPostProcessingArguments(
             builder,
             pathOptions,
+            testApplicationArguments,
             manifestPath,
             transportArgumentsBuilder => transportArgumentsBuilder.Append(
                 $" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}"));
@@ -542,6 +553,7 @@ internal sealed class TestApplication(
     private static string BuildArtifactPostProcessingArguments(
         StringBuilder builder,
         PathOptions pathOptions,
+        IReadOnlyList<string> testApplicationArguments,
         string manifestPath,
         Action<StringBuilder> appendTransportArguments)
     {
@@ -560,6 +572,28 @@ internal sealed class TestApplication(
         if (pathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
         {
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+        }
+
+        for (int i = 0; i < testApplicationArguments.Count; i++)
+        {
+            string argument = testApplicationArguments[i];
+            bool hasValue =
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic-verbosity", allowValue: true) ||
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic-file-prefix", allowValue: true) ||
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName, allowValue: true) ||
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName, allowValue: true);
+            if (!hasValue &&
+                !MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic", allowValue: false) &&
+                !MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic-synchronous-write", allowValue: false))
+            {
+                continue;
+            }
+
+            builder.Append($" {ArgumentEscaper.EscapeSingleArg(argument)}");
+            if (hasValue && argument.IndexOfAny('=', ':') < 0 && i + 1 < testApplicationArguments.Count)
+            {
+                builder.Append($" {ArgumentEscaper.EscapeSingleArg(testApplicationArguments[++i])}");
+            }
         }
 
         // The results directory is deliberately not forwarded: the merged output location travels in
@@ -866,9 +900,9 @@ internal sealed class TestApplication(
         return highestCommonVersionText;
     }
 
-    private HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true)
+    internal HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true)
     {
-        var properties = new Dictionary<byte, string>(capacity: 6)
+        var properties = new Dictionary<byte, string>(capacity: 7)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
@@ -880,6 +914,16 @@ internal sealed class TestApplication(
         if (version.Length > 0 && includeControlPipe)
         {
             properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+        }
+
+        if (version.Length > 0
+            && artifactPostProcessingManager?.IsEnabled == true
+            && !TestOptions.IsArtifactPostProcessing
+            && !RequiresHttpTransport(Module)
+            && MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
+                TestOptions, noArtifactPostProcessingRequested: false, cancellationRequested: false))
+        {
+            properties.Add(HandshakeMessagePropertyNames.RequiredPostProcessingSupported, bool.TrueString);
         }
 
         return new HandshakeMessage(properties);

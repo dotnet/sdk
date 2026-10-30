@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Moq;
 using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
@@ -328,6 +329,7 @@ public class ArtifactPostProcessingManagerTests
         string arguments = TestApplication.BuildArtifactPostProcessingArguments(
             new StringBuilder("exec A.dll"),
             pathOptions,
+            ["--diagnostic"],
             "/tmp/manifest.json",
             "pipe-name");
 
@@ -355,12 +357,55 @@ public class ArtifactPostProcessingManagerTests
         string arguments = TestApplication.BuildArtifactPostProcessingArguments(
             new StringBuilder("exec A.dll"),
             pathOptions,
+            [],
             "/tmp/manifest.json",
             "pipe-name");
 
         arguments.Should().NotContain(
             TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName,
             "the merged output location travels in the manifest, so the SDK keeps control of it");
+    }
+
+    [TestMethod]
+    [DataRow("--diagnostic")]
+    [DataRow("-DIAGNOSTIC")]
+    public void BuildArtifactPostProcessingArguments_PreservesOnlyWorkerConfiguration(string diagnosticOption)
+    {
+        string arguments = TestApplication.BuildArtifactPostProcessingArguments(
+            new StringBuilder("exec A.dll"),
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            [
+                diagnosticOption, "--diagnostic-verbosity=trace", "--diagnostic-file-prefix", "merge log",
+                "--diagnostic-synchronous-write", "--diagnostic-output-directory", "diagnostic logs",
+                "--config-file", "test config.json", "--filter", "NotForTheWorker",
+                "--collect-test-map", "--retry-failed-tests", "3", "--timeout", "1s", "--report-trx",
+            ],
+            "manifest.json", "pipe");
+
+        arguments.Should().Contain(diagnosticOption)
+            .And.Contain("--diagnostic-verbosity=trace")
+            .And.Contain("--diagnostic-file-prefix \"merge log\"")
+            .And.Contain("--diagnostic-synchronous-write")
+            .And.Contain("--diagnostic-output-directory \"diagnostic logs\"")
+            .And.Contain("--config-file \"test config.json\"")
+            .And.NotContain("--filter")
+            .And.NotContain("NotForTheWorker")
+            .And.NotContain("--collect-test-map")
+            .And.NotContain("--retry-failed-tests")
+            .And.NotContain("--timeout")
+            .And.NotContain("--report-trx");
+    }
+
+    [TestMethod]
+    public void BuildArtifactPostProcessingArguments_DoesNotEnableUnrequestedDiagnostics()
+    {
+        string arguments = TestApplication.BuildArtifactPostProcessingArguments(
+            new StringBuilder("exec A.dll"),
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            ["--filter", "SelectedTest"],
+            "manifest.json", "pipe");
+
+        arguments.Should().NotContain("--diagnostic");
     }
 
     [TestMethod]
@@ -432,6 +477,66 @@ public class ArtifactPostProcessingManagerTests
             cancellationRequested: true).Should().BeFalse("Ctrl+C is an unconditional user cancellation");
 
     [TestMethod]
+    public void ShouldPostProcessArtifacts_Collection_DoesNotPromiseSummaryHandoff()
+        => MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
+            CreateTestOptions() with { CollectTestMap = true },
+            noArtifactPostProcessingRequested: false,
+            cancellationRequested: false).Should().BeFalse();
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow("example.summary;unsupported.kind")]
+    [DataRow(" example.summary ; example.summary ")]
+    public void RecordCapabilities_RequiredKindsAreOptionalAndRestrictedToSupportedKinds(string? requiredKinds)
+    {
+        var properties = new Dictionary<byte, string>
+        {
+            [HandshakeMessagePropertyNames.SupportedPostProcessorKinds] = "example.summary;microsoft.testing.trx",
+        };
+        if (requiredKinds is not null)
+        {
+            properties[HandshakeMessagePropertyNames.RequiredPostProcessorKinds] = requiredKinds;
+        }
+
+        var manager = new ArtifactPostProcessingManager();
+        manager.RecordCapabilities(CreateModule(), "net10.0", "x64", new HandshakeMessage(properties));
+
+        manager.SnapshotApplications().Should().ContainSingle().Which.RequiredKinds
+            .Should().BeEquivalentTo(string.IsNullOrEmpty(requiredKinds) ? [] : new[] { "example.summary" });
+    }
+
+    [TestMethod]
+    public void WriteManifest_IncludesAuthoritativeRunSummaryWithInt64Counters()
+    {
+        string manifestPath = Path.Combine(Path.GetTempPath(), $"manifest-{Guid.NewGuid():N}.json");
+        var runSummary = new ArtifactPostProcessingRunSummary(
+            (long)int.MaxValue + 3, int.MaxValue, 1, 2, TimeSpan.FromSeconds(7), 9, 3);
+        try
+        {
+            ArtifactPostProcessingManager.WriteManifest(
+                manifestPath, "/results", [CreateArtifact("first.summary", "example.summary")],
+                TestRunCancellationReason.None, runSummary);
+
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            JsonElement summary = manifest.RootElement.GetProperty("runSummary");
+            summary.GetProperty("totalTests").GetInt64().Should().Be(runSummary.TotalTests);
+            summary.GetProperty("passedTests").GetInt64().Should().Be(runSummary.PassedTests);
+            summary.GetProperty("failedTests").GetInt64().Should().Be(1);
+            summary.GetProperty("skippedTests").GetInt64().Should().Be(2);
+            summary.GetProperty("durationTicks").GetInt64().Should().Be(runSummary.Duration.Ticks);
+            summary.GetProperty("exitCode").GetInt32().Should().Be(9);
+            summary.GetProperty("testModuleCount").GetInt32().Should().Be(3,
+                "modules without a fragment must remain in the invocation denominator");
+            manifest.RootElement.GetProperty("inputs").GetArrayLength().Should().Be(1);
+        }
+        finally
+        {
+            File.Delete(manifestPath);
+        }
+    }
+
+    [TestMethod]
     [DataRow((int)TestRunCancellationReason.MaximumFailedTests, "maximumFailedTests")]
     [DataRow((int)TestRunCancellationReason.Timeout, "timeout")]
     public void WriteManifest_PolicyTruncatedRun_WritesTruncationReason(
@@ -445,7 +550,8 @@ public class ArtifactPostProcessingManagerTests
                 manifestPath,
                 "/results",
                 [CreateArtifact("first.summary", "example.summary")],
-                (TestRunCancellationReason)cancellationReason);
+                (TestRunCancellationReason)cancellationReason,
+                CreateRunSummary());
 
             using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
             manifest.RootElement.GetProperty("truncationReason").GetString()
@@ -467,7 +573,8 @@ public class ArtifactPostProcessingManagerTests
                 manifestPath,
                 "/results",
                 [CreateArtifact("first.trx", "microsoft.testing.trx")],
-                TestRunCancellationReason.None);
+                TestRunCancellationReason.None,
+                CreateRunSummary());
 
             using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
             manifest.RootElement.TryGetProperty("truncationReason", out _).Should().BeFalse();
@@ -480,6 +587,9 @@ public class ArtifactPostProcessingManagerTests
 
     private static TestOptions CreateTestOptions(bool isHelp = false, bool isDiscovery = false)
         => new(isHelp, isDiscovery, TestListFormat.Text);
+
+    private static ArtifactPostProcessingRunSummary CreateRunSummary()
+        => new(5, 2, 1, 2, TimeSpan.FromSeconds(1), TestExitCode.AtLeastOneTestFailed, 2);
 
     [TestMethod]
     public void GetOutputDirectory_WithResultsDirectory_UsesThatDirectory()
@@ -604,7 +714,8 @@ public class ArtifactPostProcessingManagerTests
             CreateBuildOptions(),
             reporter,
             ctrlC,
-            TestRunCancellationReason.None);
+            TestRunCancellationReason.None,
+            CreateRunSummary());
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
 
         console.GetOutput().Should().Contain(
@@ -641,7 +752,8 @@ public class ArtifactPostProcessingManagerTests
                 CreateBuildOptions(resultsDirectory),
                 reporter,
                 ctrlC,
-                TestRunCancellationReason.None);
+                TestRunCancellationReason.None,
+                CreateRunSummary());
 
             Directory.Exists(resultsDirectory).Should().BeFalse(
                 "a cancelled run must not start the jobs it planned");
@@ -670,9 +782,104 @@ public class ArtifactPostProcessingManagerTests
             CreateBuildOptions(),
             reporter,
             ctrlC,
-            TestRunCancellationReason.None);
+            TestRunCancellationReason.None,
+            CreateRunSummary());
 
         console.GetOutput().Should().NotContain(CliCommandStrings.ArtifactPostProcessingStarted);
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_UnsupportedCandidateCannotDisplaceRequiredDesktopWorker()
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        using var ctrlC = CreateCancellationManager();
+        var manager = new ArtifactPostProcessingManager();
+        TestModule desktop = CreateModule();
+        TestModule browser = CreateModule("browser-wasm") with { TargetPath = "Browser.dll" };
+        foreach (TestModule module in new[] { desktop, browser })
+        {
+            manager.RecordCapabilities(module, "net10.0", "x64", new HandshakeMessage(new Dictionary<byte, string>
+            {
+                [HandshakeMessagePropertyNames.SupportedPostProcessorKinds] = module == browser
+                    ? "example.summary;example.other"
+                    : "example.summary",
+                [HandshakeMessagePropertyNames.RequiredPostProcessorKinds] = "example.summary",
+            }));
+        }
+
+        manager.RecordArtifact(desktop, "net10.0", "x64", "desktop",
+            new FileArtifactMessage("required\0.summary", "Summary", null, null, null, null, "example.summary"));
+        foreach (string path in new[] { "first.other", "second.other" })
+        {
+            manager.RecordArtifact(browser, "net10.0", "x64", "browser",
+                new FileArtifactMessage(path, "Other", null, null, null, null, "example.other"));
+        }
+
+        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC, TestRunCancellationReason.None, CreateRunSummary());
+
+        console.GetOutput().Should().Contain(
+            FormatPrefix(CliCommandStrings.ArtifactPostProcessingFailed, desktop.TargetPath),
+            "the desktop job must be attempted; an unsupported candidate covering more groups must not steal it");
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_ReporterFailureRemainsReportingDegradation()
+    {
+        var console = new Mock<IConsole>();
+        console.Setup(console => console.WriteLine(It.IsAny<string?>()))
+            .Throws(new IOException("reporter unavailable"));
+        using var reporter = new TerminalTestReporter(console.Object, new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        using var ctrlC = CreateCancellationManager();
+        ArtifactPostProcessingManager manager = CreateManagerWithMergeableArtifacts("first.trx", "second.trx");
+
+        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC, TestRunCancellationReason.None, CreateRunSummary());
+
+        var output = new StringBuilder();
+        console.Setup(console => console.Write(It.IsAny<string?>()))
+            .Callback<string?>(value => output.Append(value));
+        console.Setup(console => console.Write(It.IsAny<char>()))
+            .Callback<char>(value => output.Append(value));
+        console.Setup(console => console.WriteLine(It.IsAny<string?>()))
+            .Callback<string?>(value => output.AppendLine(value));
+        console.Setup(console => console.WriteLine()).Callback(() => output.AppendLine());
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+        output.ToString().Should().Contain("Reporting: degraded (1 artifact post-processing failure(s))")
+            .And.Contain("reporter unavailable")
+            .And.Contain("Test run summary: Zero tests ran");
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_WhenJobWarningWriteFails_CountsOnceAndDefersWarning()
+    {
+        var output = new CapturingConsole();
+        var console = new Mock<IConsole>();
+        console.Setup(console => console.Write(It.IsAny<string?>())).Callback<string?>(output.Write);
+        console.Setup(console => console.Write(It.IsAny<char>())).Callback<char>(output.Write);
+        console.Setup(console => console.WriteLine()).Callback(output.WriteLine);
+        console.Setup(console => console.WriteLine(It.IsAny<string?>())).Callback<string?>(output.WriteLine);
+        string warningPrefix = FormatPrefix(CliCommandStrings.ArtifactPostProcessingFailed, "A.dll");
+        console.Setup(console => console.WriteLine(
+                It.Is<string?>(value => value != null && value.StartsWith(warningPrefix, StringComparison.Ordinal))))
+            .Throws(new IOException("reporter unavailable"));
+        using var reporter = new TerminalTestReporter(console.Object, new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.ArtifactAdded(false, "A.dll", "net10.0", "x64", "execution", null, "original.trx");
+        ArtifactPostProcessingManager manager = CreateManagerWithMergeableArtifacts("first\0.trx", "second\0.trx");
+        using var ctrlC = CreateCancellationManager();
+
+        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC, TestRunCancellationReason.None, CreateRunSummary());
+
+        console.Verify(console => console.WriteLine(
+            It.Is<string?>(value => value != null && value.StartsWith(warningPrefix, StringComparison.Ordinal))), Times.Once);
+        console.Setup(console => console.WriteLine(It.IsAny<string?>())).Callback<string?>(output.WriteLine);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        output.GetOutput().Should().Contain("Reporting: degraded (1 artifact post-processing failure(s))")
+            .And.Contain(warningPrefix)
+            .And.Contain("original.trx")
+            .And.Contain("Test run summary: Zero tests ran");
     }
 
     [TestMethod]
@@ -685,6 +892,55 @@ public class ArtifactPostProcessingManagerTests
         ArtifactPostProcessingManager.ReportFailureUnlessCancelled(reporter, ctrlC, "post-processing warning");
 
         console.GetOutput().Should().Contain("post-processing warning");
+    }
+
+    [TestMethod]
+    [DataRow(0, "Zero tests ran")]
+    [DataRow(2, "Failed!")]
+    public void ReportFailureUnlessCancelled_WhenWarningWriteFails_CountsOnceAndDefersWarning(int exitCode, string verdict)
+    {
+        var output = new CapturingConsole();
+        var console = new Mock<IConsole>();
+        console.Setup(console => console.Write(It.IsAny<string?>())).Callback<string?>(output.Write);
+        console.Setup(console => console.Write(It.IsAny<char>())).Callback<char>(output.Write);
+        console.Setup(console => console.WriteLine()).Callback(output.WriteLine);
+        console.Setup(console => console.WriteLine(It.IsAny<string?>()))
+            .Throws(new IOException("reporter unavailable"));
+        using var reporter = new TerminalTestReporter(console.Object, new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.ArtifactAdded(false, "A.dll", "net10.0", "x64", "execution", null, "original.trx");
+        using var ctrlC = CreateCancellationManager();
+
+        ArtifactPostProcessingManager.ReportFailureUnlessCancelled(reporter, ctrlC, "worker failure")
+            .Should().BeTrue("the failed operation must be counted even when its warning cannot be written");
+
+        console.Verify(console => console.WriteLine("worker failure"), Times.Once);
+        console.Setup(console => console.WriteLine(It.IsAny<string?>())).Callback<string?>(output.WriteLine);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode);
+
+        output.GetOutput().Should().Contain("Reporting: degraded (1 artifact post-processing failure(s))")
+            .And.Contain("worker failure")
+            .And.Contain("original.trx")
+            .And.Contain($"Test run summary: {verdict}");
+    }
+
+    [TestMethod]
+    [DataRow(0, "Zero tests ran")]
+    [DataRow(2, "Failed!")]
+    public void ReportFailureUnlessCancelled_ReportsDegradationSeparatelyFromTestVerdict(int exitCode, string verdict)
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        using var ctrlC = CreateCancellationManager();
+        reporter.ArtifactAdded(false, "A.dll", "net9.0", "x64", "execution", null, "original.trx");
+
+        ArtifactPostProcessingManager.ReportFailureUnlessCancelled(reporter, ctrlC, "worker failure");
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode);
+
+        string output = console.GetOutput();
+        output.Should().Contain($"Test run summary: {verdict}")
+            .And.Contain("Reporting: degraded (1 artifact post-processing failure(s))")
+            .And.Contain("original.trx");
     }
 
     [TestMethod]
