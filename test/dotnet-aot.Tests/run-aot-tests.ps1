@@ -138,12 +138,12 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
-$managedTestModule = & $dotnet msbuild $testProject `
-    -p:Configuration=$Configuration `
-    -p:RuntimeIdentifier=$RuntimeIdentifier `
+$managedTestModule = & $dotnet msbuild $testProject -nologo `
+    "-p:Configuration=$Configuration" `
+    "-p:RuntimeIdentifier=$RuntimeIdentifier" `
     -p:PublishAotTests=true `
     -p:UseOptimizedPublish=false `
-    -p:PublishDir=$publishDir `
+    "-p:PublishDir=$publishDir" `
     -getProperty:TargetPath
 
 if ($LASTEXITCODE -ne 0) {
@@ -165,7 +165,7 @@ if (-not (Test-Path $dnPath)) {
     Write-Host "ERROR: Published dn host not found at $dnPath" -ForegroundColor Red
     exit 1
 }
-if (-not (Test-Path -LiteralPath $managedTestModule -PathType Leaf)) {
+if (-not $managedTestModule -or -not (Test-Path -LiteralPath $managedTestModule -PathType Leaf)) {
     Write-Host "ERROR: Managed test module not found at $managedTestModule for Native AOT integration validation." -ForegroundColor Red
     exit 1
 }

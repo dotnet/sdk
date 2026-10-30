@@ -22,6 +22,44 @@ where the two differ, this document reflects the SDK's behavior.
 > This feature applies only to the Microsoft.Testing.Platform runner for `dotnet test`. It is
 > unrelated to the VSTest artifact post-processing described under [Caveats](#caveats).
 
+## Code coverage summary
+
+Coverage producers that implement the negotiated MTP coverage-summary contract also supply
+measurements to the SDK's terminal reporter. For a single test application, its overall
+measurements appear in the run summary. For several applications, the SDK uses measurements
+read by the coverage post-processor from the **actual merged artifact**:
+
+```text
+  Code Coverage Summary:
+    Total - Line: 98.9%
+```
+
+The SDK never adds or averages per-application percentages or counts: different applications
+can cover the same assembly. `Total` is reserved for a complete, unambiguous merge whose
+explicit input provenance represents every test application. Without such a merge, available
+measurements remain application- or artifact-scoped, not a purported run total. This includes
+`--no-artifact-post-processing`, partial or unsuccessful merges, and cancelled runs.
+
+Completeness includes balanced session lifecycle and the association between each execution,
+test-host instance, and session, not just matching their separate counts. Missing sibling
+coverage, ambiguous controller/legacy identity, or a path overwritten by another source
+keeps coverage scoped. Fallback labels retain instance/session identity. Replacing an output
+path also invalidates its previous coverage metadata, including when its new metadata is
+absent or invalid.
+
+Percentages use a decimal point and one decimal place, independently of the current numeric
+culture. Labels are localized. Set `DOTNET_CLI_UI_LANGUAGE=en` when a CI parser needs the
+English labels; for example, the following regular expression captures the line percentage:
+
+```regex
+^\s*Total - Line: ([0-9]+(?:\.[0-9]+)?)%$
+```
+
+An explicit measurement with no coverable data is rendered as `no coverable data`, not as
+zero or full coverage. Missing or unsupported summary metadata does not invent a measurement.
+Older MTP or coverage-extension versions continue to run and report artifacts as before,
+without the new summary. Summary reporting does not change threshold evaluation or exit codes.
+
 ## When it runs
 
 Post-processing happens after every test application has exited and before the run summary is
@@ -146,6 +184,14 @@ so they re-enter the normal reporter path. In the summary, the SDK
 in their place. This provenance keeps an unrelated artifact listed even when it happens to share
 the processed output's file extension. Older hosts that do not report provenance retain the
 previous kind-and-extension inference for compatibility.
+
+Coverage summary support is negotiated independently of the base protocol: handshake property
+`CoverageSummaryVersion` (id 20) must be `"1"` on both sides. Session measurements use
+`CoverageSummaryMessages` (serializer id 15), while a successfully processed artifact can carry
+its own counts in the optional `FileArtifactMessage.CoverageSummary` field (id 9).
+The SDK stages this metadata with the artifact and only accepts it after successful
+post-processing; legacy kind/extension inference alone is insufficient to establish a
+coverage total. No coverage report parser or new collector dependency is included in the SDK.
 
 The original per-module artifacts are **never deleted from disk** — only the run summary
 changes. If you need the individual files (for example a per-module TRX), they are still where

@@ -126,6 +126,33 @@ including session failures and ignored-exit policies, instead of upstream's in-p
 failure callback. A successful run with zero tests uses neutral "Zero tests ran" wording,
 not a green "Passed!" verdict.
 
+## MTP coverage summaries
+
+Keep coverage scoped by execution, instance, session, and producer. Never add counts or
+percentages across test applications: they can cover the same assembly. The
+[`coverage reporter`](dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.Coverage.cs)
+reserves `Total` for a single source or an accepted, complete merged artifact with explicit
+input provenance. Failed, partial, unsupported, or cancelled processing must not fabricate a
+run total.
+
+Track complete execution/instance/session tuples and balanced starts/ends; matching separate
+identity sets or input-file counts is insufficient. Preserve source origins independently
+of artifact-list replacement, reject ambiguous path reuse, and invalidate previous coverage
+metadata when a processed output path is replaced.
+
+Unresolved measurement origins and selected applications that fail to launch also make
+coverage incomplete, even when their exit codes are ignored. The
+[`application queue`](dotnet/Commands/Test/MTP/TestApplicationActionQueue.cs) must preserve
+that state when an exception prevents the normal handshake/session completion path.
+
+Controller coverage can arrive after `TestSessionEnd`; accept it until process completion.
+Negotiate coverage-summary support independently of the base protocol, without enabling the
+unimplemented 1.4 server-control channel. Keep producer, wire, artifact-acceptance, and
+managed/Native AOT behavior aligned. See the
+[coverage contract and output format](../../documentation/general/dotnet-test-artifact-post-processing.md#code-coverage-summary).
+
+## MTP collection and diagnostics
+
 Collection has a separate parent lifecycle: its bounded progress counts completed module
 attempts, and its final status follows the existing aggregate exit code without synthesizing
 test outcomes from discovery or mapping counts. Keep collection progress independent of
