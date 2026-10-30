@@ -6,7 +6,6 @@ $ErrorActionPreference = 'Stop'
 
 $root = Join-Path ([IO.Path]::GetTempPath()) "dotnetup-publishing-tests-$([Guid]::NewGuid())"
 $source = Join-Path $root 'source'
-$script:signatureStatus = 'Valid'
 $script:corruptDownload = $false
 $script:assertions = 0
 
@@ -19,12 +18,6 @@ function Assert-Fails {
         throw "Expected failure containing '$Message'; got '$failure'."
     }
     $script:assertions++
-}
-
-# Keep these checks offline and independent of Windows signing infrastructure.
-function Get-AuthenticodeSignature {
-    param([string]$LiteralPath)
-    @{ Status = $script:signatureStatus }
 }
 
 function Invoke-WebRequest {
@@ -43,97 +36,89 @@ try {
         'dotnetup-osx-x64', 'dotnetup-osx-arm64',
         'get-dotnetup.ps1', 'get-dotnetup.sh'
     )
-    $bar = @{
-        id = 42; azureDevOpsAccount = 'dnceng'; azureDevOpsProject = 'internal'
-        azureDevOpsBuildDefinitionId = 1544; azureDevOpsBuildId = 123
-        azureDevOpsBranch = 'refs/heads/release/dnup'; commit = ('a' * 40)
-        assets = @($names | ForEach-Object {
-            $path = Join-Path $source $_
-            Set-Content -LiteralPath $path -Value "signed fixture $_"
-            $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA512).Hash
-            Set-Content -LiteralPath "$path.sha512" -Value "$hash  $_"
-            @{ name = "dotnetup/0.3.0-preview.1/$_" }
-            @{ name = "dotnetup/0.3.0-preview.1/$_.sha512" }
-        })
+    [xml]$manifest = @"
+<Build>
+  <Blob Id="assets/manifests/dotnet-sdk/20261027.2/MergedManifest.xml" NonShipping="True" />
+</Build>
+"@
+    foreach ($name in $names) {
+        $path = Join-Path $source $name
+        Set-Content -LiteralPath $path -Value "signed fixture $name"
+        $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA512).Hash
+        Set-Content -LiteralPath "$path.sha512" -Value "$hash  $name"
+        foreach ($fileName in @($name, "$name.sha512")) {
+            $blob = $manifest.CreateElement('Blob')
+            $blob.SetAttribute('Id', "dotnetup/0.3.0-preview.1/$fileName")
+            [void]$manifest.DocumentElement.AppendChild($blob)
+        }
     }
+    $manifest.Save((Join-Path $source 'MergedManifest.xml'))
     $build = @{
-        id = 123; definition = @{ id = 1544 }; project = @{ name = 'internal' }
+        id = 123
         repository = @{ name = 'dotnet-sdk' }; sourceBranch = 'refs/heads/release/dnup'
         sourceVersion = ('a' * 40); status = 'completed'; result = 'succeeded'
         buildNumber = '20261027.2'; templateParameters = @{ runTestBuild = 'False' }
-        tags = @('PME Signed', 'BAR ID - 42')
+        tags = @('PME Signed')
     }
 
-    $release = Get-DotnetupRelease -BARBuildId 42 -BARBuild $bar -SourceBuild $build
-    if ($release.files.Count -ne 20 -or $release.version -ne '0.3.0-preview.1') {
+    $release = Get-DotnetupRelease -SourceBuild $build -Manifest $manifest
+    if ($release.files.Count -ne 20 -or $release.version -ne '0.3.0-preview.1' -or
+        $release.azureDevOpsBuildId -ne $build.id -or
+        $release.buildNumber -ne $build.buildNumber -or $release.commit -ne $build.sourceVersion) {
         throw 'Incorrect release inventory.'
     }
     $script:assertions++
     $release = $release | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashtable
     $build.templateParameters.runTestBuild = $false
-    $null = Get-DotnetupRelease -BARBuildId 42 -BARBuild $bar -SourceBuild $build
+    $null = Get-DotnetupRelease -SourceBuild $build -Manifest $manifest
     $script:assertions++
     $build.templateParameters.runTestBuild = 'False'
 
     foreach ($mutation in @(
-        { $bad.id = 43 },
-        { $bad.azureDevOpsAccount = 'other' },
-        { $bad.azureDevOpsProject = 'public' },
-        { $bad.azureDevOpsBuildDefinitionId = 1 },
-        { $bad.azureDevOpsBranch = 'refs/heads/main' }
-    )) {
-        $bad = $bar | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashtable
-        & $mutation
-        Assert-Fails { Get-DotnetupRelease -BARBuildId 42 -BARBuild $bad -SourceBuild $build } 'official pipeline'
-    }
-    foreach ($mutation in @(
-        { $bad.id = 124 },
-        { $bad.definition.id = 1 },
-        { $bad.project.name = 'public' },
         { $bad.repository.name = 'other' },
         { $bad.sourceBranch = 'refs/heads/main' },
-        { $bad.sourceVersion = ('b' * 40) },
+        { $bad.sourceVersion = 'invalid' },
         { $bad.status = 'inProgress' },
         { $bad.result = 'partiallySucceeded' },
         { $bad.templateParameters.runTestBuild = 'True' },
         { $bad.templateParameters.Remove('runTestBuild') },
-        { $bad.tags = @('BAR ID - 42') },
-        { $bad.tags = @('PME Signed', 'BAR ID - 43') }
+        { $bad.tags = @() }
     )) {
         $bad = $build | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashtable
         & $mutation
-        Assert-Fails { Get-DotnetupRelease -BARBuildId 42 -BARBuild $bar -SourceBuild $bad } 'source run'
+        Assert-Fails { Get-DotnetupRelease -SourceBuild $bad -Manifest $manifest } 'source run'
     }
+    Assert-Fails { Get-DotnetupRelease -SourceBuild $build -Manifest ([xml]'<Other />') } 'Build root element'
     foreach ($mutation in @(
-        { $bad.assets = $bad.assets[1..19] },
-        { $bad.assets[0].name = 'dotnetup/0.3.0-preview.1/unexpected.exe' },
-        { $bad.assets[0].name = $bad.assets[1].name },
-        { $bad.assets[0].name = 'dotnetup/0.4.0/dotnetup-win-x64.exe' },
-        { $bad.assets[0].name = 'dotnetup/../dotnetup-win-x64.exe' }
+        { [void]$bad.DocumentElement.RemoveChild($bad.Build.Blob[1]) },
+        { $bad.Build.Blob[1].SetAttribute('Id', 'dotnetup/0.3.0-preview.1/unexpected.exe') },
+        { $bad.Build.Blob[1].SetAttribute('Id', $bad.Build.Blob[2].Id) },
+        { $bad.Build.Blob[1].SetAttribute('Id', 'dotnetup/0.4.0/dotnetup-win-x64.exe') },
+        { $bad.Build.Blob[1].SetAttribute('Id', 'dotnetup/../dotnetup-win-x64.exe') }
     )) {
-        $bad = $bar | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashtable
+        $bad = [xml]$manifest.OuterXml
         & $mutation
-        Assert-Fails { Get-DotnetupRelease -BARBuildId 42 -BARBuild $bad -SourceBuild $build } ''
+        Assert-Fails { Get-DotnetupRelease -SourceBuild $build -Manifest $bad } ''
     }
 
     $destination = Join-Path $root 'staging'
     $binary = Join-Path $source 'dotnetup-win-x64.exe'
     $original = Get-Content -LiteralPath $binary -Raw
-    Add-Content -LiteralPath $binary -Value 'tampered'
-    Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } 'SHA-512'
+    Set-Content -LiteralPath $binary -Value '' -NoNewline
+    Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } 'Missing or empty release asset'
     Set-Content -LiteralPath $binary -Value $original -NoNewline
-    $script:signatureStatus = 'NotSigned'
-    Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } 'Authenticode'
-    $script:signatureStatus = 'Valid'
     $sidecar = "$binary.sha512"
     $originalChecksum = Get-Content -LiteralPath $sidecar -Raw
     Remove-Item -LiteralPath $sidecar
-    Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } ''
+    Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } 'Missing or empty release asset'
     Set-Content -LiteralPath $sidecar -Value $originalChecksum -NoNewline
 
+    Add-Content -LiteralPath $binary -Value 'fixture content without a matching sidecar'
     Copy-DotnetupReleaseAssets $release $source $destination
     if (@(Get-ChildItem -LiteralPath $destination -File).Count -ne 20 -or
-        @($release.files | Where-Object { $_.sha512 -notmatch '^[0-9a-f]{128}$' }).Count -ne 0) {
+        @($release.files | Where-Object {
+            $_.sha512 -cne (Get-FileHash -LiteralPath (Join-Path $destination $_.name) -Algorithm SHA512).Hash.ToLowerInvariant()
+        }).Count -ne 0) {
         throw 'Staging did not produce the complete hashed inventory.'
     }
     $script:assertions++
@@ -173,7 +158,7 @@ try {
     $release = Get-Content -LiteralPath $releasePath -Raw | ConvertFrom-Json -AsHashtable
 
     $cdnRelease = Get-DotnetupCdnRelease $release $details (Join-Path $root 'verified-download')
-    if ($cdnRelease.files.Count -ne 20 -or $cdnRelease.barBuildId -ne 42 -or
+    if ($cdnRelease.files.Count -ne 20 -or $cdnRelease.azureDevOpsBuildId -ne 123 -or
         @($cdnRelease.files | Where-Object { -not $_.downloadUrl -or -not $_.sha512 }).Count -ne 0) {
         throw 'Incorrect CDN release output.'
     }
