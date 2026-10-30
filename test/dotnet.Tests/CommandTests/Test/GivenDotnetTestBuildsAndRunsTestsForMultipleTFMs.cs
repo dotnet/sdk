@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
 
                 Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
-                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
+                Assert.ContainsSingle(currentDotnetProjectMatches);
 
                 Assert.ContainsSingle(failedTestsMatches);
                 Assert.HasCount(2, skippedTestsMatches);
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
                 Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
-                Assert.IsGreaterThan(1, currentDotnetOtherProjectMatches.Count);
+                Assert.ContainsSingle(currentDotnetOtherProjectMatches);
 
                 Assert.HasCount(2, skippedTestsMatches);
                 Assert.HasCount(2, failedTestsMatches);
