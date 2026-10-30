@@ -1,0 +1,80 @@
+# Manual, read-only release rehearsal. There is intentionally no live-publishing switch.
+trigger: none
+pr: none
+
+parameters:
+- name: quality
+  displayName: Candidate to promote (GA is a placeholder)
+  type: string
+  default: preview
+  values:
+  - preview
+  - ga
+- name: akaOwners
+  type: string
+  default: UNCONFIGURED
+- name: akaActor
+  type: string
+  default: UNCONFIGURED
+- name: akaGroupOwner
+  type: string
+  default: UNCONFIGURED
+
+variables:
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
+- template: /eng/common/templates-official/variables/pool-providers.yml
+
+resources:
+  repositories:
+  - repository: 1esPipelines
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+  pipelines:
+  - pipeline: candidate
+    source: dotnet-dnup-official-ci
+    trigger: none
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  parameters:
+    pool:
+      name: $(DncEngInternalBuildPool)
+      image: windows.vs2026.amd64
+      os: windows
+    stages:
+    - stage: plan
+      displayName: Preview or GA promotion (dry run)
+      jobs:
+      - job: release
+        displayName: Validate candidates and print publication operations
+        timeoutInMinutes: 30
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            targetPath: $(Build.ArtifactStagingDirectory)/release-plan
+            artifactName: dotnetup-release-plan
+        steps:
+        - checkout: self
+          clean: true
+        - download: candidate
+          patterns: Dotnetup_*/**
+        - powershell: |
+            & .\restore.cmd /p:Projects=eng\dotnetup-release\dotnetup-release.csproj
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          displayName: Bootstrap repository toolset
+        - powershell: |
+            $output = New-Item -ItemType Directory -Force "$(Build.ArtifactStagingDirectory)\release-plan"
+            & .\.dotnet\dotnet.exe run --project eng\dotnetup-release\dotnetup-release.csproj --configuration Release -- `
+              "$(Pipeline.Workspace)\candidate" "$env:RELEASE_QUALITY" `
+              "$(resources.pipeline.candidate.runID)" "$(resources.pipeline.candidate.sourceCommit)" `
+              "$($output.FullName)\release-plan.json" "$env:AKA_OWNERS" "$env:AKA_ACTOR" "$env:AKA_GROUP_OWNER"
+            exit $LASTEXITCODE
+          displayName: Validate and print CDN and aka.ms write plan (no external writes)
+          env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            RELEASE_QUALITY: ${{ parameters.quality }}
+            AKA_OWNERS: ${{ parameters.akaOwners }}
+            AKA_ACTOR: ${{ parameters.akaActor }}
+            AKA_GROUP_OWNER: ${{ parameters.akaGroupOwner }}
