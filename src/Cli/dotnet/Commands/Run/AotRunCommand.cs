@@ -149,7 +149,9 @@ internal static class AotRunCommand
                 applicationArguments,
                 profileResult.Profile?.CommandLineArgs,
                 appendApplicationArgumentsToBase: validatedRunProperties is not null);
-            workingDirectory = validatedRunProperties?.WorkingDirectory ?? currentDirectory;
+            workingDirectory = profileResult.Profile?.WorkingDirectory
+                ?? validatedRunProperties?.WorkingDirectory
+                ?? currentDirectory;
             runTier = plan.Tier;
             decisionReason = plan.Reason;
         }
