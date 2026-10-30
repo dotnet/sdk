@@ -30,6 +30,33 @@ public class CoverageSummaryTests
     }
 
     [TestMethod]
+    [DataRow((int)AnsiMode.NoAnsi)]
+    [DataRow((int)AnsiMode.SimpleAnsi)]
+    public void CompactSummary_KeepsFailureRecapAheadOfCoverageAndArtifacts(int ansiMode)
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console, (AnsiMode)ansiMode, "first");
+        AddSummary(reporter, "first", 1, 2);
+        reporter.AssemblyRunStarted("failed.Tests.dll", "net10.0", "x64", "failed", "instance");
+        reporter.AssemblyRunCompleted("failed", 7, "host crash context", null);
+        reporter.ArtifactAdded(false, "first.Tests.dll", "net10.0", "x64", "first", null, "original.trx");
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, 7);
+
+        string output = console.GetOutput();
+        string summary = output[output.IndexOf(CliCommandStrings.TestRunSummary, StringComparison.Ordinal)..];
+        summary.Should().Contain("Errored assemblies:")
+            .And.Contain("host crash context")
+            .And.Contain(CliCommandStrings.CodeCoverageSummary)
+            .And.Contain("original.trx")
+            .And.NotContain("Total -");
+        summary.IndexOf("Errored assemblies:", StringComparison.Ordinal).Should()
+            .BeLessThan(summary.IndexOf(CliCommandStrings.CodeCoverageSummary, StringComparison.Ordinal));
+        summary.IndexOf(CliCommandStrings.CodeCoverageSummary, StringComparison.Ordinal).Should()
+            .BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     public void NoCoverageMessages_DoesNotPrintCoverageSection()
     {
         var console = new CapturingConsole();

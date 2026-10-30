@@ -91,12 +91,9 @@ internal static class FileBasedProgramDirectiveQuoting
             return false;
         }
 
-        return kind switch
-        {
-            "property" or "sdk" or "include" or "exclude" => true,
-            "package" or "project" or "ref" => !AllValidMetadata(tokens, start: 1),
-            _ => false,
-        };
+        return AllowsMetadata(kind)
+            ? !AllValidMetadata(tokens, start: 1)
+            : kind is "property" or "sdk" or "exclude";
     }
 
     /// <summary>

@@ -24,6 +24,7 @@ internal sealed class TestApplicationHandler
     private readonly HashSet<string> _coverageSummaryInstances = new(StringComparer.Ordinal);
 
     private (string? TargetFramework, string? Architecture, string ExecutionId)? _handshakeInfo;
+    private string? _reportedModulePath;
     private bool _receivedTestHostHandshake;
     private bool _receivedAffectedTestsOrchestratorHandshake;
     private bool _receivedIncompleteHandshake;
@@ -183,6 +184,12 @@ internal sealed class TestApplicationHandler
 
         if (!_options.IsArtifactPostProcessing)
         {
+            if (handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.ModulePath, out string? modulePath)
+                && !string.IsNullOrWhiteSpace(modulePath))
+            {
+                _reportedModulePath = modulePath;
+            }
+
             _artifactPostProcessingManager?.RecordCapabilities(
                 _module,
                 _module.TargetFramework ?? tfm,
@@ -298,6 +305,7 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy),
             HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds),
             HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy),
+            HandshakeMessagePropertyNames.RequiredPostProcessorKinds => nameof(HandshakeMessagePropertyNames.RequiredPostProcessorKinds),
             _ => string.Empty,
         };
 
@@ -527,10 +535,13 @@ internal sealed class TestApplicationHandler
             {
                 _artifactPostProcessingManager?.RecordArtifact(
                     _module,
-                    _module.TargetFramework ?? handshakeInfo.TargetFramework,
+                    // The handshake describes the running framework, not the assembly's target.
+                    // A --test-modules run may roll forward or target a platform-specific TFM.
+                    _module.TargetFramework,
                     handshakeInfo.Architecture,
                     handshakeInfo.ExecutionId,
-                    artifact with { FullPath = fullPath });
+                    artifact with { FullPath = fullPath },
+                    _reportedModulePath);
                 _output.ArtifactAdded(
                     outOfProcess: false,
                     _module.TargetPath, handshakeInfo.TargetFramework, handshakeInfo.Architecture, handshakeInfo.ExecutionId,
@@ -730,6 +741,11 @@ internal sealed class TestApplicationHandler
     {
         if (_options.IsArtifactPostProcessing)
         {
+            if (!_handshakeInfo.HasValue && exitCode == ExitCode.Success)
+            {
+                _artifactPostProcessingInvocation?.RecordFailure(CliCommandStrings.ArtifactPostProcessingMissingHandshake);
+            }
+
             WriteMessage(outputData);
             WriteMessage(errorData);
             LogTestProcessExit(exitCode, outputData, errorData);
@@ -738,7 +754,9 @@ internal sealed class TestApplicationHandler
 
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
         {
-            _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
+            _output.AssemblyRunCompleted(
+                _handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData,
+                hasIncompleteTestResults: HasMismatchingTestSessionEventCount());
         }
         else if (exitCode != ExitCode.Success ||
             _handshakeRejected ||

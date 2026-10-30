@@ -65,7 +65,7 @@ writing `browser-tools-key.public.json` (base64 `SubjectPublicKeyInfo`) and
 Framework). Neither file is a static web asset. A valid, matching pair is reused so
 rebuilds stay incremental; anything missing, malformed, mismatched or cleaned regenerates
 both halves. `dotnet watch` reads the private half back through
-[`BrowserToolsBuildOutputs`](../../src/Dotnet.Watch/HotReloadClient/Web/BrowserToolsBuildOutputs.cs)
+[`SharedSecretBuildOutputs`](../../src/Dotnet.Watch/HotReloadClient/Web/SharedSecretBuildOutputs.cs)
 — derived from the project's evaluated `IntermediateOutputPath`, not from a filesystem
 search. A **per-project** provider in
 [`BrowserRefreshServerFactory`](../../src/Dotnet.Watch/Watch/Browser/BrowserRefreshServerFactory.cs)

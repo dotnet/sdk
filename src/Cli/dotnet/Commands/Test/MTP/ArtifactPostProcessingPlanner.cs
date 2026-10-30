@@ -14,7 +14,20 @@ internal sealed record ArtifactPostProcessingApplication(
     IReadOnlySet<string> SupportedKinds,
     IReadOnlySet<string> SupportedExtensions,
     IReadOnlySet<string> SupportedTruncatedRunKinds,
-    IReadOnlySet<string> SupportedTruncatedRunExtensions);
+    IReadOnlySet<string> SupportedTruncatedRunExtensions)
+{
+    public IReadOnlySet<string> RequiredKinds { get; init; } = new HashSet<string>(StringComparer.Ordinal);
+    public string ProducingTestModule { get; init; } = Module.TargetPath;
+}
+
+internal sealed record ArtifactPostProcessingRunSummary(
+    long TotalTests,
+    long PassedTests,
+    long FailedTests,
+    long SkippedTests,
+    TimeSpan Duration,
+    int ExitCode,
+    int TestModuleCount);
 
 internal sealed record ArtifactPostProcessingArtifact(
     string Path,
@@ -74,6 +87,8 @@ internal static class ArtifactPostProcessingPlanner
         [
             .. groups.Where(group =>
                 group.Artifacts.Count >= 2
+                || isTruncated
+                || (group.IsKind && group.Candidates.Any(application => application.RequiredKinds.Contains(group.Key)))
                 || groups.Any(other => CanCombineKindAndExtensionGroups(group, other)))
         ];
 
@@ -92,7 +107,7 @@ internal static class ArtifactPostProcessingPlanner
                 .ThenByDescending(candidate => candidate.Groups.Sum(group =>
                     group.Artifacts.Count(artifact => FileUtilities.PathComparer.Equals(
                         artifact.ProducingTestModule,
-                        candidate.Application.Module.TargetPath))))
+                        candidate.Application.ProducingTestModule))))
                 .ThenByDescending(candidate => GetFrameworkVersion(candidate.Application.TargetFramework))
                 .ThenBy(candidate => candidate.Application.Module.TargetPath, FileUtilities.PathComparer)
                 .Select(candidate => candidate.Application)
@@ -113,10 +128,12 @@ internal static class ArtifactPostProcessingPlanner
 
         void AddGroup(string key, bool isKind, ArtifactPostProcessingArtifact[] inputs)
         {
+            bool isRequired = isKind && applications.Any(application => application.RequiredKinds.Contains(key));
             ArtifactPostProcessingApplication[] candidates =
             [
                 .. applications.Where(application =>
                     GetCapabilities(application, isKind, isTruncated).Contains(key)
+                    && (!isRequired || application.RequiredKinds.Contains(key))
                     && IsArchitectureCompatible(key, isKind, application, inputs))
             ];
 

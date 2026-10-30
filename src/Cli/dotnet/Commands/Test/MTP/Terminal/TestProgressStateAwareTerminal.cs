@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 /// <summary>
 /// Terminal that updates the progress in place when progress reporting is enabled.
 /// </summary>
-internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal, bool showProgress) : IDisposable
+internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal, bool showProgress, IProgressRenderer? renderer = null) : IDisposable
 {
     /// <summary>
     /// A cancellation token to signal the rendering thread that it should exit.
@@ -20,6 +20,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     private readonly ITerminal _terminal = terminal;
     private readonly bool _showProgress = showProgress;
+    private readonly IProgressRenderer _renderer = renderer ?? new CursorProgressRenderer();
     private TestProgressState?[] _progressItems = [];
 
     /// <summary>
@@ -27,6 +28,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
     /// </summary>
     private Thread? _refresher;
     private long _counter;
+    private int _stopped;
 
     /// <summary>
     /// The <see cref="_refresher"/> thread proc.
@@ -35,18 +37,14 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
     {
         try
         {
-            // When writing to ANSI, we update the progress in place and it should look responsive so we
-            // update every half second, because we only show seconds on the screen, so it is good enough.
-            // When writing to non-ANSI, we never show progress as the output can get long and messy.
-            const int AnsiUpdateCadenceInMs = 500;
-            while (!_cts.Token.WaitHandle.WaitOne(AnsiUpdateCadenceInMs))
+            while (!_cts.Token.WaitHandle.WaitOne(_renderer.TickInterval))
             {
                 lock (_lock)
                 {
                     _terminal.StartUpdate();
                     try
                     {
-                        _terminal.RenderProgress(_progressItems);
+                        _renderer.OnTick(_terminal, _progressItems);
                     }
                     finally
                     {
@@ -59,6 +57,10 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
         {
             // When we dispose _cts too early this will throw.
         }
+        catch (Exception ex)
+        {
+            Logger.LogTrace($"Unexpected exception while rendering test progress: {ex}");
+        }
 
         _terminal.EraseProgress();
     }
@@ -67,16 +69,19 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
     {
         if (_showProgress)
         {
-            for (int i = 0; i < _progressItems.Length; i++)
+            lock (_lock)
             {
-                if (_progressItems[i] == null)
+                for (int i = 0; i < _progressItems.Length; i++)
                 {
-                    _progressItems[i] = testWorker;
-                    return i;
+                    if (_progressItems[i] == null)
+                    {
+                        _progressItems[i] = testWorker;
+                        return i;
+                    }
                 }
-            }
 
-            throw new InvalidOperationException("No empty slot found");
+                throw new InvalidOperationException("No empty slot found");
+            }
         }
 
         return 0;
@@ -88,6 +93,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
         {
             _progressItems = new TestProgressState[workerCount];
             _terminal.StartBusyIndicator();
+            _renderer.OnStart();
             // If we crash unexpectedly without completing this thread we don't want it to keep the process running.
             _refresher = new Thread(ThreadProc) { IsBackground = true };
             _refresher.Start();
@@ -96,6 +102,11 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
 
     internal void StopShowingProgress()
     {
+        if (Interlocked.Exchange(ref _stopped, 1) != 0)
+        {
+            return;
+        }
+
         if (_showProgress)
         {
             _cts.Cancel();
@@ -106,8 +117,13 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
         }
     }
 
-    public void Dispose() =>
-        ((IDisposable)_cts).Dispose();
+    public void Dispose()
+    {
+        StopShowingProgress();
+        _cts.Dispose();
+    }
+
+    internal void NotifyTestCompleted() => _renderer.OnTestCompleted();
 
     internal void WriteToTerminal(Action<ITerminal> write)
     {
@@ -118,9 +134,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
                 try
                 {
                     _terminal.StartUpdate();
-                    _terminal.EraseProgress();
-                    write(_terminal);
-                    _terminal.RenderProgress(_progressItems);
+                    _renderer.OnWrite(_terminal, _progressItems, write);
                 }
                 finally
                 {
@@ -149,7 +163,10 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
     {
         if (_showProgress)
         {
-            _progressItems[slotIndex] = null;
+            lock (_lock)
+            {
+                _progressItems[slotIndex] = null;
+            }
         }
     }
 
@@ -160,12 +177,14 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
             // We increase the counter to say that this version of data is newer than what we had before and
             // it should be completely re-rendered. Another approach would be to use timestamps, or to replace the
             // instance and compare that, but that means more objects floating around.
-            _counter++;
-
-            TestProgressState? progress = _progressItems[slotIndex];
-            if (progress != null)
+            lock (_lock)
             {
-                progress.Version = _counter;
+                _counter++;
+                TestProgressState? progress = _progressItems[slotIndex];
+                if (progress != null)
+                {
+                    progress.Version = _counter;
+                }
             }
         }
     }
