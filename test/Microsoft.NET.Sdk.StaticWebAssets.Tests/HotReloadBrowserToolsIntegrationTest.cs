@@ -31,7 +31,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private const string ClientFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js";
         private const string InitializerFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js";
 
-        // Contract with Microsoft.DotNet.Watch.BrowserToolsBuildOutputs.
+        // Contract with Microsoft.DotNet.Watch.SharedSecretBuildOutputs.
         private const string PublicKeyFileName = "browser-tools-key.public.json";
         private const string PrivateKeyFileName = "browser-tools-key.private.json";
 
