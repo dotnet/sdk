@@ -819,7 +819,9 @@ public class TerminalTestReporterTests
     /// See https://github.com/dotnet/sdk/issues/49754.
     /// </summary>
     [TestMethod]
-    public void TestExecutionCompleted_WhenDiscoveryJsonFormat_EmitsMachineReadableJson()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void TestExecutionCompleted_WhenDiscoveryJsonFormat_EmitsMachineReadableJson(bool collectTestMap)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -830,11 +832,13 @@ public class TerminalTestReporterTests
             ShowAssembly = false,
             ShowAssemblyStartAndComplete = false,
             ListTestsFormat = TestListFormat.Json,
+            CollectTestMap = collectTestMap,
         };
 
         using var reporter = new TerminalTestReporter(capturingConsole, options);
 
         reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: true, isHelp: false, isRetry: false);
+        reporter.TestMapCollectionStarted(moduleCount: 1);
 
         const string assembly = "/repo/bin/Debug/net9.0/MyTests.dll";
         const string executionId = "exec-1";

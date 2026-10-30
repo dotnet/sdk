@@ -300,7 +300,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (!_isHelp)
         {
-            if (_options.CollectTestMap)
+            if (_options.CollectTestMap && !_isDiscovery)
             {
                 _terminalWithProgress.WriteToTerminal(terminal => AppendTestMapCollectionSummary(terminal, exitCode));
             }

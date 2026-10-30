@@ -190,7 +190,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
             affectedTests,
             forwardedMinimumExpectedTests);
 
-        int testModuleCount = testHandler.EnumerateTestModules().Count();
+        TestModule[] selectedTestModules = [.. testHandler.EnumerateTestModules()];
+        int testModuleCount = selectedTestModules.Length;
         int degreeOfParallelism = GetDegreeOfParallelism(parseResult, collectTestMap, testModuleCount);
 
         var testOptions = new TestOptions(
@@ -208,6 +209,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             degreeOfParallelism,
             parseResult,
             buildOptions,
+            selectedTestModules,
             testOptions,
             fallbackTestApplicationSettings);
         if (testOptions.CollectTestMap)
@@ -217,7 +219,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         var resultsDirectoryResolver = TestResultsDirectoryResolver.Create(
             buildOptions.PathOptions,
-            testHandler.EnumerateTestModules(),
+            selectedTestModules,
             Directory.GetCurrentDirectory());
 
         using var testRunPolicy = new TestRunPolicy(
@@ -1172,15 +1174,17 @@ internal partial class MicrosoftTestingPlatformTestCommand
         int degreeOfParallelism,
         ParseResult parseResult,
         BuildOptions buildOptions,
+        IEnumerable<TestModule> testModules,
         TestOptions testOptions,
         TestApplicationSettings fallbackSettings)
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
         var console = new SystemConsole();
-        bool noProgress = !GetProgressEnabled(
+        bool noProgress = !GetSharedProgressEnabled(
             parseResult.HasOption(definition.NoProgressOption),
-            GetEffectiveTestApplicationArguments(null, buildOptions));
+            testModules,
+            buildOptions);
         var noAnsi = parseResult.HasOption(definition.NoAnsiOption);
 
         // When emitting machine-readable JSON discovery output, stdout must contain only the JSON
@@ -1242,6 +1246,17 @@ internal partial class MicrosoftTestingPlatformTestCommand
         => int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds) && seconds >= 0
             ? TimeSpan.FromSeconds(seconds)
             : TimeSpan.FromSeconds(60);
+
+    internal static bool GetSharedProgressEnabled(
+        bool noProgress,
+        IEnumerable<TestModule> testModules,
+        BuildOptions buildOptions)
+    {
+        // Progress is shared, so honor every selected module's effective opt-out. With no modules,
+        // preserve the command-line-only fallback by resolving arguments for a null module.
+        return testModules.DefaultIfEmpty().All(module =>
+            GetProgressEnabled(noProgress, GetEffectiveTestApplicationArguments(module, buildOptions)));
+    }
 
     internal static bool GetProgressEnabled(bool noProgress, IReadOnlyList<string> arguments)
         => GetForwardedOptionValue(arguments, "--progress")?.ToLowerInvariant() switch

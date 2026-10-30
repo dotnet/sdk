@@ -332,6 +332,13 @@ backoff. `--no-progress` or forwarded `--progress off` disables progress;
 `MTP_PROGRESS_SLOW_TEST_SECONDS=0` disables slow-test messages. Nonnegative integer values
 override the corresponding 60-second default.
 
+Parent progress uses each selected module's
+[effective run and launch-profile arguments](../../src/Cli/dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs),
+resolving response files against that module's working directory. Because the progress
+display is shared, an effective opt-out in any selected module disables parent heartbeats
+and slow-test messages for the invocation. `--no-launch-profile-arguments` also excludes
+profile arguments from that decision.
+
 Non-cursor final summaries put the verdict, counts, and module/handshake failure context
 before the artifact paths. Successful module summaries are not repeated if they were
 already printed at completion. Interactive cursor-based summary ordering is unchanged.
@@ -341,6 +348,8 @@ suppresses child test-result reporting. Its progress counts **finished modules**
 passed tests or successful maps. Its final `Test map collection: Completed/Failed/Aborted`
 status follows the existing exit-code and cancellation policy, without a zero-test run
 summary. Discovery/planning counts and mapped source paths are not test outcomes.
+When discovery is requested, the final summary keeps the discovery format instead of
+switching to collection status; test applications still validate their option combinations.
 
 ## Configuration
 

@@ -74,6 +74,91 @@ public sealed class TerminalCollectionReportingTests
     }
 
     [TestMethod]
+    [DataRow(0, false, "Completed.")]
+    [DataRow(1, false, "Failed.")]
+    [DataRow(13, true, "Aborted.")]
+    public void CollectionProgress_WhenConsoleWriteFails_DoesNotThrowOrChangeSummary(
+        int exitCode, bool cancelled, string status)
+    {
+        long ticks = 0;
+        TimerCallback callback = null!;
+        object? callbackState = null;
+        var timer = new Mock<ITimer>();
+        timer.Setup(timer => timer.DisposeAsync()).Returns(ValueTask.CompletedTask);
+        var timeProvider = new Mock<TimeProvider>();
+        timeProvider.SetupGet(provider => provider.TimestampFrequency).Returns(TimeSpan.TicksPerSecond);
+        timeProvider.Setup(provider => provider.GetTimestamp()).Returns(() => ticks);
+        timeProvider.Setup(provider => provider.CreateTimer(
+                It.IsAny<TimerCallback>(), It.IsAny<object?>(), It.IsAny<TimeSpan>(), It.IsAny<TimeSpan>()))
+            .Callback<TimerCallback, object?, TimeSpan, TimeSpan>((action, state, _, _) =>
+            {
+                callback = action;
+                callbackState = state;
+            })
+            .Returns(timer.Object);
+        var output = new CapturingConsole();
+        var console = new Mock<IConsole>();
+        console.Setup(console => console.Write(It.IsAny<string?>())).Callback<string?>(output.Write);
+        console.Setup(console => console.Write(It.IsAny<char>())).Callback<char>(output.Write);
+        console.Setup(console => console.WriteLine()).Callback(output.WriteLine);
+        int progressWrites = 0;
+        bool failProgressWrite = true;
+        console.Setup(console => console.WriteLine(It.IsAny<string?>())).Callback<string?>(value =>
+        {
+            if (value?.StartsWith("Collecting test maps:", StringComparison.Ordinal) == true)
+            {
+                progressWrites++;
+                if (failProgressWrite)
+                {
+                    throw new IOException("progress unavailable");
+                }
+            }
+
+            output.WriteLine(value);
+        });
+        using var reporter = new TerminalTestReporter(console.Object, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            CollectTestMap = true,
+            ShowProgress = true,
+        }, timeProvider.Object);
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.TestMapCollectionStarted(1);
+        reporter.TestMapCollectionModuleStarted("Tests.dll");
+
+        ticks = TimeSpan.FromSeconds(60).Ticks;
+        Action refresh = () => callback(callbackState);
+        refresh.Should().NotThrow("optional progress must not escape its ThreadPool callback");
+        progressWrites.Should().Be(1);
+
+        ticks = TimeSpan.FromSeconds(119).Ticks;
+        refresh();
+        progressWrites.Should().Be(1, "failed writes must still respect the heartbeat interval");
+
+        failProgressWrite = false;
+        ticks = TimeSpan.FromSeconds(120).Ticks;
+        refresh();
+        progressWrites.Should().Be(2);
+        output.GetOutput().Should().Contain("Collecting test maps: 0/1 module(s) finished. Current module: Tests.dll");
+        reporter.TestMapCollectionModuleCompleted();
+        if (cancelled)
+        {
+            reporter.MarkCancelled();
+        }
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode);
+        string completedOutput = output.GetOutput();
+        completedOutput.Should().Contain($"Test map collection: {status}")
+            .And.Contain("modules finished: 1/1")
+            .And.NotContain("Test run summary:");
+        ticks = TimeSpan.FromSeconds(180).Ticks;
+        refresh();
+        output.GetOutput().Should().Be(completedOutput);
+        progressWrites.Should().Be(2);
+        timer.Verify(timer => timer.DisposeAsync(), Times.Once);
+    }
+
+    [TestMethod]
     [DataRow(false, 60)]
     [DataRow(true, 0)]
     public void CollectionProgress_RespectsExplicitSuppression(bool showProgress, int silenceSeconds)
