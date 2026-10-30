@@ -227,6 +227,19 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <!-- Capture locations before implicit-reference tasks replace evaluated PackageReference items. -->
+  <Target Name="_CapturePackageReferenceSourceLocations"
+          BeforeTargets="CheckForImplicitPackageReferenceOverrides;ApplyImplicitVersions;ProcessFrameworkReferences;CollectPackageReferences;ResolvePackageAssets"
+          Condition="'$(EmitAssetsLogMessages)' == 'true'">
+    <ItemGroup>
+      <PackageReference>
+        <_SourceProjectFile>%(PackageReference.DefiningProjectFullPath)</_SourceProjectFile>
+        <_SourceProjectLine>%(PackageReference.DefiningProjectLineNumber)</_SourceProjectLine>
+        <_SourceProjectColumn>%(PackageReference.DefiningProjectColumnNumber)</_SourceProjectColumn>
+      </PackageReference>
+    </ItemGroup>
+  </Target>
+
   <Target Name="ResolvePackageAssets"
           Condition="('$(DesignTimeBuild)' != 'true' Or Exists('$(ProjectAssetsFile)')) And '$(SkipResolvePackageAssets)' != 'true'"
           DependsOnTargets="ProcessFrameworkReferences;_DefaultMicrosoftNETPlatformLibrary;_ComputePackageReferencePublish;_ResolveCompilerVersion">

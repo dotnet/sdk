@@ -55,3 +55,10 @@ breaks localization or silently collides with another PR.
 - **`.xlf` files are generated**, never hand-edited — regenerate via `/t:UpdateXlf`.
 
 Diagnostics are covered by tests under `test/Microsoft.NET.Build.Tests/`.
+
+Restore diagnostics in [ResolvePackageAssets](Microsoft.NET.Build.Tasks/ResolvePackageAssets.cs)
+use current PackageReference locations captured before item replacement by
+[the targets](Microsoft.NET.Build.Tasks/targets/Microsoft.PackageDependencyResolution.targets).
+A no-op restore can leave persisted coordinates stale; retain project fallback when
+direct attribution or current source metadata is unavailable, and do not force restore
+or invalidate the assets cache solely for location changes.
