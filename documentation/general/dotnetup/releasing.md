@@ -73,28 +73,35 @@ publishes an existing signed build to `download.visualstudio.microsoft.com` thro
 ### One-time pipeline setup
 
 Create an Azure DevOps pipeline in `dnceng/internal` using this YAML on the release
-branch. Authorize the `MicroBuildTemplates` repository, the `Darc: Maestro Production`
-service connection, and the internal build pool. The pipeline's build identity must be
-able to read official pipeline 1544's runs and build artifacts. Confirm with Engineering
-that the new pipeline is authorized for MicroBuild/ESRP publishing and that its owners
-and approvers have the required PME accounts.
+branch. Authorize the `dotnetup` pipeline resource, the `MicroBuildTemplates` repository,
+and the internal build pool. No Maestro service connection or BAR lookup is required.
+The pipeline's build identity must be able to read official pipeline 1544's runs and
+build artifacts. Confirm with Engineering that the new pipeline is authorized for
+MicroBuild/ESRP publishing and that its owners and approvers have the required PME accounts.
 
-The initial ESRP owners and approvers are the same:
-`noahgilson@microsoft.com`, `daplaist@microsoft.com`, `marcpop@microsoft.com`, and
-`jorobich@microsoft.com`. They are configured in the YAML.
+The ESRP owners and approvers are configured in the YAML.
 
 ### Run and inspect the release
 
-Run the pipeline with `BARBuildId` set to the numeric BAR ID selected above, not the
-Azure DevOps run ID. It requires a successful, non-test, PME-signed run of pipeline 1544
-on `release/dnup`, with a matching commit and BAR tag. All eight RID binaries, both
-bootstrap scripts, and their SHA-512 sidecars must be registered under one dotnetup
+In the **Run pipeline** pane, select **Resources**, then select `dotnetup` and choose
+a run of `dotnet-dnup-official-ci` (pipeline 1544) from `release/dnup`. Without a manual
+selection, the resource defaults to the latest successful run on that branch with the
+`PME Signed` tag. The release pipeline remains manually triggered; completing an official
+build does not start a CDN release.
+
+The pipeline resource fixes the source pipeline and project. The selected run must be
+successful, non-test, and PME-signed. The artifact download selects that exact run;
+the pipeline uses its `MergedManifest.xml` to identify the version and expected asset inventory.
+It does not require a BAR ID or BAR tag. Manual resource selection can override
+the default branch and tag filters, so these checks also reject selections from other
+branches and unsigned or failed builds. All eight RID binaries, both
+bootstrap scripts, and their SHA-512 sidecars must be listed under one dotnetup
 version and available in that run's `BlobArtifacts`.
-BAR records use versioned paths, but `BlobArtifacts` stores files by their flat
+Manifest entries use versioned paths, but `BlobArtifacts` stores files by their flat
 filenames; the pipeline stages only the expected release files, not `MergedManifest.xml`.
 
-The pipeline verifies the original checksums and Windows executable/PowerShell script
-signatures in a regular `Prepare` job. That job publishes the staged files, release
+The regular `Prepare` job stages the source assets and records their hashes for CDN
+verification. That job publishes the staged files, release
 metadata, and publishing helper as pipeline artifacts. The `Publish` release job
 consumes those artifacts through declared job inputs; it does not check out source
 or download build artifacts directly. This follows the
@@ -105,7 +112,8 @@ matches the corresponding source asset, including checksum files.
 
 Inspect the `DotnetupCdnRelease` pipeline artifact:
 
-- `bar-build.json`: the selected BAR build record.
+- `source-build.json`: the selected Azure DevOps build record.
+- `MergedManifest.xml`: the source build's validated asset manifest.
 - `release.json`: source run, commit, version, file paths, and hashes.
 - `esrp-release-details.json`: the raw ESRP publishing result, when returned.
 - `cdn-release.json`: the verified per-file CDN URLs and hashes, written only after
@@ -128,8 +136,8 @@ layout to pin binary and checksum downloads to the same build. Validate the actu
 URL layout and establish a compatible transition for already-installed clients before
 enabling alias updates.
 
-The pipeline runs offline fixtures for build eligibility, asset completeness, hashes,
-signatures, and ESRP result validation before accessing release inputs. To run these
+The pipeline runs offline fixtures for build eligibility, asset completeness, staging hashes,
+and ESRP result and CDN download validation before accessing release inputs. To run these
 checks locally without publishing or downloading anything:
 
 ```pwsh

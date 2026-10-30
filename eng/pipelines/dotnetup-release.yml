@@ -1,12 +1,6 @@
 trigger: none
 pr: none
 
-parameters:
-- name: BARBuildId
-  displayName: BAR ID of the signed official dotnetup build
-  type: number
-  default: 0
-
 variables:
 - template: /eng/common/templates-official/variables/pool-providers.yml
 - name: DOTNET_CLI_TELEMETRY_SESSIONID
@@ -25,6 +19,14 @@ variables:
   value: noahgilson@microsoft.com;daplaist@microsoft.com;marcpop@microsoft.com;jorobich@microsoft.com
 
 resources:
+  pipelines:
+  - pipeline: dotnetup
+    project: internal
+    source: \dotnet\sdk\dotnet-dnup-official-ci
+    branch: refs/heads/release/dnup
+    tags:
+    - PME Signed
+    trigger: none
   repositories:
   - repository: MicroBuildTemplates
     type: git
@@ -63,55 +65,6 @@ extends:
           fetchDepth: 1
           fetchTags: false
 
-        - pwsh: |
-            $ErrorActionPreference = 'Stop'
-            New-Item -ItemType Directory -Path $env:RELEASEMETADATADIRECTORY -ErrorAction Stop | Out-Null
-            ./eng/pipelines/dotnetup-publishing.tests.ps1
-          displayName: Check release validation with offline fixtures
-
-        - task: AzureCLI@2
-          displayName: Resolve and validate the BAR build
-          inputs:
-            azureSubscription: 'Darc: Maestro Production'
-            scriptType: pscore
-            scriptLocation: inlineScript
-            inlineScript: |
-              $ErrorActionPreference = 'Stop'
-
-              $barBuildId = [int]$env:BAR_BUILD_ID
-              if ($barBuildId -le 0) {
-                throw 'A positive BARBuildId is required.'
-              }
-
-              # Maestro's production application audience is also used by the Darc client.
-              $buildJson = az rest --method get --resource 54c17f3d-7325-4eca-9db7-f090bfc765a8 `
-                --url "https://maestro.dot.net/api/builds/$barBuildId`?api-version=2020-02-20" --output json
-
-              if ($LASTEXITCODE -ne 0) {
-                throw "Could not resolve BAR build $barBuildId."
-              }
-
-              $barBuild = $buildJson | ConvertFrom-Json
-              $sourceBuildId = [int]$barBuild.azureDevOpsBuildId
-              if ($sourceBuildId -le 0) {
-                throw 'The BAR build has no Azure DevOps run ID.'
-              }
-
-              $headers = @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
-              $sourceBuild = Invoke-RestMethod -Headers $headers -Uri "https://dev.azure.com/dnceng/internal/_apis/build/builds/$sourceBuildId`?api-version=7.1"
-
-              . ./eng/pipelines/dotnetup-publishing.ps1
-
-              $release = Get-DotnetupRelease -BARBuildId $barBuildId -BARBuild $barBuild -SourceBuild $sourceBuild
-              $release | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'release.json')
-              $buildJson | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'bar-build.json')
-
-              Write-Host "Selected dotnetup $($release.version), BAR $barBuildId, Azure DevOps run $sourceBuildId."
-              Write-Host "##vso[task.setvariable variable=SourceBuildId]$sourceBuildId"
-          env:
-            BAR_BUILD_ID: ${{ parameters.BARBuildId }}
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
         - task: DownloadBuildArtifacts@1
           displayName: Download the signed build's blob artifacts
           inputs:
@@ -119,7 +72,7 @@ extends:
             project: internal
             pipeline: 1544
             buildVersionToDownload: specific
-            buildId: $(SourceBuildId)
+            buildId: $(resources.pipeline.dotnetup.runID)
             downloadType: single
             artifactName: BlobArtifacts
             downloadPath: $(Agent.TempDirectory)/dotnetup-source
@@ -128,17 +81,40 @@ extends:
         - pwsh: |
             $ErrorActionPreference = 'Stop'
 
+            # Load the shared release-validation and staging helpers from the checkout.
             . ./eng/pipelines/dotnetup-publishing.ps1
 
-            $path = Join-Path $env:RELEASEMETADATADIRECTORY 'release.json'
-            $release = Get-Content -LiteralPath $path -Raw | ConvertFrom-Json -AsHashtable
+            # Create storage for the metadata artifact passed to the Publish job.
+            New-Item -ItemType Directory -Path $env:RELEASEMETADATADIRECTORY -ErrorAction Stop | Out-Null
 
+            # Fetch eligibility details, such as test-build status, for the selected pipeline run.
+            $sourceBuildId = [int]$env:SOURCE_BUILD_ID
+            $headers = @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
+            $sourceBuild = Invoke-RestMethod -Headers $headers -Uri "https://dev.azure.com/dnceng/internal/_apis/build/builds/$sourceBuildId`?api-version=7.1"
+
+            # Read the version and asset inventory from the selected run's downloaded manifest.
+            $sourceDirectory = "$(Agent.TempDirectory)/dotnetup-source/BlobArtifacts"
+            $manifestPath = Join-Path $sourceDirectory 'MergedManifest.xml'
+            $manifest = [xml](Get-Content -LiteralPath $manifestPath -Raw)
+
+            # Check release eligibility and construct the expected versioned file inventory.
+            $release = Get-DotnetupRelease -SourceBuild $sourceBuild -Manifest $manifest
+
+            # Stage the expected nonempty files and record their hashes for post-publish verification.
             Copy-DotnetupReleaseAssets -Release $release `
-              -SourceDirectory "$(Agent.TempDirectory)/dotnetup-source/BlobArtifacts" `
+              -SourceDirectory $sourceDirectory `
               -DestinationDirectory $env:RELEASESTAGINGDIRECTORY
 
-            $release | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $path
-          displayName: Verify checksums and signatures and stage release files
+            # Prepare publishes this metadata as an artifact for the separate Publish job.
+            $sourceBuild | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'source-build.json')
+            $release | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'release.json')
+            Copy-Item -LiteralPath $manifestPath -Destination $env:RELEASEMETADATADIRECTORY
+
+            Write-Host "Selected dotnetup $($release.version), Azure DevOps run $($release.azureDevOpsBuildId), commit $($release.commit)."
+          displayName: Validate the build and manifest and stage release files
+          env:
+            SOURCE_BUILD_ID: $(resources.pipeline.dotnetup.runID)
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
       - job: Publish
         displayName: Publish the prepared release through ESRP
@@ -173,6 +149,8 @@ extends:
 
         - pwsh: |
             $ErrorActionPreference = 'Stop'
+
+            # Preserve the raw ESRP response for diagnosis, including when publishing failed.
             $env:ESRP_RELEASE_DETAILS | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'esrp-release-details.json')
           displayName: Retain the ESRP response, including failed releases
           condition: and(succeededOrFailed(), ne(variables['ESRP_RELEASE_DETAILS'], ''))
@@ -182,16 +160,21 @@ extends:
         - pwsh: |
             $ErrorActionPreference = 'Stop'
 
+            # This job receives the helper through Prepare's artifact.
             . (Join-Path $env:RELEASETOOLSDIRECTORY 'dotnetup-publishing.ps1')
             if ([string]::IsNullOrWhiteSpace($env:ESRP_RELEASE_DETAILS)) {
               throw 'ESRP_RELEASE_DETAILS is missing or empty.'
             }
 
+            # Combine Prepare's expected files and hashes with ESRP's publishing response.
             $release = Get-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'release.json') -Raw | ConvertFrom-Json -AsHashtable
             $details = $env:ESRP_RELEASE_DETAILS | ConvertFrom-Json
 
+            # Validate the ESRP result and compare every CDN download with its staged source hash.
             $cdnRelease = Get-DotnetupCdnRelease -Release $release -Details $details `
               -DownloadDirectory "$(Agent.TempDirectory)/dotnetup-cdn-verification"
+
+            # Retain verified URLs and hashes in the final metadata artifact.
             $cdnRelease | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'cdn-release.json')
 
             foreach ($file in $cdnRelease.files) {
