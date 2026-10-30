@@ -19,13 +19,11 @@ internal static class InstallationListRenderer
     /// </summary>
     internal static List<InstallationListRow> CreateRowsForRoot(IEnumerable<InstallSpecInfo> specs, List<InstallationInfo> installations)
     {
-        var installationInfo = installations.ToDictionary(
-            i => new Installation { Component = i.Component, Version = i.Version }, i => i);
         var rows = new List<InstallationListRow>();
         foreach (var spec in specs)
         {
             var channel = new UpdateChannel(spec.VersionOrChannel);
-            var selected = installationInfo.Keys
+            var selected = installations
                 .Where(i => i.Component == spec.Component
                     && ReleaseVersion.TryParse(i.Version, out var version) && channel.Matches(version))
                 .OrderByDescending(i => new ReleaseVersion(i.Version))
@@ -34,7 +32,7 @@ internal static class InstallationListRenderer
             {
                 Component = spec.Component,
                 Spec = spec,
-                Installation = selected is not null ? installationInfo[selected] : null,
+                Installation = selected,
                 SpecDisplay = spec.VersionOrChannel,
                 SourceDisplay = spec.Source == InstallSource.GlobalJson
                     ? spec.GlobalJsonPath ?? Strings.ListUnavailable : Strings.ListCommandLineSource
