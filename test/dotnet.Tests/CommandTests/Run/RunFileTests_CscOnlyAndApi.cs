@@ -2,10 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Runtime.CompilerServices;
 using System.Security;
 using System.Text.Json;
+using System.Xml;
 using Basic.CompilerLog.Util;
-using FluentAssertions.Execution;
+using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.NuGet;
@@ -2544,13 +2546,91 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         }
     }
 
+    [TestMethod, CombinatorialData]
+    public void Api_BuildService_RetainsLastRegisteredProjectRootElement(
+        bool reverseRegistration, bool concurrentRegistration, bool reassignSamePath)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var entryPointFilePath = Path.Join(testInstance.Path, "Program.cs");
+        var virtualProjectPath = VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath);
+        using var projectCollection = new ProjectCollection();
+
+        RegisterRootElements(projectCollection, entryPointFilePath, reverseRegistration, concurrentRegistration, reassignSamePath);
+
+        // Unloading an unrelated evaluated project clears MSBuild's incidental strong references to the virtual XML.
+        var unrelatedRoot = ProjectRootElement.Create(projectCollection);
+        unrelatedRoot.FullPath = Path.Join(testInstance.Path, "Unrelated.csproj");
+        var unrelatedProject = new Microsoft.Build.Evaluation.Project(unrelatedRoot, globalProperties: null, toolsVersion: null, projectCollection);
+        projectCollection.UnloadProject(unrelatedProject);
+
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+        GC.WaitForPendingFinalizers();
+        GC.Collect(2, GCCollectionMode.Forced, blocking: true);
+
+        File.Exists(virtualProjectPath).Should().BeFalse();
+        var project = new Microsoft.Build.Evaluation.Project(virtualProjectPath, globalProperties: null, toolsVersion: null, projectCollection);
+        var version = project.GetPropertyValue("Version");
+        if (concurrentRegistration)
+        {
+            version.Should().BeOneOf("First", "Second");
+        }
+        else
+        {
+            version.Should().Be(reverseRegistration ? "First" : "Second");
+        }
+
+        // Keep the root wrappers out of the stack that forces GC.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        static void RegisterRootElements(
+            ProjectCollection projectCollection, string entryPointFilePath,
+            bool reverseRegistration, bool concurrentRegistration, bool reassignSamePath)
+        {
+            var virtualProjectPath = VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath);
+            IProjectRootElement[] roots = [CreateRoot("First"), CreateRoot("Second")];
+            if (reverseRegistration)
+            {
+                Array.Reverse(roots);
+            }
+
+            if (concurrentRegistration)
+            {
+                Parallel.ForEach(roots, root => root.FullPath = virtualProjectPath);
+            }
+            else
+            {
+                foreach (var root in roots)
+                {
+                    root.FullPath = virtualProjectPath;
+                }
+            }
+
+            if (reassignSamePath)
+            {
+                roots[0].FullPath = virtualProjectPath;
+            }
+
+            IProjectRootElement CreateRoot(string version)
+            {
+                using var reader = new StringReader($"""
+                    <Project>
+                      <PropertyGroup>
+                        <Version>{version}</Version>
+                      </PropertyGroup>
+                    </Project>
+                    """);
+                using var xmlReader = XmlReader.Create(reader);
+                return BuildService.Instance.CreateProjectRootElement(xmlReader, projectCollection.Wrap(), entryPointFilePath);
+            }
+        }
+    }
+
     /// <summary>
     /// Regression test for https://github.com/dotnet/sdk/issues/52714.
     /// The virtual project's <see cref="ProjectRootElement"/> must survive GC
     /// even after being evicted from MSBuild's strong cache (LRU of size N).
     /// We force eviction via <c>MSBUILDPROJECTROOTELEMENTCACHESIZE=1</c>
     /// and trigger GC via an inline task during NuGet restore.
-    /// Without the fix (strong reference in <c>VirtualProjectBuilder._projectRootElement</c>),
+    /// Without the strong references held by the project collection wrapper,
     /// this fails with MSB4025 "The project file could not be loaded".
     /// </summary>
     [TestMethod]
