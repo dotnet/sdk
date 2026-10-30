@@ -1,0 +1,67 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <EnableDefaultItems>false</EnableDefaultItems>
+    <UsingToolXUnit>false</UsingToolXUnit>
+    <TestSdkRoot>$(MSBuildThisFileDirectory)artifacts/test-sdk/$(Configuration)/$(RuntimeIdentifier)/</TestSdkRoot>
+    <BuiltDotnetRoot>$(RepoRoot)artifacts/bin/redist/$(Configuration)/dotnet/</BuiltDotnetRoot>
+    <RuntimePackageRoot>$(NuGetPackageRoot)microsoft.netcore.app.runtime.$(RuntimeIdentifier)/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/$(RuntimeIdentifier)/</RuntimePackageRoot>
+    <DotnetName>dotnet</DotnetName>
+    <HostFxrName>libhostfxr.so</HostFxrName>
+    <DotnetName Condition="$(RuntimeIdentifier.StartsWith('win-'))">dotnet.exe</DotnetName>
+    <HostFxrName Condition="$(RuntimeIdentifier.StartsWith('win-'))">hostfxr.dll</HostFxrName>
+    <HostFxrName Condition="$(RuntimeIdentifier.StartsWith('osx-'))">libhostfxr.dylib</HostFxrName>
+  </PropertyGroup>
+
+  <!-- Match the native CLI's runtime version, but acquire binaries for the test host,
+       which need not have the architecture of the cross-built redist. -->
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.NETCore.App.Runtime.$(RuntimeIdentifier)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+  </ItemGroup>
+
+  <UsingTask TaskName="GenerateSdkRuntimeIdentifierChain"
+             AssemblyFile="$(ArtifactsBinDir)sdk-tasks/$(Configuration)/sdk-tasks.dll"
+             Runtime="NET" />
+
+  <Target Name="PrepareTestSdk">
+    <Error Condition="'$(RuntimeIdentifier)' == ''" Text="A host RuntimeIdentifier is required to prepare the Native AOT test SDK." />
+    <Error Condition="!Exists('$(RepoRoot).dotnet/$(DotnetName)') or !Exists('$(RuntimePackageRoot)native/$(HostFxrName)')"
+           Text="The host runtime packages are missing. Restore PrepareTestSdk.proj before preparing the test SDK." />
+    <ItemGroup>
+      <_BuiltSdk Include="$(BuiltDotnetRoot)sdk/*/dotnet.dll" />
+    </ItemGroup>
+    <Error Condition="'@(_BuiltSdk->Count())' != '1'" Text="Expected one built SDK in $(BuiltDotnetRoot). Build the $(Configuration) SDK first." />
+    <PropertyGroup>
+      <_BuiltSdkPath>@(_BuiltSdk->'%(FullPath)')</_BuiltSdkPath>
+      <_SdkVersion>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('$(_BuiltSdkPath)'))))</_SdkVersion>
+      <_TestSdkDirectory>$(TestSdkRoot)sdk/$(_SdkVersion)/</_TestSdkDirectory>
+    </PropertyGroup>
+
+    <!-- Recreate only this harness's layout, never the shipping or bootstrap SDK. -->
+    <RemoveDir Directories="$(TestSdkRoot)" />
+    <ItemGroup>
+      <_SdkFile Include="$(BuiltDotnetRoot)sdk/$(_SdkVersion)/**/*" />
+      <_PackFile Include="$(BuiltDotnetRoot)packs/**/*" />
+      <_TemplateFile Include="$(BuiltDotnetRoot)templates/**/*" />
+      <_ManifestFile Include="$(BuiltDotnetRoot)sdk-manifests/**/*" />
+      <_RuntimeFile Include="$(RuntimePackageRoot)lib/$(SdkTargetFramework)/*;$(RuntimePackageRoot)native/*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(_SdkFile)" DestinationFiles="@(_SdkFile->'$(_TestSdkDirectory)%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_PackFile)" DestinationFiles="@(_PackFile->'$(TestSdkRoot)packs/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_TemplateFile)" DestinationFiles="@(_TemplateFile->'$(TestSdkRoot)templates/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_ManifestFile)" DestinationFiles="@(_ManifestFile->'$(TestSdkRoot)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_RuntimeFile)" DestinationFiles="@(_RuntimeFile->'$(TestSdkRoot)shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)/%(Filename)%(Extension)')" />
+    <Copy SourceFiles="$(RepoRoot).dotnet/$(DotnetName)" DestinationFiles="$(TestSdkRoot)$(DotnetName)" />
+    <Copy SourceFiles="$(RuntimePackageRoot)native/$(HostFxrName)" DestinationFiles="$(TestSdkRoot)host/fxr/$(HostFxrVersion)/$(HostFxrName)" />
+
+    <!-- Preserve the built pack versions while selecting host-native apphosts by default. -->
+    <XmlPoke XmlInputPath="$(_TestSdkDirectory)Microsoft.NETCoreSdk.BundledVersions.props"
+             Query="/Project/PropertyGroup/NETCoreSdkRuntimeIdentifier" Value="$(RuntimeIdentifier)" />
+    <XmlPoke XmlInputPath="$(_TestSdkDirectory)Microsoft.NETCoreSdk.BundledVersions.props"
+             Query="/Project/PropertyGroup/NETCoreSdkPortableRuntimeIdentifier" Value="$(RuntimeIdentifier)" />
+    <GenerateSdkRuntimeIdentifierChain RuntimeIdentifier="$(RuntimeIdentifier)"
+                                       RuntimeIdentifierGraphPath="$(_TestSdkDirectory)PortableRuntimeIdentifierGraph.json"
+                                       RuntimeIdentifierChainOutputPath="$(_TestSdkDirectory)NETCoreSdkRuntimeIdentifierChain.txt" />
+    <Exec Command="chmod +x &quot;$(TestSdkRoot)$(DotnetName)&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+  </Target>
+</Project>

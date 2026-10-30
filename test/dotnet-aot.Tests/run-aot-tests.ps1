@@ -12,8 +12,9 @@
     test binary. This verifies both the Native AOT test closure and end-to-end dn
     integration against a complete SDK installation. The test publish retains
     managed build output for test-module integration validation. Build the redist
-    SDK first: the script overlays the test-built native library there, and test
-    setup and managed fallback use that SDK, not the bootstrap SDK.
+    SDK first: the script copies its SDK content into an isolated host-native
+    installation and overlays the test-built native library there. Test setup
+    and managed fallback use that SDK, not the bootstrap or cross-built host.
 
 .PARAMETER Configuration
     Build configuration (Debug or Release). Default: Debug.
@@ -59,19 +60,7 @@ $dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", $dotnetName)
 $testProject = Join-Path $PSScriptRoot "dotnet-aot.Tests.csproj"
 $productProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dotnet-aot", "dotnet-aot.csproj")
 $dnProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dn", "dn.csproj")
-$testDotnetRoot = [System.IO.Path]::Combine($repoRoot, "artifacts", "bin", "redist", $Configuration, "dotnet")
-$testDotnet = Join-Path $testDotnetRoot $dotnetName
-if (-not (Test-Path -LiteralPath $testDotnet -PathType Leaf)) {
-    throw "Built redist host not found at $testDotnet. Build the $Configuration SDK first."
-}
-
-# Do not resolve through --info here: the repository global.json selects the bootstrap SDK.
-$sdkDirectories = @(Get-ChildItem -LiteralPath (Join-Path $testDotnetRoot "sdk") -Directory |
-    Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "dotnet.dll") -PathType Leaf })
-if ($sdkDirectories.Count -ne 1) {
-    throw "Expected one built SDK in $testDotnetRoot, found $($sdkDirectories.Count)."
-}
-$sdkDirectory = $sdkDirectories[0].FullName
+$layoutProject = Join-Path $PSScriptRoot "PrepareTestSdk.proj"
 
 # Auto-detect RID
 if (-not $RuntimeIdentifier) {
@@ -100,6 +89,8 @@ $dnName = if ($RuntimeIdentifier.StartsWith("win")) { "dn.exe" } else { "dn" }
 $exePath = Join-Path $publishDir $exeName
 $aotLibraryPath = Join-Path $aotPublishDir $aotLibraryName
 $dnPath = Join-Path $dnPublishDir $dnName
+$testDotnetRoot = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "test-sdk", $Configuration, $RuntimeIdentifier)
+$testDotnet = Join-Path $testDotnetRoot $dotnetName
 
 Write-Host "=== dotnet-aot NativeAOT Test Runner ===" -ForegroundColor Cyan
 Write-Host "  Configuration: $Configuration"
@@ -153,6 +144,21 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
+# Prepare even with -NoBuild so runtime versions and SDK content cannot go stale.
+& $dotnet msbuild $layoutProject -restore -t:PrepareTestSdk `
+    -p:Configuration=$Configuration -p:RuntimeIdentifier=$RuntimeIdentifier
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not prepare the host-native test SDK (exit code $LASTEXITCODE)."
+}
+
+# Do not resolve through --info here: the repository global.json selects the bootstrap SDK.
+$sdkDirectories = @(Get-ChildItem -LiteralPath (Join-Path $testDotnetRoot "sdk") -Directory |
+    Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "dotnet.dll") -PathType Leaf })
+if ($sdkDirectories.Count -ne 1) {
+    throw "Expected one test SDK in $testDotnetRoot, found $($sdkDirectories.Count)."
+}
+$sdkDirectory = $sdkDirectories[0].FullName
+
 $managedTestModule = & $dotnet msbuild $testProject `
     -p:Configuration=$Configuration `
     -p:RuntimeIdentifier=$RuntimeIdentifier `
@@ -199,6 +205,8 @@ $environment = @{
     DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
     DOTNET_HOST_PATH = $testDotnet
     DOTNET_ROOT = $testDotnetRoot
+    DOTNET_CLI_USE_MSBUILD_SERVER = "0"
+    MSBUILDDISABLENODEREUSE = "1"
 }
 $previousEnvironment = @{}
 foreach ($entry in $environment.GetEnumerator()) {
@@ -225,8 +233,16 @@ try {
     $testExitCode = $LASTEXITCODE
 }
 finally {
-    foreach ($entry in $previousEnvironment.GetEnumerator()) {
-        [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
+    try {
+        & $testDotnet exec (Join-Path $sdkDirectory "dotnet.dll") build-server shutdown
+        if ($LASTEXITCODE -ne 0) {
+            throw "Could not shut down the isolated test SDK's build servers (exit code $LASTEXITCODE)."
+        }
+    }
+    finally {
+        foreach ($entry in $previousEnvironment.GetEnumerator()) {
+            [Environment]::SetEnvironmentVariable($entry.Key, $entry.Value)
+        }
     }
 }
 

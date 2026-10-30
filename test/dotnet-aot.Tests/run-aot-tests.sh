@@ -4,8 +4,9 @@
 
 # Publishes the NativeAOT test binary, dotnet-aot library, and dn host, then runs
 # the full test suite including end-to-end dn integration.
-# Build the redist SDK first; the script overlays the test-built native library
-# there, and test setup and managed fallback use that SDK.
+# Build the redist SDK first; the script copies its SDK content into an isolated
+# host-native installation and overlays the test-built native library there.
+# Test setup and managed fallback use that SDK, not the cross-built host.
 # See run-aot-tests.ps1 for detailed documentation.
 #
 # Usage:
@@ -20,6 +21,7 @@ DOTNET="$REPO_ROOT/.dotnet/dotnet"
 TEST_PROJECT="$SCRIPT_DIR/dotnet-aot.Tests.csproj"
 PRODUCT_PROJECT="$REPO_ROOT/src/Cli/dotnet-aot/dotnet-aot.csproj"
 DN_PROJECT="$REPO_ROOT/src/Cli/dn/dn.csproj"
+LAYOUT_PROJECT="$SCRIPT_DIR/PrepareTestSdk.proj"
 
 CONFIGURATION="Debug"
 RID=""
@@ -37,21 +39,6 @@ while [[ $# -gt 0 ]]; do
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
-
-TEST_DOTNET_ROOT="$REPO_ROOT/artifacts/bin/redist/$CONFIGURATION/dotnet"
-TEST_DOTNET="$TEST_DOTNET_ROOT/dotnet"
-if [[ ! -x "$TEST_DOTNET" ]]; then
-    echo "ERROR: Built redist host not found at $TEST_DOTNET. Build the $CONFIGURATION SDK first."
-    exit 1
-fi
-
-# Do not resolve through --info here: the repository global.json selects the bootstrap SDK.
-SDK_ASSEMBLIES=("$TEST_DOTNET_ROOT"/sdk/*/dotnet.dll)
-if [[ ${#SDK_ASSEMBLIES[@]} -ne 1 || ! -f "${SDK_ASSEMBLIES[0]}" ]]; then
-    echo "ERROR: Expected one built SDK in $TEST_DOTNET_ROOT."
-    exit 1
-fi
-SDK_DIRECTORY="$(dirname "${SDK_ASSEMBLIES[0]}")"
 
 # Auto-detect RID
 if [[ -z "$RID" ]]; then
@@ -83,6 +70,8 @@ case "$RID" in
 esac
 AOT_LIBRARY_PATH="$AOT_PUBLISH_DIR/$AOT_LIBRARY_NAME"
 DN_PATH="$DN_PUBLISH_DIR/$DN_NAME"
+TEST_DOTNET_ROOT="$SCRIPT_DIR/artifacts/test-sdk/$CONFIGURATION/$RID"
+TEST_DOTNET="$TEST_DOTNET_ROOT/dotnet"
 
 echo "=== dotnet-aot NativeAOT Test Runner ==="
 echo "  Configuration: $CONFIGURATION"
@@ -120,6 +109,18 @@ if [[ "$NO_BUILD" == false ]]; then
     fi
     echo ""
 fi
+
+# Prepare even with --no-build so runtime versions and SDK content cannot go stale.
+"$DOTNET" msbuild "$LAYOUT_PROJECT" -restore -t:PrepareTestSdk \
+    -p:Configuration="$CONFIGURATION" -p:RuntimeIdentifier="$RID"
+
+# Do not resolve through --info here: the repository global.json selects the bootstrap SDK.
+SDK_ASSEMBLIES=("$TEST_DOTNET_ROOT"/sdk/*/dotnet.dll)
+if [[ ${#SDK_ASSEMBLIES[@]} -ne 1 || ! -f "${SDK_ASSEMBLIES[0]}" ]]; then
+    echo "ERROR: Expected one test SDK in $TEST_DOTNET_ROOT."
+    exit 1
+fi
+SDK_DIRECTORY="$(dirname "${SDK_ASSEMBLIES[0]}")"
 
 # Run
 if [[ ! -f "$EXE_PATH" ]]; then
@@ -160,6 +161,9 @@ export DOTNET_AOT_SDK_DIR="$SDK_DIRECTORY"
 export DOTNET_AOT_LIBRARY_DIR="$SDK_DIRECTORY"
 export DOTNET_HOST_PATH="$TEST_DOTNET"
 export DOTNET_ROOT="$TEST_DOTNET_ROOT"
+# Do not leave build servers holding files in the disposable test installation.
+export DOTNET_CLI_USE_MSBUILD_SERVER=0
+export MSBUILDDISABLENODEREUSE=1
 
 chmod +x "$EXE_PATH"
 chmod +x "$DN_PATH"
@@ -179,6 +183,8 @@ set +e
 "$EXE_PATH" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"}
 TEST_EXIT=$?
 set -e
+
+"$TEST_DOTNET" exec "$SDK_DIRECTORY/dotnet.dll" build-server shutdown
 
 echo ""
 if [[ $TEST_EXIT -eq 0 ]]; then
