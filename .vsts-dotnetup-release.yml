@@ -61,7 +61,7 @@ extends:
         - download: candidate
           patterns: Dotnetup_Dotnetup_*/**
         - powershell: |
-            & .\restore.cmd /p:Projects=eng\dotnetup-release\dotnetup-release.csproj
+            & .\restore.cmd "/p:Projects=$(Build.SourcesDirectory)\eng\dotnetup-release\dotnetup-release.csproj"
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           displayName: Bootstrap repository toolset
         - powershell: |
