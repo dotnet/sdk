@@ -14,17 +14,18 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 /// </summary>
 internal static class InstallationListRenderer
 {
-    internal static List<InstallationListRow> CreateRows(IEnumerable<InstallSpecInfo> specs, List<InstallationInfo> installations)
+    /// <summary>
+    /// Builds rows from specs and installations already filtered to one installation root and architecture.
+    /// </summary>
+    internal static List<InstallationListRow> CreateRowsForRoot(IEnumerable<InstallSpecInfo> specs, List<InstallationInfo> installations)
     {
         var installationInfo = installations.ToDictionary(
             i => new Installation { Component = i.Component, Version = i.Version }, i => i);
         var rows = new List<InstallationListRow>();
         foreach (var spec in specs)
         {
-            var candidates = installationInfo.Where(i => i.Value.Architecture == spec.Architecture
-                && DotnetupUtilities.PathsEqual(i.Value.InstallRoot, spec.InstallRoot)).Select(i => i.Key);
             var channel = new UpdateChannel(spec.VersionOrChannel);
-            var selected = candidates
+            var selected = installationInfo.Keys
                 .Where(i => i.Component == spec.Component
                     && ReleaseVersion.TryParse(i.Version, out var version) && channel.Matches(version))
                 .OrderByDescending(i => new ReleaseVersion(i.Version))
@@ -70,7 +71,7 @@ internal static class InstallationListRenderer
             var specs = listData.InstallSpecs.Where(s => s.InstallRoot == root.InstallRoot && s.Architecture == root.Architecture);
             var installations = listData.Installations.Where(i => i.InstallRoot == root.InstallRoot && i.Architecture == root.Architecture)
                 .DistinctBy(i => new { i.Component, i.Version }).ToList();
-            var rows = CreateRows(specs, installations);
+            var rows = CreateRowsForRoot(specs, installations);
             specCount += rows.Count(r => r.Spec is not null);
             installationCount += installations.Count;
             sdkCount += installations.Count(i => i.Component == InstallComponent.SDK);

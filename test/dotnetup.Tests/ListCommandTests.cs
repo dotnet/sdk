@@ -174,7 +174,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         };
         var specs = new[] { Spec("10.0.1xx"), Spec("10.0"), Spec("10.0.103"), Spec("11.0.1xx") };
 
-        var rows = InstallationListRenderer.CreateRows(specs, installations);
+        var rows = InstallationListRenderer.CreateRowsForRoot(specs, installations);
 
         rows.Select(r => r.SpecDisplay).Should().Equal("10.0", "10.0.1xx", "10.0.103", "-", "11.0.1xx");
         rows.Select(r => r.Installation?.Version).Should().Equal("10.0.105", "10.0.105", "10.0.103", "9.0.304", null);
@@ -205,7 +205,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
             Spec("12.0.1xx"), Spec("13.0", InstallComponent.WindowsDesktop), Spec("12.0", InstallComponent.Runtime)
         };
 
-        var rows = InstallationListRenderer.CreateRows(specs, installations);
+        var rows = InstallationListRenderer.CreateRowsForRoot(specs, installations);
 
         rows.Select(r => r.Installation?.Version).Should()
             .Equal("9.0.100", null, "10.0.10", "10.0.10", "10.0.10-preview.2", "10.0.2", "9.0.9", null, null);
@@ -224,7 +224,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     public void RelationshipRows_UseExistingChannelMatching(string channel, string? expected)
     {
         var spec = Spec(channel);
-        var rows = InstallationListRenderer.CreateRows([spec],
+        var rows = InstallationListRenderer.CreateRowsForRoot([spec],
             [Installation("9.0.304"), Installation("10.0.105"), Installation("11.0.100-preview.2")]);
 
         (rows.Single(r => r.Spec == spec).Installation?.Version).Should().Be(expected);
@@ -242,7 +242,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
             Installations = [Installation("10.0.105")]
         };
 
-        var rows = InstallationListRenderer.CreateRows(data.InstallSpecs, data.Installations);
+        var rows = InstallationListRenderer.CreateRowsForRoot(data.InstallSpecs, data.Installations);
         rows.Select(r => r.SourceDisplay).Should().Contain("Command").And.Contain(repository.GlobalJsonPath);
         rows.Should().OnlyContain(r => r.Installation == data.Installations[0]);
         InstallationListRenderer.Write(Output, data, width: 160);
@@ -314,7 +314,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
-    public void RelationshipRows_DoNotResolveAcrossRootsOrArchitectures()
+    public void RelationshipTable_DoesNotResolveAcrossRootsOrArchitectures()
     {
         var spec = Spec("10.0.1xx");
         spec.InstallRoot = Path.Combine(_tempDir.FullName, "root-one");
@@ -327,12 +327,14 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         otherArchitecture.Architecture = InstallArchitecture.arm64;
         var data = new ListData { InstallSpecs = [spec], Installations = [otherRoot, otherArchitecture] };
 
-        InstallationListRenderer.CreateRows(data.InstallSpecs, data.Installations).Single(r => r.Spec == spec)
-            .Installation.Should().BeNull();
         InstallationListRenderer.Write(Output, data, width: 160);
-        Output.ToString().Should().Contain($"{spec.InstallRoot} (x64)")
+        var output = Output.ToString();
+        output.Should().Contain($"{spec.InstallRoot} (x64)")
             .And.Contain($"{spec.InstallRoot} (arm64)").And.Contain($"{otherRoot.InstallRoot} (x64)")
             .And.Contain("1 install spec; 2 installations (2 SDKs, 0 runtimes)");
+        var specRow = output.Split('\n')
+            .Single(line => line.Contains("10.0.1xx", StringComparison.Ordinal));
+        specRow.Should().Contain("Not installed").And.NotContain("10.0.105");
     }
 
     [TestMethod]
@@ -345,7 +347,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         var installations = new List<InstallationInfo> { Installation("10.0.103"), Installation("10.0.105") };
         File.WriteAllText(path, """{"sdk":{"version":"10.0.103","rollForward":"disable","allowPrerelease":false}}""");
 
-        var rows = InstallationListRenderer.CreateRows([spec], installations);
+        var rows = InstallationListRenderer.CreateRowsForRoot([spec], installations);
         var row = rows.Single(r => r.Spec == spec);
         row.SpecDisplay.Should().Be("9.0.1xx");
         row.SourceDisplay.Should().Be(path);
@@ -353,7 +355,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         spec.VersionOrChannel.Should().Be("9.0.1xx", "rendering must not change the manifest snapshot");
 
         File.WriteAllText(path, "{broken");
-        rows = InstallationListRenderer.CreateRows([spec], installations);
+        rows = InstallationListRenderer.CreateRowsForRoot([spec], installations);
         row = rows.Single(r => r.Spec == spec);
         row.Spec.Should().BeSameAs(spec);
         row.SpecDisplay.Should().Be("9.0.1xx");
@@ -378,7 +380,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
             File.WriteAllText(spec.GlobalJsonPath, "{}");
         }
 
-        var row = InstallationListRenderer.CreateRows([spec], [Installation("10.0.105")]).Single();
+        var row = InstallationListRenderer.CreateRowsForRoot([spec], [Installation("10.0.105")]).Single();
         row.Spec.Should().BeSameAs(spec);
         row.SpecDisplay.Should().Be("10.0.1xx");
         row.SourceDisplay.Should().Be(spec.GlobalJsonPath);
@@ -431,7 +433,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         File.WriteAllText(spec.GlobalJsonPath, """{"sdk":{"version":"10.0.100"}}""");
         using var locked = File.Open(spec.GlobalJsonPath, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
 
-        var rows = InstallationListRenderer.CreateRows([spec], [Installation("10.0.105")]);
+        var rows = InstallationListRenderer.CreateRowsForRoot([spec], [Installation("10.0.105")]);
 
         var repositoryRow = rows.Single(r => r.Spec is not null);
         repositoryRow.SpecDisplay.Should().Be("10.0.1xx");
@@ -473,7 +475,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         var listed = InstallationLister.GetListData(verify, manifestPath);
         listed.Installations.Should().ContainSingle().Which.Component.Should().Be(InstallComponent.SDK);
         listed.Installations[0].IsValid.Should().Be(verify ? false : null);
-        InstallationListRenderer.CreateRows(listed.InstallSpecs, listed.Installations).Should().ContainSingle()
+        InstallationListRenderer.CreateRowsForRoot(listed.InstallSpecs, listed.Installations).Should().ContainSingle()
             .Which.Installation.Should().NotBeNull();
 
         data.DotnetRoots[0].Installations.Add(new()
