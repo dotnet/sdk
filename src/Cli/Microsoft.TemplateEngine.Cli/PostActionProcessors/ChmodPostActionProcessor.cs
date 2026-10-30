@@ -39,28 +39,14 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 {
                     try
                     {
-                        Process? commandResult = System.Diagnostics.Process.Start(new ProcessStartInfo
+                        // Template arguments may contain shell globs (for example, "*.sh").
+                        ProcessExitStatus status = System.Diagnostics.Process.Run(new ProcessStartInfo("/bin/sh", ["-c", $"chmod {entry.Key} {file}"])
                         {
-                            RedirectStandardError = false,
-                            RedirectStandardOutput = false,
-                            UseShellExecute = false,
-                            CreateNoWindow = false,
+                            InheritedHandles = [],
                             WorkingDirectory = outputBasePath,
-                            FileName = "/bin/sh",
-                            Arguments = $"-c \"chmod {entry.Key} {file}\""
                         });
 
-                        if (commandResult == null)
-                        {
-                            Reporter.Error.WriteLine(LocalizableStrings.UnableToSetPermissions, entry.Key, file);
-                            Reporter.Verbose.WriteLine("Unable to start sub-process.");
-                            allSucceeded = false;
-                            continue;
-                        }
-
-                        commandResult.WaitForExit();
-
-                        if (commandResult.ExitCode != 0)
+                        if (status.ExitCode != 0)
                         {
                             Reporter.Error.WriteLine(LocalizableStrings.UnableToSetPermissions, entry.Key, file);
                             allSucceeded = false;

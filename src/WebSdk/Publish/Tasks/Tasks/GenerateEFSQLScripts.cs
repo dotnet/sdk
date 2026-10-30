@@ -6,6 +6,9 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Sdk.Publish.Tasks.Properties;
+#if NET
+using Microsoft.Win32.SafeHandles;
+#endif
 
 namespace Microsoft.NET.Sdk.Publish.Tasks
 {
@@ -75,16 +78,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             }
         }
 
-        private object _sync = new();
-        private Process? _runningProcess;
-        private int _processExitCode;
-        private StringBuilder _standardOut = new();
-        private StringBuilder _standardError = new();
         private const string AspNetCoreEnvironment = "ASPNETCORE_ENVIRONMENT";
         private bool GenerateSQLScript(string sqlFileFullPath, string dbContextName, bool isLoggingEnabled = true)
         {
-            string? previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment);
-            Environment.SetEnvironmentVariable(AspNetCoreEnvironment, "Development");
             ProcessStartInfo psi = new("dotnet", $@"ef migrations script --no-build --idempotent --configuration {Configuration} --output ""{sqlFileFullPath}"" --context {dbContextName} {EFMigrationsAdditionalArgs}")
             {
                 WorkingDirectory = ProjectDirectory,
@@ -94,27 +90,41 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 UseShellExecute = false
             };
 
-            Process? proc = null;
+            psi.EnvironmentVariables[AspNetCoreEnvironment] = "Development";
+            return ExecuteProcess(psi, TimeSpan.FromMinutes(5), isLoggingEnabled);
+        }
+
+        internal bool ExecuteProcess(ProcessStartInfo psi, TimeSpan timeout, bool isLoggingEnabled)
+        {
+            if (isLoggingEnabled)
+            {
+                Log.LogMessage(MessageImportance.High, string.Format("Executing command: {0} {1}", psi.FileName, psi.Arguments));
+            }
+
+            string? stdOut = null, stdErr = null;
+
+#if NET
+            psi.InheritedHandles ??= [];
 
             try
             {
-                if (isLoggingEnabled)
+                if (!isLoggingEnabled)
                 {
-                    Log.LogMessage(MessageImportance.High, string.Format("Executing command: {0} {1}", psi.FileName, psi.Arguments));
+                    using SafeFileHandle nullHandle = File.OpenNullHandle();
+                    psi.StandardOutputHandle = nullHandle;
+                    psi.StandardErrorHandle = nullHandle;
+
+                    return Process.Run(psi, timeout).ExitCode == 0;
                 }
 
-                proc = new Process
+                ProcessTextOutput output = Process.RunAndCaptureText(psi, timeout);
+                if (output.ExitStatus.ExitCode == 0)
                 {
-                    StartInfo = psi,
-                    EnableRaisingEvents = true
-                };
-                proc.OutputDataReceived += Proc_OutputDataReceived;
-                proc.ErrorDataReceived += Proc_ErrorDataReceived;
-                proc.Exited += Proc_Exited;
-                proc.Start();
-                proc.BeginErrorReadLine();
-                proc.BeginOutputReadLine();
-                _runningProcess = proc;
+                    return true;
+                }
+
+                stdOut = output.StandardOutput;
+                stdErr = output.StandardError;
             }
             catch (Exception e)
             {
@@ -122,71 +132,74 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 {
                     Log.LogError(e.ToString());
                 }
-                proc = null;
             }
+#else
+            using Process process = new() { StartInfo = psi };
+            StringBuilder? outputBuilder = isLoggingEnabled ? new() : null;
+            StringBuilder? errorBuilder = isLoggingEnabled ? new() : null;
+            bool started = false;
 
-            bool isProcessExited = false;
-            if (proc != null)
+            process.OutputDataReceived += (_, e) =>
             {
-                isProcessExited = proc.WaitForExit(300000);
-            }
+                if (e.Data is not null)
+                {
+                    outputBuilder?.AppendLine(e.Data);
+                }
+            };
+            process.ErrorDataReceived += (_, e) =>
+            {
+                if (e.Data is not null)
+                {
+                    errorBuilder?.AppendLine(e.Data);
+                }
+            };
 
-            Environment.SetEnvironmentVariable(AspNetCoreEnvironment, previousAspNetCoreEnvironment);
-            if (!isProcessExited || _processExitCode != 0)
+            try
+            {
+                process.Start();
+                started = true;
+
+                process.BeginErrorReadLine();
+                process.BeginOutputReadLine();
+
+                bool exited = process.WaitForExit((int)timeout.TotalMilliseconds);
+                if (exited && process.ExitCode == 0)
+                {
+                    return true;
+                }
+            }
+            catch (Exception e)
             {
                 if (isLoggingEnabled)
                 {
-                    Log.LogMessage(MessageImportance.High, _standardOut.ToString());
-                    Log.LogError(Resources.EFSCRIPT_GenerationFailed);
+                    Log.LogError(e.ToString());
                 }
-                return false;
             }
-
-            return true;
-        }
-
-        private void Proc_Exited(object? sender, EventArgs e)
-        {
-            if (_runningProcess != null)
+            finally
             {
-                try
+                if (started)
                 {
-                    _processExitCode = _runningProcess.ExitCode;
-                    _runningProcess.Exited -= Proc_Exited;
-                    _runningProcess.ErrorDataReceived -= Proc_ErrorDataReceived;
-                    _runningProcess.OutputDataReceived -= Proc_OutputDataReceived;
-                }
-                catch
-                {
-                }
-                finally
-                {
-                    _runningProcess.Dispose();
-                    _runningProcess = null;
-                }
-            }
-        }
+                    if (!process.HasExited)
+                    {
+                        process.Kill();
+                    }
 
-        private void Proc_ErrorDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            if (e.Data != null)
-            {
-                lock (_sync)
-                {
-                    _standardError.AppendLine(e.Data);
+                    process.WaitForExit(); // The finite wait doesn't join the output callbacks on .NET Framework.
                 }
             }
-        }
 
-        private void Proc_OutputDataReceived(object sender, DataReceivedEventArgs e)
-        {
-            if (e.Data != null)
+            stdOut = outputBuilder?.ToString();
+            stdErr = errorBuilder?.ToString();
+#endif
+
+            if (isLoggingEnabled)
             {
-                lock (_sync)
-                {
-                    _standardOut.AppendLine(e.Data);
-                }
+                Log.LogMessage(MessageImportance.High, stdOut);
+                Log.LogMessage(MessageImportance.High, stdErr);
+                Log.LogError(Resources.EFSCRIPT_GenerationFailed);
             }
+
+            return false;
         }
     }
 }

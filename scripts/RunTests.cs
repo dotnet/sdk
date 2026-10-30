@@ -634,7 +634,7 @@ static ProcessStartInfo CreateProcessStartInfo(
     var startInfo = new ProcessStartInfo(executable)
     {
         WorkingDirectory = workingDirectory,
-        UseShellExecute = false
+        InheritedHandles = []
     };
 
     // ArgumentList delegates platform-specific escaping to ProcessStartInfo. Building one command

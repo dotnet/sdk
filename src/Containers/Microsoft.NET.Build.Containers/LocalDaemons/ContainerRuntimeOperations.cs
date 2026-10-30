@@ -45,7 +45,8 @@ internal sealed class ContainerRuntimeOperations
         ProcessStartInfo loadInfo = new(commandPath)
         {
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
+            InheritedHandles = []
         };
         foreach (string argument in arguments)
         {
@@ -136,19 +137,27 @@ internal sealed class ContainerRuntimeOperations
 
     internal static async Task<bool> TryRunCommandAsync(string command, string arguments, CancellationToken cancellationToken)
     {
+        using SafeFileHandle nullHandle = File.OpenNullHandle();
+        ProcessStartInfo startInfo = new(command, arguments)
+        {
+            StandardOutputHandle = nullHandle,
+            StandardErrorHandle = nullHandle,
+            InheritedHandles = []
+        };
+
+        ProcessExitStatus status;
         try
         {
-            (int exitCode, _) = await RunProcessAsync(command, arguments, cancellationToken);
-            return exitCode == 0;
-        }
-        catch (OperationCanceledException)
-        {
-            throw;
+
+            status = await Process.RunAsync(startInfo, cancellationToken).ConfigureAwait(false);
         }
         catch
         {
             return false;
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return status.ExitCode == 0;
     }
 
     internal string FindFullCommandPath(string command)
@@ -177,7 +186,8 @@ internal sealed class ContainerRuntimeOperations
         ProcessStartInfo startInfo = new(commandPath, arguments)
         {
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
+            InheritedHandles = []
         };
         return await RunProcessAsync(startInfo, cancellationToken).ConfigureAwait(false);
     }
@@ -190,7 +200,8 @@ internal sealed class ContainerRuntimeOperations
         ProcessStartInfo startInfo = new(commandPath)
         {
             RedirectStandardOutput = true,
-            RedirectStandardError = true
+            RedirectStandardError = true,
+            InheritedHandles = []
         };
         foreach (string argument in arguments)
         {

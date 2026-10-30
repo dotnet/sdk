@@ -194,12 +194,14 @@ internal sealed class InternalMicrosoftDetectionContext
         IReadOnlyList<string> arguments,
         CancellationToken cancellationToken)
     {
+        // TODO: Replace this process execution and cleanup code with Process.RunAndCaptureTextAsync
+        // once https://github.com/dotnet/runtime/issues/136466 is implemented.
         using var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
                 FileName = fileName,
-                UseShellExecute = false,
+                InheritedHandles = [],
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
                 RedirectStandardError = true
@@ -211,17 +213,19 @@ internal sealed class InternalMicrosoftDetectionContext
         }
 
         process.Start();
-        var standardOutput = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var standardError = process.StandardError.ReadToEndAsync(cancellationToken);
+        Task<(string StandardOutput, string StandardError)> outputTask = process.ReadAllTextAsync(cancellationToken);
         try
         {
-            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+            ProcessExitStatus status = await process.WaitForExitStatusAsync(cancellationToken).ConfigureAwait(false);
+            (string standardOutput, string standardError) = await outputTask.ConfigureAwait(false);
+            return new(standardOutput, standardError, status.ExitCode, null);
         }
         catch (OperationCanceledException)
         {
             try
             {
                 process.Kill(entireProcessTree: true);
+                await process.WaitForExitStatusAsync().ConfigureAwait(false);
             }
             catch (InvalidOperationException)
             {
@@ -230,16 +234,9 @@ internal sealed class InternalMicrosoftDetectionContext
             {
             }
 
-            ObserveFault(standardOutput);
-            ObserveFault(standardError);
+            ObserveFault(outputTask);
             throw;
         }
-
-        return new(
-            await standardOutput.ConfigureAwait(false),
-            await standardError.ConfigureAwait(false),
-            process.ExitCode,
-            null);
     }
 
     private static void ObserveFault(Task task)

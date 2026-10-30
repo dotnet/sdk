@@ -4,7 +4,9 @@
 #nullable disable
 
 using System.Diagnostics;
+#if NETFRAMEWORK
 using Microsoft.NET.Sdk.Razor.Tool.CommandLineUtils;
+#endif
 
 namespace Microsoft.NET.Sdk.Razor.Tool
 {
@@ -318,9 +320,12 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             // The server should be in the same directory as the client
             var expectedCompilerPath = Path.Combine(clientDir, ServerName);
+            if (!File.Exists(expectedCompilerPath))
+            {
+                return false;
+            }
 
             var expectedPath = FindDotNetExecutable();
-
             var argumentList = new string[]
             {
                 expectedCompilerPath,
@@ -329,89 +334,69 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 "-p",
                 pipeName
             };
-            var processArguments = ArgumentEscaper.EscapeAndConcatenate(argumentList);
 
-            if (!File.Exists(expectedCompilerPath))
+#if NET
+            ProcessStartInfo startInfo = new(expectedPath, argumentList.Where(argument => argument.Length != 0))
             {
+                WorkingDirectory = clientDir,
+                CreateNoWindow = true,
+                InheritedHandles = []
+            };
+
+            try
+            {
+                processId = Process.StartAndForget(startInfo);
+            }
+            catch (Exception ex)
+            {
+                ServerLogger.LogException(ex, "Failed to create server process");
                 return false;
             }
 
-            if (PlatformInformation.IsWindows)
+            ServerLogger.Log("Successfully created process with process id {0}", processId);
+            return true;
+#else
+            // On Full Framework, there isn't a way to use the Process class to create a process without
+            // inheriting handles(stdin/stdout/stderr) from its parent. This might cause the parent process
+            // to block on those handles. So we use P/Invoke. This code was taken from MSBuild task starting code.
+            var startInfo = new STARTUPINFO();
+            startInfo.cb = Marshal.SizeOf(startInfo);
+            startInfo.hStdError = NativeMethods.InvalidIntPtr;
+            startInfo.hStdInput = NativeMethods.InvalidIntPtr;
+            startInfo.hStdOutput = NativeMethods.InvalidIntPtr;
+            startInfo.dwFlags = NativeMethods.STARTF_USESTDHANDLES;
+            var dwCreationFlags = NativeMethods.NORMAL_PRIORITY_CLASS | NativeMethods.CREATE_NO_WINDOW;
+
+            ServerLogger.Log("Attempting to create process '{0}'", expectedPath);
+
+            var processArguments = ArgumentEscaper.EscapeAndConcatenate(argumentList);
+            var builder = new StringBuilder($@"""{expectedPath}"" {processArguments}");
+
+            var success = NativeMethods.CreateProcess(
+                lpApplicationName: null,
+                lpCommandLine: builder,
+                lpProcessAttributes: NativeMethods.NullPtr,
+                lpThreadAttributes: NativeMethods.NullPtr,
+                bInheritHandles: false,
+                dwCreationFlags: dwCreationFlags,
+                lpEnvironment: NativeMethods.NullPtr, // Inherit environment
+                lpCurrentDirectory: clientDir,
+                lpStartupInfo: ref startInfo,
+                lpProcessInformation: out var processInfo);
+
+            if (success)
             {
-                // Currently, there isn't a way to use the Process class to create a process without
-                // inheriting handles(stdin/stdout/stderr) from its parent. This might cause the parent process
-                // to block on those handles. So we use P/Invoke. This code was taken from MSBuild task starting code.
-                // The work to customize this behavior is being tracked by https://github.com/dotnet/corefx/issues/306.
-
-                var startInfo = new STARTUPINFO();
-                startInfo.cb = Marshal.SizeOf(startInfo);
-                startInfo.hStdError = NativeMethods.InvalidIntPtr;
-                startInfo.hStdInput = NativeMethods.InvalidIntPtr;
-                startInfo.hStdOutput = NativeMethods.InvalidIntPtr;
-                startInfo.dwFlags = NativeMethods.STARTF_USESTDHANDLES;
-                var dwCreationFlags = NativeMethods.NORMAL_PRIORITY_CLASS | NativeMethods.CREATE_NO_WINDOW;
-
-                ServerLogger.Log("Attempting to create process '{0}'", expectedPath);
-
-                var builder = new StringBuilder($@"""{expectedPath}"" {processArguments}");
-
-                var success = NativeMethods.CreateProcess(
-                    lpApplicationName: null,
-                    lpCommandLine: builder,
-                    lpProcessAttributes: NativeMethods.NullPtr,
-                    lpThreadAttributes: NativeMethods.NullPtr,
-                    bInheritHandles: false,
-                    dwCreationFlags: dwCreationFlags,
-                    lpEnvironment: NativeMethods.NullPtr, // Inherit environment
-                    lpCurrentDirectory: clientDir,
-                    lpStartupInfo: ref startInfo,
-                    lpProcessInformation: out var processInfo);
-
-                if (success)
-                {
-                    ServerLogger.Log("Successfully created process with process id {0}", processInfo.dwProcessId);
-                    NativeMethods.CloseHandle(processInfo.hProcess);
-                    NativeMethods.CloseHandle(processInfo.hThread);
-                    processId = processInfo.dwProcessId;
-                }
-                else
-                {
-                    ServerLogger.Log("Failed to create process. GetLastError={0}", Marshal.GetLastWin32Error());
-                }
-                return success;
+                ServerLogger.Log("Successfully created process with process id {0}", processInfo.dwProcessId);
+                NativeMethods.CloseHandle(processInfo.hProcess);
+                NativeMethods.CloseHandle(processInfo.hThread);
+                processId = processInfo.dwProcessId;
             }
             else
             {
-                try
-                {
-                    var startInfo = new ProcessStartInfo()
-                    {
-                        FileName = expectedPath,
-                        Arguments = processArguments,
-                        UseShellExecute = false,
-                        WorkingDirectory = clientDir,
-#if NETFRAMEWORK
-                        RedirectStandardInput = true,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-#endif
-                        CreateNoWindow = true
-                    };
-
-#if NETFRAMEWORK
-                    using Process process = Process.Start(startInfo);
-                    processId = process.Id;
-#else
-                    processId = Process.StartAndForget(startInfo);
-#endif
-
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
+                ServerLogger.Log("Failed to create process. GetLastError={0}", Marshal.GetLastWin32Error());
             }
+            return success;
+#endif
         }
     }
 

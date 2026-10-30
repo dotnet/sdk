@@ -138,9 +138,12 @@ internal sealed class DockerContainerRuntime(ContainerRuntimeOperations operatio
     internal static JsonDocument GetDockerConfig()
     {
         string dockerPath = ContainerRuntimeOperations.FindFullPathFromPath(ContainerRuntime.DockerCommand);
-        Process process = new()
+        using Process process = new()
         {
-            StartInfo = new ProcessStartInfo(dockerPath, "info --format=\"{{json .}}\"")
+            StartInfo = new ProcessStartInfo(dockerPath, ["info", "--format={{json .}}"])
+            {
+                InheritedHandles = []
+            }
         };
 
         try

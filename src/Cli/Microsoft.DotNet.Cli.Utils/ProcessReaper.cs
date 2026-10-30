@@ -184,18 +184,12 @@ internal class ProcessReaper : IDisposable
 
                 try
                 {
-                    // If the target is still running, forward SIGTERM so it can shut
-                    // down as well. Signal returns false if the process already exited,
-                    // and throws Win32Exception if the signal could not be delivered.
-                    if (!_process.WaitForExit(0))
-                    {
-                        _process.SafeHandle.Signal(PosixSignal.SIGTERM);
-                    }
+                    // Signal returns false if the process already exited, so a separate
+                    // exit check is unnecessary and would still race with process exit.
+                    _process.SafeHandle.Signal(PosixSignal.SIGTERM);
 
                     // If SIGTERM was ignored by the target, then we'll still wait.
-                    _process.WaitForExit();
-
-                    Environment.ExitCode = _process.ExitCode;
+                    Environment.ExitCode = _process.WaitForExitStatus().ExitCode;
                 }
                 catch (InvalidOperationException)
                 {

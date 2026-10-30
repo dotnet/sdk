@@ -11,7 +11,19 @@ internal class FilePermissionSetter : IFilePermissionSetter
 {
     public void SetUserExecutionPermission(string path)
     {
-        RunCommand(path, "u+x");
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        try
+        {
+            File.SetUnixFileMode(path, File.GetUnixFileMode(path) | UnixFileMode.UserExecute);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            throw new FilePermissionSettingException(ex.Message, ex);
+        }
     }
 
     /// <summary>

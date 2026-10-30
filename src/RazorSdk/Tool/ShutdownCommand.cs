@@ -56,8 +56,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     {
                         try
                         {
-                            var process = Process.GetProcessById(response.ServerProcessId);
-                            process.WaitForExit();
+                            using Process process = Process.GetProcessById(response.ServerProcessId);
+                            await process.WaitForExitStatusAsync(Cancelled).ConfigureAwait(false);
                         }
                         catch (Exception ex)
                         {
