@@ -1964,7 +1964,7 @@ Výchozí hodnota je false. Pokud však cílíte na .NET 7 nebo nižší a je za
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
-        <target state="needs-review-translation">Spustit testy bez zobrazení nápisu Microsoft Testplatform</target>
+        <target state="new">Run test(s), without displaying the Microsoft Test Platform banner</target>
         <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
