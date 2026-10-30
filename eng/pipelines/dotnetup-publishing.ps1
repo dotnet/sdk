@@ -1,12 +1,21 @@
 # Licensed to the .NET Foundation under one or more agreements.
 # The .NET Foundation licenses this file to you under the MIT license.
 
+function Write-DotnetupDebug {
+    param([string]$Message)
+
+    if ($env:SYSTEM_DEBUG -eq 'true') {
+        Write-Host "##[debug]$Message"
+    }
+}
+
 function Get-DotnetupRelease {
     param(
         [Parameter(Mandatory)]$SourceBuild,
         [Parameter(Mandatory)][xml]$Manifest
     )
 
+    Write-DotnetupDebug "Checking build $($SourceBuild.id): branch=$($SourceBuild.sourceBranch), status=$($SourceBuild.status), result=$($SourceBuild.result), runTestBuild=$($SourceBuild.templateParameters.runTestBuild), PME Signed=$($SourceBuild.tags -contains 'PME Signed')."
     if ($SourceBuild.repository.name -ne 'dotnet-sdk' -or
         $SourceBuild.sourceBranch -ne 'refs/heads/release/dnup' -or
         $SourceBuild.sourceVersion -notmatch '^[0-9a-f]{40}$' -or
@@ -16,6 +25,7 @@ function Get-DotnetupRelease {
         $SourceBuild.tags -notcontains 'PME Signed') {
         throw 'The source run must be a successful, non-test, PME-signed run of official pipeline 1544 in dnceng/internal on release/dnup.'
     }
+    Write-DotnetupDebug 'Build eligibility checks passed.'
 
     $build = $Manifest.DocumentElement
     if ($build.LocalName -cne 'Build') {
@@ -52,6 +62,7 @@ function Get-DotnetupRelease {
             throw "Expected exactly one manifest asset named 'dotnetup/$version/$name'."
         }
     }
+    Write-DotnetupDebug "Manifest validated: dotnetup $version, $($expectedNames.Count) files."
 
     [ordered]@{
         azureDevOpsBuildId = $SourceBuild.id
@@ -74,6 +85,7 @@ function Copy-DotnetupReleaseAssets {
     if (Test-Path -LiteralPath $DestinationDirectory) {
         throw "The staging directory must not already exist: '$DestinationDirectory'."
     }
+    Write-DotnetupDebug "Staging $($Release.files.Count) files from '$SourceDirectory' to '$DestinationDirectory'."
 
     # BlobArtifacts is flat even though manifest entries carry the versioned publishing path.
     # Validate the complete set before staging anything for ESRP.
@@ -89,6 +101,7 @@ function Copy-DotnetupReleaseAssets {
         $path = Join-Path $SourceDirectory $file.name
         $file.sha512 = (Get-FileHash -LiteralPath $path -Algorithm SHA512).Hash.ToLowerInvariant()
         Copy-Item -LiteralPath $path -Destination (Join-Path $DestinationDirectory $file.name) -ErrorAction Stop
+        Write-DotnetupDebug "Staged $($file.name): $((Get-Item -LiteralPath $path).Length) bytes, SHA-512=$($file.sha512)."
     }
 }
 
@@ -99,6 +112,7 @@ function Get-DotnetupCdnRelease {
         [Parameter(Mandatory)][string]$DownloadDirectory
     )
 
+    Write-DotnetupDebug "Checking ESRP result: status=$($Details.status), expected files=$($Release.files.Count)."
     if ($Details.status -ne 'pass') {
         throw "ESRP publishing did not pass. Status: '$($Details.status)'."
     }
@@ -128,10 +142,12 @@ function Get-DotnetupCdnRelease {
     New-Item -ItemType Directory -Path $DownloadDirectory -ErrorAction Stop | Out-Null
     foreach ($file in $Release.files) {
         $path = Join-Path $DownloadDirectory $file.name
+        Write-DotnetupDebug "Downloading $($file.name) from '$($urls[$file.name])'."
         Invoke-WebRequest -Uri $urls[$file.name] -OutFile $path -MaximumRetryCount 3 -RetryIntervalSec 5 -TimeoutSec 300 -ErrorAction Stop
         if ((Get-FileHash -LiteralPath $path -Algorithm SHA512).Hash -ne $file.sha512) {
             throw "The CDN download does not match the signed build asset '$($file.name)'."
         }
+        Write-DotnetupDebug "Verified CDN file $($file.name): SHA-512=$($file.sha512)."
     }
 
     [ordered]@{

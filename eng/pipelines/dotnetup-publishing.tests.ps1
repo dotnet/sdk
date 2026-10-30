@@ -8,6 +8,7 @@ $root = Join-Path ([IO.Path]::GetTempPath()) "dotnetup-publishing-tests-$([Guid]
 $source = Join-Path $root 'source'
 $script:corruptDownload = $false
 $script:assertions = 0
+$originalSystemDebug = $env:SYSTEM_DEBUG
 
 function Assert-Fails {
     param([scriptblock]$Action, [string]$Message)
@@ -28,6 +29,22 @@ function Invoke-WebRequest {
 }
 
 try {
+    foreach ($debugValue in @('', 'false')) {
+        $env:SYSTEM_DEBUG = $debugValue
+        if (@(Write-DotnetupDebug 'hidden' 6>&1).Count -ne 0) {
+            throw 'Debug logging must be silent unless System.Debug is true.'
+        }
+        $script:assertions++
+    }
+    $env:SYSTEM_DEBUG = 'TrUe'
+    $debugOutput = @(Write-DotnetupDebug 'enabled' 6>&1)
+    if ($debugOutput.Count -ne 1 -or $debugOutput[0] -isnot [System.Management.Automation.InformationRecord] -or
+        [string]$debugOutput[0] -cne '##[debug]enabled') {
+        throw 'Debug logging must use the Azure debug marker on the information stream.'
+    }
+    $script:assertions++
+    $env:SYSTEM_DEBUG = 'false'
+
     New-Item -ItemType Directory -Path $source -Force | Out-Null
     $names = @(
         'dotnetup-win-x64.exe', 'dotnetup-win-arm64.exe',
@@ -68,6 +85,18 @@ try {
         throw 'Incorrect release inventory.'
     }
     $script:assertions++
+    $env:SYSTEM_DEBUG = 'true'
+    $debugOutput = @(Get-DotnetupRelease -SourceBuild $build -Manifest $manifest 6>&1)
+    $messages = @($debugOutput | Where-Object { $_ -is [System.Management.Automation.InformationRecord] })
+    if ($messages.Count -ne 3 -or
+        [string]$messages[0] -notlike '*runTestBuild=False, PME Signed=True*' -or
+        [string]$messages[1] -notlike '*eligibility checks passed*' -or
+        [string]$messages[2] -notlike '*0.3.0-preview.1, 20 files*' -or
+        @($debugOutput | Where-Object { $_ -isnot [System.Management.Automation.InformationRecord] }).Count -ne 1) {
+        throw 'Eligibility and manifest diagnostics must not change the release output.'
+    }
+    $script:assertions++
+    $env:SYSTEM_DEBUG = 'false'
     $release = $release | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashtable
     $build.templateParameters.runTestBuild = $false
     $null = Get-DotnetupRelease -SourceBuild $build -Manifest $manifest
@@ -124,6 +153,16 @@ try {
     $script:assertions++
     Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } 'must not already exist'
 
+    $env:SYSTEM_DEBUG = 'true'
+    $debugOutput = @(Copy-DotnetupReleaseAssets $release $source (Join-Path $root 'debug-staging') 6>&1)
+    if ($debugOutput.Count -ne 21 -or
+        @($debugOutput | Where-Object { $_ -isnot [System.Management.Automation.InformationRecord] }).Count -ne 0 -or
+        @($debugOutput | Where-Object { [string]$_ -match 'Staged .+: \d+ bytes, SHA-512=[0-9a-f]{128}\.' }).Count -ne 20) {
+        throw 'Staging diagnostics must include paths and every file size and hash without success-stream output.'
+    }
+    $script:assertions++
+    $env:SYSTEM_DEBUG = 'false'
+
     $details = @{
         status = 'pass'
         files = @($release.files | ForEach-Object {
@@ -157,7 +196,16 @@ try {
     $release | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $releasePath
     $release = Get-Content -LiteralPath $releasePath -Raw | ConvertFrom-Json -AsHashtable
 
-    $cdnRelease = Get-DotnetupCdnRelease $release $details (Join-Path $root 'verified-download')
+    $env:SYSTEM_DEBUG = 'true'
+    $debugOutput = @(Get-DotnetupCdnRelease $release $details (Join-Path $root 'verified-download') 6>&1)
+    $cdnRelease = @($debugOutput | Where-Object { $_ -isnot [System.Management.Automation.InformationRecord] })
+    if ($cdnRelease.Count -ne 1 -or
+        @($debugOutput | Where-Object { ([string]$_).StartsWith('##[debug]Downloading ') }).Count -ne 20 -or
+        @($debugOutput | Where-Object { ([string]$_).StartsWith('##[debug]Verified CDN file ') }).Count -ne 20) {
+        throw 'CDN diagnostics must report every download and verified hash without changing the release output.'
+    }
+    $script:assertions++
+    $cdnRelease = $cdnRelease[0]
     if ($cdnRelease.files.Count -ne 20 -or $cdnRelease.azureDevOpsBuildId -ne 123 -or
         @($cdnRelease.files | Where-Object { -not $_.downloadUrl -or -not $_.sha512 }).Count -ne 0) {
         throw 'Incorrect CDN release output.'
@@ -166,5 +214,6 @@ try {
     Write-Host "Passed $script:assertions dotnetup publishing checks."
 }
 finally {
+    $env:SYSTEM_DEBUG = $originalSystemDebug
     if (Test-Path -LiteralPath $root) { Remove-Item -LiteralPath $root -Recurse -Force }
 }
