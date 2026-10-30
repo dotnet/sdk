@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -14,9 +15,23 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 public static class GlobalJsonModifier
 {
     /// <summary>
+    /// Reads UTF-8 global.json files, allowing comments but not trailing commas, like the muxer.
+    /// SDK version and roll-forward validation belongs to the channel resolver.
+    /// </summary>
+    internal static GlobalJsonContents ReadGlobalJson(string globalJsonPath)
+    {
+        using var stream = File.OpenRead(globalJsonPath);
+        return JsonSerializer.Deserialize(stream, GlobalJsonContentsJsonContext.Default.GlobalJsonContents)
+            ?? throw new JsonException(Strings.GlobalJsonInvalidContents);
+    }
+
+    /// <summary>
     /// Searches for a global.json file starting from <paramref name="initialDirectory"/>
     /// and walking up the directory tree. Returns the parsed contents and path if found.
     /// </summary>
+    /// <exception cref="DotnetInstallException">
+    /// The file cannot be read or parsed. The error code is <see cref="DotnetInstallErrorCode.ContextResolutionFailed"/>.
+    /// </exception>
     public static GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
     {
         string? directory = initialDirectory;
@@ -25,10 +40,16 @@ public static class GlobalJsonModifier
             string globalJsonPath = Path.Combine(directory, "global.json");
             if (File.Exists(globalJsonPath))
             {
-                using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
-                var contents = JsonSerializer.Deserialize(
-                    stream,
-                    GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+                GlobalJsonContents contents;
+                try
+                {
+                    contents = ReadGlobalJson(globalJsonPath);
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or JsonException)
+                {
+                    throw new DotnetInstallException(DotnetInstallErrorCode.ContextResolutionFailed,
+                        string.Format(CultureInfo.InvariantCulture, Strings.InstallSpecRequirementError, globalJsonPath, ex.Message), ex);
+                }
                 return new GlobalJsonInfo
                 {
                     GlobalJsonPath = globalJsonPath,
@@ -51,7 +72,9 @@ public static class GlobalJsonModifier
     /// <summary>
     /// Updates the SDK version in a global.json file. Does nothing if
     /// <paramref name="sdkVersion"/> is null or the file does not exist.
+    /// The file must be UTF-8 JSON with optional comments and no trailing commas.
     /// </summary>
+    /// <exception cref="JsonException">The file cannot be parsed; it is left unchanged.</exception>
     public static void UpdateGlobalJson(string globalJsonPath, string? sdkVersion = null)
     {
         if (sdkVersion is null)
@@ -64,6 +87,7 @@ public static class GlobalJsonModifier
             return;
         }
 
+        ReadGlobalJson(globalJsonPath);
         var (fileText, encoding) = GlobalJsonFileHelper.ReadFileWithEncodingDetection(globalJsonPath);
         var updatedText = ReplaceGlobalJsonSdkVersion(fileText, sdkVersion);
         if (updatedText is not null)
@@ -78,19 +102,10 @@ public static class GlobalJsonModifier
     /// recorded in the file (or when the current version cannot be parsed).
     /// </summary>
     /// <returns><see langword="true"/> if the file was updated; otherwise <see langword="false"/>.</returns>
+    /// <exception cref="JsonException">The file contains malformed JSON; it is left unchanged.</exception>
     public static bool UpdateGlobalJsonIfNewer(string globalJsonPath, ReleaseVersion latestVersion)
     {
-        string? currentVersionString = null;
-        try
-        {
-            using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
-            var contents = JsonSerializer.Deserialize(stream, GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
-            currentVersionString = contents?.Sdk?.Version;
-        }
-        catch
-        {
-            // If we can't read the current version, proceed with the update.
-        }
+        string? currentVersionString = ReadGlobalJson(globalJsonPath).Sdk?.Version;
 
         if (currentVersionString is not null
             && ReleaseVersion.TryParse(currentVersionString, out var currentVersion)
@@ -106,17 +121,18 @@ public static class GlobalJsonModifier
     /// <summary>
     /// Replaces the "version" value inside the "sdk" section of a global.json string,
     /// preserving all existing formatting. Uses <see cref="Utf8JsonReader"/> to find
-    /// exact token positions.
+    /// exact token positions and validate the entire document before returning a replacement.
     /// </summary>
     public static string? ReplaceGlobalJsonSdkVersion(string jsonText, string newVersion)
     {
         var bytes = System.Text.Encoding.UTF8.GetBytes(jsonText);
-        var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+        var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { CommentHandling = JsonCommentHandling.Skip });
 
         int depth = 0;
         bool inSdkObject = false;
         bool foundVersionProperty = false;
         bool nextValueIsSdk = false;
+        string? updatedText = null;
 
         while (reader.Read())
         {
@@ -143,7 +159,8 @@ public static class GlobalJsonModifier
                     nextValueIsSdk = false;
                     if (foundVersionProperty)
                     {
-                        return SpliceUtf8Token(bytes, (int)reader.TokenStartIndex, (int)reader.BytesConsumed, newVersion);
+                        updatedText ??= SpliceUtf8Token(bytes, (int)reader.TokenStartIndex, (int)reader.BytesConsumed, newVersion);
+                        foundVersionProperty = false;
                     }
                     break;
 
@@ -154,7 +171,7 @@ public static class GlobalJsonModifier
             }
         }
 
-        return null;
+        return updatedText;
     }
 
     private static string SpliceUtf8Token(byte[] bytes, int tokenStart, int bytesConsumed, string newVersion)

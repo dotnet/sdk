@@ -381,6 +381,31 @@ Or open a new terminal.</target>
         <target state="new">Removing unused installations...</target>
         <note />
       </trans-unit>
+      <trans-unit id="GarbageCollectionSkippedUnreadableRequirement">
+        <source>Warning: Skipping garbage collection for {0} because a repository requirement could not be read and has no saved requirement.</source>
+        <target state="new">Warning: Skipping garbage collection for {0} because a repository requirement could not be read and has no saved requirement.</target>
+        <note>0: dotnet installation root.</note>
+      </trans-unit>
+      <trans-unit id="GlobalJsonInvalidContents">
+        <source>Expected a JSON object.</source>
+        <target state="new">Expected a JSON object.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonInvalidRollForward">
+        <source>Invalid rollForward policy: '{0}'.</source>
+        <target state="new">Invalid rollForward policy: '{0}'.</target>
+        <note>{Locked="rollForward"}</note>
+      </trans-unit>
+      <trans-unit id="GlobalJsonInvalidSdkVersion">
+        <source>Invalid SDK version: '{0}'.</source>
+        <target state="new">Invalid SDK version: '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="GlobalJsonMissingPath">
+        <source>The registration does not contain a global.json path.</source>
+        <target state="new">The registration does not contain a global.json path.</target>
+        <note>{Locked="global.json"}</note>
+      </trans-unit>
       <trans-unit id="HelpConfigCommandsTitle">
         <source>Configuration Commands:</source>
         <target state="new">Configuration Commands:</target>
@@ -466,6 +491,11 @@ Or open a new terminal.</target>
         <target state="new">Installation was cancelled before {0} {1} was installed.</target>
         <note>{0} is the component display name, such as .NET SDK. {1} is the component version.</note>
       </trans-unit>
+      <trans-unit id="InstallSpecRequirementError">
+        <source>Warning: Cannot read {0}: {1}</source>
+        <target state="new">Warning: Cannot read {0}: {1}</target>
+        <note>0: global.json path, 1: error details.</note>
+      </trans-unit>
       <trans-unit id="InstallSpecSource">
         <source>(source: {0})</source>
         <target state="new">(source: {0})</target>
@@ -515,6 +545,16 @@ Or open a new terminal.</target>
         <source>{0} (invalid)</source>
         <target state="new">{0} (invalid)</target>
         <note>0: installed version.</note>
+      </trans-unit>
+      <trans-unit id="ListLastKnownRequirement">
+        <source>{0} (last known; minimum: {1}, allowPrerelease: {2})</source>
+        <target state="new">{0} (last known; minimum: {1}, allowPrerelease: {2})</target>
+        <note>0: saved channel, 1: minimum SDK version, 2: prerelease eligibility. {Locked="allowPrerelease"}</note>
+      </trans-unit>
+      <trans-unit id="ListMigrationSource">
+        <source>Migration</source>
+        <target state="new">Migration</target>
+        <note />
       </trans-unit>
       <trans-unit id="ListNoInstallations">
         <source>(none)</source>
@@ -615,6 +655,11 @@ Or open a new terminal.</target>
         <source>Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</source>
         <target state="new">Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="RepositoryUsingLastKnownRequirement">
+        <source>Warning: Using the last known SDK requirement from {0}.</source>
+        <target state="new">Warning: Using the last known SDK requirement from {0}.</target>
+        <note>0: global.json path.</note>
       </trans-unit>
       <trans-unit id="RootCommandDescription">
         <source>.NET toolchain manager for user level installs.</source>

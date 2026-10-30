@@ -24,21 +24,24 @@ internal static class InstallationListRenderer
         var rows = new List<InstallationListRow>();
         foreach (var spec in specs)
         {
-            var channel = new UpdateChannel(spec.VersionOrChannel);
-            var selected = installations
-                .Where(i => i.Component == spec.Component
-                    && versions[i.Version] is { } version && channel.Matches(version))
-                .OrderByDescending(i => versions[i.Version])
-                .FirstOrDefault();
-            rows.Add(new InstallationListRow
+            var resolution = InstallSpecResolver.Evaluate(new InstallSpec
             {
                 Component = spec.Component,
-                Spec = spec,
-                Installation = selected,
-                SpecDisplay = spec.VersionOrChannel,
-                SourceDisplay = spec.Source == InstallSource.GlobalJson
-                    ? spec.GlobalJsonPath ?? Strings.ListUnavailable : Strings.ListCommandLineSource
+                VersionOrChannel = spec.VersionOrChannel,
+                InstallSource = spec.Source,
+                GlobalJsonPath = spec.GlobalJsonPath,
+                MinimumVersion = spec.MinimumVersion,
+                AllowPrerelease = spec.AllowPrerelease
             });
+            var selected = resolution.Spec is { } requirement
+                ? InstallSpecResolver.SelectInstallation(spec.Component, requirement, installations,
+                    i => i.Component, i => versions[i.Version])
+                : null;
+            var row = CreateSpecRow(spec, resolution, selected);
+            if (row is not null)
+            {
+                rows.Add(row);
+            }
         }
 
         foreach (var installation in installations.Where(i => !rows.Any(r => r.Installation == i)))
@@ -53,6 +56,55 @@ internal static class InstallationListRenderer
             .ThenBy(r => r.SpecDisplay, StringComparer.Ordinal)
             .ThenBy(r => r.SourceDisplay, StringComparer.Ordinal)
             .ToList();
+    }
+
+    private static InstallationListRow? CreateSpecRow(
+        InstallSpecInfo spec, InstallSpecResolution resolution, InstallationInfo? selected)
+    {
+        if (!resolution.IsActive)
+        {
+            return null;
+        }
+
+        var source = spec.Source switch
+        {
+            InstallSource.Explicit => Strings.ListCommandLineSource,
+            InstallSource.Migration => Strings.ListMigrationSource,
+            InstallSource.GlobalJson => spec.GlobalJsonPath ?? Strings.ListUnavailable,
+            _ => spec.Source.ToString()
+        };
+        var display = resolution.GlobalJsonSdk is { } requirement
+            ? FormatRequirement(requirement) : spec.VersionOrChannel;
+        if (resolution.UsesFallbackRequirement)
+        {
+            var saved = resolution.Spec!;
+            display = string.Format(CultureInfo.InvariantCulture, Strings.ListLastKnownRequirement,
+                saved.Name, saved.MinimumVersion, saved.AllowPrerelease!.Value.ToString().ToLowerInvariant());
+        }
+        return new InstallationListRow
+        {
+            Component = spec.Component,
+            Spec = spec,
+            Installation = selected,
+            SpecDisplay = resolution.Error is null || resolution.UsesFallbackRequirement ? display : Strings.ListUnavailable,
+            SourceDisplay = source,
+            Error = resolution.Error
+        };
+    }
+
+    private static string FormatRequirement(GlobalJsonContents.SdkSection requirement)
+    {
+        var policies = new List<string>();
+        if (requirement.RollForward is not null)
+        {
+            policies.Add($"rollForward: {requirement.RollForward}");
+        }
+        if (requirement.AllowPrerelease is bool allowPrerelease)
+        {
+            policies.Add($"allowPrerelease: {allowPrerelease.ToString().ToLowerInvariant()}");
+        }
+        return policies.Count == 0 ? requirement.Version!
+            : $"{requirement.Version} ({string.Join(", ", policies)})";
     }
 
     public static void Write(TextWriter writer, ListData listData, int? width = null)
@@ -121,7 +173,9 @@ internal static class InstallationListRenderer
         table.AddColumn(new TableColumn(new Text(Strings.ListSourceColumn)));
         foreach (var row in rows)
         {
-            var version = row.Installation?.Version ?? (row.Error is null ? Strings.ListNotInstalled : Strings.ListUnknown);
+            var version = row.Installation?.Version ?? (row.Error is null
+                || row.Spec is { MinimumVersion: not null, AllowPrerelease: not null }
+                ? Strings.ListNotInstalled : Strings.ListUnknown);
             if (row.Installation?.IsValid == false)
             {
                 version = string.Format(CultureInfo.InvariantCulture, Strings.ListInvalidInstallation, version);

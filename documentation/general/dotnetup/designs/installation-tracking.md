@@ -25,6 +25,9 @@ We will store the manifest in json format.  At the top level it should have a sc
 - Version, channel, or version range
 - Source: explicit install command, global.json, or previous (non-dotnetup) install
 - Global.json path
+- Optional `minimumVersion` and `allowPrerelease` constraints for repository specs.
+  Together with `versionOrChannel`, these store the last known complete requirement.
+  Both constraints are absent for standalone specs and older channel-only registrations.
 
 ### Installation
 - Component
@@ -122,6 +125,7 @@ We could represent the dotnet roots in the manifest as a node which has properti
 
 - Go through all install specs in the manifest.
   - For install specs that came from a global.json file, update the versions in them if the global.json file has changed.  Delete those specs if the global.json file has been deleted (or no longer specifies a version).
+  - Save the complete requirement after a successful read. If the file is unreadable or invalid, warn and use the saved requirement. If none was saved, skip garbage collection for this dotnet root.
   - For each install spec, find the latest installation record that matches.  Mark that installation record to keep for this garbage collection.
 - Delete all installation records from the manifest which weren't marked.
 - Iterate through all components installed in the dotnet root.  Remove any which are no longer listed under an installation record in the manifest.

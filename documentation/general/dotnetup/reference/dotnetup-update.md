@@ -26,6 +26,14 @@ specifications. It then removes unreferenced files.
 The command continues after an individual update failure. It returns a
 failure after it processes the remaining specifications.
 
+If a tracked `global.json` cannot be read or has invalid SDK settings, the command
+warns and updates using its last known requirement, including the minimum SDK
+version and prerelease eligibility. This fallback does not itself cause a failure
+and never rewrites that file, even with `--update-global-json`. If no complete
+requirement was saved, that repository update fails and garbage collection is
+skipped for its installation root. See
+[repository requirements](../concepts/repositories.md#remove-a-repository-requirement).
+
 This command does not update the dotnetup executable itself. Use
 [`dotnetup self update`](dotnetup-self-update.md) for that, optionally with
 `--no-progress` to disable progress display.
