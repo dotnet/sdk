@@ -100,6 +100,42 @@ public class TestApplicationHandlerTests : IDisposable
         rendered.Should().Contain("stderr-line");
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void OnTestProcessExited_ReportsIncompleteLiveResultsWithoutAddingRecoveredCounts(bool completeSession)
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(
+            isHelp: false, isDiscovery: false, showAssembly: true);
+        handler.OnHandshakeReceived(BuildHandshake(HandshakeMessageExecutionModes.Run), gotSupportedVersion: true)
+            .Should().BeTrue();
+        handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionStart, "session", "exec-1"));
+        handler.OnTestResultsReceived(new TestResultMessages(
+            "exec-1", "inst-1",
+            [new SuccessfulTestResultMessage("test", "Test", TestStates.Passed, null, null, null, null, "session")],
+            []));
+        if (completeSession)
+        {
+            handler.OnSessionEventReceived(new TestSessionEvent(SessionEventTypes.TestSessionEnd, "session", "exec-1"));
+        }
+
+        handler.OnTestProcessExited(exitCode: 7, outputData: "Recovered 388 test results from TRX.", errorData: string.Empty);
+
+        reporter.TotalTests.Should().Be(1, "recovered artifact counts must not be added to live IPC results");
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: 7);
+        string rendered = console.GetOutput();
+        rendered.Should().Contain("Test run summary: Failed!").And.Contain("total: 1");
+        rendered.Should().Contain("Recovered 388 test results from TRX.");
+        if (completeSession)
+        {
+            rendered.Should().NotContain("Live test results are incomplete");
+        }
+        else
+        {
+            rendered.Should().Contain("Live test results are incomplete").And.Contain("recovered");
+        }
+    }
+
     /// <summary>
     /// Backward-compat regression test. Older Microsoft.Testing.Platform versions don't include the
     /// optional <see cref="HandshakeMessagePropertyNames.ExecutionMode"/> property at all (added in

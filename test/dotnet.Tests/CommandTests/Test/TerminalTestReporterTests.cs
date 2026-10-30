@@ -16,6 +16,43 @@ namespace dotnet.Tests.CommandTests.Test;
 public class TerminalTestReporterTests
 {
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void CompactSummary_PutsFailuresBeforeArtifactsWithoutRepeatingCompletedSuccesses(bool showCompletion)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = showCompletion,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 2, false, false, false);
+        reporter.AssemblyRunStarted("Successful.dll", "net9.0", "x64", "success", "instance");
+        ReportTest(reporter, "Successful.dll", "success", "instance", "passed", TestOutcome.Passed);
+        reporter.AssemblyRunCompleted("success", 0, null, null);
+        reporter.AssemblyRunStarted("Crashed.dll", "net9.0", "x64", "crash", "instance");
+        reporter.AssemblyRunCompleted("crash", 7, "host crash context", null);
+        reporter.ArtifactAdded(false, "Successful.dll", "net9.0", "x64", "success", null, "original.trx");
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, 7);
+
+        string output = console.GetOutput();
+        string summary = output[output.IndexOf("Test run summary:", StringComparison.Ordinal)..];
+        summary.IndexOf("failed: 0", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
+        summary.IndexOf("Errored assemblies:", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
+        summary.Should().Contain("Crashed.dll").And.Contain("host crash context");
+        if (showCompletion)
+        {
+            summary.Should().NotContain("Successful.dll");
+        }
+        else
+        {
+            summary.Should().Contain("Successful.dll");
+        }
+    }
+
+    [TestMethod]
     public void AnsiTerminal_StopUpdate_WritesStringBuilder()
     {
         var console = new Mock<IConsole>(MockBehavior.Strict);

@@ -189,6 +189,48 @@ public sealed class TestApplicationLaunchTests
         startInfo.Environment.ContainsKey(TestOptions.AffectedTestsModeEnvironmentVariable).Should().BeFalse();
     }
 
+    [TestMethod]
+    public void CreateProcessStartInfo_ArtifactWorker_PreservesLaunchProfileDiagnosticsOnly()
+    {
+        var profile = new ProjectLaunchProfile
+        {
+            CommandLineArgs = "--diagnostic --diagnostic-verbosity debug --filter NotForTheWorker",
+        };
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text, IsArtifactPostProcessing: true),
+            launchProfile: profile);
+
+        string arguments = application.CreateProcessStartInfo().Arguments;
+
+        arguments.Should().Contain("--diagnostic --diagnostic-verbosity debug")
+            .And.NotContain("--filter")
+            .And.NotContain("NotForTheWorker");
+    }
+
+    [TestMethod]
+    public void CreateProcessStartInfo_ArtifactWorker_PreservesResponseFileDiagnosticsOnly()
+    {
+        string responseFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N} reporting.rsp");
+        try
+        {
+            File.WriteAllText(responseFile, "--diagnostic --diagnostic-file-prefix \"worker logs\" --filter NotForTheWorker");
+            using TestApplication application = CreateApplication(
+                new TestOptions(false, false, TestListFormat.Text, IsArtifactPostProcessing: true),
+                forwardedArguments: ["@" + responseFile]);
+
+            string arguments = application.CreateProcessStartInfo().Arguments;
+
+            arguments.Should().Contain("--diagnostic --diagnostic-file-prefix \"worker logs\"")
+                .And.NotContain("--filter")
+                .And.NotContain("NotForTheWorker")
+                .And.NotContain(responseFile);
+        }
+        finally
+        {
+            File.Delete(responseFile);
+        }
+    }
+
     private static TestApplication CreateApplication(
         TestOptions testOptions,
         IEnumerable<string>? forwardedArguments = null,
@@ -231,6 +273,9 @@ public sealed class TestApplicationLaunchTests
             testOptions,
             TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, Directory.GetCurrentDirectory()),
             reporter,
-            _ => { });
+            _ => { },
+            artifactPostProcessingInvocation: testOptions.IsArtifactPostProcessing
+                ? new ArtifactPostProcessingInvocation("manifest.json")
+                : null);
     }
 }

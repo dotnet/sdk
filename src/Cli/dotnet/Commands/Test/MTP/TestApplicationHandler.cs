@@ -681,7 +681,9 @@ internal sealed class TestApplicationHandler
 
         if (_receivedTestHostHandshake && _handshakeInfo.HasValue)
         {
-            _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
+            _output.AssemblyRunCompleted(
+                _handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData,
+                hasIncompleteTestResults: HasMismatchingTestSessionEventCount());
         }
         else if (exitCode != ExitCode.Success ||
             _handshakeRejected ||

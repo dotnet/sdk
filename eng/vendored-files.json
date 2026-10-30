@@ -36,21 +36,21 @@
     {
       "id": "dotnet-test-terminal-reporter",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs",
-      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so when testfx adds a partial it must be appended here by hand -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. Reconciled through 3c6614c5: retry/flaky and slowest-test summaries, per-outcome test-result visibility, skipped-count coloring, descriptive exit-code summaries, neutral no-selection statuses, and neutral successful zero-test summaries are ported. The SDK's final aggregate exit code remains authoritative for session/handshake/policy failures and ignored exit codes, rather than upstream's in-process HasTestSessionFailure callback. INTENTIONALLY NOT PORTED: (1) the coverage summary (TerminalTestReporter.Coverage.cs) -- it renders CoverageScopeSummary/TestCoverageThresholdMessage, which are in-process Microsoft.Testing.Platform message types with no representation in the 'dotnet test' IPC contract, so the orchestrator never receives the data; porting it requires a wire-protocol addition first. (2) In-process retry attribution (RetryAttemptProperty) and TerminalTestReporter.TestCompletedWithoutResult -- the SDK does not yet receive framework-level retry metadata and attributes retries per test-host instance id instead. (3) ShowRunSummary is never set to false by 'dotnet test': the SDK keeps one reporter for the whole execution and aggregates every attempt, so its summary already describes the whole run. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
+      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. This entry tracks the reporter class, including its SDK partial files. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so new partials must be appended here -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. CI progress and summary ordering are reconciled through f4d8d35b: visible-silence heartbeats include finished modules, compact non-cursor summaries put verdicts and failure recaps before artifacts, and successful module summaries are not repeated when already printed at completion. Existing retry/flaky, slowest-test, visibility, and neutral zero-test behavior is retained. The SDK's final aggregate exit code remains authoritative for session/handshake/policy failures and ignored exit codes, rather than upstream's in-process HasTestSessionFailure callback. SDK-specific collection progress/status and incomplete live-result warnings do not infer test outcomes from discovery, maps, or recovered artifacts. INTENTIONALLY NOT PORTED: (1) the coverage summary needs a wire-protocol addition for its in-process measurement types; (2) framework-level retry attribution needs IPC metadata, so retries remain attributed per test-host instance; (3) ShowRunSummary remains enabled because the SDK owns one whole-run aggregate; (4) in-process structured progress messages have no SDK IPC representation. This is a hard fork: the signal is upstream changed, not files differ.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.cs",
-          "baseline_ref_sha": "45f54c96f143019fd1a71254fa0449888e2f83a5",
-          "baseline_blob_sha": "a0f8cdd5ee8f4db4595e7bb9b64727e314e5acba",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "43cd96f0185cb68aac1da5120ccee203ca567de8",
           "scope": "reporter partial"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.ErroredAssemblies.cs",
-          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
           "baseline_blob_sha": "653dc2e36dd6d477f72b0f37f30494980b1f06ed",
           "scope": "reporter partial"
         },
@@ -98,8 +98,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Summary.cs",
-          "baseline_ref_sha": "3c6614c5ae19ee4ddca55cbf9b3375bbaad3496b",
-          "baseline_blob_sha": "d6a99130c85a2b39a6f22a3cdcc64802c7828b73",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "15fa0f32a8ac2e8ce7c5c77cecd9a447668e6d6c",
           "scope": "reporter partial"
         },
         {
@@ -366,14 +366,14 @@
     {
       "id": "dotnet-test-terminal-terminaltestreporteroptions",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporterOptions.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Reconciled through 3c6614c5: the SDK mirrors ShowTestResults, ShowFlakyTests, SlowestTestsCount, ShowRunSummary, and AllowZeroTests; SDK-specific option parsing adapts the upstream settings to the dotnet test command. The SDK uses the final aggregate exit code for session failures, zero-test policies, and ignored exit codes instead of the upstream in-process HasTestSessionFailure callback and ZeroTestsPolicy option.",
+      "notes": "Terminal reporter options hard-forked from testfx. Reconciled through f4d8d35b: heartbeat and slow-test thresholds default to 60 seconds; the SDK retains its synchronous boolean ShowProgress and adds collection-mode classification. Existing visibility, retry/flaky, slowest-test, and zero-test options are retained. The SDK uses the final aggregate exit code instead of the upstream in-process HasTestSessionFailure and ZeroTestsPolicy callbacks.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporterOptions.cs",
-          "baseline_ref_sha": "3c6614c5ae19ee4ddca55cbf9b3375bbaad3496b",
-          "baseline_blob_sha": "ba5b89ac0a30b6850db9e7391e5ad5d7deb7808e",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "8180ec21656507ef1f56d9535141142d841e0c14",
           "scope": "entire file"
         }
       ]
@@ -426,7 +426,7 @@
     {
       "id": "dotnet-test-terminal-testprogressstate",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestProgressState.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Retry/flaky accounting and in-process retry attribution are intentionally deferred with reporter reconciliation issues #55472 and #55473.",
+      "notes": "Terminal reporter support type hard-forked from testfx. The SDK implements instance-based retry/flaky accounting; framework-level retry attribution still needs IPC metadata. HasIncompleteTestResults is SDK-owned session-lifecycle state, not a recovered-artifact count.",
       "sources": [
         {
           "repo": "microsoft/testfx",
@@ -441,14 +441,14 @@
     {
       "id": "dotnet-test-terminal-testprogressstateawareterminal",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestProgressStateAwareTerminal.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "notes": "Renderer strategy and completion notifications reconciled through f4d8d35b. SDK adaptations retain the boolean progress switch and Console.Out lock, use the SDK trace logger, and omit upstream in-process structured progress messages because they have no SDK IPC representation. Disposal stops and joins the rendering thread.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressStateAwareTerminal.cs",
-          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
-          "baseline_blob_sha": "9acf46a59f32349a8c784f57ac2742ab7a2c6eaf",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "d0405762d63f1c4998ce199f8a208e048b8ad044",
           "scope": "entire file"
         }
       ]
@@ -570,6 +570,96 @@
           "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
           "baseline_blob_sha": "7ce0c0b08a798fdb926c45c09c38c30e4a0e1d8c",
           "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-progress-renderer",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/IProgressRenderer.cs",
+      "notes": "Renderer strategy contract. SDK omits the optional in-process structured-progress argument, which has no IPC counterpart.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/IProgressRenderer.cs",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "576ee23bcc50084a036ba79bce81b3377ad02763",
+          "scope": "renderer contract without in-process progress messages"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-cursor-progress",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/CursorProgressRenderer.cs",
+      "notes": "Cursor rendering strategy adapted to the SDK's existing ITerminal.RenderProgress signature.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/CursorProgressRenderer.cs",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "556ceb7af12e5e7a0fc746d40fd88749e4054ac3",
+          "scope": "cursor rendering without in-process progress messages"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-silence-heartbeat",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SilenceDrivenHeartbeatRenderer.cs",
+      "notes": "Visible-output silence, cumulative results, completion age, and exponential slow-test reporting. SDK adapts namespace/resources and retains GetRunningTasks(1).FirstOrDefault() semantics rather than importing unrelated allocation optimizations.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SilenceDrivenHeartbeatRenderer.cs",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "9c96bd930d92b8e9f21cc9e63f5892e8fa8eedb0",
+          "scope": "heartbeat and slow-test behavior"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-slow-test-threshold",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/SlowTestThresholdState.cs",
+      "notes": "Exponential slow-test backoff, with only the namespace and repository header adapted.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/SlowTestThresholdState.cs",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "221f3e0a1032e01b3fa1e6cdd674491ce2355b25",
+          "scope": "entire file"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-progress-configuration",
+      "local_path": "src/Cli/dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs",
+      "notes": "GetProgressThreshold adapts upstream nonnegative-integer parsing to SDK environment access. Both heartbeat and slow-test defaults are 60 seconds; zero disables that signal.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/ProgressReportingConfiguration.cs",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "857cf4239674b526bb6d11accdadb6f72b574756",
+          "scope": "progress threshold parsing"
+        }
+      ]
+    },
+    {
+      "id": "dotnet-test-terminal-progress-resources",
+      "local_path": "src/Cli/dotnet/Commands/CliCommandStrings.resx",
+      "notes": "TerminalProgressHeartbeat*, TerminalProgressSlowTest and ErroredAssembliesHeader are adapted into the managed CLI resource owner. SDK-only collection and reporting-completeness messages have no upstream equivalent.",
+      "sources": [
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalResources.resx",
+          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
+          "baseline_blob_sha": "77721cf92e280e1cf34cce88093e253151854541",
+          "scope": "progress and errored-assembly strings"
         }
       ]
     }

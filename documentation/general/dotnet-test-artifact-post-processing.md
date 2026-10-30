@@ -247,6 +247,38 @@ Post-processing is a best-effort convenience layered on top of an already-comple
 a timeout is degraded to a warning, and the original per-module artifacts stay listed. A run
 whose tests all passed still reports success even if merging failed.
 
+The final summary also prints `Reporting: degraded (...)` separately from the test verdict.
+This includes failures while planning or starting post-processing, not just a failed merge
+process. Cancellation does not create an additional reporting-failure warning.
+
+When a test host exits without completing its test session, the SDK labels its **live
+results as incomplete**. A TRX or another report recovered by an extension can contain more
+results than the SDK received over IPC. The SDK neither adds those recovered counts to the
+live counts nor changes a crash into a passing run.
+
+## CI progress and summaries
+
+On terminals that cannot update a progress area in place, the
+[parent SDK renderer](../../src/Cli/dotnet/Commands/Test/MTP/Terminal/SilenceDrivenHeartbeatRenderer.cs) prints a bounded
+progress line after 60 seconds without visible reporter output. Hidden passing results do
+not reset that interval. The line includes cumulative completed/failed counts across both
+finished and active modules, active-module count, and the age of the last completion (or an
+explicit indication that no test has completed). Slow tests use exponential reporting
+backoff. `--no-progress` or forwarded `--progress off` disables progress;
+`MTP_PROGRESS_SILENCE_SECONDS=0` disables the silence heartbeat, while
+`MTP_PROGRESS_SLOW_TEST_SECONDS=0` disables slow-test messages. Nonnegative integer values
+override the corresponding 60-second default.
+
+Non-cursor final summaries put the verdict, counts, and module/handshake failure context
+before the artifact paths. Successful module summaries are not repeated if they were
+already printed at completion. Interactive cursor-based summary ordering is unchanged.
+
+[`--collect-test-map` has a separate parent lifecycle](../../src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.Collection.cs) because collection intentionally
+suppresses child test-result reporting. Its progress counts **finished modules**, not
+passed tests or successful maps. Its final `Test map collection: Completed/Failed/Aborted`
+status follows the existing exit-code and cancellation policy, without a zero-test run
+summary. Discovery/planning counts and mapped source paths are not test outcomes.
+
 ## Configuration
 
 | Knob | Effect |
@@ -255,7 +287,8 @@ whose tests all passed still reports success even if merging failed.
 | `DOTNET_CLI_TEST_ARTIFACT_POST_PROCESSING_TIMEOUT_SECONDS` | Override the default 15-minute bound on a single merge host. `0` removes the bound (useful for attaching a debugger to a merge host), as does any value large enough that the runtime could not wait on it (above roughly 49.7 days). An absent, non-numeric, or negative value keeps the default. |
 | `--results-directory` | Determines the output directory recorded in the manifest (see [Where the merged artifact lands](#where-the-merged-artifact-lands)). It is not passed to the merge host on the command line — the merged output location travels in the manifest so the SDK keeps control of it even when it has to be derived. |
 | `--config-file` | Forwarded to the merge host, so it resolves and enables the same extensions as the test run. |
-| `--diagnostic-output-directory` | Forwarded to the merge host, so its diagnostic logs land beside the run's. |
+| `--diagnostic` and `--diagnostic-output-directory` | Forwarded together when requested, preserving MTP's diagnostic validation and placing worker logs beside the run's. |
+| `--diagnostic-verbosity`, `--diagnostic-file-prefix`, `--diagnostic-synchronous-write` | Preserved for the worker, including when provided through response files or launch-profile arguments. Test filters, retries, collection switches, and test timeouts are not forwarded to the worker. |
 
 ## Caveats
 

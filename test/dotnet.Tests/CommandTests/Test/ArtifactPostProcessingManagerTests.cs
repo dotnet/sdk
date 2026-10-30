@@ -328,6 +328,7 @@ public class ArtifactPostProcessingManagerTests
         string arguments = TestApplication.BuildArtifactPostProcessingArguments(
             new StringBuilder("exec A.dll"),
             pathOptions,
+            ["--diagnostic"],
             "/tmp/manifest.json",
             "pipe-name");
 
@@ -355,12 +356,55 @@ public class ArtifactPostProcessingManagerTests
         string arguments = TestApplication.BuildArtifactPostProcessingArguments(
             new StringBuilder("exec A.dll"),
             pathOptions,
+            [],
             "/tmp/manifest.json",
             "pipe-name");
 
         arguments.Should().NotContain(
             TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName,
             "the merged output location travels in the manifest, so the SDK keeps control of it");
+    }
+
+    [TestMethod]
+    [DataRow("--diagnostic")]
+    [DataRow("-DIAGNOSTIC")]
+    public void BuildArtifactPostProcessingArguments_PreservesOnlyWorkerConfiguration(string diagnosticOption)
+    {
+        string arguments = TestApplication.BuildArtifactPostProcessingArguments(
+            new StringBuilder("exec A.dll"),
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            [
+                diagnosticOption, "--diagnostic-verbosity=trace", "--diagnostic-file-prefix", "merge log",
+                "--diagnostic-synchronous-write", "--diagnostic-output-directory", "diagnostic logs",
+                "--config-file", "test config.json", "--filter", "NotForTheWorker",
+                "--collect-test-map", "--retry-failed-tests", "3", "--timeout", "1s", "--report-trx",
+            ],
+            "manifest.json", "pipe");
+
+        arguments.Should().Contain(diagnosticOption)
+            .And.Contain("--diagnostic-verbosity=trace")
+            .And.Contain("--diagnostic-file-prefix \"merge log\"")
+            .And.Contain("--diagnostic-synchronous-write")
+            .And.Contain("--diagnostic-output-directory \"diagnostic logs\"")
+            .And.Contain("--config-file \"test config.json\"")
+            .And.NotContain("--filter")
+            .And.NotContain("NotForTheWorker")
+            .And.NotContain("--collect-test-map")
+            .And.NotContain("--retry-failed-tests")
+            .And.NotContain("--timeout")
+            .And.NotContain("--report-trx");
+    }
+
+    [TestMethod]
+    public void BuildArtifactPostProcessingArguments_DoesNotEnableUnrequestedDiagnostics()
+    {
+        string arguments = TestApplication.BuildArtifactPostProcessingArguments(
+            new StringBuilder("exec A.dll"),
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            ["--filter", "SelectedTest"],
+            "manifest.json", "pipe");
+
+        arguments.Should().NotContain("--diagnostic");
     }
 
     [TestMethod]
@@ -685,6 +729,25 @@ public class ArtifactPostProcessingManagerTests
         ArtifactPostProcessingManager.ReportFailureUnlessCancelled(reporter, ctrlC, "post-processing warning");
 
         console.GetOutput().Should().Contain("post-processing warning");
+    }
+
+    [TestMethod]
+    [DataRow(0, "Zero tests ran")]
+    [DataRow(2, "Failed!")]
+    public void ReportFailureUnlessCancelled_ReportsDegradationSeparatelyFromTestVerdict(int exitCode, string verdict)
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        using var ctrlC = CreateCancellationManager();
+        reporter.ArtifactAdded(false, "A.dll", "net9.0", "x64", "execution", null, "original.trx");
+
+        ArtifactPostProcessingManager.ReportFailureUnlessCancelled(reporter, ctrlC, "worker failure");
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode);
+
+        string output = console.GetOutput();
+        output.Should().Contain($"Test run summary: {verdict}")
+            .And.Contain("Reporting: degraded (1 artifact post-processing failure(s))")
+            .And.Contain("original.trx");
     }
 
     [TestMethod]

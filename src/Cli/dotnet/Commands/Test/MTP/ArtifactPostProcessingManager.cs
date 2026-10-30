@@ -94,6 +94,10 @@ internal sealed class ArtifactPostProcessingManager
             // best-effort convenience layered on a finished run can escape and turn that run into a
             // CLI crash with a different exit code.
             Logger.LogTrace($"Artifact post-processing failed: {ex}");
+            ReportFailureUnlessCancelled(output, ctrlC, string.Format(
+                CultureInfo.CurrentCulture,
+                CliCommandStrings.ArtifactPostProcessingUnexpectedFailure,
+                ex.Message));
         }
     }
 
@@ -255,7 +259,7 @@ internal sealed class ArtifactPostProcessingManager
             return false;
         }
 
-        output.WriteWarningMessage(message);
+        output.ArtifactPostProcessingFailed(message);
         return true;
     }
 

@@ -125,3 +125,20 @@ aggregate exit code from
 including session failures and ignored-exit policies, instead of upstream's in-process
 failure callback. A successful run with zero tests uses neutral "Zero tests ran" wording,
 not a green "Passed!" verdict.
+
+Collection has a separate parent lifecycle: its bounded progress counts completed module
+attempts, and its final status follows the existing aggregate exit code without synthesizing
+test outcomes from discovery or mapping counts. Keep collection progress independent of
+TestHost handshakes, since suppression is intentional. Interrupted sessions label live counts
+as incomplete; never add recovered TRX counts to those live results.
+
+Artifact workers inherit only configuration and diagnostic options from the elected
+application, including response-file and launch-profile sources. Preserve `--diagnostic`
+with its directory, verbosity, prefix, and synchronous-write settings; do not weaken MTP
+validation or forward test-selection/retry/timeout arguments. Reporting degradation remains
+separate from the test verdict, with original artifacts retained.
+
+The vendored non-cursor renderer measures **visible-output silence**, not silence between
+test completions. Its totals include completed modules after their worker slots are freed.
+Keep SDK final-exit-code authority when reconciling upstream terminal code, and update
+[`eng/vendored-files.json`](../../eng/vendored-files.json) with exact upstream blob identities.

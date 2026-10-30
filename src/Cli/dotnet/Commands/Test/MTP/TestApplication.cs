@@ -360,6 +360,7 @@ internal sealed class TestApplication(
             return BuildArtifactPostProcessingArguments(
                 builder,
                 _buildOptions.PathOptions,
+                MicrosoftTestingPlatformTestCommand.GetEffectiveTestApplicationArguments(Module, _buildOptions),
                 _artifactPostProcessingInvocation.ManifestPath,
                 AppendTestHostTransportArguments);
         }
@@ -530,11 +531,13 @@ internal sealed class TestApplication(
     internal static string BuildArtifactPostProcessingArguments(
         StringBuilder builder,
         PathOptions pathOptions,
+        IReadOnlyList<string> testApplicationArguments,
         string manifestPath,
         string pipeName)
         => BuildArtifactPostProcessingArguments(
             builder,
             pathOptions,
+            testApplicationArguments,
             manifestPath,
             transportArgumentsBuilder => transportArgumentsBuilder.Append(
                 $" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}"));
@@ -542,6 +545,7 @@ internal sealed class TestApplication(
     private static string BuildArtifactPostProcessingArguments(
         StringBuilder builder,
         PathOptions pathOptions,
+        IReadOnlyList<string> testApplicationArguments,
         string manifestPath,
         Action<StringBuilder> appendTransportArguments)
     {
@@ -560,6 +564,28 @@ internal sealed class TestApplication(
         if (pathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
         {
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+        }
+
+        for (int i = 0; i < testApplicationArguments.Count; i++)
+        {
+            string argument = testApplicationArguments[i];
+            bool hasValue =
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic-verbosity", allowValue: true) ||
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic-file-prefix", allowValue: true) ||
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName, allowValue: true) ||
+                MicrosoftTestingPlatformTestCommand.IsOption(argument, TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName, allowValue: true);
+            if (!hasValue &&
+                !MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic", allowValue: false) &&
+                !MicrosoftTestingPlatformTestCommand.IsOption(argument, "--diagnostic-synchronous-write", allowValue: false))
+            {
+                continue;
+            }
+
+            builder.Append($" {ArgumentEscaper.EscapeSingleArg(argument)}");
+            if (hasValue && argument.IndexOfAny('=', ':') < 0 && i + 1 < testApplicationArguments.Count)
+            {
+                builder.Append($" {ArgumentEscaper.EscapeSingleArg(testApplicationArguments[++i])}");
+            }
         }
 
         // The results directory is deliberately not forwarded: the merged output location travels in
