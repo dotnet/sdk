@@ -21,7 +21,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
 
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _version;
-    private readonly IArchiveDownloader _downloader;
+    private readonly IArtifactDownloader _downloader;
     private readonly IInstallerSignatureVerifier _signatureVerifier;
     private readonly IBundleProcessRunner _processRunner;
     private readonly ExtractorProgressTracker _progress;
@@ -37,7 +37,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         DotnetInstallRequest request,
         ReleaseVersion version,
         InstallBatchContext batchContext,
-        IArchiveDownloader? downloader = null,
+        IArtifactDownloader? downloader = null,
         IInstallerSignatureVerifier? signatureVerifier = null,
         IBundleProcessRunner? processRunner = null,
         TextWriter? notices = null,

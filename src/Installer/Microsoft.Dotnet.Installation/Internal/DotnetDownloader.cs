@@ -10,7 +10,7 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// <summary>
 /// Resolves and downloads .NET artifacts with hash verification, including unsigned daily dotnetup builds.
 /// </summary>
-internal class DotnetDownloader : IArchiveDownloader
+internal class DotnetDownloader : IArtifactDownloader
 {
     private const int MaxRetryCount = 3;
     private const int RetryDelayMilliseconds = 1000;

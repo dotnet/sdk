@@ -13,9 +13,9 @@ using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 
 /// <summary>
-/// Mock implementation of IArchiveDownloader for testing without network access.
+/// Mock implementation of IArtifactDownloader for testing without network access.
 /// </summary>
-internal class MockArchiveDownloader : IArchiveDownloader
+internal class MockArchiveDownloader : IArtifactDownloader
 {
     /// <summary>
     /// Records all calls to DownloadVerifiedArtifact for verification.
