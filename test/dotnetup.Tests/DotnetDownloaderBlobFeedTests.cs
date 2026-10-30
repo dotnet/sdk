@@ -977,7 +977,7 @@ public class DotnetDownloaderBlobFeedTests
         using var http = new HttpClient(handler);
         var downloader = CreateDownloader(http, DotnetInstallErrorCode.VersionNotFound);
         var request = bundle ? BuildBundleRequest(version, InstallComponent.SDK) : BuildRequest(version, InstallComponent.SDK);
-        request = request with { Options = request.Options with { ExpectReleasesJsonSignature = true } };
+        request = request with { Options = request.Options with { RequireReleasesJsonSignature = true } };
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
             InvokeResolveManifestEntry(downloader, request, new ReleaseVersion(version)));

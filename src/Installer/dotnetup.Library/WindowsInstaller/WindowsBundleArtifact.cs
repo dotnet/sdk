@@ -45,7 +45,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         DotnetupPolicy? policy = null)
     {
         // Installer bundles are only trusted through the signed releases.json manifest.
-        _request = request with { Options = request.Options with { ExpectReleasesJsonSignature = true } };
+        _request = request with { Options = request.Options with { RequireReleasesJsonSignature = true } };
         _version = version;
         _signatureVerifier = signatureVerifier ?? CreateDefaultSignatureVerifier();
         _processRunner = processRunner ?? new BundleProcessRunner();

@@ -186,7 +186,7 @@ internal class DotnetDownloader : IArchiveDownloader
 
     public ResolvedDownload ResolveDotnetupDownload(string channel, string rid)
     {
-        ThrowIfReleasesJsonSignatureRequired("dotnetup", channel, expectReleasesJsonSignature: false);
+        ThrowIfReleasesJsonSignatureRequired("dotnetup", channel, requireReleasesJsonSignature: false);
         using var resolver = new DailyChannelResolver(_releaseManifest, _httpClient);
         ResolvedDotnetupArtifact resolved = resolver.ResolveDotnetupArtifact(channel, rid);
         var location = BlobFeedUrlBuilder.GetDotnetupFeedLocation(resolved.Version, rid);
@@ -226,7 +226,7 @@ internal class DotnetDownloader : IArchiveDownloader
             DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture), resolvedVersion,
             IsUnsigned: downloadUrl.StartsWith(BlobFeedUrlBuilder.ArchiveBaseUrl + "/", StringComparison.Ordinal));
         string path = DownloadWithVerification(download, destinationBasePath + extension, progress,
-            installRequest.Options.ExpectReleasesJsonSignature);
+            installRequest.Options.RequireReleasesJsonSignature);
         return new VerifiedDownload(path, expectedHash, download.IsUnsigned);
     }
 
@@ -234,13 +234,13 @@ internal class DotnetDownloader : IArchiveDownloader
     /// Downloads and verifies an artifact at the exact destination path, without appending an extension.
     /// </summary>
     public string DownloadWithVerification(ResolvedDownload download, string destinationPath, IProgress<DownloadProgress>? progress = null)
-        => DownloadWithVerification(download, destinationPath, progress, expectReleasesJsonSignature: false);
+        => DownloadWithVerification(download, destinationPath, progress, requireReleasesJsonSignature: false);
 
     private string DownloadWithVerification(
         ResolvedDownload download,
         string destinationPath,
         IProgress<DownloadProgress>? progress,
-        bool expectReleasesJsonSignature)
+        bool requireReleasesJsonSignature)
     {
         ArgumentNullException.ThrowIfNull(download);
         ArgumentException.ThrowIfNullOrEmpty(destinationPath);
@@ -250,7 +250,7 @@ internal class DotnetDownloader : IArchiveDownloader
         }
         if (download.IsUnsigned || download.IsDotnetup)
         {
-            ThrowIfReleasesJsonSignatureRequired(download.IsDotnetup ? "dotnetup" : ".NET", download.Version.ToString(), expectReleasesJsonSignature);
+            ThrowIfReleasesJsonSignatureRequired(download.IsDotnetup ? "dotnetup" : ".NET", download.Version.ToString(), requireReleasesJsonSignature);
         }
 
         if (download.IsDotnetup)
@@ -446,7 +446,7 @@ internal class DotnetDownloader : IArchiveDownloader
         // InstallExecutor.ExecuteInstalls / UpdateWorkflow.InstallVersion via
         // UnsignedSourcePolicy.MayDownloadUnsigned), so no per-fallback warning is needed here.
         ThrowIfReleasesJsonSignatureRequired(installRequest.Component.ToString(), resolvedVersion.ToString(),
-            installRequest.Options.ExpectReleasesJsonSignature);
+            installRequest.Options.RequireReleasesJsonSignature);
 
         string rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
         var locationsChecked = new List<string>();
@@ -494,10 +494,10 @@ internal class DotnetDownloader : IArchiveDownloader
     /// its published hash). Throws when the request expects the releases.json signature (admin mode) or
     /// the machine BlockUnsignedDownloads policy requires it. Authenticode is verified elsewhere.
     /// </summary>
-    private void ThrowIfReleasesJsonSignatureRequired(string component, string version, bool expectReleasesJsonSignature)
+    private void ThrowIfReleasesJsonSignatureRequired(string component, string version, bool requireReleasesJsonSignature)
     {
         // Admin mode expects the releases.json signature independently of the machine policy; this may change in the future.
-        if (expectReleasesJsonSignature)
+        if (requireReleasesJsonSignature)
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.AdminModeSignatureRequired,

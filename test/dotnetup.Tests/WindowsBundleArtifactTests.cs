@@ -60,7 +60,7 @@ public class WindowsBundleArtifactTests : IDisposable
         artifact.Prepare();
 
         downloader.DownloadCalls.Should().ContainSingle()
-            .Which.Request.Options.ExpectReleasesJsonSignature.Should().BeTrue();
+            .Which.Request.Options.RequireReleasesJsonSignature.Should().BeTrue();
     }
 
     [TestMethod]

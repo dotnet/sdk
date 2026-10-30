@@ -98,7 +98,7 @@ internal record InstallRequestOptions()
     /// only by a published hash (such as daily or blob-feed builds) are rejected. This is separate from
     /// Authenticode verification and from the machine BlockUnsignedDownloads policy. Set for admin mode installs.
     /// </summary>
-    public bool ExpectReleasesJsonSignature { get; init; }
+    public bool RequireReleasesJsonSignature { get; init; }
 }
 
 /// <summary>
