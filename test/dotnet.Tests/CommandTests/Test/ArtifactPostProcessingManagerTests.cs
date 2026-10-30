@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using Moq;
 using TestExitCode = Microsoft.DotNet.Cli.Commands.Test.ExitCode;
 
 namespace dotnet.Tests.CommandTests.Test;
@@ -717,6 +718,33 @@ public class ArtifactPostProcessingManagerTests
             TestRunCancellationReason.None);
 
         console.GetOutput().Should().NotContain(CliCommandStrings.ArtifactPostProcessingStarted);
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_ReporterFailureRemainsReportingDegradation()
+    {
+        var console = new Mock<IConsole>();
+        console.Setup(console => console.WriteLine(It.IsAny<string?>()))
+            .Throws(new IOException("reporter unavailable"));
+        using var reporter = new TerminalTestReporter(console.Object, new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        using var ctrlC = CreateCancellationManager();
+        ArtifactPostProcessingManager manager = CreateManagerWithMergeableArtifacts("first.trx", "second.trx");
+
+        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC, TestRunCancellationReason.None);
+
+        var output = new StringBuilder();
+        console.Setup(console => console.Write(It.IsAny<string?>()))
+            .Callback<string?>(value => output.Append(value));
+        console.Setup(console => console.Write(It.IsAny<char>()))
+            .Callback<char>(value => output.Append(value));
+        console.Setup(console => console.WriteLine(It.IsAny<string?>()))
+            .Callback<string?>(value => output.AppendLine(value));
+        console.Setup(console => console.WriteLine()).Callback(() => output.AppendLine());
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+        output.ToString().Should().Contain("Reporting: degraded")
+            .And.Contain("reporter unavailable")
+            .And.Contain("Test run summary: Zero tests ran");
     }
 
     [TestMethod]

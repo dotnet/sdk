@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Globalization;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
@@ -15,6 +16,7 @@ internal sealed partial class TerminalTestReporter
     private long _collectionLastProgressTimestamp;
     private bool _collectionFinished;
     private int _artifactPostProcessingFailures;
+    private readonly ConcurrentQueue<string> _deferredArtifactPostProcessingFailures = new();
 
     internal void TestMapCollectionStarted(int moduleCount)
     {
@@ -112,6 +114,12 @@ internal sealed partial class TerminalTestReporter
         WriteWarningMessage(message);
     }
 
+    internal void DeferArtifactPostProcessingFailure(string message)
+    {
+        Interlocked.Increment(ref _artifactPostProcessingFailures);
+        _deferredArtifactPostProcessingFailures.Enqueue(message);
+    }
+
     private void AppendReportingStatus(ITerminal terminal, IEnumerable<TestProgressState> assemblies)
     {
         if (_artifactPostProcessingFailures > 0)
@@ -120,6 +128,11 @@ internal sealed partial class TerminalTestReporter
             terminal.AppendLine(string.Format(
                 CultureInfo.CurrentCulture, CliCommandStrings.ArtifactReportingDegraded,
                 _artifactPostProcessingFailures));
+            foreach (string message in _deferredArtifactPostProcessingFailures)
+            {
+                terminal.AppendLine(message);
+            }
+
             terminal.ResetColor();
         }
 

@@ -138,6 +138,12 @@ with its directory, verbosity, prefix, and synchronous-write settings; do not we
 validation or forward test-selection/retry/timeout arguments. Reporting degradation remains
 separate from the test verdict, with original artifacts retained.
 
+Ordinary best-effort artifact merging is not the newer **required** post-processing contract.
+Do not advertise `RequiredPostProcessingSupported` without single-input required jobs and an
+authoritative, policy-aware `runSummary` manifest. Current CI-summary extensions correctly
+retain their per-module fallback; a successful TRX merge is not evidence of aggregate summary
+handoff.
+
 The vendored non-cursor renderer measures **visible-output silence**, not silence between
 test completions. Its totals include completed modules after their worker slots are freed.
 Keep SDK final-exit-code authority when reconciling upstream terminal code, and update

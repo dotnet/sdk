@@ -143,11 +143,17 @@ per-module inputs and double-count tests.
 
 ## What currently merges
 
-Shipping Microsoft.Testing.Platform extensions provide post-processors for **TRX, Microsoft code
-coverage, JUnit, CTRF, and HTML reports**, as well as aggregated GitHub Actions and Azure DevOps
-summaries. The formats available to a run still depend on which extensions its test applications
-reference and enable; the SDK does not install a processor or infer mergeability from a file name.
-It merges whatever the installed extensions advertise.
+Microsoft.Testing.Platform extensions provide post-processors for **TRX, Microsoft code
+coverage, JUnit, CTRF, and HTML reports**. The formats available to a run still depend on which
+extensions its test applications reference and enable; the SDK does not install a processor or
+infer mergeability from a file name.
+
+Newer aggregate GitHub Actions and Azure DevOps summaries require a stronger, separate
+handoff contract: `RequiredPostProcessorKinds` must run even with a single input, and the
+worker manifest must contain an authoritative `runSummary`. This SDK does **not** advertise
+`RequiredPostProcessingSupported`, so those extensions retain their per-module summary
+fallback. Successful TRX/CTRF/JUnit merging does not prove support for that required CI-summary
+handoff. Do not enable the capability merely to suppress per-module output.
 
 Other formats continue to be listed individually until their producing extension ships a
 post-processor. The contract for adding one is public; see

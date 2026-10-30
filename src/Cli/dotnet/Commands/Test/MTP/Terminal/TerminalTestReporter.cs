@@ -303,6 +303,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         _artifactPostProcessingFailures = 0;
+        _deferredArtifactPostProcessingFailures.Clear();
         _buildErrorsCount = 0;
         _testExecutionStartTime = null;
         _testExecutionEndTime = null;
