@@ -185,11 +185,22 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
         IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
 
+        using FileStream packageMutationLock = ToolPackageDownloaderBase.AcquireToolPackageMutationLock(
+            toolPackageStore.Root,
+            packageId);
+
         var oldPackage = TryGetOldPackage(toolPackageStoreQuery, packageId);
 
         if (oldPackage != null)
         {
-            NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
+            NuGetVersion nugetVersion =
+                versionRange?.MinVersion is not null &&
+                versionRange.MaxVersion == versionRange.MinVersion
+                    ? versionRange.MinVersion
+                    : GetBestMatchNugetVersion(
+                        packageId,
+                        versionRange,
+                        toolPackageDownloader);
 
             if (ToolVersionAlreadyInstalled(oldPackage, nugetVersion))
             {

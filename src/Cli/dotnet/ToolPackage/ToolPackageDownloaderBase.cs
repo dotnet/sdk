@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -18,6 +21,14 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 {
+    private static readonly TimeSpan s_lockInitialWaitTimeout = TimeSpan.FromMilliseconds(50);
+    private static readonly TimeSpan s_lockRetryDelay = TimeSpan.FromMilliseconds(10);
+    private static readonly TimeSpan s_lockWaitTimeout = TimeSpan.FromMinutes(5);
+    private const int WindowsSharingViolationHResult = unchecked((int)0x80070020);
+    private const int WindowsLockViolationHResult = unchecked((int)0x80070021);
+    private const int LinuxWouldBlockError = 11;
+    private const int MacOSWouldBlockError = 35;
+
     private readonly IToolPackageStore _toolPackageStore;
 
     protected readonly IFileSystem _fileSystem;
@@ -155,6 +166,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool isGlobalToolRollForward,
         VerbosityOptions verbosity)
     {
+        using FileStream installLock = AcquireToolInstallLock(_toolPackageStore.Root, packageId, packageVersion);
+
         // Check if package already exists in global tools location
         var nugetPackageRootDirectory = new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion);
         if (IsPackageInstalled(packageId, packageVersion, nugetPackageRootDirectory))
@@ -179,6 +192,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     packageSourceLocation,
                     givenSpecificVersion,
                     assetFileDirectory: _globalToolStageDir,
+                    acquireInstallLock: false,
                     targetFramework,
                     verbosity);
 
@@ -226,6 +240,182 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             });
     }
 
+    /// <summary>
+    /// Serializes installation of one package version so concurrent processes cannot mutate the same files.
+    /// </summary>
+    /// <remarks>
+    /// The lock file persists, but only its open <see cref="FileShare.None"/> handle represents ownership. A terminated
+    /// process therefore releases the lock without requiring stale-file cleanup. Prolonged contention is reported and
+    /// eventually fails with a timeout; callers can cancel while waiting.
+    /// </remarks>
+    internal static FileStream AcquireToolInstallLock(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        TimeSpan? initialWaitTimeout = null,
+        TimeSpan? waitTimeout = null,
+        IReporter? errorReporter = null,
+        CancellationToken cancellationToken = default)
+    {
+        return AcquireToolLock(
+            GetToolInstallLockFilePath(packageInstallRoot, packageId, packageVersion),
+            initialWaitTimeout,
+            waitTimeout,
+            errorReporter,
+            cancellationToken,
+            lockOwner => lockOwner is not null
+                ? string.Format(
+                    CliStrings.ToolInstallationWaitingWithProcess,
+                    packageId,
+                    packageVersion.ToNormalizedString(),
+                    lockOwner.ProcessId,
+                    lockOwner.ProcessName)
+                : string.Format(
+                    CliStrings.ToolInstallationWaiting,
+                    packageId,
+                    packageVersion.ToNormalizedString()),
+            () => string.Format(
+                CliStrings.ToolInstallationTimeout,
+                packageId,
+                packageVersion.ToNormalizedString()));
+    }
+
+    /// <summary>
+    /// Serializes all global-tool mutations for one package ID through transaction completion.
+    /// </summary>
+    /// <remarks>
+    /// The lock identity intentionally excludes the version so install, update, and uninstall operations cannot mutate
+    /// different versions of the same global tool concurrently. Callers can cancel while waiting.
+    /// </remarks>
+    internal static FileStream AcquireToolPackageMutationLock(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId,
+        TimeSpan? initialWaitTimeout = null,
+        TimeSpan? waitTimeout = null,
+        IReporter? errorReporter = null,
+        CancellationToken cancellationToken = default)
+    {
+        return AcquireToolLock(
+            GetToolPackageMutationLockFilePath(packageInstallRoot, packageId),
+            initialWaitTimeout,
+            waitTimeout,
+            errorReporter,
+            cancellationToken,
+            lockOwner => lockOwner is not null
+                ? string.Format(
+                    CliStrings.ToolPackageMutationWaitingWithProcess,
+                    packageId,
+                    lockOwner.ProcessId,
+                    lockOwner.ProcessName)
+                : string.Format(
+                    CliStrings.ToolPackageMutationWaiting,
+                    packageId),
+            () => string.Format(
+                CliStrings.ToolPackageMutationTimeout,
+                packageId));
+    }
+
+    private static FileStream AcquireToolLock(
+        string lockFilePath,
+        TimeSpan? initialWaitTimeout,
+        TimeSpan? waitTimeout,
+        IReporter? errorReporter,
+        CancellationToken cancellationToken,
+        Func<FileLockOwner?, string> getWaitingMessage,
+        Func<string> getTimeoutMessage)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
+
+        initialWaitTimeout ??= s_lockInitialWaitTimeout;
+        waitTimeout ??= s_lockWaitTimeout;
+        errorReporter ??= Reporter.Error;
+        Stopwatch stopwatch = Stopwatch.StartNew();
+        bool waitingReported = false;
+
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            try
+            {
+                FileStream lockStream = new(
+                    lockFilePath,
+                    FileMode.OpenOrCreate,
+                    FileAccess.ReadWrite,
+                    FileShare.None);
+
+                return lockStream;
+            }
+            catch (IOException exception) when (IsToolInstallLockContention(exception))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (!waitingReported && stopwatch.Elapsed >= initialWaitTimeout)
+                {
+                    FileLockOwner? lockOwner = FileLockOwnerFinder.TryGetFileLockOwner(lockFilePath);
+                    errorReporter.WriteLine(getWaitingMessage(lockOwner));
+                    waitingReported = true;
+                }
+
+                cancellationToken.ThrowIfCancellationRequested();
+
+                if (stopwatch.Elapsed >= waitTimeout)
+                {
+                    throw new ToolPackageException(getTimeoutMessage());
+                }
+
+                Thread.Sleep(s_lockRetryDelay);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Creates a stable per-root lock path so only installations of the same package version contend.
+    /// </summary>
+    /// <remarks>
+    /// The normalized, case-insensitive package identity is hashed to produce a fixed-length valid file name under
+    /// the package root's lock directory.
+    /// </remarks>
+    internal static string GetToolInstallLockFilePath(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId,
+        NuGetVersion packageVersion)
+    {
+        string lockIdentity = $"{packageId.ToString().ToLowerInvariant()}\n{packageVersion.ToNormalizedString().ToLowerInvariant()}";
+        return GetToolInstallLockFilePath(packageInstallRoot, lockIdentity);
+    }
+
+    /// <summary>
+    /// Creates one stable lock path for every version of a global-tool package.
+    /// </summary>
+    /// <remarks>The separate identity prevents collisions with the version-specific shared-cache locks.</remarks>
+    internal static string GetToolPackageMutationLockFilePath(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId)
+    {
+        string lockIdentity = $"{packageId.ToString().ToLowerInvariant()}\n<all-versions>";
+        return GetToolInstallLockFilePath(packageInstallRoot, lockIdentity);
+    }
+
+    private static string GetToolInstallLockFilePath(DirectoryPath packageInstallRoot, string lockIdentity)
+    {
+        string lockFileName = $"{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(lockIdentity)))}.lock";
+        return Path.Combine(Path.GetFullPath(packageInstallRoot.Value), ToolPackageStoreAndQuery.LockDirectory, lockFileName);
+    }
+
+    /// <summary>
+    /// Distinguishes retryable lock contention from I/O failures that must be surfaced immediately.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="FileStream"/> exposes the relevant Windows sharing errors and Unix <c>EWOULDBLOCK</c> values through
+    /// <see cref="Exception.HResult"/>.
+    /// </remarks>
+    internal static bool IsToolInstallLockContention(IOException exception) =>
+        OperatingSystem.IsWindows()
+            ? exception.HResult is WindowsSharingViolationHResult or WindowsLockViolationHResult
+            : exception.HResult is LinuxWouldBlockError or MacOSWouldBlockError;
+
     protected IToolPackage InstallLocalToolPackageInternal(
         PackageSourceLocation packageSourceLocation,
         INuGetPackageDownloader nugetPackageDownloader,
@@ -246,6 +436,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     packageSourceLocation,
                     givenSpecificVersion,
                     assetFileDirectory: _localToolAssetDir,
+                    acquireInstallLock: true,
                     targetFramework,
                     verbosity);
 
@@ -267,26 +458,82 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         PackageSourceLocation packageSourceLocation,
         bool givenSpecificVersion,
         DirectoryPath assetFileDirectory,
+        bool acquireInstallLock,
         string? targetFramework,
         VerbosityOptions verbosity)
     {
-
-        if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
-        {
-            DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion, verbosity: verbosity);
-        }
+        EnsurePackageInstalled(
+            packageDownloadDir,
+            packageId,
+            packageVersion,
+            nugetPackageDownloader,
+            packageSourceLocation,
+            includeUnlisted: givenSpecificVersion,
+            acquireInstallLock,
+            verbosity);
 
         CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
 
         //  Also download RID-specific package if needed
         if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory, verbosity) is PackageId ridSpecificPackage)
         {
-            if (!IsPackageInstalled(ridSpecificPackage, packageVersion, packageDownloadDir.Value))
-            {
-                DownloadAndExtractPackage(ridSpecificPackage, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: true, verbosity: verbosity);
-            }
+            EnsurePackageInstalled(
+                packageDownloadDir,
+                ridSpecificPackage,
+                packageVersion,
+                nugetPackageDownloader,
+                packageSourceLocation,
+                includeUnlisted: true,
+                acquireInstallLock,
+                verbosity);
 
             CreateAssetFile(ridSpecificPackage, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
+        }
+    }
+
+    /// <summary>
+    /// Locks only cache misses so complete shared packages remain usable from read-only package roots.
+    /// </summary>
+    /// <remarks>The package is checked again after locking because another process can complete installation first.</remarks>
+    private void EnsurePackageInstalled(
+        DirectoryPath packageDownloadDir,
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        INuGetPackageDownloader nugetPackageDownloader,
+        PackageSourceLocation packageSourceLocation,
+        bool includeUnlisted,
+        bool acquireInstallLock,
+        VerbosityOptions verbosity)
+    {
+        if (IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
+        {
+            return;
+        }
+
+        if (!acquireInstallLock)
+        {
+            DownloadAndExtractPackage(
+                packageId,
+                nugetPackageDownloader,
+                packageDownloadDir.Value,
+                packageVersion,
+                packageSourceLocation,
+                verbosity,
+                includeUnlisted);
+            return;
+        }
+
+        using FileStream installLock = AcquireToolInstallLock(packageDownloadDir, packageId, packageVersion);
+        if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
+        {
+            DownloadAndExtractPackage(
+                packageId,
+                nugetPackageDownloader,
+                packageDownloadDir.Value,
+                packageVersion,
+                packageSourceLocation,
+                verbosity,
+                includeUnlisted);
         }
     }
 
