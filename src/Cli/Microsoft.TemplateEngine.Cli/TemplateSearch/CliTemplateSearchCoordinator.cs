@@ -136,7 +136,6 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 
             NuGetSourceConfiguration sourceConfiguration = NuGetSourceConfiguration.Load(
                 nugetConfig: commandArgs.ConfigFile,
-                sourceFeedOverrides: commandArgs.Sources,
                 additionalSourceFeeds: commandArgs.AddSources,
                 invalidSource: invalidSource => Reporter.Error.WriteLine(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResource, invalidSource).Bold().Red()));
 
@@ -148,7 +147,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 
             PackageSourceMapping? sourceMapping = PackageAvailabilityChecker.GetEffectivePackageSourceMapping(
                 sourceConfiguration.Settings,
-                sourceOverridesSpecified: commandArgs.Sources?.Count > 0,
+                sourceOverridesSpecified: false,
                 additionalSourcesSpecified: commandArgs.AddSources?.Count > 0);
 
             HashSet<PackageAvailabilityCandidate> candidates = searchResults

@@ -241,10 +241,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
-        public void Search_CanParseSourceSelectionOptions()
+        public void Search_CanParseSourceConfigurationOptions()
         {
             string configFile = typeof(SearchTests).Assembly.Location;
-            string command = $"new search source --source https://one.test/index.json --source https://two.test/index.json --configfile \"{configFile}\" --add-source https://add1.test/index.json --add-source https://add2.test/index.json --interactive";
+            string command = $"new search source --configfile \"{configFile}\" --add-source https://add1.test/index.json --add-source https://add2.test/index.json --interactive";
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
@@ -253,10 +253,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             Assert.IsEmpty(parseResult.Errors);
             Assert.AreEqual(configFile, args.ConfigFile);
-            Assert.IsNotNull(args.Sources);
-            Assert.HasCount(2, args.Sources!);
-            Assert.Contains("https://one.test/index.json", args.Sources!);
-            Assert.Contains("https://two.test/index.json", args.Sources!);
             Assert.IsNotNull(args.AddSources);
             Assert.HasCount(2, args.AddSources!);
             Assert.Contains("https://add1.test/index.json", args.AddSources!);
@@ -294,18 +290,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
+        [DataRow("new search source --source https://one.test/index.json")]
         [DataRow("new search source -s https://one.test/index.json")]
-        public void Search_CanParseSourceOptionShortAlias(string command)
+        public void Search_CannotParseSourceOption(string command)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
-            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            Assert.IsNotNull(args.Sources);
-            Assert.HasCount(1, args.Sources!);
-            Assert.Contains("https://one.test/index.json", args.Sources!);
+            Assert.IsNotEmpty(parseResult.Errors);
         }
 
         [TestMethod]

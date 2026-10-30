@@ -24,7 +24,6 @@ public sealed class NewSearchCommandDefinition : Command
     public readonly Option<string[]> ColumnsOption;
     public readonly FilterOptions FilterOptions;
 
-    public readonly Option<string[]> SourceOption = SharedOptionsFactory.CreateSourceOption();
     public readonly Option<FileInfo> ConfigFileOption = SharedOptionsFactory.CreateConfigFileOption();
     // Keep the positional template name from being consumed as another source.
     public readonly Option<string[]> AddSourceOption = SharedOptionsFactory.CreateAddSourceOption().DisableAllowMultipleArgumentsPerToken();
@@ -62,7 +61,6 @@ public sealed class NewSearchCommandDefinition : Command
         {
             Options.AddRange(
             [
-                SourceOption,
                 ConfigFileOption,
                 AddSourceOption,
                 InteractiveOption,
