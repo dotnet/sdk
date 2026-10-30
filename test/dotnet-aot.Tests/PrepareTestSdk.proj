@@ -6,6 +6,7 @@
     <TestSdkRoot>$(MSBuildThisFileDirectory)artifacts/test-sdk/$(Configuration)/$(RuntimeIdentifier)/</TestSdkRoot>
     <BuiltDotnetRoot>$(RepoRoot)artifacts/bin/redist/$(Configuration)/dotnet/</BuiltDotnetRoot>
     <RuntimePackageRoot>$(NuGetPackageRoot)microsoft.netcore.app.runtime.$(RuntimeIdentifier)/$(MicrosoftNETCoreAppRuntimePackageVersion)/runtimes/$(RuntimeIdentifier)/</RuntimePackageRoot>
+    <HostPackRoot>$(NuGetPackageRoot)microsoft.netcore.app.host.$(RuntimeIdentifier)/$(MicrosoftNETCoreAppHostPackageVersion)/</HostPackRoot>
     <DotnetName>dotnet</DotnetName>
     <HostFxrName>libhostfxr.so</HostFxrName>
     <DotnetName Condition="$(RuntimeIdentifier.StartsWith('win-'))">dotnet.exe</DotnetName>
@@ -17,6 +18,7 @@
        which need not have the architecture of the cross-built redist. -->
   <ItemGroup>
     <PackageDownload Include="Microsoft.NETCore.App.Runtime.$(RuntimeIdentifier)" Version="[$(MicrosoftNETCoreAppRuntimePackageVersion)]" />
+    <PackageDownload Include="Microsoft.NETCore.App.Host.$(RuntimeIdentifier)" Version="[$(MicrosoftNETCoreAppHostPackageVersion)]" />
   </ItemGroup>
 
   <UsingTask TaskName="GenerateSdkRuntimeIdentifierChain"
@@ -37,19 +39,39 @@
       <_TestSdkDirectory>$(TestSdkRoot)sdk/$(_SdkVersion)/</_TestSdkDirectory>
     </PropertyGroup>
 
+    <!-- The installer crossgens SDK assemblies for the target architecture. Use the
+         original SDK layout instead, not those target-specific ReadyToRun images.
+         Like BuiltDotnetRoot, the redist output is the platform-neutral build layout,
+         even when a native toolchain sets Platform for the test publish. -->
+    <MSBuild Projects="$(RepoRoot)src/Layout/redist/redist.csproj"
+             Targets="GetTargetPath"
+             Properties="Configuration=$(Configuration);Platform=AnyCPU"
+             RemoveProperties="RuntimeIdentifier">
+      <Output TaskParameter="TargetOutputs" ItemName="_RedistTargetPath" />
+    </MSBuild>
+    <PropertyGroup>
+      <_SdkContentDirectory>@(_RedistTargetPath->'%(RootDir)%(Directory)')</_SdkContentDirectory>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(_SdkContentDirectory)dotnet.dll') or !Exists('$(_SdkContentDirectory)Sdks/Microsoft.NET.Sdk/Sdk/Sdk.props')"
+           Text="The pre-crossgen SDK layout is missing from $(_SdkContentDirectory). Build the $(Configuration) SDK first." />
+    <Error Condition="!Exists('$(HostPackRoot)runtimes/$(RuntimeIdentifier)/native')"
+           Text="The host-native apphost pack is missing. Restore PrepareTestSdk.proj before preparing the test SDK." />
+
     <!-- Recreate only this harness's layout, never the shipping or bootstrap SDK. -->
     <RemoveDir Directories="$(TestSdkRoot)" />
     <ItemGroup>
-      <_SdkFile Include="$(BuiltDotnetRoot)sdk/$(_SdkVersion)/**/*" />
+      <_SdkFile Include="$(_SdkContentDirectory)**/*" />
       <_PackFile Include="$(BuiltDotnetRoot)packs/**/*" />
       <_TemplateFile Include="$(BuiltDotnetRoot)templates/**/*" />
       <_ManifestFile Include="$(BuiltDotnetRoot)sdk-manifests/**/*" />
       <_RuntimeFile Include="$(RuntimePackageRoot)lib/$(SdkTargetFramework)/*;$(RuntimePackageRoot)native/*" />
+      <_HostPackFile Include="$(HostPackRoot)**/*" Exclude="$(HostPackRoot)*" />
     </ItemGroup>
     <Copy SourceFiles="@(_SdkFile)" DestinationFiles="@(_SdkFile->'$(_TestSdkDirectory)%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_PackFile)" DestinationFiles="@(_PackFile->'$(TestSdkRoot)packs/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_TemplateFile)" DestinationFiles="@(_TemplateFile->'$(TestSdkRoot)templates/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_ManifestFile)" DestinationFiles="@(_ManifestFile->'$(TestSdkRoot)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(_HostPackFile)" DestinationFiles="@(_HostPackFile->'$(TestSdkRoot)packs/Microsoft.NETCore.App.Host.$(RuntimeIdentifier)/$(MicrosoftNETCoreAppHostPackageVersion)/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(_RuntimeFile)" DestinationFiles="@(_RuntimeFile->'$(TestSdkRoot)shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)/%(Filename)%(Extension)')" />
     <Copy SourceFiles="$(RepoRoot).dotnet/$(DotnetName)" DestinationFiles="$(TestSdkRoot)$(DotnetName)" />
     <Copy SourceFiles="$(RuntimePackageRoot)native/$(HostFxrName)" DestinationFiles="$(TestSdkRoot)host/fxr/$(HostFxrVersion)/$(HostFxrName)" />
