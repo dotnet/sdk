@@ -364,7 +364,49 @@ public class InstallerOrchestratorTests
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed);
         artifact.CommitCalls.Should().Be(1);
+        artifact.RepairCalls.Should().Be(1);
         File.Exists(testEnv.ManifestPath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_BundleFilesMissing_RepairsAndSucceeds()
+    {
+        using var testEnv = new TestEnvironment();
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var artifact = new FakeArtifact
+        {
+            OnRepair = () =>
+            {
+                File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
+                string sdkDirectory = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, InstallComponent.SDK, install.Version.ToString())!;
+                Directory.CreateDirectory(sdkDirectory);
+                File.WriteAllText(Path.Combine(sdkDirectory, "dotnet.dll"), string.Empty);
+                return true;
+            },
+        };
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
+
+        result.WasAlreadyInstalled.Should().BeFalse();
+        artifact.CommitCalls.Should().Be(1);
+        artifact.RepairCalls.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_RepairStillMissingFiles_ThrowsPostInstallVerificationFailed()
+    {
+        using var testEnv = new TestEnvironment();
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var artifact = new FakeArtifact { OnRepair = () => true };
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed);
+        artifact.RepairCalls.Should().Be(1);
     }
 
     [TestMethod]
@@ -484,6 +526,10 @@ public class InstallerOrchestratorTests
 
         public Action? OnCommit { get; init; }
 
+        public Func<bool>? OnRepair { get; init; }
+
+        public int RepairCalls { get; private set; }
+
         public bool RequiresPostInstallValidation { get; init; } = true;
 
         public IReadOnlyList<string> ExtractedSubcomponents => [];
@@ -496,6 +542,12 @@ public class InstallerOrchestratorTests
         {
             CommitCalls++;
             OnCommit?.Invoke();
+        }
+
+        public bool TryRepair()
+        {
+            RepairCalls++;
+            return OnRepair?.Invoke() ?? false;
         }
 
         public void Dispose() => Disposed = true;

@@ -91,6 +91,47 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
+    public void TryRepair_RerunsSameBundleQuietlyWithRepairAndExplains()
+    {
+        var runner = new FakeRunner(exitCode: 0);
+        using var notices = new StringWriter();
+        var artifact = CreateArtifact(StableChannel, runner: runner, notices: notices);
+        artifact.Prepare();
+        artifact.Commit();
+
+        artifact.TryRepair().Should().BeTrue();
+
+        runner.Calls.Should().HaveCount(2);
+        runner.Calls[1].Path.Should().Be(artifact.BundlePath);
+        runner.Calls[1].Arguments.Should().Equal("/repair", "/quiet", "/norestart");
+        notices.ToString().Should().Contain(".NET SDK 10.0.100 is registered with Windows, but its files are missing");
+    }
+
+    [TestMethod]
+    public void TryRepair_BeforePrepare_DoesNotRunInstaller()
+    {
+        var runner = new FakeRunner(exitCode: 0);
+        var artifact = CreateArtifact(StableChannel, runner: runner);
+
+        artifact.TryRepair().Should().BeFalse();
+
+        runner.Calls.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void TryRepair_FailedExitCode_Throws()
+    {
+        var runner = new FakeRunner(exitCode: 1603);
+        var artifact = CreateArtifact(StableChannel, runner: runner);
+        artifact.Prepare();
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => artifact.TryRepair());
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerFailed);
+        runner.Calls.Should().ContainSingle().Which.Arguments.Should().Equal("/repair", "/quiet", "/norestart");
+    }
+
+    [TestMethod]
     public void Commit_SignatureFailureOnSignedSource_ThrowsAndDoesNotRunInstaller()
     {
         var runner = new FakeRunner(exitCode: 0);

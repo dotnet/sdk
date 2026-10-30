@@ -382,7 +382,8 @@ internal class InstallerOrchestratorSingleton
             prepared.Artifact.Commit();
 
             if (prepared.Artifact.RequiresPostInstallValidation
-                && !validator.Validate(prepared.Install, out string? validationFailure))
+                && !validator.Validate(prepared.Install, out string? validationFailure)
+                && !TryRepairAndRevalidate(prepared, validator, ref validationFailure))
             {
                 throw CreatePostInstallValidationException(prepared, validationFailure);
             }
@@ -400,6 +401,21 @@ internal class InstallerOrchestratorSingleton
         return new InstallResult(prepared.Install, WasAlreadyInstalled: false);
     }
 #pragma warning restore CA1822
+
+    /// <summary>
+    /// Repairs an artifact whose install reported success without its files, then validates again. A repair
+    /// that requires a restart skips the second validation, as the install would.
+    /// </summary>
+    private static bool TryRepairAndRevalidate(PreparedInstall prepared, IInstallationValidator validator, ref string? validationFailure)
+    {
+        if (!prepared.Artifact.TryRepair())
+        {
+            return false;
+        }
+
+        return !prepared.Artifact.RequiresPostInstallValidation
+            || validator.Validate(prepared.Install, out validationFailure);
+    }
 
     private static DotnetInstallException CreatePostInstallValidationException(PreparedInstall prepared, string? validationFailure)
     {

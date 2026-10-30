@@ -841,6 +841,11 @@ Or open a new terminal.</target>
         <target state="new">Could not start the installer for {0}: {1}</target>
         <note>{0} is the component display name and version. {1} is the operating system error.</note>
       </trans-unit>
+      <trans-unit id="WindowsInstallerRepairingMissingFiles">
+        <source>{0} is registered with Windows, but its files are missing. Repairing it with the Windows installer. Approve the administrator prompt if asked.</source>
+        <target state="new">{0} is registered with Windows, but its files are missing. Repairing it with the Windows installer. Approve the administrator prompt if asked.</target>
+        <note>{0} is the component display name and version.</note>
+      </trans-unit>
       <trans-unit id="WindowsInstallerRestartInitiated">
         <source>A restart has been initiated and is required to finish installing {0}.</source>
         <target state="new">A restart has been initiated and is required to finish installing {0}.</target>
