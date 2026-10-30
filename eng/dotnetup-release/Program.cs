@@ -42,7 +42,7 @@ internal static class Program
             Console.WriteLine(json);
             return 0;
         }
-        catch (Exception exception) when (exception is IOException or ArgumentException or JsonException or HttpRequestException or InvalidOperationException or CryptographicException)
+        catch (Exception exception) when (exception is IOException or InvalidDataException or ArgumentException or JsonException or HttpRequestException or InvalidOperationException or CryptographicException)
         {
             Console.Error.WriteLine($"Release planning failed: {exception.Message}");
             return 1;

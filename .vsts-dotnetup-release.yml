@@ -58,8 +58,16 @@ extends:
         steps:
         - checkout: self
           clean: true
-        - download: candidate
-          patterns: Dotnetup_Dotnetup_*/**
+        - task: DownloadPipelineArtifact@2
+          displayName: Download dotnetup candidate pipeline artifacts
+          inputs:
+            buildType: specific
+            project: $(System.TeamProjectId)
+            definition: '1544'
+            buildVersionToDownload: specific
+            pipelineId: $(resources.pipeline.candidate.runID)
+            itemPattern: Dotnetup_Dotnetup_*/**
+            targetPath: $(Pipeline.Workspace)/candidate
         - powershell: |
             & .\restore.cmd "/p:Projects=$(Build.SourcesDirectory)\eng\dotnetup-release\dotnetup-release.csproj"
             if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
