@@ -60,12 +60,14 @@ public class WebSocketTransportTests
         Assert.HasCount(1, environment);
 
         using var agent = new WebSocketTransport(environment[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint], key.GetPublicKey(), _ => { }, 5000);
-        await agent.SendAsync(new ClientInitializationResponse("Baseline"), cts.Token);
+        await agent.SendAsync(new ClientInitializationResponse(Environment.ProcessId, "Baseline"), cts.Token);
         await server.WaitForConnectionAsync(cts.Token);
         using var response = await server.ReadAsync(cts.Token);
         Assert.IsNotNull(response);
         Assert.AreEqual(ResponseType.InitializationResponse, response.Value.Type);
-        Assert.AreEqual("Baseline", (await ClientInitializationResponse.ReadAsync(response.Value.Data, cts.Token)).Capabilities);
+        var initialization = await ClientInitializationResponse.ReadAsync(response.Value.Data, cts.Token);
+        Assert.AreEqual(Environment.ProcessId, initialization.ProcessId);
+        Assert.AreEqual("Baseline", initialization.Capabilities);
     }
 
     [TestMethod]
@@ -79,7 +81,7 @@ public class WebSocketTransportTests
         var environment = new Dictionary<string, string>();
         server.ConfigureEnvironment(environment);
         using var agent = new WebSocketTransport(environment[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint], currentKey.GetPublicKey(), _ => { }, 5000);
-        await agent.SendAsync(new ClientInitializationResponse("Baseline"), cts.Token);
+        await agent.SendAsync(new ClientInitializationResponse(Environment.ProcessId, "Baseline"), cts.Token);
         await server.WaitForConnectionAsync(cts.Token);
     }
 
@@ -94,7 +96,7 @@ public class WebSocketTransportTests
         server.ConfigureEnvironment(environment);
         var url = new Uri(environment[AgentEnvironmentVariables.DotNetWatchHotReloadWebSocketEndpoint]);
         using var agent = new WebSocketTransport(url.ToString(), key.GetPublicKey(), _ => { }, 5000);
-        await agent.SendAsync(new ClientInitializationResponse("Baseline"), cts.Token);
+        await agent.SendAsync(new ClientInitializationResponse(Environment.ProcessId, "Baseline"), cts.Token);
         await server.WaitForConnectionAsync(cts.Token);
 
         using var second = new ClientWebSocket();
@@ -191,7 +193,7 @@ public class WebSocketTransportTests
         using (var agent = new WebSocketTransport(server.ServerUrls[0], key.GetPublicKey(), _ => { }, 5000))
         {
             await Assert.ThrowsExactlyAsync<InvalidDataException>(
-                async () => await agent.SendAsync(new ClientInitializationResponse("Baseline"), cts.Token));
+                async () => await agent.SendAsync(new ClientInitializationResponse(Environment.ProcessId, "Baseline"), cts.Token));
         }
 
         Assert.IsFalse(await initializationReceived.Task.WaitAsync(cts.Token));
@@ -215,7 +217,7 @@ public class WebSocketTransportTests
         }, cts.Token);
 
         using var agent = new WebSocketTransport(server.ServerUrls[0], key.GetPublicKey(), _ => { }, 5000);
-        await agent.SendAsync(new ClientInitializationResponse("Baseline"), cts.Token);
+        await agent.SendAsync(new ClientInitializationResponse(Environment.ProcessId, "Baseline"), cts.Token);
         Assert.AreEqual(WebSocketMessageType.Binary, await initializationReceived.Task.WaitAsync(cts.Token));
     }
 
@@ -238,6 +240,6 @@ public class WebSocketTransportTests
 
         using var agent = new WebSocketTransport(server.ServerUrls[0], key.GetPublicKey(), _ => { }, 1000);
         await Assert.ThrowsExactlyAsync<TimeoutException>(
-            async () => await agent.SendAsync(new ClientInitializationResponse("Baseline"), cts.Token));
+            async () => await agent.SendAsync(new ClientInitializationResponse(Environment.ProcessId, "Baseline"), cts.Token));
     }
 }
