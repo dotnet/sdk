@@ -20,20 +20,15 @@ internal static class BrowserToolsBuildOutputsExtensions
         /// </summary>
         public static BrowserToolsBuildOutputs? FromProject(ProjectInstance projectInstance, ILogger logger)
         {
-            var result = BrowserToolsBuildOutputs.FromProjectSettings(
-                configuration: projectInstance.GetPropertyValue(PropertyNames.Configuration),
-                intermediateOutputDirectory: projectInstance.GetIntermediateOutputDirectory(),
-                enableHotReloadInRuntimeConfigDevFile: projectInstance.TryGetBooleanPropertyValue(PropertyNames.EnableHotReloadInRuntimeConfigDevFile),
-                browserToolsAssetPrefix: projectInstance.GetPropertyValue(PropertyNames.HotReloadBrowserToolsAssetPrefix),
-                staticWebAssetsEnabled: projectInstance.GetBooleanPropertyValue(PropertyNames.StaticWebAssetsEnabled),
-                jsModulesEnabled: projectInstance.GetBooleanPropertyValue(PropertyNames.JSModulesEnabled));
+            var result =
+                projectInstance.GetBooleanPropertyValue(PropertyNames.HotReloadBrowserToolsEnabled, defaultValue: false) &&
+                projectInstance.GetIntermediateOutputDirectory() is { } intermediateOutputDirectory
+                ? BrowserToolsBuildOutputs.FromProjectSettings(intermediateOutputDirectory)
+                : null;
 
             if (result == null)
             {
-                logger.Log(LogEvents.BrowserToolsNotSupportedByProjectSettings,
-                    $"{PropertyNames.HotReloadBrowserToolsAssetPrefix}='{projectInstance.GetPropertyValue(PropertyNames.HotReloadBrowserToolsAssetPrefix)}', " +
-                    $"{PropertyNames.StaticWebAssetsEnabled}='{projectInstance.GetBooleanPropertyValue(PropertyNames.StaticWebAssetsEnabled)}', " +
-                    $"{PropertyNames.JSModulesEnabled}='{projectInstance.GetBooleanPropertyValue(PropertyNames.JSModulesEnabled)}'");
+                logger.Log(LogEvents.BrowserToolsNotSupportedByProjectSettings);
             }
 
             return result;
