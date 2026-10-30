@@ -87,7 +87,7 @@ function Copy-DotnetupReleaseAssets {
     }
     Write-DotnetupDebug "Staging $($Release.files.Count) files from '$SourceDirectory' to '$DestinationDirectory'."
 
-    # BlobArtifacts is flat even though manifest entries carry the versioned publishing path.
+    # Read flat BlobArtifacts, but restore the manifest's versioned paths when staging for ESRP.
     # Validate the complete set before staging anything for ESRP.
     foreach ($file in $Release.files) {
         $path = Join-Path $SourceDirectory $file.name
@@ -96,12 +96,12 @@ function Copy-DotnetupReleaseAssets {
         }
     }
 
-    New-Item -ItemType Directory -Path $DestinationDirectory -ErrorAction Stop | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $DestinationDirectory "dotnetup/$($Release.version)") -Force -ErrorAction Stop | Out-Null
     foreach ($file in $Release.files) {
         $path = Join-Path $SourceDirectory $file.name
         $file.sha512 = (Get-FileHash -LiteralPath $path -Algorithm SHA512).Hash.ToLowerInvariant()
-        Copy-Item -LiteralPath $path -Destination (Join-Path $DestinationDirectory $file.name) -ErrorAction Stop
-        Write-DotnetupDebug "Staged $($file.name): $((Get-Item -LiteralPath $path).Length) bytes, SHA-512=$($file.sha512)."
+        Copy-Item -LiteralPath $path -Destination (Join-Path $DestinationDirectory $file.relativePath) -ErrorAction Stop
+        Write-DotnetupDebug "Staged $($file.relativePath): $((Get-Item -LiteralPath $path).Length) bytes, SHA-512=$($file.sha512)."
     }
 }
 
@@ -131,6 +131,10 @@ function Get-DotnetupCdnRelease {
             $name = [Uri]::UnescapeDataString($uri.Segments[-1])
             if ($Release.files.name -cnotcontains $name -or -not $urls.TryAdd($name, $uri.AbsoluteUri)) {
                 throw "Unexpected or duplicate ESRP download '$name'."
+            }
+            $asset = $Release.files | Where-Object { $_.name -ceq $name }
+            if (-not [Uri]::UnescapeDataString($uri.AbsolutePath).EndsWith("/$($asset.relativePath)", [StringComparison]::Ordinal)) {
+                throw "The ESRP download URL must preserve '$($asset.relativePath)': '$($uri.AbsoluteUri)'."
             }
         }
     }
