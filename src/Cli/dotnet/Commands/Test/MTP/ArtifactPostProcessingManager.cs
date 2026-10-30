@@ -130,26 +130,26 @@ internal sealed class ArtifactPostProcessingManager(bool enabled = true, Cancell
         TestRunCancellationReason cancellationReason,
         ArtifactPostProcessingRunSummary runSummary)
     {
-        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
-            SnapshotApplications(),
-            SnapshotArtifacts(),
-            cancellationReason);
-        ArtifactPostProcessingJob[] runnableJobs =
+        ArtifactPostProcessingApplication[] applications =
         [
-            .. plan.Jobs.Where(job =>
+            .. SnapshotApplications().Where(application =>
             {
-                bool supported = !TestApplication.RequiresHttpTransport(job.Application.Module);
+                bool supported = !TestApplication.RequiresHttpTransport(application.Module);
                 if (!supported)
                 {
                     Logger.LogTrace(
-                        $"Skipping artifact post-processing for WebAssembly module '{job.Application.Module.TargetPath}' because no browser-aware merge host is available.");
+                        $"Skipping artifact post-processing for WebAssembly module '{application.Module.TargetPath}' because no browser-aware merge host is available.");
                 }
 
                 return supported;
             }),
         ];
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            applications,
+            SnapshotArtifacts(),
+            cancellationReason);
 
-        if (runnableJobs.Length == 0)
+        if (plan.Jobs.Count == 0)
         {
             return;
         }
@@ -163,7 +163,7 @@ internal sealed class ArtifactPostProcessingManager(bool enabled = true, Cancell
         int executedJobs = 0;
         int failedJobs = 0;
 
-        foreach (ArtifactPostProcessingJob job in runnableJobs)
+        foreach (ArtifactPostProcessingJob job in plan.Jobs)
         {
             if (ctrlC.Token.IsCancellationRequested)
             {

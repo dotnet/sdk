@@ -789,6 +789,41 @@ public class ArtifactPostProcessingManagerTests
     }
 
     [TestMethod]
+    public async Task ExecuteAsync_UnsupportedCandidateCannotDisplaceRequiredDesktopWorker()
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        using var ctrlC = CreateCancellationManager();
+        var manager = new ArtifactPostProcessingManager();
+        TestModule desktop = CreateModule();
+        TestModule browser = CreateModule("browser-wasm") with { TargetPath = "Browser.dll" };
+        foreach (TestModule module in new[] { desktop, browser })
+        {
+            manager.RecordCapabilities(module, "net10.0", "x64", new HandshakeMessage(new Dictionary<byte, string>
+            {
+                [HandshakeMessagePropertyNames.SupportedPostProcessorKinds] = module == browser
+                    ? "example.summary;example.other"
+                    : "example.summary",
+                [HandshakeMessagePropertyNames.RequiredPostProcessorKinds] = "example.summary",
+            }));
+        }
+
+        manager.RecordArtifact(desktop, "net10.0", "x64", "desktop",
+            new FileArtifactMessage("required\0.summary", "Summary", null, null, null, null, "example.summary"));
+        foreach (string path in new[] { "first.other", "second.other" })
+        {
+            manager.RecordArtifact(browser, "net10.0", "x64", "browser",
+                new FileArtifactMessage(path, "Other", null, null, null, null, "example.other"));
+        }
+
+        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC, TestRunCancellationReason.None, CreateRunSummary());
+
+        console.GetOutput().Should().Contain(
+            FormatPrefix(CliCommandStrings.ArtifactPostProcessingFailed, desktop.TargetPath),
+            "the desktop job must be attempted; an unsupported candidate covering more groups must not steal it");
+    }
+
+    [TestMethod]
     public async Task ExecuteAsync_ReporterFailureRemainsReportingDegradation()
     {
         var console = new Mock<IConsole>();

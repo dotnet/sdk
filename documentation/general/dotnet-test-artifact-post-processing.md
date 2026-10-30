@@ -104,6 +104,10 @@ are relaunched. Ties are broken deterministically — preferring an application 
 more of the inputs, then the higher target-framework version, then path order — so a given
 input set always produces the same plan.
 
+Applications whose worker transport is unsupported are removed **before** election. An
+unsupported application must not win more groups and then be discarded, losing a required
+job that a desktop application could have processed.
+
 ## How the merge is performed
 
 Each elected application is relaunched **once** — not to run tests, but as an MTP tool. The tool
