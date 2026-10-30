@@ -53,7 +53,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
     /// <summary>
     /// Creates and starts a new <see cref="WebSocketClientTransport"/> instance.
     /// </summary>
-    public static async Task<WebSocketClientTransport> CreateAsync(WebSocketConfig config, BrowserToolsBuildOutputs buildOutputs, ILogger logger, CancellationToken cancellationToken)
+    public static async Task<WebSocketClientTransport> CreateAsync(WebSocketConfig config, SharedSecretBuildOutputs buildOutputs, ILogger logger, CancellationToken cancellationToken)
     {
         var handler = new RequestHandler(config, buildOutputs, logger);
         var server = await KestrelWebSocketServer.StartServerAsync(config, handler.HandleRequestAsync, cancellationToken);
@@ -79,7 +79,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
     public override ValueTask<ClientTransportResponse?> ReadAsync(CancellationToken cancellationToken)
         => _handler.ReadAsync(cancellationToken);
 
-    private sealed class RequestHandler(WebSocketConfig webSocketConfig, BrowserToolsBuildOutputs buildOutputs, ILogger logger) : IDisposable
+    private sealed class RequestHandler(WebSocketConfig webSocketConfig, SharedSecretBuildOutputs buildOutputs, ILogger logger) : IDisposable
     {
         public TaskCompletionSource<WebSocket?> ClientConnectedSource { get; } = new();
 
@@ -132,7 +132,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
             if (subProtocol == null)
             {
                 logger.LogWarning("WebSocket connection rejected: missing subprotocol (shared secret)");
-                context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                 return;
             }
 
@@ -152,7 +152,7 @@ internal sealed class WebSocketClientTransport : ClientTransport
                 catch (Exception ex) when (ex is CryptographicException or FormatException)
                 {
                     logger.LogWarning("WebSocket connection rejected: invalid shared secret - {Message}", ex.Message);
-                    context.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    context.Response.StatusCode = StatusCodes.Status401Unauthorized;
                     return;
                 }
             }

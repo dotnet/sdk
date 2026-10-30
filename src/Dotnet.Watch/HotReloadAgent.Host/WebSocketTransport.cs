@@ -87,7 +87,10 @@ internal sealed class WebSocketTransport(string serverUrl, string serverPublicKe
             cancellationToken).ConfigureAwait(false);
     }
 
-    public override async ValueTask<RequestStream> ReceiveAsync(CancellationToken cancellationToken)
+    public override ValueTask<RequestStream> ReceiveAsync(CancellationToken cancellationToken)
+        => ReceiveAsync(expectedMessageType: null, maxMessageLength: null, cancellationToken);
+
+    private async ValueTask<RequestStream> ReceiveAsync(WebSocketMessageType? expectedMessageType, int? maxMessageLength, CancellationToken cancellationToken)
     {
         if (_webSocket.State != WebSocketState.Open)
         {
@@ -104,12 +107,21 @@ internal sealed class WebSocketTransport(string serverUrl, string serverPublicKe
             WebSocketReceiveResult result;
             do
             {
-                result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken).ConfigureAwait(false);
+                var receiveCount = maxMessageLength.HasValue
+                    ? (int)Math.Min(buffer.Length, maxMessageLength.Value + 1L - _receiveBuffer.Length)
+                    : buffer.Length;
+                result = await _webSocket.ReceiveAsync(new ArraySegment<byte>(buffer, 0, receiveCount), cancellationToken).ConfigureAwait(false);
 
                 if (result.MessageType == WebSocketMessageType.Close)
                 {
                     Log("Server closed connection.");
                     return new RequestStream(stream: null, disposeOnCompletion: false);
+                }
+
+                if ((expectedMessageType.HasValue && result.MessageType != expectedMessageType.Value) ||
+                    (maxMessageLength.HasValue && _receiveBuffer.Length + result.Count > maxMessageLength.Value))
+                {
+                    throw new InvalidDataException("The Hot Reload provider returned an invalid authentication response.");
                 }
 
                 _receiveBuffer.Write(buffer, 0, result.Count);
@@ -150,26 +162,16 @@ internal sealed class WebSocketTransport(string serverUrl, string serverPublicKe
         Debug.Assert(sharedSecret.Length == 32);
 
         var encodedLength = Base64.GetMaxEncodedToUtf8Length(sharedSecret.Length);
-        _receiveBuffer ??= new MemoryStream();
-        _receiveBuffer.SetLength(encodedLength + 1);
-        var buffer = _receiveBuffer.GetBuffer();
-        var count = 0;
-        WebSocketReceiveResult result;
-        do
+        using var response = await ReceiveAsync(WebSocketMessageType.Text, encodedLength, cancellationToken).ConfigureAwait(false);
+        if (response.Stream == null)
         {
-            result = await _webSocket.ReceiveAsync(
-                new ArraySegment<byte>(buffer, count, encodedLength + 1 - count), cancellationToken).ConfigureAwait(false);
-            count += result.Count;
-            if (result.MessageType != WebSocketMessageType.Text || count > encodedLength)
-            {
-                throw new InvalidDataException("The Hot Reload provider returned an invalid authentication response.");
-            }
+            throw new InvalidDataException("The Hot Reload provider closed the connection before authentication.");
         }
-        while (!result.EndOfMessage);
 
         Span<byte> expectedSecret = stackalloc byte[encodedLength];
         Base64.EncodeToUtf8(sharedSecret, expectedSecret, out _, out _);
-        if (!buffer.AsSpan(0, count).SequenceEqual(expectedSecret))
+        Debug.Assert(_receiveBuffer != null);
+        if (!_receiveBuffer.GetBuffer().AsSpan(0, (int)_receiveBuffer.Length).SequenceEqual(expectedSecret))
         {
             throw new InvalidDataException("The Hot Reload provider did not return the expected shared secret.");
         }

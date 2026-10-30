@@ -4,7 +4,7 @@
 #nullable disable
 
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.HotReload;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -59,7 +59,7 @@ public class EnsureHotReloadBrowserToolsKey : Task
     {
         try
         {
-            (PublicKey, Regenerated) = HotReloadKeyPair.Ensure(PublicKeyPath, PrivateKeyPath,
+            (PublicKey, Regenerated) = HotReloadKeyPair.GetOrCreate(PublicKeyPath, PrivateKeyPath,
                 message => Log.LogMessage(MessageImportance.Low, message));
             return true;
         }

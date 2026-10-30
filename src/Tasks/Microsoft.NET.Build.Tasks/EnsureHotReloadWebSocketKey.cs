@@ -4,7 +4,7 @@
 #nullable disable
 
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.HotReload;
+using Microsoft.DotNet.HotReload;
 using Task = Microsoft.Build.Utilities.Task;
 
 namespace Microsoft.NET.Build.Tasks;
@@ -24,7 +24,7 @@ public sealed class EnsureHotReloadWebSocketKey : Task
     {
         try
         {
-            (PublicKey, _) = HotReloadKeyPair.Ensure(PublicKeyPath, PrivateKeyPath,
+            (PublicKey, _) = HotReloadKeyPair.GetOrCreate(PublicKeyPath, PrivateKeyPath,
                 message => Log.LogMessage(MessageImportance.Low, message));
             return true;
         }

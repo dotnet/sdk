@@ -354,7 +354,7 @@ Copyright (c) .NET Foundation. All rights reserved.
             and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
             and '@(ProjectCapability->WithMetadataValue('Identity', 'HotReloadWebSockets'))' != ''">
     <PropertyGroup>
-      <!-- Keep these paths in sync with BrowserToolsBuildOutputs. -->
+      <!-- Keep these paths in sync with SharedSecretBuildOutputs. -->
       <_HotReloadWebSocketKeyDirectory>$(IntermediateOutputPath)HotReload\</_HotReloadWebSocketKeyDirectory>
     </PropertyGroup>
     <EnsureHotReloadWebSocketKey

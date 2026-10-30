@@ -22,10 +22,10 @@ internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNod
             var keyDirectory = Path.Combine(
                 project.ProjectInstance.GetIntermediateOutputDirectory()
                     ?? throw new InvalidOperationException("The mobile project must have an intermediate output directory."),
-                BrowserToolsBuildOutputs.DirectoryName);
+                SharedSecretBuildOutputs.DirectoryName);
             var transport = await WebSocketClientTransport.CreateAsync(
                 context.EnvironmentOptions.AgentWebSocketConfig,
-                new BrowserToolsBuildOutputs(keyDirectory, "websocket-key.public.json", "websocket-key.private.json"),
+                new SharedSecretBuildOutputs(keyDirectory, SharedSecretBuildOutputs.WebSocketPublicKeyFileName, SharedSecretBuildOutputs.WebSocketPrivateKeyFileName),
                 clientLogger,
                 cancellationToken);
 

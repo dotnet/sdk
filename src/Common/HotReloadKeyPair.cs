@@ -6,7 +6,7 @@
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace Microsoft.NET.Sdk.HotReload;
+namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
 /// Creates, validates, and reuses the two JSON documents that describe the <c>dotnet watch</c> key
@@ -23,7 +23,7 @@ namespace Microsoft.NET.Sdk.HotReload;
 /// </summary>
 internal static class HotReloadKeyPair
 {
-    public static (string PublicKey, bool Regenerated) Ensure(string publicKeyPath, string privateKeyPath, Action<string> log)
+    public static (string publicKey, bool isNewKey) GetOrCreate(string publicKeyPath, string privateKeyPath, Action<string> log)
     {
         if (TryReuseExistingKeyPair(publicKeyPath, privateKeyPath, log, out var existingPublicKey))
         {

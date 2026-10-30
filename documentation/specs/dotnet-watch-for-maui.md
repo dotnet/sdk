@@ -62,7 +62,7 @@ Mobile uses the same RSA-OAEP-SHA256 exchange as WASM/browser tools:
 3. **Send a secret.** The agent generates 32 random bytes, encrypts them with the
    public key, and sends URL-encoded standard Base64 as the WebSocket subprotocol.
 4. **Echo the secret.** Watch loads the current key pair when the app connects.
-   It returns HTTP 500 for unusable key files or HTTP 400 for invalid credentials,
+   It returns HTTP 500 for unusable key files or HTTP 401 for invalid credentials,
    before upgrade. On success, its first WebSocket text message is the decrypted
    secret encoded as Base64.
 5. **Verify the provider.** The agent checks the echo before sending initialization

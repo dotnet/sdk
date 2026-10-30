@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.HotReload;
 /// They must stay in sync with Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets and
 /// _GenerateHotReloadWebSocketKey in Microsoft.NET.Sdk.targets.
 /// </summary>
-internal sealed class BrowserToolsBuildOutputs
+internal sealed class SharedSecretBuildOutputs
 {
     /// <summary>
     /// Subdirectory of the project's intermediate output that holds the browser tools build outputs.
@@ -34,6 +34,8 @@ internal sealed class BrowserToolsBuildOutputs
 
     public const string PublicKeyFileName = "browser-tools-key.public.json";
     public const string PrivateKeyFileName = "browser-tools-key.private.json";
+    public const string WebSocketPublicKeyFileName = "websocket-key.public.json";
+    public const string WebSocketPrivateKeyFileName = "websocket-key.private.json";
 
     private const int SupportedKeyDocumentVersion = 1;
     private const string SupportedKeyAlgorithm = "RSA-OAEP-SHA256";
@@ -43,7 +45,7 @@ internal sealed class BrowserToolsBuildOutputs
     private readonly string _publicKeyPath;
     private readonly string _privateKeyPath;
 
-    public BrowserToolsBuildOutputs(string directory, string publicKeyFileName, string privateKeyFileName)
+    public SharedSecretBuildOutputs(string directory, string publicKeyFileName, string privateKeyFileName)
     {
         _publicKeyPath = Path.Combine(directory, publicKeyFileName);
         _privateKeyPath = Path.Combine(directory, privateKeyFileName);
@@ -57,7 +59,7 @@ internal sealed class BrowserToolsBuildOutputs
     /// so a project that opted out - or an SDK that has no browser tools initializer - is recognized without touching the file
     /// system.
     /// </summary>
-    public static BrowserToolsBuildOutputs? FromProjectSettings(
+    public static SharedSecretBuildOutputs? FromProjectSettings(
         string configuration,
         string? intermediateOutputDirectory,
         bool? enableHotReloadInRuntimeConfigDevFile,
@@ -76,16 +78,8 @@ internal sealed class BrowserToolsBuildOutputs
             return null;
         }
 
-        return new BrowserToolsBuildOutputs(Path.Combine(intermediateOutputDirectory, DirectoryName), PublicKeyFileName, PrivateKeyFileName);
+        return new SharedSecretBuildOutputs(Path.Combine(intermediateOutputDirectory, DirectoryName), PublicKeyFileName, PrivateKeyFileName);
     }
-
-    /// <summary>
-    /// Creates the outputs for a directory directly, bypassing project evaluation. Only used by
-    /// tests: production code always derives the directory from the project instance so that the
-    /// paths cannot drift from what the build wrote.
-    /// </summary>
-    internal static BrowserToolsBuildOutputs CreateForTesting(string directory)
-        => new(directory, PublicKeyFileName, PrivateKeyFileName);
 
     /// <summary>
     /// Creates the provider's session key from the private half the build produced, after checking

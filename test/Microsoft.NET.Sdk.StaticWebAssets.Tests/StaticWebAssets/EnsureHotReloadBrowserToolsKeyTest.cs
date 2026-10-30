@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.HotReload;
+using Microsoft.DotNet.HotReload;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
@@ -147,7 +147,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var publicKeyPath = Path.Combine(blockedDirectory, "key.public.json");
             var privateKeyPath = Path.Combine(blockedDirectory, "key.private.json");
 
-            Assert.ThrowsExactly<IOException>(() => HotReloadKeyPair.Ensure(publicKeyPath, privateKeyPath, _ => { }));
+            Assert.ThrowsExactly<IOException>(() => HotReloadKeyPair.GetOrCreate(publicKeyPath, privateKeyPath, _ => { }));
         }
 
         [TestMethod]

@@ -19,13 +19,13 @@ public class WebSocketTransportTests
     {
         private readonly string _directory = Path.Combine(Path.GetTempPath(), "mobile-hot-reload", Guid.NewGuid().ToString("N"));
         private readonly string _keyDirectory;
-        public BrowserToolsBuildOutputs Outputs { get; }
+        public SharedSecretBuildOutputs Outputs { get; }
 
         public BuildOutputs()
         {
-            _keyDirectory = Path.Combine(_directory, BrowserToolsBuildOutputs.DirectoryName);
+            _keyDirectory = Path.Combine(_directory, SharedSecretBuildOutputs.DirectoryName);
             Directory.CreateDirectory(_keyDirectory);
-            Outputs = new BrowserToolsBuildOutputs(_keyDirectory, "websocket-key.public.json", "websocket-key.private.json");
+            Outputs = new SharedSecretBuildOutputs(_keyDirectory, SharedSecretBuildOutputs.WebSocketPublicKeyFileName, SharedSecretBuildOutputs.WebSocketPrivateKeyFileName);
         }
 
         public SharedSecretProvider WriteKey()
@@ -33,11 +33,11 @@ public class WebSocketTransportTests
             var key = new SharedSecretProvider();
             var p = key.RSA.ExportParameters(includePrivateParameters: true);
             var publicKey = key.GetPublicKey();
-            File.WriteAllText(Path.Combine(_keyDirectory, "websocket-key.public.json"), JsonSerializer.Serialize(new
+            File.WriteAllText(Path.Combine(_keyDirectory, SharedSecretBuildOutputs.WebSocketPublicKeyFileName), JsonSerializer.Serialize(new
             {
                 version = 1, algorithm = "RSA-OAEP-SHA256", format = "SubjectPublicKeyInfo", publicKey
             }));
-            File.WriteAllText(Path.Combine(_keyDirectory, "websocket-key.private.json"), JsonSerializer.Serialize(new
+            File.WriteAllText(Path.Combine(_keyDirectory, SharedSecretBuildOutputs.WebSocketPrivateKeyFileName), JsonSerializer.Serialize(new
             {
                 version = 1, algorithm = "RSA-OAEP-SHA256", format = "RSAParameters", publicKey,
                 parameters = new { modulus = p.Modulus, exponent = p.Exponent, d = p.D, p = p.P, q = p.Q, dp = p.DP, dq = p.DQ, inverseQ = p.InverseQ }
@@ -111,9 +111,9 @@ public class WebSocketTransportTests
     }
 
     [TestMethod]
-    [DataRow(null, HttpStatusCode.BadRequest)]
-    [DataRow("invalid", HttpStatusCode.BadRequest)]
-    [DataRow("another-key", HttpStatusCode.BadRequest)]
+    [DataRow(null, HttpStatusCode.Unauthorized)]
+    [DataRow("invalid", HttpStatusCode.Unauthorized)]
+    [DataRow("another-key", HttpStatusCode.Unauthorized)]
     [DataRow("missing-build-output", HttpStatusCode.InternalServerError)]
     public async Task RejectsInvalidHandshakeBeforeUpgrade(string? credential, HttpStatusCode expectedStatus)
     {

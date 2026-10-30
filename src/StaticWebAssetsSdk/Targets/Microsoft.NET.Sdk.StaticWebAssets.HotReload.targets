@@ -69,7 +69,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <!-- These paths are a Hot Reload contract. Keep them in sync with
-           Microsoft.DotNet.Watch.BrowserToolsBuildOutputs. -->
+           Microsoft.DotNet.HotReload.SharedSecretBuildOutputs. -->
       <_HotReloadBrowserToolsIntermediatePath>$(IntermediateOutputPath)HotReload\</_HotReloadBrowserToolsIntermediatePath>
       <_HotReloadBrowserToolsPublicKeyFile>$(_HotReloadBrowserToolsIntermediatePath)browser-tools-key.public.json</_HotReloadBrowserToolsPublicKeyFile>
       <_HotReloadBrowserToolsPrivateKeyFile>$(_HotReloadBrowserToolsIntermediatePath)browser-tools-key.private.json</_HotReloadBrowserToolsPrivateKeyFile>
