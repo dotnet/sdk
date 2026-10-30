@@ -394,6 +394,43 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     }
 
     [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void ComputeRunArguments_NoBuild_UsesMultiThreading(bool multiThreaded)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(identifier: multiThreaded.ToString());
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine(Path.GetFileName(args.Single()));
+            """);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // MT runs targets with a sentinel process directory.
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <Target Name="_SetCustomRunArgs" BeforeTargets="ComputeRunArguments">
+                <PropertyGroup>
+                  <RunArguments>$(RunArguments) &quot;$([System.IO.Directory]::GetCurrentDirectory())&quot;</RunArguments>
+                </PropertyGroup>
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs", "--no-build", "--no-cache", "--no-launch-profile", $"-mt:{multiThreaded}")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDDISABLEFEATURESFROMVERSION", "")
+            .WithEnvironmentVariable("MSBUILDENABLEALLPROPERTYFUNCTIONS", "1")
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(multiThreaded ? "MT-sentinel-CWD" : Path.GetFileName(testInstance.Path));
+    }
+
+    [TestMethod]
     public void ComputeRunArguments_Failure()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
