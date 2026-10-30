@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -64,12 +63,6 @@ internal class ArchiveInstallationValidator : IInstallationValidator
             return false;
         }
 
-        if (!ValidateWithHostFxr(installRoot, install.Version, install.Component, out string? hostFxrFailure))
-        {
-            failureReason = $"HostFxr validation failed: {hostFxrFailure}";
-            return false;
-        }
-
         // We should also validate whether the host is the maximum version or higher than all installed versions.
 
         return true;
@@ -96,61 +89,5 @@ internal class ArchiveInstallationValidator : IInstallationValidator
     private static bool DirectoryExistsAndNotEmpty(string path)
     {
         return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
-    }
-
-    private static bool ValidateWithHostFxr(string installRoot, ReleaseVersion resolvedVersion, InstallComponent component, out string? failureReason)
-    {
-        failureReason = null;
-
-        if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            //  Calling HostFxr is not working on Linux, so don't use it for validation until we fix that
-            //  See https://github.com/dotnet/sdk/issues/52821
-            return true;
-        }
-
-        try
-        {
-            var environmentInfo = HostFxrWrapper.getInfo(installRoot);
-
-            if (component == InstallComponent.SDK)
-            {
-                string expectedPath = Path.Combine(installRoot, "sdk", resolvedVersion.ToString());
-                bool found = environmentInfo.SdkInfo.Any(sdk =>
-                    string.Equals(sdk.Version.ToString(), resolvedVersion.ToString(), StringComparison.OrdinalIgnoreCase) &&
-                    DotnetupUtilities.PathsEqual(sdk.Path, expectedPath));
-                if (!found)
-                {
-                    var availableSdks = string.Join(", ", environmentInfo.SdkInfo.Select(s => $"{s.Version} @ {s.Path}"));
-                    failureReason = $"HostFxr did not report SDK {resolvedVersion} at '{expectedPath}'. Available SDKs: [{availableSdks}]";
-                }
-                return found;
-            }
-
-            if (!s_runtimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
-            {
-                failureReason = $"No runtime moniker mapping for component '{component}'.";
-                return false;
-            }
-
-            // The HostFxr returns paths like shared/Microsoft.NETCore.App (without version)
-            // but when comparing, we need to account for this
-            string expectedRuntimeBasePath = Path.Combine(installRoot, "shared", runtimeMoniker);
-            bool runtimeFound = environmentInfo.RuntimeInfo.Any(runtime =>
-                string.Equals(runtime.Name, runtimeMoniker, StringComparison.OrdinalIgnoreCase) &&
-                string.Equals(runtime.Version.ToString(), resolvedVersion.ToString(), StringComparison.OrdinalIgnoreCase) &&
-                DotnetupUtilities.PathsEqual(runtime.Path, expectedRuntimeBasePath));
-            if (!runtimeFound)
-            {
-                var availableRuntimes = string.Join(", ", environmentInfo.RuntimeInfo.Select(r => $"{r.Name} {r.Version} @ {r.Path}"));
-                failureReason = $"HostFxr did not report {runtimeMoniker} {resolvedVersion} at '{expectedRuntimeBasePath}'. Available runtimes: [{availableRuntimes}]";
-            }
-            return runtimeFound;
-        }
-        catch (Exception ex)
-        {
-            failureReason = $"HostFxr threw an exception: {ex}";
-            return false;
-        }
     }
 }
