@@ -79,6 +79,83 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         error.Message.Should().NotContain(projectDir, "the original empty path must not be absolutized");
     }
 
+    [TestMethod]
+    public void PlatformManifest_IsReusedWithinBuild()
+    {
+        var projectDir = CreateTempDir();
+        var manifestPath = Path.Combine(projectDir, "PlatformManifest.txt");
+        File.WriteAllText(manifestPath, "System.Runtime.dll|Platform.Package|9.0.0.0|9.0.0.0");
+
+        var engine = new MockBuildEngine();
+        var firstTask = CreateTask(engine);
+        firstTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+        firstTask.PlatformManifests = new ITaskItem[] { new MockTaskItem(manifestPath, new Dictionary<string, string>()) };
+
+        firstTask.Execute().Should().BeTrue();
+        engine.RegisteredTaskObjects.Should().ContainSingle();
+        ((ConflictItem[])engine.RegisteredTaskObjects.Values.Single()).Should().ContainSingle()
+            .Which.FileName.Should().Be("System.Runtime.dll");
+
+        File.Delete(manifestPath);
+
+        var secondTask = CreateTask(engine);
+        secondTask.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+        secondTask.PlatformManifests = new ITaskItem[] { new MockTaskItem(manifestPath, new Dictionary<string, string>()) };
+
+        secondTask.Execute().Should().BeTrue("the parsed manifest should be reused for the rest of the build");
+        engine.Errors.Should().BeEmpty();
+        engine.RegisteredTaskObjects.Should().ContainSingle("the same manifest path should use the same cache entry");
+        engine.RegisteredTaskObjectsQueries.Should().Be(2);
+    }
+
+    [TestMethod]
+    public void PlatformManifest_RelativePathsFromDifferentProjectsUseDifferentCacheEntries()
+    {
+        var firstProjectDir = CreateTempDir();
+        var secondProjectDir = CreateTempDir();
+        const string manifestPath = "PlatformManifest.txt";
+        var firstManifestPath = Path.Combine(firstProjectDir, manifestPath);
+        var secondManifestPath = Path.Combine(secondProjectDir, manifestPath);
+        File.WriteAllText(firstManifestPath, "System.Runtime.dll|Platform.Package|9.0.0.0|9.0.0.0");
+        File.WriteAllText(secondManifestPath, "System.Console.dll|Platform.Package|9.0.0.0|9.0.0.0");
+
+        var engine = new MockBuildEngine();
+        foreach (string projectDir in new[] { firstProjectDir, secondProjectDir })
+        {
+            var task = CreateTask(engine);
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+            task.PlatformManifests = new ITaskItem[] { new MockTaskItem(manifestPath, new Dictionary<string, string>()) };
+
+            task.Execute().Should().BeTrue();
+        }
+
+        engine.Errors.Should().BeEmpty();
+        engine.RegisteredTaskObjects.Should().HaveCount(2);
+        engine.RegisteredTaskObjectsQueries.Should().Be(2);
+    }
+
+    [TestMethod]
+    public void PlatformManifest_ParseFailuresAreNotCached()
+    {
+        var projectDir = CreateTempDir();
+        var manifestPath = Path.Combine(projectDir, "PlatformManifest.txt");
+        File.WriteAllText(manifestPath, "invalid");
+
+        var engine = new MockBuildEngine();
+        for (int i = 0; i < 2; i++)
+        {
+            var task = CreateTask(engine);
+            task.TaskEnvironment = TaskEnvironmentHelper.CreateForTest(projectDir);
+            task.PlatformManifests = new ITaskItem[] { new MockTaskItem(manifestPath, new Dictionary<string, string>()) };
+
+            task.Execute().Should().BeFalse();
+        }
+
+        engine.Errors.Should().HaveCount(2);
+        engine.RegisteredTaskObjects.Should().BeEmpty();
+        engine.RegisteredTaskObjectsQueries.Should().Be(2);
+    }
+
     /// <summary>
     /// TargetFrameworkDirectories with a relative ItemSpec must preserve the pre-migration
     /// behavior: the derived FrameworkList.xml path is invalid because it is not rooted.
