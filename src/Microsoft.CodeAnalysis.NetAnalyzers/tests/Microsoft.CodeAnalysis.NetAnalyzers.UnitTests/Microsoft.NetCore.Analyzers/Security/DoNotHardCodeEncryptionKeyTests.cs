@@ -39,6 +39,90 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         }
 
         [TestMethod]
+        public async Task LiteralSourceInNonconstantCatchFilter_RunsValueContentAnalysis_CSharpAsync()
+        {
+            var counts = await GetCSharpFlowCountsAsync("""
+                using System;
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    void Method(byte[] key, SymmetricAlgorithm algorithm, int mode)
+                    {
+                        try
+                        {
+                            algorithm.GetHashCode();
+                        }
+                        catch (Exception) when (mode == 1)
+                        {
+                            key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        }
+                        catch (Exception)
+                        {
+                        }
+
+                        algorithm.Key = key;
+                    }
+                }
+                """,
+                false,
+                GetCSharpResultAt(20, 9, 14, 19, "byte[] SymmetricAlgorithm.Key", "void TestClass.Method(byte[] key, SymmetricAlgorithm algorithm, int mode)", "byte[]", "void TestClass.Method(byte[] key, SymmetricAlgorithm algorithm, int mode)"));
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.IsGreaterThan(0, counts.ValueContentCount);
+        }
+
+        [TestMethod]
+        public async Task LiteralSourceInInfeasibleCatchFilter_CSharp_NoDiagnosticAsync()
+        {
+            var counts = await GetCSharpFlowCountsAsync("""
+                using System;
+                using System.Security.Cryptography;
+
+                class TestClass
+                {
+                    void Method(byte[] key, SymmetricAlgorithm algorithm)
+                    {
+                        int mode = 0;
+                        try
+                        {
+                            algorithm.GetHashCode();
+                        }
+                        catch (Exception) when (mode == 1)
+                        {
+                            key = new byte[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+                        }
+
+                        algorithm.Key = key;
+                    }
+                }
+                """);
+            Assert.IsGreaterThan(0, counts.DataflowCount);
+            Assert.IsGreaterThan(0, counts.ValueContentCount);
+        }
+
+        [TestMethod]
+        public async Task LiteralSourceInInfeasibleCatchFilter_VB_NoDiagnosticAsync()
+        {
+            await VerifyVisualBasicWithDependenciesAsync("""
+                Imports System
+                Imports System.Security.Cryptography
+
+                Public Class TestClass
+                    Public Sub Method(key As Byte(), algorithm As SymmetricAlgorithm)
+                        Dim mode = 0
+                        Try
+                            algorithm.GetHashCode()
+                        Catch ex As Exception When mode = 1
+                            key = New Byte() {1, 2, 3, 4, 5, 6, 7, 8}
+                        End Try
+
+                        algorithm.Key = key
+                    End Sub
+                End Class
+                """);
+        }
+
+        [TestMethod]
         public async Task LiteralSourceOnInfeasibleBranch_VB_NoDiagnosticAsync()
         {
             await VerifyVisualBasicWithDependenciesAsync("""
