@@ -59,7 +59,7 @@ internal class ArchiveInstallationValidator : IInstallationValidator
                 : s_runtimeMonikerByComponent.TryGetValue(install.Component, out string? moniker)
                     ? Path.Combine(installRoot, "shared", moniker, resolvedVersion)
                     : "<unknown>";
-            failureReason = $"Component layout validation failed. Expected directory '{expectedDir}' to exist and be non-empty.";
+            failureReason = $"Component layout validation failed. Expected '{expectedDir}' to contain {(install.Component == InstallComponent.SDK ? "dotnet.dll" : "the framework .deps.json")}.";
             return false;
         }
 
@@ -69,25 +69,22 @@ internal class ArchiveInstallationValidator : IInstallationValidator
     }
 #pragma warning restore CA1822
 
+    /// <summary>
+    /// Matches how hostfxr recognizes installs: an SDK version folder must contain <c>dotnet.dll</c>, and a
+    /// runtime version folder must contain <c>&lt;framework name&gt;.deps.json</c>.
+    /// </summary>
     private static bool ValidateComponentLayout(string installRoot, string resolvedVersion, InstallComponent component)
     {
         if (component == InstallComponent.SDK)
         {
-            string sdkDirectory = Path.Combine(installRoot, "sdk", resolvedVersion);
-            return DirectoryExistsAndNotEmpty(sdkDirectory);
+            return File.Exists(Path.Combine(installRoot, "sdk", resolvedVersion, "dotnet.dll"));
         }
 
         if (s_runtimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker))
         {
-            string runtimeDirectory = Path.Combine(installRoot, "shared", runtimeMoniker, resolvedVersion);
-            return DirectoryExistsAndNotEmpty(runtimeDirectory);
+            return File.Exists(Path.Combine(installRoot, "shared", runtimeMoniker, resolvedVersion, runtimeMoniker + ".deps.json"));
         }
 
         return false;
-    }
-
-    private static bool DirectoryExistsAndNotEmpty(string path)
-    {
-        return Directory.Exists(path) && Directory.EnumerateFileSystemEntries(path).Any();
     }
 }
