@@ -46,7 +46,7 @@ public class TelemetryClientTests : SdkTest
             AppContext.SetData(drainBudgetName, 17);
             Action shutdown = () => TelemetryClient.FlushProviders(exitCode);
             shutdown.Should().NotThrow();
-            processor.Timeout.Should().Be(boundedExport ? boundedTimeout : exitCode == 0 ? Timeout.Infinite : 300);
+            processor.Timeout.Should().Be(boundedExport ? boundedTimeout : exitCode == 0 ? 100 : 300);
             processor.DrainBudget.Should().Be(boundedExport || exitCode == 0 ? 17 : 300);
             AppContext.GetData(drainBudgetName).Should().Be(17);
         }
