@@ -11,7 +11,7 @@ trigger:
   branches:
     include:
     - main
-    - release/11.0.1*
+    - release/11.0.2*
     - internal/release/*
     - exp/*
 pr:
@@ -82,7 +82,7 @@ extends:
 
     stages:
     ############### ONELOCBUILD STAGE ###############
-    - ${{ if and(or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI')), eq(variables['Build.SourceBranch'], 'refs/heads/release/11.0.1xx')) }}:
+    - ${{ if and(or(eq(variables['Build.Reason'], 'IndividualCI'), eq(variables['Build.Reason'], 'BatchedCI')), eq(variables['Build.SourceBranch'], 'refs/heads/release/11.0.2xx')) }}:
       - stage: onelocbuild
         displayName: OneLocBuild
         dependsOn: []
@@ -92,7 +92,7 @@ extends:
             CreatePr: true
             LclSource: lclFilesfromPackage
             LclPackageId: LCL-JUNO-PROD-DOTNETSDK
-            MirrorBranch: release/11.0.1xx
+            MirrorBranch: release/11.0.2xx
             MirrorRepo: sdk
 
     ############### BUILD STAGE ###############
