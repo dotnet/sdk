@@ -58,7 +58,7 @@ The `PATH` will not be managed by `dotnetup` as the[ MSI installer already does 
 | Arm64 | Arm64 | `PR\dotnet` |
 | Arm64 | x64 | `PR\dotnet\x64` |
 
-Migrating system installs is meaningless, so the `init` form locks the migration field to "Not supported in admin mode" and never migrates.
+Migrating system installs is meaningless, so the `init` form hides the migration field in admin mode and never migrates.
 
 ## Selecting Admin Mode
 

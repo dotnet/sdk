@@ -239,14 +239,11 @@ internal sealed class InitFormModel
                 defaults.MigrateSystemInstalls,
                 isVisible: () =>
                 {
-                    return MigrationWorkflow.FilterMigrationSelections(
+                    return accessModes[accessModeField.SelectedIndex] != DotnetAccessMode.Admin
+                        && MigrationWorkflow.FilterMigrationSelections(
                         defaults.Migrations,
                         GetCurrentInstallSpecs(channelField, channelTokens, defaults.DefaultInstallSpecs)).Count > 0;
-                },
-                // Admin installs go to the shared system location, so there is nothing to migrate.
-                lockedValue: () => accessModes[accessModeField.SelectedIndex] == DotnetAccessMode.Admin
-                    ? Strings.InitMigrationNotSupportedInAdminMode
-                    : null);
+                });
         }
 
         var fields = new List<FormField> { channelField, accessModeField };
@@ -367,7 +364,7 @@ internal sealed class InitFormModel
         _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null),
     };
 
-    private static FormField BuildMigrateField(bool migrateByDefault, Func<bool> isVisible, Func<string?> lockedValue)
+    private static FormField BuildMigrateField(bool migrateByDefault, Func<bool> isVisible)
     {
         var choices = new List<FieldChoice>
         {
@@ -379,8 +376,7 @@ internal sealed class InitFormModel
             "Migrate system installs",
             choices,
             defaultIndex: migrateByDefault ? YesIndex : NoIndex,
-            isVisible: isVisible,
-            lockedValue: lockedValue);
+            isVisible: isVisible);
     }
 
     private static string? GetSelectedChannel(

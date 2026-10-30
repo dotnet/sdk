@@ -309,7 +309,7 @@ public class InitFormRendererTests
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void SelectedAdmin_LocksMigrationAndLeavingRestoresIt()
+    public void SelectedAdmin_HidesMigrationAndLeavingRestoresIt()
     {
         InitFormModel model = CreateMigrateModel(DotnetAccessMode.Shell, migrateByDefault: true);
         FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
@@ -320,22 +320,17 @@ public class InitFormRendererTests
         accessMode.SelectChoice(IndexOf(accessMode, DotnetAccessMode.Admin));
         string output = RenderForm(model, state, width: 240, height: 100, out _);
 
-        state.VisibleFields.Should().HaveCount(fieldCount);
-        migration.IsLocked.Should().BeTrue();
+        state.VisibleFields.Should().HaveCount(fieldCount - 1);
+        migration.IsVisible.Should().BeFalse();
         model.MigrateSelected().Should().BeFalse();
-        output.Should().Contain("Migrate system installs");
-        output.Should().Contain(Strings.InitMigrationNotSupportedInAdminMode);
+        output.Should().NotContain("Migrate system installs");
+        output.Should().NotContain(Strings.InitMigrationNotSupportedInAdminMode);
         output.Should().Contain("Accept and install");
-        while (!ReferenceEquals(state.FocusedField, migration))
-        {
-            state.MoveUp();
-        }
-        state.Enter();
-        state.Mode.Should().Be(FormMode.Form, "a locked field cannot be edited");
 
         accessMode.SelectChoice(IndexOf(accessMode, DotnetAccessMode.Shell));
 
-        migration.IsLocked.Should().BeFalse();
+        migration.IsVisible.Should().BeTrue();
+        state.VisibleFields.Should().HaveCount(fieldCount);
         model.MigrateSelected().Should().BeTrue();
         RenderForm(model, state, width: 240, height: 100, out _)
             .Should().NotContain(Strings.InitMigrationNotSupportedInAdminMode);

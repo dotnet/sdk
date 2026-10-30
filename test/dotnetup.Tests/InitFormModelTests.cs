@@ -199,7 +199,7 @@ public class InitFormModelTests
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
-    public void AdminAccessMode_LocksMigrationAndRestoresSelectionWhenLeaving()
+    public void AdminAccessMode_HidesMigrationAndRestoresSelectionWhenLeaving()
     {
         var model = CreateModel(
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
@@ -216,13 +216,12 @@ public class InitFormModelTests
 
         accessModeField.SelectChoice(adminIndex);
 
-        migrationField.IsVisible.Should().BeTrue();
-        migrationField.IsLocked.Should().BeTrue();
+        migrationField.IsVisible.Should().BeFalse();
         model.MigrateSelected().Should().BeFalse();
 
         accessModeField.SelectChoice(everywhereIndex);
 
-        migrationField.IsLocked.Should().BeFalse();
+        migrationField.IsVisible.Should().BeTrue();
         model.MigrateSelected().Should().BeTrue();
     }
 
