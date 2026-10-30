@@ -19,9 +19,6 @@ internal static class HostFxrQueryProcess
         GetInfo(installRoot, DotnetupProcessInfo.ExecutablePath
             ?? throw new InvalidOperationException("Could not locate the dotnetup executable."));
 
-    internal static NetEnvironmentInfo GetInfo(string installRoot, string executablePath) =>
-        GetInfoAsync(installRoot, executablePath).GetAwaiter().GetResult();
-
     public static bool TryRun(string[] args, out int exitCode)
     {
         exitCode = 0;
@@ -57,7 +54,7 @@ internal static class HostFxrQueryProcess
         return true;
     }
 
-    private static async Task<NetEnvironmentInfo> GetInfoAsync(string installRoot, string executablePath)
+    internal static NetEnvironmentInfo GetInfo(string installRoot, string executablePath)
     {
         var startInfo = new ProcessStartInfo(executablePath)
         {
@@ -74,60 +71,36 @@ internal static class HostFxrQueryProcess
         startInfo.ArgumentList.Add(Path.GetFullPath(installRoot));
         startInfo.Environment["DOTNET_MULTILEVEL_LOOKUP"] = "0";
 
-        using var process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Could not start the hostfxr query process.");
-        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var stdout = process.StandardOutput.ReadToEndAsync(cancellation.Token);
-        var stderr = process.StandardError.ReadToEndAsync(cancellation.Token);
+        ProcessTextOutput output;
         try
         {
-            await Task.WhenAll(process.WaitForExitAsync(cancellation.Token), stdout, stderr)
-                .WaitAsync(cancellation.Token).ConfigureAwait(false);
-            if (process.ExitCode == EnvironmentInfoUnavailableExitCode)
-            {
-                throw new HostFxrEnvironmentInfoUnavailableException();
-            }
-
-            if (process.ExitCode != 0)
-            {
-                throw new InvalidOperationException($"Hostfxr query exited with code {process.ExitCode}: {await stderr.ConfigureAwait(false)}");
-            }
-
-            var result = JsonSerializer.Deserialize(await stdout.ConfigureAwait(false), HostFxrQueryJsonContext.Default.HostFxrQueryResult)
-                ?? throw new InvalidDataException("The hostfxr query returned no environment information.");
-            return new NetEnvironmentInfo(
-                result.RuntimeInfo.Select(runtime => new NetRuntimeInfo(runtime.Name, runtime.Version, runtime.Path)).ToArray(),
-                result.SdkInfo.Select(sdk => new NetSdkInfo(sdk.Version, sdk.Path)).ToArray());
+            output = Process.RunAndCaptureText(startInfo, timeout: TimeSpan.FromSeconds(60));
         }
-        catch (OperationCanceledException ex)
+        catch (TimeoutException ex)
         {
-            Terminate(process);
             throw new TimeoutException("The hostfxr query did not complete within 60 seconds.", ex);
         }
-        catch
-        {
-            Terminate(process);
-            throw;
-        }
-    }
 
-    private static void Terminate(Process process)
-    {
-        if (!process.HasExited)
+        if (output.ExitStatus.Canceled)
         {
-            try
-            {
-                process.Kill(entireProcessTree: true);
-            }
-            catch (InvalidOperationException) when (process.HasExited)
-            {
-            }
-
-            if (!process.WaitForExit(5000))
-            {
-                throw new TimeoutException("The hostfxr query process could not be terminated within five seconds.");
-            }
+            throw new TimeoutException("The hostfxr query did not complete within 60 seconds.");
         }
+
+        if (output.ExitStatus.ExitCode == EnvironmentInfoUnavailableExitCode)
+        {
+            throw new HostFxrEnvironmentInfoUnavailableException();
+        }
+
+        if (output.ExitStatus.ExitCode != 0)
+        {
+            throw new InvalidOperationException($"Hostfxr query exited with code {output.ExitStatus.ExitCode}: {output.StandardError}");
+        }
+
+        var result = JsonSerializer.Deserialize(output.StandardOutput, HostFxrQueryJsonContext.Default.HostFxrQueryResult)
+            ?? throw new InvalidDataException("The hostfxr query returned no environment information.");
+        return new NetEnvironmentInfo(
+            result.RuntimeInfo.Select(runtime => new NetRuntimeInfo(runtime.Name, runtime.Version, runtime.Path)).ToArray(),
+            result.SdkInfo.Select(sdk => new NetSdkInfo(sdk.Version, sdk.Path)).ToArray());
     }
 }
 
