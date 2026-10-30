@@ -174,11 +174,11 @@
 
       <!-- MSI packages for ManifestPackagesToDownload -->
       <!-- Manifest packages are not RID-specific, add MSI packages for all three architectures -->
-      <PackageDownload Include="%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand).Msi.x86" 
+      <PackageDownload Include="%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand)$(DotNet1xxWorkloadManifestPackageIdSuffix).Msi.x86"
                        Version="[$(DotNet1xxWorkloadManifestVersion)]" />
-      <PackageDownload Include="%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand).Msi.x64" 
+      <PackageDownload Include="%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand)$(DotNet1xxWorkloadManifestPackageIdSuffix).Msi.x64"
                        Version="[$(DotNet1xxWorkloadManifestVersion)]" />
-      <PackageDownload Include="%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand).Msi.arm64" 
+      <PackageDownload Include="%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand)$(DotNet1xxWorkloadManifestPackageIdSuffix).Msi.arm64"
                        Version="[$(DotNet1xxWorkloadManifestVersion)]" />
     </ItemGroup>
   </Target>
@@ -214,7 +214,7 @@
       <DownloadedWorkloadMsis Include="$(NuGetPackageRoot)\%(RuntimeWorkloadPacksToDownload.Identity).Msi.*\$(DotNet1xxRuntimeVersion)\*.nupkg" 
                               Condition="'%(RuntimeWorkloadPacksToDownload.ExcludeAsMsi)' != 'true'" />
       <DownloadedWorkloadMsis Include="$(NuGetPackageRoot)\%(EmsdkWorkloadPacksToDownload.Identity).Msi.*\$(DotNet1xxRuntimeVersion)\*.nupkg" />
-      <DownloadedWorkloadMsis Include="$(NuGetPackageRoot)\%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand).Msi.*\$(DotNet1xxWorkloadManifestVersion)\*.nupkg" />
+      <DownloadedWorkloadMsis Include="$(NuGetPackageRoot)\%(ManifestPackagesToDownload.Identity)-$(BuiltInWorkloadFeatureBand)$(DotNet1xxWorkloadManifestPackageIdSuffix).Msi.*\$(DotNet1xxWorkloadManifestVersion)\*.nupkg" />
     </ItemGroup>
 
     <!-- Copy to shipping packages directory so they appear as build outputs -->

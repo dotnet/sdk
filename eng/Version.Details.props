@@ -29,41 +29,42 @@ This file should be imported by eng/Versions.props
     <MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>11.0.0-rc.2.26508.107</MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion>
     <MicrosoftAspNetCoreMetadataPackageVersion>11.0.0-rc.2.26508.107</MicrosoftAspNetCoreMetadataPackageVersion>
     <MicrosoftAspNetCoreMvcAnalyzersPackageVersion>11.0.0-rc.2.26508.107</MicrosoftAspNetCoreMvcAnalyzersPackageVersion>
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>11.1.0-preview.26508.107</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>11.1.0-preview.26529.105</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>11.0.0-rc.2.26508.107</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>11.0.0-rc.2.26508.107</MicrosoftBclAsyncInterfacesPackageVersion>
-    <MicrosoftBuildPackageVersion>18.13.0-1.26508.107</MicrosoftBuildPackageVersion>
-    <MicrosoftBuildLocalizationPackageVersion>18.13.0-1.26508.107</MicrosoftBuildLocalizationPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>8.0.0-rc.1007</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <MicrosoftBuildTaskAuthoringAnalyzerPackageVersion>18.13.0-1.26508.107</MicrosoftBuildTaskAuthoringAnalyzerPackageVersion>
-    <MicrosoftBuildTasksGitPackageVersion>11.0.100-rc.2.26508.107</MicrosoftBuildTasksGitPackageVersion>
-    <MicrosoftCodeAnalysisPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisPackageVersion>
-    <MicrosoftCodeAnalysisAnalyzersPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisAnalyzersPackageVersion>
-    <MicrosoftCodeAnalysisBuildClientPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisBuildClientPackageVersion>
-    <MicrosoftCodeAnalysisCSharpPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisCSharpPackageVersion>
-    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
-    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
-    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
-    <MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>
-    <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>11.1.0-preview.26508.107</MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
-    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>5.13.0-1.26508.107</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
+    <MicrosoftBuildPackageVersion>18.13.0-1.26529.105</MicrosoftBuildPackageVersion>
+    <MicrosoftBuildLocalizationPackageVersion>18.13.0-1.26529.105</MicrosoftBuildLocalizationPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>8.1.0-rc.3005</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <MicrosoftBuildTaskAuthoringAnalyzerPackageVersion>18.13.0-1.26529.105</MicrosoftBuildTaskAuthoringAnalyzerPackageVersion>
+    <MicrosoftBuildTasksGitPackageVersion>11.0.200-preview.26529.105</MicrosoftBuildTasksGitPackageVersion>
+    <MicrosoftCodeAnalysisPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisPackageVersion>
+    <MicrosoftCodeAnalysisAnalyzersPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisAnalyzersPackageVersion>
+    <MicrosoftCodeAnalysisBuildClientPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisBuildClientPackageVersion>
+    <MicrosoftCodeAnalysisCSharpPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisCSharpCodeStylePackageVersion>
+    <MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisCSharpFeaturesPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
+    <MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisExternalAccessHotReloadPackageVersion>
+    <MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisPublicApiAnalyzersPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>11.1.0-preview.26529.105</MicrosoftCodeAnalysisRazorToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisWorkspacesCommonPackageVersion>
+    <MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>5.13.0-1.26529.105</MicrosoftCodeAnalysisWorkspacesMSBuildPackageVersion>
     <MicrosoftDeploymentDotNetReleasesPackageVersion>2.0.0-preview.1.26508.107</MicrosoftDeploymentDotNetReleasesPackageVersion>
     <MicrosoftDiaSymReaderPackageVersion>3.0.0-rc.2.26508.107</MicrosoftDiaSymReaderPackageVersion>
-    <MicrosoftDotNetArcadeSdkPackageVersion>11.0.0-beta.26508.107</MicrosoftDotNetArcadeSdkPackageVersion>
-    <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26508.107</MicrosoftDotNetBuildTasksInstallersPackageVersion>
-    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>11.0.0-beta.26508.107</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
-    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26508.107</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
-    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26508.107</MicrosoftDotNetHelixJobMonitorPackageVersion>
-    <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26508.107</MicrosoftDotNetHelixSdkPackageVersion>
-    <MicrosoftDotNetSignToolPackageVersion>11.0.0-beta.26508.107</MicrosoftDotNetSignToolPackageVersion>
+    <MicrosoftDotNetArcadeSdkPackageVersion>11.0.0-beta.26529.105</MicrosoftDotNetArcadeSdkPackageVersion>
+    <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26529.105</MicrosoftDotNetBuildTasksInstallersPackageVersion>
+    <MicrosoftDotNetBuildTasksTemplatingPackageVersion>11.0.0-beta.26529.105</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
+    <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26529.105</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
+    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26529.105</MicrosoftDotNetHelixJobMonitorPackageVersion>
+    <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26529.105</MicrosoftDotNetHelixSdkPackageVersion>
+    <MicrosoftDotNetSignToolPackageVersion>11.0.0-beta.26529.105</MicrosoftDotNetSignToolPackageVersion>
     <MicrosoftDotNetWebItemTemplates110PackageVersion>11.0.0-rc.2.26508.107</MicrosoftDotNetWebItemTemplates110PackageVersion>
     <MicrosoftDotNetWebProjectTemplates110PackageVersion>11.0.0-rc.2.26508.107</MicrosoftDotNetWebProjectTemplates110PackageVersion>
     <MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>11.0.0-rc.2.26508.107</MicrosoftDotnetWinFormsProjectTemplatesPackageVersion>
     <MicrosoftDotNetWpfProjectTemplatesPackageVersion>11.0.0-rc.2.26508.107</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
-    <MicrosoftDotNetXliffTasksPackageVersion>11.0.0-beta.26508.107</MicrosoftDotNetXliffTasksPackageVersion>
-    <MicrosoftDotNetXUnitV3ExtensionsPackageVersion>11.0.0-beta.26508.107</MicrosoftDotNetXUnitV3ExtensionsPackageVersion>
+    <MicrosoftDotNetXliffTasksPackageVersion>11.0.0-beta.26529.105</MicrosoftDotNetXliffTasksPackageVersion>
+    <MicrosoftDotNetXUnitV3ExtensionsPackageVersion>11.0.0-beta.26529.105</MicrosoftDotNetXUnitV3ExtensionsPackageVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>11.0.0-rc.2.26508.107</MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion>
     <MicrosoftExtensionsConfigurationIniPackageVersion>11.0.0-rc.2.26508.107</MicrosoftExtensionsConfigurationIniPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>11.0.0-rc.2.26508.107</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>11.0.0-rc.2.26508.107</MicrosoftExtensionsDependencyModelPackageVersion>
@@ -74,47 +75,47 @@ This file should be imported by eng/Versions.props
     <MicrosoftExtensionsLoggingAbstractionsPackageVersion>11.0.0-rc.2.26508.107</MicrosoftExtensionsLoggingAbstractionsPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>11.0.0-rc.2.26508.107</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsObjectPoolPackageVersion>11.0.0-rc.2.26508.107</MicrosoftExtensionsObjectPoolPackageVersion>
-    <MicrosoftFSharpCompilerPackageVersion>15.2.200-rc2.26508.107</MicrosoftFSharpCompilerPackageVersion>
+    <MicrosoftFSharpCompilerPackageVersion>15.2.200-rc2.26529.105</MicrosoftFSharpCompilerPackageVersion>
     <MicrosoftJSInteropPackageVersion>11.0.0-rc.2.26508.107</MicrosoftJSInteropPackageVersion>
     <MicrosoftMcpServerProjectTemplates110PackageVersion>11.0.0-rc.2.26508.107</MicrosoftMcpServerProjectTemplates110PackageVersion>
-    <MicrosoftNetCompilersToolsetPackageVersion>5.13.0-1.26508.107</MicrosoftNetCompilersToolsetPackageVersion>
-    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.13.0-1.26508.107</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
+    <MicrosoftNetCompilersToolsetPackageVersion>5.13.0-1.26529.105</MicrosoftNetCompilersToolsetPackageVersion>
+    <MicrosoftNetCompilersToolsetFrameworkPackageVersion>5.13.0-1.26529.105</MicrosoftNetCompilersToolsetFrameworkPackageVersion>
     <MicrosoftNETHostModelPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETHostModelPackageVersion>
     <MicrosoftNETILLinkTasksPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETILLinkTasksPackageVersion>
-    <MicrosoftNETProjectDataTasksPackageVersion>5.13.0-1.26508.107</MicrosoftNETProjectDataTasksPackageVersion>
+    <MicrosoftNETProjectDataTasksPackageVersion>5.13.0-1.26529.105</MicrosoftNETProjectDataTasksPackageVersion>
     <MicrosoftNETRuntimeEmscriptenInternalPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETRuntimeEmscriptenInternalPackageVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>11.1.0-preview.26508.107</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>11.1.0-preview.26529.105</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
     <MicrosoftNETSdkWindowsDesktopPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftNETTestSdkPackageVersion>18.11.0-release-26508-107</MicrosoftNETTestSdkPackageVersion>
+    <MicrosoftNETTestSdkPackageVersion>18.11.0-release-26529-105</MicrosoftNETTestSdkPackageVersion>
     <MicrosoftNETCoreAppRefPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETCoreAppRefPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>11.0.0-rc.2.26508.107</MicrosoftNETCorePlatformsPackageVersion>
-    <MicrosoftSourceLinkAzureReposGitPackageVersion>11.0.100-rc.2.26508.107</MicrosoftSourceLinkAzureReposGitPackageVersion>
-    <MicrosoftSourceLinkBitbucketGitPackageVersion>11.0.100-rc.2.26508.107</MicrosoftSourceLinkBitbucketGitPackageVersion>
-    <MicrosoftSourceLinkCommonPackageVersion>11.0.100-rc.2.26508.107</MicrosoftSourceLinkCommonPackageVersion>
-    <MicrosoftSourceLinkGitHubPackageVersion>11.0.100-rc.2.26508.107</MicrosoftSourceLinkGitHubPackageVersion>
-    <MicrosoftSourceLinkGitLabPackageVersion>11.0.100-rc.2.26508.107</MicrosoftSourceLinkGitLabPackageVersion>
-    <MicrosoftTestPlatformBuildPackageVersion>18.11.0-release-26508-107</MicrosoftTestPlatformBuildPackageVersion>
-    <MicrosoftTestPlatformCLIPackageVersion>18.11.0-release-26508-107</MicrosoftTestPlatformCLIPackageVersion>
+    <MicrosoftSourceLinkAzureReposGitPackageVersion>11.0.200-preview.26529.105</MicrosoftSourceLinkAzureReposGitPackageVersion>
+    <MicrosoftSourceLinkBitbucketGitPackageVersion>11.0.200-preview.26529.105</MicrosoftSourceLinkBitbucketGitPackageVersion>
+    <MicrosoftSourceLinkCommonPackageVersion>11.0.200-preview.26529.105</MicrosoftSourceLinkCommonPackageVersion>
+    <MicrosoftSourceLinkGitHubPackageVersion>11.0.200-preview.26529.105</MicrosoftSourceLinkGitHubPackageVersion>
+    <MicrosoftSourceLinkGitLabPackageVersion>11.0.200-preview.26529.105</MicrosoftSourceLinkGitLabPackageVersion>
+    <MicrosoftTestPlatformBuildPackageVersion>18.11.0-release-26529-105</MicrosoftTestPlatformBuildPackageVersion>
+    <MicrosoftTestPlatformCLIPackageVersion>18.11.0-release-26529-105</MicrosoftTestPlatformCLIPackageVersion>
     <MicrosoftWebXdtPackageVersion>3.3.0-rc.2.26508.107</MicrosoftWebXdtPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>11.0.0-rc.2.26508.107</MicrosoftWin32SystemEventsPackageVersion>
     <MicrosoftWindowsDesktopAppInternalPackageVersion>11.0.0-rc.2.26508.107</MicrosoftWindowsDesktopAppInternalPackageVersion>
     <MicrosoftWindowsDesktopAppRefPackageVersion>11.0.0-rc.2.26508.107</MicrosoftWindowsDesktopAppRefPackageVersion>
-    <NuGetBuildTasksPackageVersion>8.0.0-rc.1007</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>8.0.0-rc.1007</NuGetBuildTasksConsolePackageVersion>
-    <NuGetBuildTasksPackPackageVersion>8.0.0-rc.1007</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>8.0.0-rc.1007</NuGetCommandLineXPlatPackageVersion>
-    <NuGetCommandsPackageVersion>8.0.0-rc.1007</NuGetCommandsPackageVersion>
-    <NuGetCommonPackageVersion>8.0.0-rc.1007</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>8.0.0-rc.1007</NuGetConfigurationPackageVersion>
-    <NuGetCredentialsPackageVersion>8.0.0-rc.1007</NuGetCredentialsPackageVersion>
-    <NuGetDependencyResolverCorePackageVersion>8.0.0-rc.1007</NuGetDependencyResolverCorePackageVersion>
-    <NuGetFrameworksPackageVersion>8.0.0-rc.1007</NuGetFrameworksPackageVersion>
-    <NuGetLibraryModelPackageVersion>8.0.0-rc.1007</NuGetLibraryModelPackageVersion>
-    <NuGetLocalizationPackageVersion>8.0.0-rc.1007</NuGetLocalizationPackageVersion>
-    <NuGetPackagingPackageVersion>8.0.0-rc.1007</NuGetPackagingPackageVersion>
-    <NuGetProjectModelPackageVersion>8.0.0-rc.1007</NuGetProjectModelPackageVersion>
-    <NuGetProtocolPackageVersion>8.0.0-rc.1007</NuGetProtocolPackageVersion>
-    <NuGetVersioningPackageVersion>8.0.0-rc.1007</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>8.1.0-rc.3005</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>8.1.0-rc.3005</NuGetBuildTasksConsolePackageVersion>
+    <NuGetBuildTasksPackPackageVersion>8.1.0-rc.3005</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>8.1.0-rc.3005</NuGetCommandLineXPlatPackageVersion>
+    <NuGetCommandsPackageVersion>8.1.0-rc.3005</NuGetCommandsPackageVersion>
+    <NuGetCommonPackageVersion>8.1.0-rc.3005</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>8.1.0-rc.3005</NuGetConfigurationPackageVersion>
+    <NuGetCredentialsPackageVersion>8.1.0-rc.3005</NuGetCredentialsPackageVersion>
+    <NuGetDependencyResolverCorePackageVersion>8.1.0-rc.3005</NuGetDependencyResolverCorePackageVersion>
+    <NuGetFrameworksPackageVersion>8.1.0-rc.3005</NuGetFrameworksPackageVersion>
+    <NuGetLibraryModelPackageVersion>8.1.0-rc.3005</NuGetLibraryModelPackageVersion>
+    <NuGetLocalizationPackageVersion>8.1.0-rc.3005</NuGetLocalizationPackageVersion>
+    <NuGetPackagingPackageVersion>8.1.0-rc.3005</NuGetPackagingPackageVersion>
+    <NuGetProjectModelPackageVersion>8.1.0-rc.3005</NuGetProjectModelPackageVersion>
+    <NuGetProtocolPackageVersion>8.1.0-rc.3005</NuGetProtocolPackageVersion>
+    <NuGetVersioningPackageVersion>8.1.0-rc.3005</NuGetVersioningPackageVersion>
     <SystemCodeDomPackageVersion>11.0.0-rc.2.26508.107</SystemCodeDomPackageVersion>
     <SystemCommandLinePackageVersion>3.0.0-rc.2.26508.107</SystemCommandLinePackageVersion>
     <SystemComponentModelCompositionPackageVersion>11.0.0-rc.2.26508.107</SystemComponentModelCompositionPackageVersion>
@@ -204,6 +205,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetWpfProjectTemplatesVersion>$(MicrosoftDotNetWpfProjectTemplatesPackageVersion)</MicrosoftDotNetWpfProjectTemplatesVersion>
     <MicrosoftDotNetXliffTasksVersion>$(MicrosoftDotNetXliffTasksPackageVersion)</MicrosoftDotNetXliffTasksVersion>
     <MicrosoftDotNetXUnitV3ExtensionsVersion>$(MicrosoftDotNetXUnitV3ExtensionsPackageVersion)</MicrosoftDotNetXUnitV3ExtensionsVersion>
+    <MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)</MicrosoftExtensionsConfigurationEnvironmentVariablesVersion>
     <MicrosoftExtensionsConfigurationIniVersion>$(MicrosoftExtensionsConfigurationIniPackageVersion)</MicrosoftExtensionsConfigurationIniVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsVersion>$(MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion)</MicrosoftExtensionsDependencyInjectionAbstractionsVersion>
     <MicrosoftExtensionsDependencyModelVersion>$(MicrosoftExtensionsDependencyModelPackageVersion)</MicrosoftExtensionsDependencyModelVersion>
