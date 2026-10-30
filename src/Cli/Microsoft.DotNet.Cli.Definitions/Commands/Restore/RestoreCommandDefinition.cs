@@ -89,25 +89,12 @@ internal sealed class RestoreCommandDefinition : Command
         Options.Add(GetResultOutputFileOption);
     }
 
-    private static string GetOsFromRid(string rid)
-        => rid.Substring(0, rid.LastIndexOf("-", StringComparison.InvariantCulture));
-
-    private static string GetArchFromRid(string rid)
-        => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
-
     public static string RestoreRuntimeArgFunc(IEnumerable<string> rids)
     {
         List<string> convertedRids = [];
         foreach (string rid in rids)
         {
-            if (GetArchFromRid(rid.ToString()) == "amd64")
-            {
-                convertedRids.Add($"{GetOsFromRid(rid.ToString())}-x64");
-            }
-            else
-            {
-                convertedRids.Add($"{rid}");
-            }
+            convertedRids.Add(RuntimeIdentifierUtilities.Normalize(rid));
         }
         return $"-property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
     }

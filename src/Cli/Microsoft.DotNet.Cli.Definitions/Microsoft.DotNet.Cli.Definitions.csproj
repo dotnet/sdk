@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="$(SdkSrcRoot)Common\RuntimeIdentifierUtilities.cs" LinkBase="Common" />
     <Compile Include="$(SdkSrcRoot)Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\EnvironmentProvider.cs" LinkBase="Common\NativeWrapper" />
     <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\Constants.cs" LinkBase="Common\NativeWrapper" />

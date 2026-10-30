@@ -6,6 +6,10 @@ namespace Microsoft.DotNet.Watch;
 internal static class PropertyNames
 {
     public const string Configuration = nameof(Configuration);
+    public const string Device = nameof(Device);
+    public const string RuntimeIdentifier = nameof(RuntimeIdentifier);
+    public const string SelfContained = nameof(SelfContained);
+    public const string IsRidAgnostic = nameof(IsRidAgnostic);
     public const string TargetFramework = nameof(TargetFramework);
     public const string NetCoreSdkVersion = nameof(NetCoreSdkVersion);
     public const string TargetFrameworkIdentifier = nameof(TargetFrameworkIdentifier);
