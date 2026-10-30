@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\Common\FileBasedProgramDefaults.cs" Link="Common\FileBasedProgramDefaults.cs" />
+    <Compile Include="..\..\Common\RuntimeIdentifierUtilities.cs" Link="Common\RuntimeIdentifierUtilities.cs" />
     <ProjectReference Include="$(ProjectToolsProjectDir)Microsoft.DotNet.ProjectTools.csproj" />
   </ItemGroup>
 
