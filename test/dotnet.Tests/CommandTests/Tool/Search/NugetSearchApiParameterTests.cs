@@ -41,6 +41,7 @@ namespace dotnet.Tests.ToolSearchTests
             result.Prerelease.Should().Be(true);
             result.Skip.Should().Be(3);
             result.Take.Should().Be(4);
+            result.IncludeVersions.Should().BeTrue();
         }
     }
 }

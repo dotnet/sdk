@@ -3521,11 +3521,6 @@ Lo strumento '{1}' (versione '{2}') è stato installato.</target>
         <target state="translated">PATH</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="translated">Il file di configurazione NuGet '{0}' non esiste.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
         <target state="translated">Non è stato specificato un ID pacchetto per l'installazione dello strumento.</target>
@@ -3660,7 +3655,12 @@ Lo strumento '{1}' (versione '{2}') è stato installato.</target>
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">Cerca negli strumenti dotnet in nuget.org</target>
+        <target state="needs-review-translation">Cerca negli strumenti dotnet in nuget.org</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchNoSourcesConfigured">
+        <source>No NuGet package sources are configured or enabled.</source>
+        <target state="new">No NuGet package sources are configured or enabled.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">
@@ -3686,6 +3686,11 @@ Lo strumento '{1}' (versione '{2}') è stato installato.</target>
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="translated">Numero di risultati da ignorare per l'impaginazione.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSourceDoesNotSupportPackageTypeFiltering">
+        <source>The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</source>
+        <target state="new">The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">

@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.CommandUtils;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
+using NuGet.Packaging;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
 {
@@ -21,8 +22,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         {
             string testDir = TestUtils.CreateTemporaryFolder();
             using var packageManager = new PackageManager();
-            string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
-            packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates");
+            string testTemplatesPackagePath = PackTestTemplatesNuGetPackage(packageManager);
+            string packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates");
+            TestUtils.SetupNuGetConfigForPackagesLocation(testDir, Path.GetDirectoryName(packageLocation)!);
+            string discoveryPackagesPath = CreateDiscoveryPackagesDirectory(testTemplatesPackagePath, packageLocation);
 
             new DotnetCommand(
                 Log,
@@ -30,7 +33,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packageLocation) ?? throw new Exception("Couldn't get package location directory"),
+                discoveryPackagesPath,
                 "-v")
                 .Execute()
                 .Should()
@@ -59,6 +62,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 new DotnetNewCommand(Log, "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
+                    .WithWorkingDirectory(testDir)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()
@@ -81,6 +85,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 new DotnetNewCommand(Log, "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
+                    .WithWorkingDirectory(testDir)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()
@@ -90,6 +95,18 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                     .And.NotHaveStdOutContaining("Exception")
                     .And.HaveStdOutContaining("Microsoft.Azure.WebJobs.ProjectTemplates");
             }
+        }
+
+        private static string CreateDiscoveryPackagesDirectory(params string[] packagePaths)
+        {
+            string directory = TestUtils.CreateTemporaryFolder();
+            foreach (string packagePath in packagePaths)
+            {
+                using PackageArchiveReader packageReader = new(packagePath);
+                var identity = packageReader.GetIdentity();
+                File.Copy(packagePath, Path.Combine(directory, $"{identity.Id}##{identity.Version}.nupkg"));
+            }
+            return directory;
         }
 
         [TestMethod]

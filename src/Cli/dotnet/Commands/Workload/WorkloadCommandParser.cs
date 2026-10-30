@@ -84,13 +84,13 @@ internal static class WorkloadCommandParser
     /// Builds the <see cref="PackageSourceLocation"/> described by the <c>--configfile</c> and <c>--source</c>
     /// options, or <see langword="null"/> if neither was specified.
     /// </summary>
-    public static PackageSourceLocation? ToPackageSourceLocation(this ParseResult parseResult, Option<string> configOption, Option<string[]> sourceOption)
+    public static PackageSourceLocation? ToPackageSourceLocation(this ParseResult parseResult, Option<FileInfo> configOption, Option<string[]> sourceOption)
     {
         var configFile = parseResult.GetValue(configOption);
         var sources = parseResult.GetValue(sourceOption);
 
-        return string.IsNullOrEmpty(configFile) && (sources is null || sources.Length == 0) ? null :
-            new PackageSourceLocation(string.IsNullOrEmpty(configFile) ? null : new FilePath(configFile), sourceFeedOverrides: sources);
+        return configFile is null && (sources is null || sources.Length == 0) ? null :
+            new PackageSourceLocation(configFile is null ? null : new FilePath(configFile.FullName), sourceFeedOverrides: sources);
     }
 
     public static RestoreActionConfig ToRestoreActionConfig(this NuGetRestoreOptions options, ParseResult parseResult)

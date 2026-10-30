@@ -32,6 +32,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 Language = GetFilterValue(FilterOptionDefinition.LanguageFilter);
             }
+
+            ConfigFile = parseResult.GetValue(command.Definition.ConfigFileOption)?.FullName;
+            AddSources = parseResult.GetValue(command.Definition.AddSourceOption);
+            Interactive = parseResult.GetValue(command.Definition.InteractiveOption);
         }
 
         public bool DisplayAllColumns { get; }
@@ -41,5 +45,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal string? SearchNameCriteria { get; }
 
         internal string? Language { get; }
+
+        internal string? ConfigFile { get; }
+
+        internal IReadOnlyList<string>? AddSources { get; }
+
+        internal bool Interactive { get; }
     }
 }

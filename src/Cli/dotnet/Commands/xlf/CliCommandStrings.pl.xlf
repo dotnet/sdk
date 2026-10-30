@@ -3521,11 +3521,6 @@ Tool '{1}' (version '{2}') was successfully installed.</target>
         <target state="new">PATH</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="new">NuGet configuration file '{0}' does not exist.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
         <target state="new">A package ID was not specified for tool installation.</target>
@@ -3663,6 +3658,11 @@ Tool '{1}' (version '{2}') was successfully installed.</target>
         <target state="new">Search dotnet tools in nuget.org</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSearchNoSourcesConfigured">
+        <source>No NuGet package sources are configured or enabled.</source>
+        <target state="new">No NuGet package sources are configured or enabled.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">
         <source>Include pre-release packages.</source>
         <target state="new">Include pre-release packages.</target>
@@ -3686,6 +3686,11 @@ Tool '{1}' (version '{2}') was successfully installed.</target>
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="new">The number of results to skip, for pagination.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSourceDoesNotSupportPackageTypeFiltering">
+        <source>The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</source>
+        <target state="new">The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">

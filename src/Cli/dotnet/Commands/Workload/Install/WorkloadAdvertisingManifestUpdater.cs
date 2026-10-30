@@ -347,9 +347,8 @@ internal class WorkloadAdvertisingManifestUpdater(
     private async Task<bool> UpdatedAdManifestPackagesExistAsync()
     {
         var manifests = GetInstalledManifestIds();
-        //  TODO: This doesn't seem to account for differing feature bands
         var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest))).ConfigureAwait(false);
-        return availableUpdates.Any();
+        return availableUpdates.Any(updateAvailable => updateAvailable);
     }
 
     private async Task<bool> NewerManifestPackageExists(ManifestId manifest)
@@ -357,13 +356,28 @@ internal class WorkloadAdvertisingManifestUpdater(
         try
         {
             var currentVersion = NuGetVersion.Parse(_workloadResolver.GetManifestVersion(manifest.ToString()));
-            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(_workloadManifestInstaller.GetManifestPackageId(manifest, _sdkFeatureBand));
-            return latestVersion > currentVersion;
+            var fallbackFeatureBand = new SdkFeatureBand(_workloadResolver.GetManifestFeatureBand(manifest.ToString()));
+            foreach (SdkFeatureBand band in new[] { _sdkFeatureBand, fallbackFeatureBand }.Distinct())
+            {
+                try
+                {
+                    var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(
+                        _workloadManifestInstaller.GetManifestPackageId(manifest, band),
+                        _packageSourceLocation);
+                    if (latestVersion > currentVersion)
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception)
+                {
+                }
+            }
         }
         catch (Exception)
         {
-            return false;
         }
+        return false;
     }
 
     private string GetAdvertisingManifestSentinelPath(SdkFeatureBand featureBand) => Path.Combine(_userProfileDir, $".workloadAdvertisingManifestSentinel{featureBand}");

@@ -25,7 +25,7 @@ internal sealed class WorkloadSearchVersionsCommandDefinition : WorkloadCommandD
 
     public readonly Option<bool> IncludePreviewsOption = new("--include-previews");
 
-    public readonly Option<string> ConfigOption = CreateConfigOption();
+    public readonly Option<FileInfo> ConfigOption = CreateConfigOption();
 
     public readonly Option<string[]> SourceOption = CreateSourceOption();
 

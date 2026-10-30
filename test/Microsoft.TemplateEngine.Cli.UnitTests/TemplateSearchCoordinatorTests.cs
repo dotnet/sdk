@@ -100,8 +100,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
                 Assert.HasCount(2, nugetSearchResults.SearchHits);
                 (ITemplatePackageInfo _, IReadOnlyList<ITemplateInfo> packOneMatchedTemplates) = nugetSearchResults.SearchHits.Single(pack => pack.PackageInfo.Name.Equals(s_packOneInfo.Name));
                 (ITemplatePackageInfo _, IReadOnlyList<ITemplateInfo> packTwoMatchedTemplates) = nugetSearchResults.SearchHits.Single(pack => pack.PackageInfo.Name.Equals(s_packTwoInfo.Name));
@@ -148,8 +148,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
                 Assert.HasCount(1, nugetSearchResults.SearchHits);
 
                 (ITemplatePackageInfo _, IReadOnlyList<ITemplateInfo> packTwoMatchedTemplates) = nugetSearchResults.SearchHits.Single(pack => pack.PackageInfo.Name.Equals(s_packTwoInfo.Name));
@@ -193,8 +193,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
                 Assert.IsEmpty(nugetSearchResults.SearchHits);
             }
         }
@@ -232,8 +232,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
                 Assert.HasCount(1, nugetSearchResults.SearchHits);
                 Assert.HasCount(1, nugetSearchResults.SearchHits[0].MatchedTemplates);
                 Assert.AreEqual(s_packThreeInfo.Name, nugetSearchResults.SearchHits[0].PackageInfo.Name);
@@ -276,8 +276,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
                 Assert.HasCount(matchCount, nugetSearchResults.SearchHits);
             }
         }
@@ -318,8 +318,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
                 Assert.HasCount(matchCount, nugetSearchResults.SearchHits);
             }
         }
@@ -361,8 +361,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
                 Assert.HasCount(packMatchCount, nugetSearchResults.SearchHits);
                 if (packMatchCount != 0)
                 {
@@ -408,8 +408,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
                 Assert.HasCount(packMatchCount, nugetSearchResults.SearchHits);
                 if (packMatchCount != 0)
                 {
@@ -450,8 +450,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                     TestContext.CancellationToken);
 
                 Assert.HasCount(1, searchResults);
-                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+                Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+                SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
                 Assert.IsEmpty(nugetSearchResults.SearchHits);
             }
         }
@@ -485,8 +485,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 TestContext.CancellationToken);
 
             Assert.HasCount(1, searchResults);
-            Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == "NuGet.org", searchResults);
-            SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == "NuGet.org");
+            Assert.ContainsSingle(result => result.Provider.Factory.DisplayName == ".NET template catalog", searchResults);
+            SearchResult nugetSearchResults = searchResults.Single(result => result.Provider.Factory.DisplayName == ".NET template catalog");
             Assert.IsEmpty(nugetSearchResults.SearchHits);
         }
 

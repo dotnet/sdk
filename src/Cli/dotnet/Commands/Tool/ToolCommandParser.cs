@@ -36,7 +36,8 @@ internal static class ToolCommandParser
                 ? throw new CommandNotAvailableInAotException()
                 : new ToolUninstallLocalCommand(parseResult).Execute());
         command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
-        command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
+        command.SearchCommand.SetAction(
+            (parseResult, cancellationToken) => new ToolSearchCommand(parseResult).ExecuteAsync(cancellationToken));
 #else
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
         command.InstallCommand.SetAction((parseResult, cancellationToken) =>
@@ -46,7 +47,8 @@ internal static class ToolCommandParser
             new ToolUpdateCommand(parseResult).ExecuteAsync(cancellationToken));
         command.ListCommand.SetAction(parseResult => new ToolListCommand(parseResult).Execute());
         command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
-        command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
+        command.SearchCommand.SetAction(
+            (parseResult, cancellationToken) => new ToolSearchCommand(parseResult).ExecuteAsync(cancellationToken));
         command.RestoreCommand.SetAction((parseResult, cancellationToken) =>
             new ToolRestoreCommand(parseResult).ExecuteAsync(cancellationToken));
         command.ExecuteCommand.SetAction((parseResult, cancellationToken) =>
