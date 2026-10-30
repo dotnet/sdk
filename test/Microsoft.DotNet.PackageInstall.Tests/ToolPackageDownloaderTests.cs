@@ -869,6 +869,110 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             NupkgMetadataFileFormat.Read(metadataPath).ContentHash.Should().Be(expectedContentHash);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task GivenMetadataPublicationFailsItPreservesThePackageForAnotherInstall(bool metadataPublished)
+        {
+            string source = GetTestLocalFeedPath();
+            var root = _testAssetsManager.CreateTestDirectory(identifier: metadataPublished.ToString());
+            var packagesRoot = new DirectoryPath(Path.Combine(root.Path, "packages"));
+            string runtimeJsonPath = Path.Combine(
+                SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest,
+                "RuntimeIdentifierGraph.json");
+            var packageVersion = NuGetVersion.Parse(TestPackageVersion);
+            var packageSourceLocation = new PackageSourceLocation(additionalSourceFeeds: [source], basePath: root.Path);
+            var pathResolver = new VersionFolderPathResolver(packagesRoot.Value);
+            string hashPath = pathResolver.GetHashPath(TestPackageId.ToString(), packageVersion);
+            string metadataPath = pathResolver.GetNupkgMetadataPath(TestPackageId.ToString(), packageVersion);
+            var metadataPublicationReached = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var continuePublication = new ManualResetEventSlim(initialState: false);
+            Action failPublication = () =>
+            {
+                metadataPublicationReached.SetResult();
+                continuePublication.Wait();
+                throw new IOException("Simulated metadata publication failure.");
+            };
+            using var downloader = new TestableToolPackageDownloader(
+                new ToolPackageStoreAndQuery(new DirectoryPath(Path.Combine(root.Path, "tools"))),
+                runtimeJsonPath,
+                root.Path,
+                beforeMetadataPublication: metadataPublished ? null : failPublication,
+                afterMetadataPublication: metadataPublished ? failPublication : null);
+            using var reusingDownloader = new TestableToolPackageDownloader(
+                new ToolPackageStoreAndQuery(new DirectoryPath(Path.Combine(root.Path, "reusing-tools"))),
+                runtimeJsonPath,
+                root.Path);
+
+            Task<NuGetVersion> download = Task.Run(() =>
+            {
+                using FileStream installLock = ToolPackageDownloaderBase.AcquireToolInstallLock(
+                    packagesRoot, TestPackageId, packageVersion);
+                return downloader.DownloadAndExtract(
+                    TestPackageId,
+                    downloader.CreatePackageDownloader(),
+                    packagesRoot.Value,
+                    packageVersion,
+                    packageSourceLocation);
+            });
+
+            Task<IToolPackage> reuse;
+            string publishedHash;
+            try
+            {
+                Task firstCompleted = await Task.WhenAny(metadataPublicationReached.Task, download)
+                    .WaitAsync(TimeSpan.FromSeconds(30));
+                firstCompleted.Should().Be(metadataPublicationReached.Task);
+                publishedHash = File.ReadAllText(hashPath);
+                File.Exists(metadataPath).Should().Be(metadataPublished);
+                reuse = Task.Run(() => reusingDownloader.InstallFromCache(
+                    TestPackageId,
+                    packageVersion,
+                    packagesRoot,
+                    packageSourceLocation,
+                    _testTargetframework));
+                if (metadataPublished)
+                {
+                    IToolPackage acceptedPackage = await reuse.WaitAsync(TimeSpan.FromSeconds(30));
+                    File.Exists(acceptedPackage.Command.Executable.Value).Should().BeTrue();
+                }
+                else
+                {
+                    (await Task.WhenAny(reuse, Task.Delay(TimeSpan.FromMilliseconds(250))))
+                        .Should().NotBe(reuse, "NuGet must wait for the writer before it can repair the missing metadata");
+                }
+            }
+            finally
+            {
+                continuePublication.Set();
+            }
+
+            Func<Task> awaitDownload = async () => await download;
+            await awaitDownload.Should().ThrowAsync<IOException>()
+                .WithMessage("Simulated metadata publication failure.");
+            IToolPackage reusedPackage = await reuse.WaitAsync(TimeSpan.FromSeconds(30));
+            File.Exists(reusedPackage.Command.Executable.Value).Should().BeTrue(
+                "metadata publication failure must not delete a package accepted by another install");
+            File.ReadAllText(hashPath).Should().Be(publishedHash);
+            File.Exists(metadataPath).Should().BeTrue(
+                "NuGet must preserve published metadata or repair it after the writer releases its lock");
+            var packageDownloader = new StaticPackagePathNuGetPackageDownloader("must-not-download");
+            reusingDownloader.DownloadAndExtract(
+                TestPackageId,
+                packageDownloader,
+                packagesRoot.Value,
+                packageVersion,
+                packageSourceLocation).Should().Be(packageVersion);
+            packageDownloader.ExtractCalled.Should().BeFalse();
+            File.ReadAllText(hashPath).Should().Be(publishedHash);
+            File.Exists(reusedPackage.Command.Executable.Value).Should().BeTrue();
+            using FileStream packageStream = File.OpenRead(
+                pathResolver.GetPackageFilePath(TestPackageId.ToString(), packageVersion));
+            using PackageArchiveReader reader = new(packageStream);
+            NupkgMetadataFileFormat.Read(metadataPath).ContentHash.Should().Be(
+                reader.GetContentHash(CancellationToken.None, () => publishedHash));
+        }
+
         [Fact]
         public async Task GivenNuGetsPackageLockToolInstallationWaitsForTheCanonicalWriter()
         {
@@ -1451,6 +1555,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private sealed class TestableToolPackageDownloader : ToolPackageDownloader, IDisposable
         {
             private readonly bool _pauseHashPublication;
+            private readonly Action _beforeMetadataPublication;
+            private readonly Action _afterMetadataPublication;
             private readonly TaskCompletionSource _hashMoveStarted =
                 new(TaskCreationOptions.RunContinuationsAsynchronously);
             private readonly ManualResetEventSlim _continueHashMove = new(initialState: false);
@@ -1459,10 +1565,14 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 IToolPackageStore store,
                 string runtimeJsonPathForTests,
                 string currentWorkingDirectory,
-                bool pauseHashPublication = false)
+                bool pauseHashPublication = false,
+                Action beforeMetadataPublication = null,
+                Action afterMetadataPublication = null)
                 : base(store, runtimeJsonPathForTests, currentWorkingDirectory)
             {
                 _pauseHashPublication = pauseHashPublication;
+                _beforeMetadataPublication = beforeMetadataPublication;
+                _afterMetadataPublication = afterMetadataPublication;
             }
 
             public Task HashMoveStarted => _hashMoveStarted.Task;
@@ -1490,6 +1600,32 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public bool IsInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath) =>
                 IsPackageInstalled(packageId, packageVersion, packagesRootPath);
 
+            public IToolPackage InstallFromCache(
+                PackageId packageId,
+                NuGetVersion packageVersion,
+                DirectoryPath packagesRoot,
+                PackageSourceLocation packageSourceLocation,
+                string targetFramework)
+            {
+                DownloadTool(
+                    packagesRoot,
+                    packageId,
+                    packageVersion,
+                    CreatePackageDownloader(),
+                    packageSourceLocation,
+                    givenSpecificVersion: true,
+                    assetFileDirectory: _localToolAssetDir,
+                    acquireInstallLock: true,
+                    targetFramework,
+                    TestVerbosity);
+                return new ToolPackageInstance(
+                    packageId,
+                    packageVersion,
+                    packagesRoot,
+                    _localToolAssetDir,
+                    _fileSystem);
+            }
+
             public void ContinueHashMove() => _continueHashMove.Set();
 
             protected override void MovePackageHash(string temporaryHashPath, string hashPath)
@@ -1501,6 +1637,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 }
 
                 base.MovePackageHash(temporaryHashPath, hashPath);
+            }
+
+            protected override void MovePackageMetadata(string temporaryMetadataPath, string metadataPath)
+            {
+                _beforeMetadataPublication?.Invoke();
+                base.MovePackageMetadata(temporaryMetadataPath, metadataPath);
+                _afterMetadataPublication?.Invoke();
             }
 
             public void Dispose() => _continueHashMove.Dispose();

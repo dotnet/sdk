@@ -124,8 +124,8 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             }
             catch
             {
-                // If something fails, don't leave a folder with partial contents.
-                if (Directory.Exists(packageDirectory))
+                // A completion marker can expose the package to other installs. Preserve it so NuGet can repair missing metadata.
+                if (!File.Exists(hashPath) && !File.Exists(metadataPath) && Directory.Exists(packageDirectory))
                 {
                     Directory.Delete(packageDirectory, true);
                 }
@@ -171,7 +171,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
     /// Publishes NuGet's canonical completion marker so other NuGet writers preserve the completed package.
     /// </summary>
     /// <remarks>The metadata is written to a sibling temporary file and moved last while the NuGet package lock is held.</remarks>
-    private static void PublishPackageMetadata(string metadataPath, string contentHash)
+    private void PublishPackageMetadata(string metadataPath, string contentHash)
     {
         string metadataDirectory = Path.GetDirectoryName(metadataPath)!;
         Directory.CreateDirectory(metadataDirectory);
@@ -185,12 +185,17 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                 {
                     ContentHash = contentHash
                 });
-            File.Move(temporaryMetadataPath, metadataPath, overwrite: true);
+            MovePackageMetadata(temporaryMetadataPath, metadataPath);
         }
         finally
         {
             File.Delete(temporaryMetadataPath);
         }
+    }
+
+    protected virtual void MovePackageMetadata(string temporaryMetadataPath, string metadataPath)
+    {
+        File.Move(temporaryMetadataPath, metadataPath, overwrite: true);
     }
 
     protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)
