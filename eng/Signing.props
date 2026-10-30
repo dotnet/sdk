@@ -3,6 +3,7 @@
   <!-- Import default TargetRid calculation so it's available to Sign.proj / Publish.proj
        (which import this file but not /Directory.Build.props). -->
   <Import Project="TargetRid.props" />
+  <Import Project="DotnetupVariants.props" />
 
   <PropertyGroup>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
@@ -213,6 +214,14 @@
     <!-- The '*' wildcard is for the TargetFramework, which isn't set when evaluating this file. -->
     <_DotnetupPublishedBinary Include="$(ArtifactsBinDir)dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
     <Artifact Include="@(_DotnetupPublishedBinary)" Kind="Blob">
+      <ChecksumPath>%(FullPath).sha512</ChecksumPath>
+    </Artifact>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(BuildDotnetupVariants)' == 'true'">
+    <_DotnetupCandidateBinary Include="$(ArtifactsDir)dotnetup-variants\*\bin\dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
+    <!-- SkipPublish is Arcade's existing sign-only contract: these never enter BAR. -->
+    <Artifact Include="@(_DotnetupCandidateBinary)" Kind="Blob" SkipPublish="true">
       <ChecksumPath>%(FullPath).sha512</ChecksumPath>
     </Artifact>
   </ItemGroup>

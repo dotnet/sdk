@@ -15,6 +15,16 @@
     <DotnetupPreReleaseVersionIteration>1</DotnetupPreReleaseVersionIteration>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(DotnetupBuildVariant)' == 'daily'">
+    <DotnetupPreReleaseVersionLabel>daily</DotnetupPreReleaseVersionLabel>
+    <DotnetupPreReleaseVersionIteration />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(DotnetupBuildVariant)' == 'ga'">
+    <!-- Prebuild the stable-versioned candidate, but do not publish it. -->
+    <DotNetFinalVersionKind>release</DotNetFinalVersionKind>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
   <!-- Shared properties for the dotnetup family of projects (dotnetup, dotnetup.Library,
        Microsoft.Dotnet.Installation). Individual projects can still override these.
        TargetFramework is intentionally NOT set here — some tooling gets confused when

@@ -24,7 +24,7 @@
     <FSharpArtifactVisibility Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">Vertical</FSharpArtifactVisibility>
     <FSharpArtifactVisibility Condition="'$(FSharpArtifactVisibility)' == ''">External</FSharpArtifactVisibility>
   </PropertyGroup>
-  <ItemGroup Condition="'$(EnableDefaultArtifacts)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
+  <ItemGroup Condition="'$(BuildDotnetupVariants)' != 'true' and '$(EnableDefaultArtifacts)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
     <Artifact Include="$(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg;
                        $(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
               Kind="Package"
@@ -70,6 +70,28 @@
              Targets="ReturnDotnetupVersion">
       <Output TaskParameter="TargetOutputs" PropertyName="DotnetupVersion" />
     </MSBuild>
+  </Target>
+
+  <Target Name="StageDotnetupReleaseCandidates"
+          Condition="'$(BuildDotnetupVariants)' == 'true'"
+          AfterTargets="GenerateChecksumsFromArtifacts"
+          BeforeTargets="PublishToAzureDevOpsArtifacts">
+    <MSBuild Projects="$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj"
+             Targets="ReturnDotnetupReleaseAsset"
+             Properties="DotnetupBuildVariant=%(DotnetupVariant.Identity);ArtifactsDir=%(DotnetupVariant.ArtifactsDir);DotnetupReleaseDirectory=$(ArtifactsDir)dotnetup-release\"
+             BuildInParallel="false">
+      <Output TaskParameter="TargetOutputs" ItemName="_DotnetupReleaseAsset" />
+    </MSBuild>
+    <Error Condition="!Exists('%(_DotnetupReleaseAsset.Identity)')"
+           Text="Missing dotnetup %(_DotnetupReleaseAsset.Variant) candidate: %(_DotnetupReleaseAsset.Identity)" />
+    <Copy SourceFiles="%(_DotnetupReleaseAsset.Identity);%(_DotnetupReleaseAsset.Identity).sha512"
+          DestinationFolder="%(_DotnetupReleaseAsset.ReleaseDirectory)" />
+    <Copy SourceFiles="@(_GetDotnetupPublishedScript);@(_GetDotnetupPublishedScript->'%(Identity).sha512')"
+          DestinationFolder="%(_DotnetupReleaseAsset.ReleaseDirectory)"
+          Condition="'$(TargetRid)' == 'win-x64'" />
+    <WriteLinesToFile File="%(_DotnetupReleaseAsset.ReleaseDirectory)release.json"
+                      Lines="{ &quot;schemaVersion&quot;: 1, &quot;buildId&quot;: &quot;$(BUILD_BUILDID)&quot;, &quot;commit&quot;: &quot;$(BUILD_SOURCEVERSION)&quot;, &quot;variant&quot;: &quot;%(_DotnetupReleaseAsset.Variant)&quot;, &quot;version&quot;: &quot;%(_DotnetupReleaseAsset.Version)&quot;, &quot;rid&quot;: &quot;%(_DotnetupReleaseAsset.Rid)&quot;, &quot;placeholder&quot;: %(_DotnetupReleaseAsset.Placeholder) }"
+                      Overwrite="true" Encoding="UTF-8" />
   </Target>
 
   <!--

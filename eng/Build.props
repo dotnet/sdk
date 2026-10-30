@@ -1,5 +1,19 @@
 <Project>
 
+  <Import Project="DotnetupVariants.props" />
+
+  <PropertyGroup Condition="'$(BuildDotnetupVariants)' == 'true'">
+    <Projects />
+    <!-- Each version needs its own restore graph and intermediate outputs. -->
+    <RestoreUsingNuGetTargets>false</RestoreUsingNuGetTargets>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(BuildDotnetupVariants)' == 'true'">
+    <ProjectToBuild Include="@(DotnetupVariant->'$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj')"
+                    AdditionalProperties="DotnetupBuildVariant=%(Variant);ArtifactsDir=%(ArtifactsDir)"
+                    RestoreInParallel="false"
+                    BuildInParallel="false" />
+  </ItemGroup>
+
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <ProjectToBuild Include="$(RepoRoot)source-build.slnf" />
   </ItemGroup>
