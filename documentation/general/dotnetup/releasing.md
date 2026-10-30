@@ -89,6 +89,19 @@ selection, the resource defaults to the latest successful run on that branch wit
 `PME Signed` tag. The release pipeline remains manually triggered; completing an official
 build does not start a CDN release.
 
+The `dryRun` parameter defaults to `true`. A dry run executes `Prepare`, including build
+eligibility checks, artifact download, manifest validation, staging, and hash generation,
+but skips the entire `Publish` job. Inspect the `DotnetupCdnAssets` artifact for staged files
+and `DotnetupReleaseInputs` for the build record, manifest, and release metadata.
+No ESRP submission or CDN verification occurs. Set `dryRun` to `false` in the
+**Run pipeline** pane to publish the prepared release through ESRP.
+
+Both modes log the source build URL, branch, version, commit, eligibility result, and
+staged filenames and sizes, including total bytes. Dry runs explicitly report that ESRP
+submission and CDN verification are skipped. Set the pipeline variable `System.Debug`
+to `true` for detailed eligibility, manifest, staging-path, per-file SHA-512, and CDN
+verification diagnostics. Authentication headers and full API responses are not logged.
+
 The pipeline resource fixes the source pipeline and project. The selected run must be
 successful, non-test, and PME-signed. The artifact download selects that exact run;
 the pipeline uses its `MergedManifest.xml` to identify the version and expected asset inventory.
@@ -136,9 +149,8 @@ layout to pin binary and checksum downloads to the same build. Validate the actu
 URL layout and establish a compatible transition for already-installed clients before
 enabling alias updates.
 
-The pipeline runs offline fixtures for build eligibility, asset completeness, staging hashes,
-and ESRP result and CDN download validation before accessing release inputs. To run these
-checks locally without publishing or downloading anything:
+To run offline fixtures for build eligibility, asset completeness, staging hashes,
+and ESRP result and CDN download validation locally without publishing or downloading anything:
 
 ```pwsh
 pwsh -NoProfile -File eng/pipelines/dotnetup-publishing.tests.ps1

@@ -1,6 +1,12 @@
 trigger: none
 pr: none
 
+parameters:
+- name: dryRun
+  displayName: Dry run (prepare artifacts without publishing to ESRP)
+  type: boolean
+  default: true
+
 variables:
 - template: /eng/common/templates-official/variables/pool-providers.yml
 - name: DOTNET_CLI_TELEMETRY_SESSIONID
@@ -111,14 +117,31 @@ extends:
             Copy-Item -LiteralPath $manifestPath -Destination $env:RELEASEMETADATADIRECTORY
 
             Write-Host "Selected dotnetup $($release.version), Azure DevOps run $($release.azureDevOpsBuildId), commit $($release.commit)."
+            Write-Host "Source build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$($release.azureDevOpsBuildId)"
+            Write-Host "Branch: $($sourceBuild.sourceBranch). Eligibility checks passed: successful, non-test, PME-signed."
+            [long]$totalBytes = 0
+            foreach ($file in $release.files) {
+              $size = (Get-Item -LiteralPath (Join-Path $env:RELEASESTAGINGDIRECTORY $file.name)).Length
+              $totalBytes += $size
+              Write-Host "  $($file.name): $size bytes"
+            }
+            Write-Host "Staged $($release.files.Count) files, $totalBytes bytes total."
+            Write-Host 'Inspect DotnetupCdnAssets for files and DotnetupReleaseInputs for metadata and full hashes.'
+            if ('${{ parameters.dryRun }}' -eq 'true') {
+              Write-Host 'DRY RUN: Prepare completed. ESRP submission and CDN verification are skipped. Set dryRun=false to publish.'
+            } else {
+              Write-Host 'Publish will submit these files to ESRP and verify the resulting CDN downloads.'
+            }
           displayName: Validate the build and manifest and stage release files
           env:
             SOURCE_BUILD_ID: $(resources.pipeline.dotnetup.runID)
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            SYSTEM_DEBUG: $(System.Debug)
 
       - job: Publish
         displayName: Publish the prepared release through ESRP
         dependsOn: Prepare
+        condition: and(succeeded(), ${{ eq(parameters.dryRun, false) }})
         timeoutInMinutes: 180
         templateContext:
           type: releaseJob
@@ -185,6 +208,7 @@ extends:
           displayName: Verify CDN downloads and record release URLs
           env:
             ESRP_RELEASE_DETAILS: $(ESRP_RELEASE_DETAILS)
+            SYSTEM_DEBUG: $(System.Debug)
 
         - task: 1ES.PublishPipelineArtifact@1
           displayName: Retain release metadata and ESRP results
