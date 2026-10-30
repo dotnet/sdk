@@ -80,6 +80,37 @@ public class BundleProcessRunnerTests
         }
     }
 
+    [TestMethod]
+    [ResourceLock(WellKnownResources.Console)]
+    public void RepeatedCancellation_ReportsOnlyOnce()
+    {
+        using var output = new StringWriter(CultureInfo.InvariantCulture);
+        var originalConsole = AnsiConsole.Console;
+        int callbacks = 0;
+        int reported = 0;
+        try
+        {
+            AnsiConsole.Console = AnsiConsole.Create(new AnsiConsoleSettings
+            {
+                Ansi = AnsiSupport.No,
+                Interactive = InteractionSupport.No,
+                Out = new AnsiConsoleOutput(output),
+            });
+
+            for (int i = 0; i < 3; i++)
+            {
+                BundleProcessRunner.ReportCancellationOnce(ref reported, () => callbacks++);
+            }
+        }
+        finally
+        {
+            AnsiConsole.Console = originalConsole;
+        }
+
+        callbacks.Should().Be(1);
+        output.ToString().Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Should().ContainSingle();
+    }
+
     private static void AssertNoticeClearsProgressRows(string rendered, string warning, int width)
     {
         string[] noticeLines = rendered.Split(Environment.NewLine)

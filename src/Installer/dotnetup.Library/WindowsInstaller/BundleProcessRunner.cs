@@ -38,10 +38,12 @@ internal sealed class BundleProcessRunner : IBundleProcessRunner
             startInfo.ArgumentList.Add(argument);
         }
 
+        // Print once per installer run; later Ctrl+C presses are swallowed silently.
+        int cancellationReported = 0;
         void WaitForInstaller(object? sender, ConsoleCancelEventArgs e)
         {
             e.Cancel = true;
-            ReportCancellation(onCancelRequested);
+            ReportCancellationOnce(ref cancellationReported, onCancelRequested);
         }
 
         Console.CancelKeyPress += WaitForInstaller;
@@ -55,6 +57,14 @@ internal sealed class BundleProcessRunner : IBundleProcessRunner
         finally
         {
             Console.CancelKeyPress -= WaitForInstaller;
+        }
+    }
+
+    internal static void ReportCancellationOnce(ref int reported, Action onCancelRequested)
+    {
+        if (Interlocked.Exchange(ref reported, 1) == 0)
+        {
+            ReportCancellation(onCancelRequested);
         }
     }
 
