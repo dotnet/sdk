@@ -297,14 +297,6 @@ public class InstallerOrchestratorTests
         }
     }
 
-    [TestMethod]
-    public void CreateInstallationValidator_UsesSharedValidatorForBothMechanisms()
-    {
-        InstallerOrchestratorSingleton.CreateInstallationValidator(InstallMechanism.Archive)
-            .Should().BeOfType<InstallationValidator>();
-        InstallerOrchestratorSingleton.CreateInstallationValidator(InstallMechanism.WindowsInstallerBundle)
-            .Should().BeOfType<InstallationValidator>();
-    }
 
     [TestMethod]
     public void PrepareInstall_BundleAlreadyInstalled_ReturnsAlreadyInstalledWithoutDownloading()
@@ -326,19 +318,12 @@ public class InstallerOrchestratorTests
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
     [DataRow(true)]
     [DataRow(false)]
     public void CommitPreparedInstall_RechecksBundleBeforeRunningInstaller(bool alreadyInstalled)
     {
         using var testEnv = new TestEnvironment();
-        string dotnetHost = SelfUpdateTestFiles.DotnetHostPath;
-        string dotnetDirectory = Path.GetDirectoryName(dotnetHost)!;
-        string sourceFxr = Directory.EnumerateFiles(Path.Combine(dotnetDirectory, "host", "fxr"), "hostfxr.dll", SearchOption.AllDirectories).First();
-        string destinationFxr = Path.Combine(testEnv.InstallPath, "host", "fxr", Path.GetFileName(Path.GetDirectoryName(sourceFxr)!));
-        Directory.CreateDirectory(destinationFxr);
-        File.Copy(sourceFxr, Path.Combine(destinationFxr, "hostfxr.dll"));
-        File.Copy(dotnetHost, Path.Combine(testEnv.InstallPath, "dotnet.exe"));
+        File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
 
         var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
         var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
@@ -356,8 +341,7 @@ public class InstallerOrchestratorTests
 
         var artifact = new FakeArtifact { OnCommit = InstallSdk };
         using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
-        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle,
-            root => HostFxrQueryProcess.GetInfo(root, DotnetupTestUtilities.GetDotnetupExecutablePath()));
+        var validator = new InstallationValidator();
 
         var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared, validator);
 
@@ -368,7 +352,7 @@ public class InstallerOrchestratorTests
     }
 
     [TestMethod]
-    public void CommitPreparedInstall_BundleNotVisibleToHostFxr_ThrowsPostInstallVerificationFailed()
+    public void CommitPreparedInstall_BundleNotFoundOnDisk_ThrowsPostInstallVerificationFailed()
     {
         using var testEnv = new TestEnvironment();
         var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);

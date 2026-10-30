@@ -63,271 +63,104 @@ public class AdminInstallRootResolverTests
 [TestClass]
 public class InstallationValidatorTests
 {
+    private const string Version = "10.0.100";
+
     [TestMethod]
     public void Validate_ReturnsFalse_WhenRootIsMissing()
     {
-        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new InvalidOperationException("must not be called"));
         var install = MakeInstall(Path.Combine(Path.GetTempPath(), "dotnetup-missing-" + Guid.NewGuid().ToString("N")));
 
-        validator.Validate(install, out string? failure).Should().BeFalse();
-        failure.Should().Contain("does not exist");
-    }
-
-    [TestMethod]
-    public void Validate_ReturnsFalse_WhenHostFxrIsMissing()
-    {
-        using var testEnv = new TestEnvironment();
-        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new InvalidOperationException("must not be called"));
-
-        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
-        failure.Should().Contain("hostfxr");
-    }
-
-    [TestMethod]
-    [DataRow("")]
-    [DataRow("10.0.0/nested")]
-    public void Validate_ReturnsFalse_WhenHostFxrIsNotDirectlyInAVersionDirectory(string relativeDirectory)
-    {
-        using var testEnv = new TestEnvironment();
-        string directory = Path.Combine(testEnv.InstallPath, "host", "fxr", relativeDirectory);
-        Directory.CreateDirectory(directory);
-        File.WriteAllText(Path.Combine(directory, HostFxrLibraryName), string.Empty);
-        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new InvalidOperationException("must not be called"));
-
-        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
-        failure.Should().Contain("hostfxr");
-    }
-
-    [TestMethod]
-    public void Validate_ReturnsTrue_WhenHostReportsInstall()
-    {
-        using var testEnv = new TestEnvironment();
-        StubHostFxr(testEnv.InstallPath);
-        var install = MakeInstall(testEnv.InstallPath);
-        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => HostReport(
-            sdks: [new NetSdkInfo("10.0.100", Path.Combine(testEnv.InstallPath, "sdk", "10.0.100"))],
-            runtimes: [new NetRuntimeInfo(InstallComponentExtensions.RuntimeFrameworkName, "10.0.100", Path.Combine(testEnv.InstallPath, "shared", InstallComponentExtensions.RuntimeFrameworkName))]));
-
-        validator.Validate(install).Should().BeTrue();
-        validator.Validate(install, out string? failure).Should().BeTrue();
-        failure.Should().BeNull();
-        validator.Validate(install with { Component = InstallComponent.Runtime }).Should().BeTrue();
-        validator.Validate(install with { Component = InstallComponent.ASPNETCore }).Should().BeFalse();
-    }
-
-    [TestMethod]
-    public void Validate_ReturnsFalse_WhenHostDoesNotReportVersion()
-    {
-        using var testEnv = new TestEnvironment();
-        StubHostFxr(testEnv.InstallPath);
-        var install = MakeInstall(testEnv.InstallPath);
-        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => HostReport(
-            sdks: [new NetSdkInfo("10.0.101", Path.Combine(testEnv.InstallPath, "sdk", "10.0.101"))]));
-
-        validator.Validate(install, out string? failure).Should().BeFalse();
-        failure.Should().Contain("10.0.101");
-    }
-
-    [TestMethod]
-    public void Validate_ReturnsFalse_WhenHostReportsVersionFromAnotherRoot()
-    {
-        using var testEnv = new TestEnvironment();
-        StubHostFxr(testEnv.InstallPath);
-        var install = MakeInstall(testEnv.InstallPath);
-        string otherSdk = Path.Combine(testEnv.TempRoot, "other", "sdk", "10.0.100");
-        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => HostReport(sdks: [new NetSdkInfo("10.0.100", otherSdk)]));
-
-        validator.Validate(install, out string? failure).Should().BeFalse();
-        failure.Should().Contain(otherSdk);
-    }
-
-    [TestMethod]
-    public void Validate_ReturnsFalse_WhenHostQueryThrows()
-    {
-        using var testEnv = new TestEnvironment();
-        StubHostFxr(testEnv.InstallPath);
-        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new DllNotFoundException("hostfxr"));
-
-        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
-        failure.Should().Contain("hostfxr");
+        new InstallationValidator().Validate(install, out string? failure).Should().BeFalse();
+        failure.Should().Contain("Muxer not found");
     }
 
     [TestMethod]
     public void Validate_ReturnsFalse_WhenMuxerIsMissing()
     {
         using var testEnv = new TestEnvironment();
-        StubHostFxr(testEnv.InstallPath);
-        File.Delete(InstallationValidator.GetMuxerPath(testEnv.InstallPath));
+        WriteMarker(testEnv.InstallPath, InstallComponent.SDK, Version);
 
-        new InstallationValidator(InstallMechanism.WindowsInstallerBundle).Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
+        new InstallationValidator().Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
         failure.Should().Contain("Muxer not found");
     }
 
     [TestMethod]
-    public void Validate_ArchiveRequiresComponentLayout()
+    [DataRow(InstallComponent.SDK)]
+    [DataRow(InstallComponent.Runtime)]
+    [DataRow(InstallComponent.ASPNETCore)]
+    [DataRow(InstallComponent.WindowsDesktop)]
+    internal void Validate_ReturnsTrue_WhenMarkerFileExists(InstallComponent component)
     {
         using var testEnv = new TestEnvironment();
-        File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
-        var validator = new InstallationValidator(InstallMechanism.Archive, _ => throw new InvalidOperationException("must not be called"));
+        WriteMuxer(testEnv.InstallPath);
+        WriteMarker(testEnv.InstallPath, component, Version);
 
-        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
-        failure.Should().Contain("Component layout validation failed");
-    }
-
-    [TestMethod]
-    public void Validate_ArchivePreservesPlatformSpecificHostCheck()
-    {
-        using var testEnv = new TestEnvironment();
-        File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
-        string sdkPath = Path.Combine(testEnv.InstallPath, "sdk", "10.0.100");
-        Directory.CreateDirectory(sdkPath);
-        File.WriteAllText(Path.Combine(sdkPath, "dotnet.dll"), string.Empty);
-        int queryCalls = 0;
-        var validator = new InstallationValidator(InstallMechanism.Archive, _ =>
-        {
-            queryCalls++;
-            return HostReport(sdks: [new NetSdkInfo("10.0.100", sdkPath)]);
-        });
-
-        validator.Validate(MakeInstall(testEnv.InstallPath)).Should().BeTrue();
-        queryCalls.Should().Be(OperatingSystem.IsWindows() ? 1 : 0);
-    }
-
-    [TestMethod]
-    public void Validate_ArchiveWindowsDesktopCanBeInstalledWithoutMuxer()
-    {
-        using var testEnv = new TestEnvironment();
-        string runtimePath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, InstallComponent.WindowsDesktop, "10.0.100")!;
-        Directory.CreateDirectory(runtimePath);
-        File.WriteAllText(Path.Combine(runtimePath, "WindowsBase.dll"), string.Empty);
-        var validator = new InstallationValidator(InstallMechanism.Archive, _ => throw new InvalidOperationException("must not be called"));
-
-        validator.Validate(MakeInstall(testEnv.InstallPath) with { Component = InstallComponent.WindowsDesktop }).Should().BeTrue();
-    }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    [DataRow(InstallMechanism.Archive, InstallComponent.SDK)]
-    [DataRow(InstallMechanism.Archive, InstallComponent.Runtime)]
-    [DataRow(InstallMechanism.Archive, InstallComponent.ASPNETCore)]
-    [DataRow(InstallMechanism.Archive, InstallComponent.WindowsDesktop)]
-    [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.SDK)]
-    [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.Runtime)]
-    [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.ASPNETCore)]
-    [DataRow(InstallMechanism.WindowsInstallerBundle, InstallComponent.WindowsDesktop)]
-    internal void Validate_UnavailableEnvironmentInfoRequiresInstalledComponent(InstallMechanism mechanism, InstallComponent component)
-    {
-        using var testEnv = new TestEnvironment();
-        StubHostFxr(testEnv.InstallPath);
-        string componentPath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, component, "10.0.100")!;
-        Directory.CreateDirectory(componentPath);
-        File.WriteAllText(Path.Combine(componentPath, "payload"), string.Empty);
-        var validator = new InstallationValidator(mechanism, _ => throw new HostFxrEnvironmentInfoUnavailableException());
-
-        validator.Validate(MakeInstall(testEnv.InstallPath) with { Component = component }, out string? failure).Should().BeTrue();
+        new InstallationValidator().Validate(MakeInstall(testEnv.InstallPath) with { Component = component }, out string? failure).Should().BeTrue();
         failure.Should().BeNull();
     }
 
     [TestMethod]
-    [DataRow("missing-component")]
-    [DataRow("empty-component")]
+    [DataRow(InstallComponent.SDK)]
+    [DataRow(InstallComponent.Runtime)]
+    [DataRow(InstallComponent.ASPNETCore)]
+    [DataRow(InstallComponent.WindowsDesktop)]
+    internal void Validate_ReturnsFalse_WhenVersionFolderLacksMarkerFile(InstallComponent component)
+    {
+        using var testEnv = new TestEnvironment();
+        WriteMuxer(testEnv.InstallPath);
+        string componentPath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, component, Version)!;
+        Directory.CreateDirectory(componentPath);
+        File.WriteAllText(Path.Combine(componentPath, "payload"), string.Empty);
+
+        new InstallationValidator().Validate(MakeInstall(testEnv.InstallPath) with { Component = component }, out string? failure).Should().BeFalse();
+        failure.Should().Contain("Component layout validation failed");
+    }
+
+    [TestMethod]
     [DataRow("wrong-version")]
     [DataRow("wrong-component")]
     [DataRow("wrong-root")]
-    [DataRow("missing-muxer")]
-    [DataRow("missing-hostfxr")]
-    public void Validate_UnavailableEnvironmentInfoDoesNotBypassMissingEvidence(string scenario)
+    public void Validate_ReturnsFalse_WhenMarkerIsForAnotherInstall(string scenario)
     {
         using var testEnv = new TestEnvironment();
-        StubHostFxr(testEnv.InstallPath);
-        if (scenario != "missing-component")
-        {
-            string root = scenario == "wrong-root" ? Path.Combine(testEnv.TempRoot, "other") : testEnv.InstallPath;
-            string version = scenario == "wrong-version" ? "10.0.101" : "10.0.100";
-            InstallComponent component = scenario == "wrong-component" ? InstallComponent.Runtime : InstallComponent.SDK;
-            string componentPath = InstallationValidator.GetComponentDirectory(root, component, version)!;
-            Directory.CreateDirectory(componentPath);
-            if (scenario != "empty-component")
-            {
-                File.WriteAllText(Path.Combine(componentPath, "payload"), string.Empty);
-            }
-        }
-        if (scenario == "missing-muxer")
-        {
-            File.Delete(InstallationValidator.GetMuxerPath(testEnv.InstallPath));
-        }
-        if (scenario == "missing-hostfxr")
-        {
-            Directory.Delete(Path.Combine(testEnv.InstallPath, "host"), recursive: true);
-        }
-        var validator = new InstallationValidator(InstallMechanism.WindowsInstallerBundle, _ => throw new HostFxrEnvironmentInfoUnavailableException());
+        WriteMuxer(testEnv.InstallPath);
+        string root = scenario == "wrong-root" ? Path.Combine(testEnv.TempRoot, "other") : testEnv.InstallPath;
+        string version = scenario == "wrong-version" ? "10.0.101" : Version;
+        InstallComponent component = scenario == "wrong-component" ? InstallComponent.Runtime : InstallComponent.SDK;
+        WriteMarker(root, component, version);
 
-        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
-        failure.Should().NotBeNullOrEmpty();
+        new InstallationValidator().Validate(MakeInstall(testEnv.InstallPath)).Should().BeFalse();
     }
 
     [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    [DataRow(InstallMechanism.Archive, "dll")]
-    [DataRow(InstallMechanism.Archive, "export")]
-    [DataRow(InstallMechanism.Archive, "query")]
-    [DataRow(InstallMechanism.WindowsInstallerBundle, "dll")]
-    [DataRow(InstallMechanism.WindowsInstallerBundle, "export")]
-    [DataRow(InstallMechanism.WindowsInstallerBundle, "query")]
-    internal void Validate_OtherHostQueryFailuresDoNotUseLayoutFallback(InstallMechanism mechanism, string failureType)
+    public void Validate_WindowsDesktopCanBeInstalledWithoutMuxer()
     {
         using var testEnv = new TestEnvironment();
-        StubHostFxr(testEnv.InstallPath);
-        string sdkPath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, InstallComponent.SDK, "10.0.100")!;
-        Directory.CreateDirectory(sdkPath);
-        File.WriteAllText(Path.Combine(sdkPath, "dotnet.dll"), string.Empty);
-        Exception exception = failureType switch
-        {
-            "dll" => new DllNotFoundException("hostfxr"),
-            "export" => new EntryPointNotFoundException("another hostfxr export"),
-            _ => new InvalidOperationException("hostfxr query failed"),
-        };
-        var validator = new InstallationValidator(mechanism, _ => throw exception);
+        WriteMarker(testEnv.InstallPath, InstallComponent.WindowsDesktop, Version);
 
-        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
-        failure.Should().Contain(exception.Message);
+        new InstallationValidator().Validate(MakeInstall(testEnv.InstallPath) with { Component = InstallComponent.WindowsDesktop }).Should().BeTrue();
     }
-
-    [TestMethod]
-    [OSCondition(OperatingSystems.Windows)]
-    [DataRow(InstallMechanism.Archive)]
-    [DataRow(InstallMechanism.WindowsInstallerBundle)]
-    internal void Validate_AvailableEnvironmentInfoStillRequiresHostReport(InstallMechanism mechanism)
-    {
-        using var testEnv = new TestEnvironment();
-        StubHostFxr(testEnv.InstallPath);
-        string sdkPath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, InstallComponent.SDK, "10.0.100")!;
-        Directory.CreateDirectory(sdkPath);
-        File.WriteAllText(Path.Combine(sdkPath, "dotnet.dll"), string.Empty);
-        var validator = new InstallationValidator(mechanism, _ => HostReport());
-
-        validator.Validate(MakeInstall(testEnv.InstallPath), out string? failure).Should().BeFalse();
-        failure.Should().Contain("did not report SDK");
-    }
-
-    private static string HostFxrLibraryName => OperatingSystem.IsWindows()
-        ? "hostfxr.dll"
-        : OperatingSystem.IsMacOS() ? "libhostfxr.dylib" : "libhostfxr.so";
-
-    private static NetEnvironmentInfo HostReport(NetSdkInfo[]? sdks = null, NetRuntimeInfo[]? runtimes = null) =>
-        new(runtimes ?? [], sdks ?? []);
 
     private static DotnetInstall MakeInstall(string root) =>
-        new(new DotnetInstallRoot(root, InstallArchitecture.x64), new ReleaseVersion("10.0.100"), InstallComponent.SDK);
+        new(new DotnetInstallRoot(root, InstallArchitecture.x64), new ReleaseVersion(Version), InstallComponent.SDK);
 
-    private static void StubHostFxr(string root) => StubHostFxr(root, "10.0.0");
-
-    /// <summary>Creates an empty hostfxr library under <c>host/fxr</c> joined with <paramref name="subdirectories"/>.</summary>
-    private static void StubHostFxr(string root, params string[] subdirectories)
+    private static void WriteMuxer(string root)
     {
-        string fxrDirectory = Path.Combine(root, "host", "fxr", Path.Combine(subdirectories));
-        Directory.CreateDirectory(fxrDirectory);
-        File.WriteAllText(Path.Combine(fxrDirectory, HostFxrLibraryName), string.Empty);
+        Directory.CreateDirectory(root);
         File.WriteAllText(InstallationValidator.GetMuxerPath(root), string.Empty);
+    }
+
+    private static void WriteMarker(string root, InstallComponent component, string version)
+    {
+        string componentPath = InstallationValidator.GetComponentDirectory(root, component, version)!;
+        Directory.CreateDirectory(componentPath);
+        string marker = component switch
+        {
+            InstallComponent.SDK => "dotnet.dll",
+            InstallComponent.Runtime => InstallComponentExtensions.RuntimeFrameworkName + ".deps.json",
+            InstallComponent.ASPNETCore => InstallComponentExtensions.AspNetCoreFrameworkName + ".deps.json",
+            _ => InstallComponentExtensions.WindowsDesktopFrameworkName + ".deps.json",
+        };
+        File.WriteAllText(Path.Combine(componentPath, marker), string.Empty);
     }
 }

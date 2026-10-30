@@ -261,7 +261,7 @@ internal class InstallerOrchestratorSingleton
     {
         var installRequest = resolvedRequest.Request;
         var install = new DotnetInstall(installRequest.InstallRoot, resolvedRequest.ResolvedVersion, installRequest.Component);
-        installationValidator ??= CreateInstallationValidator(installRequest.Options.InstallMechanism);
+        installationValidator ??= CreateInstallationValidator();
 
         alreadyInstalledResult = CheckExistingInstallState(installRequest, install, installationValidator);
         if (alreadyInstalledResult is not null)
@@ -357,7 +357,7 @@ internal class InstallerOrchestratorSingleton
     /// Creates the validator that checks whether an install exists. Archive installs validate the layout
     /// dotnetup extracted; installer bundle installs ask hostfxr, since the bundle owns the layout.
     /// </summary>
-    internal static IInstallationValidator CreateInstallationValidator(InstallMechanism mechanism) => new InstallationValidator(mechanism);
+    internal static IInstallationValidator CreateInstallationValidator() => new InstallationValidator();
 
     /// <summary>
     /// Commits a previously prepared installation: installs the artifact into the target directory
@@ -371,7 +371,7 @@ internal class InstallerOrchestratorSingleton
 
         using (var finalizeLock = ModifyInstallStateMutex())
         {
-            IInstallationValidator validator = installationValidator ?? CreateInstallationValidator(prepared.Request.Options.InstallMechanism);
+            IInstallationValidator validator = installationValidator ?? CreateInstallationValidator();
             if (manifest?.InstallAlreadyExists(prepared.Install) == true
                 || (prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
                     && validator.Validate(prepared.Install)))
