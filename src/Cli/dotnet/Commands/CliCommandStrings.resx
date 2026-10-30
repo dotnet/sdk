@@ -2743,6 +2743,12 @@ Proceed?</value>
   <data name="ArtifactPostProcessingStarted" xml:space="preserve">
     <value>Merging compatible artifacts produced by different test applications...</value>
   </data>
+  <data name="ArtifactPostProcessingMissingHandshake" xml:space="preserve">
+    <value>The artifact worker exited without completing the expected handshake.</value>
+  </data>
+  <data name="ArtifactPostProcessingConnectionFailed" xml:space="preserve">
+    <value>The artifact worker's reporting connection did not complete successfully.</value>
+  </data>
   <data name="ArtifactPostProcessingUnexpectedFailure" xml:space="preserve">
     <value>Artifact post-processing failed: {0} Original artifacts are preserved; the test exit code is unchanged.</value>
     <comment>{0} is the failure reason.</comment>

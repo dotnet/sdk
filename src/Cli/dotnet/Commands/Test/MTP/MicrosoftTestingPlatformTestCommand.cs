@@ -233,7 +233,12 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
         using var queueCancellation = CancellationTokenSource.CreateLinkedTokenSource(ctrlC.Token, testRunPolicy.Token);
-        var artifactPostProcessingManager = new ArtifactPostProcessingManager();
+        var artifactPostProcessingManager = new ArtifactPostProcessingManager(
+            enabled: ShouldPostProcessArtifacts(
+                testOptions,
+                parseResult.GetValue(definition.NoArtifactPostProcessingOption),
+                cancellationRequested: false),
+            cancellationToken: ctrlC.Token);
         int? exitCode = null;
         try
         {
@@ -253,21 +258,6 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 fallbackTestApplicationSettings);
             exitCode = testHandler.RunTestApplications(actionQueue);
             TestRunCancellationReason cancellationReason = testRunPolicy.Complete();
-            exitCode = GetCancellationExitCode(
-                exitCode.Value,
-                ctrlC.Token.IsCancellationRequested,
-                cancellationReason);
-
-            if (ShouldPostProcessArtifacts(
-                testOptions,
-                parseResult.GetValue(definition.NoArtifactPostProcessingOption),
-                ctrlC.Token.IsCancellationRequested))
-            {
-                artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC, cancellationReason).GetAwaiter().GetResult();
-            }
-
-            // Ctrl+C can arrive while artifact post-processing is running, after the initial
-            // cancellation verdict above. Re-evaluate it before computing the final run result.
             exitCode = GetCancellationExitCode(
                 exitCode.Value,
                 ctrlC.Token.IsCancellationRequested,
@@ -305,6 +295,22 @@ internal partial class MicrosoftTestingPlatformTestCommand
             }
 
             exitCode = actionQueue.ApplyExitCodeIgnorePolicy(exitCode.Value);
+
+            if (artifactPostProcessingManager.IsEnabled && testModuleCount > 0 && !ctrlC.Token.IsCancellationRequested)
+            {
+                // Required CI summaries must see the final test-policy verdict, not the raw
+                // module exit codes or a count reconstructed from potentially missing fragments.
+                ArtifactPostProcessingRunSummary runSummary = output.CreateRunSummary(
+                    DateTimeOffset.Now, exitCode.Value, testModuleCount);
+                artifactPostProcessingManager.ExecuteAsync(
+                    buildOptions, output, ctrlC, cancellationReason, runSummary).GetAwaiter().GetResult();
+            }
+
+            // A user cancellation during reporting is distinct from a best-effort worker failure.
+            exitCode = actionQueue.ApplyExitCodeIgnorePolicy(GetCancellationExitCode(
+                exitCode.Value,
+                ctrlC.Token.IsCancellationRequested,
+                cancellationReason));
             return exitCode.Value;
         }
         finally
@@ -328,6 +334,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
         bool cancellationRequested)
         => !testOptions.IsHelp
             && !testOptions.IsDiscovery
+            && !testOptions.CollectTestMap
             && !noArtifactPostProcessingRequested
             && !cancellationRequested;
 

@@ -194,17 +194,25 @@ internal sealed class TestApplication(
             {
                 try
                 {
-                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout);
+                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout, ctrlC.Token);
                 }
-                catch (TimeoutException)
+                catch (Exception ex) when (ex is TimeoutException || (ex is OperationCanceledException && ctrlC.Token.IsCancellationRequested))
                 {
-                    if (!process.HasExited)
+                    try
                     {
-                        process.Kill(entireProcessTree: true);
-                        await process.WaitForExitAsync();
+                        if (!process.HasExited)
+                        {
+                            process.Kill(entireProcessTree: true);
+                        }
+                    }
+                    catch (InvalidOperationException killException)
+                    {
+                        // The worker exited between HasExited and Kill.
+                        Logger.LogTrace($"Artifact worker exited before it could be killed:\n{killException}");
                     }
 
-                    artifactPostProcessingTimedOut = true;
+                    await process.WaitForExitAsync();
+                    artifactPostProcessingTimedOut = ex is TimeoutException;
                 }
             }
 
@@ -892,9 +900,9 @@ internal sealed class TestApplication(
         return highestCommonVersionText;
     }
 
-    private HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true)
+    internal HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true)
     {
-        var properties = new Dictionary<byte, string>(capacity: 6)
+        var properties = new Dictionary<byte, string>(capacity: 7)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
@@ -906,6 +914,16 @@ internal sealed class TestApplication(
         if (version.Length > 0 && includeControlPipe)
         {
             properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+        }
+
+        if (version.Length > 0
+            && artifactPostProcessingManager?.IsEnabled == true
+            && !TestOptions.IsArtifactPostProcessing
+            && !RequiresHttpTransport(Module)
+            && MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
+                TestOptions, noArtifactPostProcessingRequested: false, cancellationRequested: false))
+        {
+            properties.Add(HandshakeMessagePropertyNames.RequiredPostProcessingSupported, bool.TrueString);
         }
 
         return new HandshakeMessage(properties);

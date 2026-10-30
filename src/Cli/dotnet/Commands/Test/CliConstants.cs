@@ -102,6 +102,12 @@ internal static class HandshakeMessagePropertyNames
     internal const byte SupportedPostProcessorExtensionsLegacy = 15;
     internal const byte SupportedTruncatedRunPostProcessorKinds = 16;
     internal const byte SupportedTruncatedRunPostProcessorExtensionsLegacy = 17;
+
+    // Subset of SupportedPostProcessorKinds that must run even for a single input.
+    internal const byte RequiredPostProcessorKinds = 18;
+
+    // Reply-only capability promising required processing and an authoritative runSummary.
+    internal const byte RequiredPostProcessingSupported = 19;
 }
 
 internal static class HandshakeMessageExecutionModes

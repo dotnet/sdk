@@ -77,10 +77,20 @@
         <target state="translated">Разрешить переход на использование более ранней версии пакета при установке пакета инструментов .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArtifactPostProcessingConnectionFailed">
+        <source>The artifact worker's reporting connection did not complete successfully.</source>
+        <target state="new">The artifact worker's reporting connection did not complete successfully.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ArtifactPostProcessingFailed">
         <source>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</source>
         <target state="translated">Сбой последующей обработки артефактов с '{0}': {1} Будет сообщено об исходных артефактах.</target>
         <note>{0} is the test application path. {1} is the failure reason.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactPostProcessingMissingHandshake">
+        <source>The artifact worker exited without completing the expected handshake.</source>
+        <target state="new">The artifact worker exited without completing the expected handshake.</target>
+        <note />
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingProcessFailed">
         <source>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</source>
