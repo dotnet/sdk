@@ -306,7 +306,6 @@ namespace EndToEnd.Tests
 
         /// <summary>
         /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0
         /// </summary>
         [TestMethod]
         [DataRow("console")]
@@ -353,7 +352,6 @@ namespace EndToEnd.Tests
 
         /// <summary>
         /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
         [TestMethod]
         [DataRow("wpf")]
@@ -386,7 +384,6 @@ namespace EndToEnd.Tests
         /// <summary>
         /// [project is not built on linux-musl]
         /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
         [TestMethod]
         [DataRow("grpc")]
@@ -406,20 +403,10 @@ namespace EndToEnd.Tests
 
         private static string DetectExpectedDefaultFramework(string template)
         {
-            // NetTFMUpdate: Use the current product-pack TFM while templates are staged to net11.
-            return ToolsetInfo.CurrentTargetFramework;
-
-            /*
-            string dotnetFolder = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
-            string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
-            int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 11)
-            {
-                return $"net{latestMajorVersion}.0";
-            }
-
-            throw new Exception("Unsupported version of SDK");
-            */
+            // NetTFMUpdate: ASP.NET Core and Windows Desktop templates still target net11.
+            return template is "console" or "classlib" or "mstest" or "nunit" or "xunit"
+                ? ToolsetInfo.CurrentTargetFramework
+                : "net11.0";
         }
 
         private void TestTemplateCreateAndBuild(

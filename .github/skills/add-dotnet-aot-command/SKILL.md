@@ -308,8 +308,19 @@ on each affected OS rather than cross-publishing and assuming native execution.
 ```
 
 The script publishes the MTP test application, product `dotnet-aot` library, and `dn` host with Native
-AOT. It loads the test-built library while using a complete installed SDK for SDK-relative assets and
-managed fallback, then runs the suite and can emit a TRX. Report executed, passed, failed, and skipped
+AOT. Build the matching redist SDK first. Both runners use
+[`PrepareTestSdk.proj`](../../../test/dotnet-aot.Tests/PrepareTestSdk.proj) to copy its pre-crossgen SDK content
+into an isolated installation under `test/dotnet-aot.Tests/artifacts/test-sdk/<configuration>/<RID>`.
+The installation uses the host-native bootstrap muxer, hostfxr and CoreCLR from the runtime pack
+matching the native CLI's runtime version, the host-native apphost pack, host-RID SDK metadata, and
+the test-built native library. Copy managed SDK assemblies from the redist project's evaluated
+output directory, not the installer or test-host SDK directory: those contain target-architecture
+ReadyToRun images after `CrossgenLayout` and can fail to load in the host-native managed CLI.
+The bootstrap SDK is used for compilation, not managed setup or fallback. Do not execute a cross-built
+redist host (for example, arm64 redist on an x64 macOS agent) or overlay host-native binaries into that
+redist. Mixing bootstrap-managed setup with a newly built native CLI can invalidate run-file caches
+or produce apps targeting an unavailable runtime. The script runs the suite and can emit a TRX.
+Report executed, passed, failed, and skipped
 counts; required `dn` integration tests must not be skipped.
 
 ### 5. Real `dn` integration and parity

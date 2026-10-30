@@ -27,7 +27,7 @@
       "src\\TemplateEngine\\Tools\\Microsoft.TemplateEngine.TemplateLocalizer.Core\\Microsoft.TemplateEngine.TemplateLocalizer.Core.csproj",
       "src\\TemplateEngine\\Tools\\Microsoft.TemplateSearch.TemplateDiscovery\\Microsoft.TemplateSearch.TemplateDiscovery.csproj",
       "template_feed\\Microsoft.DotNet.Common.ItemTemplates\\Microsoft.DotNet.Common.ItemTemplates.csproj",
-      "template_feed\\Microsoft.DotNet.Common.ProjectTemplates.11.0\\Microsoft.DotNet.Common.ProjectTemplates.11.0.csproj",
+      "template_feed\\Microsoft.DotNet.Common.ProjectTemplates.12.0\\Microsoft.DotNet.Common.ProjectTemplates.12.0.csproj",
       "template_feed\\Microsoft.TemplateEngine.Authoring.Templates\\Microsoft.TemplateEngine.Authoring.Templates.csproj",
       "documentation\\TemplateEngine\\Samples\\Microsoft.TemplateEngine.Samples.csproj",
       "test\\Microsoft.DotNet.TemplateLocator.Tests\\Microsoft.DotNet.TemplateLocator.Tests.csproj",
