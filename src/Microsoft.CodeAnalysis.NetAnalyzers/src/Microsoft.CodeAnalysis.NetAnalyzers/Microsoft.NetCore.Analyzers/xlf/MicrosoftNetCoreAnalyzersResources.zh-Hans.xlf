@@ -1078,6 +1078,21 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
         <target state="translated">可序列化类型上的 Pointer 字段 {0}</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotSetApartmentStateOfRunningThreadDescription">
+        <source>The apartment state of a thread can only be set before the thread starts. The 'STAThread' attribute takes effect only on the synchronous entry point of an application; on any other method, including an async 'Main' method, it is ignored and the method runs in the multithreaded apartment. Calling 'SetApartmentState' or 'TrySetApartmentState' on the current thread to request a single-threaded apartment fails because the thread is already running, and in an async method, code after an 'await' can resume on a different thread. To run code in a single-threaded apartment, mark a synchronous 'Main' method with 'STAThread', or call 'SetApartmentState' on a new thread before starting it.</source>
+        <target state="new">The apartment state of a thread can only be set before the thread starts. The 'STAThread' attribute takes effect only on the synchronous entry point of an application; on any other method, including an async 'Main' method, it is ignored and the method runs in the multithreaded apartment. Calling 'SetApartmentState' or 'TrySetApartmentState' on the current thread to request a single-threaded apartment fails because the thread is already running, and in an async method, code after an 'await' can resume on a different thread. To run code in a single-threaded apartment, mark a synchronous 'Main' method with 'STAThread', or call 'SetApartmentState' on a new thread before starting it.</target>
+        <note>{Locked="STAThread"}{Locked="SetApartmentState"}{Locked="TrySetApartmentState"}{Locked="await"}{Locked="Main"}</note>
+      </trans-unit>
+      <trans-unit id="DoNotSetApartmentStateOfRunningThreadMessage">
+        <source>'{0}' cannot change the apartment state of a thread that is already running</source>
+        <target state="new">'{0}' cannot change the apartment state of a thread that is already running</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotSetApartmentStateOfRunningThreadTitle">
+        <source>Do not set the apartment state of a running thread</source>
+        <target state="new">Do not set the apartment state of a running thread</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotUseAccountSAS">
         <source>Do Not Use Account Shared Access Signature</source>
         <target state="translated">不使用帐户共享访问签名</target>
