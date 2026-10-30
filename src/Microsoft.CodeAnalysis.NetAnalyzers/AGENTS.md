@@ -4,7 +4,8 @@ Guidance for changes under `src/Microsoft.CodeAnalysis.NetAnalyzers` — the .NE
 analyzers (the `CA####` rules), migrated here from the retired `dotnet/roslyn-analyzers`.
 
 For the end-to-end workflow of adding or porting a rule, use the
-[`add-net-analyzer`](../../.github/skills/add-net-analyzer/SKILL.md) skill.
+[`roslyn-analyzers`](../../.github/skills/roslyn-analyzers/SKILL.md) skill and its .NET SDK
+overlay.
 
 ## Where things live
 
@@ -17,6 +18,7 @@ Paths are relative to `src/Microsoft.CodeAnalysis.NetAnalyzers`.
 | `src/Microsoft.CodeAnalysis.NetAnalyzers.Package.csproj` | Packaging **and** the generated-file regeneration target. |
 | `tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/` | Tests, mirroring the analyzer folder structure. |
 | `tests/Test.Utilities/` | The `VerifyCS`/`VerifyVB` verifier harness. |
+| `tools/NextDiagnosticId.cs` | Finds an unclaimed CA diagnostic ID across the working tree, local branches, and open PRs. |
 | `tools/GenerateDocumentationAndConfigFiles/` | Generates rule docs, rulesets, editorconfig, and SARIF. |
 | `docs/` | Rule-design guidance, the `.editorconfig` option reference, and the dataflow-analysis framework walkthrough. |
 
@@ -39,7 +41,7 @@ the driver already implies them and the combination fails. To regenerate `.xlf` 
   `src/Utilities/Compiler/DiagnosticCategoryAndIdRanges.txt` — take the ID after the
   category's range end and extend the range. That file only reflects *merged* work, so
   concurrent branches routinely collide;
-  `.github/skills/add-net-analyzer/scripts/NextDiagnosticId.cs` checks the working
+  `src/Microsoft.CodeAnalysis.NetAnalyzers/tools/NextDiagnosticId.cs` checks the working
   tree, local branches, and open PR titles and bodies for you.
 - **Release tracking is mandatory (not `PublicAPI.txt`).** Any new, changed, or removed
   diagnostic ID must be recorded in the declaring project's `AnalyzerReleases.Unshipped.md`
