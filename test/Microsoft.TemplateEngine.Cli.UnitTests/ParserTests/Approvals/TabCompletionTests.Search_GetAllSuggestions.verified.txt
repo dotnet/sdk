@@ -70,13 +70,6 @@
     Detail: Filters the templates based on NuGet package ID.
   },
   {
-    Label: --source,
-    Kind: Keyword,
-    SortText: --source,
-    InsertText: --source,
-    Detail: The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.
-  },
-  {
     Label: --tag,
     Kind: Keyword,
     SortText: --tag,
@@ -110,13 +103,6 @@
     SortText: -lang,
     InsertText: -lang,
     Detail: Filters templates based on language.
-  },
-  {
-    Label: -s,
-    Kind: Keyword,
-    SortText: -s,
-    InsertText: -s,
-    Detail: The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.
   },
   {
     Label: -v,
