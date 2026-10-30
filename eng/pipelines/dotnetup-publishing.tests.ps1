@@ -144,11 +144,13 @@ try {
 
     Add-Content -LiteralPath $binary -Value 'fixture content without a matching sidecar'
     Copy-DotnetupReleaseAssets $release $source $destination
-    if (@(Get-ChildItem -LiteralPath $destination -File).Count -ne 20 -or
+    if (@(Get-ChildItem -LiteralPath $destination -File -Recurse).Count -ne 20 -or
+        @(Get-ChildItem -LiteralPath $destination -File).Count -ne 0 -or
         @($release.files | Where-Object {
-            $_.sha512 -cne (Get-FileHash -LiteralPath (Join-Path $destination $_.name) -Algorithm SHA512).Hash.ToLowerInvariant()
+            $_.relativePath -cne "dotnetup/0.3.0-preview.1/$($_.name)" -or
+            $_.sha512 -cne (Get-FileHash -LiteralPath (Join-Path $destination $_.relativePath) -Algorithm SHA512).Hash.ToLowerInvariant()
         }).Count -ne 0) {
-        throw 'Staging did not produce the complete hashed inventory.'
+        throw 'Staging did not produce the complete hashed inventory under dotnetup/0.3.0-preview.1/.'
     }
     $script:assertions++
     Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } 'must not already exist'
@@ -157,7 +159,7 @@ try {
     $debugOutput = @(Copy-DotnetupReleaseAssets $release $source (Join-Path $root 'debug-staging') 6>&1)
     if ($debugOutput.Count -ne 21 -or
         @($debugOutput | Where-Object { $_ -isnot [System.Management.Automation.InformationRecord] }).Count -ne 0 -or
-        @($debugOutput | Where-Object { [string]$_ -match 'Staged .+: \d+ bytes, SHA-512=[0-9a-f]{128}\.' }).Count -ne 20) {
+        @($debugOutput | Where-Object { [string]$_ -match 'Staged dotnetup/0\.3\.0-preview\.1/[^/]+: \d+ bytes, SHA-512=[0-9a-f]{128}\.' }).Count -ne 20) {
         throw 'Staging diagnostics must include paths and every file size and hash without success-stream output.'
     }
     $script:assertions++
@@ -166,7 +168,7 @@ try {
     $details = @{
         status = 'pass'
         files = @($release.files | ForEach-Object {
-            @{ fileDownloadDetails = @(@{ downloadUrl = "https://download.visualstudio.microsoft.com/download/pr/fixture/$($_.name)" }) }
+            @{ fileDownloadDetails = @(@{ downloadUrl = "https://download.visualstudio.microsoft.com/download/pr/fixture/$($_.relativePath)" }) }
         })
     }
     foreach ($mutation in @(
@@ -182,6 +184,15 @@ try {
         $bad = $details | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashtable
         & $mutation
         Assert-Fails { Get-DotnetupCdnRelease $release $bad (Join-Path $root 'invalid-download') } ''
+    }
+    foreach ($invalidPath in @(
+        'dotnetup-win-x64.exe',
+        'dotnetup/0.4.0/dotnetup-win-x64.exe',
+        'notdotnetup/0.3.0-preview.1/dotnetup-win-x64.exe'
+    )) {
+        $bad = $details | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashtable
+        $bad.files[0].fileDownloadDetails[0].downloadUrl = "https://download.visualstudio.microsoft.com/download/pr/fixture/$invalidPath"
+        Assert-Fails { Get-DotnetupCdnRelease $release $bad (Join-Path $root 'invalid-layout') } 'must preserve'
     }
     $script:corruptDownload = $true
     Assert-Fails { Get-DotnetupCdnRelease $release $details (Join-Path $root 'corrupt-download') } 'does not match'

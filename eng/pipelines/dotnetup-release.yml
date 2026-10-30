@@ -106,7 +106,7 @@ extends:
             # Check release eligibility and construct the expected versioned file inventory.
             $release = Get-DotnetupRelease -SourceBuild $sourceBuild -Manifest $manifest
 
-            # Stage the expected nonempty files and record their hashes for post-publish verification.
+            # Restore dotnetup/<version>/ paths under the ESRP publishing root and record file hashes.
             Copy-DotnetupReleaseAssets -Release $release `
               -SourceDirectory $sourceDirectory `
               -DestinationDirectory $env:RELEASESTAGINGDIRECTORY
@@ -121,9 +121,9 @@ extends:
             Write-Host "Branch: $($sourceBuild.sourceBranch). Eligibility checks passed: successful, non-test, PME-signed."
             [long]$totalBytes = 0
             foreach ($file in $release.files) {
-              $size = (Get-Item -LiteralPath (Join-Path $env:RELEASESTAGINGDIRECTORY $file.name)).Length
+              $size = (Get-Item -LiteralPath (Join-Path $env:RELEASESTAGINGDIRECTORY $file.relativePath)).Length
               $totalBytes += $size
-              Write-Host "  $($file.name): $size bytes"
+              Write-Host "  $($file.relativePath): $size bytes"
             }
             Write-Host "Staged $($release.files.Count) files, $totalBytes bytes total."
             Write-Host 'Inspect DotnetupCdnAssets for files and DotnetupReleaseInputs for metadata and full hashes.'
@@ -160,7 +160,7 @@ extends:
             publish:
               feedSource: https://pkgs.dev.azure.com/dnceng/_packaging/MicroBuildToolset/nuget/v3/index.json
         steps:
-        - template: MicroBuild.Publish.ReleaseStudio.yml@MicroBuildTemplates
+        - template: azure-pipelines/MicroBuild.Publish.ReleaseStudio.yml@MicroBuildTemplates
           parameters:
             intent: filedownloadlinkgeneration
             contentType: Binaries

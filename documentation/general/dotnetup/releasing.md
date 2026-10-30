@@ -97,7 +97,7 @@ No ESRP submission or CDN verification occurs. Set `dryRun` to `false` in the
 **Run pipeline** pane to publish the prepared release through ESRP.
 
 Both modes log the source build URL, branch, version, commit, eligibility result, and
-staged filenames and sizes, including total bytes. Dry runs explicitly report that ESRP
+staged relative paths and sizes, including total bytes. Dry runs explicitly report that ESRP
 submission and CDN verification are skipped. Set the pipeline variable `System.Debug`
 to `true` for detailed eligibility, manifest, staging-path, per-file SHA-512, and CDN
 verification diagnostics. Authentication headers and full API responses are not logged.
@@ -111,7 +111,12 @@ branches and unsigned or failed builds. All eight RID binaries, both
 bootstrap scripts, and their SHA-512 sidecars must be listed under one dotnetup
 version and available in that run's `BlobArtifacts`.
 Manifest entries use versioned paths, but `BlobArtifacts` stores files by their flat
-filenames; the pipeline stages only the expected release files, not `MergedManifest.xml`.
+filenames. The pipeline restores the manifest's `dotnetup/<version>/<filename>` layout
+under the ESRP publishing root, matching the binary paths in
+[`eng/Publishing.props`](../../../eng/Publishing.props):
+`dotnetup/<version>/dotnetup-<rid>` (with `.exe` on Windows). The bootstrap scripts and
+all SHA-512 sidecars share the same version directory. Only the expected release files
+are staged, not `MergedManifest.xml`.
 
 The regular `Prepare` job stages the source assets and records their hashes for CDN
 verification. That job publishes the staged files, release
@@ -120,7 +125,8 @@ consumes those artifacts through declared job inputs; it does not check out sour
 or download build artifacts directly. This follows the
 [1ES release-job dependency requirements](https://aka.ms/1espt/release-deps).
 It publishes those existing files without rebuilding or re-signing.
-After ESRP completes, it downloads every returned CDN URL and checks that its SHA-512
+After ESRP completes, it checks that each returned CDN URL retains the expected
+`dotnetup/<version>/<filename>` suffix, downloads every URL, and checks that its SHA-512
 matches the corresponding source asset, including checksum files.
 
 Inspect the `DotnetupCdnRelease` pipeline artifact:
