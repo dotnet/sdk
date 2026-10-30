@@ -1,0 +1,11 @@
+<Project>
+  <ItemGroup Condition="'$(BuildDotnetupVariants)' == 'true'">
+    <DotnetupVariant Include="daily" ArtifactsDir="$(ArtifactsDir)" />
+    <DotnetupVariant Include="preview;ga">
+      <ArtifactsDir>$(ArtifactsDir)dotnetup-variants\%(Identity)\</ArtifactsDir>
+    </DotnetupVariant>
+    <DotnetupVariant Update="@(DotnetupVariant)">
+      <Variant>%(Identity)</Variant>
+    </DotnetupVariant>
+  </ItemGroup>
+</Project>

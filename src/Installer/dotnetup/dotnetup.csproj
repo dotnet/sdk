@@ -137,4 +137,17 @@
   -->
   <Target Name="ReturnDotnetupVersion" Returns="$(Version)" />
 
+  <Target Name="ReturnDotnetupReleaseAsset" Returns="@(_DotnetupReleaseAsset)">
+    <ItemGroup>
+      <_DotnetupReleaseAsset Include="$(PublishDir)dotnetup-$(RuntimeIdentifier)$(_DotnetupNativeBinaryExt)">
+        <Variant>$(DotnetupBuildVariant)</Variant>
+        <Version>$(Version)</Version>
+        <Rid>$(RuntimeIdentifier)</Rid>
+        <ReleaseDirectory>$(DotnetupReleaseDirectory)$(DotnetupBuildVariant)\$(Version)\</ReleaseDirectory>
+        <Placeholder Condition="'$(DotnetupBuildVariant)' == 'ga'">true</Placeholder>
+        <Placeholder Condition="'$(DotnetupBuildVariant)' != 'ga'">false</Placeholder>
+      </_DotnetupReleaseAsset>
+    </ItemGroup>
+  </Target>
+
 </Project>
