@@ -231,12 +231,62 @@ public sealed class TestApplicationLaunchTests
         }
     }
 
+    [TestMethod]
+    [DataRow("1.0.0")]
+    [DataRow("1.3.0")]
+    public void CreateHandshakeMessage_AdvertisesRequiredProcessingIndependentlyOfProtocolVersion(string version)
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            artifactPostProcessingManager: new ArtifactPostProcessingManager());
+
+        application.CreateHandshakeMessage(version).Properties[HandshakeMessagePropertyNames.RequiredPostProcessingSupported]
+            .Should().Be(bool.TrueString);
+    }
+
+    [TestMethod]
+    [DataRow("help")]
+    [DataRow("discovery")]
+    [DataRow("collection")]
+    [DataRow("worker")]
+    [DataRow("opt-out")]
+    [DataRow("no-manager")]
+    [DataRow("cancelled")]
+    [DataRow("rejected")]
+    [DataRow("browser-wasm")]
+    [DataRow("wasi-wasm")]
+    public void CreateHandshakeMessage_DoesNotPromiseUnsupportedOrSuppressedProcessing(string scenario)
+    {
+        using var cancellation = new CancellationTokenSource();
+        if (scenario == "cancelled")
+        {
+            cancellation.Cancel();
+        }
+
+        var options = new TestOptions(
+            scenario == "help", scenario == "discovery", TestListFormat.Text,
+            IsArtifactPostProcessing: scenario == "worker")
+        {
+            CollectTestMap = scenario == "collection",
+        };
+        using TestApplication application = CreateApplication(
+            options,
+            runtimeIdentifier: scenario,
+            artifactPostProcessingManager: scenario == "no-manager"
+                ? null
+                : new ArtifactPostProcessingManager(enabled: scenario != "opt-out", cancellation.Token));
+
+        application.CreateHandshakeMessage(scenario == "rejected" ? string.Empty : "1.3.0")
+            .Properties.Should().NotContainKey(HandshakeMessagePropertyNames.RequiredPostProcessingSupported);
+    }
+
     private static TestApplication CreateApplication(
         TestOptions testOptions,
         IEnumerable<string>? forwardedArguments = null,
         IReadOnlyDictionary<string, string>? environmentVariables = null,
         ProjectLaunchProfile? launchProfile = null,
-        string runtimeIdentifier = "")
+        string runtimeIdentifier = "",
+        ArtifactPostProcessingManager? artifactPostProcessingManager = null)
     {
         var module = new TestModule(
             new RunProperties("dotnet", "test.dll", null, runtimeIdentifier, string.Empty, string.Empty),
@@ -274,6 +324,7 @@ public sealed class TestApplicationLaunchTests
             TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, Directory.GetCurrentDirectory()),
             reporter,
             _ => { },
+            artifactPostProcessingManager: artifactPostProcessingManager,
             artifactPostProcessingInvocation: testOptions.IsArtifactPostProcessing
                 ? new ArtifactPostProcessingInvocation("manifest.json")
                 : null);

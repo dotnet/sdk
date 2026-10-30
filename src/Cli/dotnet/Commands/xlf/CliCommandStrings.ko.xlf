@@ -77,10 +77,20 @@
         <target state="translated">.NET 도구 패키지를 설치할 때 패키지 다운그레이드를 허용합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ArtifactPostProcessingConnectionFailed">
+        <source>The artifact worker's reporting connection did not complete successfully.</source>
+        <target state="new">The artifact worker's reporting connection did not complete successfully.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ArtifactPostProcessingFailed">
         <source>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</source>
         <target state="translated">'{0}' 있는 아티팩트 사후 처리에 실패했습니다. {1} 원본 아티팩트가 보고됩니다.</target>
         <note>{0} is the test application path. {1} is the failure reason.</note>
+      </trans-unit>
+      <trans-unit id="ArtifactPostProcessingMissingHandshake">
+        <source>The artifact worker exited without completing the expected handshake.</source>
+        <target state="new">The artifact worker exited without completing the expected handshake.</target>
+        <note />
       </trans-unit>
       <trans-unit id="ArtifactPostProcessingProcessFailed">
         <source>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</source>

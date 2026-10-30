@@ -359,6 +359,26 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
+    public void OnFileArtifactsReceived_UsesHandshakeModuleIdentityRatherThanLaunchPath()
+    {
+        var manager = new ArtifactPostProcessingManager();
+        (TestApplicationHandler handler, _, _) = CreateHandler(
+            isHelp: false, isDiscovery: false, artifactPostProcessingManager: manager);
+        HandshakeMessage handshake = BuildHandshake(
+            HandshakeMessageExecutionModes.Run, supportedPostProcessorKinds: "example.summary");
+        string modulePath = Path.GetFullPath("AssemblyBehindAppHost.dll");
+        handshake.Properties[HandshakeMessagePropertyNames.ModulePath] = modulePath;
+        handler.OnHandshakeReceived(handshake, gotSupportedVersion: true).Should().BeTrue();
+
+        handler.OnFileArtifactsReceived(new FileArtifactMessages(
+            "exec-1", "inst-1",
+            [new FileArtifactMessage(Path.GetFullPath("summary.json"), "Summary", null, null, null, null, "example.summary")]));
+
+        manager.SnapshotArtifacts().Should().ContainSingle().Which.ProducingTestModule.Should().Be(modulePath);
+        manager.SnapshotApplications().Should().ContainSingle().Which.ProducingTestModule.Should().Be(modulePath);
+    }
+
+    [TestMethod]
     public void OnFileArtifactsReceived_DuringArtifactPostProcessing_RecordsInputProvenance()
     {
         var invocation = new ArtifactPostProcessingInvocation("manifest.json");
@@ -404,6 +424,38 @@ public class TestApplicationHandlerTests : IDisposable
         invocation.FailureMessage.Should().NotBeNullOrEmpty();
         reporter.HasHandshakeFailure.Should().BeFalse(
             "post-processing failures must not change the test run exit code");
+    }
+
+    [TestMethod]
+    public void OnTestProcessExited_WorkerWithoutHandshake_RecordsReportingFailureOnly()
+    {
+        var invocation = new ArtifactPostProcessingInvocation("manifest.json");
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false, isDiscovery: false, artifactPostProcessingInvocation: invocation);
+
+        handler.OnTestProcessExited(0, string.Empty, string.Empty);
+
+        invocation.FailureMessage.Should().Be(CliCommandStrings.ArtifactPostProcessingMissingHandshake);
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        reporter.TotalTests.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void OnTestProcessExited_WorkerWithSuccessfulHandshakeAndNullOutput_IsNotAFailure()
+    {
+        var invocation = new ArtifactPostProcessingInvocation("manifest.json");
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false, isDiscovery: false, artifactPostProcessingInvocation: invocation);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Tool, hostType: HandshakeMessageHostTypes.ArtifactPostProcessor),
+            gotSupportedVersion: true).Should().BeTrue();
+
+        handler.OnTestProcessExited(0, string.Empty, string.Empty);
+
+        invocation.FailureMessage.Should().BeNull();
+        invocation.SnapshotOutputs().Should().BeEmpty();
+        reporter.HasHandshakeFailure.Should().BeFalse();
+        reporter.TotalTests.Should().Be(0);
     }
 
     /// <summary>

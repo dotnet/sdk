@@ -477,6 +477,66 @@ public class ArtifactPostProcessingManagerTests
             cancellationRequested: true).Should().BeFalse("Ctrl+C is an unconditional user cancellation");
 
     [TestMethod]
+    public void ShouldPostProcessArtifacts_Collection_DoesNotPromiseSummaryHandoff()
+        => MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
+            CreateTestOptions() with { CollectTestMap = true },
+            noArtifactPostProcessingRequested: false,
+            cancellationRequested: false).Should().BeFalse();
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow("example.summary;unsupported.kind")]
+    [DataRow(" example.summary ; example.summary ")]
+    public void RecordCapabilities_RequiredKindsAreOptionalAndRestrictedToSupportedKinds(string? requiredKinds)
+    {
+        var properties = new Dictionary<byte, string>
+        {
+            [HandshakeMessagePropertyNames.SupportedPostProcessorKinds] = "example.summary;microsoft.testing.trx",
+        };
+        if (requiredKinds is not null)
+        {
+            properties[HandshakeMessagePropertyNames.RequiredPostProcessorKinds] = requiredKinds;
+        }
+
+        var manager = new ArtifactPostProcessingManager();
+        manager.RecordCapabilities(CreateModule(), "net10.0", "x64", new HandshakeMessage(properties));
+
+        manager.SnapshotApplications().Should().ContainSingle().Which.RequiredKinds
+            .Should().BeEquivalentTo(string.IsNullOrEmpty(requiredKinds) ? [] : new[] { "example.summary" });
+    }
+
+    [TestMethod]
+    public void WriteManifest_IncludesAuthoritativeRunSummaryWithInt64Counters()
+    {
+        string manifestPath = Path.Combine(Path.GetTempPath(), $"manifest-{Guid.NewGuid():N}.json");
+        var runSummary = new ArtifactPostProcessingRunSummary(
+            (long)int.MaxValue + 3, int.MaxValue, 1, 2, TimeSpan.FromSeconds(7), 9, 3);
+        try
+        {
+            ArtifactPostProcessingManager.WriteManifest(
+                manifestPath, "/results", [CreateArtifact("first.summary", "example.summary")],
+                TestRunCancellationReason.None, runSummary);
+
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            JsonElement summary = manifest.RootElement.GetProperty("runSummary");
+            summary.GetProperty("totalTests").GetInt64().Should().Be(runSummary.TotalTests);
+            summary.GetProperty("passedTests").GetInt64().Should().Be(runSummary.PassedTests);
+            summary.GetProperty("failedTests").GetInt64().Should().Be(1);
+            summary.GetProperty("skippedTests").GetInt64().Should().Be(2);
+            summary.GetProperty("durationTicks").GetInt64().Should().Be(runSummary.Duration.Ticks);
+            summary.GetProperty("exitCode").GetInt32().Should().Be(9);
+            summary.GetProperty("testModuleCount").GetInt32().Should().Be(3,
+                "modules without a fragment must remain in the invocation denominator");
+            manifest.RootElement.GetProperty("inputs").GetArrayLength().Should().Be(1);
+        }
+        finally
+        {
+            File.Delete(manifestPath);
+        }
+    }
+
+    [TestMethod]
     [DataRow((int)TestRunCancellationReason.MaximumFailedTests, "maximumFailedTests")]
     [DataRow((int)TestRunCancellationReason.Timeout, "timeout")]
     public void WriteManifest_PolicyTruncatedRun_WritesTruncationReason(
@@ -490,7 +550,8 @@ public class ArtifactPostProcessingManagerTests
                 manifestPath,
                 "/results",
                 [CreateArtifact("first.summary", "example.summary")],
-                (TestRunCancellationReason)cancellationReason);
+                (TestRunCancellationReason)cancellationReason,
+                CreateRunSummary());
 
             using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
             manifest.RootElement.GetProperty("truncationReason").GetString()
@@ -512,7 +573,8 @@ public class ArtifactPostProcessingManagerTests
                 manifestPath,
                 "/results",
                 [CreateArtifact("first.trx", "microsoft.testing.trx")],
-                TestRunCancellationReason.None);
+                TestRunCancellationReason.None,
+                CreateRunSummary());
 
             using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
             manifest.RootElement.TryGetProperty("truncationReason", out _).Should().BeFalse();
@@ -525,6 +587,9 @@ public class ArtifactPostProcessingManagerTests
 
     private static TestOptions CreateTestOptions(bool isHelp = false, bool isDiscovery = false)
         => new(isHelp, isDiscovery, TestListFormat.Text);
+
+    private static ArtifactPostProcessingRunSummary CreateRunSummary()
+        => new(5, 2, 1, 2, TimeSpan.FromSeconds(1), TestExitCode.AtLeastOneTestFailed, 2);
 
     [TestMethod]
     public void GetOutputDirectory_WithResultsDirectory_UsesThatDirectory()
@@ -649,7 +714,8 @@ public class ArtifactPostProcessingManagerTests
             CreateBuildOptions(),
             reporter,
             ctrlC,
-            TestRunCancellationReason.None);
+            TestRunCancellationReason.None,
+            CreateRunSummary());
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
 
         console.GetOutput().Should().Contain(
@@ -686,7 +752,8 @@ public class ArtifactPostProcessingManagerTests
                 CreateBuildOptions(resultsDirectory),
                 reporter,
                 ctrlC,
-                TestRunCancellationReason.None);
+                TestRunCancellationReason.None,
+                CreateRunSummary());
 
             Directory.Exists(resultsDirectory).Should().BeFalse(
                 "a cancelled run must not start the jobs it planned");
@@ -715,7 +782,8 @@ public class ArtifactPostProcessingManagerTests
             CreateBuildOptions(),
             reporter,
             ctrlC,
-            TestRunCancellationReason.None);
+            TestRunCancellationReason.None,
+            CreateRunSummary());
 
         console.GetOutput().Should().NotContain(CliCommandStrings.ArtifactPostProcessingStarted);
     }
@@ -731,7 +799,7 @@ public class ArtifactPostProcessingManagerTests
         using var ctrlC = CreateCancellationManager();
         ArtifactPostProcessingManager manager = CreateManagerWithMergeableArtifacts("first.trx", "second.trx");
 
-        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC, TestRunCancellationReason.None);
+        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC, TestRunCancellationReason.None, CreateRunSummary());
 
         var output = new StringBuilder();
         console.Setup(console => console.Write(It.IsAny<string?>()))

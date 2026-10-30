@@ -138,11 +138,18 @@ with its directory, verbosity, prefix, and synchronous-write settings; do not we
 validation or forward test-selection/retry/timeout arguments. Reporting degradation remains
 separate from the test verdict, with original artifacts retained.
 
-Ordinary best-effort artifact merging is not the newer **required** post-processing contract.
-Do not advertise `RequiredPostProcessingSupported` without single-input required jobs and an
-authoritative, policy-aware `runSummary` manifest. Current CI-summary extensions correctly
-retain their per-module fallback; a successful TRX merge is not evidence of aggregate summary
-handoff.
+Required artifact processing is a per-invocation promise: advertise field 19 only when the
+SDK will honor field 18 singleton jobs and provide an authoritative, policy-aware
+`runSummary`. Preserve per-module fallback for opt-out, help/discovery/collection, and
+unsupported transports. Snapshot logical live counts after final test policies, before
+workers run; keep selected modules without fragments in the denominator. Preserve the
+handshake's producing-module identity separately from an apphost launch path, and never
+use a running framework as proof of the artifact's target framework. See the
+[contract decision](../../documentation/general/dotnet-test-artifact-post-processing.md#required-summary-contract-decision)
+and [real-worker regressions](../../test/dotnet.Tests/CommandTests/Test/GivenDotnetTestRunsRequiredArtifactProcessing.cs).
+Join worker reporting before applying outputs; a legal null result or a worker failure
+does not change test policy. Bound worker cancellation without expanding general test-host
+cancellation plumbing.
 
 The vendored non-cursor renderer measures **visible-output silence**, not silence between
 test completions. Its totals include completed modules after their worker slots are freed.

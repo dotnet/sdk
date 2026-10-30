@@ -74,6 +74,26 @@ internal sealed partial class TerminalTestReporter : IDisposable
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
     public int SkippedTests => _assemblies.Values.Sum(a => a.SkippedTests);
 
+    internal ArtifactPostProcessingRunSummary CreateRunSummary(DateTimeOffset endTime, int exitCode, int testModuleCount)
+    {
+        TestProgressState[] assemblies = [.. _assemblies.Values];
+        long passedTests = assemblies.Sum(assembly => (long)assembly.PassedTests);
+        long failedTests = assemblies.Sum(assembly => (long)assembly.FailedTests);
+        long skippedTests = assemblies.Sum(assembly => (long)assembly.SkippedTests);
+        TimeSpan duration = _testExecutionStartTime is { } startTime && endTime > startTime
+            ? endTime - startTime
+            : TimeSpan.Zero;
+
+        return new ArtifactPostProcessingRunSummary(
+            passedTests + failedTests + skippedTests,
+            passedTests,
+            failedTests,
+            skippedTests,
+            duration,
+            exitCode,
+            testModuleCount);
+    }
+
     // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
     // thread suspends, so the regex gets blamed incorrectly.
     [GeneratedRegex(@$"^   at ((?<code>.+) in (?<file>.+):line (?<line>\d+)|(?<code1>.+))$", RegexOptions.ExplicitCapture)]
