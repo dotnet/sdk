@@ -146,5 +146,9 @@ handoff.
 
 The vendored non-cursor renderer measures **visible-output silence**, not silence between
 test completions. Its totals include completed modules after their worker slots are freed.
+Resolve parent progress from every selected module's effective arguments and working
+directory; any effective opt-out disables the shared heartbeat and slow-test display.
+Collection status must not override discovery formatting. Keep optional timer and warning
+writes exception-safe, without recounting an operation when its warning cannot be written.
 Keep SDK final-exit-code authority when reconciling upstream terminal code, and update
 [`eng/vendored-files.json`](../../eng/vendored-files.json) with exact upstream blob identities.

@@ -31,7 +31,17 @@ internal sealed partial class TerminalTestReporter
         if (_options.ShowProgress && _options.HeartbeatSilenceThreshold > TimeSpan.Zero)
         {
             _collectionTimer = _timeProvider.CreateTimer(
-                _ => WriteTestMapCollectionProgress(), null,
+                _ =>
+                {
+                    try
+                    {
+                        WriteTestMapCollectionProgress();
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogTrace($"Unexpected exception while rendering test map collection progress: {ex}");
+                    }
+                }, null,
                 TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(1));
         }
     }
@@ -111,7 +121,16 @@ internal sealed partial class TerminalTestReporter
     internal void ArtifactPostProcessingFailed(string message)
     {
         Interlocked.Increment(ref _artifactPostProcessingFailures);
-        WriteWarningMessage(message);
+        try
+        {
+            WriteWarningMessage(message);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogTrace($"Failed to report artifact post-processing failure: {ex}");
+            // The operation is already counted; retain its warning without counting it again.
+            _deferredArtifactPostProcessingFailures.Enqueue(message);
+        }
     }
 
     internal void DeferArtifactPostProcessingFailure(string message)

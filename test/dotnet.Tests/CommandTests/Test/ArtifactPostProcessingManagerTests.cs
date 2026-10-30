@@ -742,8 +742,40 @@ public class ArtifactPostProcessingManagerTests
             .Callback<string?>(value => output.AppendLine(value));
         console.Setup(console => console.WriteLine()).Callback(() => output.AppendLine());
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
-        output.ToString().Should().Contain("Reporting: degraded")
+        output.ToString().Should().Contain("Reporting: degraded (1 artifact post-processing failure(s))")
             .And.Contain("reporter unavailable")
+            .And.Contain("Test run summary: Zero tests ran");
+    }
+
+    [TestMethod]
+    public async Task ExecuteAsync_WhenJobWarningWriteFails_CountsOnceAndDefersWarning()
+    {
+        var output = new CapturingConsole();
+        var console = new Mock<IConsole>();
+        console.Setup(console => console.Write(It.IsAny<string?>())).Callback<string?>(output.Write);
+        console.Setup(console => console.Write(It.IsAny<char>())).Callback<char>(output.Write);
+        console.Setup(console => console.WriteLine()).Callback(output.WriteLine);
+        console.Setup(console => console.WriteLine(It.IsAny<string?>())).Callback<string?>(output.WriteLine);
+        string warningPrefix = FormatPrefix(CliCommandStrings.ArtifactPostProcessingFailed, "A.dll");
+        console.Setup(console => console.WriteLine(
+                It.Is<string?>(value => value != null && value.StartsWith(warningPrefix, StringComparison.Ordinal))))
+            .Throws(new IOException("reporter unavailable"));
+        using var reporter = new TerminalTestReporter(console.Object, new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.ArtifactAdded(false, "A.dll", "net10.0", "x64", "execution", null, "original.trx");
+        ArtifactPostProcessingManager manager = CreateManagerWithMergeableArtifacts("first\0.trx", "second\0.trx");
+        using var ctrlC = CreateCancellationManager();
+
+        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC, TestRunCancellationReason.None);
+
+        console.Verify(console => console.WriteLine(
+            It.Is<string?>(value => value != null && value.StartsWith(warningPrefix, StringComparison.Ordinal))), Times.Once);
+        console.Setup(console => console.WriteLine(It.IsAny<string?>())).Callback<string?>(output.WriteLine);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        output.GetOutput().Should().Contain("Reporting: degraded (1 artifact post-processing failure(s))")
+            .And.Contain(warningPrefix)
+            .And.Contain("original.trx")
             .And.Contain("Test run summary: Zero tests ran");
     }
 
@@ -757,6 +789,36 @@ public class ArtifactPostProcessingManagerTests
         ArtifactPostProcessingManager.ReportFailureUnlessCancelled(reporter, ctrlC, "post-processing warning");
 
         console.GetOutput().Should().Contain("post-processing warning");
+    }
+
+    [TestMethod]
+    [DataRow(0, "Zero tests ran")]
+    [DataRow(2, "Failed!")]
+    public void ReportFailureUnlessCancelled_WhenWarningWriteFails_CountsOnceAndDefersWarning(int exitCode, string verdict)
+    {
+        var output = new CapturingConsole();
+        var console = new Mock<IConsole>();
+        console.Setup(console => console.Write(It.IsAny<string?>())).Callback<string?>(output.Write);
+        console.Setup(console => console.Write(It.IsAny<char>())).Callback<char>(output.Write);
+        console.Setup(console => console.WriteLine()).Callback(output.WriteLine);
+        console.Setup(console => console.WriteLine(It.IsAny<string?>()))
+            .Throws(new IOException("reporter unavailable"));
+        using var reporter = new TerminalTestReporter(console.Object, new TerminalTestReporterOptions { AnsiMode = AnsiMode.NoAnsi });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.ArtifactAdded(false, "A.dll", "net10.0", "x64", "execution", null, "original.trx");
+        using var ctrlC = CreateCancellationManager();
+
+        ArtifactPostProcessingManager.ReportFailureUnlessCancelled(reporter, ctrlC, "worker failure")
+            .Should().BeTrue("the failed operation must be counted even when its warning cannot be written");
+
+        console.Verify(console => console.WriteLine("worker failure"), Times.Once);
+        console.Setup(console => console.WriteLine(It.IsAny<string?>())).Callback<string?>(output.WriteLine);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode);
+
+        output.GetOutput().Should().Contain("Reporting: degraded (1 artifact post-processing failure(s))")
+            .And.Contain("worker failure")
+            .And.Contain("original.trx")
+            .And.Contain($"Test run summary: {verdict}");
     }
 
     [TestMethod]
