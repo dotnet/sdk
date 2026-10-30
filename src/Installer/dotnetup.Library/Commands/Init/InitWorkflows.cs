@@ -199,7 +199,7 @@ internal class InitWorkflows
     private static MinimalInstallSpec[] BuildOriginalSpecs(List<ResolvedInstallRequest> requests) =>
         [.. requests.Select(request => new MinimalInstallSpec(
             request.Request.Component,
-            request.Request.Options.InstallSource == InstallRequestSource.GlobalJson ? null : request.Request.Channel.Name))];
+            request.Request.Options.InstallSource == InstallSource.GlobalJson ? null : request.Request.Channel.Name))];
 
     internal static MinimalInstallSpec[] BuildChangedChannelSpecs(
         List<ResolvedInstallRequest>? requests,

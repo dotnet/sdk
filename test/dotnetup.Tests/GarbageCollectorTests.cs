@@ -341,7 +341,7 @@ public class GarbageCollectorTests
         }
 
         var data = InstallationLister.GetListData(verify: false, manifestPath: testEnv.ManifestPath);
-        var row = InstallationListRenderer.CreateRows(data.InstallSpecs, data.Installations).Single(r => r.Spec is not null);
+        var row = InstallationListRenderer.CreateRowsForRoot(data.InstallSpecs, data.Installations).Single(r => r.Spec is not null);
         row.Installation.Should().NotBeNull();
         row.Installation!.Version.Should().Be(expected);
         manifest.GetInstallSpecs(root).Single().VersionOrChannel.Should().Be("9.0.1xx");

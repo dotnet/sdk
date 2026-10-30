@@ -479,7 +479,7 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         var before = File.ReadAllText(manifestPath);
 
         var data = InstallationLister.GetListData(manifestPath: manifestPath);
-        var row = InstallationListRenderer.CreateRows(data.InstallSpecs, data.Installations).Single();
+        var row = InstallationListRenderer.CreateRowsForRoot(data.InstallSpecs, data.Installations).Single();
         row.SpecDisplay.Should().Be("10.0.1xx (last known; minimum: 10.0.103, allowPrerelease: false)");
         row.Installation!.Version.Should().Be("10.0.105");
         row.Error.Should().Contain(path);
