@@ -11,7 +11,9 @@
     publishes the dotnet-aot library and dn host, and runs the resulting native
     test binary. This verifies both the Native AOT test closure and end-to-end dn
     integration against a complete SDK installation. The test publish retains
-    managed build output for test-module integration validation.
+    managed build output for test-module integration validation. Build the redist
+    SDK first: the script overlays the test-built native library there, and test
+    setup and managed fallback use that SDK, not the bootstrap SDK.
 
 .PARAMETER Configuration
     Build configuration (Debug or Release). Default: Debug.
@@ -57,6 +59,19 @@ $dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", $dotnetName)
 $testProject = Join-Path $PSScriptRoot "dotnet-aot.Tests.csproj"
 $productProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dotnet-aot", "dotnet-aot.csproj")
 $dnProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dn", "dn.csproj")
+$testDotnetRoot = [System.IO.Path]::Combine($repoRoot, "artifacts", "bin", "redist", $Configuration, "dotnet")
+$testDotnet = Join-Path $testDotnetRoot $dotnetName
+if (-not (Test-Path -LiteralPath $testDotnet -PathType Leaf)) {
+    throw "Built redist host not found at $testDotnet. Build the $Configuration SDK first."
+}
+
+# Do not resolve through --info here: the repository global.json selects the bootstrap SDK.
+$sdkDirectories = @(Get-ChildItem -LiteralPath (Join-Path $testDotnetRoot "sdk") -Directory |
+    Where-Object { Test-Path -LiteralPath (Join-Path $_.FullName "dotnet.dll") -PathType Leaf })
+if ($sdkDirectories.Count -ne 1) {
+    throw "Expected one built SDK in $testDotnetRoot, found $($sdkDirectories.Count)."
+}
+$sdkDirectory = $sdkDirectories[0].FullName
 
 # Auto-detect RID
 if (-not $RuntimeIdentifier) {
@@ -173,26 +188,17 @@ if (-not (Test-Path -LiteralPath $managedTestModule -PathType Leaf)) {
 Write-Host "Running AOT tests..." -ForegroundColor Yellow
 Write-Host ""
 
-$sdkDirectory = & $dotnet --info 2>$null | ForEach-Object {
-    if ($_ -match '^\s*Base Path:\s*(.+?)\s*$') {
-        $Matches[1]
-    }
-} | Select-Object -First 1
-
-if (-not $sdkDirectory) {
-    Write-Host "ERROR: Could not determine the bootstrap SDK directory." -ForegroundColor Red
-    exit 1
-}
+Copy-Item -LiteralPath $aotLibraryPath -Destination (Join-Path $sdkDirectory $aotLibraryName) -Force
 
 $environment = @{
-    DOTNET_AOT_LIBRARY_DIR = $aotPublishDir
+    DOTNET_AOT_LIBRARY_DIR = $sdkDirectory
     DOTNET_AOT_SDK_DIR = $sdkDirectory
     DOTNET_AOT_TEST_DN_PATH = $dnPath
     DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
     DOTNET_AOT_TEST_NUGET_CONFIG = [System.IO.Path]::Combine($repoRoot, "NuGet.config")
     DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
-    DOTNET_HOST_PATH = $dotnet
-    DOTNET_ROOT = [System.IO.Path]::Combine($repoRoot, ".dotnet")
+    DOTNET_HOST_PATH = $testDotnet
+    DOTNET_ROOT = $testDotnetRoot
 }
 $previousEnvironment = @{}
 foreach ($entry in $environment.GetEnumerator()) {

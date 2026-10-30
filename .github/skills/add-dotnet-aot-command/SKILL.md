@@ -308,8 +308,11 @@ on each affected OS rather than cross-publishing and assuming native execution.
 ```
 
 The script publishes the MTP test application, product `dotnet-aot` library, and `dn` host with Native
-AOT. It loads the test-built library while using a complete installed SDK for SDK-relative assets and
-managed fallback, then runs the suite and can emit a TRX. Report executed, passed, failed, and skipped
+AOT. Build the matching redist SDK first. The script uses the bootstrap SDK only for compilation,
+then overlays the test-built native library into the built redist SDK for SDK-relative assets, managed
+setup, and fallback. Mixing bootstrap-managed setup with a newly built native CLI can invalidate
+run-file caches or produce apps targeting an unavailable runtime. The script runs the suite and can
+emit a TRX. Report executed, passed, failed, and skipped
 counts; required `dn` integration tests must not be skipped.
 
 ### 5. Real `dn` integration and parity

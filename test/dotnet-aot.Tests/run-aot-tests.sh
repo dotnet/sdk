@@ -4,6 +4,8 @@
 
 # Publishes the NativeAOT test binary, dotnet-aot library, and dn host, then runs
 # the full test suite including end-to-end dn integration.
+# Build the redist SDK first; the script overlays the test-built native library
+# there, and test setup and managed fallback use that SDK.
 # See run-aot-tests.ps1 for detailed documentation.
 #
 # Usage:
@@ -35,6 +37,21 @@ while [[ $# -gt 0 ]]; do
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
+
+TEST_DOTNET_ROOT="$REPO_ROOT/artifacts/bin/redist/$CONFIGURATION/dotnet"
+TEST_DOTNET="$TEST_DOTNET_ROOT/dotnet"
+if [[ ! -x "$TEST_DOTNET" ]]; then
+    echo "ERROR: Built redist host not found at $TEST_DOTNET. Build the $CONFIGURATION SDK first."
+    exit 1
+fi
+
+# Do not resolve through --info here: the repository global.json selects the bootstrap SDK.
+SDK_ASSEMBLIES=("$TEST_DOTNET_ROOT"/sdk/*/dotnet.dll)
+if [[ ${#SDK_ASSEMBLIES[@]} -ne 1 || ! -f "${SDK_ASSEMBLIES[0]}" ]]; then
+    echo "ERROR: Expected one built SDK in $TEST_DOTNET_ROOT."
+    exit 1
+fi
+SDK_DIRECTORY="$(dirname "${SDK_ASSEMBLIES[0]}")"
 
 # Auto-detect RID
 if [[ -z "$RID" ]]; then
@@ -122,17 +139,7 @@ fi
 echo "Running AOT tests..."
 echo ""
 
-SDK_DIRECTORY=$("$DOTNET" --info 2>/dev/null | awk '
-    /^[[:space:]]*Base Path:/ {
-        sub(/^[[:space:]]*Base Path:[[:space:]]*/, "")
-        print
-        exit
-    }')
-
-if [[ -z "$SDK_DIRECTORY" ]]; then
-    echo "ERROR: Could not determine the bootstrap SDK directory."
-    exit 1
-fi
+cp "$AOT_LIBRARY_PATH" "$SDK_DIRECTORY/$AOT_LIBRARY_NAME"
 
 export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
 export DOTNET_AOT_TEST_DN_PATH="$DN_PATH"
@@ -150,9 +157,9 @@ fi
 export DOTNET_AOT_TEST_MANAGED_TEST_MODULE="$MANAGED_TEST_MODULE"
 export DOTNET_AOT_TEST_NUGET_CONFIG="$REPO_ROOT/NuGet.config"
 export DOTNET_AOT_SDK_DIR="$SDK_DIRECTORY"
-export DOTNET_AOT_LIBRARY_DIR="$AOT_PUBLISH_DIR"
-export DOTNET_HOST_PATH="$DOTNET"
-export DOTNET_ROOT="$REPO_ROOT/.dotnet"
+export DOTNET_AOT_LIBRARY_DIR="$SDK_DIRECTORY"
+export DOTNET_HOST_PATH="$TEST_DOTNET"
+export DOTNET_ROOT="$TEST_DOTNET_ROOT"
 
 chmod +x "$EXE_PATH"
 chmod +x "$DN_PATH"
