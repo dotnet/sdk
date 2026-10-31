@@ -30,6 +30,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         private const string ConfigFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.Config.js";
         private const string ClientFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.BrowserTools.js";
         private const string InitializerFileName = "Microsoft.NET.Sdk.BlazorWeb.HotReload.lib.module.js";
+        private const string SettingsFileName = "hot-reload-settings.json";
+        private const string SettingsRelativePath = "_framework/dotnet-browser-tools/" + SettingsFileName;
 
         // Contract with Microsoft.DotNet.Watch.SharedSecretBuildOutputs.
         private const string PublicKeyFileName = "browser-tools-key.public.json";
@@ -37,6 +39,156 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 
         private string GeneratedDirectory(MSBuildCommand command)
             => Path.Combine(command.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(), "HotReload");
+
+        [TestMethod]
+        [DataRow(TestAsset, "net8.0")]
+        [DataRow(TestAsset, "net10.0")]
+        [DataRow("BlazorWasmMinimal", "net8.0")]
+        [DataRow("BlazorWasmMinimal", "net10.0")]
+        public void Build_GeneratesDisabledSettingsFallbackForOlderTargetFrameworks(string testAsset, string targetFramework)
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(
+                testAsset, overrideTfm: targetFramework, identifier: $"{testAsset}-{targetFramework}");
+            var build = CreateBuildCommand(projectDirectory);
+
+            ExecuteCommand(build, "/p:StaticWebAssetsFingerprintContent=true").Should().Pass();
+
+            var intermediate = build.GetIntermediateDirectory(targetFramework, "Debug").ToString();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(
+                File.ReadAllBytes(Path.Combine(intermediate, "staticwebassets.build.json")));
+            var fallback = Assert.ContainsSingle(manifest.Assets.Where(
+                asset => asset.IsPrimaryAsset() && asset.RelativePath == SettingsRelativePath));
+
+            Assert.AreEqual(StaticWebAsset.AssetKinds.Build, fallback.AssetKind);
+            Assert.AreEqual(StaticWebAsset.AssetCopyOptions.Never, fallback.CopyToPublishDirectory);
+            Assert.AreEqual("/", fallback.BasePath);
+            using var settings = JsonDocument.Parse(File.ReadAllBytes(fallback.Identity));
+            Assert.IsFalse(settings.RootElement.GetProperty("hotReload").GetBoolean());
+
+            var endpoints = JsonSerializer.Deserialize(
+                File.ReadAllBytes(Path.Combine(intermediate, "staticwebassets.build.endpoints.json")),
+                StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointsManifest);
+            var endpoint = Assert.ContainsSingle(endpoints.Endpoints.Where(
+                endpoint => endpoint.Route == SettingsRelativePath && endpoint.Selectors.Length == 0));
+            endpoint.ResponseHeaders.Should().Contain(
+                header => header.Name == "Content-Type" && header.Value == "application/json");
+        }
+
+        [TestMethod]
+        [DataRow(TestAsset)]
+        [DataRow("BlazorWasmMinimal")]
+        public void Build_CurrentTargetFrameworkDoesNotGenerateDisabledSettingsFallback(string testAsset)
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: testAsset);
+            var build = CreateBuildCommand(projectDirectory);
+
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediate = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(
+                File.ReadAllBytes(Path.Combine(intermediate, "staticwebassets.build.json")));
+            manifest.Assets.Should().NotContain(asset => asset.RelativePath.Contains(SettingsFileName));
+            new FileInfo(Path.Combine(intermediate, "HotReload", SettingsFileName)).Should().NotExist();
+        }
+
+        [TestMethod]
+        [DataRow("/p:EnableHotReloadInRuntimeConfigDevFile=false")]
+        [DataRow("/p:Configuration=Release")]
+        [DataRow("/p:JSModulesEnabled=false")]
+        [DataRow("/p:StaticWebAssetsEnabled=false")]
+        public void Build_DisabledBrowserToolsDoNotGenerateSettingsFallback(string argument)
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(
+                TestAsset, overrideTfm: "net10.0", identifier: argument.Replace('/', '_').Replace(':', '_'));
+            var build = CreateBuildCommand(projectDirectory);
+
+            ExecuteCommand(build, argument).Should().Pass();
+
+            Directory.GetFiles(projectDirectory.TestRoot, SettingsFileName, SearchOption.AllDirectories)
+                .Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void Build_ReleaseWithHotReloadEnabledGeneratesDisabledSettingsFallbackForOlderTargetFramework()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset, overrideTfm: "net10.0");
+            var build = CreateBuildCommand(projectDirectory);
+
+            ExecuteCommand(build, "/p:Configuration=Release", "/p:EnableHotReloadInRuntimeConfigDevFile=true")
+                .Should().Pass();
+
+            var generated = Path.Combine(
+                build.GetIntermediateDirectory("net10.0", "Release").ToString(), "HotReload", SettingsFileName);
+            using var settings = JsonDocument.Parse(File.ReadAllBytes(generated));
+            Assert.IsFalse(settings.RootElement.GetProperty("hotReload").GetBoolean());
+        }
+
+        [TestMethod]
+        public void Rebuild_ReusesDisabledSettingsFallbackAndCleanRemovesIt()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(TestAsset, overrideTfm: "net10.0");
+            var build = CreateBuildCommand(projectDirectory);
+
+            ExecuteCommand(build).Should().Pass();
+
+            var generated = Path.Combine(
+                build.GetIntermediateDirectory("net10.0", "Debug").ToString(), "HotReload", SettingsFileName);
+            var thumbprint = FileThumbPrint.Create(generated);
+            var lastWriteTime = File.GetLastWriteTimeUtc(generated);
+
+            ExecuteCommand(CreateBuildCommand(projectDirectory)).Should().Pass();
+
+            Assert.AreEqual(thumbprint, FileThumbPrint.Create(generated));
+            Assert.AreEqual(lastWriteTime, File.GetLastWriteTimeUtc(generated));
+
+            var clean = new MSBuildCommand(Log, "Clean", build.FullPathProjectFile);
+            ExecuteCommand(clean).Should().Pass();
+
+            new FileInfo(generated).Should().NotExist();
+        }
+
+        [TestMethod]
+        [DataRow(TestAsset)]
+        [DataRow("BlazorWasmMinimal")]
+        public void Publish_ExcludesDisabledSettingsFallbackForOlderTargetFramework(string testAsset)
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset(
+                testAsset, overrideTfm: "net10.0", identifier: testAsset);
+            var build = CreateBuildCommand(projectDirectory);
+
+            ExecuteCommand(build).Should().Pass();
+
+            new FileInfo(Path.Combine(
+                build.GetIntermediateDirectory("net10.0", "Debug").ToString(), "HotReload", SettingsFileName))
+                .Should().Exist();
+
+            var publish = CreatePublishCommand(projectDirectory);
+            ExecuteCommand(publish).Should().Pass();
+
+            var manifest = File.ReadAllText(Path.Combine(
+                publish.GetIntermediateDirectory("net10.0", "Debug").ToString(), "staticwebassets.publish.json"));
+            manifest.Should().NotContain(SettingsFileName);
+            Directory.GetFiles(
+                publish.GetOutputDirectory("net10.0", "Debug").ToString(), SettingsFileName, SearchOption.AllDirectories)
+                .Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void Build_HostedWebAssemblyClientOwnsDisabledSettingsFallbackForOlderTargetFramework()
+        {
+            var projectDirectory = CreateAspNetSdkTestAsset("BlazorHosted", overrideTfm: "net10.0");
+            var build = CreateBuildCommand(projectDirectory, "blazorhosted");
+
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediate = build.GetIntermediateDirectory("net10.0", "Debug").ToString();
+            new DirectoryInfo(Path.Combine(intermediate, "HotReload")).Should().NotExist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(
+                File.ReadAllBytes(Path.Combine(intermediate, "staticwebassets.build.json")));
+            var fallback = Assert.ContainsSingle(manifest.Assets.Where(
+                asset => asset.IsPrimaryAsset() && asset.RelativePath == SettingsRelativePath));
+            Assert.AreEqual("blazorwasm", fallback.SourceId);
+        }
 
         [TestMethod]
         public void Build_GeneratesKeyPairInDeterministicIntermediatePaths()
