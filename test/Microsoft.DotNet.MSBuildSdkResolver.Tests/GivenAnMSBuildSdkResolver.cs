@@ -10,6 +10,8 @@ using Microsoft.DotNet.MSBuildSdkResolver;
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     [TestClass]
+    // Most tests call Resolve(), which samples MSBuildEnableWorkloadResolver; GivenACachingWorkloadResolver mutates it under the same lock.
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
