@@ -41,8 +41,12 @@ parameters:
   osProperties: ''
   runtimeSourceProperties: ''
   officialBuildProperties: ''
+  buildVariants:
+  - name: ''
+    properties: ''
   downloadManifestMsiPackages: false
   ### ARCADE ###
+  enableMicrobuild: true
   preSteps: []
 
 jobs:
@@ -64,8 +68,8 @@ jobs:
       timeoutInMinutes: 90
     ${{ else }}:
       timeoutInMinutes: 60
-    enableMicrobuild: true
-    enablePublishBuildAssets: true
+    enableMicrobuild: ${{ parameters.enableMicrobuild }}
+    enablePublishBuildAssets: ${{ eq(parameters.buildVariants[0].name, '') }}
     enableTelemetry: true
     enablePublishUsingPipelines: true
     enableSbom: ${{ parameters.enableSbom }}
@@ -76,7 +80,15 @@ jobs:
     templateContext:
       sdl:
         binskim:
-          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|artifacts\bin\**\capstone.dll;
+          analyzeTargetGlob: +:f|eng\**\*.props;+:f|artifacts\bin\**\*.dll;+:f|artifacts\bin\**\*.exe;+:f|artifacts\dotnetup-*\bin\**\*.dll;+:f|artifacts\dotnetup-*\bin\**\*.exe;-:f|artifacts\bin\**\msdia140.dll;-:f|artifacts\bin\**\pgort140.dll;-:f|artifacts\bin\*Tests\**;-:f|**\Microsoft.NET.Runtime.Emscripten**\tools\**;-:f|**\CodeCoverage\**;-:f|**\bin\**\capstone.dll;
+      ${{ if ne(parameters.buildVariants[0].name, '') }}:
+        outputs:
+        - ${{ each variant in parameters.buildVariants }}:
+          - output: pipelineArtifact
+            targetPath: '$(Build.ArtifactStagingDirectory)/dotnetup-${{ variant.name }}'
+            artifactName: '$(System.PhaseName)_${{ variant.name }}_Artifacts'
+            displayName: 'Publish ${{ variant.name }} candidate'
+            condition: succeeded()
 
     steps:
     ############## PREP ###############
@@ -105,52 +117,22 @@ jobs:
         displayName: 🟣 Download Manifest MSI Packages
 
     ############### BUILDING ###############
-    - ${{ if eq(parameters.pool.os, 'windows') }}:
-      - powershell: eng/common/build.ps1
-          -restore -build -pack -ci -nativeToolsOnMachine
-          -configuration $(buildConfiguration)
-          ${{ parameters.publishArgument }}
-          ${{ parameters.signArgument }}
-          ${{ parameters.projectsArgument }}
-          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
-          /p:TargetArchitecture=${{ parameters.targetArchitecture }}
-          /p:PgoInstrument=${{ parameters.pgoInstrument }}
-          ${{ parameters.osProperties }}
-          ${{ parameters.runtimeSourceProperties }}
-          ${{ parameters.officialBuildProperties }}
-          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: 🟣 Build
-        env:
-          BuildConfig: $(buildConfiguration)
-          TestFullMSBuild: ${{ parameters.testFullMSBuild }}
-          MSBUILDALWAYSRETRY: true
-
-    - ${{ else }}:
-      - script: |
-          source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
-          source $(Build.SourcesDirectory)/eng/common/native/init-distro-rid.sh
-          initDistroRidGlobal "$os" "$arch" ""
-
-          . $(Build.SourcesDirectory)/eng/common/build.sh \
-          -restore -build -pack -ci \
-          -configuration $(buildConfiguration) \
-          ${{ parameters.publishArgument }} \
-          ${{ parameters.signArgument }} \
-          ${{ parameters.projectsArgument }} \
-          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
-          /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
-          /p:PgoInstrument=${{ parameters.pgoInstrument }} \
-          /p:TargetRid=${{ parameters.runtimeIdentifier }} \
-          ${{ parameters.osProperties }} \
-          ${{ parameters.runtimeSourceProperties }} \
-          ${{ parameters.officialBuildProperties }} \
-          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-        displayName: 🟣 Build
-        env:
-          BuildConfig: $(buildConfiguration)
-          OPENSSL_ENABLE_SHA1_SIGNATURES: 1
-          MSBUILDALWAYSRETRY: true
-          TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
+    - ${{ each variant in parameters.buildVariants }}:
+      - template: /eng/pipelines/templates/steps/sdk-build-step.yml
+        parameters:
+          buildParameters: ${{ parameters }}
+          commonBuildArguments: >-
+            ${{ parameters.publishArgument }}
+            ${{ parameters.signArgument }}
+            ${{ parameters.projectsArgument }}
+            /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
+            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+            /p:PgoInstrument=${{ parameters.pgoInstrument }}
+            ${{ parameters.osProperties }}
+            ${{ parameters.runtimeSourceProperties }}
+            ${{ parameters.officialBuildProperties }}
+            /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+          variant: ${{ variant }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
@@ -291,12 +273,14 @@ jobs:
         ${{ if eq(parameters.runTests, false) }}:
           Contents: |
             log/$(buildConfiguration)/**/*
+            dotnetup-*/log/$(buildConfiguration)/**/*
             TestResults/$(buildConfiguration)/**/*
             SymStore/$(buildConfiguration)/**/*
             tmp/$(buildConfiguration)/**/*.binlog
         ${{ else }}:
           Contents: |
             log/$(buildConfiguration)/**/*
+            dotnetup-*/log/$(buildConfiguration)/**/*
             TestResults/$(buildConfiguration)/**/*
             tmp/$(buildConfiguration)/**/*.binlog
         TargetFolder: $(Build.ArtifactStagingDirectory)
