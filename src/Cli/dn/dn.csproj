@@ -1,12 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
+
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AssemblyName>dn</AssemblyName>
     <OutputType>Exe</OutputType>
     <RootNamespace>Microsoft.DotNet.Cli</RootNamespace>
-    <PublishAot>true</PublishAot>
-    <IsAotCompatible>true</IsAotCompatible>
+    <!-- NativeAOT is not available on every platform (linux-musl, openharmony, ...); only
+         enable PublishAot where the vendored NativeAotSupported.props allows it. -->
+    <PublishAot Condition="'$(NativeAotSupported)' == 'true'">true</PublishAot>
+    <IsAotCompatible Condition="'$(NativeAotSupported)' == 'true'">true</IsAotCompatible>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">true</PublicSign>
