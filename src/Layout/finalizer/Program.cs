@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
@@ -288,6 +289,19 @@ static void RemoveInstallStateFile(SdkFeatureBand featureBandVersion, string pla
 
     if (File.Exists(installStatePath))
     {
+        // %ProgramData% lets a standard user pre-create this tree, so prove the machine dotnet root is
+        // administrator-owned before deleting below it from this elevated process. Retaining the path is
+        // preferred over failing the uninstall after dependents and workload records were removed.
+        try
+        {
+            TrustedMachinePath.ValidateProgramDataRoot();
+        }
+        catch (Exception ex) when (ex is InvalidDataException or IOException or UnauthorizedAccessException)
+        {
+            Logger.Log($"Retaining install state path below an untrusted machine root: {installStatePath}, error: {ex.Message}");
+            return;
+        }
+
         File.Delete(installStatePath);
         Logger.Log($"Deleted install state file: {installStatePath}");
 
