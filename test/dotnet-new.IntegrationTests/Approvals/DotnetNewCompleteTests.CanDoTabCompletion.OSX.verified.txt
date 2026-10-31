@@ -29,6 +29,7 @@ razorclasslib
 razorcomponent
 sln
 slnf
+slnx
 tool-manifest
 view
 viewimports
