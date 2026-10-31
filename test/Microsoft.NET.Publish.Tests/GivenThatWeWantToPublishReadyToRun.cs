@@ -485,6 +485,56 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
+        [TestMethod]
+        [DataRow("ios-arm64", "Release", "", true, true, true)]
+        [DataRow("ios-arm64", "Debug", "", false, false, false)]
+        [DataRow("browser-wasm", "Release", "", true, true, false)]
+        [DataRow("wasi-wasm", "Release", "", true, true, false)]
+        [DataRow("browser-wasm", "Debug", "", false, false, false)]
+        [DataRow("wasi-wasm", "Debug", "", false, false, false)]
+        [DataRow("browser-wasm", "Release", "DebuggerSupport=true", false, false, false)]
+        [DataRow("wasi-wasm", "Release", "DebuggerSupport=true", false, false, false)]
+        [DataRow("browser-wasm", "Release", "PublishReadyToRunStripDebugInfo=false", true, false, false)]
+        [DataRow("linux-x64", "Release", "", false, false, false)]
+        public void It_defaults_readytorun_strip_options_by_runtime_identifier(string runtimeIdentifier, string configuration, string extraProperty, bool expectStripInliningInfo, bool expectStripDebugInfo, bool expectStripILBodies)
+        {
+            var testProject = new TestProject()
+            {
+                Name = "R2RStripDefaults",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: $"{runtimeIdentifier}_{configuration}_{extraProperty}");
+
+            string[] args =
+            [
+                $"/p:RuntimeIdentifier={runtimeIdentifier}",
+                $"/p:Configuration={configuration}",
+                "/p:PublishReadyToRun=true",
+                .. string.IsNullOrEmpty(extraProperty) ? Array.Empty<string>() : [$"/p:{extraProperty}"],
+            ];
+
+            var extraArgsCommand = new GetValuesCommand(testAsset, "PublishReadyToRunCrossgen2ExtraArgs")
+            {
+                ShouldCompile = false,
+                Configuration = configuration,
+            };
+            extraArgsCommand.Execute(args).Should().Pass();
+            string extraArgs = string.Join(";", extraArgsCommand.GetValues());
+
+            var stripILBodiesCommand = new GetValuesCommand(testAsset, "PublishReadyToRunStripILBodies")
+            {
+                ShouldCompile = false,
+                Configuration = configuration,
+            };
+            stripILBodiesCommand.Execute(args).Should().Pass();
+
+            extraArgs.Contains("--strip-inlining-info").Should().Be(expectStripInliningInfo);
+            extraArgs.Contains("--strip-debug-info").Should().Be(expectStripDebugInfo);
+            stripILBodiesCommand.GetValues().Contains("true").Should().Be(expectStripILBodies);
+        }
+
         private TestProject CreateTestProjectForR2RTesting(string targetFramework, string mainProjectName, string referenceProjectName, bool isExeProject = true, string runtimeIdentifier = null)
         {
             var referenceProject = new TestProject()
