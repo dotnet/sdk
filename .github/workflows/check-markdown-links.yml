@@ -27,7 +27,7 @@ jobs:
           persist-credentials: false
 
       - name: Check Markdown links (offline)
-        uses: becheran/mlc@b0d0d353e04fcbcfd1d86716103d78a61e5b25dd # v1.2.2
+        uses: becheran/mlc@d791bd6ae91ea883f02172e21f453ba8da45dfcd # v1.3.0
         with:
           args: >-
             .
