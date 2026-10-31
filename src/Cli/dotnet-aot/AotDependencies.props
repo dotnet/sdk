@@ -48,18 +48,6 @@
   <Import Project="$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets"
           Condition="Exists('$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets')" />
 
-    <!-- NativeAOT automatically includes package and current-project satellites, but project-reference
-      satellites arrive without AssetType=resources. Promote the Configurer satellites explicitly so
-      localized first-run resources are compiled into the native image instead of merely copied beside it. -->
-    <Target Name="IncludeConfigurerSatelliteAssembliesInIlc"
-          AfterTargets="_ComputeIlcCompileInputs">
-    <ItemGroup>
-      <IlcSatelliteAssembly
-      Include="@(ReferenceSatellitePaths->WithMetadataValue('ReferenceSourceTarget', 'ProjectReference')->WithMetadataValue('Filename', 'Microsoft.DotNet.Configurer.resources')->Distinct())"
-          Exclude="@(IlcSatelliteAssembly)" />
-    </ItemGroup>
-  </Target>
-
   <!-- 'dotnet sdk check' command dependency. -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
@@ -70,5 +58,20 @@
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
   </ItemGroup>
+
+  <!-- This repository's Microsoft.NET.Publish.targets now marks reference satellites with
+       AssetType=resources, but the bootstrap SDK used to build the CLI does not yet do so.
+       Supply published reference satellites explicitly until the bootstrap SDK includes that
+       change, excluding satellites it has already selected. -->
+  <Target Name="_IncludeBootstrapReferenceSatellites"
+          AfterTargets="_ComputeIlcCompileInputs"
+          Condition="'$(PublishAot)' == 'true'">
+    <JoinItems Left="@(ReferenceSatellitePaths)" Right="@(ResolvedFileToPublish)" RightMetadata="*">
+      <Output TaskParameter="JoinResult" ItemName="_BootstrapReferenceSatellites" />
+    </JoinItems>
+    <ItemGroup>
+      <IlcSatelliteAssembly Include="@(_BootstrapReferenceSatellites)" Exclude="@(IlcSatelliteAssembly)" />
+    </ItemGroup>
+  </Target>
 
 </Project>

@@ -8,7 +8,8 @@
 
 .DESCRIPTION
     This script publishes the dotnet-aot.Tests project as a NativeAOT executable,
-    publishes the dotnet-aot library and dn host, and runs the resulting native
+    publishes the dotnet-aot library and dn host, builds the matching managed CLI,
+    and runs the resulting native
     test binary. This verifies both the Native AOT test closure and end-to-end dn
     integration against a complete SDK installation. The test publish retains
     managed build output for test-module integration validation.
@@ -56,6 +57,7 @@ $dotnetName = if ($IsWindows -or $env:OS -eq "Windows_NT") { "dotnet.exe" } else
 $dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", $dotnetName)
 $testProject = Join-Path $PSScriptRoot "dotnet-aot.Tests.csproj"
 $productProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dotnet-aot", "dotnet-aot.csproj")
+$managedCliProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dotnet", "dotnet.csproj")
 $dnProject = [System.IO.Path]::Combine($repoRoot, "src", "Cli", "dn", "dn.csproj")
 
 # Auto-detect RID
@@ -129,6 +131,12 @@ if (-not $NoBuild) {
         exit $LASTEXITCODE
     }
 
+    & $dotnet build $managedCliProject -c $Configuration
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "ERROR: Managed CLI build failed with exit code $LASTEXITCODE" -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+
     Write-Host ""
     Write-Host "Published: $exePath" -ForegroundColor Green
     $size = (Get-Item $exePath -ErrorAction SilentlyContinue).Length
@@ -149,6 +157,17 @@ $managedTestModule = & $dotnet msbuild $testProject `
 if ($LASTEXITCODE -ne 0) {
     Write-Host "ERROR: Could not determine the managed test module path." -ForegroundColor Red
     exit $LASTEXITCODE
+}
+
+$managedCliDirectory = & $dotnet msbuild $managedCliProject "-p:Configuration=$Configuration" -getProperty:TargetDir -nologo
+if ($LASTEXITCODE -ne 0) {
+    throw "Could not determine the managed CLI output directory."
+}
+$managedCliDirectory = "$managedCliDirectory".Trim()
+foreach ($file in @("dotnet.dll", "dotnet.deps.json", "dotnet.runtimeconfig.json")) {
+    if (-not (Test-Path ([System.IO.Path]::Combine($managedCliDirectory, $file)))) {
+        throw "Managed CLI baseline is missing $file. Run without -NoBuild to build it."
+    }
 }
 
 # Run
@@ -189,6 +208,7 @@ $environment = @{
     DOTNET_AOT_SDK_DIR = $sdkDirectory
     DOTNET_AOT_TEST_DN_PATH = $dnPath
     DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
+    DOTNET_AOT_TEST_MANAGED_CLI_DIRECTORY = $managedCliDirectory
     DOTNET_AOT_TEST_NUGET_CONFIG = [System.IO.Path]::Combine($repoRoot, "NuGet.config")
     DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
     DOTNET_HOST_PATH = $dotnet
