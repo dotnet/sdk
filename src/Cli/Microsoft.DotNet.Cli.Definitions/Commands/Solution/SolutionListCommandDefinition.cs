@@ -13,10 +13,18 @@ public sealed class SolutionListCommandDefinition : Command
         Arity = ArgumentArity.Zero
     };
 
+    public readonly Option<string> FormatOption = new Option<string>("--format")
+    {
+        Description = CommandDefinitionStrings.SolutionListFormatOptionDescription,
+        Arity = ArgumentArity.ExactlyOne,
+        DefaultValueFactory = _ => "table"
+    }.AcceptOnlyFromAmong("table", "json");
+
     public SolutionListCommandDefinition()
         : base("list", CommandDefinitionStrings.ListAppFullName)
     {
         Options.Add(SolutionFolderOption);
+        Options.Add(FormatOption);
     }
 
     public SolutionCommandDefinition Parent => (SolutionCommandDefinition)Parents.Single();
