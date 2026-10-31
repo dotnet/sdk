@@ -26,6 +26,21 @@ public static class NuGetSignatureVerificationEnabler
         forwardingApp.WithEnvironmentVariable(DotNetNuGetSignatureVerification, value);
     }
 
+    internal static void ConditionallyEnable(
+        IDictionary<string, string?> environmentVariables,
+        IEnvironmentProvider? environmentProvider = null)
+    {
+        ArgumentNullException.ThrowIfNull(environmentVariables);
+
+        if (!IsLinux())
+        {
+            return;
+        }
+
+        environmentVariables[DotNetNuGetSignatureVerification] =
+            GetSignatureVerificationEnablementValue(environmentProvider);
+    }
+
     public static void ConditionallyEnable(MSBuildForwardingApp forwardingApp, IEnvironmentProvider? environmentProvider = null)
     {
         ArgumentNullException.ThrowIfNull(forwardingApp, nameof(forwardingApp));

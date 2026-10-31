@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using System.Security.AccessControl;
 using System.Security.Principal;
+using Microsoft.DotNet;
 using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
@@ -258,7 +259,7 @@ namespace Microsoft.DotNet.Tests
         [InlineData(null)]
         public void ValidatePathComponent_ShouldRejectInvalidInput(string input)
         {
-            Assert.False(WindowsUtils.ValidatePathComponent(input));
+            Assert.False(PathComponentUtilities.IsValidPathComponent(input));
         }
 
         [WindowsOnlyTheory]
@@ -266,7 +267,7 @@ namespace Microsoft.DotNet.Tests
         [InlineData("8.0.100")]
         public void ValidatePathComponent_ShouldAcceptValidComponent(string input)
         {
-            Assert.True(WindowsUtils.ValidatePathComponent(input));
+            Assert.True(PathComponentUtilities.IsValidPathComponent(input));
         }
 
         [WindowsOnlyTheory]
