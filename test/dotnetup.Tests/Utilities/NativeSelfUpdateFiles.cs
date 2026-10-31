@@ -86,6 +86,13 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
 
     public Process Start(string[] arguments, bool enableTelemetry = false, string? dotnetRoot = null)
     {
+        var process = Process.Start(CreateStartInfo(arguments, enableTelemetry, dotnetRoot));
+        Assert.IsNotNull(process);
+        return process;
+    }
+
+    private ProcessStartInfo CreateStartInfo(string[] arguments, bool enableTelemetry, string? dotnetRoot = null)
+    {
         var start = new ProcessStartInfo(Paths.InstalledPath)
         {
             UseShellExecute = false,
@@ -117,37 +124,27 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
         start.Environment["CI"] = "false";
         start.Environment.Remove("TF_BUILD");
         start.Environment.Remove("GITHUB_ACTIONS");
-        var process = Process.Start(start);
-        Assert.IsNotNull(process);
-        return process;
+        return start;
     }
 
     public string Run(string[] arguments, bool succeeds = true, bool enableTelemetry = false)
     {
-        using var process = Start(arguments, enableTelemetry);
-        var stdout = process.StandardOutput.ReadToEndAsync();
-        var stderr = process.StandardError.ReadToEndAsync();
-        try
+        var startInfo = CreateStartInfo(arguments, enableTelemetry);
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        var result = Process.RunAndCaptureTextAsync(startInfo, timeout.Token).GetAwaiter().GetResult();
+        Assert.IsFalse(result.ExitStatus.Canceled, "Native dotnetup timed out.");
+        var output = result.StandardOutput + result.StandardError;
+        if (succeeds)
         {
-            Assert.IsTrue(process.WaitForExit(20_000), "Native dotnetup timed out.");
-            var output = stdout.GetAwaiter().GetResult();
-            var error = stderr.GetAwaiter().GetResult();
-            if (succeeds)
-            {
-                Assert.AreEqual(0, process.ExitCode, output + error);
-                Assert.AreEqual(string.Empty, error);
-            }
-            else
-            {
-                Assert.AreNotEqual(0, process.ExitCode, output + error);
-            }
+            Assert.AreEqual(0, result.ExitStatus.ExitCode, output);
+            Assert.AreEqual(string.Empty, result.StandardError);
+        }
+        else
+        {
+            Assert.AreNotEqual(0, result.ExitStatus.ExitCode, output);
+        }
 
-            return output + error;
-        }
-        finally
-        {
-            Stop(process);
-        }
+        return output;
     }
 
     public static void Stop(Process process)
