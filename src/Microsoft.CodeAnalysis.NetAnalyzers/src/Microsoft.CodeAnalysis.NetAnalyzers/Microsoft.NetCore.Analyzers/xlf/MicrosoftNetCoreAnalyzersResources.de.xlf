@@ -2533,6 +2533,26 @@ Erweiterungen und benutzerdefinierte Konvertierungen werden bei generischen Type
         <target state="translated">Stark typisierte Append- und Insert-Methodenüberladungen für StringBuilder bevorzugen</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleCodeFixTitle">
+        <source>Use a tuple literal</source>
+        <target state="new">Use a tuple literal</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleDescription">
+        <source>'ValueTuple' is a struct, so it avoids the heap allocation of each 'Tuple'. A tuple is only reported when every use of it, and of everything it is stored in, passed to or returned from, works the same with a value tuple.</source>
+        <target state="new">'ValueTuple' is a struct, so it avoids the heap allocation of each 'Tuple'. A tuple is only reported when every use of it, and of everything it is stored in, passed to or returned from, works the same with a value tuple.</target>
+        <note>{Locked="ValueTuple"}{Locked="Tuple"}</note>
+      </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleMessage">
+        <source>Use a value tuple instead of '{0}'</source>
+        <target state="new">Use a value tuple instead of '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferValueTupleOverTupleTitle">
+        <source>Prefer 'ValueTuple' over 'Tuple'</source>
+        <target state="new">Prefer 'ValueTuple' over 'Tuple'</target>
+        <note>{Locked="ValueTuple"}{Locked="Tuple"}</note>
+      </trans-unit>
       <trans-unit id="PreventNumericIntPtrUIntPtrBehavioralChangesConversionNotThrowMessage">
         <source>Starting with .NET 7 the explicit conversion '{0}' will not throw when overflowing in an unchecked context. Wrap the expression with a 'checked' statement to restore the .NET 6 behavior.</source>
         <target state="translated">Beginnend mit .NET 7 löst die explizite Konvertierung „{0}“ nicht aus, wenn sie in einem ungeprüften Kontext überläuft. Schließen Sie den Ausdruck in eine „checked“-Anweisung ein, um das .NET 6-Verhalten wiederherzustellen.</target>

@@ -474,8 +474,10 @@ namespace Analyzer.Utilities
         public const string SystemThreadingThread = "System.Threading.Thread";
         public const string SystemThreadingVolatile = "System.Threading.Volatile";
         public const string SystemTimeSpan = "System.TimeSpan";
+        public const string SystemTuple = "System.Tuple";
         public const string SystemType = "System.Type";
         public const string SystemUri = "System.Uri";
+        public const string SystemValueTuple = "System.ValueTuple";
         public const string SystemWebConfigurationHttpRuntimeSection = "System.Web.Configuration.HttpRuntimeSection";
         public const string SystemWebHttpApplication = "System.Web.HttpApplication";
         public const string SystemWebHttpCookie = "System.Web.HttpCookie";
