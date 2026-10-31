@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Sdk;
+using Microsoft.DotNet.Cli.Commands.SelfSign;
 using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Tool;
@@ -183,6 +184,7 @@ public static class Parser
         ProjectCommandParser.ConfigureCommand(rootCommand.ProjectCommand);
         PublishCommandParser.ConfigureCommand(rootCommand.PublishCommand);
         ReferenceCommandParser.ConfigureCommand(rootCommand.ReferenceCommand);
+        SelfSignCommandParser.ConfigureCommand(rootCommand.SelfSignCommand);
         RemoveCommandParser.ConfigureCommand(rootCommand.RemoveCommand);
         RestoreCommandParser.ConfigureCommand(rootCommand.RestoreCommand);
         RunCommandParser.ConfigureCommand(rootCommand.RunCommand);

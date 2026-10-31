@@ -34,6 +34,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "completions",
                 "format",
                 "sdk",
+                "selfsign",
                 "fsi",
                 "help",
                 "msbuild",
