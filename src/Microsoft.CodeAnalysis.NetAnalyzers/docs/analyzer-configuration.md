@@ -84,6 +84,7 @@ Configurable Rules:
 [CA1819](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1819),
 [CA1822](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1822),
 [CA1859](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1859),
+[CA1881](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1881),
 [CA2208](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2208),
 [CA2217](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2217),
 [CA2225](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2225),
@@ -103,6 +104,7 @@ Option Values:
 Default Value: `public`, except as listed below
 
   1. CA1859: default value is `private`.
+  2. CA1881: default value is `private`.
 
 Example: `dotnet_code_quality.api_surface = all`
 
