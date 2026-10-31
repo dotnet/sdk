@@ -15,6 +15,11 @@
       <PortableRuntimeIdentifierGraphTargetFile>$(OutputPath)PortableRuntimeIdentifierGraph.json</PortableRuntimeIdentifierGraphTargetFile>
     </PropertyGroup>
 
+    <!--
+      The RID graph comes from the Microsoft.NETCore.Platforms package, which is built from
+      the runtime RID graph (dotnet/runtime#132953 contains the openharmony RIDs). Do not
+      fork it here: a newer package version flows the graph without SDK-side maintenance.
+    -->
     <Copy SourceFiles="$(NuGetPackageRoot)/microsoft.netcore.platforms/$(MicrosoftNETCorePlatformsPackageVersion)/runtime.json"
           DestinationFiles="$(OutputPath)RuntimeIdentifierGraph.json"
           SkipUnchangedFiles="true" />
@@ -637,7 +642,8 @@
       <WorkloadManifestFilesContent Include="%(BuiltinManifests.Identity)" />
     </ItemGroup>
 
-    <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />
+    <Error Text="No workload manifest content found."
+           Condition="'@(WorkloadManifestFilesContent->Count())' == '0' and '$(SkipWorkloadManifestValidation)' != 'true'" />
 
     <ItemGroup>
       <WorkloadManifestFilesContent Include="samsung.net.sdk.tizen" />
@@ -786,9 +792,18 @@
       <ToolRuntimeConfigPath Include="$(OutputPath)**\*.runtimeconfig.json" Exclude="$(OutputPath)**\testhost-*.runtimeconfig.json" />
     </ItemGroup>
 
+    <!-- The SDK's own tools (csc, VBCSCompiler, F#, ...) need the OpenHarmony sandbox
+         defaults; user applications must not inherit them. Write them into every tool
+         runtimeconfig instead of setting process-wide environment variables. -->
+    <ItemGroup Condition="'$(OSName)' == 'openharmony'">
+      <OpenHarmonyRuntimeHostConfigurationOption Include="System.Runtime.EnableWriteXorExecute" Value="false" />
+      <OpenHarmonyRuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+    </ItemGroup>
+
     <!-- Update runtimeconfig files for tools in the SDK to pin the shared frameworks to the version redistributed. -->
     <UpdateRuntimeConfig
       RuntimeConfigPaths="@(ToolRuntimeConfigPath)"
+      RuntimeHostConfigurationOptions="@(OpenHarmonyRuntimeHostConfigurationOption)"
       MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
       MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
 
