@@ -1,0 +1,218 @@
+trigger: none
+pr: none
+
+parameters:
+- name: dryRun
+  displayName: Dry run (prepare artifacts without publishing to ESRP)
+  type: boolean
+  default: true
+
+variables:
+- template: /eng/common/templates-official/variables/pool-providers.yml
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
+- name: DOTNET_ADD_GLOBAL_TOOLS_TO_PATH
+  value: 0
+- name: ReleaseMetadataDirectory
+  value: $(Build.ArtifactStagingDirectory)/release-metadata
+- name: ReleaseStagingDirectory
+  value: $(Agent.TempDirectory)/dotnetup-cdn-staging
+- name: ReleaseToolsDirectory
+  value: $(Pipeline.Workspace)/dotnetup-release-tools
+- name: ESRPOwners
+  value: noahgilson@microsoft.com;marcpop@microsoft.com
+- name: ESRPApprovers
+  value: noahgilson@microsoft.com;daplaist@microsoft.com;marcpop@microsoft.com;jorobich@microsoft.com
+
+resources:
+  pipelines:
+  - pipeline: dotnetup
+    project: internal
+    source: \dotnet\sdk\dotnet-dnup-official-ci
+    branch: refs/heads/release/dnup
+    tags:
+    - PME Signed
+    trigger: none
+  repositories:
+  - repository: MicroBuildTemplates
+    type: git
+    name: 1ESPipelineTemplates/MicroBuildTemplate
+    ref: refs/tags/release
+
+extends:
+  template: azure-pipelines/1ES.Official.Publish.yml@MicroBuildTemplates
+  parameters:
+    pool:
+      name: $(DncEngInternalBuildPool)
+      image: 1es-windows-2022
+      os: windows
+    stages:
+    - stage: PublishToESRP
+      displayName: Publish dotnetup to the CDN
+      jobs:
+      - job: Prepare
+        displayName: Validate and stage the signed release
+        templateContext:
+          mb:
+            publish:
+              enabled: false
+          outputs:
+          - output: pipelineArtifact
+            targetPath: $(ReleaseStagingDirectory)
+            artifactName: DotnetupCdnAssets
+          - output: pipelineArtifact
+            targetPath: $(ReleaseMetadataDirectory)
+            artifactName: DotnetupReleaseInputs
+          - output: pipelineArtifact
+            targetPath: $(Build.SourcesDirectory)/eng/pipelines/dotnetup-publishing.ps1
+            artifactName: DotnetupReleaseTools
+        steps:
+        - checkout: self
+          fetchDepth: 1
+          fetchTags: false
+
+        - task: DownloadBuildArtifacts@1
+          displayName: Download the signed build's blob artifacts
+          inputs:
+            buildType: specific
+            project: internal
+            pipeline: 1544
+            buildVersionToDownload: specific
+            buildId: $(resources.pipeline.dotnetup.runID)
+            downloadType: single
+            artifactName: BlobArtifacts
+            downloadPath: $(Agent.TempDirectory)/dotnetup-source
+            checkDownloadedFiles: true
+
+        - pwsh: |
+            $ErrorActionPreference = 'Stop'
+
+            # Load the shared release-validation and staging helpers from the checkout.
+            . ./eng/pipelines/dotnetup-publishing.ps1
+
+            # Create storage for the metadata artifact passed to the Publish job.
+            New-Item -ItemType Directory -Path $env:RELEASEMETADATADIRECTORY -ErrorAction Stop | Out-Null
+
+            # Fetch eligibility details, such as test-build status, for the selected pipeline run.
+            $sourceBuildId = [int]$env:SOURCE_BUILD_ID
+            $headers = @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
+            $sourceBuild = Invoke-RestMethod -Headers $headers -Uri "https://dev.azure.com/dnceng/internal/_apis/build/builds/$sourceBuildId`?api-version=7.1"
+
+            # Read the version and asset inventory from the selected run's downloaded manifest.
+            $sourceDirectory = "$(Agent.TempDirectory)/dotnetup-source/BlobArtifacts"
+            $manifestPath = Join-Path $sourceDirectory 'MergedManifest.xml'
+            $manifest = [xml](Get-Content -LiteralPath $manifestPath -Raw)
+
+            # Check release eligibility and construct the expected versioned file inventory.
+            $release = Get-DotnetupRelease -SourceBuild $sourceBuild -Manifest $manifest
+
+            # Restore dotnetup/<version>/ paths under the ESRP publishing root and record file hashes.
+            Copy-DotnetupReleaseAssets -Release $release `
+              -SourceDirectory $sourceDirectory `
+              -DestinationDirectory $env:RELEASESTAGINGDIRECTORY
+
+            # Prepare publishes this metadata as an artifact for the separate Publish job.
+            $sourceBuild | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'source-build.json')
+            $release | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'release.json')
+            Copy-Item -LiteralPath $manifestPath -Destination $env:RELEASEMETADATADIRECTORY
+
+            Write-Host "Selected dotnetup $($release.version), Azure DevOps run $($release.azureDevOpsBuildId), commit $($release.commit)."
+            Write-Host "Source build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$($release.azureDevOpsBuildId)"
+            Write-Host "Branch: $($sourceBuild.sourceBranch). Eligibility checks passed: successful, non-test, PME-signed."
+            [long]$totalBytes = 0
+            foreach ($file in $release.files) {
+              $size = (Get-Item -LiteralPath (Join-Path $env:RELEASESTAGINGDIRECTORY $file.relativePath)).Length
+              $totalBytes += $size
+              Write-Host "  $($file.relativePath): $size bytes"
+            }
+            Write-Host "Staged $($release.files.Count) files, $totalBytes bytes total."
+            Write-Host 'Inspect DotnetupCdnAssets for files and DotnetupReleaseInputs for metadata and full hashes.'
+            if ('${{ parameters.dryRun }}' -eq 'true') {
+              Write-Host 'DRY RUN: Prepare completed. ESRP submission and CDN verification are skipped. Set dryRun=false to publish.'
+            } else {
+              Write-Host 'Publish will submit these files to ESRP and verify the resulting CDN downloads.'
+            }
+          displayName: Validate the build and manifest and stage release files
+          env:
+            SOURCE_BUILD_ID: $(resources.pipeline.dotnetup.runID)
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            SYSTEM_DEBUG: $(System.Debug)
+
+      - job: Publish
+        displayName: Publish the prepared release through ESRP
+        dependsOn: Prepare
+        condition: and(succeeded(), ${{ eq(parameters.dryRun, false) }})
+        timeoutInMinutes: 180
+        templateContext:
+          type: releaseJob
+          isProduction: true
+          inputs:
+          - input: pipelineArtifact
+            artifactName: DotnetupCdnAssets
+            targetPath: $(ReleaseStagingDirectory)
+          - input: pipelineArtifact
+            artifactName: DotnetupReleaseInputs
+            targetPath: $(ReleaseMetadataDirectory)
+          - input: pipelineArtifact
+            artifactName: DotnetupReleaseTools
+            targetPath: $(ReleaseToolsDirectory)
+          mb:
+            publish:
+              feedSource: https://pkgs.dev.azure.com/dnceng/_packaging/MicroBuildToolset/nuget/v3/index.json
+        steps:
+        - template: azure-pipelines/MicroBuild.Publish.ReleaseStudio.yml@MicroBuildTemplates
+          parameters:
+            intent: filedownloadlinkgeneration
+            contentType: Binaries
+            contentSource: Folder
+            folderLocation: $(ReleaseStagingDirectory)
+            waitForReleaseCompletion: true
+            owners: $(ESRPOwners)
+            approvers: $(ESRPApprovers)
+
+        - pwsh: |
+            $ErrorActionPreference = 'Stop'
+
+            # Preserve the raw ESRP response for diagnosis, including when publishing failed.
+            $env:ESRP_RELEASE_DETAILS | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'esrp-release-details.json')
+          displayName: Retain the ESRP response, including failed releases
+          condition: and(succeededOrFailed(), ne(variables['ESRP_RELEASE_DETAILS'], ''))
+          env:
+            ESRP_RELEASE_DETAILS: $(ESRP_RELEASE_DETAILS)
+
+        - pwsh: |
+            $ErrorActionPreference = 'Stop'
+
+            # This job receives the helper through Prepare's artifact.
+            . (Join-Path $env:RELEASETOOLSDIRECTORY 'dotnetup-publishing.ps1')
+            if ([string]::IsNullOrWhiteSpace($env:ESRP_RELEASE_DETAILS)) {
+              throw 'ESRP_RELEASE_DETAILS is missing or empty.'
+            }
+
+            # Combine Prepare's expected files and hashes with ESRP's publishing response.
+            $release = Get-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'release.json') -Raw | ConvertFrom-Json -AsHashtable
+            $details = $env:ESRP_RELEASE_DETAILS | ConvertFrom-Json
+
+            # Validate the ESRP result and compare every CDN download with its staged source hash.
+            $cdnRelease = Get-DotnetupCdnRelease -Release $release -Details $details `
+              -DownloadDirectory "$(Agent.TempDirectory)/dotnetup-cdn-verification"
+
+            # Retain verified URLs and hashes in the final metadata artifact.
+            $cdnRelease | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'cdn-release.json')
+
+            foreach ($file in $cdnRelease.files) {
+              Write-Host "$($file.name): $($file.downloadUrl)"
+            }
+
+            Write-Host 'CDN files verified. No aka.ms links were changed.'
+          displayName: Verify CDN downloads and record release URLs
+          env:
+            ESRP_RELEASE_DETAILS: $(ESRP_RELEASE_DETAILS)
+            SYSTEM_DEBUG: $(System.Debug)
+
+        - task: 1ES.PublishPipelineArtifact@1
+          displayName: Retain release metadata and ESRP results
+          condition: always()
+          inputs:
+            targetPath: $(ReleaseMetadataDirectory)
+            artifactName: DotnetupCdnRelease

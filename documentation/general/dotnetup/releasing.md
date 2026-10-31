@@ -63,3 +63,101 @@ Invoke-WebRequest https://aka.ms/dotnet/dotnetup/preview/get-dotnetup.ps1 -OutFi
 & $script -InstallDir $installDir
 & (Join-Path $installDir 'dotnetup.exe') --info
 ```
+
+## Publish to the CDN through ESRP (initial rollout)
+
+The manually triggered pipeline defined in
+[`eng/pipelines/dotnetup-release.yml`](../../../eng/pipelines/dotnetup-release.yml)
+publishes an existing signed build to `download.visualstudio.microsoft.com` through ESRP.
+
+### One-time pipeline setup
+
+Create an Azure DevOps pipeline in `dnceng/internal` using this YAML on the release
+branch. Authorize the `dotnetup` pipeline resource, the `MicroBuildTemplates` repository,
+and the internal build pool. No Maestro service connection or BAR lookup is required.
+The pipeline's build identity must be able to read official pipeline 1544's runs and
+build artifacts. Confirm with Engineering that the new pipeline is authorized for
+MicroBuild/ESRP publishing and that its owners and approvers have the required PME accounts.
+
+The ESRP owners and approvers are configured in the YAML.
+
+### Run and inspect the release
+
+In the **Run pipeline** pane, select **Resources**, then select `dotnetup` and choose
+a run of `dotnet-dnup-official-ci` (pipeline 1544) from `release/dnup`. Without a manual
+selection, the resource defaults to the latest successful run on that branch with the
+`PME Signed` tag. The release pipeline remains manually triggered; completing an official
+build does not start a CDN release.
+
+The `dryRun` parameter defaults to `true`. A dry run executes `Prepare`, including build
+eligibility checks, artifact download, manifest validation, staging, and hash generation,
+but skips the entire `Publish` job. Inspect the `DotnetupCdnAssets` artifact for staged files
+and `DotnetupReleaseInputs` for the build record, manifest, and release metadata.
+No ESRP submission or CDN verification occurs. Set `dryRun` to `false` in the
+**Run pipeline** pane to publish the prepared release through ESRP.
+
+Both modes log the source build URL, branch, version, commit, eligibility result, and
+staged relative paths and sizes, including total bytes. Dry runs explicitly report that ESRP
+submission and CDN verification are skipped. Set the pipeline variable `System.Debug`
+to `true` for detailed eligibility, manifest, staging-path, per-file SHA-512, and CDN
+verification diagnostics. Authentication headers and full API responses are not logged.
+
+The pipeline resource fixes the source pipeline and project. The selected run must be
+successful, non-test, and PME-signed. The artifact download selects that exact run;
+the pipeline uses its `MergedManifest.xml` to identify the version and expected asset inventory.
+It does not require a BAR ID or BAR tag. Manual resource selection can override
+the default branch and tag filters, so these checks also reject selections from other
+branches and unsigned or failed builds. All eight RID binaries, both
+bootstrap scripts, and their SHA-512 sidecars must be listed under one dotnetup
+version and available in that run's `BlobArtifacts`.
+Manifest entries use versioned paths, but `BlobArtifacts` stores files by their flat
+filenames. The pipeline restores the manifest's `dotnetup/<version>/<filename>` layout
+under the ESRP publishing root, matching the binary paths in
+[`eng/Publishing.props`](../../../eng/Publishing.props):
+`dotnetup/<version>/dotnetup-<rid>` (with `.exe` on Windows). The bootstrap scripts and
+all SHA-512 sidecars share the same version directory. Only the expected release files
+are staged, not `MergedManifest.xml`.
+
+The regular `Prepare` job stages the source assets and records their hashes for CDN
+verification. That job publishes the staged files, release
+metadata, and publishing helper as pipeline artifacts. The `Publish` release job
+consumes those artifacts through declared job inputs; it does not check out source
+or download build artifacts directly. This follows the
+[1ES release-job dependency requirements](https://aka.ms/1espt/release-deps).
+It publishes those existing files without rebuilding or re-signing.
+After ESRP completes, it checks that each returned CDN URL retains the expected
+`dotnetup/<version>/<filename>` suffix, downloads every URL, and checks that its SHA-512
+matches the corresponding source asset, including checksum files.
+
+Inspect the `DotnetupCdnRelease` pipeline artifact:
+
+- `source-build.json`: the selected Azure DevOps build record.
+- `MergedManifest.xml`: the source build's validated asset manifest.
+- `release.json`: source run, commit, version, file paths, and hashes.
+- `esrp-release-details.json`: the raw ESRP publishing result, when returned.
+- `cdn-release.json`: the verified per-file CDN URLs and hashes, written only after
+  every download passes verification.
+
+A failure after ESRP submission can leave files published even though URL verification
+failed. Inspect the retained ESRP result before retrying; do not assume a retry reuses
+the previous URLs. Neither a failure nor a successful run changes production aliases.
+
+### Before switching aka.ms links
+
+Do not point the existing download links at the new CDN URLs during this initial
+rollout. [Self-update resolution](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DailyChannelResolver.cs)
+currently extracts the version from the final URL's path, and the
+[downloader](../../../src/Installer/Microsoft.Dotnet.Installation/Internal/DotnetDownloader.cs)
+fetches checksums from a version-specific `ci.dot.net/public-checksums` location.
+The [PowerShell](../../../scripts/get-dotnetup.ps1) and
+[shell](../../../scripts/get-dotnetup.sh) bootstrap scripts also use the existing blob
+layout to pin binary and checksum downloads to the same build. Validate the actual ESRP
+URL layout and establish a compatible transition for already-installed clients before
+enabling alias updates.
+
+To run offline fixtures for build eligibility, asset completeness, staging hashes,
+and ESRP result and CDN download validation locally without publishing or downloading anything:
+
+```pwsh
+pwsh -NoProfile -File eng/pipelines/dotnetup-publishing.tests.ps1
+```
