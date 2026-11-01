@@ -21,17 +21,21 @@ internal static class InstallSpecResolver
         if (result.Spec is { } requirement)
         {
             result.Installation = SelectInstallation(spec.Component, requirement, installations,
-                i => i.Component, i => ReleaseVersion.TryParse(i.Version, out var version) ? version : null);
+                i => i.Component, i => ReleaseVersion.TryParse(i.Version, out var version) ? version : null,
+                spec.InstallSource == InstallSource.GlobalJson
+                    ? i => ReleaseVersion.TryParse(i.ProductVersion, out var version) ? version : null : null);
         }
         return result;
     }
 
     public static T? SelectInstallation<T>(InstallComponent component, UpdateChannel requirement,
-        IEnumerable<T> installations, Func<T, InstallComponent> getComponent, Func<T, ReleaseVersion?> getVersion)
+        IEnumerable<T> installations, Func<T, InstallComponent> getComponent, Func<T, ReleaseVersion?> getVersion,
+        Func<T, ReleaseVersion?>? getProductVersion = null)
         where T : class =>
         installations.Where(i => getComponent(i) == component)
             .Select(i => (Installation: i, Version: getVersion(i)))
-            .Where(i => i.Version is { } version && requirement.Matches(version))
+            .Where(i => i.Version is { } version && (requirement.Matches(version) ||
+                (getProductVersion?.Invoke(i.Installation) is { } productVersion && requirement.Matches(productVersion))))
             .OrderByDescending(i => i.Version)
             .Select(i => i.Installation)
             .FirstOrDefault();

@@ -337,7 +337,7 @@ internal class InstallerOrchestratorSingleton
         DotnetupSharedManifest? manifest,
         IInstallationValidator installationValidator)
     {
-        bool fromGlobalJson = installRequest.Options.InstallSource == InstallRequestSource.GlobalJson;
+        bool fromGlobalJson = installRequest.Options.InstallSource == InstallSource.GlobalJson;
         if (manifest?.FindExistingInstall(install, matchLayoutVersion: fromGlobalJson) is { } existingInstall)
         {
             manifest.RecordInstallSpec(installRequest);

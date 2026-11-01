@@ -120,6 +120,32 @@ public class InstallSpecResolverTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Resolve_RepositoryMatchesRtmDailyLayoutVersion(bool useSavedRequirement)
+    {
+        using var env = new TestEnvironment();
+        var path = Path.Combine(env.TempRoot, "global.json");
+        File.WriteAllText(path, useSavedRequirement
+            ? "{broken" : """{"sdk":{"version":"11.0.100","rollForward":"disable"}}""");
+        var daily = new Installation
+        {
+            Component = InstallComponent.SDK, Version = "11.0.100-rtm.26552.115", ProductVersion = "11.0.100"
+        };
+        var spec = new InstallSpec
+        {
+            Component = InstallComponent.SDK, InstallSource = InstallSource.GlobalJson,
+            VersionOrChannel = "11.0.100", GlobalJsonPath = path,
+            MinimumVersion = "11.0.100", AllowPrerelease = false
+        };
+
+        var result = InstallSpecResolver.Resolve(spec, [daily]);
+
+        result.Installation.Should().BeSameAs(daily);
+        result.UsesFallbackRequirement.Should().Be(useSavedRequirement);
+    }
+
+    [TestMethod]
     [DataRow(null, null)]
     [DataRow("10.0.103", null)]
     [DataRow(null, false)]

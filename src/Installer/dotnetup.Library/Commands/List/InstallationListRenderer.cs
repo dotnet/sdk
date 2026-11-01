@@ -20,13 +20,6 @@ internal static class InstallationListRenderer
     {
         var versions = installations.Select(i => i.Version).Distinct(StringComparer.Ordinal)
             .ToDictionary(v => v, v => ReleaseVersion.TryParse(v, out var version) ? version : null, StringComparer.Ordinal);
-        var records = installations.ToDictionary(i => new Installation
-        {
-            Component = i.Component,
-            Version = i.Version,
-            ProductVersion = i.ProductVersion
-        });
-        var recordList = records.Keys.ToList();
         var rows = new List<InstallationListRow>();
         foreach (var spec in specs)
         {
@@ -41,7 +34,9 @@ internal static class InstallationListRenderer
             });
             var selected = resolution.Spec is { } requirement
                 ? InstallSpecResolver.SelectInstallation(spec.Component, requirement, installations,
-                    i => i.Component, i => versions[i.Version])
+                    i => i.Component, i => versions[i.Version],
+                    spec.Source == InstallSource.GlobalJson
+                        ? i => ReleaseVersion.TryParse(i.ProductVersion, out var version) ? version : null : null)
                 : null;
             var row = CreateSpecRow(spec, resolution, selected);
             if (row is not null)

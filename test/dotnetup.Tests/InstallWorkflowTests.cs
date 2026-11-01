@@ -97,12 +97,13 @@ public class InstallWorkflowTests : IDisposable
         try
         {
             Environment.CurrentDirectory = _tempDir;
+            string expectedGlobalJsonPath = Path.Combine(Environment.CurrentDirectory, "global.json");
 
             var requests = new InstallWorkflow(command).GenerateInstallRequests([new(InstallComponent.SDK, null)]);
 
             requests.Should().ContainSingle();
             requests[0].ResolvedVersion.ToString().Should().Be("10.0.103");
-            requests[0].Request.Options.GlobalJsonPath.Should().Be(path);
+            requests[0].Request.Options.GlobalJsonPath.Should().Be(expectedGlobalJsonPath);
             requests[0].Request.Options.InstallSource.Should().Be(InstallSource.GlobalJson);
         }
         finally

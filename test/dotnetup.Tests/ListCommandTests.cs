@@ -257,6 +257,11 @@ public class ListCommandTests(TestContext testContext) : IDisposable
         daily.ProductVersion = "11.0.100";
         var spec = Spec("11.0.100");
         spec.Source = fromGlobalJson ? InstallSource.GlobalJson : InstallSource.Explicit;
+        if (fromGlobalJson)
+        {
+            spec.GlobalJsonPath = Path.Combine(_tempDir.FullName, "global.json");
+            File.WriteAllText(spec.GlobalJsonPath, """{"sdk":{"version":"11.0.100","rollForward":"disable"}}""");
+        }
 
         var rows = InstallationListRenderer.CreateRowsForRoot([spec], [daily]);
 

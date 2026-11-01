@@ -491,7 +491,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
 
         var owningSpecs = root!.InstallSpecs
-            .Where(spec => GarbageCollector.ResolveLatestMatchingInstallation(spec, root.Installations) is { } kept && conflicts.Contains(kept))
+            .Where(spec => InstallSpecResolver.Resolve(spec, root.Installations).Installation is { } kept && conflicts.Contains(kept))
             .ToList();
         return (conflicts, owningSpecs);
     }
