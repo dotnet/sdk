@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.Dotnet.Installation.Internal;
 using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
