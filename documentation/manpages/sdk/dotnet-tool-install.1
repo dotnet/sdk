@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-install" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-tool-install" "1" "2026-10-30" "" ".NET Documentation"
 .hy
 .SH dotnet tool install
 .PP
@@ -225,6 +225,10 @@ Omitting both \f[V]--global\f[R] and \f[V]--tool-path\f[R] specifies a local too
 \f[B]\f[VB]--source <SOURCE>\f[B]\f[R]
 .PP
 Specifies the source for NuGet packages.
+.RS
+.PP
+[!CAUTION] This option completely replaces existing NuGet configuration, including Package Source Mapping.
+.RE
 .PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
 .PP
