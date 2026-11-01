@@ -117,15 +117,14 @@ public class InfoCommandTests : IDisposable
         // Arrange
         using var sw = new StringWriter();
 
-        // Act - include list (may be empty but should show the header)
+        // Act - include list (may be empty but should show the summary)
         InfoCommand.Execute(format: OutputFormat.Text, noList: false, output: sw);
         var output = sw.ToString();
 
         // Assert
         output.Should().Contain("dotnetup Information:");
-        output.Should().Contain("Installations");
-        output.Should().Contain("managed by dotnetup");
-        output.Should().Contain("Total:");
+        output.Should().Contain("install specs;").And.Contain("installations (");
+        output.Should().NotContain("managed by dotnetup");
     }
 
     [TestMethod]

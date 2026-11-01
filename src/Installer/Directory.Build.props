@@ -30,11 +30,9 @@
 
     <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build.
          EnforceCodeStyleInBuild=false  prevents IDE* code-style analyzers from running during build.
-         CodeAnalysisTreatWarningsAsErrors=false  keeps CA* analyzer warnings as warnings instead of errors.
-         WarningsNotAsErrors demotes Meziantou MA0051 (method too long) so it stays a warning under TreatWarningsAsErrors. -->
+         CodeAnalysisTreatWarningsAsErrors=false  keeps CA* analyzer warnings as warnings instead of errors. -->
     <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
     <CodeAnalysisTreatWarningsAsErrors>false</CodeAnalysisTreatWarningsAsErrors>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);MA0051</WarningsNotAsErrors>
   </PropertyGroup>
 </Project>
