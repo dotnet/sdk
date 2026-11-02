@@ -90,21 +90,32 @@ public class SdkAppHostLayoutTests : SdkTest
         project.Build();
         Dictionary<string, string> updatedAssembly = project.ReadHosts();
         updatedAssembly["MSBuild"].Should().NotBe(updatedTemplateContents["MSBuild"]);
+        updatedAssembly["MSBuild"].Should().StartWith("MSBuild.dll|resources=updated MSBuild.dll|");
         foreach (string host in Hosts.Where(host => host != "MSBuild"))
         {
             updatedAssembly[host].Should().Be(updatedTemplateContents[host]);
         }
 
+        File.WriteAllText(project.AssemblyPath("csc"), "updated csc.dll");
+        project.Build();
+        Dictionary<string, string> updatedCompiler = project.ReadHosts();
+        updatedCompiler["csc"].Should().NotBe(updatedAssembly["csc"]);
+        updatedCompiler["csc"].Should().StartWith("csc.dll|resources=updated csc.dll|");
+        foreach (string host in Hosts.Where(host => host != "csc"))
+        {
+            updatedCompiler[host].Should().Be(updatedAssembly[host]);
+        }
+
         File.WriteAllText(project.LayoutTaskAssembly, "updated sdk-tasks.dll");
         project.Build();
-        project.ReadHosts().Should().Equal(updatedAssembly);
+        project.ReadHosts().Should().Equal(updatedCompiler);
 
         File.WriteAllText(project.TaskAssembly, "updated Microsoft.NET.Build.Tasks.dll");
         project.Build();
         Dictionary<string, string> updatedTask = project.ReadHosts();
         foreach (string host in Hosts)
         {
-            updatedTask[host].Should().NotBe(updatedAssembly[host]);
+            updatedTask[host].Should().NotBe(updatedCompiler[host]);
         }
 
         File.WriteAllText(project.HostModelAssembly, "updated Microsoft.NET.HostModel.dll");
@@ -137,6 +148,7 @@ public class SdkAppHostLayoutTests : SdkTest
         {
             File.GetLastWriteTimeUtc(project.AssemblyPath(host)).Should().BeBefore(File.GetLastWriteTimeUtc(project.HostPath(host)));
             updatedCompilers[host].Should().NotBe(generated[host]);
+            updatedCompilers[host].Should().StartWith($"{host}.dll|resources=replacement {host}.dll|");
         }
         updatedCompilers["MSBuild"].Should().Be(generated["MSBuild"]);
         project.Build();
@@ -147,6 +159,7 @@ public class SdkAppHostLayoutTests : SdkTest
         Dictionary<string, string> updatedMSBuild = project.ReadHosts();
         File.GetLastWriteTimeUtc(project.AssemblyPath("MSBuild")).Should().BeBefore(File.GetLastWriteTimeUtc(project.HostPath("MSBuild")));
         updatedMSBuild["MSBuild"].Should().NotBe(updatedCompilers["MSBuild"]);
+        updatedMSBuild["MSBuild"].Should().StartWith("MSBuild.dll|resources=replacement MSBuild.dll|");
         foreach (string host in Hosts.Where(host => host != "MSBuild"))
         {
             updatedMSBuild[host].Should().Be(updatedCompilers[host]);
@@ -410,7 +423,8 @@ public class SdkAppHostLayoutTests : SdkTest
 }
 
 /// <summary>
-/// Stands in for the SDK apphost writer: each invocation writes the embedded binary name\r\n/// and a unique token, so tests can tell which hosts were regenerated.
+/// Stands in for the SDK apphost writer: each invocation writes the embedded binary name,
+/// managed resource input, and a unique token, so tests can tell which hosts were regenerated.
 /// </summary>
 public sealed class CreateAppHost : Microsoft.Build.Utilities.Task
 {
@@ -443,7 +457,7 @@ public sealed class CreateAppHost : Microsoft.Build.Utilities.Task
         }
 
         string signature = EnableMacOSCodeSign ? "|ad-hoc-signed" : string.Empty;
-        File.WriteAllText(AppHostDestinationPath, $"{AppBinaryName}|{Guid.NewGuid():N}{signature}");
+        File.WriteAllText(AppHostDestinationPath, $"{AppBinaryName}|resources={File.ReadAllText(IntermediateAssembly)}|{Guid.NewGuid():N}{signature}");
         return true;
     }
 }
