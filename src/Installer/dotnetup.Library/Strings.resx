@@ -649,6 +649,10 @@ Or open a new terminal.</value>
     <value>Could not start the installer for {0}: {1}</value>
     <comment>{0} is the component display name and version. {1} is the operating system error.</comment>
   </data>
+  <data name="WindowsInstallerRepairingMissingFiles" xml:space="preserve">
+    <value>{0} is registered with Windows, but its files are missing. Repairing it with the Windows installer. Approve the administrator prompt if asked.</value>
+    <comment>{0} is the component display name and version.</comment>
+  </data>
   <data name="WindowsInstallerRestartRequired" xml:space="preserve">
     <value>You must restart your computer to finish installing {0}. dotnetup will not restart it automatically.</value>
     <comment>{Locked="dotnetup"} {0} is the component display name and version.</comment>

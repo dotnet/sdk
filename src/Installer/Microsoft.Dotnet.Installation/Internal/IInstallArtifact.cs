@@ -22,4 +22,10 @@ internal interface IInstallArtifact : IDisposable
 
     /// <summary>The subcomponents laid down by the last <see cref="Commit"/> call, for manifest tracking.</summary>
     IReadOnlyList<string> ExtractedSubcomponents { get; }
+
+    /// <summary>
+    /// Repairs a committed artifact whose files are missing after <see cref="Commit"/> reported success.
+    /// Returns <c>false</c> when the artifact cannot be repaired.
+    /// </summary>
+    bool TryRepair() => false;
 }

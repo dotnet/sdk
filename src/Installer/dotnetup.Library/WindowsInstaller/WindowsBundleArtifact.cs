@@ -19,6 +19,9 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     /// <summary>Quiet, per-machine install that never restarts the computer.</summary>
     internal static IReadOnlyList<string> InstallArguments { get; } = ["/install", "/quiet", "/norestart"];
 
+    /// <summary>Quiet repair that never restarts the computer.</summary>
+    internal static IReadOnlyList<string> RepairArguments { get; } = ["/repair", "/quiet", "/norestart"];
+
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _version;
     private readonly IArtifactDownloader _downloader;
@@ -99,10 +102,28 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
         var installTask = _progress.BeginExtraction();
 
         EnsureMicrosoftAuthenticodeSignature(download);
-        HandleExitCode(RunInstaller(download.Path));
+        HandleExitCode(RunInstaller(download.Path, InstallArguments));
 
         installTask.Value = installTask.MaxValue;
         _progress.CompleteExtraction(installTask);
+    }
+
+    /// <summary>
+    /// Runs the same verified bundle with <c>/repair</c>. The bundle reports success without writing files when
+    /// Windows Installer already has its packages registered (for example, by Visual Studio) but the files were
+    /// deleted; a repair restores them. The bundle must still be present, so this runs before disposal.
+    /// </summary>
+    public bool TryRepair()
+    {
+        // Honor Ctrl+C from the install: start no further installers once the user asked to cancel.
+        if (_download is not VerifiedDownload download || _batchContext.IsCancellationRequested)
+        {
+            return false;
+        }
+
+        _notices.WriteLine(Format(Strings.WindowsInstallerRepairingMissingFiles, Describe()));
+        HandleExitCode(RunInstaller(download.Path, RepairArguments));
+        return true;
     }
 
     public void Dispose()
@@ -198,11 +219,11 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
             Format(Strings.WindowsInstallerSignatureVerificationFailed, Describe(), result.FailureReason));
     }
 
-    private int RunInstaller(string bundlePath)
+    private int RunInstaller(string bundlePath, IReadOnlyList<string> arguments)
     {
         try
         {
-            return _processRunner.Run(bundlePath, InstallArguments, _batchContext.RequestCancellation);
+            return _processRunner.Run(bundlePath, arguments, _batchContext.RequestCancellation);
         }
         catch (Exception ex) when (ex is Win32Exception or InvalidOperationException or IOException or PlatformNotSupportedException)
         {

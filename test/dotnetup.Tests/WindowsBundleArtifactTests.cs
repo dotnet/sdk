@@ -91,6 +91,47 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
+    public void TryRepair_RerunsSameBundleQuietlyWithRepairAndExplains()
+    {
+        var runner = new FakeRunner(exitCode: 0);
+        using var notices = new StringWriter();
+        var artifact = CreateArtifact(StableChannel, runner: runner, notices: notices);
+        artifact.Prepare();
+        artifact.Commit();
+
+        artifact.TryRepair().Should().BeTrue();
+
+        runner.Calls.Should().HaveCount(2);
+        runner.Calls[1].Path.Should().Be(artifact.BundlePath);
+        runner.Calls[1].Arguments.Should().Equal("/repair", "/quiet", "/norestart");
+        notices.ToString().Should().Contain(".NET SDK 10.0.100 is registered with Windows, but its files are missing");
+    }
+
+    [TestMethod]
+    public void TryRepair_BeforePrepare_DoesNotRunInstaller()
+    {
+        var runner = new FakeRunner(exitCode: 0);
+        var artifact = CreateArtifact(StableChannel, runner: runner);
+
+        artifact.TryRepair().Should().BeFalse();
+
+        runner.Calls.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void TryRepair_FailedExitCode_Throws()
+    {
+        var runner = new FakeRunner(exitCode: 1603);
+        var artifact = CreateArtifact(StableChannel, runner: runner);
+        artifact.Prepare();
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => artifact.TryRepair());
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerFailed);
+        runner.Calls.Should().ContainSingle().Which.Arguments.Should().Equal("/repair", "/quiet", "/norestart");
+    }
+
+    [TestMethod]
     public void Commit_SignatureFailureOnSignedSource_ThrowsAndDoesNotRunInstaller()
     {
         var runner = new FakeRunner(exitCode: 0);
@@ -305,6 +346,38 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow(3010, "must restart")]
+    [DataRow(1641, "restart has been initiated")]
+    public void CommitPreparedInstall_RepairRequiresRestart_SucceedsAsRepairedWithoutRevalidating(int repairExitCode, string expectedNotice)
+    {
+        using var notices = new StringWriter(CultureInfo.InvariantCulture);
+        var runner = new FakeRunner(exitCode: 0) { RepairExitCode = repairExitCode };
+        using var prepared = Prepare(CreateArtifact(StableChannel, runner: runner, notices: notices), StableChannel);
+        var validator = new MockInstallationValidator(validateResult: false);
+
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared, validator);
+
+        result.Repaired.Should().BeTrue();
+        runner.Calls.Select(call => call.Arguments[0]).Should().Equal("/install", "/repair");
+        notices.ToString().Should().Contain(expectedNotice);
+        validator.ValidateCalls.Should().Be(2, "the pre-install and post-install checks run, but not a post-repair check while a restart is pending");
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_CancelledDuringInstallWithMissingFiles_DoesNotRepair()
+    {
+        var runner = new FakeRunner(exitCode: 0) { RequestCancellation = true };
+        using var prepared = Prepare(CreateArtifact(StableChannel, runner: runner), StableChannel);
+        var validator = new MockInstallationValidator(validateResult: false);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared, validator));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed);
+        ex.IsRepairFailed().Should().BeFalse("no repair should start after cancellation");
+        runner.Calls.Should().ContainSingle().Which.Arguments.Should().Equal(WindowsBundleArtifact.InstallArguments);
+    }
+
+    [TestMethod]
     [DataRow(1602, DotnetInstallErrorCode.OperationCancelled)]
     [DataRow(1223, DotnetInstallErrorCode.OperationCancelled)]
     [DataRow(1618, DotnetInstallErrorCode.InstallerBusy)]
@@ -481,6 +554,9 @@ public class WindowsBundleArtifactTests : IDisposable
         /// <summary>Simulates the user pressing Ctrl+C while the installer runs.</summary>
         public bool RequestCancellation { get; init; }
 
+        /// <summary>The exit code for <c>/repair</c> runs; defaults to the install exit code.</summary>
+        public int? RepairExitCode { get; init; }
+
         public int Run(string bundlePath, IReadOnlyList<string> arguments, Action onCancelRequested)
         {
             Calls.Add((bundlePath, arguments));
@@ -490,7 +566,7 @@ public class WindowsBundleArtifactTests : IDisposable
             }
 
             OnRun?.Invoke(bundlePath);
-            return exitCode;
+            return arguments.Contains("/repair") && RepairExitCode is int repairExitCode ? repairExitCode : exitCode;
         }
     }
 }
