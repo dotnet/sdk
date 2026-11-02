@@ -1,0 +1,21 @@
+// IMPORTANT: This file is read by the merge flow from main branch only.
+// It is used by .github/workflows/inter-branch-merge-flow-dnup.yml, which runs on pushes to
+// the source branch below. It is separate from github-merge-flow.jsonc because each source
+// branch can only have one MergeToBranch per configuration file.
+{
+    "merge-flow-configurations": {
+        // Automate opening PRs to merge sdk repos from release/11.0.2xx to release/dnup.
+        // dotnetup must stay on .NET 11, so it is fed from the newest .NET 11 feature band rather
+        // than main (.NET 12). When a newer 11.0 band is created, move this key and the workflow
+        // trigger in inter-branch-merge-flow-dnup.yml to that branch.
+        // release/dnup has NO darc/Maestro subscription, so this auto-merge is its only path to
+        // dependency and toolset updates. Do not reset global.json, eng/Version.Details.*,
+        // eng/Versions.props, or eng/common/* here; that would freeze dnup on stale Arcade.
+        // CODEOWNERS is reset to keep dnup's minimal ownership and avoid review pings.
+        "release/11.0.2xx":{
+            "MergeToBranch": "release/dnup",
+            "ExtraSwitches": "-QuietComments",
+            "ResetToTargetPaths": "CODEOWNERS"
+        }
+    }
+}

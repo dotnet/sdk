@@ -48,24 +48,11 @@
             "MergeToBranch": "main",
             "ExtraSwitches": "-QuietComments",
             "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Version.Details.props;eng/common/*"
-        },
-        // Automate opening PRs to merge sdk repos from main to release/dnup.
-        // Unlike the release-band flows above, release/dnup has NO darc/Maestro
-        // subscription, so this auto-merge is its only path to dependency and
-        // toolset updates. Resetting the dep/toolset files would freeze dnup on
-        // stale Arcade + eng/common; since dnup is the same 11.0.1xx band as main,
-        // we let those flow and reset only CODEOWNERS (kept minimal to avoid review
-        // pings on these automated PRs).
-        "main":{
-            "MergeToBranch": "release/dnup",
-            "ExtraSwitches": "-QuietComments",
-            "ResetToTargetPaths": "CODEOWNERS"
-        },
-        // Automate opening PRs to merge sdk repos from dnup to release/dnup
-        "dnup":{
-            "MergeToBranch": "release/dnup",
-            "ExtraSwitches": "-QuietComments",
-            "ResetToTargetPaths": "global.json;NuGet.config;eng/Version.Details.xml;eng/Versions.props;eng/common/*"
         }
+        // release/dnup is NOT fed from main: dotnetup stays on .NET 11 while main moves to
+        // .NET 12. A branch can only have one MergeToBranch per config file, and
+        // release/11.0.2xx already flows to main above, so the release/11.0.2xx -> release/dnup
+        // flow lives in github-merge-flow-dnup.jsonc and is run by
+        // .github/workflows/inter-branch-merge-flow-dnup.yml on release/11.0.2xx.
     }
 }

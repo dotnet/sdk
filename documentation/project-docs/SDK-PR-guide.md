@@ -86,6 +86,8 @@ Internal codeflow is merged into public GitHub repos on patch Tuesday each month
 
 ## Inter-branch codeflow
 In the SDK repo, we have automated codeflow set up for each non-preview release branch flowing from the oldest branch all the way to main. You can see the configuration for that in [github-merge-flow.jsonc](https://github.com/dotnet/sdk/blob/main/github-merge-flow.jsonc). The workflow configuration is in [inter-branch-merge-flow.yml](https://github.com/dotnet/sdk/blob/main/.github/workflows/inter-branch-merge-flow.yml)
+
+`release/dnup` (dotnetup) is fed from the newest .NET 11 feature band (currently `release/11.0.2xx`) instead of `main`, so dotnetup stays on .NET 11. Because a branch can only have one merge target per configuration file, this flow is configured separately in [github-merge-flow-dnup.jsonc](https://github.com/dotnet/sdk/blob/main/github-merge-flow-dnup.jsonc) and run by `inter-branch-merge-flow-dnup.yml` on the source branch.
 You can see the existing open branch codeflows [here](https://github.com/dotnet/sdk/issues?q=is%3Apr%20is%3Aopen%20author%3Aapp%2Fgithub-actions%20%20Merge%20branch)
 
 ### Further updates
