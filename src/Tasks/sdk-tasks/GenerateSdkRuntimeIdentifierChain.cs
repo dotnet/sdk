@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Build.Tasks
             var runtimeIdentifierGraph = JsonRuntimeFormat.ReadRuntimeGraph(RuntimeIdentifierGraphPath);
 
             var chainContents = string.Join("\n", runtimeIdentifierGraph.ExpandRuntime(RuntimeIdentifier));
-            File.WriteAllText(RuntimeIdentifierChainOutputPath, chainContents);
+            PublishMutationUtilities.WriteFileIfDifferent(RuntimeIdentifierChainOutputPath, chainContents);
 
             return true;
         }

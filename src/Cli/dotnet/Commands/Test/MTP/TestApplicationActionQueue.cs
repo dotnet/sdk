@@ -132,6 +132,7 @@ internal class TestApplicationActionQueue
                         testApplicationSettings: GetEffectiveSettings(module));
                     try
                     {
+                        output.TestMapCollectionModuleStarted(module.TargetPath);
                         using (testApp)
                         {
                             result = await testApp.RunAsync(ctrlC);
@@ -139,10 +140,15 @@ internal class TestApplicationActionQueue
                     }
                     catch (Exception ex)
                     {
+                        output.MarkCoverageIncomplete();
                         var exAsString = ex.ToString();
                         Logger.LogTrace($"Exception running test module {module.RunProperties?.Command} {module.RunProperties?.Arguments}: {exAsString}");
                         Reporter.Error.WriteLine(string.Format(CliCommandStrings.ErrorRunningTestModule, module.RunProperties?.Command, module.RunProperties?.Arguments, exAsString));
                         result = ExitCode.GenericFailure;
+                    }
+                    finally
+                    {
+                        output.TestMapCollectionModuleCompleted();
                     }
 
                     // A module that ran zero tests (exit code 8) is not, by itself, a whole-run failure.

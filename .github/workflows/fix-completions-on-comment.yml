@@ -314,7 +314,7 @@ jobs:
 
       - name: Upload snapshot artifacts
         if: steps.evaluate.outputs.status == 'success' && steps.check-changes.outputs.changes == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: cli-completion-snapshots
           path: pr/__artifacts
@@ -333,7 +333,7 @@ jobs:
 
       - name: Upload failure diagnostics
         if: steps.evaluate.outputs.status == 'failed'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: cli-completion-failure
           path: pr/__failure
@@ -369,7 +369,7 @@ jobs:
 
       - name: Download snapshot artifacts
         if: needs.generate.outputs.changes == 'true'
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: cli-completion-snapshots
           path: artifact
@@ -572,7 +572,7 @@ jobs:
 
     steps:
       - name: Download failure diagnostics
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: cli-completion-failure
           path: diagnostics

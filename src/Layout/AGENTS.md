@@ -36,6 +36,87 @@ Two families of targets:
 - Producing the laid-out SDK requires the **full repo build** (so the components exist
   to copy), not just this project — see the root build/dogfood instructions.
 
+Downlevel test runtimes are acquired by
+[`eng/restore-toolset.ps1`](../../eng/restore-toolset.ps1) and
+[`.sh`](../../eng/restore-toolset.sh) and overlaid by
+[`OverlaySdkOnLKG.targets`](redist/targets/OverlaySdkOnLKG.targets).
+Targeting packs required by offline tests belong in that test-only overlay too,
+not in `BundledLayoutPackage`. Keep their versions aligned with
+`GenerateBundledVersions.targets`.
+Windows GUI tests also need the matching Windows Desktop shared runtime.
+Workload devserver runtimes follow
+[`VersionFeature110ForWorkloads`](../../eng/Versions.props), which can be newer
+than the test targeting packs pinned by
+[`Net110PackageVersion`](../../eng/ManualVersions.props).
+
+### macOS tool signing
+
+`PublishRoslyn` and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with
+per-tool `SigningIdentifier` metadata and their existing entitlement files, while
+preserving other signing metadata. Official signing must preserve those identifiers
+and entitlements or explicitly supply the same values. Do not assign a shared
+product identifier to apphost templates.
+Identifiers use `com.microsoft.dotnet.<executable-name>` in lowercase, including
+`msbuild`, `vbcscompiler`, and the `dotnet-*` tool names.
+
+`LayoutBundledTools` ad hoc signs the three native `aspnetcoretools` shims after
+copying the selected package into the SDK layout. It preserves existing entitlements,
+requirements, signing flags, hardened runtime version, and launch and library
+constraints while explicitly setting the identifier, without adding JIT
+entitlements to NativeAOT tools. Its file selection is scoped to the selected
+package version and RID (`tools/*/<rid>`).
+The framework directory is `any` for self-contained tools. Selection excludes
+debug-symbol bundles.
+This is an integrated signing experiment: permanent signing belongs in the
+ASP.NET Core publishing targets so standalone packages have the same identities,
+and SDK composition does not replace a producer's official signature.
+
+### SDK staging incrementality
+
+The targets below manage their own incremental state. When you change these targets,
+preserve the behavior. Do not create, delete, or publish the state files by hand.
+
+#### Metadata generation
+
+The targets in
+[`GenerateBundledVersions.targets`](redist/targets/GenerateBundledVersions.targets)
+write a metadata file only when its content changes. The targets still run because they
+also initialize properties and items that later targets consume.
+
+#### Runtime identifier chain
+
+`GenerateSdkRuntimeIdentifierChain` writes `NETCoreSdkRuntimeIdentifierChain.txt`. The
+file starts with the input runtime identifier (RID), then lists each fallback RID from
+`PortableRuntimeIdentifierGraph.json`. In this section, the RID graph means that fallback
+data. It does not mean the MSBuild target graph.
+
+The target stores its state under
+`$(IntermediateOutputPath)/incremental-layout/sdk-runtime-identifier-chain.*`. The
+`.inputs` file records the RID, package mapping, output path, and implementation files.
+The `.complete` file records successful processing of those inputs. The target deletes
+`.complete` before generation and recreates it after the output exists.
+
+The completion file is separate from the chain file because an update to the RID graph
+can produce the same chain content. In that case, the target records processing of the
+new graph without changing the chain file. Preserve this sequence when editing the target.
+[`SdkMetadataTests`](../../test/sdk-tasks.Tests/SdkMetadataTests.cs) covers this behavior.
+
+#### JSON finalization
+
+The JSON-producing targets read an original source file, apply all changes, and replace
+the destination only when the final content differs. Preserve that source-to-final flow.
+Do not add a raw copy that can overwrite an SDK file after finalization.
+
+`PublishFSharp` publishes the child project under
+`IntermediateOutputPath/fsharp-publish`. The layout targets copy the compiler payload
+from that directory and create the final `fsc` and `fsi` `.runtimeconfig.json` and
+`.deps.json` files in the SDK.
+
+`RetargetTools` runs as a repair pass without an incremental stamp. It moves legacy
+`15.0` files and excludes testhost runtime config files. Other targets can stage files
+after an earlier pass, so `RetargetTools` must inspect the layout each time it runs.
+[`SdkJsonLayoutTests`](../../test/sdk-tasks.Tests/SdkJsonLayoutTests.cs) covers this behavior.
+
 ### Workload manifest layout ownership
 
 [`LayoutManifests`](redist/targets/BundledManifests.targets) may only delete the

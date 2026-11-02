@@ -207,7 +207,6 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<int> UpdateBatchFailed = Create(LogEvents.UpdateBatchFailed, Emoji.HotReload);
     public static readonly MessageDescriptor<int> UpdateBatchCanceled = Create(LogEvents.UpdateBatchCanceled, Emoji.HotReload);
     public static readonly MessageDescriptor<(int, string)> UpdateBatchFailedWithError = Create(LogEvents.UpdateBatchFailedWithError, Emoji.HotReload);
-    public static readonly MessageDescriptor<(int, string)> UpdateBatchExceptionStackTrace = Create(LogEvents.UpdateBatchExceptionStackTrace, Emoji.HotReload);
     public static readonly MessageDescriptor<string> Capabilities = Create(LogEvents.Capabilities, Emoji.HotReload);
     public static readonly MessageDescriptor<string> ProjectSpecifiesCapabilities = Create(LogEvents.ProjectSpecifiesCapabilities, Emoji.HotReload);
     public static readonly MessageDescriptor<(Version, string)> UsingCapabilitiesBasedOnTargetFrameworkVersion = Create(LogEvents.UsingCapabilitiesBasedOnTargetFrameworkVersion, Emoji.HotReload);

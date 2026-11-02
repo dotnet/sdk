@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Nodes;
 using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
@@ -68,4 +69,68 @@ public class PublishMutationUtilitiesTests : SdkTest
         result.Should().Contain("RenamedApp/1.0.0");
         result.Should().Contain("\"type\": \"project\"");
     }
+
+    /// <summary>
+    /// Verifies repeated renaming preserves dependency libraries and their ordering in
+    /// every target instead of treating the next library as a new entry point.
+    /// </summary>
+    [TestMethod]
+    public void RepeatedRenamingPreservesOtherLibrariesAndTimestamps()
+    {
+        string directory = TestAssetsManager.CreateTestDirectory().Path;
+        string path = Path.Combine(directory, "multiple.deps.json");
+        JsonNode? deps = JsonNode.Parse(SampleDepsJson);
+        Assert.IsNotNull(deps);
+        JsonNode? targets = deps["targets"];
+        Assert.IsNotNull(targets);
+        JsonNode? targetNode = targets[".NETCoreApp,Version=v9.0"];
+        Assert.IsNotNull(targetNode);
+        JsonObject target = targetNode.AsObject();
+        target.Add("Dependency/2.0.0", JsonNode.Parse("""{ "runtime": { "Dependency.dll": {} } }"""));
+        target.Add("ReferencedProject/3.0.0", JsonNode.Parse("""{ "runtime": { "ReferencedProject.dll": {} } }"""));
+        JsonNode? dependency = target["Dependency/2.0.0"];
+        JsonNode? entryPoint = target["OldApp/1.0.0"];
+        JsonNode? referencedProject = target["ReferencedProject/3.0.0"];
+        Assert.IsNotNull(dependency);
+        Assert.IsNotNull(entryPoint);
+        Assert.IsNotNull(referencedProject);
+        var ridTarget = new JsonObject
+        {
+            ["Dependency/2.0.0"] = dependency.DeepClone(),
+            ["OldApp/1.0.0"] = entryPoint.DeepClone(),
+            ["ReferencedProject/3.0.0"] = referencedProject.DeepClone()
+        };
+        targets.AsObject().Add(".NETCoreApp,Version=v9.0/test-rid", ridTarget);
+        JsonNode? libraries = deps["libraries"];
+        Assert.IsNotNull(libraries);
+        libraries.AsObject().Add("Dependency/2.0.0", JsonNode.Parse("""{ "type": "package" }"""));
+        libraries.AsObject().Add("ReferencedProject/3.0.0", JsonNode.Parse("""{ "type": "project" }"""));
+        File.WriteAllText(path, deps.ToJsonString());
+
+        PublishMutationUtilities.ChangeEntryPointLibraryName(path, "NewApp");
+        byte[] expected = File.ReadAllBytes(path);
+        File.SetLastWriteTimeUtc(path, DateTime.UtcNow.AddMinutes(-5));
+        DateTime timestamp = File.GetLastWriteTimeUtc(path);
+
+        PublishMutationUtilities.ChangeEntryPointLibraryName(path, "NewApp");
+        PublishMutationUtilities.ChangeEntryPointLibraryName(path, "NewApp");
+
+        File.ReadAllBytes(path).Should().Equal(expected);
+        File.GetLastWriteTimeUtc(path).Should().Be(timestamp);
+        JsonNode? result = JsonNode.Parse(File.ReadAllText(path));
+        Assert.IsNotNull(result);
+        JsonNode? resultTargets = result["targets"];
+        Assert.IsNotNull(resultTargets);
+        foreach (JsonNode? value in resultTargets.AsObject().Select(pair => pair.Value))
+        {
+            Assert.IsNotNull(value);
+            value.AsObject().Select(pair => pair.Key).Should().Equal(
+                "Dependency/2.0.0", "ReferencedProject/3.0.0", "NewApp/1.0.0");
+        }
+        JsonNode? resultLibraries = result["libraries"];
+        Assert.IsNotNull(resultLibraries);
+        resultLibraries.AsObject().Select(pair => pair.Key).Should().Equal(
+            "Dependency/2.0.0", "ReferencedProject/3.0.0", "NewApp/1.0.0");
+    }
+
 }
