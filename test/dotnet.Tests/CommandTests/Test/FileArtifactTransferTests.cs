@@ -59,7 +59,7 @@ public class FileArtifactTransferTests : SdkTest
 
         Assert.AreEqual("http", reply.Properties[26]);
         Assert.AreEqual("chunked-v1", reply.Properties[27]);
-        Assert.IsFalse(Enumerable.Range(21, 5).Any(id => reply.Properties.ContainsKey((byte)id)));
+        reply.Properties.Keys.Should().NotContain(id => id >= 21 && id <= 25);
         Assert.AreEqual("chunked-v1", reply.Properties[HandshakeMessagePropertyNames.FileArtifactTransfer]);
 
         rejected = Assert.IsInstanceOfType<FileArtifactTransferResponse>(
@@ -127,13 +127,13 @@ public class FileArtifactTransferTests : SdkTest
     [TestMethod]
     public void BrowserHandshakeIdsDoNotReuseCoverageOrRetiredExperimentalSlots()
     {
-        Assert.AreEqual((byte)20, HandshakeMessagePropertyNames.CoverageSummaryVersion);
-        Assert.AreEqual((byte)26, HandshakeMessagePropertyNames.ServerControlTransport);
-        Assert.AreEqual((byte)27, HandshakeMessagePropertyNames.FileArtifactTransfer);
-        Assert.AreEqual((byte)28, HandshakeMessagePropertyNames.FileArtifactTransferMaxChunkBytes);
-        Assert.AreEqual((byte)29, HandshakeMessagePropertyNames.FileArtifactTransferMaxFileBytes);
-        Assert.AreEqual((byte)30, HandshakeMessagePropertyNames.FileArtifactTransferMaxModuleBytes);
-        Assert.AreEqual((byte)31, HandshakeMessagePropertyNames.FileArtifactTransferMaxFileCount);
+        HandshakeMessagePropertyNames.CoverageSummaryVersion.Should().Be(20);
+        HandshakeMessagePropertyNames.ServerControlTransport.Should().Be(26);
+        HandshakeMessagePropertyNames.FileArtifactTransfer.Should().Be(27);
+        HandshakeMessagePropertyNames.FileArtifactTransferMaxChunkBytes.Should().Be(28);
+        HandshakeMessagePropertyNames.FileArtifactTransferMaxFileBytes.Should().Be(29);
+        HandshakeMessagePropertyNames.FileArtifactTransferMaxModuleBytes.Should().Be(30);
+        HandshakeMessagePropertyNames.FileArtifactTransferMaxFileCount.Should().Be(31);
     }
 
     [TestMethod]

@@ -6,14 +6,14 @@
     {
       "id": "dotnet-test-wire-contract-fieldids",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/IPC/ObjectFieldIds.cs",
-      "notes": "Shared named-pipe/HTTP wire contract for dotnet test and Microsoft.Testing.Platform. Serializer and field IDs must stay byte-aligned; TestFX is the source of truth. Upstream coverage retains serializer 15, artifact metadata field 9, and coverage payload fields 1-8. The companion browser experiment adds bounded artifact-transfer request/reply serializers 17/18; experimental serializer 16 remains reserved. Optional command metadata remains forward-compatible.",
+      "notes": "Shared named-pipe/HTTP wire contract for dotnet test and Microsoft.Testing.Platform. Serializer and field IDs must stay byte-aligned; TestFX is the source of truth. Reconciled through c22e5fd7: upstream coverage retains serializer 15, artifact metadata field 9, and coverage payload fields 1-8. The companion browser experiment adds bounded artifact-transfer request/reply serializers 17/18; experimental serializer 16 remains reserved. Optional command metadata remains forward-compatible.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
-          "baseline_ref_sha": "6075756d0590f3d1643d4fdf4bc03f79684660fd",
-          "baseline_blob_sha": "289a192a8acb6e2472c1fb4d4e3dbb7558152b5c",
+          "baseline_ref_sha": "c22e5fd7b54c25e11ba8915dcf0f77d29b011487",
+          "baseline_blob_sha": "cef0235e6e074f1987d460857f779e5abbe954c4",
           "scope": "entire file; ids must match exactly"
         }
       ]
@@ -21,14 +21,14 @@
     {
       "id": "dotnet-test-wire-contract-constants",
       "local_path": "src/Cli/dotnet/Commands/Test/CliConstants.cs",
-      "notes": "Handshake/session/state constants for the dotnet test protocol, inlined from TestFX IPC/Constants.cs. Upstream coverage retains property 20 and version 1 independently of the base protocol. The companion browser experiment advertises HTTP control, chunked-v1 transfer, and bounds in properties 26-31; properties 21-25 remain reserved. Features require their exact capabilities, not just a version match. SDK versions retain 1.4.0 server control and 1.5.0 artifact transfer. IDs 18/19 retain upstream post-processing assignments. Informational DisplayMessage forwards GitHub Actions workflow commands verbatim. The SDK does not mirror TestStates.InProgress.",
+      "notes": "Handshake/session/state constants for the dotnet test protocol, inlined from TestFX IPC/Constants.cs. Reconciled through c22e5fd7: upstream coverage retains property 20 and version 1 independently of the base protocol. The companion browser experiment advertises HTTP control, chunked-v1 transfer, and bounds in properties 26-31; properties 21-25 remain reserved. Features require their exact capabilities, not just a version match. SDK versions retain 1.4.0 server control and 1.5.0 artifact transfer. IDs 18/19 retain upstream post-processing assignments. Informational DisplayMessage forwards GitHub Actions workflow commands verbatim. The SDK does not mirror TestStates.InProgress.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs",
-          "baseline_ref_sha": "6075756d0590f3d1643d4fdf4bc03f79684660fd",
-          "baseline_blob_sha": "65e4cbe0ee2c2ce45aa2acfa2aa278de89f2285b",
+          "baseline_ref_sha": "c22e5fd7b54c25e11ba8915dcf0f77d29b011487",
+          "baseline_blob_sha": "2daa19f6a01a2c0caa74fd62e698273c0a91d085",
           "scope": "wire constants (TestStates, SessionEventTypes, HandshakeMessage*, ProtocolConstants)"
         }
       ]
