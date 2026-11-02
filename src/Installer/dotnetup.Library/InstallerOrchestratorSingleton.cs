@@ -368,6 +368,7 @@ internal class InstallerOrchestratorSingleton
     public InstallResult CommitPreparedInstall(PreparedInstall prepared, IInstallationValidator? installationValidator = null)
     {
         var manifest = prepared.Request.Options.Untracked ? null : new DotnetupSharedManifest(prepared.Request.Options.ManifestPath);
+        bool repaired;
 
         using (var finalizeLock = ModifyInstallStateMutex())
         {
@@ -381,12 +382,9 @@ internal class InstallerOrchestratorSingleton
 
             prepared.Artifact.Commit();
 
-            if (prepared.Artifact.RequiresPostInstallValidation
+            repaired = prepared.Artifact.RequiresPostInstallValidation
                 && !validator.Validate(prepared.Install, out string? validationFailure)
-                && !TryRepairAndRevalidate(prepared, validator, ref validationFailure))
-            {
-                throw CreatePostInstallValidationException(prepared, validationFailure);
-            }
+                && RepairOrThrow(prepared, validator, validationFailure);
 
             manifest?.RecordInstallSpec(prepared.Request);
 
@@ -398,23 +396,43 @@ internal class InstallerOrchestratorSingleton
             });
         }
 
-        return new InstallResult(prepared.Install, WasAlreadyInstalled: false);
+        return new InstallResult(prepared.Install, WasAlreadyInstalled: false, Repaired: repaired);
     }
 #pragma warning restore CA1822
 
     /// <summary>
-    /// Repairs an artifact whose install reported success without its files, then validates again. A repair
-    /// that requires a restart skips the second validation, as the install would.
+    /// Handles an install that reported success without its files: repairs the artifact once and validates
+    /// again. Returns <c>true</c> when the repair fixed the install (a repair that requires a restart skips the
+    /// second validation, as the install would). Throws when the artifact cannot be repaired or the repair
+    /// did not fix it; a failure after a repair was attempted is marked with
+    /// <see cref="ExceptionExtensions.MarkRepairFailed"/> for telemetry.
     /// </summary>
-    private static bool TryRepairAndRevalidate(PreparedInstall prepared, IInstallationValidator validator, ref string? validationFailure)
+    private static bool RepairOrThrow(PreparedInstall prepared, IInstallationValidator validator, string? validationFailure)
     {
-        if (!prepared.Artifact.TryRepair())
+        bool repairAttempted;
+        try
         {
-            return false;
+            repairAttempted = prepared.Artifact.TryRepair();
+        }
+        catch (Exception ex)
+        {
+            ex.MarkRepairFailed();
+            throw;
         }
 
-        return !prepared.Artifact.RequiresPostInstallValidation
-            || validator.Validate(prepared.Install, out validationFailure);
+        if (repairAttempted
+            && (!prepared.Artifact.RequiresPostInstallValidation || validator.Validate(prepared.Install, out validationFailure)))
+        {
+            return true;
+        }
+
+        DotnetInstallException failure = CreatePostInstallValidationException(prepared, validationFailure);
+        if (repairAttempted)
+        {
+            failure.MarkRepairFailed();
+        }
+
+        throw failure;
     }
 
     private static DotnetInstallException CreatePostInstallValidationException(PreparedInstall prepared, string? validationFailure)

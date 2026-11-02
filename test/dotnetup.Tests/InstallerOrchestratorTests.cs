@@ -9,6 +9,7 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
@@ -365,6 +366,7 @@ public class InstallerOrchestratorTests
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed);
         artifact.CommitCalls.Should().Be(1);
         artifact.RepairCalls.Should().Be(1);
+        ex.IsRepairFailed().Should().BeFalse("no repair could be attempted");
         File.Exists(testEnv.ManifestPath).Should().BeFalse();
     }
 
@@ -390,6 +392,7 @@ public class InstallerOrchestratorTests
         var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
 
         result.WasAlreadyInstalled.Should().BeFalse();
+        result.Repaired.Should().BeTrue();
         artifact.CommitCalls.Should().Be(1);
         artifact.RepairCalls.Should().Be(1);
     }
@@ -406,7 +409,41 @@ public class InstallerOrchestratorTests
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed);
+        ex.IsRepairFailed().Should().BeTrue();
         artifact.RepairCalls.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void CommitPreparedInstall_RepairInstallerFails_MarksRepairFailed()
+    {
+        using var testEnv = new TestEnvironment();
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var artifact = new FakeArtifact { OnRepair = () => throw new DotnetInstallException(DotnetInstallErrorCode.InstallerFailed, "repair failed") };
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerFailed);
+        ex.IsRepairFailed().Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void GetRepairTagValue_IsNullWithoutRepairsAndCountsRepairOutcomes()
+    {
+        using var testEnv = new TestEnvironment();
+        var request = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        var install = new DotnetInstall(request.Request.InstallRoot, request.ResolvedVersion, InstallComponent.SDK);
+        var plainFailure = new DotnetInstallException(DotnetInstallErrorCode.InstallerFailed, "failed");
+        var repairFailure = new DotnetInstallException(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed, "still missing");
+        repairFailure.MarkRepairFailed();
+
+        InstallExecutor.GetRepairTagValue(new InstallBatchResult(
+            [new InstallResult(install, WasAlreadyInstalled: false)],
+            [new InstallFailure(request, plainFailure)])).Should().BeNull();
+        InstallExecutor.GetRepairTagValue(new InstallBatchResult(
+            [new InstallResult(install, WasAlreadyInstalled: false, Repaired: true)],
+            [new InstallFailure(request, repairFailure), new InstallFailure(request, plainFailure)])).Should().Be("succeeded:1,failed:1");
     }
 
     [TestMethod]
