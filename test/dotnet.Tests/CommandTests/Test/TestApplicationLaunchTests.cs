@@ -217,6 +217,38 @@ public sealed class TestApplicationLaunchTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void HttpHandshakeKeepsCoverageIndependentOfBrowserCapabilities(bool coverage)
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            runtimeIdentifier: "browser-wasm");
+        application.CreateProcessStartInfo();
+
+        var properties = application.CreateHandshakeMessage(
+            "1.5.0", includeControlPipe: false, includeCoverageSummary: coverage).Properties;
+
+        properties.ContainsKey(20).Should().Be(coverage);
+        if (coverage)
+        {
+            properties[20].Should().Be("1");
+        }
+
+        properties[26].Should().Be("http");
+        properties[27].Should().Be("chunked-v1");
+        properties[28].Should().Be("1048576");
+        properties[29].Should().Be(FileArtifactTransferLimits.Default.MaximumFileBytes.ToString());
+        properties[30].Should().Be(FileArtifactTransferLimits.Default.MaximumModuleBytes.ToString());
+        properties[31].Should().Be(FileArtifactTransferLimits.Default.MaximumFileCount.ToString());
+        properties.Should().NotContainKey(HandshakeMessagePropertyNames.ServerControlPipeName);
+        foreach (byte retired in new byte[] { 21, 22, 23, 24, 25 })
+        {
+            properties.Should().NotContainKey(retired);
+        }
+    }
+
+    [TestMethod]
     public async Task ControlPollTimeoutReturnsNoCommandAndAllowsAnotherPoll()
     {
         using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
@@ -279,6 +311,123 @@ public sealed class TestApplicationLaunchTests
         startInfo.Environment.ContainsKey(TestOptions.AffectedTestsModeEnvironmentVariable).Should().BeFalse();
     }
 
+    [TestMethod]
+    public void CreateProcessStartInfo_ArtifactWorker_PreservesLaunchProfileDiagnosticsOnly()
+    {
+        var profile = new ProjectLaunchProfile
+        {
+            CommandLineArgs = "--diagnostic --diagnostic-verbosity debug --filter NotForTheWorker",
+        };
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text, IsArtifactPostProcessing: true),
+            launchProfile: profile);
+
+        string arguments = application.CreateProcessStartInfo().Arguments;
+
+        arguments.Should().Contain("--diagnostic --diagnostic-verbosity debug")
+            .And.NotContain("--filter")
+            .And.NotContain("NotForTheWorker");
+    }
+
+    [TestMethod]
+    public void CreateProcessStartInfo_ArtifactWorker_PreservesResponseFileDiagnosticsOnly()
+    {
+        string responseFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N} reporting.rsp");
+        try
+        {
+            File.WriteAllText(responseFile, "--diagnostic --diagnostic-file-prefix \"worker logs\" --filter NotForTheWorker");
+            using TestApplication application = CreateApplication(
+                new TestOptions(false, false, TestListFormat.Text, IsArtifactPostProcessing: true),
+                forwardedArguments: ["@" + responseFile]);
+
+            string arguments = application.CreateProcessStartInfo().Arguments;
+
+            arguments.Should().Contain("--diagnostic --diagnostic-file-prefix \"worker logs\"")
+                .And.NotContain("--filter")
+                .And.NotContain("NotForTheWorker")
+                .And.NotContain(responseFile);
+        }
+        finally
+        {
+            File.Delete(responseFile);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("1.0.0")]
+    [DataRow("1.3.0")]
+    public void CreateHandshakeMessage_AdvertisesRequiredProcessingIndependentlyOfProtocolVersion(string version)
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            artifactPostProcessingManager: new ArtifactPostProcessingManager());
+
+        application.CreateHandshakeMessage(version).Properties[HandshakeMessagePropertyNames.RequiredPostProcessingSupported]
+            .Should().Be(bool.TrueString);
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void CreateHandshakeMessage_CoverageAndRequiredProcessingCapabilitiesAreIndependent(
+        bool requiredProcessing, bool coverage)
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            artifactPostProcessingManager: new ArtifactPostProcessingManager(enabled: requiredProcessing));
+
+        var properties = application.CreateHandshakeMessage(
+            "1.3.0", includeControlPipe: false, includeCoverageSummary: coverage).Properties;
+
+        properties.ContainsKey(HandshakeMessagePropertyNames.RequiredPostProcessingSupported).Should().Be(requiredProcessing);
+        properties.ContainsKey(HandshakeMessagePropertyNames.CoverageSummaryVersion).Should().Be(coverage);
+        if (coverage)
+        {
+            properties[HandshakeMessagePropertyNames.CoverageSummaryVersion].Should().Be("1");
+        }
+
+        properties[HandshakeMessagePropertyNames.SupportedProtocolVersions].Should().Be("1.3.0");
+        properties.Should().NotContainKey(HandshakeMessagePropertyNames.ServerControlPipeName);
+    }
+
+    [TestMethod]
+    [DataRow("help")]
+    [DataRow("discovery")]
+    [DataRow("collection")]
+    [DataRow("worker")]
+    [DataRow("opt-out")]
+    [DataRow("no-manager")]
+    [DataRow("cancelled")]
+    [DataRow("rejected")]
+    [DataRow("browser-wasm")]
+    [DataRow("wasi-wasm")]
+    public void CreateHandshakeMessage_DoesNotPromiseUnsupportedOrSuppressedProcessing(string scenario)
+    {
+        using var cancellation = new CancellationTokenSource();
+        if (scenario == "cancelled")
+        {
+            cancellation.Cancel();
+        }
+
+        var options = new TestOptions(
+            scenario == "help", scenario == "discovery", TestListFormat.Text,
+            IsArtifactPostProcessing: scenario == "worker")
+        {
+            CollectTestMap = scenario == "collection",
+        };
+        using TestApplication application = CreateApplication(
+            options,
+            runtimeIdentifier: scenario,
+            artifactPostProcessingManager: scenario == "no-manager"
+                ? null
+                : new ArtifactPostProcessingManager(enabled: scenario != "opt-out", cancellation.Token));
+
+        application.CreateHandshakeMessage(scenario == "rejected" ? string.Empty : "1.3.0")
+            .Properties.Should().NotContainKey(HandshakeMessagePropertyNames.RequiredPostProcessingSupported);
+    }
+
     internal static TestApplication CreateApplication(
         TestOptions testOptions,
         IEnumerable<string>? forwardedArguments = null,
@@ -286,7 +435,7 @@ public sealed class TestApplicationLaunchTests
         ProjectLaunchProfile? launchProfile = null,
         string runtimeIdentifier = "",
         string? resultsDirectory = null,
-        ArtifactPostProcessingManager? artifactManager = null)
+        ArtifactPostProcessingManager? artifactPostProcessingManager = null)
     {
         var module = new TestModule(
             new RunProperties("dotnet", "test.dll", null, runtimeIdentifier, string.Empty, string.Empty),
@@ -324,6 +473,9 @@ public sealed class TestApplicationLaunchTests
             TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, Directory.GetCurrentDirectory()),
             reporter,
             _ => { },
-            artifactPostProcessingManager: artifactManager);
+            artifactPostProcessingManager: artifactPostProcessingManager,
+            artifactPostProcessingInvocation: testOptions.IsArtifactPostProcessing
+                ? new ArtifactPostProcessingInvocation("manifest.json")
+                : null);
     }
 }

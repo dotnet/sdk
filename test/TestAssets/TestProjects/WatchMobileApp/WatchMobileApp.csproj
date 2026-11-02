@@ -7,6 +7,7 @@
   <ItemGroup>
     <!-- This simulates a mobile project that would have this capability set by the workload -->
     <ProjectCapability Include="HotReloadWebSockets" />
+    <ProjectCapability Include="RuntimeEnvironmentVariableSupport" />
     <!-- items placeholder -->
   </ItemGroup>
 </Project>

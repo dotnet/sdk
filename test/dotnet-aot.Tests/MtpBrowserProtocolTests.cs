@@ -21,8 +21,10 @@ public class MtpBrowserProtocolTests
         var serializer = new ProtocolMessageSerializer();
         serializer.RegisterAllSerializers();
         var request = new FileArtifactTransferRequest("execution", "instance", "transfer", "artifact.txt", 3, 0, [1, 2, 3], true);
+        byte[] frame = serializer.Serialize(request);
+        Assert.AreEqual(17, BitConverter.ToInt32(frame.AsSpan(sizeof(int))));
         var decoded = Assert.IsInstanceOfType<FileArtifactTransferRequest>(
-            serializer.Deserialize(serializer.Serialize(request), false));
+            serializer.Deserialize(frame, false));
         Assert.AreSequenceEqual(request.Data, decoded.Data);
         string directory = Directory.CreateTempSubdirectory("native-browser-artifacts-").FullName;
         try
@@ -35,7 +37,15 @@ public class MtpBrowserProtocolTests
             Assert.AreSequenceEqual(request.Data, File.ReadAllBytes(response.FullPath));
             Assert.IsTrue(manager.OwnsPublishedPath(response.FullPath));
             Assert.IsFalse(manager.HasIncompleteOrFailedTransfers);
-            Assert.AreEqual(response, serializer.Deserialize(serializer.Serialize(response), false));
+            frame = serializer.Serialize(response);
+            Assert.AreEqual(18, BitConverter.ToInt32(frame.AsSpan(sizeof(int))));
+            Assert.AreEqual(response, serializer.Deserialize(frame, false));
+            var coverage = new CoverageSummaryMessages("execution", "instance",
+                [new("session", "collector", 0, null, (int)CoverageMetric.Line, null, 2, 3)]);
+            frame = serializer.Serialize(coverage);
+            Assert.AreEqual(15, BitConverter.ToInt32(frame.AsSpan(sizeof(int))));
+            var decodedCoverage = Assert.IsInstanceOfType<CoverageSummaryMessages>(serializer.Deserialize(frame, false));
+            Assert.AreSequenceEqual(coverage.Summaries, decodedCoverage.Summaries);
             Assert.IsEmpty(errors);
         }
         finally

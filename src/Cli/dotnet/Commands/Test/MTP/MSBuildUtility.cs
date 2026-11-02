@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
+using Microsoft.DotNet.ProjectTools;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Immutable;
@@ -143,7 +144,8 @@ internal static class MSBuildUtility
         string fullEntryPointFilePath = Path.GetFullPath(entryPointFilePath);
         var buildCommand = new VirtualProjectBuildingCommand(
             fullEntryPointFilePath,
-            msbuildArgs)
+            msbuildArgs,
+            CommandServices.CreateDefault())
         {
             NoRestore = buildOptions.HasNoRestore,
             NoCache = true,
@@ -164,7 +166,10 @@ internal static class MSBuildUtility
                 properties[ProjectProperties.TargetFramework] = targetFramework;
             }
 
-            var evaluationCommand = new VirtualProjectBuildingCommand(fullEntryPointFilePath, msbuildArgs);
+            var evaluationCommand = new VirtualProjectBuildingCommand(
+                fullEntryPointFilePath,
+                msbuildArgs,
+                CommandServices.CreateDefault());
             return evaluationCommand.CreateProjectInstance(buildSession.ProjectCollection, properties);
         }
 
@@ -203,7 +208,7 @@ internal static class MSBuildUtility
 
             if (device is not null)
             {
-                perTfmArgs = perTfmArgs.Append($"-p:Device={device}");
+                perTfmArgs = perTfmArgs.Append($"-p:Device={MSBuildPropertyEscaping.Escape(device)}");
             }
 
             if (!string.IsNullOrEmpty(rid))
@@ -322,7 +327,13 @@ internal static class MSBuildUtility
                 }
             }
 
-            return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
+            return new RestoringCommand(
+                parsedMSBuildArgs,
+                buildOptions.HasNoRestore,
+                msbuildPath: null,
+                userProfileDir: null,
+                advertiseWorkloadUpdates: null,
+                CommandServices.CreateDefault()).Execute();
         }
         finally
         {

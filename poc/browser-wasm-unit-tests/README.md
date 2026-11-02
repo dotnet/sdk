@@ -61,6 +61,26 @@ against the runtime pack selected by the SDK build. Changing the readiness forma
 requires a coordinated launcher change; a structured runtime-owned readiness API
 must not be claimed until it exists upstream.
 
+## Wire compatibility
+
+Coverage and browser transport negotiate independently. Upstream coverage keeps
+serializer **15**, handshake property **20** (`1`), artifact metadata field **9**,
+and coverage payload fields **1-8**. Browser artifact requests/replies use
+serializers **17/18**. Handshake property **26** (`http`) enables auxiliary HTTP
+control, **27** (`chunked-v1`) enables artifact transfer, and **28-31** carry the
+chunk, file, module-byte, and file-count limits. Transfer payload fields **1-8**
+and reply fields **1-3** are unchanged.
+
+Serializer **16** and handshake properties **21-25** are retired experiment
+allocations; they must not be reused or aliased. In particular, artifact request
+ID 15 is not accepted as a legacy alias because it now belongs to coverage.
+Protocol 1.5 support alone does not enable either browser capability. When old
+and new experiment peers lack the other's capability block, HTTP control stays
+disabled and artifacts retain the existing warning/suppressed-HTTP-artifact
+fallback rather than sending bytes to a mismatched decoder. Named-pipe behavior
+and independent coverage negotiation remain unchanged. Validate both directions
+using aligned source-built SDK and TestFX packages before updating dependency pins.
+
 ## Reproduce using the built SDK and package
 
 Build this SDK checkout with `build.cmd` and pack the aligned testfx packages.

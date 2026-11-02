@@ -15,7 +15,10 @@ namespace dotnet.Tests.CommandTests.Test;
 public class FileArtifactTransferTests : SdkTest
 {
     [TestMethod]
-    public async Task HttpReceiverRequiresAHandshakeAndReportsOnlyCommittedPaths()
+    [DataRow(null, false)]
+    [DataRow("http", false)]
+    [DataRow("1", true)]
+    public async Task HttpReceiverRequiresAHandshakeAndReportsOnlyCommittedPaths(string? coverageVersion, bool coverageSupported)
     {
         string directory = TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString("N")).Path;
         var artifacts = new ArtifactPostProcessingManager();
@@ -23,7 +26,7 @@ public class FileArtifactTransferTests : SdkTest
             new TestOptions(false, false, TestListFormat.Text),
             runtimeIdentifier: "browser-wasm",
             resultsDirectory: directory,
-            artifactManager: artifacts);
+            artifactPostProcessingManager: artifacts);
         application.CreateProcessStartInfo();
         var chunk = Chunk("transfer", "file.txt", 3, 0, [1, 2, 3], true);
 
@@ -41,8 +44,22 @@ public class FileArtifactTransferTests : SdkTest
             [HandshakeMessagePropertyNames.Architecture] = "wasm",
             [HandshakeMessagePropertyNames.SupportedProtocolVersions] = "1.3.0;1.5.0",
         });
+        if (coverageVersion is not null)
+        {
+            handshake.Properties[20] = coverageVersion;
+        }
+
         HandshakeMessage reply = Assert.IsInstanceOfType<HandshakeMessage>(await SendHttpAsync(application, handshake));
         Assert.AreEqual("1.5.0", reply.Properties[HandshakeMessagePropertyNames.SupportedProtocolVersions]);
+        Assert.AreEqual(coverageSupported, reply.Properties.ContainsKey(HandshakeMessagePropertyNames.CoverageSummaryVersion));
+        if (coverageSupported)
+        {
+            Assert.AreEqual("1", reply.Properties[HandshakeMessagePropertyNames.CoverageSummaryVersion]);
+        }
+
+        Assert.AreEqual("http", reply.Properties[26]);
+        Assert.AreEqual("chunked-v1", reply.Properties[27]);
+        Assert.IsFalse(Enumerable.Range(21, 5).Any(id => reply.Properties.ContainsKey((byte)id)));
         Assert.AreEqual("chunked-v1", reply.Properties[HandshakeMessagePropertyNames.FileArtifactTransfer]);
 
         rejected = Assert.IsInstanceOfType<FileArtifactTransferResponse>(
@@ -81,7 +98,7 @@ public class FileArtifactTransferTests : SdkTest
         serializer.RegisterAllSerializers();
         var request = Chunk("transfer", "report.trx", 4, 0, [0, 1, 2, 255], true);
         byte[] frame = serializer.Serialize(request);
-        Assert.AreEqual(15, BitConverter.ToInt32(frame.AsSpan(sizeof(int))));
+        Assert.AreEqual(17, BitConverter.ToInt32(frame.AsSpan(sizeof(int))));
         var decoded = Assert.IsInstanceOfType<FileArtifactTransferRequest>(serializer.Deserialize(frame, false));
         Assert.AreEqual(request.ExecutionId, decoded.ExecutionId);
         Assert.AreEqual(request.InstanceId, decoded.InstanceId);
@@ -94,8 +111,44 @@ public class FileArtifactTransferTests : SdkTest
 
         var response = new FileArtifactTransferResponse(0, null, "quota exceeded");
         frame = serializer.Serialize(response);
-        Assert.AreEqual(16, BitConverter.ToInt32(frame.AsSpan(sizeof(int))));
+        Assert.AreEqual(18, BitConverter.ToInt32(frame.AsSpan(sizeof(int))));
         Assert.AreEqual(response, serializer.Deserialize(frame, false));
+
+        var coverage = new CoverageSummaryMessages("execution", "instance",
+            [new("session", "collector", 0, null, (int)CoverageMetric.Line, null, 2, 3)]);
+        frame = serializer.Serialize(coverage);
+        Assert.AreEqual(15, BitConverter.ToInt32(frame.AsSpan(sizeof(int))));
+        var decodedCoverage = Assert.IsInstanceOfType<CoverageSummaryMessages>(serializer.Deserialize(frame, false));
+        Assert.AreEqual(coverage.ExecutionId, decodedCoverage.ExecutionId);
+        Assert.AreEqual(coverage.InstanceId, decodedCoverage.InstanceId);
+        Assert.AreSequenceEqual(coverage.Summaries, decodedCoverage.Summaries);
+    }
+
+    [TestMethod]
+    public void BrowserHandshakeIdsDoNotReuseCoverageOrRetiredExperimentalSlots()
+    {
+        Assert.AreEqual((byte)20, HandshakeMessagePropertyNames.CoverageSummaryVersion);
+        Assert.AreEqual((byte)26, HandshakeMessagePropertyNames.ServerControlTransport);
+        Assert.AreEqual((byte)27, HandshakeMessagePropertyNames.FileArtifactTransfer);
+        Assert.AreEqual((byte)28, HandshakeMessagePropertyNames.FileArtifactTransferMaxChunkBytes);
+        Assert.AreEqual((byte)29, HandshakeMessagePropertyNames.FileArtifactTransferMaxFileBytes);
+        Assert.AreEqual((byte)30, HandshakeMessagePropertyNames.FileArtifactTransferMaxModuleBytes);
+        Assert.AreEqual((byte)31, HandshakeMessagePropertyNames.FileArtifactTransferMaxFileCount);
+    }
+
+    [TestMethod]
+    [DataRow(4)]
+    [DataRow(16)]
+    public void ReservedSerializerIdsDoNotResolveToArtifactTransfer(int serializerId)
+    {
+        var serializer = new ProtocolMessageSerializer();
+        serializer.RegisterAllSerializers();
+        byte[] frame = serializer.Serialize(new FileArtifactTransferResponse(0, null, null));
+        Assert.IsTrue(BitConverter.TryWriteBytes(frame.AsSpan(sizeof(int)), serializerId));
+
+        Assert.ThrowsExactly<ArgumentException>(() => serializer.Deserialize(frame, false));
+        var unknown = Assert.IsInstanceOfType<UnknownMessage>(serializer.Deserialize(frame, true));
+        Assert.AreEqual(serializerId, unknown.SerializerId);
     }
 
     [TestMethod]

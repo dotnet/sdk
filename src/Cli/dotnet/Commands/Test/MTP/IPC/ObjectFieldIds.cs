@@ -148,6 +148,7 @@ internal static class FileArtifactMessageFieldsId
     public const ushort SessionUid = 6;
     public const ushort Kind = 7;
     public const ushort InputArtifactPaths = 8;
+    public const ushort CoverageSummary = 9;
 }
 
 internal static class TestSessionEventFieldsId
@@ -210,9 +211,32 @@ internal static class ServerControlMessageFieldsId
     public const ushort Kind = 1;
 }
 
-internal static class FileArtifactTransferRequestFieldsId
+internal static class CoverageSummaryMessagesFieldsId
 {
     public const int MessagesSerializerId = 15;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort Summaries = 3;
+}
+
+internal static class CoverageSummaryMessageFieldsId
+{
+    public const ushort SessionUid = 1;
+    public const ushort ProducerId = 2;
+    public const ushort ScopeLevel = 3;
+    public const ushort ScopeName = 4;
+    public const ushort Metric = 5;
+    public const ushort CustomMetricName = 6;
+    public const ushort CoveredCount = 7;
+    public const ushort CoverableCount = 8;
+}
+
+// Reserved: serializer ID 16 was used by the earlier browser experiment.
+
+internal static class FileArtifactTransferRequestFieldsId
+{
+    public const int MessagesSerializerId = 17;
     public const ushort ExecutionId = 1;
     public const ushort InstanceId = 2;
     public const ushort TransferId = 3;
@@ -225,7 +249,7 @@ internal static class FileArtifactTransferRequestFieldsId
 
 internal static class FileArtifactTransferResponseFieldsId
 {
-    public const int MessagesSerializerId = 16;
+    public const int MessagesSerializerId = 18;
     public const ushort NextOffset = 1;
     public const ushort FullPath = 2;
     public const ushort Error = 3;

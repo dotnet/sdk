@@ -78,6 +78,21 @@ rest are supporting libraries:
 - `Common/` — shared option/argument factories.
 - `Help/` — help builder and localization.
 
+## Per-command services
+
+[`CommandServices`](dotnet/CommandServices.cs) holds immutable service dependencies.
+[`CommandBase`](dotnet/CommandBase.cs) retains them per instance. Build-family factories
+require callers to provide services explicitly; pass the same instance to subordinate commands, as
+[`RestoringCommand`](dotnet/Commands/Restore/RestoringCommand.cs) does for separate restore.
+CLI entry points that do not receive services create the production defaults explicitly.
+
+For in-process LLM tests, inject a detector through these services rather than changing
+the process environment or adding ambient overrides. Keep command-path tests entering
+through the real factory; see
+[`GivenCommandServices`](../../test/dotnet.Tests/CommandTests/MSBuild/GivenCommandServices.cs).
+Test the detector's environment-variable mapping separately with an `IEnvironmentProvider`.
+For subprocess tests, set environment variables on the child process instead.
+
 ## Verify (approval) snapshot tests
 
 Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):
@@ -102,6 +117,76 @@ gain that exemption. Rejection and partial-handshake state must survive later ac
 handshakes. Keep these boundaries covered by
 [`TestApplicationHandlerTests`](../../test/dotnet.Tests/CommandTests/Test/TestApplicationHandlerTests.cs).
 
+[`TerminalTestReporter`](dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs)
+renders a neutral no-selection status for a successful affected-run orchestrator that
+never starts a TestHost, without inventing skipped tests. Run summaries use the final
+aggregate exit code from
+[`MicrosoftTestingPlatformTestCommand`](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs),
+including session failures and ignored-exit policies, instead of upstream's in-process
+failure callback. A successful run with zero tests uses neutral "Zero tests ran" wording,
+not a green "Passed!" verdict.
+
+## MTP coverage summaries
+
+Keep coverage scoped by execution, instance, session, and producer. Never add counts or
+percentages across test applications: they can cover the same assembly. The
+[`coverage reporter`](dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.Coverage.cs)
+reserves `Total` for a single source or an accepted, complete merged artifact with explicit
+input provenance. Failed, partial, unsupported, or cancelled processing must not fabricate a
+run total.
+
+Track complete execution/instance/session tuples and balanced starts/ends; matching separate
+identity sets or input-file counts is insufficient. Preserve source origins independently
+of artifact-list replacement, reject ambiguous path reuse, and invalidate previous coverage
+metadata when a processed output path is replaced.
+
+Unresolved measurement origins and selected applications that fail to launch also make
+coverage incomplete, even when their exit codes are ignored. The
+[`application queue`](dotnet/Commands/Test/MTP/TestApplicationActionQueue.cs) must preserve
+that state when an exception prevents the normal handshake/session completion path.
+
+Controller coverage can arrive after `TestSessionEnd`; accept it until process completion.
+Negotiate coverage-summary support independently of the base protocol and control
+transport. Keep producer, wire, artifact-acceptance, and
+managed/Native AOT behavior aligned. See the
+[coverage contract and output format](../../documentation/general/dotnet-test-artifact-post-processing.md#code-coverage-summary).
+
+## MTP collection and diagnostics
+
+Collection has a separate parent lifecycle: its bounded progress counts completed module
+attempts, and its final status follows the existing aggregate exit code without synthesizing
+test outcomes from discovery or mapping counts. Keep collection progress independent of
+TestHost handshakes, since suppression is intentional. Interrupted sessions label live counts
+as incomplete; never add recovered TRX counts to those live results.
+
+Artifact workers inherit only configuration and diagnostic options from the elected
+application, including response-file and launch-profile sources. Preserve `--diagnostic`
+with its directory, verbosity, prefix, and synchronous-write settings; do not weaken MTP
+validation or forward test-selection/retry/timeout arguments. Reporting degradation remains
+separate from the test verdict, with original artifacts retained.
+
+Required artifact processing is a per-invocation promise: advertise field 19 only when the
+SDK will honor field 18 singleton jobs and provide an authoritative, policy-aware
+`runSummary`. Preserve per-module fallback for opt-out, help/discovery/collection, and
+unsupported transports. Snapshot logical live counts after final test policies, before
+workers run; keep selected modules without fragments in the denominator. Preserve the
+handshake's producing-module identity separately from an apphost launch path, and never
+use a running framework as proof of the artifact's target framework. See the
+[contract decision](../../documentation/general/dotnet-test-artifact-post-processing.md#required-summary-contract-decision)
+and [real-worker regressions](../../test/dotnet.Tests/CommandTests/Test/GivenDotnetTestRunsRequiredArtifactProcessing.cs).
+Join worker reporting before applying outputs; a legal null result or a worker failure
+does not change test policy. Bound worker cancellation without expanding general test-host
+cancellation plumbing.
+
+The vendored non-cursor renderer measures **visible-output silence**, not silence between
+test completions. Its totals include completed modules after their worker slots are freed.
+Resolve parent progress from every selected module's effective arguments and working
+directory; any effective opt-out disables the shared heartbeat and slow-test display.
+Collection status must not override discovery formatting. Keep optional timer and warning
+writes exception-safe, without recounting an operation when its warning cannot be written.
+Keep SDK final-exit-code authority when reconciling upstream terminal code, and update
+[`eng/vendored-files.json`](../../eng/vendored-files.json) with exact upstream blob identities.
+
 ## MTP launcher selection
 
 `dotnet test` completes `ComputeRunArguments`, including its `AfterTargets` providers,
@@ -115,3 +200,13 @@ Do not overwrite the canonical properties or make `dotnet run` invoke the test-o
 The SDK advertises this contract as `TestingPlatformRunArgumentsVersion=1`; see
 [`SolutionAndProjectUtility`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) and
 [`Sdk.targets`](../Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets).
+
+## MTP browser wire compatibility
+
+Preserve upstream coverage serializer 15 and handshake property 20 independently of the
+browser experiment. Artifact transfer uses serializers 17/18 and capability property 27;
+HTTP control uses property 26 and transfer limits use 28-31. Serializer 16 and properties
+21-25 are retired experimental slots, not aliases. Protocol 1.5 alone never enables
+transfer or HTTP control: mixed old/new browser peers must retain capability-based
+fallback. Keep both repositories aligned and validate their actual built products; see
+the [browser contract](../../poc/browser-wasm-unit-tests/README.md#wire-compatibility).

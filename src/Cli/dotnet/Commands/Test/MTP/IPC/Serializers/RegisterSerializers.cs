@@ -23,8 +23,10 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
  * DisplayMessageSerializer: 12
  * WaitForServerControlRequestSerializer: 13
  * ServerControlMessageSerializer: 14
- * FileArtifactTransferRequestSerializer: 15
- * FileArtifactTransferResponseSerializer: 16
+ * CoverageSummaryMessagesSerializer: 15
+ * Reserved: 16 (earlier browser experiment)
+ * FileArtifactTransferRequestSerializer: 17
+ * FileArtifactTransferResponseSerializer: 18
  */
 
 internal static class RegisterSerializers
@@ -43,6 +45,7 @@ internal static class RegisterSerializers
         namedPipeBase.RegisterSerializer(new DisplayMessageSerializer(), typeof(DisplayMessage));
         namedPipeBase.RegisterSerializer(new WaitForServerControlRequestSerializer(), typeof(WaitForServerControlRequest));
         namedPipeBase.RegisterSerializer(new ServerControlMessageSerializer(), typeof(ServerControlMessage));
+        namedPipeBase.RegisterSerializer(new CoverageSummaryMessagesSerializer(), typeof(CoverageSummaryMessages));
         namedPipeBase.RegisterSerializer(new FileArtifactTransferRequestSerializer(), typeof(FileArtifactTransferRequest));
         namedPipeBase.RegisterSerializer(new FileArtifactTransferResponseSerializer(), typeof(FileArtifactTransferResponse));
     }

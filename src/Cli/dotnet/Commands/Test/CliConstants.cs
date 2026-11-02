@@ -103,14 +103,22 @@ internal static class HandshakeMessagePropertyNames
     internal const byte SupportedPostProcessorExtensionsLegacy = 15;
     internal const byte SupportedTruncatedRunPostProcessorKinds = 16;
     internal const byte SupportedTruncatedRunPostProcessorExtensionsLegacy = 17;
+    // Subset of SupportedPostProcessorKinds that must run even for a single input.
     internal const byte RequiredPostProcessorKinds = 18;
+
+    // Reply-only capability promising required processing and an authoritative runSummary.
     internal const byte RequiredPostProcessingSupported = 19;
-    internal const byte ServerControlTransport = 20;
-    internal const byte FileArtifactTransfer = 21;
-    internal const byte FileArtifactTransferMaxChunkBytes = 22;
-    internal const byte FileArtifactTransferMaxFileBytes = 23;
-    internal const byte FileArtifactTransferMaxModuleBytes = 24;
-    internal const byte FileArtifactTransferMaxFileCount = 25;
+
+    // Independently negotiated so coverage does not enable the 1.4 server-control protocol.
+    internal const byte CoverageSummaryVersion = 20;
+
+    // Reserved: 21-25 were used by the earlier browser experiment.
+    internal const byte ServerControlTransport = 26;
+    internal const byte FileArtifactTransfer = 27;
+    internal const byte FileArtifactTransferMaxChunkBytes = 28;
+    internal const byte FileArtifactTransferMaxFileBytes = 29;
+    internal const byte FileArtifactTransferMaxModuleBytes = 30;
+    internal const byte FileArtifactTransferMaxFileCount = 31;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -137,10 +145,14 @@ internal static class HandshakeMessageHostTypes
 
 internal static class ProtocolConstants
 {
+    internal const string CoverageSummaryVersion = "1";
+
     /// <summary>
     /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
     /// </summary>
-    // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding; 1.3.0 adds DisplayMessage (serializer id 12) forwarding.
+    // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding.
+    // 1.3.0 adds DisplayMessage (serializer id 12) forwarding, including GitHub Actions workflow commands
+    // sent at the Information level so the SDK writes their text verbatim without warning/error formatting.
     // 1.4.0 adds server control; 1.5.0 adds chunked artifact transfer. Transport capabilities
     // are negotiated separately so older peers retain their existing behavior.
     internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0;1.4.0;1.5.0";

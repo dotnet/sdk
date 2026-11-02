@@ -43,23 +43,31 @@ internal class DefaultBlobOperations : IBlobOperations
     public async Task<JsonNode> GetJsonAsync(string repositoryName, string digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        HttpResponseMessage response = await GetAsync(repositoryName, digest, cancellationToken).ConfigureAwait(false);
+        ReadOnlyMemory<byte> content = await GetContentAsync(repositoryName, digest, cancellationToken).ConfigureAwait(false);
 
-        JsonNode? configDoc = JsonNode.Parse(await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false));
+        JsonNode? configDoc = JsonNode.Parse(content.Span);
         Debug.Assert(configDoc is not null);
 
         return configDoc;
     }
 
-    public async Task<Stream> GetStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken)
+    public async Task<Stream> GetUnvalidatedStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        HttpResponseMessage response = await GetAsync(repositoryName, digest, cancellationToken).ConfigureAwait(false);
+        HttpResponseMessage response = await GetResponseAsync(repositoryName, digest, cancellationToken).ConfigureAwait(false);
 
         return await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<HttpResponseMessage> GetAsync(string repositoryName, string digest, CancellationToken cancellationToken)
+    private async Task<ReadOnlyMemory<byte>> GetContentAsync(string repositoryName, string digest, CancellationToken cancellationToken)
+    {
+        using HttpResponseMessage response = await GetResponseAsync(repositoryName, digest, cancellationToken).ConfigureAwait(false);
+        ReadOnlyMemory<byte> content = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+        DigestUtils.ValidateDigestContent(digest, content.Span);
+        return content;
+    }
+
+    private async Task<HttpResponseMessage> GetResponseAsync(string repositoryName, string digest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, new Uri(_baseUri, $"/v2/{repositoryName}/blobs/{digest}")).AcceptManifestFormats();
