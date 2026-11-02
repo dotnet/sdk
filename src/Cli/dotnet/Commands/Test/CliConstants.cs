@@ -108,6 +108,9 @@ internal static class HandshakeMessagePropertyNames
 
     // Reply-only capability promising required processing and an authoritative runSummary.
     internal const byte RequiredPostProcessingSupported = 19;
+
+    // Independently negotiated so coverage does not enable the 1.4 server-control protocol.
+    internal const byte CoverageSummaryVersion = 20;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -134,6 +137,8 @@ internal static class HandshakeMessageHostTypes
 
 internal static class ProtocolConstants
 {
+    internal const string CoverageSummaryVersion = "1";
+
     /// <summary>
     /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
     /// </summary>

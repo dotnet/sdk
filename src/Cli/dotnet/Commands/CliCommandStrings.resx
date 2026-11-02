@@ -2873,6 +2873,63 @@ Proceed?</value>
     <value>Slowest tests:</value>
     <comment>Header of the run summary section that lists the longest-running tests.</comment>
   </data>
+  <data name="CodeCoverageSummary" xml:space="preserve">
+    <value>Code Coverage Summary:</value>
+  </data>
+  <data name="CoverageScopeOverall" xml:space="preserve">
+    <value>Total</value>
+    <comment>Labels coverage of a single test application or a complete merged coverage artifact, never a sum of application percentages.</comment>
+  </data>
+  <data name="CoverageNoData" xml:space="preserve">
+    <value>no coverable data</value>
+  </data>
+  <data name="CoverageMetricLine" xml:space="preserve">
+    <value>Line</value>
+  </data>
+  <data name="CoverageMetricStatement" xml:space="preserve">
+    <value>Statement</value>
+  </data>
+  <data name="CoverageMetricBranch" xml:space="preserve">
+    <value>Branch</value>
+  </data>
+  <data name="CoverageMetricMethod" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="CoverageMetricFunction" xml:space="preserve">
+    <value>Function</value>
+  </data>
+  <data name="CoverageMetricBlock" xml:space="preserve">
+    <value>Block</value>
+  </data>
+  <data name="CoverageMetricInstruction" xml:space="preserve">
+    <value>Instruction</value>
+  </data>
+  <data name="CoverageMetricRegion" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="CoverageMetricClass" xml:space="preserve">
+    <value>Class</value>
+  </data>
+  <data name="CoverageMetricCondition" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="CoverageMetricComplexity" xml:space="preserve">
+    <value>Complexity</value>
+  </data>
+  <data name="CoverageMetricWithProducer" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>{0} is the coverage metric label. {1} identifies its producer when several producers report the same metric.</comment>
+  </data>
+  <data name="CoverageMergedArtifact" xml:space="preserve">
+    <value>Merged coverage ({0})</value>
+    <comment>{0} is an artifact path. Used instead of Total when the merged artifact does not represent every test application.</comment>
+  </data>
+  <data name="InvalidCoverageSummary" xml:space="preserve">
+    <value>A test application reported an invalid code coverage summary. The invalid summary was ignored.</value>
+  </data>
+  <data name="UnnegotiatedCoverageSummary" xml:space="preserve">
+    <value>A test application reported a code coverage summary without negotiating coverage summary support. The summary was ignored.</value>
+  </data>
   <data name="FailedColon" xml:space="preserve">
     <value>failed:</value>
   </data>

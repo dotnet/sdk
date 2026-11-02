@@ -245,6 +245,32 @@ public sealed class TestApplicationLaunchTests
     }
 
     [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void CreateHandshakeMessage_CoverageAndRequiredProcessingCapabilitiesAreIndependent(
+        bool requiredProcessing, bool coverage)
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            artifactPostProcessingManager: new ArtifactPostProcessingManager(enabled: requiredProcessing));
+
+        var properties = application.CreateHandshakeMessage(
+            "1.3.0", includeControlPipe: false, includeCoverageSummary: coverage).Properties;
+
+        properties.ContainsKey(HandshakeMessagePropertyNames.RequiredPostProcessingSupported).Should().Be(requiredProcessing);
+        properties.ContainsKey(HandshakeMessagePropertyNames.CoverageSummaryVersion).Should().Be(coverage);
+        if (coverage)
+        {
+            properties[HandshakeMessagePropertyNames.CoverageSummaryVersion].Should().Be("1");
+        }
+
+        properties[HandshakeMessagePropertyNames.SupportedProtocolVersions].Should().Be("1.3.0");
+        properties.Should().NotContainKey(HandshakeMessagePropertyNames.ServerControlPipeName);
+    }
+
+    [TestMethod]
     [DataRow("help")]
     [DataRow("discovery")]
     [DataRow("collection")]

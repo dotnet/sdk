@@ -971,6 +971,11 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <target state="new">Lists packages that have known vulnerabilities. Cannot be combined with '--deprecated' or '--outdated' options.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CodeCoverageSummary">
+        <source>Code Coverage Summary:</source>
+        <target state="new">Code Coverage Summary:</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Command">
         <source>Command</source>
         <target state="new">Command</target>
@@ -1110,6 +1115,81 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="new">Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="CoverageMergedArtifact">
+        <source>Merged coverage ({0})</source>
+        <target state="new">Merged coverage ({0})</target>
+        <note>{0} is an artifact path. Used instead of Total when the merged artifact does not represent every test application.</note>
+      </trans-unit>
+      <trans-unit id="CoverageMetricBlock">
+        <source>Block</source>
+        <target state="new">Block</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricBranch">
+        <source>Branch</source>
+        <target state="new">Branch</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricClass">
+        <source>Class</source>
+        <target state="new">Class</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricComplexity">
+        <source>Complexity</source>
+        <target state="new">Complexity</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricCondition">
+        <source>Condition</source>
+        <target state="new">Condition</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricFunction">
+        <source>Function</source>
+        <target state="new">Function</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricInstruction">
+        <source>Instruction</source>
+        <target state="new">Instruction</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricLine">
+        <source>Line</source>
+        <target state="new">Line</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricMethod">
+        <source>Method</source>
+        <target state="new">Method</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricRegion">
+        <source>Region</source>
+        <target state="new">Region</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricStatement">
+        <source>Statement</source>
+        <target state="new">Statement</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageMetricWithProducer">
+        <source>{0} ({1})</source>
+        <target state="new">{0} ({1})</target>
+        <note>{0} is the coverage metric label. {1} identifies its producer when several producers report the same metric.</note>
+      </trans-unit>
+      <trans-unit id="CoverageNoData">
+        <source>no coverable data</source>
+        <target state="new">no coverable data</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CoverageScopeOverall">
+        <source>Total</source>
+        <target state="new">Total</target>
+        <note>Labels coverage of a single test application or a complete merged coverage artifact, never a sum of application percentages.</note>
       </trans-unit>
       <trans-unit id="CrashDumpTypeArgumentName">
         <source>DUMP_TYPE</source>
@@ -1730,6 +1810,11 @@ See https://aka.ms/dotnet-test/mtp for more information.</target>
       <trans-unit id="InternalLoopAsyncDidNotExitSuccessfullyErrorMessage">
         <source>Method '{0}' did not exit successfully</source>
         <target state="new">Method '{0}' did not exit successfully</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidCoverageSummary">
+        <source>A test application reported an invalid code coverage summary. The invalid summary was ignored.</source>
+        <target state="new">A test application reported an invalid code coverage summary. The invalid summary was ignored.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -3916,6 +4001,11 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="UnknownSessionEventType">
         <source>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</source>
         <target state="new">Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnnegotiatedCoverageSummary">
+        <source>A test application reported a code coverage summary without negotiating coverage summary support. The summary was ignored.</source>
+        <target state="new">A test application reported a code coverage summary without negotiating coverage summary support. The summary was ignored.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">

@@ -792,7 +792,8 @@ internal sealed class TestApplication(
                         SetNegotiatedProtocolVersion(handshakeAccepted ? negotiatedVersion : string.Empty);
                         return Task.FromResult((IResponse)CreateHandshakeMessage(
                             handshakeAccepted ? negotiatedVersion : string.Empty,
-                            includeControlPipe: _httpGateway is null));
+                            includeControlPipe: _httpGateway is null,
+                            includeCoverageSummary: handshakeAccepted && SupportsCoverageSummary(handshakeMessage)));
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -810,12 +811,21 @@ internal sealed class TestApplication(
                         OnFileArtifactMessages(fileArtifactMessages);
                         break;
 
+                    case CoverageSummaryMessages coverageSummaryMessages:
+                        _handler.OnCoverageSummaryReceived(coverageSummaryMessages);
+                        break;
+
                     case TestInProgressMessages testInProgressMessages:
                         OnTestInProgressMessages(testInProgressMessages);
                         break;
 
                     case TestSessionEvent sessionEvent:
-                        OnSessionEvent(sessionEvent);
+                        string? sessionInstanceId = server is not null
+                            && _handshakes.TryGetValue(server, out HandshakeMessage? sessionHandshake)
+                            && sessionHandshake.Properties.TryGetValue(HandshakeMessagePropertyNames.InstanceId, out string? senderInstanceId)
+                                ? senderInstanceId
+                                : null;
+                        OnSessionEvent(sessionEvent, sessionInstanceId);
                         break;
 
                     case AzureDevOpsLogMessage azureDevOpsLogMessage:
@@ -900,7 +910,11 @@ internal sealed class TestApplication(
         return highestCommonVersionText;
     }
 
-    internal HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true)
+    internal static bool SupportsCoverageSummary(HandshakeMessage handshakeMessage)
+        => handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.CoverageSummaryVersion, out string? version)
+            && version == ProtocolConstants.CoverageSummaryVersion;
+
+    internal HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true, bool includeCoverageSummary = false)
     {
         var properties = new Dictionary<byte, string>(capacity: 7)
         {
@@ -914,6 +928,11 @@ internal sealed class TestApplication(
         if (version.Length > 0 && includeControlPipe)
         {
             properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+        }
+
+        if (includeCoverageSummary)
+        {
+            properties.Add(HandshakeMessagePropertyNames.CoverageSummaryVersion, ProtocolConstants.CoverageSummaryVersion);
         }
 
         if (version.Length > 0
@@ -995,8 +1014,8 @@ internal sealed class TestApplication(
     private void OnTestInProgressMessages(TestInProgressMessages testInProgressMessages)
         => _handler.OnTestInProgressReceived(testInProgressMessages);
 
-    private void OnSessionEvent(TestSessionEvent sessionEvent)
-        => _handler.OnSessionEventReceived(sessionEvent);
+    private void OnSessionEvent(TestSessionEvent sessionEvent, string? instanceId)
+        => _handler.OnSessionEventReceived(sessionEvent, instanceId);
 
     private void OnAzureDevOpsLogMessage(AzureDevOpsLogMessage azureDevOpsLogMessage)
         => _handler.OnAzureDevOpsLogReceived(azureDevOpsLogMessage);
