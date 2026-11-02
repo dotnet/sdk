@@ -26,7 +26,7 @@ internal static class PropertyNames
     public const string NonExistentFile = nameof(NonExistentFile);
     // Evaluated properties that mirror the condition guarding the target which produces the browser
     // tools build outputs. They are read, never set: the build owns the browser tools key pair and
-    // dotnet-watch discovers its outputs. See BrowserToolsBuildOutputs.
+    // dotnet-watch discovers its outputs. See SharedSecretBuildOutputs.
     public const string HotReloadBrowserToolsAssetPrefix = nameof(HotReloadBrowserToolsAssetPrefix);
     public const string StaticWebAssetsEnabled = nameof(StaticWebAssetsEnabled);
     public const string JSModulesEnabled = nameof(JSModulesEnabled);

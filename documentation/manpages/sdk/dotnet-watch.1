@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-watch" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-watch" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet watch
 .PP
@@ -31,7 +31,7 @@ dotnet watch [<command>]
   [--list] [--no-hot-reload] [--no-self-contained]
   [--non-interactive] [--project <PROJECT>] [--sc|--self-contained]
   [-q|--quiet] [-v|--verbose] [--version]
-  [--] <forwarded arguments> 
+  [--] <forwarded arguments>
 
 dotnet watch -?|-h|--help
 \f[R]
@@ -93,35 +93,31 @@ If you\[cq]re running \f[V]dotnet watch run\f[R], these arguments are options fo
 If you\[cq]re running \f[V]dotnet watch test\f[R], these arguments are options for dotnet test.
 .RE
 .SH OPTIONS
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
-.RS 2
 .PP
 All build output files from the executed command will go in subfolders under the specified path, separated by project.
 For more information see Artifacts Output Layout.
+This option and the value provided must be explicitly cascaded in any \f[V]dotnet\f[R] command that depends on the output of another \f[V]dotnet\f[R] command, for example, when using \f[V]dotnet build --no-restore\f[R] and \f[V]dotnet publish --no-build\f[R].
 Available since .NET 8 SDK.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--disable-build-servers\f[B]\f[R]
-.RS 2
 .PP
 Forces the command to ignore any persistent build servers.
 This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
 A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
 Available since .NET 7 SDK.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--list\f[B]\f[R]
 .RS 2
 .PP
 Lists all discovered files without starting the watcher.
 .RE
-.IP \[bu] 2
-\f[B]\f[VB]--no-self-contained\f[B]\f[R]
-.RS 2
 .PP
-Equivalent to \f[V]--self-contained false\f[R].
-.RE
+\f[B]\f[VB]--no-self-contained\f[B]\f[R]
+.PP
+Publish your application as a framework-dependent application.
+A compatible .NET runtime must be installed on the target machine to run your application.
 .IP \[bu] 2
 \f[B]\f[VB]--no-hot-reload\f[B]\f[R]
 .RS 2
@@ -144,13 +140,10 @@ Available since .NET 7 SDK.
 Specifies the path of the project file to run (folder only or including the project file name).
 If not specified, it defaults to the current directory.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--sc|--self-contained\f[B]\f[R]
-.RS 2
 .PP
 Publish the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target machine.
-The default is \f[V]true\f[R].
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]-q|--quiet\f[B]\f[R]
 .RS 2
@@ -179,12 +172,10 @@ The double-dash option (`\[en]') can be used to delimit \f[V]dotnet watch\f[R] o
 Its use is optional.
 When the double-dash option isn\[cq]t used, \f[V]dotnet watch\f[R] considers the first unrecognized argument to be the beginning of arguments that it should pass into the child \f[V]dotnet\f[R] process.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .SH ENVIRONMENT VARIABLES
 .PP
 \f[V]dotnet watch\f[R] uses the following environment variables:
@@ -200,7 +191,7 @@ This value is configured by \f[V]dotnet watch\f[R] when the app is to be launche
 .PP
 When set to \f[V]1\f[R] or \f[V]true\f[R], \f[V]dotnet watch\f[R] uses a polling file watcher instead of <xref:System.IO.FileSystemWatcher?displayProperty=nameWithType>.
 Polling is required for some file systems, such as network shares, Docker mounted volumes, and other virtual file systems.
-The <xref:Microsoft.Extensions.FileProviders.PhysicalFileProvider> class uses \f[V]DOTNET_USE_POLLING_FILE_WATCHER\f[R] to determine whether the <xref:Microsoft.Extensions.FileProviders.PhysicalFileProvider.Watch%2A?displayProperty=nameWithType> method will rely on the <xref:Microsoft.Extensions.FileProviders.Physical.PollingFileChangeToken>.
+The <xref:Microsoft.Extensions.FileProviders.PhysicalFileProvider> class uses \f[V]DOTNET_USE_POLLING_FILE_WATCHER\f[R] to determine whether the <xref:Microsoft.Extensions.FileProviders.PhysicalFileProvider.Watch*?displayProperty=nameWithType> method will rely on the <xref:Microsoft.Extensions.FileProviders.Physical.PollingFileChangeToken>.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]DOTNET_WATCH\f[B]\f[R]
@@ -305,9 +296,12 @@ For example, the following markup extends that group to include JavaScript files
 </ItemGroup>
 \f[R]
 .fi
-.SS Ignore specified files
+.SS Ignore specified files and folders
 .PP
-\f[V]dotnet watch\f[R] will ignore \f[V]Compile\f[R] and \f[V]EmbeddedResource\f[R] items that have the \f[V]Watch=\[dq]false\[dq]\f[R] attribute, as shown in the following example:
+Use the \f[V]Watch=\[dq]false\[dq]\f[R] attribute to ignore specified files.
+Use the \f[V]DefaultItemExcludes\f[R] property to ignore folders or files from being watched.
+.PP
+To prevent \f[V]dotnet watch\f[R] from watching files, use the \f[V]Compile\f[R] and \f[V]EmbeddedResource\f[R] items with the \f[V]Watch=\[dq]false\[dq]\f[R] attribute, as shown in the following example:
 .IP
 .nf
 \f[C]
@@ -318,7 +312,7 @@ For example, the following markup extends that group to include JavaScript files
 \f[R]
 .fi
 .PP
-\f[V]dotnet watch\f[R] will ignore project references that have the \f[V]Watch=\[dq]false\[dq]\f[R] attribute, as shown in the following example:
+\f[V]dotnet watch\f[R] ignores project references that have the \f[V]Watch=\[dq]false\[dq]\f[R] attribute, as shown in the following example:
 .IP
 .nf
 \f[C]
@@ -327,6 +321,35 @@ For example, the following markup extends that group to include JavaScript files
 </ItemGroup>
 \f[R]
 .fi
+.PP
+Starting in .NET 10, use the \f[V]DefaultItemExcludes\f[R] property to exclude entire folders or file patterns from being watched by \f[V]dotnet watch\f[R].
+This approach is useful when you want to exclude files that aren\[cq]t relevant to compilation or files that trigger unwanted restarts or reloads.
+.PP
+For example, files in the \f[V]App_Data\f[R] folder of ASP.NET Core applications might change while the app runs, causing unnecessary page reloads.
+Exclude this folder from being watched:
+.IP
+.nf
+\f[C]
+<PropertyGroup>
+  <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**</DefaultItemExcludes>
+</PropertyGroup>
+\f[R]
+.fi
+.PP
+Exclude multiple patterns by separating them with semicolons:
+.IP
+.nf
+\f[C]
+<PropertyGroup>
+  <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**;**/temp/**;**/*.log</DefaultItemExcludes>
+</PropertyGroup>
+\f[R]
+.fi
+.PP
+The \f[V]DefaultItemExcludes\f[R] property affects all default item types, like \f[V]Compile\f[R] and \f[V]EmbeddedResource\f[R].
+The \f[V]Watch=\[dq]false\[dq]\f[R] attribute provides finer control over specific files or project references.
+.PP
+For more information, see the DefaultItemExcludes reference.
 .SS Advanced configuration
 .PP
 \f[V]dotnet watch\f[R] performs a design-time build to find items to watch.

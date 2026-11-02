@@ -148,7 +148,7 @@
     </PropertyGroup>
 
     <WriteLinesToFile File="$(_AppHostStateDirectory)roslyn-%(_RoslynAppHost.Filename).inputs"
-                      Lines="$(_AppHostCommonInputs);Assembly=%(_RoslynAppHost.FullPath);CompilerPackage=$(RoslynPackagePath)$(_RoslynEntitlementInput)"
+                      Lines="$(_AppHostCommonInputs);Assembly=%(_RoslynAppHost.FullPath);CompilerPackage=$(RoslynPackagePath);SigningIdentifier=%(_RoslynAppHost.SigningIdentifier)$(_RoslynEntitlementInput)"
                       Overwrite="true"
                       WriteOnlyWhenDifferent="true" />
 
@@ -168,8 +168,8 @@
                    IntermediateAssembly="%(_RoslynAppHost.FullPath)"
                    EnableMacOSCodeSign="false" />
     <!-- Pass paths as environment values so sh does not interpret shell syntax within them. -->
-    <Exec Command="codesign --sign - --force --entitlements &quot;$_SDK_APPHOST_ENTITLEMENTS&quot; &quot;$_SDK_APPHOST_PATH&quot;"
-          EnvironmentVariables="_SDK_APPHOST_ENTITLEMENTS=$(_RoslynEntitlements);_SDK_APPHOST_PATH=$(_RoslynHostToDelete)"
+    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier &quot;$_SDK_APPHOST_IDENTIFIER&quot; --entitlements &quot;$_SDK_APPHOST_ENTITLEMENTS&quot; &quot;$_SDK_APPHOST_PATH&quot;"
+          EnvironmentVariables="_SDK_APPHOST_ENTITLEMENTS=$(_RoslynEntitlements);_SDK_APPHOST_PATH=$(_RoslynHostToDelete);_SDK_APPHOST_IDENTIFIER=%(_RoslynAppHost.SigningIdentifier)"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
     <OnError ExecuteTargets="_DeleteRoslynAppHost" />
   </Target>
@@ -192,7 +192,7 @@
     </PropertyGroup>
 
     <WriteLinesToFile File="$(_AppHostStateDirectory)msbuild-%(_MSBuildAppHost.Filename).inputs"
-                      Lines="$(_AppHostCommonInputs);Assembly=%(_MSBuildAppHost.FullPath);MSBuildVersion=$(MicrosoftBuildVersion)$(_MSBuildEntitlementInput)"
+                      Lines="$(_AppHostCommonInputs);Assembly=%(_MSBuildAppHost.FullPath);MSBuildVersion=$(MicrosoftBuildVersion);SigningIdentifier=%(_MSBuildAppHost.SigningIdentifier)$(_MSBuildEntitlementInput)"
                       Overwrite="true"
                       WriteOnlyWhenDifferent="true" />
 
@@ -207,8 +207,8 @@
                    AppBinaryName="MSBuild.dll"
                    IntermediateAssembly="$(OutputPath)MSBuild.dll"
                    EnableMacOSCodeSign="false" />
-    <Exec Command="codesign --sign - --force --entitlements &quot;$_SDK_APPHOST_ENTITLEMENTS&quot; &quot;$_SDK_APPHOST_PATH&quot;"
-          EnvironmentVariables="_SDK_APPHOST_ENTITLEMENTS=$(_MSBuildEntitlements);_SDK_APPHOST_PATH=$(OutputPath)MSBuild$(ExeExtension)"
+    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier &quot;$_SDK_APPHOST_IDENTIFIER&quot; --entitlements &quot;$_SDK_APPHOST_ENTITLEMENTS&quot; &quot;$_SDK_APPHOST_PATH&quot;"
+          EnvironmentVariables="_SDK_APPHOST_ENTITLEMENTS=$(_MSBuildEntitlements);_SDK_APPHOST_PATH=$(OutputPath)MSBuild$(ExeExtension);_SDK_APPHOST_IDENTIFIER=%(_MSBuildAppHost.SigningIdentifier)"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
     <OnError ExecuteTargets="_DeleteMSBuildAppHost" />
   </Target>
@@ -404,11 +404,15 @@
   </Target>
 
   <Target Name="PublishTestCli">
+    <ItemGroup>
+      <_TestCliEntryPoint Include="$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/net*/vstest.console.dll" />
+    </ItemGroup>
+
+    <Error Condition="'@(_TestCliEntryPoint->Count())' != '1'"
+           Text="Expected exactly one vstest.console.dll under '$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/net*'; found @(_TestCliEntryPoint->Count())." />
+
     <PropertyGroup>
-      <TestCliNuGetDirectoryTargetFramework>net10.0</TestCliNuGetDirectoryTargetFramework>
-      <!-- NetTFMUpdate: Restore $(NetCurrent) when the source-built VSTest CLI targets net12.0. -->
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">net11.0</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectory>$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
+      <TestCliNuGetDirectory>@(_TestCliEntryPoint->'%(RootDir)%(Directory)')</TestCliNuGetDirectory>
     </PropertyGroup>
 
     <ItemGroup>

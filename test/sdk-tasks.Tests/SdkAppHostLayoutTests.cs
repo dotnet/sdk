@@ -213,8 +213,12 @@ public class SdkAppHostLayoutTests : SdkTest
         generated.Values.Should().OnlyContain(text =>
             text.IndexOf("|signed", StringComparison.Ordinal) == text.LastIndexOf("|signed", StringComparison.Ordinal));
         generated.Values.Should().OnlyContain(text => !text.Contains("|ad-hoc-signed", StringComparison.Ordinal));
+        foreach (string host in Hosts)
+        {
+            generated[host].Should().EndWith($"|identifier=com.microsoft.dotnet.{host.ToLowerInvariant()}|signed");
+        }
         string extraHost = File.ReadAllText(project.HostPath("extra"));
-        extraHost.Should().StartWith("extra.dll|").And.EndWith("|signed");
+        extraHost.Should().StartWith("extra.dll|").And.EndWith("|identifier=com.microsoft.dotnet.extra|signed");
 
         project.Build();
         project.ReadHosts().Should().Equal(generated);
@@ -266,6 +270,30 @@ public class SdkAppHostLayoutTests : SdkTest
 
         project.Build();
         project.ReadHosts().Should().Equal(repairedMSBuild);
+
+        project.SwitchSigningIdentifier("csc", "com.microsoft.dotnet.csc.updated");
+        project.Build();
+        Dictionary<string, string> updatedCompilerIdentifier = project.ReadHosts();
+        updatedCompilerIdentifier["csc"].Should().NotBe(repairedMSBuild["csc"])
+            .And.EndWith("|identifier=com.microsoft.dotnet.csc.updated|signed");
+        foreach (string host in Hosts.Where(host => host != "csc"))
+        {
+            updatedCompilerIdentifier[host].Should().Be(repairedMSBuild[host]);
+        }
+        project.Build();
+        project.ReadHosts().Should().Equal(updatedCompilerIdentifier);
+
+        project.SwitchSigningIdentifier("MSBuild", "com.microsoft.dotnet.msbuild.updated");
+        project.Build();
+        Dictionary<string, string> updatedMSBuildIdentifier = project.ReadHosts();
+        updatedMSBuildIdentifier["MSBuild"].Should().NotBe(updatedCompilerIdentifier["MSBuild"])
+            .And.EndWith("|identifier=com.microsoft.dotnet.msbuild.updated|signed");
+        foreach (string host in Hosts.Where(host => host != "MSBuild"))
+        {
+            updatedMSBuildIdentifier[host].Should().Be(updatedCompilerIdentifier[host]);
+        }
+        project.Build();
+        project.ReadHosts().Should().Equal(updatedMSBuildIdentifier);
     }
 
     private static string Escape(string value) => SecurityElement.Escape(value)!;
@@ -355,8 +383,8 @@ public class SdkAppHostLayoutTests : SdkTest
                     <SdkTargetFramework>test-framework</SdkTargetFramework>
                   </PropertyGroup>
                   <ItemGroup>
-                    {{string.Join(Environment.NewLine, compilerHosts.Select(name => $"<_RoslynAppHost Include=\"$(OutputPath)Roslyn\\bincore\\{Escape(name)}.dll\" />"))}}
-                    <_MSBuildAppHost Include="$(OutputPath)MSBuild.dll" />
+                    {{string.Join(Environment.NewLine, compilerHosts.Select(name => $"<_RoslynAppHost Include=\"$(OutputPath)Roslyn\\bincore\\{Escape(name)}.dll\" SigningIdentifier=\"com.microsoft.dotnet.{Escape(name.ToLowerInvariant())}\" />"))}}
+                    <_MSBuildAppHost Include="$(OutputPath)MSBuild.dll" SigningIdentifier="com.microsoft.dotnet.msbuild" />
                   </ItemGroup>
                   <Import Project="GenerateLayout.targets" />
                 </Project>
@@ -374,6 +402,13 @@ public class SdkAppHostLayoutTests : SdkTest
 
         public string AssemblyPath(string name) =>
             name == "MSBuild" ? Path.Combine(OutputDirectory, "MSBuild.dll") : Path.Combine(Root, "packages", "microsoft.net.compilers.toolset", _compilerVersion, "tasks", "netcore", "bincore", name + ".dll");
+
+        public void SwitchSigningIdentifier(string host, string identifier)
+        {
+            File.WriteAllText(_project, File.ReadAllText(_project).Replace(
+                $"SigningIdentifier=\"com.microsoft.dotnet.{host.ToLowerInvariant()}\"",
+                $"SigningIdentifier=\"{Escape(identifier)}\"", StringComparison.Ordinal));
+        }
 
         public void SwitchCompilerVersion(string version)
         {
@@ -497,10 +532,12 @@ public sealed class Exec : Microsoft.Build.Utilities.Task
     {
         const string entitlementsPrefix = "_SDK_APPHOST_ENTITLEMENTS=";
         const string hostPrefix = "_SDK_APPHOST_PATH=";
-        if (Command != "codesign --sign - --force --entitlements \"$_SDK_APPHOST_ENTITLEMENTS\" \"$_SDK_APPHOST_PATH\"" ||
-            EnvironmentVariables.Length != 2 ||
+        const string identifierPrefix = "_SDK_APPHOST_IDENTIFIER=";
+        if (Command != "codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier \"$_SDK_APPHOST_IDENTIFIER\" --entitlements \"$_SDK_APPHOST_ENTITLEMENTS\" \"$_SDK_APPHOST_PATH\"" ||
+            EnvironmentVariables.Length != 3 ||
             !EnvironmentVariables[0].StartsWith(entitlementsPrefix, StringComparison.Ordinal) ||
-            !EnvironmentVariables[1].StartsWith(hostPrefix, StringComparison.Ordinal))
+            !EnvironmentVariables[1].StartsWith(hostPrefix, StringComparison.Ordinal) ||
+            !EnvironmentVariables[2].StartsWith(identifierPrefix, StringComparison.Ordinal))
         {
             Log.LogError($"Invalid signing command or environment: {Command}");
             return false;
@@ -508,9 +545,10 @@ public sealed class Exec : Microsoft.Build.Utilities.Task
 
         string entitlements = EnvironmentVariables[0][entitlementsPrefix.Length..];
         string host = EnvironmentVariables[1][hostPrefix.Length..];
-        if (!File.Exists(entitlements) || !File.Exists(host))
+        string identifier = EnvironmentVariables[2][identifierPrefix.Length..];
+        if (!File.Exists(entitlements) || !File.Exists(host) || string.IsNullOrWhiteSpace(identifier))
         {
-            Log.LogError($"Signing input does not exist: '{entitlements}' or '{host}'.");
+            Log.LogError($"Invalid signing input: '{entitlements}', '{host}', or identifier '{identifier}'.");
             return false;
         }
 
@@ -520,13 +558,18 @@ public sealed class Exec : Microsoft.Build.Utilities.Task
             startInfo.ArgumentList.Add("-c");
             startInfo.ArgumentList.Add("""
                 codesign() {
-                    test "$#" -eq 6 &&
-                    test "$5" = "$_SDK_APPHOST_ENTITLEMENTS" &&
-                    test "$6" = "$_SDK_APPHOST_PATH"
+                    test "$#" -eq 9 &&
+                    test "$4" = "--preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints" &&
+                    test "$5" = "--identifier" &&
+                    test "$6" = "$_SDK_APPHOST_IDENTIFIER" &&
+                    test "$7" = "--entitlements" &&
+                    test "$8" = "$_SDK_APPHOST_ENTITLEMENTS" &&
+                    test "$9" = "$_SDK_APPHOST_PATH"
                 }
                 """ + "\n" + Command);
             startInfo.Environment["_SDK_APPHOST_ENTITLEMENTS"] = entitlements;
             startInfo.Environment["_SDK_APPHOST_PATH"] = host;
+            startInfo.Environment["_SDK_APPHOST_IDENTIFIER"] = identifier;
             using Process process = new() { StartInfo = startInfo };
             process.Start();
             process.WaitForExit();
@@ -544,7 +587,7 @@ public sealed class Exec : Microsoft.Build.Utilities.Task
             return false;
         }
 
-        File.AppendAllText(host, "|signed");
+        File.AppendAllText(host, $"|identifier={identifier}|signed");
         return true;
     }
 }
