@@ -45,10 +45,10 @@ extends:
       os: windows
     stages:
     - stage: PublishToESRP
-      displayName: Publish dotnetup to the CDN
+      displayName: 🚀 Publish dotnetup to the CDN
       jobs:
       - job: Prepare
-        displayName: Validate and stage the signed release
+        displayName: 📦 Validate and stage the signed release
         templateContext:
           mb:
             publish:
@@ -69,7 +69,7 @@ extends:
           fetchTags: false
 
         - task: DownloadBuildArtifacts@1
-          displayName: Download the signed build's blob artifacts
+          displayName: 📥 Download the signed build's blob artifacts
           inputs:
             buildType: specific
             project: internal
@@ -129,14 +129,14 @@ extends:
             } else {
               Write-Host 'Publish will submit these files to ESRP and verify the resulting CDN downloads.'
             }
-          displayName: Validate the build and manifest and stage release files
+          displayName: 🔎 Validate the build and manifest and stage release files
           env:
             SOURCE_BUILD_ID: $(resources.pipeline.dotnetup.runID)
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             SYSTEM_DEBUG: $(System.Debug)
 
       - job: Publish
-        displayName: Publish the prepared release through ESRP
+        displayName: 📤 Publish the prepared release through ESRP
         dependsOn: Prepare
         condition: and(succeeded(), ${{ eq(parameters.dryRun, false) }})
         timeoutInMinutes: 180
@@ -172,7 +172,7 @@ extends:
 
             # Preserve the raw ESRP response for diagnosis, including when publishing failed.
             $env:ESRP_RELEASE_DETAILS | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'esrp-release-details.json')
-          displayName: Retain the ESRP response, including failed releases
+          displayName: 🧾 Retain the ESRP response, including failed releases
           condition: and(succeededOrFailed(), ne(variables['ESRP_RELEASE_DETAILS'], ''))
           env:
             ESRP_RELEASE_DETAILS: $(ESRP_RELEASE_DETAILS)
@@ -202,13 +202,13 @@ extends:
             }
 
             Write-Host 'CDN files verified. No aka.ms links were changed.'
-          displayName: Verify CDN downloads and record release URLs
+          displayName: 🌐 Verify CDN downloads and record release URLs
           env:
             ESRP_RELEASE_DETAILS: $(ESRP_RELEASE_DETAILS)
             SYSTEM_DEBUG: $(System.Debug)
 
         - task: 1ES.PublishPipelineArtifact@1
-          displayName: Retain release metadata and ESRP results
+          displayName: 🗃️ Retain release metadata and ESRP results
           condition: always()
           inputs:
             targetPath: $(ReleaseMetadataDirectory)
