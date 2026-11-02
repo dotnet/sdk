@@ -8,6 +8,7 @@
        Keep the Arcade SDK version in this directory's global.json aligned with the repo-level global.json
        so direct Installer builds use the same targeting-framework support as builds through test projects. -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <Import Project="$(RepoRoot)eng\DotnetupTelemetryPackageVersions.props" />
   <PropertyGroup>
     <!-- Shared version for dotnetup CLI and Microsoft.Dotnet.Installation library. -->
     <DotnetupVersionPrefix>0.3.0</DotnetupVersionPrefix>

@@ -1,4 +1,6 @@
 <Project Sdk="MSTest.Sdk">
+  <!-- dotnetup pins its own telemetry package versions; see the imported file. -->
+  <Import Project="$(RepoRoot)eng\DotnetupTelemetryPackageVersions.props" />
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>

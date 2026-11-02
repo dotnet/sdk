@@ -1,4 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <!-- Keep transitive telemetry packages at the versions dotnetup ships with. -->
+  <Import Project="$(RepoRoot)eng\DotnetupTelemetryPackageVersions.props" />
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
