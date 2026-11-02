@@ -210,6 +210,8 @@ public class SdkAppHostLayoutTests : SdkTest
         project.Build();
         Dictionary<string, string> generated = project.ReadHosts();
         generated.Values.Should().OnlyContain(text => text.EndsWith("|signed", StringComparison.Ordinal));
+        generated.Values.Should().OnlyContain(text =>
+            text.IndexOf("|signed", StringComparison.Ordinal) == text.LastIndexOf("|signed", StringComparison.Ordinal));
         generated.Values.Should().OnlyContain(text => !text.Contains("|ad-hoc-signed", StringComparison.Ordinal));
         string extraHost = File.ReadAllText(project.HostPath("extra"));
         extraHost.Should().StartWith("extra.dll|").And.EndWith("|signed");
@@ -243,6 +245,27 @@ public class SdkAppHostLayoutTests : SdkTest
         project.Build();
         File.ReadAllText(project.HostPath("extra")).Should().NotBe(extraHost).And.EndWith("|signed");
         project.ReadHosts().Should().Equal(repaired);
+
+        File.Delete(project.HostPath("MSBuild"));
+        File.WriteAllText(failureFile, "MSBuild");
+        project.Build(success: false).Should().Contain("Simulated signing failure");
+        File.Exists(project.HostPath("MSBuild")).Should().BeFalse();
+        foreach (string host in Hosts.Where(host => host != "MSBuild"))
+        {
+            File.ReadAllText(project.HostPath(host)).Should().Be(repaired[host]);
+        }
+
+        File.Delete(failureFile);
+        project.Build();
+        Dictionary<string, string> repairedMSBuild = project.ReadHosts();
+        repairedMSBuild["MSBuild"].Should().NotBe(repaired["MSBuild"]).And.EndWith("|signed");
+        foreach (string host in Hosts.Where(host => host != "MSBuild"))
+        {
+            repairedMSBuild[host].Should().Be(repaired[host]);
+        }
+
+        project.Build();
+        project.ReadHosts().Should().Equal(repairedMSBuild);
     }
 
     private static string Escape(string value) => SecurityElement.Escape(value)!;
