@@ -73,6 +73,7 @@ sealed file class ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection
     /// would fail to find the <see cref="IProjectRootElement"/> in the cache and try to load it from disk,
     /// resulting in MSB4025 because the virtual project file does not exist on disk.
     /// See <see href="https://github.com/dotnet/sdk/issues/52714"/>.
+    /// Access is synchronized by locking this dictionary directly.
     /// </summary>
     private readonly Dictionary<string, Microsoft.Build.Construction.ProjectRootElement> _projectRootElements = new(StringComparer.OrdinalIgnoreCase);
 
@@ -90,7 +91,8 @@ sealed file class ProjectCollection(Microsoft.Build.Evaluation.ProjectCollection
             // FullPath registers the root in MSBuild's cache, so registration and retention must share this lock.
             projectRootElement.FullPath = fullPath;
 
-            // An unchanged FullPath does not replace MSBuild's cached root.
+            // Compare after assignment because FullPath normalizes the input before checking for a no-op.
+            // An unchanged normalized path does not replace MSBuild's cached root.
             if (!string.Equals(previousFullPath, projectRootElement.FullPath, StringComparison.OrdinalIgnoreCase))
             {
                 _projectRootElements[entryPointFilePath] = projectRootElement;
