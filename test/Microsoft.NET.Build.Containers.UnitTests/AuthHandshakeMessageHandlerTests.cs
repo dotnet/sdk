@@ -1215,6 +1215,12 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         [DataRow("https://10.0.0.7/token")]
         [DataRow("https://127.0.0.1/token")]
         [DataRow("https://localhost/token")]
+        [DataRow("https://[::ffff:127.0.0.1]/token")]
+        [DataRow("https://[::ffff:169.254.169.254]/token")]
+        [DataRow("https://127\uFF0E0\uFF0E0\uFF0E1/token")]
+        [DataRow("https://169\uFF0E254\uFF0E169\uFF0E254/token")]
+        [DataRow("https://10\uFF0E0\uFF0E0\uFF0E5/token")]
+        [DataRow("https://127\u30020\u30020\u30021/token")]
         public async Task SendAsync_ThrowsOnInternalBearerRealm_WithDefaultPolicy(string realm)
         {
             // Use a unique registry name to avoid contamination from the static auth header cache.

@@ -136,6 +136,30 @@ public class AuthRealmHandlerFactoryTests
         }
     }
 
+    [TestMethod]
+    [DataRow("[::ffff:127.0.0.1]")]
+    [DataRow("127\uFF0E0\uFF0E0\uFF0E1")]
+    [DataRow("127\u30020\u30020\u30021")]
+    public async Task Create_RejectsNormalizedLoopbackBeforeConnecting(string host)
+    {
+        using TcpListener listener = new(IPAddress.Loopback, 0);
+        listener.Start();
+        Uri realmUri = new($"http://{host}:{((IPEndPoint)listener.LocalEndpoint).Port}/token");
+        IPAddress[] addresses = await Dns.GetHostAddressesAsync(realmUri.IdnHost.Trim('[', ']'), TestContext.CancellationToken);
+        Assert.IsNotEmpty(addresses);
+        Assert.IsTrue(addresses.All(IPAddress.IsLoopback));
+
+        AuthRealmHandlerFactory factory = CreateFactory(policyValue: null, allowedAddresses: null, isInsecureRegistry: true);
+        using var client = new HttpMessageInvoker(factory.Create(realmUri));
+
+        InvalidAuthResponseException exception = await Assert.ThrowsExactlyAsync<InvalidAuthResponseException>(
+            () => client.SendAsync(new HttpRequestMessage(HttpMethod.Get, realmUri), TestContext.CancellationToken));
+
+        Assert.IsInstanceOfType<AntiSSRFException>(exception.InnerException);
+        Assert.Contains("CONTAINER1019", exception.Message);
+        Assert.IsFalse(listener.Pending());
+    }
+
     /// <summary>
     /// Verifies that the policy applies to each connection, not only the initial realm: a redirect
     /// from an allowed realm to a blocked address is refused before connecting.
