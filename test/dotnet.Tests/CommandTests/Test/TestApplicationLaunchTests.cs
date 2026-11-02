@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
@@ -238,9 +239,9 @@ public sealed class TestApplicationLaunchTests
         properties[26].Should().Be("http");
         properties[27].Should().Be("chunked-v1");
         properties[28].Should().Be("1048576");
-        properties[29].Should().Be(FileArtifactTransferLimits.Default.MaximumFileBytes.ToString());
-        properties[30].Should().Be(FileArtifactTransferLimits.Default.MaximumModuleBytes.ToString());
-        properties[31].Should().Be(FileArtifactTransferLimits.Default.MaximumFileCount.ToString());
+        properties[29].Should().Be(FileArtifactTransferLimits.Default.MaximumFileBytes.ToString(CultureInfo.InvariantCulture));
+        properties[30].Should().Be(FileArtifactTransferLimits.Default.MaximumModuleBytes.ToString(CultureInfo.InvariantCulture));
+        properties[31].Should().Be(FileArtifactTransferLimits.Default.MaximumFileCount.ToString(CultureInfo.InvariantCulture));
         properties.Should().NotContainKey(HandshakeMessagePropertyNames.ServerControlPipeName);
         foreach (byte retired in new byte[] { 21, 22, 23, 24, 25 })
         {

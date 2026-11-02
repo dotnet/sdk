@@ -1050,7 +1050,7 @@ internal sealed class TestApplication(
         }
 
         if (version.Length > 0
-            && artifactPostProcessingManager?.IsEnabled == true
+            && _artifactPostProcessingManager?.IsEnabled == true
             && !TestOptions.IsArtifactPostProcessing
             && !RequiresHttpTransport(Module)
             && MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
