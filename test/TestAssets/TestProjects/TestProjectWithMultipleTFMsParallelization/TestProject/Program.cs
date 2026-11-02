@@ -1,4 +1,5 @@
-﻿using Microsoft.Testing.Platform.Builder;
+﻿using System.Diagnostics;
+using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Capabilities.TestFramework;
 using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.Extensions.TestFramework;
@@ -43,40 +44,45 @@ namespace TestProjectWithNetFM
 
 		public async Task ExecuteRequestAsync(ExecuteRequestContext context)
 		{
-			string markerDirectory = Environment.GetEnvironmentVariable("DOTNET_TEST_PARALLELIZATION_DIRECTORY")
-				?? throw new InvalidOperationException("DOTNET_TEST_PARALLELIZATION_DIRECTORY must be set.");
-			string markerPath = Path.Combine(markerDirectory, $"test-run-{Environment.ProcessId}.marker");
-			File.WriteAllText(markerPath, string.Empty);
-			try
+			var currentProcess = Process.GetCurrentProcess();
+			var processPath = currentProcess.MainModule?.FileName;
+			if (processPath is null)
 			{
-				await Task.Delay(5000);
-
-				// Only inspect this test's active TFM runs, not unrelated or exiting OS processes.
-				if (Directory.EnumerateFiles(markerDirectory, "test-run-*.marker").Any(path => path != markerPath))
+				await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
 				{
-					await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
-					{
-						Uid = "Test0",
-						DisplayName = "Test0",
-						Properties = new PropertyBag(new FailedTestNodeStateProperty(new Exception("This is run in parallel!"), "")),
-					}));
-				}
-				else
-				{
-					await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
-					{
-						Uid = "Test0",
-						DisplayName = "Test0",
-						Properties = new PropertyBag(new PassedTestNodeStateProperty("OK")),
-					}));
-				}
+					Uid = "Test0",
+					DisplayName = "Test0",
+					Properties = new PropertyBag(new FailedTestNodeStateProperty(new Exception("Process path is null"), "")),
+				}));
 
-				await Task.Delay(5000);
+				context.Complete();
+				return;
 			}
-			finally
+
+			await Task.Delay(5000);
+			
+			var processes = Process.GetProcessesByName(currentProcess.ProcessName);
+			var pathPrefix = Path.GetDirectoryName(Path.GetDirectoryName(processPath));
+			if (processes.Where(p => p.Id != Process.GetCurrentProcess().Id && p.MainModule is not null && p.MainModule.FileName.StartsWith(pathPrefix!)).Any())
 			{
-				File.Delete(markerPath);
+                await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
+                {
+                    Uid = "Test0",
+                    DisplayName = "Test0",
+                    Properties = new PropertyBag(new FailedTestNodeStateProperty(new Exception("This is run in parallel!"), "")),
+                }));
 			}
+			else
+			{
+                await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
+                {
+                    Uid = "Test0",
+                    DisplayName = "Test0",
+                    Properties = new PropertyBag(new PassedTestNodeStateProperty("OK")),
+                }));
+            }
+
+			await Task.Delay(5000);
 
 			context.Complete();
 		}

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
-    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>

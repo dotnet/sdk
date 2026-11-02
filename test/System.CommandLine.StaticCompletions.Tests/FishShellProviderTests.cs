@@ -110,38 +110,28 @@ public class FishShellProviderTests : VerifyMSTest.VerifyBase
     }
 
     [TestMethod]
-    public async Task WindowsStyleAliasesAreFilteredOut()
+    public async Task MixedArityOptions()
     {
-        // Options with Windows-style aliases (starting with '/') should not appear in fish completions
-        var flagOption = new Option<bool>("--verbose", "/v", "-v")
-        {
-            Arity = ArgumentArity.Zero
-        };
-        var valueOption = new Option<string>("--verbosity", "/verbosity", "-verbosity", "-v")
-        {
-            Description = "Set verbosity level"
-        };
-        valueOption.AcceptOnlyFromAmong("quiet", "normal", "detailed");
-        Command command = new Command("mycommand")
-        {
-            flagOption,
-            valueOption,
-            new Command("subcommand")
-        };
-        await provider.Verify(command, TestContext);
-    }
+        var singleOption = new Option<string>("--config");
+        singleOption.AcceptOnlyFromAmong("debug", "release");
 
-    [TestMethod]
-    public async Task WindowsStyleValueAliasesAreRecognizedByStateWalker()
-    {
-        var verbosityOption = new Option<string>("--verbosity", "/verbosity")
+        var multiOption = new Option<string[]>("--framework", "-f")
         {
-            Description = "Set verbosity level"
+            Arity = new ArgumentArity(1, 3)
         };
+        multiOption.AcceptOnlyFromAmong("net8.0", "net9.0", "net10.0");
+
+        var unboundedOption = new Option<string[]>("--sources")
+        {
+            Arity = ArgumentArity.OneOrMore
+        };
+
         Command command = new Command("mycommand")
         {
-            verbosityOption,
-            new Command("quiet")
+            singleOption,
+            multiOption,
+            unboundedOption,
+            new Command("build")
         };
         await provider.Verify(command, TestContext);
     }

@@ -6,7 +6,6 @@
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
     <PackageId>testSdkILLink</PackageId>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

@@ -34,6 +34,7 @@ Log($"Key is '{publicKey}'.");
 
 var secret = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
 var encryptedSecret = GetEncryptedSecret(publicKey, secret);
+var connected = false;
 
 while (true)
 {
@@ -42,12 +43,21 @@ while (true)
     {
         webSocket = await OpenWebSocket(origin, webSocketUrl, encryptedSecret);
     }
+    catch (WebSocketException e) when (connected && e.InnerException is HttpRequestException { HttpRequestError: HttpRequestError.ConnectionError })
+    {
+        // The stopping application can still serve the config before its listener closes.
+        Log($"Waiting to reconnect to '{webSocketUrl}': {e.Message}");
+        await Task.Delay(100);
+        await WaitForApplicationAsync(configUrl);
+        continue;
+    }
     catch (Exception e) when (e is not OperationCanceledException)
     {
         Log($"Error connecting to '{webSocketUrl}': {e.Message}");
         return -1;
     }
 
+    connected = true;
     using (webSocket)
     {
         while (await TryReceiveMessageAsync(webSocket, message =>
@@ -84,8 +94,16 @@ static async Task<WebSocket> OpenWebSocket(string origin, string url, string enc
         webSocket.Options.SetRequestHeader("Origin", origin);
     }
 
-    await webSocket.ConnectAsync(new Uri(url), CancellationToken.None);
-    return webSocket;
+    try
+    {
+        await webSocket.ConnectAsync(new Uri(url), CancellationToken.None);
+        return webSocket;
+    }
+    catch
+    {
+        webSocket.Dispose();
+        throw;
+    }
 }
 
 // The provider withholds live messages until the session initialization message is acknowledged and

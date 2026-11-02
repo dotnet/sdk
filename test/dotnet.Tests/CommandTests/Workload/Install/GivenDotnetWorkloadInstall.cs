@@ -46,6 +46,28 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [TestMethod]
+        public void GivenWorkloadInstallItGracefullyErrorsOnInvalidWorkloadName()
+        {
+            const string invalidWorkloadId = "../fake";
+            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+            var dotnetRoot = Path.Combine(testDirectory, "dotnet");
+            var workloadResolver = WorkloadResolver.CreateForTests(new MockManifestProvider(new[] { _manifestPath }), dotnetRoot);
+            var workloadResolverFactory = new MockWorkloadResolverFactory(dotnetRoot, "6.0.100", workloadResolver);
+            var parseResult = Parser.Parse(["dotnet", "workload", "install", invalidWorkloadId, "--skip-manifest-update"]);
+            var command = new WorkloadInstallCommand(
+                parseResult,
+                reporter: _reporter,
+                workloadResolverFactory,
+                workloadInstaller: new MockPackWorkloadInstaller(),
+                nugetPackageDownloader: new MockNuGetPackageDownloader(dotnetRoot),
+                workloadManifestUpdater: new MockWorkloadManifestUpdater(),
+                tempDirPath: testDirectory);
+
+            var exceptionThrown = Assert.ThrowsExactly<GracefulException>(() => command.Execute());
+            exceptionThrown.Message.Should().Be(string.Format(CliCommandStrings.WorkloadNotRecognized, invalidWorkloadId));
+        }
+
+        [TestMethod]
         public void ItErrorUsingSkipManifestAndRollback()
         {
             var command = new DotnetCommand(Log);
@@ -606,8 +628,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [Ignore("https://github.com/dotnet/sdk/issues/25175")]
         [DataRow("--verbosity:minimal")]
         [DataRow("--verbosity:normal")]
-        [DataRow("--verbosity:detailed")]
-        public void HideManifestUpdatesWhenVerbosityIsNonDiagnostic(string verbosityFlag)
+        public void HideManifestUpdatesWhenVerbosityIsMinimalOrNormal(string verbosityFlag)
         {
             var command = new DotnetCommand(Log);
             command
@@ -622,8 +643,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
         [TestMethod]
         [Ignore("https://github.com/dotnet/sdk/issues/25175")]
+        [DataRow("--verbosity:detailed")]
         [DataRow("--verbosity:diagnostic")]
-        public void ShowManifestUpdatesWhenVerbosityIsDiagnostic(string verbosityFlag)
+        public void ShowManifestUpdatesWhenVerbosityIsDetailedOrDiagnostic(string verbosityFlag)
         {
             string sdkFeatureBand = "6.0.300";
 

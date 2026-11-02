@@ -36,8 +36,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
         [TestMethod]
         [Ignore("https://github.com/dotnet/sdk/issues/42346")]
-        // CurrentDirectory is process-wide and is read by code throughout this project that cannot participate in a resource lock.
-        [DoNotParallelize]
         public void WhenRunWithRoot()
         {
             Directory.CreateDirectory("/tmp/folder/sub");

@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// This task is replicated in dotnet/runtime at src/tasks/Crossgen2Tasks/RunReadyToRunCompiler.cs.
-// Keep both copies synchronized.
-
 #nullable disable
 
 using Microsoft.Build.Framework;
@@ -382,10 +379,9 @@ namespace Microsoft.NET.Build.Tasks
                 result.AppendLine("--partial");
             }
 
-            // Emit --composite for composite images, or for non-PE container formats that can only
-            // carry metadata in a composite manifest. The wasm container format wraps a per-assembly
-            // manifest, so it does not require (and must not be forced into) composite compilation.
-            if (_createCompositeImage || (!string.IsNullOrEmpty(Crossgen2ContainerFormat) && Crossgen2ContainerFormat != "pe" && Crossgen2ContainerFormat != "wasm"))
+            // Emit --composite for composite images, or for non-PE container formats
+            // (we only support PE as the envelope for metadata).
+            if (_createCompositeImage || (!string.IsNullOrEmpty(Crossgen2ContainerFormat) && Crossgen2ContainerFormat != "pe"))
             {
                 result.AppendLine("--composite");
 

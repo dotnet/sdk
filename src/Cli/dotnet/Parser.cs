@@ -237,10 +237,6 @@ public static class Parser
         // reuse a synthetic CSC cache or a validated cached run contract. Other shapes fall back.
         AotRunCommand.ConfigureCommand(rootCommand.RunCommand);
 
-        // Build-free Microsoft.Testing.Platform invocations over explicit --test-modules run in AOT.
-        // Project, solution, file-based, VSTest, and unsupported option shapes retain managed fallback.
-        AotTestCommand.ConfigureCommand(rootCommand.TestCommand);
-
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);
         rootCommand.CliSchemaOption.Action = new PrintCliSchemaAction(rootCommand.CliSchemaOption);
@@ -476,10 +472,7 @@ public static class Parser
             }
             else if (command is MSBuildCommandDefinition)
             {
-                new MSBuildForwardingApp(
-                    MSBuildArgs.ForHelp,
-                    msbuildPath: null,
-                    CommandServices.CreateDefault()).Execute();
+                new MSBuildForwardingApp(MSBuildArgs.ForHelp).Execute();
                 context.Output.WriteLine();
                 additionalOption(context);
             }

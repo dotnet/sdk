@@ -18,32 +18,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExistsAsync()
         {
-            var code = """
+            var code = @"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+internal static class NativeMethods
+{
+    [DllImport(""native.dll"")]
+    internal static extern IntPtr AllocateResource();
+}
 
-                internal static class NativeMethods
-                {
-                    [DllImport("native.dll")]
-                    internal static extern IntPtr AllocateResource();
-                }
+public class A : IDisposable
+{
+    private readonly IntPtr _pi;
 
-                public class A : IDisposable
-                {
-                    private readonly IntPtr _pi;
+    public A()
+    {
+        _pi = NativeMethods.AllocateResource();
+    }
 
-                    public A()
-                    {
-                        _pi = NativeMethods.AllocateResource();
-                    }
-
-                    public void Dispose()
-                    {
-                    }
-                }
-
-                """;
+    public void Dispose()
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpDiagnostic(11, 14));
         }
@@ -51,31 +49,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task BasicDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExistsAsync()
         {
-            var code = """
+            var code = @"
+Imports System
+Imports System.Runtime.InteropServices
 
-                Imports System
-                Imports System.Runtime.InteropServices
+Friend Class NativeMethods
+    <DllImport(""native.dll"")>
+    Friend Shared Function AllocateResource() As IntPtr
+    End Function
+End Class
 
-                Friend Class NativeMethods
-                    <DllImport("native.dll")>
-                    Friend Shared Function AllocateResource() As IntPtr
-                    End Function
-                End Class
+Public Class A
+    Implements IDisposable
 
-                Public Class A
-                    Implements IDisposable
+    Private ReadOnly _pi As IntPtr
 
-                    Private ReadOnly _pi As IntPtr
+    Public Sub New()
+        _pi = NativeMethods.AllocateResource()
+    End Sub
 
-                    Public Sub New()
-                        _pi = NativeMethods.AllocateResource()
-                    End Sub
-
-                    Public Sub Dispose() Implements IDisposable.Dispose
-                    End Sub
-                End Class
-
-                """;
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicDiagnostic(11, 14));
         }
@@ -83,269 +79,267 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExistsAsync()
         {
-            var code = """
-                using System;
-                using System.Runtime.InteropServices;
+            var code = @"
+using System;
+using System.Runtime.InteropServices;
 
-                internal static class NativeMethods
-                {
-                    [DllImport("native.dll")]
-                    internal static extern IntPtr AllocateResource();
-                }
+internal static class NativeMethods
+{
+    [DllImport(""native.dll"")]
+    internal static extern IntPtr AllocateResource();
+}
 
-                public class A : IDisposable
-                {
-                    private readonly IntPtr _pi;
+public class A : IDisposable
+{
+    private readonly IntPtr _pi;
 
-                    public A()
-                    {
-                        _pi = NativeMethods.AllocateResource();
-                    }
+    public A()
+    {
+        _pi = NativeMethods.AllocateResource();
+    }
 
-                    public void Dispose()
-                    {
-                    }
+    public void Dispose()
+    {
+    }
 
-                    ~A()
-                    {
-                    }
-                }
-                """;
+    ~A()
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExistsAsync()
         {
-            var code = """
-                Imports System
-                Imports System.Runtime.InteropServices
+            var code = @"
+Imports System
+Imports System.Runtime.InteropServices
 
-                Friend Class NativeMethods
-                    <DllImport("native.dll")>
-                    Friend Shared Function AllocateResource() As IntPtr
-                    End Function
-                End Class
+Friend Class NativeMethods
+    <DllImport(""native.dll"")>
+    Friend Shared Function AllocateResource() As IntPtr
+    End Function
+End Class
 
-                Public Class A
-                    Implements IDisposable
+Public Class A
+    Implements IDisposable
 
-                    Private ReadOnly _pi As IntPtr
+    Private ReadOnly _pi As IntPtr
 
-                    Public Sub New()
-                        _pi = NativeMethods.AllocateResource()
-                    End Sub
+    Public Sub New()
+        _pi = NativeMethods.AllocateResource()
+    End Sub
 
-                    Public Sub Dispose() Implements IDisposable.Dispose
-                    End Sub
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
 
-                    Protected Overrides Sub Finalize()
-                    End Sub
-                End Class
-                """;
+    Protected Overrides Sub Finalize()
+    End Sub
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCodeAsync()
         {
-            var code = """
-                using System;
-                using System.Runtime.InteropServices;
+            var code = @"
+using System;
+using System.Runtime.InteropServices;
 
-                internal static class NativeMethods
-                {
-                    [DllImport("native.dll")]
-                    internal static extern IntPtr AllocateResource();
-                }
+internal static class NativeMethods
+{
+    [DllImport(""native.dll"")]
+    internal static extern IntPtr AllocateResource();
+}
 
-                public struct A : IDisposable // Although disposable structs are evil
-                {
-                    private readonly IntPtr _pi;
+public struct A : IDisposable // Although disposable structs are evil
+{
+    private readonly IntPtr _pi;
 
-                    public A(int i)
-                    {
-                        _pi = NativeMethods.AllocateResource();
-                    }
+    public A(int i)
+    {
+        _pi = NativeMethods.AllocateResource();
+    }
 
-                    public void Dispose()
-                    {
-                    }
-                }
-                """;
+    public void Dispose()
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCodeAsync()
         {
-            var code = """
-                Imports System
-                Imports System.Runtime.InteropServices
+            var code = @"
+Imports System
+Imports System.Runtime.InteropServices
 
-                Friend Class NativeMethods
-                    <DllImport("native.dll")>
-                    Friend Shared Function AllocateResource() As IntPtr
-                    End Function
-                End Class
+Friend Class NativeMethods
+    <DllImport(""native.dll"")>
+    Friend Shared Function AllocateResource() As IntPtr
+    End Function
+End Class
 
-                Public Structure A
-                    Implements IDisposable ' Although disposable structs are evil
+Public Structure A
+    Implements IDisposable ' Although disposable structs are evil
 
-                    Private ReadOnly _pi As IntPtr
+    Private ReadOnly _pi As IntPtr
 
-                    Public Sub New(i As Integer)
-                        _pi = NativeMethods.AllocateResource()
-                    End Sub
+    Public Sub New(i As Integer)
+        _pi = NativeMethods.AllocateResource()
+    End Sub
 
-                    Public Sub Dispose() Implements IDisposable.Dispose
-                    End Sub
-                End Structure
-                """;
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Structure
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCodeAsync()
         {
-            var code = """
-                using System;
-                using System.Runtime.InteropServices;
+            var code = @"
+using System;
+using System.Runtime.InteropServices;
 
-                internal static class NativeMethods
-                {
-                    [DllImport("native.dll")]
-                    internal static extern IntPtr AllocateResource();
-                }
+internal static class NativeMethods
+{
+    [DllImport(""native.dll"")]
+    internal static extern IntPtr AllocateResource();
+}
 
-                public class A
-                {
-                    private readonly IntPtr _pi;
+public class A
+{
+    private readonly IntPtr _pi;
 
-                    public A()
-                    {
-                        _pi = NativeMethods.AllocateResource();
-                    }
-                }
-                """;
+    public A()
+    {
+        _pi = NativeMethods.AllocateResource();
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCodeAsync()
         {
-            var code = """
-                Imports System
-                Imports System.Runtime.InteropServices
+            var code = @"
+Imports System
+Imports System.Runtime.InteropServices
 
-                Friend Class NativeMethods
-                    <DllImport("native.dll")>
-                    Friend Shared Function AllocateResource() As IntPtr
-                    End Function
-                End Class
+Friend Class NativeMethods
+    <DllImport(""native.dll"")>
+    Friend Shared Function AllocateResource() As IntPtr
+    End Function
+End Class
 
-                Public Class A
-                    Private ReadOnly _pi As IntPtr
+Public Class A
+    Private ReadOnly _pi As IntPtr
 
-                    Public Sub New()
-                        _pi = NativeMethods.AllocateResource()
-                    End Sub
+    Public Sub New()
+        _pi = NativeMethods.AllocateResource()
+    End Sub
 
-                    Public Sub Dispose()
-                    End Sub
-                End Class
-                """;
+    Public Sub Dispose()
+    End Sub
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCodeAsync()
         {
-            var code = """
-                using System;
+            var code = @"
+using System;
 
-                internal static class ManagedMethods
-                {
-                    internal static IntPtr AllocateResource()
-                    {
-                        return IntPtr.Zero;
-                    }
-                }
+internal static class ManagedMethods
+{
+    internal static IntPtr AllocateResource()
+    {
+        return IntPtr.Zero;
+    }
+}
 
-                public class A : IDisposable
-                {
-                    private readonly IntPtr _pi;
+public class A : IDisposable
+{
+    private readonly IntPtr _pi;
 
-                    public A()
-                    {
-                        _pi = ManagedMethods.AllocateResource();
-                    }
+    public A()
+    {
+        _pi = ManagedMethods.AllocateResource();
+    }
 
-                    public void Dispose()
-                    {
-                    }
-                }
-                """;
+    public void Dispose()
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCodeAsync()
         {
-            var code = """
-                Imports System
+            var code = @"
+Imports System
 
-                Friend NotInheritable Class ManagedMethods
-                    Friend Shared Function AllocateResource() As IntPtr
-                        Return IntPtr.Zero
-                    End Function
-                End Class
+Friend NotInheritable Class ManagedMethods
+    Friend Shared Function AllocateResource() As IntPtr
+        Return IntPtr.Zero
+    End Function
+End Class
 
-                Public Class A
-                    Implements IDisposable
+Public Class A
+    Implements IDisposable
 
-                    Private ReadOnly _pi As IntPtr
+    Private ReadOnly _pi As IntPtr
 
-                    Public Sub New()
-                        _pi = ManagedMethods.AllocateResource()
-                    End Sub
+    Public Sub New()
+        _pi = ManagedMethods.AllocateResource()
+    End Sub
 
-                    Public Overloads Sub Dispose() Implements IDisposable.Dispose
-                    End Sub
-                End Class
-                """;
+    Public Overloads Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task CSharpDiagnosticIfUIntPtrFieldIsAssignedFromNativeCodeAsync()
         {
-            var code = """
+            var code = @"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+internal static class NativeMethods
+{
+    [DllImport(""native.dll"")]
+    internal static extern UIntPtr AllocateResource();
+}
 
-                internal static class NativeMethods
-                {
-                    [DllImport("native.dll")]
-                    internal static extern UIntPtr AllocateResource();
-                }
+public class A : IDisposable
+{
+    private readonly UIntPtr _pu;
 
-                public class A : IDisposable
-                {
-                    private readonly UIntPtr _pu;
+    public A()
+    {
+        _pu = NativeMethods.AllocateResource();
+    }
 
-                    public A()
-                    {
-                        _pu = NativeMethods.AllocateResource();
-                    }
-
-                    public void Dispose()
-                    {
-                    }
-                }
-
-                """;
+    public void Dispose()
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpDiagnostic(11, 14));
         }
@@ -353,31 +347,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task BasicDiagnosticIfUIntPtrFieldIsAssignedFromNativeCodeAsync()
         {
-            var code = """
+            var code = @"
+Imports System
+Imports System.Runtime.InteropServices
 
-                Imports System
-                Imports System.Runtime.InteropServices
+Friend Class NativeMethods
+    <DllImport(""native.dll"")>
+    Friend Shared Function AllocateResource() As UIntPtr
+    End Function
+End Class
 
-                Friend Class NativeMethods
-                    <DllImport("native.dll")>
-                    Friend Shared Function AllocateResource() As UIntPtr
-                    End Function
-                End Class
+Public Class A
+    Implements IDisposable
 
-                Public Class A
-                    Implements IDisposable
+    Private ReadOnly _pu As UIntPtr
 
-                    Private ReadOnly _pu As UIntPtr
+    Public Sub New()
+        _pu = NativeMethods.AllocateResource()
+    End Sub
 
-                    Public Sub New()
-                        _pu = NativeMethods.AllocateResource()
-                    End Sub
-
-                    Public Sub Dispose() Implements IDisposable.Dispose
-                    End Sub
-                End Class
-
-                """;
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicDiagnostic(11, 14));
         }
@@ -385,32 +377,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CSharpDiagnosticIfHandleRefFieldIsAssignedFromNativeCodeAsync()
         {
-            var code = """
+            var code = @"
+using System;
+using System.Runtime.InteropServices;
 
-                using System;
-                using System.Runtime.InteropServices;
+internal static class NativeMethods
+{
+    [DllImport(""native.dll"")]
+    internal static extern HandleRef AllocateResource();
+}
 
-                internal static class NativeMethods
-                {
-                    [DllImport("native.dll")]
-                    internal static extern HandleRef AllocateResource();
-                }
+public class A : IDisposable
+{
+    private readonly HandleRef _hr;
 
-                public class A : IDisposable
-                {
-                    private readonly HandleRef _hr;
+    public A()
+    {
+        _hr = NativeMethods.AllocateResource();
+    }
 
-                    public A()
-                    {
-                        _hr = NativeMethods.AllocateResource();
-                    }
-
-                    public void Dispose()
-                    {
-                    }
-                }
-
-                """;
+    public void Dispose()
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code,
                 GetCSharpDiagnostic(11, 14));
         }
@@ -418,31 +408,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task BasicDiagnosticIfHandleRefFieldIsAssignedFromNativeCodeAsync()
         {
-            var code = """
+            var code = @"
+Imports System
+Imports System.Runtime.InteropServices
 
-                Imports System
-                Imports System.Runtime.InteropServices
+Friend Class NativeMethods
+    <DllImport(""native.dll"")>
+    Friend Shared Function AllocateResource() As HandleRef
+    End Function
+End Class
 
-                Friend Class NativeMethods
-                    <DllImport("native.dll")>
-                    Friend Shared Function AllocateResource() As HandleRef
-                    End Function
-                End Class
+Public Class A
+    Implements IDisposable
 
-                Public Class A
-                    Implements IDisposable
+    Private ReadOnly _hr As HandleRef
 
-                    Private ReadOnly _hr As HandleRef
+    Public Sub New()
+        _hr = NativeMethods.AllocateResource()
+    End Sub
 
-                    Public Sub New()
-                        _hr = NativeMethods.AllocateResource()
-                    End Sub
-
-                    Public Sub Dispose() Implements IDisposable.Dispose
-                    End Sub
-                End Class
-
-                """;
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code,
                 GetBasicDiagnostic(11, 14));
         }
@@ -450,59 +438,59 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CSharpNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCodeAsync()
         {
-            var code = """
-                using System;
-                using System.Runtime.InteropServices;
+            var code = @"
+using System;
+using System.Runtime.InteropServices;
 
-                internal static class NativeMethods
-                {
-                    [DllImport("native.dll")]
-                    internal static extern int AllocateResource();
-                }
+internal static class NativeMethods
+{
+    [DllImport(""native.dll"")]
+    internal static extern int AllocateResource();
+}
 
-                public class A : IDisposable
-                {
-                    private readonly int _i;
+public class A : IDisposable
+{
+    private readonly int _i;
 
-                    public A()
-                    {
-                        _i = NativeMethods.AllocateResource();
-                    }
+    public A()
+    {
+        _i = NativeMethods.AllocateResource();
+    }
 
-                    public void Dispose()
-                    {
-                    }
-                }
-                """;
+    public void Dispose()
+    {
+    }
+}
+";
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
         public async Task BasicNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCodeAsync()
         {
-            var code = """
-                Imports System
-                Imports System.Runtime.InteropServices
+            var code = @"
+Imports System
+Imports System.Runtime.InteropServices
 
-                Friend Class NativeMethods
-                    <DllImport("native.dll")>
-                    Friend Shared Function AllocateResource() As Integer
-                    End Function
-                End Class
+Friend Class NativeMethods
+    <DllImport(""native.dll"")>
+    Friend Shared Function AllocateResource() As Integer
+    End Function
+End Class
 
-                Public Class A
-                    Implements IDisposable
+Public Class A
+    Implements IDisposable
 
-                    Private ReadOnly _i As Integer
+    Private ReadOnly _i As Integer
 
-                    Public Sub New()
-                        _i = NativeMethods.AllocateResource()
-                    End Sub
+    Public Sub New()
+        _i = NativeMethods.AllocateResource()
+    End Sub
 
-                    Public Sub Dispose() Implements IDisposable.Dispose
-                    End Sub
-                End Class
-                """;
+    Public Sub Dispose() Implements IDisposable.Dispose
+    End Sub
+End Class
+";
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 

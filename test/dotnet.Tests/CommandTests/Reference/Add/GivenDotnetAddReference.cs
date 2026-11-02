@@ -133,12 +133,12 @@ Commands:
         [TestMethod]
         public void WhenTooManyArgumentsArePassedItPrintsError()
         {
-            var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
-            File.WriteAllText(Path.Combine(testDirectory, "proj.csproj"), string.Empty);
-
+            if (!File.Exists("proj.csproj"))
+            {
+                File.Create("proj.csproj");
+            }
             var cmd = new DotnetCommand(Log, "add", "one", "two", "three", "reference")
-                .WithWorkingDirectory(testDirectory)
-                .Execute("proj.csproj");
+                    .Execute("proj.csproj");
             cmd.ExitCode.Should().NotBe(0);
             cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CliStrings.UnrecognizedCommandOrArgument, "two")}
 {string.Format(CliStrings.UnrecognizedCommandOrArgument, "three")}");

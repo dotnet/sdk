@@ -76,7 +76,6 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <_IsImplicitRestore>false</_IsImplicitRestore>
     <_IsImplicitRestore Condition="'$(MSBuildIsRestoring)' == 'true'">true</_IsImplicitRestore>
     <_IsPacking Condition="'$(_IsPacking)' == ''">false</_IsPacking>
-    <_ToolPackWasSelfContained>$(SelfContained)</_ToolPackWasSelfContained>
 
     <!-- Now we can set load-bearing properties for the package, but only if the previously-computed conditions hold.
          We must set these to different values for the 'outer' agnostic package, as well as any RID-agnostic child packages,
@@ -305,9 +304,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <NETSdkError Condition=" '$(_TargetFrameworkVersionWithoutV)' &lt; '2.1' "
                  ResourceName="DotnetToolDoesNotSupportTFMLowerThanNetcoreapp21" />
 
-    <NETSdkError Condition=" '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0)) and
-                            !('$(_ToolPackWasSelfContained)' == 'true' and ('$(_IsRidSpecific)' == 'true' or
-                              ('$(CreateRidSpecificToolPackages)' == 'true' and '$(_UserSpecifiedToolPackageRids)' != '')))"
+    <NETSdkError Condition=" '$(TargetPlatformIdentifier)' != '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), 5.0))"
              ResourceName="PackAsToolCannotSupportTargetPlatformIdentifier" />
   </Target>
 
@@ -320,11 +317,17 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     -->
 
   <PropertyGroup>
+    <_AdditionalOptimizedPublishTargets Condition="'$(PackAsTool)' == 'true' and '$(PackAsToolShimRuntimeIdentifiers)' != ''">
+      $(_AdditionalOptimizedPublishTargets);
+      GenerateShimsAssets;
+    </_AdditionalOptimizedPublishTargets>
     <_ShimInputCacheFile Condition="'$(_ShimInputCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).shiminput.cache</_ShimInputCacheFile>
     <_ShimInputCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_ShimInputCacheFile)))</_ShimInputCacheFile>
     <_ShimCreatedSentinelFile Condition="'$(_ShimCreatedSentinelFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).shimcreated.sentinel</_ShimCreatedSentinelFile>
     <_ShimCreatedSentinelFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_ShimCreatedSentinelFile)))</_ShimCreatedSentinelFile>
     <PackagedShimOutputRootDirectory Condition=" '$(PackagedShimOutputRootDirectory)' == '' ">$(OutDir)</PackagedShimOutputRootDirectory>
+    <!-- Publish can infer a different SelfContained value than Build; keep shim staging independent of it. -->
+    <_PackagedShimOutputDirectory>$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory), $(PackagedShimOutputRootDirectory), 'shims', $(TargetFramework)))</_PackagedShimOutputDirectory>
   </PropertyGroup>
 
   <Target Name="GenerateShimsAssets"
@@ -338,7 +341,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
       ApphostsForShimRuntimeIdentifiers="@(_ApphostsForShimRuntimeIdentifiers)"
       IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
       OutputType="$(OutputType)"
-      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
+      PackagedShimOutputDirectory="$(_PackagedShimOutputDirectory)"
       PackageId="$(PackageId)"
       PackageVersion="$(PackageVersion)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
@@ -367,7 +370,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
 
   <Target Name="_ComputeExpectedEmbeddedApphostPaths">
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$([MSBuild]::NormalizeDirectory($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
+      PackagedShimOutputDirectory="$(_PackagedShimOutputDirectory)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)">
 
@@ -390,6 +393,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
       <_GenerateShimsAssetsInputCacheToHash Include="$(ToolCommandName)"/>
       <_GenerateShimsAssetsInputCacheToHash Include="$(ToolEntryPoint)"/>
       <_GenerateShimsAssetsInputCacheToHash Include="$(PackAsToolShimRuntimeIdentifiers)"/>
+      <_GenerateShimsAssetsInputCacheToHash Include="$(_PackagedShimOutputDirectory)"/>
     </ItemGroup>
 
     <Hash ItemsToHash="@(_GenerateShimsAssetsInputCacheToHash)">

@@ -22,57 +22,57 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UsedInvocationResultAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
 
-                public class C
-                {
-                    private static void M(string x, out int y)
-                    {
-                        // Object creation
-                        var c = new C();
+public class C
+{
+    private static void M(string x, out int y)
+    {
+        // Object creation
+        var c = new C();
+        
+        // String creation
+        var xUpper = x.ToUpper();
 
-                        // String creation
-                        var xUpper = x.ToUpper();
+        // Try parse
+        if (!int.TryParse(x, out y))
+        {
+            return;
+        }
 
-                        // Try parse
-                        if (!int.TryParse(x, out y))
-                        {
-                            return;
-                        }
+        var result = NativeMethod();
+    }
 
-                        var result = NativeMethod();
-                    }
+    [DllImport(""user32.dll"")]
+    private static extern int NativeMethod();
+}
+");
 
-                    [DllImport("user32.dll")]
-                    private static extern int NativeMethod();
-                }
-                """);
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System.Runtime.InteropServices
+Public Class C
+    Private Shared Sub M(x As String, ByRef y As Integer)
+        ' Object creation
+        Dim c = New C()
 
-                Public Class C
-                    Private Shared Sub M(x As String, ByRef y As Integer)
-                        ' Object creation
-                        Dim c = New C()
+        ' String creation
+        Dim xUpper = x.ToUpper()
 
-                        ' String creation
-                        Dim xUpper = x.ToUpper()
+        ' Try parse
+        If Not Integer.TryParse(x, y) Then
+            Return
+        End If
 
-                        ' Try parse
-                        If Not Integer.TryParse(x, y) Then
-                            Return
-                        End If
+        Dim result = NativeMethod()
+    End Sub
 
-                        Dim result = NativeMethod()
-                    End Sub
-
-                    <DllImport("user32.dll")> _
-                    Private Shared Function NativeMethod() As Integer
-                    End Function
-                End Class
-                """);
+    <DllImport(""user32.dll"")> _
+    Private Shared Function NativeMethod() As Integer
+    End Function
+End Class
+");
         }
 
         [WorkItem(1369, "https://github.com/dotnet/roslyn-analyzers/issues/1369")]
@@ -86,18 +86,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            using Microsoft.VisualStudio.TestTools.UnitTesting;
+                        @"
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-                            public class Test
-                            {
-                                [ExpectedException(typeof(System.Exception))]
-                                public void ThrowsException()
-                                {
-                                    new Test();
-                                }
-                            }
-                            """,
+public class Test
+{
+    [ExpectedException(typeof(System.Exception))]
+    public void ThrowsException()
+    {
+        new Test();
+    }
+}",
                     }
                 }
             }.RunAsync(CancellationToken.None);
@@ -109,20 +108,19 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        """
-                            Imports System
-                            Imports System.Globalization
-                            Imports Microsoft.VisualStudio.TestTools.UnitTesting
+                        @"
+Imports System
+Imports System.Globalization
+Imports Microsoft.VisualStudio.TestTools.UnitTesting
 
-                            Class C
-                                <ExpectedException(GetType(Exception))>
-                                Public Sub ThrowsException()
-                                    Console.WriteLine(Me)
-                                    Dim sample As String = "Sample"
-                                    sample.ToLower(CultureInfo.InvariantCulture)
-                                End Sub
-                            End Class
-                            """,
+Class C
+    <ExpectedException(GetType(Exception))>
+    Public Sub ThrowsException()
+        Console.WriteLine(Me)
+        Dim sample As String = ""Sample""
+        sample.ToLower(CultureInfo.InvariantCulture)
+    End Sub
+End Class",
                     }
                 }
             }.RunAsync(CancellationToken.None);
@@ -144,18 +142,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        $$"""
-                            using System;
-                            using {{@namespace}};
+                        $@"
+using System;
+using {@namespace};
 
-                            public class Test
-                            {
-                                public void ThrowsException()
-                                {
-                                    Assert.{{method}}{{(generic.Length == 0 ? string.Empty : $"<{generic}>")}}(() => { new Test(); });
-                                }
-                            }
-                            """,
+public class Test
+{{
+    public void ThrowsException()
+    {{
+        Assert.{method}{(generic.Length == 0 ? string.Empty : $"<{generic}>")}(() => {{ new Test(); }});
+    }}
+}}",
                     }
                 }
             }.RunAsync(CancellationToken.None);
@@ -167,20 +164,19 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        $"""
-                            Imports System
-                            Imports System.Globalization
-                            Imports {@namespace}
+                        $@"
+Imports System
+Imports System.Globalization
+Imports {@namespace}
 
-                            Class C
-                                Public Sub ThrowsException()
-                                    Assert.{method}{(generic.Length == 0 ? string.Empty : $"(Of {generic})")}(Sub()
-                                                                    Dim sample As String = "Sample"
-                                                                    sample.ToLower(CultureInfo.InvariantCulture)
-                                                                End Sub)
-                                End Sub
-                            End Class
-                            """,
+Class C
+    Public Sub ThrowsException()
+        Assert.{method}{(generic.Length == 0 ? string.Empty : $"(Of {generic})")}(Sub()
+                                        Dim sample As String = ""Sample""
+                                        sample.ToLower(CultureInfo.InvariantCulture)
+                                    End Sub)
+    End Sub
+End Class",
                     }
                 }
             }.RunAsync(CancellationToken.None);
@@ -202,19 +198,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        $$"""
-                            using System;
-                            using System.Threading.Tasks;
-                            using {{@namespace}};
+                        $@"
+using System;
+using System.Threading.Tasks;
+using {@namespace};
 
-                            public class Test
-                            {
-                                public void ThrowsException()
-                                {
-                                    Assert.{{method}}{{(generic.Length == 0 ? string.Empty : $"<{generic}>")}}(async () => { new Test(); });
-                                }
-                            }
-                            """,
+public class Test
+{{
+    public void ThrowsException()
+    {{
+        Assert.{method}{(generic.Length == 0 ? string.Empty : $"<{generic}>")}(async () => {{ new Test(); }});
+    }}
+}}",
                     }
                 }
             }.RunAsync(CancellationToken.None);
@@ -226,20 +221,19 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        $"""
-                            Imports System
-                            Imports System.Globalization
-                            Imports {@namespace}
+                        $@"
+Imports System
+Imports System.Globalization
+Imports {@namespace}
 
-                            Class C
-                                Public Sub ThrowsException()
-                                    Assert.{method}{(generic.Length == 0 ? string.Empty : $"(Of {generic})")}(Async Function()
-                                                                    Dim sample As String = "Sample"
-                                                                    sample.ToLower(CultureInfo.InvariantCulture)
-                                                                End Function)
-                                End Sub
-                            End Class
-                            """,
+Class C
+    Public Sub ThrowsException()
+        Assert.{method}{(generic.Length == 0 ? string.Empty : $"(Of {generic})")}(Async Function()
+                                        Dim sample As String = ""Sample""
+                                        sample.ToLower(CultureInfo.InvariantCulture)
+                                    End Function)
+    End Sub
+End Class",
                     }
                 }
             }.RunAsync(CancellationToken.None);
@@ -248,42 +242,41 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [TestMethod, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
         public async Task CA1806_LinqMethods_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System.Linq;
-                using System.Collections.Generic;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+using System.Collections.Generic;
 
-                public class Class1
-                {
-                    public bool Method1(IEnumerable<int> ienum, List<object> list)
-                    {
-                        var filteredList = ienum.Where(x => x > 42).Select(x => x.ToString()).ToList();
+public class Class1
+{
+    public bool Method1(IEnumerable<int> ienum, List<object> list)
+    {
+        var filteredList = ienum.Where(x => x > 42).Select(x => x.ToString()).ToList();
 
-                        Method2(ienum.Min());
+        Method2(ienum.Min());
 
-                        return list.OfType<string>().Any();
-                    }
+        return list.OfType<string>().Any();
+    }
 
-                    public void Method2(int val) {}
-                }
-                """);
+    public void Method2(int val) {}
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System.Linq
-                Imports System.Collections.Generic
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Linq
+Imports System.Collections.Generic
 
-                Public Class Class1
-                    Public Function Method1(ByVal ienum As IEnumerable(Of Integer), ByVal list As List(Of Object)) As Boolean
-                        Dim filteredList = ienum.Where(Function(x) x > 42).[Select](Function(x) x.ToString()).ToList()
+Public Class Class1
+    Public Function Method1(ByVal ienum As IEnumerable(Of Integer), ByVal list As List(Of Object)) As Boolean
+        Dim filteredList = ienum.Where(Function(x) x > 42).[Select](Function(x) x.ToString()).ToList()
 
-                        Method2(ienum.Min())
+        Method2(ienum.Min())
 
-                        Return list.OfType(Of String)().Any()
-                    End Function
+        Return list.OfType(Of String)().Any()
+    End Function
 
-                    Public Sub Method2(ByVal val As Integer)
-                    End Sub
-                End Class
-                """);
+    Public Sub Method2(ByVal val As Integer)
+    End Sub
+End Class
+");
         }
 
         #endregion
@@ -294,40 +287,36 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UnusedStringCreationAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Globalization;
 
-                using System;
-                using System.Globalization;
-
-                class C
-                {
-                    public void DoesNotAssignStringToVariable()
-                    {
-                        Console.WriteLine(this);
-                        string sample = "Sample";
-                        sample.ToLower(CultureInfo.InvariantCulture);
-                        return;
-                    }
-                }
-
-                """,
+class C
+{
+    public void DoesNotAssignStringToVariable()
+    {
+        Console.WriteLine(this);
+        string sample = ""Sample"";
+        sample.ToLower(CultureInfo.InvariantCulture);
+        return;
+    }
+}
+",
     GetCSharpStringCreationResultAt(11, 9, "DoesNotAssignStringToVariable", "ToLower"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Globalization
 
-                Imports System
-                Imports System.Globalization
-
-                Class C
-                    Public Sub DoesNotAssignStringToVariable()
-                        Console.WriteLine(Me)
-                        Dim sample As String = "Sample"
-                        sample.ToLower(CultureInfo.InvariantCulture)
-                        Return
-                    End Sub
-                End Class
-
-                """,
+Class C
+    Public Sub DoesNotAssignStringToVariable()
+        Console.WriteLine(Me)
+        Dim sample As String = ""Sample""
+        sample.ToLower(CultureInfo.InvariantCulture)
+        Return
+    End Sub
+End Class
+",
     GetBasicStringCreationResultAt(9, 9, "DoesNotAssignStringToVariable", "ToLower"));
         }
 
@@ -335,69 +324,61 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UnusedObjectCreationAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
+using System.Globalization;
 
-                using System;
-                using System.Globalization;
-
-                class C
-                {
-                    public void DoesNotAssignObjectToVariable()
-                    {
-                        new C();
-                    }
-                }
-
-                """,
+class C
+{
+    public void DoesNotAssignObjectToVariable()
+    {
+        new C();
+    }
+}
+",
     GetCSharpObjectCreationResultAt(9, 9, "DoesNotAssignObjectToVariable", "C"));
 
             // Following code produces syntax error for VB, so no object creation diagnostic.
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
+Imports System.Globalization
 
-                Imports System
-                Imports System.Globalization
-
-                Class C
-                    Public Sub DoesNotAssignObjectToVariable()
-                        {|BC30035:New|} C()
-                    End Sub
-                End Class
-
-                """);
+Class C
+    Public Sub DoesNotAssignObjectToVariable()
+        {|BC30035:New|} C()
+    End Sub
+End Class
+");
         }
 
         [TestMethod]
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UnusedTryParseResultAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
 
-                using System.Runtime.InteropServices;
-
-                public class C
-                {
-                    private static void M(string x, out int y)
-                    {
-                        // Try parse
-                        int.TryParse(x, out y);
-                    }
-                }
-
-                """,
+public class C
+{
+    private static void M(string x, out int y)
+    {
+        // Try parse
+        int.TryParse(x, out y);
+    }
+}
+",
     GetCSharpTryParseResultAt(9, 9, "M", "TryParse"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
 
-                Imports System.Runtime.InteropServices
-
-                Public Class C
-                    Private Shared Sub M(x As String, ByRef y As Integer)
-                        ' Try parse
-                        Integer.TryParse(x, y)
-                    End Sub
-                End Class
-
-                """,
+Public Class C
+    Private Shared Sub M(x As String, ByRef y As Integer)
+        ' Try parse
+        Integer.TryParse(x, y)
+    End Sub
+End Class
+",
     GetBasicTryParseResultAt(7, 9, "M", "TryParse"));
         }
 
@@ -405,40 +386,36 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [WorkItem(462, "https://github.com/dotnet/roslyn-analyzers/issues/462")]
         public async Task UnusedPInvokeResultAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
 
-                using System.Runtime.InteropServices;
+public class C
+{
+    private static void M(string x, out int y)
+    {
+        y = 1;
+        NativeMethod();
+    }
 
-                public class C
-                {
-                    private static void M(string x, out int y)
-                    {
-                        y = 1;
-                        NativeMethod();
-                    }
-
-                    [DllImport("user32.dll")]
-                    private static extern int NativeMethod();
-                }
-
-                """,
+    [DllImport(""user32.dll"")]
+    private static extern int NativeMethod();
+}
+",
     GetCSharpHResultOrErrorCodeResultAt(9, 9, "M", "NativeMethod"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
 
-                Imports System.Runtime.InteropServices
+Public Class C
+    Private Shared Sub M(x As String, ByRef y As Integer)
+        NativeMethod()
+    End Sub
 
-                Public Class C
-                    Private Shared Sub M(x As String, ByRef y As Integer)
-                        NativeMethod()
-                    End Sub
-
-                    <DllImport("user32.dll")> _
-                    Private Shared Function NativeMethod() As Integer
-                    End Function
-                End Class
-
-                """,
+    <DllImport(""user32.dll"")> _
+    Private Shared Function NativeMethod() As Integer
+    End Function
+End Class
+",
     GetBasicHResultOrErrorCodeResultAt(6, 9, "M", "NativeMethod"));
         }
 
@@ -446,43 +423,43 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [WorkItem(746, "https://github.com/dotnet/roslyn-analyzers/issues/746")]
         public async Task UnusedComImportPreserveSigAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Runtime.InteropServices;
 
-                public class C
-                {
-                    private static void M(IComClass cc)
-                    {
-                        cc.NativeMethod();
-                    }
-                }
+public class C
+{
+    private static void M(IComClass cc)
+    {
+        cc.NativeMethod();
+    }
+}
 
-                [ComImport]
-                [Guid("060DDE7F-A9CD-4669-A443-B6E25AF44E7C")]
-                public interface IComClass
-                {
-                    [PreserveSig]
-                    int NativeMethod();
-                }
-                """,
+[ComImport]
+[Guid(""060DDE7F-A9CD-4669-A443-B6E25AF44E7C"")]
+public interface IComClass
+{
+    [PreserveSig]
+    int NativeMethod();
+}
+",
     GetCSharpHResultOrErrorCodeResultAt(8, 9, "M", "NativeMethod"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System.Runtime.InteropServices
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Runtime.InteropServices
 
-                Public Class C
-                    Private Shared Sub M(cc As IComClass)
-                        cc.NativeMethod()
-                    End Sub
-                End Class
+Public Class C
+    Private Shared Sub M(cc As IComClass)
+        cc.NativeMethod()
+    End Sub
+End Class
 
-                <ComImport> _
-                <Guid("060DDE7F-A9CD-4669-A443-B6E25AF44E7C")> _
-                Public Interface IComClass
-                    <PreserveSig> _
-                    Function NativeMethod() As Integer
-                End Interface
-                """,
+<ComImport> _
+<Guid(""060DDE7F-A9CD-4669-A443-B6E25AF44E7C"")> _
+Public Interface IComClass
+    <PreserveSig> _
+    Function NativeMethod() As Integer
+End Interface
+",
     GetBasicHResultOrErrorCodeResultAt(6, 9, "M", "NativeMethod"));
         }
 
@@ -490,40 +467,36 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [WorkItem(1164, "https://github.com/dotnet/roslyn-analyzers/issues/1164")]
         public async Task UnusedPureMethodTriggersErrorAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Diagnostics.Contracts;
 
-                using System.Diagnostics.Contracts;
+class C
+{
+    [Pure]
+    public int Returns1() => 1;
 
-                class C
-                {
-                    [Pure]
-                    public int Returns1() => 1;
-
-                    public void DoesNotUseResult()
-                    {
-                        Returns1();
-                    }
-                }
-                """,
+    public void DoesNotUseResult()
+    {
+        Returns1();
+    }
+}",
     GetCSharpPureMethodResultAt(11, 9, "DoesNotUseResult", "Returns1"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Diagnostics.Contracts
 
-                Imports System.Diagnostics.Contracts
+Module Module1
+    <Pure>
+    Function Returns1() As Integer
+        Return 1
+    End Function
 
-                Module Module1
-                    <Pure>
-                    Function Returns1() As Integer
-                        Return 1
-                    End Function
+    Sub DoesNotUseResult()
+        Returns1()
+    End Sub
 
-                    Sub DoesNotUseResult()
-                        Returns1()
-                    End Sub
-
-                End Module
-
-                """,
+End Module
+",
     GetBasicPureMethodResultAt(11, 9, "DoesNotUseResult", "Returns1"));
         }
 
@@ -543,22 +516,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        $$"""
+                        $@"
+using System;
+using {@namespace};
 
-                            using System;
-                            using {{@namespace}};
-
-                            public class Test
-                            {
-                                public void ThrowsException()
-                                {
-                                    Assert.{{method}}{{(generic.Length == 0 ? string.Empty : $"<{generic}>")}}(() => {
-                                        new Test();
-                                        return;
-                                    });
-                                }
-                            }
-                            """,
+public class Test
+{{
+    public void ThrowsException()
+    {{
+        Assert.{method}{(generic.Length == 0 ? string.Empty : $"<{generic}>")}(() => {{
+            new Test();
+            return;
+        }});
+    }}
+}}",
                     }
                 },
                 ExpectedDiagnostics =
@@ -574,22 +545,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        $"""
+                        $@"
+Imports System
+Imports System.Globalization
+Imports {@namespace}
 
-                            Imports System
-                            Imports System.Globalization
-                            Imports {@namespace}
-
-                            Class C
-                                Public Sub ThrowsException()
-                                    Assert.{method}{(generic.Length == 0 ? string.Empty : $"(Of {generic})")}(Sub()
-                                                                    Dim sample As String = "Sample"
-                                                                    sample.ToLower(CultureInfo.InvariantCulture)
-                                                                    Return
-                                                                End Sub)
-                                End Sub
-                            End Class
-                            """,
+Class C
+    Public Sub ThrowsException()
+        Assert.{method}{(generic.Length == 0 ? string.Empty : $"(Of {generic})")}(Sub()
+                                        Dim sample As String = ""Sample""
+                                        sample.ToLower(CultureInfo.InvariantCulture)
+                                        Return
+                                    End Sub)
+    End Sub
+End Class",
                     }
                 },
                 ExpectedDiagnostics =
@@ -615,22 +584,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        $$"""
+                        $@"
+using System;
+using {@namespace};
 
-                            using System;
-                            using {{@namespace}};
-
-                            public class Test
-                            {
-                                public void ThrowsException()
-                                {
-                                    Assert.{{method}}{{(generic.Length == 0 ? string.Empty : $"<{generic}>")}}(async () => {
-                                        new Test();
-                                        return;
-                                    });
-                                }
-                            }
-                            """,
+public class Test
+{{
+    public void ThrowsException()
+    {{
+        Assert.{method}{(generic.Length == 0 ? string.Empty : $"<{generic}>")}(async () => {{
+            new Test();
+            return;
+        }});
+    }}
+}}",
                     }
                 },
                 ExpectedDiagnostics =
@@ -646,22 +613,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        $"""
+                        $@"
+Imports System
+Imports System.Globalization
+Imports {@namespace}
 
-                            Imports System
-                            Imports System.Globalization
-                            Imports {@namespace}
-
-                            Class C
-                                Public Sub ThrowsException()
-                                    Assert.{method}{(generic.Length == 0 ? string.Empty : $"(Of {generic})")}(Async Function()
-                                                                    Dim sample As String = "Sample"
-                                                                    sample.ToLower(CultureInfo.InvariantCulture)
-                                                                    Return
-                                                                End Function)
-                                End Sub
-                            End Class
-                            """,
+Class C
+    Public Sub ThrowsException()
+        Assert.{method}{(generic.Length == 0 ? string.Empty : $"(Of {generic})")}(Async Function()
+                                        Dim sample As String = ""Sample""
+                                        sample.ToLower(CultureInfo.InvariantCulture)
+                                        Return
+                                    End Function)
+    End Sub
+End Class",
                     }
                 },
                 ExpectedDiagnostics =
@@ -682,20 +647,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-                            using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-                            public class Test
-                            {
-                                [ExpectedException(typeof(System.Exception))]
-                                public void ThrowsException()
-                                {
-                                    new Test();
-                                    return;
-                                }
-                            }
-                            """,
+public class Test
+{
+    [ExpectedException(typeof(System.Exception))]
+    public void ThrowsException()
+    {
+        new Test();
+        return;
+    }
+}",
                     }
                 },
                 ExpectedDiagnostics =
@@ -711,22 +674,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+Imports System
+Imports System.Globalization
+Imports Microsoft.VisualStudio.TestTools.UnitTesting
 
-                            Imports System
-                            Imports System.Globalization
-                            Imports Microsoft.VisualStudio.TestTools.UnitTesting
-
-                            Class C
-                                <ExpectedException(GetType(Exception))>
-                                Public Sub ThrowsException()
-                                    Console.WriteLine(Me)
-                                    Dim sample As String = "Sample"
-                                    sample.ToLower(CultureInfo.InvariantCulture)
-                                    Return
-                                End Sub
-                            End Class
-                            """,
+Class C
+    <ExpectedException(GetType(Exception))>
+    Public Sub ThrowsException()
+        Console.WriteLine(Me)
+        Dim sample As String = ""Sample""
+        sample.ToLower(CultureInfo.InvariantCulture)
+        Return
+    End Sub
+End Class",
                     }
                 },
                 ExpectedDiagnostics =
@@ -739,94 +700,88 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
         [TestMethod, WorkItem(3104, "https://github.com/dotnet/roslyn-analyzers/issues/3104")]
         public async Task PureMethodVoidAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System.Diagnostics.Contracts;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Diagnostics.Contracts;
 
-                public class A
-                {
-                    public int Write(string s) => 42;
-                }
+public class A
+{
+    public int Write(string s) => 42;
+}
 
-                public class B
-                {
-                    public string GetSomething()
-                    {
-                        WriteToDmm("a");
-                        return "something";
-                    }
+public class B
+{
+    public string GetSomething()
+    {
+        WriteToDmm(""a"");
+        return ""something"";
+    }
 
-                    [Pure]
-                    private void WriteToDmm(string s) => new A().Write(s);
-                }
-                """);
+    [Pure]
+    private void WriteToDmm(string s) => new A().Write(s);
+}");
 
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System.Diagnostics.Contracts
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Diagnostics.Contracts
 
-                Public Class A
-                    Public Function Write(ByVal s As String) As Integer
-                        Return 42
-                    End Function
-                End Class
+Public Class A
+    Public Function Write(ByVal s As String) As Integer
+        Return 42
+    End Function
+End Class
 
-                Public Class B
-                    Public Function GetSomething() As String
-                        WriteToDmm("a")
-                        Return "something"
-                    End Function
+Public Class B
+    Public Function GetSomething() As String
+        WriteToDmm(""a"")
+        Return ""something""
+    End Function
 
-                    <Pure>
-                    Private Sub WriteToDmm(ByVal s As String)
-                        Dim x = New A().Write(s)
-                    End Sub
-                End Class
-                """);
+    <Pure>
+    Private Sub WriteToDmm(ByVal s As String)
+        Dim x = New A().Write(s)
+    End Sub
+End Class");
         }
 
         [TestMethod, WorkItem(3363, "https://github.com/dotnet/roslyn-analyzers/issues/3363")]
         public async Task CA1806_LinqMethods_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System.Linq;
+using System.Collections.Generic;
 
-                using System.Linq;
-                using System.Collections.Generic;
+public class Class1
+{
+    public void Method1(IEnumerable<int> ienum, List<object> list)
+    {
+        ienum.Any(x => x > 42);
+        ienum.Cast<object>();
+        Enumerable.Empty<int>();
+        ienum.Where(x => x > 42).Select(x => x.ToString()).ToList();
 
-                public class Class1
-                {
-                    public void Method1(IEnumerable<int> ienum, List<object> list)
-                    {
-                        ienum.Any(x => x > 42);
-                        ienum.Cast<object>();
-                        Enumerable.Empty<int>();
-                        ienum.Where(x => x > 42).Select(x => x.ToString()).ToList();
-
-                        list.OfType<string>();
-                    }
-                }
-                """,
+        list.OfType<string>();
+    }
+}",
                 GetCSharpLinqMethodResultAt(9, 9, "Method1", "Any"),
                 GetCSharpLinqMethodResultAt(10, 9, "Method1", "Cast"),
                 GetCSharpLinqMethodResultAt(11, 9, "Method1", "Empty"),
                 GetCSharpLinqMethodResultAt(12, 9, "Method1", "ToList"),
                 GetCSharpLinqMethodResultAt(14, 9, "Method1", "OfType"));
 
-            await VerifyVB.VerifyAnalyzerAsync("""
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System.Linq
+Imports System.Collections.Generic
 
-                Imports System.Linq
-                Imports System.Collections.Generic
+Public Class Class1
+    Public Sub Method1(ByVal ienum As IEnumerable(Of Integer), ByVal list As List(Of Object))
+        ienum.Any(Function(x) x > 42)
+        ienum.Cast(Of Object)()
+        Enumerable.Empty(Of Integer)()
+        ienum.Where(Function(x) x > 42).[Select](Function(x) x.ToString()).ToList()
 
-                Public Class Class1
-                    Public Sub Method1(ByVal ienum As IEnumerable(Of Integer), ByVal list As List(Of Object))
-                        ienum.Any(Function(x) x > 42)
-                        ienum.Cast(Of Object)()
-                        Enumerable.Empty(Of Integer)()
-                        ienum.Where(Function(x) x > 42).[Select](Function(x) x.ToString()).ToList()
-
-                        list.OfType(Of String)()
-                    End Sub
-                End Class
-
-                """,
+        list.OfType(Of String)()
+    End Sub
+End Class
+",
                 GetBasicLinqMethodResultAt(7, 9, "Method1", "Any"),
                 GetBasicLinqMethodResultAt(8, 9, "Method1", "Cast"),
                 GetBasicLinqMethodResultAt(9, 9, "Method1", "Empty"),
@@ -853,31 +808,27 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+public class SomeClass
+{
+    public int GetSomeValue() => 42;
+    public int GetSomeValue(int value) => value;
+}
 
-                            public class SomeClass
-                            {
-                                public int GetSomeValue() => 42;
-                                public int GetSomeValue(int value) => value;
-                            }
-
-                            public class Class1
-                            {
-                                public void Method1(SomeClass sc)
-                                {
-                                    sc.GetSomeValue();
-                                    sc.GetSomeValue(10);
-                                }
-                            }
-                            """,
+public class Class1
+{
+    public void Method1(SomeClass sc)
+    {
+        sc.GetSomeValue();
+        sc.GetSomeValue(10);
+    }
+}",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """), },
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -895,34 +846,30 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 {
                     Sources =
                     {
-                        """
+                        @"
+Public Class SomeClass
+    Public Function GetSomeValue() As Integer
+        Return 42
+    End Function
 
-                            Public Class SomeClass
-                                Public Function GetSomeValue() As Integer
-                                    Return 42
-                                End Function
+    Public Function GetSomeValue(ByVal val As Integer) As Integer
+        Return val
+    End Function
+End Class
 
-                                Public Function GetSomeValue(ByVal val As Integer) As Integer
-                                    Return val
-                                End Function
-                            End Class
-
-                            Public Class Class1
-                                Public Sub Method1(ByVal sc As SomeClass)
-                                    sc.GetSomeValue()
-                                    sc.GetSomeValue(12)
-                                End Sub
-                            End Class
-
-                            """,
+Public Class Class1
+    Public Sub Method1(ByVal sc As SomeClass)
+        sc.GetSomeValue()
+        sc.GetSomeValue(12)
+    End Sub
+End Class
+",
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
-                        root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
 
-                        [*]
-                        {editorConfigText}
-
-                        """), },
+[*]
+{editorConfigText}
+"), },
                 },
             };
 
@@ -942,7 +889,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
             const string code = """
                                 using System.Collections.Generic;
                                 using System.Linq;
-
+                                
                                 class Test
                                 {
                                     void M()
