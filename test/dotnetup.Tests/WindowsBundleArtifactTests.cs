@@ -346,6 +346,24 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow(3010, "must restart")]
+    [DataRow(1641, "restart has been initiated")]
+    public void CommitPreparedInstall_RepairRequiresRestart_SucceedsAsRepairedWithoutRevalidating(int repairExitCode, string expectedNotice)
+    {
+        using var notices = new StringWriter(CultureInfo.InvariantCulture);
+        var runner = new FakeRunner(exitCode: 0) { RepairExitCode = repairExitCode };
+        using var prepared = Prepare(CreateArtifact(StableChannel, runner: runner, notices: notices), StableChannel);
+        var validator = new MockInstallationValidator(validateResult: false);
+
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared, validator);
+
+        result.Repaired.Should().BeTrue();
+        runner.Calls.Select(call => call.Arguments[0]).Should().Equal("/install", "/repair");
+        notices.ToString().Should().Contain(expectedNotice);
+        validator.ValidateCalls.Should().Be(2, "the pre-install and post-install checks run, but not a post-repair check while a restart is pending");
+    }
+
+    [TestMethod]
     [DataRow(1602, DotnetInstallErrorCode.OperationCancelled)]
     [DataRow(1223, DotnetInstallErrorCode.OperationCancelled)]
     [DataRow(1618, DotnetInstallErrorCode.InstallerBusy)]
@@ -522,6 +540,9 @@ public class WindowsBundleArtifactTests : IDisposable
         /// <summary>Simulates the user pressing Ctrl+C while the installer runs.</summary>
         public bool RequestCancellation { get; init; }
 
+        /// <summary>The exit code for <c>/repair</c> runs; defaults to the install exit code.</summary>
+        public int? RepairExitCode { get; init; }
+
         public int Run(string bundlePath, IReadOnlyList<string> arguments, Action onCancelRequested)
         {
             Calls.Add((bundlePath, arguments));
@@ -531,7 +552,7 @@ public class WindowsBundleArtifactTests : IDisposable
             }
 
             OnRun?.Invoke(bundlePath);
-            return exitCode;
+            return arguments.Contains("/repair") && RepairExitCode is int repairExitCode ? repairExitCode : exitCode;
         }
     }
 }
