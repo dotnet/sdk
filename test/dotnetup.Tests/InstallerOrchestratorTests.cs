@@ -326,8 +326,7 @@ public class InstallerOrchestratorTests
         using var testEnv = new TestEnvironment();
         File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
 
-        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
-        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         void InstallSdk()
         {
             string sdkDirectory = Path.Combine(testEnv.InstallPath, "sdk", install.Version.ToString());
@@ -356,8 +355,7 @@ public class InstallerOrchestratorTests
     public void CommitPreparedInstall_BundleNotFoundOnDisk_ThrowsPostInstallVerificationFailed()
     {
         using var testEnv = new TestEnvironment();
-        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
-        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var artifact = new FakeArtifact();
         using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
 
@@ -374,8 +372,7 @@ public class InstallerOrchestratorTests
     public void CommitPreparedInstall_BundleFilesMissing_RepairsAndSucceeds()
     {
         using var testEnv = new TestEnvironment();
-        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
-        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var artifact = new FakeArtifact
         {
             OnRepair = () =>
@@ -401,8 +398,7 @@ public class InstallerOrchestratorTests
     public void CommitPreparedInstall_RepairStillMissingFiles_ThrowsPostInstallVerificationFailed()
     {
         using var testEnv = new TestEnvironment();
-        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
-        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var artifact = new FakeArtifact { OnRepair = () => true };
         using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
 
@@ -417,8 +413,7 @@ public class InstallerOrchestratorTests
     public void CommitPreparedInstall_RepairInstallerFails_MarksRepairFailed()
     {
         using var testEnv = new TestEnvironment();
-        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
-        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var artifact = new FakeArtifact { OnRepair = () => throw new DotnetInstallException(DotnetInstallErrorCode.InstallerFailed, "repair failed") };
         using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
 
@@ -432,8 +427,7 @@ public class InstallerOrchestratorTests
     public void GetRepairTagValue_IsNullWithoutRepairsAndCountsRepairOutcomes()
     {
         using var testEnv = new TestEnvironment();
-        var request = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
-        var install = new DotnetInstall(request.Request.InstallRoot, request.ResolvedVersion, InstallComponent.SDK);
+        var (request, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var plainFailure = new DotnetInstallException(DotnetInstallErrorCode.InstallerFailed, "failed");
         var repairFailure = new DotnetInstallException(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed, "still missing");
         repairFailure.MarkRepairFailed();
@@ -450,8 +444,7 @@ public class InstallerOrchestratorTests
     public void CommitPreparedInstall_ArtifactThatInitiatedRestart_SkipsPostInstallVerification()
     {
         using var testEnv = new TestEnvironment();
-        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
-        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
+        var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var artifact = new FakeArtifact { RequiresPostInstallValidation = false };
         using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
 
@@ -538,6 +531,13 @@ public class InstallerOrchestratorTests
 
         fatalExceptions.Should().BeEmpty();
         return (results, failures);
+    }
+
+    /// <summary>An untracked installer-bundle SDK request in <paramref name="testEnv"/> and the install it produces.</summary>
+    private static (ResolvedInstallRequest Request, DotnetInstall Install) MakeUntrackedBundleSdkInstall(TestEnvironment testEnv)
+    {
+        var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.WindowsInstallerBundle, untracked: true);
+        return (resolvedRequest, new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK));
     }
 
     private static ResolvedInstallRequest MakeResolvedRequest(TestEnvironment testEnv, InstallMechanism mechanism, bool untracked)
