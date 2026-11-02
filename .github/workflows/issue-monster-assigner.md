@@ -84,6 +84,7 @@ jobs:
           fi
 
 safe-outputs:
+  report-failure-as-issue: false
   # The inference PAT pool intentionally grants only Copilot Requests access.
   # Process the assignment in the separate environment that owns the
   # repository-write PAT instead of broadening every PAT in the inference pool.
