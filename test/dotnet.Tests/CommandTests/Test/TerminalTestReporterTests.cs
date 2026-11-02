@@ -16,6 +16,74 @@ namespace dotnet.Tests.CommandTests.Test;
 public class TerminalTestReporterTests
 {
     [TestMethod]
+    [DataRow(0)]
+    [DataRow(2)]
+    [DataRow(8)]
+    [DataRow(9)]
+    [DataRow(15)]
+    public void CreateRunSummary_UsesFinalPolicyAndLogicalLiveResults(int exitCode)
+    {
+        using var reporter = new TerminalTestReporter(new CapturingConsole(), new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+        });
+        DateTimeOffset startTime = DateTimeOffset.UtcNow;
+        reporter.TestExecutionStarted(startTime, 2, false, false, true);
+        reporter.AssemblyRunStarted("Retry.dll", "net9.0", "x64", "retry", "first");
+        ReportTest(reporter, "Retry.dll", "retry", "first", "flaky", TestOutcome.Fail, TimeSpan.FromSeconds(20));
+        reporter.AssemblyRunStarted("Retry.dll", "net9.0", "x64", "retry", "second");
+        ReportTest(reporter, "Retry.dll", "retry", "second", "flaky", TestOutcome.Passed, TimeSpan.FromSeconds(20));
+        reporter.AssemblyRunCompleted("retry", 0, null, null);
+        reporter.AssemblyRunStarted("Mixed.dll", "net9.0", "x64", "mixed", "instance");
+        ReportTest(reporter, "Mixed.dll", "mixed", "instance", "failed", TestOutcome.Fail);
+        ReportTest(reporter, "Mixed.dll", "mixed", "instance", "skipped", TestOutcome.Skipped);
+        reporter.AssemblyRunCompleted("mixed", 2, null, null);
+
+        ArtifactPostProcessingRunSummary summary = reporter.CreateRunSummary(
+            startTime.AddSeconds(3), exitCode, testModuleCount: 3);
+
+        summary.Should().Be(new ArtifactPostProcessingRunSummary(3, 1, 1, 1, TimeSpan.FromSeconds(3), exitCode, 3),
+            "retries are logical results, duration is wall time, and absent fragments do not remove selected modules");
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void CompactSummary_PutsFailuresBeforeArtifactsWithoutRepeatingCompletedSuccesses(bool showCompletion)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = showCompletion,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 2, false, false, false);
+        reporter.AssemblyRunStarted("Successful.dll", "net9.0", "x64", "success", "instance");
+        ReportTest(reporter, "Successful.dll", "success", "instance", "passed", TestOutcome.Passed);
+        reporter.AssemblyRunCompleted("success", 0, null, null);
+        reporter.AssemblyRunStarted("Crashed.dll", "net9.0", "x64", "crash", "instance");
+        reporter.AssemblyRunCompleted("crash", 7, "host crash context", null);
+        reporter.ArtifactAdded(false, "Successful.dll", "net9.0", "x64", "success", null, "original.trx");
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, 7);
+
+        string output = console.GetOutput();
+        string summary = output[output.IndexOf("Test run summary:", StringComparison.Ordinal)..];
+        summary.IndexOf("failed: 0", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
+        summary.IndexOf("Errored assemblies:", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
+        summary.Should().Contain("Crashed.dll").And.Contain("host crash context");
+        if (showCompletion)
+        {
+            summary.Should().NotContain("Successful.dll");
+        }
+        else
+        {
+            summary.Should().Contain("Successful.dll");
+        }
+    }
+
+    [TestMethod]
     public void AnsiTerminal_StopUpdate_WritesStringBuilder()
     {
         var console = new Mock<IConsole>(MockBehavior.Strict);
@@ -751,7 +819,9 @@ public class TerminalTestReporterTests
     /// See https://github.com/dotnet/sdk/issues/49754.
     /// </summary>
     [TestMethod]
-    public void TestExecutionCompleted_WhenDiscoveryJsonFormat_EmitsMachineReadableJson()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void TestExecutionCompleted_WhenDiscoveryJsonFormat_EmitsMachineReadableJson(bool collectTestMap)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -762,11 +832,13 @@ public class TerminalTestReporterTests
             ShowAssembly = false,
             ShowAssemblyStartAndComplete = false,
             ListTestsFormat = TestListFormat.Json,
+            CollectTestMap = collectTestMap,
         };
 
         using var reporter = new TerminalTestReporter(capturingConsole, options);
 
         reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: true, isHelp: false, isRetry: false);
+        reporter.TestMapCollectionStarted(moduleCount: 1);
 
         const string assembly = "/repo/bin/Debug/net9.0/MyTests.dll";
         const string executionId = "exec-1";

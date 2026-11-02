@@ -35,9 +35,14 @@ internal sealed class TerminalTestReporterOptions
     /// </summary>
     public bool AllowZeroTests { get; init; }
 
+    public bool CollectTestMap { get; init; }
+
+    public TimeSpan HeartbeatSilenceThreshold { get; init; } = TimeSpan.FromSeconds(60);
+
+    public TimeSpan SlowTestThreshold { get; init; } = TimeSpan.FromSeconds(60);
+
     /// <summary>
-    /// Gets a value indicating whether we should write the progress periodically to screen. When ANSI is allowed we update the progress as often as we can.
-    /// When ANSI is not allowed we never have progress.
+    /// Gets whether to show cursor progress or bounded non-cursor progress after visible-output silence.
     /// </summary>
     public bool ShowProgress { get; init; }
 

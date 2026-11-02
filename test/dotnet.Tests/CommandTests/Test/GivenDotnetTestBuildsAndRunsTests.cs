@@ -150,7 +150,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                if (expectedExitCode == TestExitCode.Success)
+                if (collectTestMap)
+                {
+                    result.StdOut.Should().Contain(expectedExitCode == TestExitCode.Success
+                        ? "Test map collection: Completed."
+                        : "Test map collection: Failed.");
+                    result.StdOut.Should().NotContain("Test run summary:")
+                        .And.NotContain("total: 0")
+                        .And.NotContain("skipped: 0");
+                }
+                else if (expectedExitCode == TestExitCode.Success)
                 {
                     result.StdOut
                         .Should().Contain("Test run summary: Zero tests ran")

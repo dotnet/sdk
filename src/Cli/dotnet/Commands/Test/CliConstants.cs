@@ -102,6 +102,15 @@ internal static class HandshakeMessagePropertyNames
     internal const byte SupportedPostProcessorExtensionsLegacy = 15;
     internal const byte SupportedTruncatedRunPostProcessorKinds = 16;
     internal const byte SupportedTruncatedRunPostProcessorExtensionsLegacy = 17;
+
+    // Subset of SupportedPostProcessorKinds that must run even for a single input.
+    internal const byte RequiredPostProcessorKinds = 18;
+
+    // Reply-only capability promising required processing and an authoritative runSummary.
+    internal const byte RequiredPostProcessingSupported = 19;
+
+    // Independently negotiated so coverage does not enable the 1.4 server-control protocol.
+    internal const byte CoverageSummaryVersion = 20;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -128,6 +137,8 @@ internal static class HandshakeMessageHostTypes
 
 internal static class ProtocolConstants
 {
+    internal const string CoverageSummaryVersion = "1";
+
     /// <summary>
     /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
     /// </summary>

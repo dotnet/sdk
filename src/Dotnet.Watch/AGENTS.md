@@ -57,7 +57,7 @@ Reload).
   output, and
   only the public half is pinned into an application-hosted configuration module. There is
   no watch-to-MSBuild property flow: `dotnet watch` reads the private half back through
-  [`BrowserToolsBuildOutputs`](HotReloadClient/Web/BrowserToolsBuildOutputs.cs) when each browser
+  [`SharedSecretBuildOutputs`](HotReloadClient/Web/SharedSecretBuildOutputs.cs) when each browser
   connects. This lets the per-project provider bind before `dotnet run` builds the
   application, avoids a separate watcher build, and observes key rotation after `Clean`.
   The provider validates and imports the current matching pair only long enough to decrypt

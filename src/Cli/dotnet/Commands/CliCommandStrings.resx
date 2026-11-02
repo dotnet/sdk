@@ -2743,6 +2743,73 @@ Proceed?</value>
   <data name="ArtifactPostProcessingStarted" xml:space="preserve">
     <value>Merging compatible artifacts produced by different test applications...</value>
   </data>
+  <data name="ArtifactPostProcessingMissingHandshake" xml:space="preserve">
+    <value>The artifact worker exited without completing the expected handshake.</value>
+  </data>
+  <data name="ArtifactPostProcessingConnectionFailed" xml:space="preserve">
+    <value>The artifact worker's reporting connection did not complete successfully.</value>
+  </data>
+  <data name="ArtifactPostProcessingUnexpectedFailure" xml:space="preserve">
+    <value>Artifact post-processing failed: {0} Original artifacts are preserved; the test exit code is unchanged.</value>
+    <comment>{0} is the failure reason.</comment>
+  </data>
+  <data name="ArtifactReportingDegraded" xml:space="preserve">
+    <value>Reporting: degraded ({0} artifact post-processing failure(s)). Original artifacts are preserved; the test verdict is unchanged.</value>
+    <comment>{0} is the number of failed post-processing operations.</comment>
+  </data>
+  <data name="IncompleteLiveTestResults" xml:space="preserve">
+    <value>Live test results are incomplete for '{0}': {1} result(s) received. Artifact reports may contain additional recovered results; they are not added to these live counts.</value>
+    <comment>{0} is the test module path. {1} is the number of results received live.</comment>
+  </data>
+  <data name="TestMapCollectionStarted" xml:space="preserve">
+    <value>Collecting test maps for {0} module(s). Child test-result reporting is suppressed.</value>
+    <comment>{0} is the number of selected test modules.</comment>
+  </data>
+  <data name="TestMapCollectionProgress" xml:space="preserve">
+    <value>Collecting test maps: {0}/{1} module(s) finished. Current module: {2}</value>
+    <comment>{0} is the number of finished modules. {1} is the selected module count. {2} is the current module path or a waiting status.</comment>
+  </data>
+  <data name="TestMapCollectionWaiting" xml:space="preserve">
+    <value>waiting for the next module</value>
+  </data>
+  <data name="TestMapCollectionCompleted" xml:space="preserve">
+    <value>Test map collection: Completed.</value>
+  </data>
+  <data name="TestMapCollectionFailed" xml:space="preserve">
+    <value>Test map collection: Failed.</value>
+  </data>
+  <data name="TestMapCollectionAborted" xml:space="preserve">
+    <value>Test map collection: Aborted.</value>
+  </data>
+  <data name="TestMapCollectionModules" xml:space="preserve">
+    <value>  modules finished: {0}/{1}</value>
+    <comment>{0} is the number of finished module processes. {1} is the selected module count.</comment>
+  </data>
+  <data name="TestMapCollectionNoTestVerdict" xml:space="preserve">
+    <value>  Module completion is not a test verdict. Discovery and mapping counts do not represent executed test outcomes.</value>
+  </data>
+  <data name="TerminalProgressHeartbeat" xml:space="preserve">
+    <value>running... {0} completed, {1} failed, active modules: {2}</value>
+    <comment>{0} is the cumulative number of completed tests, {1} is the number of failed tests, {2} is the number of active test modules.</comment>
+  </data>
+  <data name="TerminalProgressHeartbeatLastCompletionSuffix" xml:space="preserve">
+    <value> | last completion: {0} ago</value>
+    <comment>{0} is the elapsed duration since the last test completion.</comment>
+  </data>
+  <data name="TerminalProgressHeartbeatNoCompletionSuffix" xml:space="preserve">
+    <value> | no tests completed yet</value>
+  </data>
+  <data name="TerminalProgressHeartbeatActiveSuffix" xml:space="preserve">
+    <value> | active: {0}</value>
+    <comment>{0} is the active test name.</comment>
+  </data>
+  <data name="TerminalProgressSlowTest" xml:space="preserve">
+    <value>[slow] still running after {0}: {1}</value>
+    <comment>{0} is the elapsed duration, {1} is the test description. {Locked="[slow]"}</comment>
+  </data>
+  <data name="ErroredAssembliesHeader" xml:space="preserve">
+    <value>Errored assemblies:</value>
+  </data>
   <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
     <value>A message of type '{0}' was received in help mode, which is not expected.</value>
   </data>
@@ -2805,6 +2872,63 @@ Proceed?</value>
   <data name="SlowestTests" xml:space="preserve">
     <value>Slowest tests:</value>
     <comment>Header of the run summary section that lists the longest-running tests.</comment>
+  </data>
+  <data name="CodeCoverageSummary" xml:space="preserve">
+    <value>Code Coverage Summary:</value>
+  </data>
+  <data name="CoverageScopeOverall" xml:space="preserve">
+    <value>Total</value>
+    <comment>Labels coverage of a single test application or a complete merged coverage artifact, never a sum of application percentages.</comment>
+  </data>
+  <data name="CoverageNoData" xml:space="preserve">
+    <value>no coverable data</value>
+  </data>
+  <data name="CoverageMetricLine" xml:space="preserve">
+    <value>Line</value>
+  </data>
+  <data name="CoverageMetricStatement" xml:space="preserve">
+    <value>Statement</value>
+  </data>
+  <data name="CoverageMetricBranch" xml:space="preserve">
+    <value>Branch</value>
+  </data>
+  <data name="CoverageMetricMethod" xml:space="preserve">
+    <value>Method</value>
+  </data>
+  <data name="CoverageMetricFunction" xml:space="preserve">
+    <value>Function</value>
+  </data>
+  <data name="CoverageMetricBlock" xml:space="preserve">
+    <value>Block</value>
+  </data>
+  <data name="CoverageMetricInstruction" xml:space="preserve">
+    <value>Instruction</value>
+  </data>
+  <data name="CoverageMetricRegion" xml:space="preserve">
+    <value>Region</value>
+  </data>
+  <data name="CoverageMetricClass" xml:space="preserve">
+    <value>Class</value>
+  </data>
+  <data name="CoverageMetricCondition" xml:space="preserve">
+    <value>Condition</value>
+  </data>
+  <data name="CoverageMetricComplexity" xml:space="preserve">
+    <value>Complexity</value>
+  </data>
+  <data name="CoverageMetricWithProducer" xml:space="preserve">
+    <value>{0} ({1})</value>
+    <comment>{0} is the coverage metric label. {1} identifies its producer when several producers report the same metric.</comment>
+  </data>
+  <data name="CoverageMergedArtifact" xml:space="preserve">
+    <value>Merged coverage ({0})</value>
+    <comment>{0} is an artifact path. Used instead of Total when the merged artifact does not represent every test application.</comment>
+  </data>
+  <data name="InvalidCoverageSummary" xml:space="preserve">
+    <value>A test application reported an invalid code coverage summary. The invalid summary was ignored.</value>
+  </data>
+  <data name="UnnegotiatedCoverageSummary" xml:space="preserve">
+    <value>A test application reported a code coverage summary without negotiating coverage summary support. The summary was ignored.</value>
   </data>
   <data name="FailedColon" xml:space="preserve">
     <value>failed:</value>

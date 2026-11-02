@@ -371,6 +371,115 @@ public static class Program
         }
 
         [TestMethod]
+        public void HotReloadWebSocketKey_is_pinned_and_reused_until_clean()
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WatchMobileApp").WithSource()
+                .WithProjectChanges(project => project.Root!.Add(
+                    new XElement("PropertyGroup", new XElement("IntermediateOutputPath", @"custom-obj\$(Configuration)\"))));
+            File.WriteAllText(Path.Combine(asset.Path, "Program.cs"), """
+                using System;
+                Console.WriteLine(Environment.GetEnvironmentVariable("DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY"));
+                """);
+            var build = new BuildCommand(asset);
+            build.Execute().Should().Pass();
+            var keyDirectory = Path.Combine(asset.Path, "custom-obj", "Debug", ToolsetInfo.CurrentTargetFramework, "HotReload");
+            var publicKeyFile = Path.Combine(keyDirectory, "websocket-key.public.json");
+            var privateKeyFile = Path.Combine(keyDirectory, "websocket-key.private.json");
+            var appFile = Path.Combine(build.GetOutputDirectory().FullName, "WatchMobileApp.dll");
+
+            string ReadPinnedKey()
+            {
+                var result = new DotnetCommand(Log, "run", "--no-build", "-e", "DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY=launch-supplied")
+                    .WithWorkingDirectory(asset.Path).Execute();
+                result.Should().Pass();
+                return result.StdOut!.Trim();
+            }
+
+            using var publicDocument = System.Text.Json.JsonDocument.Parse(File.ReadAllText(publicKeyFile));
+            var publicKey = publicDocument.RootElement.GetProperty("publicKey").GetString();
+            Assert.AreEqual(publicKey, ReadPinnedKey());
+            Assert.IsTrue(File.Exists(privateKeyFile));
+            Assert.IsFalse(File.Exists(Path.Combine(keyDirectory, "browser-tools-key.public.json")));
+            Assert.IsFalse(File.Exists(Path.Combine(keyDirectory, "browser-tools-key.private.json")));
+            Assert.IsFalse(File.Exists(Path.Combine(build.GetOutputDirectory().FullName, Path.GetFileName(privateKeyFile))));
+            var writeTime = File.GetLastWriteTimeUtc(publicKeyFile);
+            var appWriteTime = File.GetLastWriteTimeUtc(appFile);
+
+            build.Execute().Should().Pass();
+            Assert.AreEqual(publicKey, ReadPinnedKey());
+            Assert.AreEqual(writeTime, File.GetLastWriteTimeUtc(publicKeyFile));
+            Assert.AreEqual(appWriteTime, File.GetLastWriteTimeUtc(appFile));
+
+            File.WriteAllText(publicKeyFile, "{}");
+            build.Execute().Should().Pass();
+            var regeneratedKey = ReadPinnedKey();
+            Assert.AreNotEqual(publicKey, regeneratedKey);
+
+            new DotnetCommand(Log, "clean").WithWorkingDirectory(asset.Path).Execute().Should().Pass();
+            Assert.IsFalse(File.Exists(publicKeyFile));
+            Assert.IsFalse(File.Exists(privateKeyFile));
+            build.Execute().Should().Pass();
+            Assert.AreNotEqual(regeneratedKey, ReadPinnedKey());
+        }
+
+        [TestMethod]
+        [DataRow("Debug", true)]
+        [DataRow("Debug", false)]
+        [DataRow("Release", false)]
+        public void HotReloadWebSocketKey_is_generated_for_capable_projects(string configuration, bool enableHotReload)
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WatchMobileApp", identifier: $"{configuration}-{enableHotReload}").WithSource();
+            var build = new BuildCommand(asset);
+            build.Execute($"-p:Configuration={configuration}", $"-p:EnableHotReloadInRuntimeConfigDevFile={enableHotReload}").Should().Pass();
+
+            var keyDirectory = Path.Combine(asset.Path, "obj", configuration, ToolsetInfo.CurrentTargetFramework, "HotReload");
+            Assert.IsTrue(File.Exists(Path.Combine(keyDirectory, "websocket-key.public.json")));
+            Assert.IsTrue(File.Exists(Path.Combine(keyDirectory, "websocket-key.private.json")));
+        }
+
+        [TestMethod]
+        public void HotReloadWebSocketKey_is_not_generated_without_capability()
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WatchMobileApp").WithSource()
+                .WithProjectChanges(project => project.Descendants("ProjectCapability")
+                    .Where(item => item.Attribute("Include")?.Value == "HotReloadWebSockets").Remove());
+
+            new BuildCommand(asset).Execute().Should().Pass();
+            Assert.IsFalse(Directory.Exists(Path.Combine(asset.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "HotReload")));
+        }
+
+        [TestMethod]
+        public void HotReloadWebSocketKey_is_generated_for_capable_library()
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WatchMobileApp").WithSource()
+                .WithProjectChanges(project => project.Descendants("OutputType").Single().Value = "Library");
+            File.WriteAllText(Path.Combine(asset.Path, "Program.cs"), "public class C { }");
+
+            new BuildCommand(asset).Execute().Should().Pass();
+            var keyDirectory = Path.Combine(asset.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "HotReload");
+            Assert.IsTrue(File.Exists(Path.Combine(keyDirectory, "websocket-key.public.json")));
+            Assert.IsTrue(File.Exists(Path.Combine(keyDirectory, "websocket-key.private.json")));
+        }
+
+        [TestMethod]
+        public void HotReloadWebSocketKey_is_not_generated_for_netstandard()
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WatchMobileApp").WithSource().WithTargetFramework("netstandard2.0");
+            new MSBuildCommand(Log, "_GenerateHotReloadWebSocketKey", Path.Combine(asset.Path, "WatchMobileApp.csproj"))
+                .Execute().Should().Pass();
+            Assert.IsFalse(Directory.Exists(Path.Combine(asset.Path, "obj", "Debug", "netstandard2.0", "HotReload")));
+        }
+
+        [TestMethod]
+        public void HotReloadWebSocketKey_is_not_generated_during_design_time_build()
+        {
+            var asset = TestAssetsManager.CopyTestAsset("WatchMobileApp").WithSource();
+            new MSBuildCommand(Log, "_GenerateHotReloadWebSocketKey", Path.Combine(asset.Path, "WatchMobileApp.csproj"))
+                .Execute("-p:DesignTimeBuild=true").Should().Pass();
+            Assert.IsFalse(Directory.Exists(Path.Combine(asset.Path, "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "HotReload")));
+        }
+
+        [TestMethod]
         [DataRow("netcoreapp2.0", true)]
         [DataRow("netcoreapp3.0", true)]
         [DataRow("net5.0", true)]
