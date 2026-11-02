@@ -222,6 +222,51 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [DataRow("/bin/bash", "/home/user/.dotnet/tools:/usr/bin")]
+        [DataRow("/bin/zsh", "/usr/bin:/home/user/.dotnet/tools:/bin")]
+        [DataRow("/bin/sh", "/usr/bin:/home/user/.dotnet/tools")]
+        [DataRow("/bin/dash", "/usr/bin:/home/user/.dotnet/tools")]
+        [DataRow("/bin/bash", "/usr/bin:~/.dotnet/tools:/bin")]
+        public void GivenToolsDirectoryAddedToPathSubsequentCallsDoNotPrintInstructionsOrWriteFiles(string shell, string updatedPath)
+        {
+            var reporter = new BufferedReporter();
+            var toolsPath = new BashPathUnderHomeDirectory("/home/user", ".dotnet/tools");
+            var pathValue = "/usr/bin";
+            var provider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+            provider.Setup(p => p.GetEnvironmentVariable("PATH")).Returns(() => pathValue);
+            provider.Setup(p => p.GetEnvironmentVariable("SHELL")).Returns(shell);
+            provider.Setup(p => p.GetEnvironmentVariable("HOME")).Returns("/home/user");
+            provider.Setup(p => p.GetEnvironmentVariable("ZDOTDIR")).Returns((string?)null);
+            var fileSystem = new Mock<IFile>(MockBehavior.Strict);
+            fileSystem.Setup(f => f.Exists(It.IsAny<string>())).Returns(false);
+            var environmentPath = new LinuxEnvironmentPath(
+                toolsPath, reporter, provider.Object, fileSystem.Object);
+
+            environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
+
+            reporter.Lines.Single().Should().Contain("export PATH=\"$PATH\":'/home/user/.dotnet/tools'");
+            reporter.Clear();
+            fileSystem.Invocations.Clear();
+            pathValue = updatedPath;
+
+            environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
+            environmentPath.AddPackageExecutablePathToUserPath();
+
+            reporter.Lines.Should().BeEmpty();
+            fileSystem.VerifyNoOtherCalls();
+
+            var subsequentEnvironmentPath = new LinuxEnvironmentPath(
+                toolsPath, reporter, provider.Object, fileSystem.Object);
+
+            subsequentEnvironmentPath.PrintAddPathInstructionIfPathDoesNotExist();
+            subsequentEnvironmentPath.AddPackageExecutablePathToUserPath();
+
+            reporter.Lines.Should().BeEmpty();
+            fileSystem.VerifyNoOtherCalls();
+        }
+
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void GivenPathSetItDoesNotAddPathToEnvironment()
         {
             var reporter = new BufferedReporter();
