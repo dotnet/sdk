@@ -29,6 +29,7 @@ public class SdkAppHostLayoutTests : SdkTest
     public void AppHostsAreGeneratedPerHostAndTypeLibraryIsIndependent()
     {
         AppHostProject project = new(TestAssetsManager.CreateTestDirectory(identifier: Guid.NewGuid().ToString("N")).Path);
+        DateTime originalTemplateTimestamp = File.GetLastWriteTimeUtc(project.Template);
         project.Build();
         Dictionary<string, string> generated = project.ReadHosts();
         generated.Values.Should().OnlyHaveUniqueItems().And.OnlyContain(text => text.Length > 0);
@@ -56,6 +57,18 @@ public class SdkAppHostLayoutTests : SdkTest
             updatedTemplate[host].Should().NotBe(repaired[host]);
         }
 
+        project.SwitchTemplateVersion("1.0.0");
+        File.GetLastWriteTimeUtc(project.Template).Should().Be(originalTemplateTimestamp);
+        project.Build();
+        Dictionary<string, string> revertedTemplate = project.ReadHosts();
+        foreach (string host in Hosts)
+        {
+            revertedTemplate[host].Should().NotBe(updatedTemplate[host]);
+        }
+
+        project.Build();
+        project.ReadHosts().Should().Equal(revertedTemplate);
+
         string[] inputFiles = Directory.GetFiles(Path.Combine(project.Root, "obj", "incremental-layout"), "*.inputs");
         Dictionary<string, DateTime> inputTimestamps = inputFiles.ToDictionary(path => path, File.GetLastWriteTimeUtc);
         File.WriteAllText(project.Template, "updated template at the same path");
@@ -63,7 +76,7 @@ public class SdkAppHostLayoutTests : SdkTest
         Dictionary<string, string> updatedTemplateContents = project.ReadHosts();
         foreach (string host in Hosts)
         {
-            updatedTemplateContents[host].Should().NotBe(updatedTemplate[host]);
+            updatedTemplateContents[host].Should().NotBe(revertedTemplate[host]);
         }
         foreach ((string path, DateTime timestamp) in inputTimestamps)
         {
@@ -231,6 +244,7 @@ public class SdkAppHostLayoutTests : SdkTest
     {
         private readonly string _project;
         private string _compilerVersion = "1.0.0";
+        private string _templateVersion = "1.0.0";
 
         public AppHostProject(string root, bool macOS = false, params string[] additionalCompilerHosts)
         {
@@ -350,12 +364,16 @@ public class SdkAppHostLayoutTests : SdkTest
 
         public void SwitchTemplateVersion(string version)
         {
-            string oldVersion = "<MicrosoftNETCoreAppHostPackageVersion>1.0.0</MicrosoftNETCoreAppHostPackageVersion>";
+            string oldVersion = $"<MicrosoftNETCoreAppHostPackageVersion>{_templateVersion}</MicrosoftNETCoreAppHostPackageVersion>";
             string newVersion = $"<MicrosoftNETCoreAppHostPackageVersion>{version}</MicrosoftNETCoreAppHostPackageVersion>";
             File.WriteAllText(_project, File.ReadAllText(_project).Replace(oldVersion, newVersion, StringComparison.Ordinal));
+            _templateVersion = version;
             Template = Path.Combine(Root, "packages", $"microsoft.netcore.app.host.win-x64", version, "runtimes", "win-x64", "native", "apphost.exe");
-            Write(Template, "replacement template");
-            File.SetLastWriteTimeUtc(Template, DateTime.UtcNow.AddHours(-2));
+            if (!File.Exists(Template))
+            {
+                Write(Template, "replacement template");
+                File.SetLastWriteTimeUtc(Template, DateTime.UtcNow.AddHours(-2));
+            }
         }
 
         public Dictionary<string, string> ReadHosts() => Hosts.ToDictionary(host => host, host => File.ReadAllText(HostPath(host)));
