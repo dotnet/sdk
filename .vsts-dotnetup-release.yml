@@ -51,37 +51,56 @@ extends:
         displayName: Validate candidates and print publication operations
         timeoutInMinutes: 30
         templateContext:
-          outputs:
-          - output: pipelineArtifact
-            targetPath: $(Build.ArtifactStagingDirectory)/release-plan
-            artifactName: dotnetup-release-plan
-        steps:
-        - checkout: self
-          clean: true
-        - task: DownloadPipelineArtifact@2
-          displayName: Download dotnetup candidate pipeline artifacts
+          type: releaseJob
+          isProduction: false
           inputs:
-            buildType: specific
-            project: $(System.TeamProjectId)
-            definition: '1544'
-            buildVersionToDownload: specific
-            pipelineId: $(resources.pipeline.candidate.runID)
-            itemPattern: Dotnetup_Dotnetup_*/**
-            targetPath: $(Pipeline.Workspace)/candidate
-        - powershell: |
-            & .\restore.cmd "/p:Projects=$(Build.SourcesDirectory)\eng\dotnetup-release\dotnetup-release.csproj"
-            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          displayName: Bootstrap repository toolset
+          - input: pipelineArtifact
+            pipeline: candidate
+            artifactName: DotnetupReleaseTools
+            targetPath: $(Pipeline.Workspace)/release-tools
+          - input: pipelineArtifact
+            pipeline: candidate
+            artifactName: Dotnetup_Dotnetup_windows_x64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_windows_x64
+          - input: pipelineArtifact
+            pipeline: candidate
+            artifactName: Dotnetup_Dotnetup_windows_arm64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_windows_arm64
+          - input: pipelineArtifact
+            pipeline: candidate
+            artifactName: Dotnetup_Dotnetup_linux_x64_crossBuildLinuxX64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_linux_x64_crossBuildLinuxX64
+          - input: pipelineArtifact
+            pipeline: candidate
+            artifactName: Dotnetup_Dotnetup_linux_arm64_crossBuildLinuxArm64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_linux_arm64_crossBuildLinuxArm64
+          - input: pipelineArtifact
+            pipeline: candidate
+            artifactName: Dotnetup_Dotnetup_linux_x64_crossBuildMuslX64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_linux_x64_crossBuildMuslX64
+          - input: pipelineArtifact
+            pipeline: candidate
+            artifactName: Dotnetup_Dotnetup_linux_arm64_crossBuildMuslArm64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_linux_arm64_crossBuildMuslArm64
+          - input: pipelineArtifact
+            pipeline: candidate
+            artifactName: Dotnetup_Dotnetup_macOS_x64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_macOS_x64
+          - input: pipelineArtifact
+            pipeline: candidate
+            artifactName: Dotnetup_Dotnetup_macOS_arm64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_macOS_arm64
+        steps:
         - powershell: |
             $output = New-Item -ItemType Directory -Force "$(Build.ArtifactStagingDirectory)\release-plan"
-            & .\.dotnet\dotnet.exe run --project eng\dotnetup-release\dotnetup-release.csproj --configuration Release -- `
+            & "$(Pipeline.Workspace)\release-tools\dotnetup-release.exe" `
               "$(Pipeline.Workspace)\candidate" "$env:RELEASE_QUALITY" `
               "$(resources.pipeline.candidate.runID)" "$(resources.pipeline.candidate.sourceCommit)" `
               "$($output.FullName)\release-plan.json" "$env:AKA_OWNERS" "$env:AKA_ACTOR" "$env:AKA_GROUP_OWNER"
-            exit $LASTEXITCODE
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            Write-Host "##vso[task.uploadfile]$($output.FullName)\release-plan.json"
           displayName: Validate and print CDN and aka.ms write plan (no external writes)
           env:
-            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
             RELEASE_QUALITY: ${{ parameters.quality }}
             AKA_OWNERS: ${{ parameters.akaOwners }}
             AKA_ACTOR: ${{ parameters.akaActor }}

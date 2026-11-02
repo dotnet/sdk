@@ -3,31 +3,52 @@
 The manual `dotnetup-release` pipeline, defined in
 [`.vsts-dotnetup-release.yml`](../../../.vsts-dotnetup-release.yml), consumes
 prebuilt preview or placeholder GA candidates from `dotnet-dnup-official-ci`.
-It does not build, rebrand, sign, or publish dotnetup.
+That official pipeline also builds and signs a self-contained Windows x64 release
+tool and publishes it as the `DotnetupReleaseTools` pipeline artifact. The release
+pipeline runs that executable from the selected build in a formal 1ES release job
+(`templateContext.type: releaseJob`, `isProduction: false`). It does not check out
+sources, install an SDK, compile tooling, or build, rebrand, sign, or publish dotnetup.
 
 **There are no external writes and no live-mode switch.** The C#
-[release tool](../../../eng/dotnetup-release/Program.cs) performs a read-only
-Azure DevOps build lookup, validates downloaded candidates, and prints the proposed
-CDN and aka.ms operations. Its JSON plan is uploaded as `dotnetup-release-plan`.
-The pipeline has no CDN or aka.ms write credentials.
+[release tool](../../../eng/dotnetup-release/Program.cs) trusts the selected input
+build, validates downloaded candidates locally, and prints the proposed
+CDN and aka.ms operations. Its JSON plan is attached to the execution task's logs
+as `release-plan.json` (1ES release jobs do not support pipeline artifact outputs).
+The tool requires no Azure DevOps token and the pipeline has no CDN or aka.ms write
+credentials.
 
 ## Run a rehearsal
 
-1. Select the YAML branch containing the release tool.
+1. Select the release pipeline's YAML branch.
 2. Select a successful `dotnet-dnup-official-ci` run under the `candidate` pipeline
    resource. It must include the variant pipeline artifacts described in
-   [Building dotnetup release candidates](releasing.md), and have the `PME Signed` tag.
+   [Building and releasing dotnetup](releasing.md), and the `DotnetupReleaseTools`
+   artifact. The variant artifacts require [dotnet/sdk#56864](https://github.com/dotnet/sdk/pull/56864).
 3. Choose `quality: preview` or `quality: ga`.
 4. Optionally replace the explicit `UNCONFIGURED` aka.ms ownership parameters with
    the intended owners, actor, and group owner. Do not copy another team's ownership.
-5. Inspect the console output and `dotnetup-release-plan` artifact.
+5. Inspect the console output and attached `release-plan.json` in the execution
+   task's downloadable logs.
 
 Development source branches are permitted for rehearsals; this pipeline cannot
-publish them. Source build definition, repository, successful completion, signing
-tag, commit, and every candidate manifest's build ID/commit must agree. Each quality
+publish them. There is no source-build API lookup or separate signing-tag check;
+the operator selects the appropriate official build. Every candidate manifest's
+build ID/commit must agree with the selected resource metadata. Each quality
 must have exactly one candidate for each of the eight supported RIDs, with the same
 version. The tool rejects missing or unexpected files, invalid layout or identity,
 placeholder mismatches, empty/linked payloads, and SHA-512 mismatches.
+
+### Candidate manifest producer
+
+`release.json` is produced by `StageDotnetupReleaseCandidates` in
+[`eng/Publishing.props`](../../../eng/Publishing.props), introduced by
+[dotnet/sdk#56864](https://github.com/dotnet/sdk/pull/56864). After signing and final
+checksum generation, that target stages each RID's binary, checksums, and (for
+win-x64) bootstrap scripts under `<variant>/<version>/`, then writes `release.json`
+alongside them. The manifest records schema version, build ID, commit, variant,
+version, RID, and whether the GA candidate is a placeholder. Each RID's
+`Dotnetup_Dotnetup_*` pipeline artifact contains this layout; the release tool reads,
+rather than generates, these manifests.
 
 Preview plans use `dotnet/dotnetup/preview/` shortlinks. GA plans use the product's
 `dotnet/dotnetup/stable/` channel, but **GA artifacts remain placeholders** and

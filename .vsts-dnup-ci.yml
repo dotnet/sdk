@@ -148,6 +148,52 @@ extends:
                 if ($failed) { Write-Error 'One or more projects have warnings. Fix all warnings to pass this check.'; exit 1 }
               displayName: 🔨 Build with -warnaserror
 
+      - stage: build_release_tools
+        displayName: Build dotnetup release tooling
+        dependsOn: []
+        jobs:
+        - template: /eng/common/templates-official/job/job.yml@self
+          parameters:
+            name: DotnetupReleaseTools
+            displayName: Build and sign self-contained release tool
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-windows-2022
+              os: windows
+            timeoutInMinutes: 30
+            enableMicrobuild: true
+            enablePublishBuildAssets: false
+            enableTelemetry: true
+            templateContext:
+              outputs:
+              - output: pipelineArtifact
+                targetPath: $(Build.SourcesDirectory)/artifacts/dotnetup-release-tools
+                artifactName: DotnetupReleaseTools
+            steps:
+            - template: /eng/common/templates-official/steps/enable-internal-sources.yml
+              parameters:
+                legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+            - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml
+            - powershell: |
+                & .\restore.cmd "/p:Projects=$(Build.SourcesDirectory)\eng\dotnetup-release\dotnetup-release.csproj"
+                exit $LASTEXITCODE
+              displayName: Bootstrap repository toolset
+            - powershell: |
+                & .\.dotnet\dotnet.exe publish eng\dotnetup-release\dotnetup-release.csproj `
+                  --configuration Release --runtime win-x64 --self-contained true `
+                  /p:OfficialBuildId=$(Build.BuildNumber) `
+                  --output artifacts\dotnetup-release-tools
+                exit $LASTEXITCODE
+              displayName: Publish self-contained release tool
+            - powershell: eng/common/build.ps1
+                -restore -sign -ci -configuration Release -msbuildEngine dotnet
+                /p:Projects=$(Build.SourcesDirectory)\eng\dotnetup-release\dotnetup-release.csproj
+                /p:EnableDefaultArtifacts=false /p:PublishBinariesAndBadge=false
+                /p:SignDotnetupReleaseTool=true
+                $(_officialBuildProperties)
+                /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+              displayName: Sign release tool
+
       - stage: tests
         displayName: 🧪 dotnetup tests
         dependsOn: []

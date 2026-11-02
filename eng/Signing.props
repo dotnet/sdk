@@ -138,6 +138,7 @@
 
     <!-- Avoid SignTool flagging the .sh script as missing sign info. -->
     <FileSignInfo Include="get-dotnetup.sh" CertificateName="None" />
+    <FileSignInfo Include="dotnetup-release.exe" CertificateName="MicrosoftDotNet500" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetOS)' == 'osx'">
@@ -230,6 +231,11 @@
     <Artifact Include="@(_GetDotnetupPublishedScript)" Kind="Blob">
       <ChecksumPath>%(FullPath).sha512</ChecksumPath>
     </Artifact>
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(SignDotnetupReleaseTool)' == 'true'">
+    <Artifact Remove="@(Artifact)" />
+    <Artifact Include="$(ArtifactsDir)dotnetup-release-tools\*.exe;$(ArtifactsDir)dotnetup-release-tools\*.dll" Kind="Blob" SkipPublish="true" />
   </ItemGroup>
 
 </Project>
