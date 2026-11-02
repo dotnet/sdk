@@ -162,6 +162,29 @@ You can add it to the current session by running the following command:
         <target state="translated">Da Sie gerade das .NET SDK installiert haben, müssen Sie sich abmelden oder Ihre Sitzung neu starten, bevor Sie das installierte Tool ausführen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxShellManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+{1}
+Append the tools directory to your shell's startup configuration by running:
+
+{2}
+
+You can add it to the current session by running the following command:
+
+{3}
+</source>
+        <target state="new">Tools directory '{0}' is not currently on the PATH environment variable.
+{1}
+Append the tools directory to your shell's startup configuration by running:
+
+{2}
+
+You can add it to the current session by running the following command:
+
+{3}
+</target>
+        <note>{0} is the tools directory, {1} explains shell startup-file loading, {2} is the shell-native command that appends to the startup file without overwriting it, {3} is the command for the current session.</note>
+      </trans-unit>
       <trans-unit id="EnvironmentPathLinuxUnknownShellInstructions">
         <source>Tools directory '{0}' is not currently on the PATH environment variable.
 Add this directory to PATH using your shell's configuration. Consult your shell's documentation for the appropriate startup file and syntax.</source>

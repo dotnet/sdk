@@ -78,11 +78,50 @@ internal class LinuxEnvironmentPath : IEnvironmentPath
 
     private void PrintManualInstructions(string shell)
     {
+        if (shell is "pwsh" or "powershell")
+        {
+            var command = $"$env:PATH += [System.IO.Path]::PathSeparator + {QuotePowerShellArgument(_packageExecutablePath.Path)}";
+            // Resolve profiles in the user's shell, including host-specific and XDG overrides.
+            // File APIs preserve literal backslashes on Unix, unlike PowerShell's filesystem provider.
+            var appendCommand = "$dotnetProfile = if ([System.IO.File]::Exists($PROFILE.CurrentUserAllHosts)) { $PROFILE.CurrentUserAllHosts } " +
+                "elseif ([System.IO.File]::Exists($PROFILE)) { $PROFILE } else { $PROFILE }; " +
+                "[System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($dotnetProfile)) | Out-Null; " +
+                $"[System.IO.File]::AppendAllText($dotnetProfile, \"`n\" + {QuotePowerShellArgument(command)} + \"`n\")";
+            PrintShellInstructions(shell, "$PROFILE.CurrentUserAllHosts / $PROFILE", appendCommand, command);
+            return;
+        }
+
+        if (shell == "nu")
+        {
+            var command = $"$env.PATH = ($env.PATH | append {QuoteNushellArgument(_packageExecutablePath.Path)})";
+            // These variables reflect --env-config/--config and Nushell's configuration directory.
+            var appendCommand = "let dotnet_profile = (if ($nu.config-path | path exists) { $nu.config-path } " +
+                "else if ($nu.env-path | path exists) { $nu.env-path } else { $nu.config-path }); " +
+                "mkdir ($dotnet_profile | path dirname); " +
+                $"(\"\\n\" + {QuoteNushellArgument(command)} + \"\\n\") | save --append --raw $dotnet_profile";
+            PrintShellInstructions(shell, "$nu.config-path / $nu.env-path", appendCommand, command);
+            return;
+        }
+
         var home = _environmentProvider.GetEnvironmentVariable("HOME");
-        if (string.IsNullOrEmpty(home) || shell is not ("bash" or "zsh" or "sh" or "dash"))
+        if (string.IsNullOrEmpty(home) || shell is not ("bash" or "zsh" or "sh" or "dash" or "fish"))
         {
             _reporter.WriteLine(string.Format(
                 CliStrings.EnvironmentPathLinuxUnknownShellInstructions, _packageExecutablePath.Path));
+            return;
+        }
+
+        if (shell == "fish")
+        {
+            var xdgConfigHome = _environmentProvider.GetEnvironmentVariable("XDG_CONFIG_HOME");
+            var directory = System.IO.Path.Combine(
+                !string.IsNullOrEmpty(xdgConfigHome) && System.IO.Path.IsPathFullyQualified(xdgConfigHome)
+                    ? xdgConfigHome : System.IO.Path.Combine(home, ".config"), "fish");
+            var startupPath = System.IO.Path.Combine(directory, "config.fish");
+            var command = $"fish_add_path --append --path {QuoteFishArgument(_packageExecutablePath.Path)}";
+            var appendCommand = $"mkdir -p -- {QuoteFishArgument(directory)}; " +
+                $"printf '\\n%s\\n' {QuoteFishArgument(command)} >> {QuoteFishArgument(startupPath)}";
+            PrintShellInstructions(shell, startupPath, appendCommand, command);
             return;
         }
 
@@ -137,4 +176,33 @@ internal class LinuxEnvironmentPath : IEnvironmentPath
     }
 
     private static string QuoteShellArgument(string value) => "'" + value.Replace("'", "'\\''") + "'";
+
+    private static string QuoteFishArgument(string value) => "'" + value.Replace("\\", "\\\\").Replace("'", "\\'") + "'";
+
+    // PowerShell also recognizes typographic apostrophes as single-quote delimiters.
+    private static string QuotePowerShellArgument(string value) => "'" + value
+        .Replace("'", "''")
+        .Replace("\u2018", "\u2018\u2018")
+        .Replace("\u2019", "\u2019\u2019")
+        .Replace("\u201a", "\u201a\u201a")
+        .Replace("\u201b", "\u201b\u201b") + "'";
+
+    private static string QuoteNushellArgument(string value)
+    {
+        var delimiter = "#";
+        while (value.Contains("'" + delimiter))
+        {
+            delimiter += "#";
+        }
+
+        return "r" + delimiter + "'" + value + "'" + delimiter;
+    }
+
+    private void PrintShellInstructions(string shell, string startupFile, string appendCommand, string command) =>
+        _reporter.WriteLine(string.Format(
+            CliStrings.EnvironmentPathLinuxShellManualInstructions,
+            _packageExecutablePath.Path,
+            string.Format(CliStrings.EnvironmentPathLinuxInteractiveShellInstructions, shell, startupFile),
+            appendCommand,
+            command));
 }
