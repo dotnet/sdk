@@ -76,6 +76,15 @@
     <Copy SourceFiles="$(RepoRoot).dotnet/$(DotnetName)" DestinationFiles="$(TestSdkRoot)$(DotnetName)" />
     <Copy SourceFiles="$(RuntimePackageRoot)native/$(HostFxrName)" DestinationFiles="$(TestSdkRoot)host/fxr/$(HostFxrVersion)/$(HostFxrName)" />
 
+    <!-- Pre-crossgen managed assemblies are portable, but their tool apphosts are
+         still target-native. Reuse the product generation and macOS signing logic. -->
+    <MSBuild Projects="$(RepoRoot)src/Layout/redist/redist.csproj"
+             Targets="PublishRoslyn;CreateMSBuildAppHost"
+             Properties="Configuration=$(Configuration);Platform=AnyCPU;OutputPath=$(_TestSdkDirectory);SharedFrameworkRid=$(RuntimeIdentifier)"
+             RemoveProperties="RuntimeIdentifier" />
+    <Exec Command="chmod +x &quot;$(_TestSdkDirectory)Roslyn/bincore/csc&quot; &quot;$(_TestSdkDirectory)Roslyn/bincore/vbc&quot; &quot;$(_TestSdkDirectory)Roslyn/bincore/VBCSCompiler&quot; &quot;$(_TestSdkDirectory)MSBuild&quot;"
+          Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+
     <!-- Preserve the built pack versions while selecting host-native apphosts by default. -->
     <XmlPoke XmlInputPath="$(_TestSdkDirectory)Microsoft.NETCoreSdk.BundledVersions.props"
              Query="/Project/PropertyGroup/NETCoreSdkRuntimeIdentifier" Value="$(RuntimeIdentifier)" />

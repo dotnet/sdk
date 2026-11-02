@@ -316,6 +316,9 @@ matching the native CLI's runtime version, the host-native apphost pack, host-RI
 the test-built native library. Copy managed SDK assemblies from the redist project's evaluated
 output directory, not the installer or test-host SDK directory: those contain target-architecture
 ReadyToRun images after `CrossgenLayout` and can fail to load in the host-native managed CLI.
+The pre-crossgen layout still contains target-native compiler and MSBuild apphosts; regenerate
+them for the host RID through the
+[redist targets](../../../src/Layout/redist/targets/GenerateLayout.targets), including their macOS code signing.
 The bootstrap SDK is used for compilation, not managed setup or fallback. Do not execute a cross-built
 redist host (for example, arm64 redist on an x64 macOS agent) or overlay host-native binaries into that
 redist. Mixing bootstrap-managed setup with a newly built native CLI can invalidate run-file caches
