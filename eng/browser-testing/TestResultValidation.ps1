@@ -8,6 +8,7 @@ New-Item -ItemType Directory -Path $directory | Out-Null
 $required = Join-Path $directory 'required.json'
 $trx = Join-Path $directory 'results.trx'
 $validator = Join-Path $PSScriptRoot 'AssertBrowserTestResults.ps1'
+. (Join-Path $PSScriptRoot 'RuntimePrerequisites.ps1')
 '["BrowserRun", "BrowserCancellation"]' | Set-Content -LiteralPath $required
 
 function Write-Results([string] $Rows, [int] $Total = 2, [int] $Executed = 2, [int] $Passed = 2) {
@@ -36,6 +37,37 @@ function Expect-Rejection([string] $Case) {
 }
 
 try {
+    $bootstrap = Join-Path $directory 'bootstrap'
+    $layout = Join-Path $directory 'sdk-layout'
+    $runtime = '11.0.0-rc.2.12345.1'
+    $sourceRuntime = Join-Path $bootstrap "shared\Microsoft.NETCore.App\$runtime"
+    $targetRuntime = Join-Path $layout "shared\Microsoft.NETCore.App\$runtime"
+    New-Item -ItemType Directory -Path $sourceRuntime -Force | Out-Null
+    New-Item -ItemType Directory -Path $layout -Force | Out-Null
+    'runtime input' | Set-Content -LiteralPath (Join-Path $sourceRuntime 'runtime.dll')
+    'selected SDK' | Set-Content -LiteralPath (Join-Path $layout '.sdk-source')
+    $runtimeManifest = @(Copy-BrowserRuntimePrerequisites -BootstrapRoot $bootstrap -SdkLayout $layout -Versions $runtime)
+    if ($runtimeManifest.Count -ne 1 -or $runtimeManifest[0].Version -ne $runtime -or
+        (Get-FileHash (Join-Path $sourceRuntime 'runtime.dll')).Hash -ne
+        (Get-FileHash (Join-Path $targetRuntime 'runtime.dll')).Hash -or
+        (Get-Content (Join-Path $layout '.sdk-source') -Raw).Trim() -ne 'selected SDK') {
+        throw 'Runtime composition must preserve the exact restored bytes and selected SDK.'
+    }
+    'interrupted copy' | Set-Content -LiteralPath (Join-Path $targetRuntime 'runtime.dll')
+    Copy-BrowserRuntimePrerequisites -BootstrapRoot $bootstrap -SdkLayout $layout -Versions $runtime | Out-Null
+    if ((Get-FileHash (Join-Path $sourceRuntime 'runtime.dll')).Hash -ne
+        (Get-FileHash (Join-Path $targetRuntime 'runtime.dll')).Hash) {
+        throw 'A retried runtime composition must repair an interrupted copy.'
+    }
+    foreach ($invalid in @('12.0.0-missing', '../escape', '')) {
+        $rejected = $false
+        try {
+            Copy-BrowserRuntimePrerequisites -BootstrapRoot $bootstrap -SdkLayout $layout -Versions @($invalid) | Out-Null
+        }
+        catch { $rejected = $true }
+        if (-not $rejected) { throw "Runtime prerequisite '$invalid' must not be silently accepted." }
+    }
+
     $success = '<UnitTestResult testName="BrowserRun" outcome="Passed" /><UnitTestResult testName="BrowserCancellation" outcome="Passed" />'
     Write-Results $success
     & $validator -Trx $trx -RequiredTests $required
@@ -99,6 +131,7 @@ try {
     }
     Write-Host 'Browser TRX contract checks passed (one positive and eleven negative cases).'
     Write-Host 'Preflight and evidence-writing failures restore process state.'
+    Write-Host 'Runtime prerequisites preserve exact inputs, repair partial copies, and reject missing/invalid versions.'
     $global:LASTEXITCODE = 0
 }
 finally {

@@ -47,6 +47,16 @@ fingerprint-verified signing key and signed APT repository if Chrome is absent.
 The local runner still requires an explicitly supplied installed browser and does
 not provision one.
 
+After packing, the runner stages the exact .NET runtime versions declared by the
+TestFX source's `global.json` from its restored bootstrap into the isolated SDK
+layout. This adds only versioned `Microsoft.NETCore.App` directories; it does not
+replace the SDK, muxer, hostfxr, or existing framework versions. Every staged file
+is hash-checked and recorded in `runtime-manifest.json`, and the composed
+`--list-runtimes` output is retained. A consumer requiring a newer .NET 11
+prerelease must not silently run against an older prerelease or major-roll-forward
+to .NET 12. Missing restored runtime inputs fail the gate. Evidence explicitly
+labels this as an augmented runtime composition, not an unmodified shipping SDK.
+
 The SDK counterpart is pinned in
 [`eng/browser-testing/testfx.json`](../../eng/browser-testing/testfx.json).
 Cross-repository changes must update the counterpart pins deliberately and run both

@@ -15,6 +15,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $PSNativeCommandUseErrorActionPreference = $false
+. (Join-Path $PSScriptRoot 'RuntimePrerequisites.ps1')
 $SdkRoot = (Resolve-Path -LiteralPath $SdkRoot).Path
 $BrowserExecutable = (Resolve-Path -LiteralPath $BrowserExecutable).Path
 if (-not (Test-Path -LiteralPath $BrowserExecutable -PathType Leaf)) {
@@ -40,6 +41,7 @@ if (Test-Path -LiteralPath $ResultsDirectory) {
 New-Item -ItemType Directory -Path $ResultsDirectory | Out-Null
 $commands = [Collections.Generic.List[object]]::new()
 $environment = @{}
+$runtimeManifest = @()
 $runSucceeded = $false
 
 function Invoke-Logged {
@@ -211,7 +213,14 @@ try {
     }
     $manifest | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $feed 'manifest.json')
 
-    $bootstrap = Join-Path $TestFxRoot ".dotnet\$dotnetName"
+    $bootstrapRoot = Join-Path $TestFxRoot '.dotnet'
+    $bootstrap = Join-Path $bootstrapRoot $dotnetName
+    $testfxGlobalJson = Get-Content -LiteralPath (Join-Path $TestFxRoot 'global.json') -Raw | ConvertFrom-Json
+    $runtimeManifest = @(Copy-BrowserRuntimePrerequisites -BootstrapRoot $bootstrapRoot `
+        -SdkLayout $sdkLayout -Versions @($testfxGlobalJson.tools.runtimes.dotnet))
+    $runtimeManifest | ConvertTo-Json -Depth 6 |
+        Set-Content -LiteralPath (Join-Path $ResultsDirectory 'runtime-manifest.json')
+    Invoke-Logged 'composed-runtimes' $sdkDotnet @('--list-runtimes')
     $acceptance = Join-Path $TestFxRoot 'test\IntegrationTests\Microsoft.Testing.Platform.Acceptance.IntegrationTests\Microsoft.Testing.Platform.Acceptance.IntegrationTests.csproj'
     $frameworkOutput = @(Invoke-Logged 'acceptance-framework' $bootstrap @('msbuild', $acceptance, '-nologo', "-p:Configuration=$Configuration", '-getProperty:NetCurrent') -PassThru)
     $framework = ($frameworkOutput | Where-Object { -not [string]::IsNullOrWhiteSpace("$_") } | Select-Object -Last 1).ToString().Trim()
@@ -251,6 +260,8 @@ finally {
             sdkVersion = if ($matchingSdks.Count -eq 1) { $matchingSdks[0].Name } else { $null }
             browser = $BrowserExecutable; browserVersion = "$browserVersion"
             configuration = $Configuration; commands = $commands.ToArray()
+            runtimePrerequisites = @($runtimeManifest)
+            runtimeLayoutAugmented = $runtimeManifest.Count -gt 0
         } | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath (Join-Path $ResultsDirectory 'evidence.json')
     }
     finally {
