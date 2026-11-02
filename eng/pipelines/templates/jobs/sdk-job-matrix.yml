@@ -3,7 +3,6 @@ parameters:
     templateFolderName: templates
   locBranch: ''
   runTests: true
-  publishDotnetupVariants: false
   timeoutInMinutes: ''
   additionalWindowsJobParameterSets: []
   ### WINDOWS ###

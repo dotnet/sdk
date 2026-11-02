@@ -1,4 +1,4 @@
-# Building dotnetup release candidates
+# Building and releasing dotnetup
 
 The official `dotnet-dnup-official-ci` pipeline builds three variants in one Arcade
 invocation on each RID agent. Intermediate and output directories are isolated; the
@@ -30,21 +30,35 @@ To produce variants locally:
 
 ```powershell
 .\eng\common\build.ps1 -restore -build -pack -configuration Release `
-    /p:BuildDotnetupVariants=true /p:DotnetupBuildVariant=daily
+    /p:BuildDotnetupVariants=true
 ```
 
+The build selects each variant internally. Daily uses the normal `artifacts` root;
+preview and GA use `artifacts\preview` and `artifacts\ga` for their isolated outputs.
 The pipeline additionally signs and publishes the candidates. Local nonofficial
 builds retain Arcade's development versions; an `OfficialBuildId` produces the
 date-stamped identities shown above.
 
-## Publishing boundaries
+## Releasing
 
-Only non-test official runs on `dnup`, `release/dnup`, or `release/dotnetup` (and the
-explicit corresponding internal release branches) immediately publish daily assets.
-User/dev branches can register daily assets in BAR but do **not** run the explicit
-Darc publishing step. No preview or GA assets can be promoted through the daily BAR
-record.
+Daily publication uses the build's configured Maestro default channels. Preview and
+GA promotion consume the corresponding pipeline artifacts, without rebuilding or
+restamping the binaries.
 
-Do not use the former `BuildQuality=preview` Maestro workaround: it changes link
-names but cannot select or rebrand preview binaries. Preview/GA promotion must select
-the corresponding pipeline artifacts without rebuilding or restamping.
+1. Select the input run from
+   [dotnet-dnup-official-ci](https://dev.azure.com/dnceng/internal/_build?definitionId=1544).
+2. Run [dotnetup-release](https://dev.azure.com/dnceng/internal/_build?definitionId=1710).
+   Select that run for the `candidate` pipeline resource and choose `preview` or `ga`
+   for `quality`. The source run is an Azure DevOps build, not a BAR build ID.
+3. Inspect `release-plan.json` attached to the release execution task's logs.
+   The planner validates the eight RID manifests against the selected build and final-byte
+   checksums before generating any publication operations.
+
+The release pipeline is currently **dry-run only**. It prints the versioned uploads
+to both CDN origin accounts and the conditional aka.ms link updates; it does not call
+their write APIs. Aka.ms ownership parameters remain `UNCONFIGURED` until approved.
+
+Preview links use `https://aka.ms/dotnet/dotnetup/preview/`; GA links use
+`https://aka.ms/dotnet/dotnetup/stable/`. GA plans remain explicitly marked as
+placeholders. Each plan contains 40 blob uploads and 20 link operations, including
+the bootstrap scripts and checksums.

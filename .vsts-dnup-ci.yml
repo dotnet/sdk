@@ -194,7 +194,6 @@ extends:
         ############### WINDOWS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
-            publishDotnetupVariants: true
             pool:
               name: $(DncEngInternalBuildPool)
               image: windows.vs2026.amd64
@@ -214,7 +213,7 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true /p:DotnetupBuildVariant=daily
+              projectsArgument: /p:BuildDotnetupVariants=true
               enableDefaultArtifacts: true
               runTests: false
               variables:
@@ -224,7 +223,7 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true /p:DotnetupBuildVariant=daily
+              projectsArgument: /p:BuildDotnetupVariants=true
               enableDefaultArtifacts: true
               runTests: false
               variables:
@@ -233,7 +232,6 @@ extends:
         ############### LINUX ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
-            publishDotnetupVariants: true
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
@@ -255,7 +253,7 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true /p:DotnetupBuildVariant=daily
+              projectsArgument: /p:BuildDotnetupVariants=true
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
               enableDefaultArtifacts: true
               runTests: false
@@ -266,7 +264,7 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true /p:DotnetupBuildVariant=daily
+              projectsArgument: /p:BuildDotnetupVariants=true
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
               enableDefaultArtifacts: true
               runTests: false
@@ -277,7 +275,7 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true /p:DotnetupBuildVariant=daily
+              projectsArgument: /p:BuildDotnetupVariants=true
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
               enableDefaultArtifacts: true
               enableSbom: false
@@ -289,7 +287,7 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true /p:DotnetupBuildVariant=daily
+              projectsArgument: /p:BuildDotnetupVariants=true
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
               enableDefaultArtifacts: true
               enableSbom: false
@@ -298,7 +296,6 @@ extends:
         ############### MACOS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
-            publishDotnetupVariants: true
             pool:
               name: Azure Pipelines
               image: macOS-latest
@@ -317,7 +314,7 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true /p:DotnetupBuildVariant=daily
+              projectsArgument: /p:BuildDotnetupVariants=true
               enableDefaultArtifacts: true
               runTests: false
             - categoryName: Dotnetup
@@ -326,7 +323,7 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true /p:DotnetupBuildVariant=daily
+              projectsArgument: /p:BuildDotnetupVariants=true
               enableDefaultArtifacts: true
               runTests: false
 
@@ -339,8 +336,7 @@ extends:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
             publishUsingPipelines: true
-            # Dev and test builds may register daily assets, but must never update user feeds or links.
-            publishAssetsImmediately: ${{ and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest'), in(variables['Build.SourceBranch'], 'refs/heads/dnup', 'refs/heads/release/dnup', 'refs/heads/release/dotnetup', 'refs/heads/internal/release/dnup', 'refs/heads/internal/release/dotnetup')) }}
+            publishAssetsImmediately: true
             isAssetlessBuild: false
             repositoryAlias: self
             pool:

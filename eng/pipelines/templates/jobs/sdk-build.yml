@@ -35,7 +35,6 @@ parameters:
   # MSBuild /p:Projects argument used to scope the build to specific projects (e.g. a .slnf).
   # Defaults to empty, which builds the repo's default solution.
   projectsArgument: ''
-  publishDotnetupVariants: false
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -285,7 +284,7 @@ jobs:
           condition: always()
 
     ############### POST ###############
-    - ${{ if eq(parameters.publishDotnetupVariants, true) }}:
+    - ${{ if eq(parameters.categoryName, 'Dotnetup') }}:
       - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
         displayName: Publish dotnetup daily, preview, and GA candidates
         inputs:
