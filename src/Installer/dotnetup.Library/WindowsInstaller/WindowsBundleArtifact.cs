@@ -115,7 +115,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
     /// </summary>
     public bool TryRepair()
     {
-        if (_download is not VerifiedDownload download)
+        // Honor Ctrl+C from the install: start no further installers once the user asked to cancel.
+        if (_download is not VerifiedDownload download || _batchContext.IsCancellationRequested)
         {
             return false;
         }

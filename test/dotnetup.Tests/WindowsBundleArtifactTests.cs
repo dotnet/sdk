@@ -364,6 +364,20 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
+    public void CommitPreparedInstall_CancelledDuringInstallWithMissingFiles_DoesNotRepair()
+    {
+        var runner = new FakeRunner(exitCode: 0) { RequestCancellation = true };
+        using var prepared = Prepare(CreateArtifact(StableChannel, runner: runner), StableChannel);
+        var validator = new MockInstallationValidator(validateResult: false);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared, validator));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerPostInstallVerificationFailed);
+        ex.IsRepairFailed().Should().BeFalse("no repair should start after cancellation");
+        runner.Calls.Should().ContainSingle().Which.Arguments.Should().Equal(WindowsBundleArtifact.InstallArguments);
+    }
+
+    [TestMethod]
     [DataRow(1602, DotnetInstallErrorCode.OperationCancelled)]
     [DataRow(1223, DotnetInstallErrorCode.OperationCancelled)]
     [DataRow(1618, DotnetInstallErrorCode.InstallerBusy)]
