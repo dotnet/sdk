@@ -33,12 +33,10 @@ We will store the manifest in json format.  At the top level it should have a sc
 - Subcomponents
 
 RTM and servicing daily builds can have a build identity such as
-`11.0.100-rtm.26552.115` but install into `sdk/11.0.100`. In that case, the manifest
-keeps the build identity in `version` for channel matching and updates, and records
-`11.0.100` in `productVersion` for layout validation and stale-entry pruning.
-When `productVersion` is absent, the layout uses `version`, preserving existing
-manifest behavior. See the [manifest model](../../../../src/Installer/dotnetup.Library/DotnetupManifestData.cs)
-and [installation validator](../../../../src/Installer/dotnetup.Library/InstallationValidator.cs).
+`11.0.100-rtm.26552.115` but install into `sdk/11.0.100`. In that case, the manifest keeps:
+
+- `version` as `11.0.100-rtm.26552.115` for channel matching and updates, and records
+- `productVersion` as `11.0.100` for layout validation and stale-entry pruning.
 
 ### Subcomponent
 
