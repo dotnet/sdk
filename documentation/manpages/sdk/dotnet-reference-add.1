@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-reference-add" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-reference-add" "1" "2026-09-29" "" ".NET Documentation"
 .hy
 .SH dotnet reference add
 .PP
@@ -32,7 +32,7 @@ For more information, see More consistent command order.
 .IP
 .nf
 \f[C]
-dotnet reference add reference [-f|--framework <FRAMEWORK>]
+dotnet reference add [--file <FILE>] [-f|--framework <FRAMEWORK>]
      [--interactive] <PROJECT_REFERENCES> [--project <PROJECT>]
 
 dotnet reference add -h|--help
@@ -84,6 +84,14 @@ Specify one or more projects.
 Glob patterns (https://en.wikipedia.org/wiki/Glob_(programming)) are supported on Unix/Linux-based systems.
 .RE
 .SH OPTIONS
+.IP \[bu] 2
+\f[B]\f[VB]--file <FILE>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the file-based app to add project references to.
+For example, specify \f[V]app.cs\f[R] to add \f[V]#:project\f[R] directives to a file-based app.
+Available starting with .NET 11.
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
 .RS 2

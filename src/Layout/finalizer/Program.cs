@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
 
@@ -286,8 +287,15 @@ static void RemoveInstallStateFile(SdkFeatureBand featureBandVersion, string pla
     string programDataPath = Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData);
     string installStatePath = Path.Combine(programDataPath, "dotnet", "workloads", platform, featureBandVersion.ToString(), "installstate", "default.json");
 
+    if (!TrustedMachinePath.IsUnderRoot(installStatePath, TrustedMachinePath.ProgramDataDotnetRoot))
+    {
+        Logger.Log($"Install state path is outside trusted root: {installStatePath}");
+        return;
+    }
+
     if (File.Exists(installStatePath))
     {
+        TrustedMachinePath.ValidateProgramDataRoot();
         File.Delete(installStatePath);
         Logger.Log($"Deleted install state file: {installStatePath}");
 

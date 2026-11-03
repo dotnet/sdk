@@ -43,7 +43,7 @@ namespace Microsoft.NET.TestFramework
             {
                 RemainingArgs = new List<string>()
             };
-            Stack<string> argStack = new(args.Reverse());
+            Stack<string> argStack = new(((IEnumerable<string>)args).Reverse());
 
             while (argStack.Any())
             {

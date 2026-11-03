@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-test" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-test" "1" "2026-09-15" "" ".NET Documentation"
 .hy
 .SH dotnet test
 .PP
@@ -31,9 +31,9 @@ The test runner you use determines the available command-line options and behavi
 Test runner selection is available starting with .NET 10 SDK.
 In earlier versions of .NET, tests are always executed with VSTest.
 .RE
-.SS Choosing a test runner
+.SS Choose a test runner
 .PP
-To enable Microsoft.Testing.Platform (MTP), you need to specify the test runner in the \f[V]global.json\f[R] file:
+With the .NET 10 SDK and later versions, select Microsoft.Testing.Platform (MTP) in the \f[V]global.json\f[R] file:
 .IP
 .nf
 \f[C]
@@ -51,6 +51,25 @@ It is the current default and can be omitted.
 .PP
 The \f[V]dotnet test\f[R] experience for MTP is only supported in \f[V]Microsoft.Testing.Platform\f[R] version 1.7 and later.
 .RE
+.PP
+Starting with .NET 11 Preview 6, set the \f[V]DOTNET_TEST_RUNNER\f[R] environment variable to select the runner without changing \f[V]global.json\f[R].
+The environment variable accepts \f[V]VSTest\f[R] or \f[V]Microsoft.Testing.Platform\f[R], without regard to case, and overrides the \f[V]global.json\f[R] value:
+.IP
+.nf
+\f[C]
+$env:DOTNET_TEST_RUNNER = \[dq]Microsoft.Testing.Platform\[dq]
+dotnet test
+\f[R]
+.fi
+.IP
+.nf
+\f[C]
+DOTNET_TEST_RUNNER=Microsoft.Testing.Platform dotnet test
+\f[R]
+.fi
+.PP
+If the environment variable is empty or contains an unrecognized value, \f[V]dotnet test\f[R] uses the \f[V]global.json\f[R] value.
+If neither setting selects a runner, \f[V]dotnet test\f[R] uses VSTest.
 .SS Test runner documentation
 .PP
 The available command-line options, behavior, and capabilities differ depending on which test runner you use:
@@ -72,6 +91,10 @@ Testing with dotnet test
 dotnet test with VSTest
 .IP \[bu] 2
 dotnet test with MTP
+.IP \[bu] 2
+Microsoft.Testing.Platform overview
+.IP \[bu] 2
+Run tests with MSTest
 .IP \[bu] 2
 Frameworks and Targets
 .IP \[bu] 2

@@ -4,6 +4,7 @@
 #nullable disable
 
 using ManifestReaderTests;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -55,6 +56,18 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
             var exceptionThrown = Assert.Throws<GracefulException>(() => UninstallWorkload("mock-1", testDirectory, "6.0.100"));
             exceptionThrown.Message.Should().Contain("mock-1");
+        }
+
+        [Fact]
+        public void GivenWorkloadUninstallItGracefullyErrorsOnInvalidWorkloadName()
+        {
+            var testDirectory = _testAssetsManager.CreateTestDirectory().Path;
+            const string invalidWorkloadId = "../mock-1";
+
+            var exceptionThrown = Assert.Throws<GracefulException>(
+                () => UninstallWorkload(invalidWorkloadId, testDirectory, "6.0.100"));
+
+            exceptionThrown.Message.Should().Be(string.Format(CliCommandStrings.WorkloadNotRecognized, invalidWorkloadId));
         }
 
         [Theory]

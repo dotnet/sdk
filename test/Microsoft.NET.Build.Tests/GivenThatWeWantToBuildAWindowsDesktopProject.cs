@@ -322,7 +322,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void SupportedOSPlatformVersionCanBeSetInDirectoryBuildTargets()
         {
-            var testProject = new TestProject()
+            var testProject = new TestProject("DBPSupportedOS")
             {
                 Name = "App",
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0"
