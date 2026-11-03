@@ -171,6 +171,33 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
     }
 
     [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public void ItKeepsTraceLoggingInTheInvocationDirectory(bool multiThreaded, bool absoluteTracePath)
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", Guid.NewGuid().ToString())
+            .WithSource();
+        string relativeTracePath = Path.Combine("trace-output", "trace.log");
+        string tracePath = Path.Combine(testInstance.Path, relativeTracePath);
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("DOTNET_CLI_TEST_TRACEFILE", absoluteTracePath ? tracePath : relativeTracePath)
+            .WithEnvironmentVariable("MSBUILDFORCEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDENABLEMULTITHREADED", "0")
+            .WithEnvironmentVariable("MSBUILDDISABLEFEATURESFROMVERSION", "")
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:SingleDevice=true", "--no-progress", $"-mt:{multiThreaded}");
+
+        result.Should().Pass().And.HaveStdOutContaining("succeeded: 1");
+        result.StdOut.Should().NotContain("MSB4287").And.NotContain(nameof(DirectoryNotFoundException));
+        result.StdErr.Should().NotContain("MSB4287").And.NotContain(nameof(DirectoryNotFoundException));
+        File.Exists(tracePath).Should().BeTrue();
+        File.ReadAllText(tracePath).Should().Contain("Loaded project").And.Contain("Starting test process");
+    }
+
+    [TestMethod]
     [DataRow(false, "Restore")]
     [DataRow(true, "Restore")]
     [DataRow(false, "CoreCompile")]
