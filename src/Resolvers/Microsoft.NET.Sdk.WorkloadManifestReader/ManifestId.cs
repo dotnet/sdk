@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet;
+
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
     public struct ManifestId : IEquatable<ManifestId>, IComparable<ManifestId>
@@ -9,7 +11,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         public ManifestId(string id)
         {
-            _id = id?.ToLowerInvariant() ?? throw new ArgumentNullException(nameof(id));
+            if (!PathComponentUtilities.IsValidPathComponent(id))
+            {
+                throw new ArgumentException($"'{nameof(id)}' must be a valid path component", nameof(id));
+            }
+
+            _id = id.ToLowerInvariant();
         }
 
         public bool Equals(ManifestId other)

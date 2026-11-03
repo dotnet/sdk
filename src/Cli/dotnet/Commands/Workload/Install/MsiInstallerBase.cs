@@ -322,6 +322,14 @@ internal abstract class MsiInstallerBase(InstallElevationContextBase elevationCo
 
         if (IsElevated)
         {
+            // The cache lives below %ProgramData%\dotnet, which a standard user can pre-create. Prove that
+            // root is administrator-owned so the validated package path cannot have been substituted.
+            SecurityUtils.EnsureSecureProgramDataRoot();
+
+            // The unelevated client verified this payload before requesting elevation. Verify it again
+            // here so the process that executes the package is the one that authenticated it.
+            Cache.VerifyPackageSignature(packagePath);
+
             ConfigureInstall(logFile);
             string installProperties = InstallProperties.Create(InstallProperties.SystemComponent,
                 InstallProperties.FastInstall, InstallProperties.SuppressReboot,
