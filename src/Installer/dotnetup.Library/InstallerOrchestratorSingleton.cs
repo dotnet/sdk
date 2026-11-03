@@ -380,7 +380,7 @@ internal class InstallerOrchestratorSingleton
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
 
-            ThrowIfLayoutConflict(prepared, manifest, validator);
+            ThrowIfLayoutConflict(prepared, manifest);
 
             prepared.Artifact.Commit();
 
@@ -407,7 +407,7 @@ internal class InstallerOrchestratorSingleton
     /// Rejects an install whose on-disk version folder already holds a different build of the component,
     /// because extraction would keep the existing files while recording the new build.
     /// </summary>
-    private static void ThrowIfLayoutConflict(PreparedInstall prepared, DotnetupSharedManifest? manifest, IInstallationValidator validator)
+    private static void ThrowIfLayoutConflict(PreparedInstall prepared, DotnetupSharedManifest? manifest)
     {
         var install = prepared.Install;
         string component = install.Component.GetDisplayName();
@@ -425,13 +425,21 @@ internal class InstallerOrchestratorSingleton
                 component: install.Component.ToString());
         }
 
-        // Untracked roots don't record which build owns a folder, so an existing folder for a remapped build is a conflict.
-        if (manifest is null
-            && install.PayloadVersionOverride is not null
-            && prepared.Request.Options.InstallMechanism == InstallMechanism.Archive
-            && validator.Validate(install))
+        // A folder not recorded for this component (untracked root, or a tracked root with untracked files) has no known
+        // owning build, so an existing folder for a remapped build is a conflict. Extraction skips any existing folder.
+        // Assumption: only RTM or servicing daily builds (PayloadVersionOverride set) reach this, so other existing installs don't fail here.
+        if (install.PayloadVersionOverride is null
+            || prepared.Request.Options.InstallMechanism != InstallMechanism.Archive
+            || InstallationValidator.GetComponentDirectory(install.InstallRoot.Path!, install.Component, install.LayoutVersion.ToString()) is not { } directory
+            || !Directory.Exists(directory))
         {
-            string? directory = InstallationValidator.GetComponentDirectory(install.InstallRoot.Path!, install.Component, install.LayoutVersion.ToString());
+            return;
+        }
+
+        // A folder bundled with a tracked installation (such as an SDK's runtime) is left to the existing behavior.
+        string subcomponent = Path.GetRelativePath(install.InstallRoot.Path!, directory).Replace('\\', '/');
+        if (manifest?.GetInstallations(install.InstallRoot).Any(i => i.Subcomponents.Contains(subcomponent, StringComparer.OrdinalIgnoreCase)) != true)
+        {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InstallLayoutConflict,
                 string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictUntracked, component, install.Version, directory, install.LayoutVersion),
