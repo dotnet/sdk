@@ -18,6 +18,14 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 var absoluteFolderPath = Path.GetFullPath(folderPath, Directory.GetCurrentDirectory());
 
                 var filePaths = GetMatchingFilePaths(absoluteFolderPath, fileMatcher);
+
+                return LoadSolutionInfoFromFiles(absoluteFolderPath, filePaths);
+            }
+
+            public static SolutionInfo LoadSolutionInfoFromFiles(string folderPath, ImmutableArray<string> filePaths)
+            {
+                var absoluteFolderPath = Path.GetFullPath(folderPath, Directory.GetCurrentDirectory());
+
                 var editorConfigPaths = EditorConfigFinder.GetEditorConfigPathsForFiles(filePaths);
 
                 var projectInfos = ImmutableArray.CreateBuilder<ProjectInfo>(ProjectLoaders.Length);

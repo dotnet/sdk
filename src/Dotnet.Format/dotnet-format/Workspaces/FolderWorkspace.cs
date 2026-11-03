@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Text;
@@ -37,6 +38,22 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
             ClearSolution();
 
             var solutionInfo = FolderSolutionLoader.LoadSolutionInfo(folderPath, fileMatcher);
+
+            OnSolutionAdded(solutionInfo);
+
+            return CurrentSolution;
+        }
+
+        public Solution OpenFiles(string folderPath, ImmutableArray<string> filePaths)
+        {
+            if (string.IsNullOrEmpty(folderPath) || !Directory.Exists(folderPath))
+            {
+                throw new ArgumentException($"Folder '{folderPath}' does not exist.", nameof(folderPath));
+            }
+
+            ClearSolution();
+
+            var solutionInfo = FolderSolutionLoader.LoadSolutionInfoFromFiles(folderPath, filePaths);
 
             OnSolutionAdded(solutionInfo);
 

@@ -10,6 +10,15 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
     {
         private static string[] AllFilesList => new[] { @"**/*.*" };
 
+        // Directories that an MSBuild workspace would never turn into documents, so they can be
+        // skipped while enumerating a workspace without running MSBuild.
+        private static string[] FormattableIgnoredDirectories => new[]
+        {
+            @"**/.git/**",
+            @"**/.vs/**",
+            @"**/node_modules/**",
+        };
+
         public static SourceFileMatcher CreateMatcher(string[] include, string[] exclude)
             => new SourceFileMatcher(include, exclude);
 
@@ -38,5 +47,20 @@ namespace Microsoft.CodeAnalysis.Tools.Utilities
 
         public IEnumerable<string> GetResultsInFullPath(string directoryPath)
             => _matcher.GetResultsInFullPath(directoryPath);
+
+        /// <summary>
+        /// Gets the files beneath <paramref name="directoryPath"/> that an MSBuild workspace could
+        /// turn into documents, skipping the directories that would never be part of it. The
+        /// include/exclude patterns are intentionally not applied here because those patterns are
+        /// meant to be matched against absolute file paths (see <see cref="HasMatches(string)"/>),
+        /// so callers filter the returned paths with <see cref="HasMatches(string)"/>.
+        /// </summary>
+        public IEnumerable<string> GetFormattableResultsInFullPath(string directoryPath)
+        {
+            var matcher = new Matcher(StringComparison.OrdinalIgnoreCase);
+            matcher.AddIncludePatterns(AllFilesList);
+            matcher.AddExcludePatterns(FormattableIgnoredDirectories);
+            return matcher.GetResultsInFullPath(directoryPath);
+        }
     }
 }
