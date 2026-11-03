@@ -417,7 +417,7 @@ internal class InstallerOrchestratorSingleton
             string action = owningSpecs.Count == 0
                 ? string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictUninstallVersion, component, existing.Version)
                 : string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictRunCommand,
-                    string.Join(", ", owningSpecs.Select(spec => $"'{GetUninstallCommand(spec, install.InstallRoot)}'")));
+                    string.Join(", ", owningSpecs.Select(spec => $"'{GetUninstallCommand(spec, install.InstallRoot, prepared.Request.Options.ManifestPath)}'")));
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InstallLayoutConflict,
                 string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflict, component, install.Version, existing.Version, install.LayoutVersion, action),
@@ -448,12 +448,18 @@ internal class InstallerOrchestratorSingleton
         }
     }
 
-    private static string GetUninstallCommand(InstallSpec spec, DotnetInstallRoot installRoot)
+    private static string GetUninstallCommand(InstallSpec spec, DotnetInstallRoot installRoot, string? manifestPath)
     {
         string target = spec.Component == InstallComponent.SDK
             ? $"sdk uninstall {spec.VersionOrChannel}"
             : $"runtime uninstall {Commands.Runtime.Install.RuntimeInstallCommand.FormatComponentSpec(spec.Component, spec.VersionOrChannel)}";
-        return $"dotnetup {target} {CommonOptions.InstallPathOption.Name} \"{installRoot.Path}\"";
+        string command = $"dotnetup {target} {CommonOptions.InstallPathOption.Name} \"{installRoot.Path}\"";
+        if (spec.InstallSource != InstallSource.Explicit)
+        {
+            command += $" {CommonOptions.SourceOption.Name} {spec.InstallSource.ToString().ToLowerInvariant()}";
+        }
+
+        return manifestPath is null ? command : $"{command} {CommonOptions.ManifestPathOption.Name} \"{manifestPath}\"";
     }
 
     /// <summary>

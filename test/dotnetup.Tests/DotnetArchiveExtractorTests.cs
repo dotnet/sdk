@@ -125,14 +125,36 @@ public class DotnetArchiveExtractorTests
         File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("existing");
     }
 
+    [TestMethod]
+    public void Commit_LayoutConflictWithGlobalJsonSpec_SuggestsSourceAndManifestPath()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        var globalJson = Path.Combine(testEnv.TempRoot, "global.json");
+        File.WriteAllText(globalJson, """{"sdk":{"version":"11.0.100"}}""");
+        using (var existing = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "existing", globalJsonPath: globalJson))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(existing);
+        }
+        using var replacement = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "replacement");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(replacement));
+
+        ex.Message.Should().Contain("--source globaljson").And.Contain($"--manifest-path \"{testEnv.ManifestPath}\"");
+    }
+
     private static InstallerOrchestratorSingleton.PreparedInstall PrepareArchiveInstall(
         TestEnvironment testEnv, InstallComponent component, string channel, string version, string? payloadVersion,
-        string markerPath, string markerContent, bool untracked = false)
+        string markerPath, string markerContent, bool untracked = false, string? globalJsonPath = null)
     {
         var resolvedVersion = new ReleaseVersion(version);
         var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
         var request = new DotnetInstallRequest(root, new UpdateChannel(channel), component,
-            new InstallRequestOptions { ManifestPath = testEnv.ManifestPath, Untracked = untracked });
+            new InstallRequestOptions
+            {
+                ManifestPath = testEnv.ManifestPath, Untracked = untracked, GlobalJsonPath = globalJsonPath,
+                InstallSource = globalJsonPath is null ? InstallRequestSource.Explicit : InstallRequestSource.GlobalJson,
+            });
         var downloader = new MockArchiveDownloader
         {
             ArchiveFileExtension = ".tar.gz",
