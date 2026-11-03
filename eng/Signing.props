@@ -66,8 +66,10 @@
     <FileSignInfo Include="Humanizer.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="MessagePack.Annotations.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Nerdbank.MessagePack.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Nerdbank.Streams.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Newtonsoft.Json.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="PolyType.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="OpenTelemetry.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="OpenTelemetry.Api.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="OpenTelemetry.Api.ProviderBuilderExtensions.dll" CertificateName="$(ExternalCertificateId)" />

@@ -4,6 +4,9 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <CopyBuildOutputToPublishDirectory>false</CopyBuildOutputToPublishDirectory>
+    <!-- Only content files are harvested from Microsoft.NET.ProjectData.Tasks, so don't pin its
+         transitive NuGet dependencies to this band's NuGet version. -->
+    <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
   </PropertyGroup>
 
   <ItemGroup>

@@ -21,13 +21,18 @@ test/Microsoft.NET.Sdk.StaticWebAssets.Tests/
 └── *.cs                            # Integration tests
 ```
 
-`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets` is shared by the Web and
-WebAssembly SDKs. It exists here, rather than in `dotnet watch`, because the browser tools
+[`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets`](Targets/Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets)
+is shared by the [Web](../WebSdk/Web/Targets/Sdk.Server.targets) and
+[WebAssembly](../WasmSdk/Sdk/Sdk.targets) SDKs. Each imports it after setting its browser
+tools properties, so `HotReloadBrowserToolsEnabled` is available during project evaluation,
+including design-time builds. Keep these imports after the SDK-specific property groups.
+It exists here, rather than in `dotnet watch`, because the browser tools
 client must be an application static asset: the browser authenticates the watch provider
 with a build-pinned public key, so the provider must not be the source of the executable
 code, nor of the key. This target therefore also generates the keypair (via
 `EnsureHotReloadBrowserToolsKey`) into `obj/<config>/<tfm>/HotReload/` and embeds only
-the public half in the generated configuration module. The existing
+the public half in the generated configuration module. Key handling is shared with the
+mobile SDK task through [`HotReloadKeyPair`](../Common/HotReloadKeyPair.cs). The existing
 `EnableHotReloadInRuntimeConfigDevFile` property controls generation and defaults to
 `true` for Debug builds; there is no browser-tools-specific watch-to-MSBuild property.
 The generated initializer checks the provider-owned
