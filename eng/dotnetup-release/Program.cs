@@ -23,6 +23,16 @@ internal static class Program
             string json = JsonSerializer.Serialize(plan, new JsonSerializerOptions(JsonSerializerDefaults.Web) { WriteIndented = true });
             await File.WriteAllTextAsync(args[4], json + Environment.NewLine).ConfigureAwait(false);
             Console.WriteLine(json);
+            foreach (BlobUpload upload in plan.Uploads)
+            {
+                UploadBlob(upload);
+            }
+
+            foreach (AkaUpdate link in plan.Links)
+            {
+                UpdateAkaLink(link);
+            }
+
             return 0;
         }
         catch (Exception exception) when (exception is IOException or InvalidDataException or ArgumentException or JsonException or InvalidOperationException or CryptographicException)
@@ -30,5 +40,17 @@ internal static class Program
             Console.Error.WriteLine($"Release planning failed: {exception.Message}");
             return 1;
         }
+    }
+
+    private static void UploadBlob(BlobUpload upload)
+    {
+        // TODO: Implement authenticated conditional uploads and verify bytes/headers before updating any links.
+        Console.WriteLine($"DRY RUN: would {upload.Method} '{upload.Source}' to '{upload.Destination}' with If-None-Match: *; reuse only identical bytes, then verify SHA-512 and headers.");
+    }
+
+    private static void UpdateAkaLink(AkaUpdate link)
+    {
+        // TODO: Implement authenticated GET followed by PUT on 200 or POST on 404; fail on every other status.
+        Console.WriteLine($"DRY RUN: would {link.ReadMethod} '{link.ReadUri}'; on 200, {link.IfExistsMethod} '{link.ReadUri}' targeting '{link.UpdateBody.TargetUrl}'; on 404, {link.IfNotFoundMethod} '{link.CreateUri}' with short URL '{link.CreateBody.ShortUrl}' targeting '{link.CreateBody.TargetUrl}'; fail on any other status.");
     }
 }
