@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <!-- dotnetup pins its own telemetry package versions; see the imported file. -->
   <Import Project="$(RepoRoot)eng\DotnetupTelemetryPackageVersions.props" />
   <PropertyGroup>
@@ -26,7 +26,7 @@
   <ItemGroup>
     <InternalsVisibleTo Include="dotnet.Tests" />
     <InternalsVisibleTo Include="dotnet-aot.Tests" />
-    <InternalsVisibleTo Include="Microsoft.DotNet.Cli.Telemetry.Tests" />
+    <InternalsVisibleTo Include="dotnetup.Telemetry.Tests" />
   </ItemGroup>
 
   <!-- Surface the Azure Monitor exporter package version as assembly metadata so

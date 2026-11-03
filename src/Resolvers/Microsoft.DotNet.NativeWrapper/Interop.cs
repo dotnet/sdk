@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.NativeWrapper
         static Interop()
         {
 #if NET
-            if (!OperatingSystem.IsWindows())
+            if (!RunningOnWindows)
             {
                 s_hostFxrPath = (string)AppContext.GetData(Constants.RuntimeProperty.HostFxrPath)!;
                 System.Runtime.Loader.AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly())!.ResolvingUnmanagedDll += HostFxrResolver;
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.NativeWrapper
 
         private static void PreloadWindowsLibrary(string dllFileName)
         {
-            string? basePath = AppContext.BaseDirectory;
+            string? basePath = Path.GetDirectoryName(typeof(Interop).Assembly.Location);
             string architecture = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
             string dllPath = Path.Combine(basePath ?? string.Empty, architecture, $"{dllFileName}.dll");
 
@@ -92,11 +92,6 @@ namespace Microsoft.DotNet.NativeWrapper
 
             return handle;
         }
-#endif
-
-#if NET
-        [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
-        private static partial nint LoadLibraryExW(string lpFileName, nint hFile, int dwFlags);
 #endif
 
         /// <summary>
@@ -285,7 +280,6 @@ namespace Microsoft.DotNet.NativeWrapper
             hostfxr_get_dotnet_environment_info_result_fn result,
             nint resultContext);
 
-#if !NET
         /// <summary>
         ///  Callback delegate for receiving error messages from the hosting layer.
         /// </summary>
@@ -299,7 +293,6 @@ namespace Microsoft.DotNet.NativeWrapper
         /// </remarks>
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         internal delegate void hostfxr_error_writer_fn(PlatformString message);
-#endif
 
         /// <summary>
         ///  Sets a callback for receiving error messages from the hosting layer.
@@ -580,26 +573,5 @@ namespace Microsoft.DotNet.NativeWrapper
             nint hostContextHandle,
             string name,
             string? value);
-
-#if NET
-        internal static partial class Unix
-        {
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-            private static partial nint realpath(string path, nint buffer);
-
-            [LibraryImport("libc", StringMarshalling = StringMarshalling.Utf8)]
-            [UnmanagedCallConv(CallConvs = [typeof(CallConvCdecl)])]
-            private static partial void free(nint ptr);
-
-            public static string? realpath(string path)
-            {
-                nint ptr = realpath(path, nint.Zero);
-                string? result = Marshal.PtrToStringUTF8(ptr);
-                free(ptr);
-                return result;
-            }
-        }
-#endif
     }
 }
