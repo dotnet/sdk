@@ -378,9 +378,9 @@ public class FishShellProvider : IShellProvider
     private static void WriteCandidate(IndentedTextWriter writer, string label, string? description)
     {
         if (!string.IsNullOrEmpty(description))
-            writer.WriteLine($"printf '%s\\t%s\\n' {FishEscape(label)} {FishEscape(description)}");
+            writer.WriteLine($"printf '%s\\t%s\\n' {ShellInfo.QuoteLiteralArgument(ShellType.Fish, label)} {ShellInfo.QuoteLiteralArgument(ShellType.Fish, description)}");
         else
-            writer.WriteLine($"printf '%s\\n' {FishEscape(label)}");
+            writer.WriteLine($"printf '%s\\n' {ShellInfo.QuoteLiteralArgument(ShellType.Fish, label)}");
     }
 
     /// <summary>
@@ -391,16 +391,6 @@ public class FishShellProvider : IShellProvider
     internal static string GenerateDynamicCall()
     {
         return "command $tokens[1] complete --position (commandline -C) (commandline -cp) 2>/dev/null";
-    }
-
-    /// <summary>
-    /// Escape a string for use in a fish single-quoted string.
-    /// Fish single-quoted strings support \' and \\ as escape sequences.
-    /// </summary>
-    internal static string FishEscape(string? s)
-    {
-        if (string.IsNullOrEmpty(s)) return "''";
-        return "'" + s.Replace("\\", "\\\\").Replace("'", "\\'") + "'";
     }
 
     private static string SanitizeDescription(string? s) =>

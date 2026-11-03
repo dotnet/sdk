@@ -224,9 +224,22 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
         [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+        [DataRow("nu")]
+        [DataRow("nushell")]
+        public void GivenNushellExecutableAliasesItUsesNushellInstructions(string shell)
+        {
+            var output = GetAdditionalShellInstructions(shell, "/home/user");
+
+            output.Should().Contain("$nu.config-path / $nu.env-path");
+            output.Should().Contain("$env.PATH = ($env.PATH | append r#'/home/user/.dotnet/tools'#)");
+        }
+
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         [DataRow("fish", "fish_add_path --append --path '/home/a \\'quote\\' \"$value`command`\\\\!history/.dotnet/tools'")]
         [DataRow("pwsh", "$env:PATH += [System.IO.Path]::PathSeparator + '/home/a ''quote'' \"$value`command`\\!history/.dotnet/tools'")]
         [DataRow("nu", "$env.PATH = ($env.PATH | append r#'/home/a 'quote' \"$value`command`\\!history/.dotnet/tools'#)")]
+        [DataRow("nushell", "$env.PATH = ($env.PATH | append r#'/home/a 'quote' \"$value`command`\\!history/.dotnet/tools'#)")]
         public void GivenAdditionalShellsItQuotesMetacharactersLiterally(string shell, string expectedCommand)
         {
             GetAdditionalShellInstructions(shell, "/home/a 'quote' \"$value`command`\\!history")

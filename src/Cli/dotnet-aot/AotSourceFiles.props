@@ -77,6 +77,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\WindowsEnvironmentPath.cs" Link="ShellShim\WindowsEnvironmentPath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\DoNothingEnvironmentPath.cs" Link="ShellShim\DoNothingEnvironmentPath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\LinuxEnvironmentPath.cs" Link="ShellShim\LinuxEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\ShellPathInstructions.cs" Link="ShellShim\ShellPathInstructions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\OsxBashEnvironmentPath.cs" Link="ShellShim\OsxBashEnvironmentPath.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\OsxZshEnvironmentPathInstruction.cs" Link="ShellShim\OsxZshEnvironmentPathInstruction.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\ZshDetector.cs" Link="ShellShim\ZshDetector.cs" />
