@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.InteropServices;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
@@ -9,6 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Strings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -99,6 +101,128 @@ public class InitFormModelTests
         accessModeField.DisplayValue.Should().Be(DotnetAccessMode.Shell.ToString());
         accessModeField.IsChangedFromDefault.Should().BeFalse();
         model.SelectedAccessMode().Should().Be(DotnetAccessMode.Shell);
+    }
+
+    [TestMethod]
+    public void AdminAccessModeChoice_IsOfferedOnlyOnWindows()
+    {
+        var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+
+        bool hasAdmin = accessModeField.Choices.Any(choice => choice.Title == DotnetAccessMode.Admin.ToString());
+
+        hasAdmin.Should().Be(OperatingSystem.IsWindows());
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void AdminAccessModeChoice_MapsToAdminSelection()
+    {
+        var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+        int adminIndex = accessModeField.Choices
+            .Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == DotnetAccessMode.Admin.ToString())
+            .index;
+
+        accessModeField.SelectChoice(adminIndex);
+
+        model.SelectedAccessMode().Should().Be(DotnetAccessMode.Admin);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void AdminAccessMode_ShowsTradeoffsOnlyAsHighlightedDetail()
+    {
+        var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
+        FormField accessMode = model.Fields.Single(field => field.Label == "Access mode");
+        int adminIndex = accessMode.Choices.Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == "Admin").index;
+
+        accessMode.Choices[adminIndex].HelperText.Should().Be(Strings.AccessModeAdminDescription);
+        model.BuildDerivedDetailLines(accessMode, adminIndex).Should().ContainSingle()
+            .Which.Label.Should().Be(Strings.AccessModeAdminDetails);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [DataRow(Architecture.X64, InstallArchitecture.x64, @"C:\PF\dotnet")]
+    [DataRow(Architecture.X64, InstallArchitecture.x86, @"C:\PFx86\dotnet")]
+    [DataRow(Architecture.Arm64, InstallArchitecture.arm64, @"C:\PF\dotnet")]
+    [DataRow(Architecture.Arm64, InstallArchitecture.x64, @"C:\PF\dotnet\x64")]
+    [DataRow(Architecture.Arm64, InstallArchitecture.x86, @"C:\PFx86\dotnet")]
+    [DataRow(Architecture.X86, InstallArchitecture.x86, @"C:\PF\dotnet")]
+    internal void AdminInstallPath_UsesSystemRootForPayloadArchitecture(
+        Architecture osArchitecture,
+        InstallArchitecture payloadArchitecture,
+        string expectedPath)
+    {
+        InitFormDefaults defaults = CreateDefaults(
+            new DefaultChannelDisplay("9.0.100", GlobalJsonPath: null),
+            accessMode: DotnetAccessMode.Admin) with
+        {
+            InstallRoot = new DotnetInstallRoot(@"D:\custom\dotnet", payloadArchitecture),
+        };
+        var resolver = new AdminInstallRootResolver(osArchitecture, @"C:\PF", @"C:\PFx86");
+
+        InitFormModel model = InitFormModel.Create(defaults, shellProvider: null, resolver);
+
+        model.InstallPath.Should().Be(expectedPath);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    [DataRow(DotnetAccessMode.None)]
+    [DataRow(DotnetAccessMode.Shell)]
+    [DataRow(DotnetAccessMode.Everywhere)]
+    internal void SelectingAdminInstallPath_RestoresCustomUserRootWhenLeaving(DotnetAccessMode accessMode)
+    {
+        const string userPath = @"D:\custom\dotnet";
+        InitFormDefaults defaults = CreateDefaults(
+            new DefaultChannelDisplay("9.0.100", GlobalJsonPath: null),
+            accessMode: accessMode) with
+        {
+            InstallRoot = new DotnetInstallRoot(userPath, InstallArchitecture.x64),
+        };
+        var resolver = new AdminInstallRootResolver(Architecture.Arm64, @"C:\PF", @"C:\PFx86");
+        InitFormModel model = InitFormModel.Create(defaults, shellProvider: null, resolver);
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+        int userIndex = accessModeField.SelectedIndex;
+        int adminIndex = accessModeField.Choices
+            .Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == DotnetAccessMode.Admin.ToString()).index;
+        model.InstallPath.Should().Be(userPath);
+
+        accessModeField.SelectChoice(adminIndex);
+
+        model.InstallPath.Should().Be(@"C:\PF\dotnet\x64");
+
+        accessModeField.SelectChoice(userIndex);
+
+        model.InstallPath.Should().Be(userPath);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void AdminAccessMode_HidesMigrationAndRestoresSelectionWhenLeaving()
+    {
+        var model = CreateModel(
+            new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
+            [CreateMigration("10.0.1xx", "10.0.100")],
+            DotnetAccessMode.Everywhere);
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+        int everywhereIndex = accessModeField.SelectedIndex;
+        int adminIndex = accessModeField.Choices
+            .Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == DotnetAccessMode.Admin.ToString()).index;
+        migrationField.IsVisible.Should().BeTrue();
+        model.MigrateSelected().Should().BeTrue();
+
+        accessModeField.SelectChoice(adminIndex);
+
+        migrationField.IsVisible.Should().BeFalse();
+        model.MigrateSelected().Should().BeFalse();
+
+        accessModeField.SelectChoice(everywhereIndex);
+
+        migrationField.IsVisible.Should().BeTrue();
+        model.MigrateSelected().Should().BeTrue();
     }
 
     [TestMethod]

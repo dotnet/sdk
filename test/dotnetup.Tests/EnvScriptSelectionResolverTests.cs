@@ -35,6 +35,8 @@ public class EnvScriptSelectionResolverTests
     [DataRow(DotnetAccessMode.None, true, false, true)]
     [DataRow(DotnetAccessMode.Shell, false, true, false)]
     [DataRow(DotnetAccessMode.None, false, false, false)]
+    [DataRow(DotnetAccessMode.Admin, true, false, true)]
+    [DataRow(DotnetAccessMode.Admin, false, false, false)]
     internal void NoFlags_WithConfig_FollowsConfig(DotnetAccessMode accessMode, bool dotnetupOnPath, bool expectedDotnet, bool expectedDotnetup)
     {
         var result = Resolve(config: Config(accessMode, dotnetupOnPath));

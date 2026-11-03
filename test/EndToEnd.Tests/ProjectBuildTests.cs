@@ -404,8 +404,12 @@ namespace EndToEnd.Tests
             }
         }
 
-        private static string DetectExpectedDefaultFramework(string template = "")
+        private static string DetectExpectedDefaultFramework(string template)
         {
+            // NetTFMUpdate: Use the current product-pack TFM while templates are staged to net11.
+            return ToolsetInfo.CurrentTargetFramework;
+
+            /*
             string dotnetFolder = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
             string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
             int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
@@ -415,6 +419,7 @@ namespace EndToEnd.Tests
             }
 
             throw new Exception("Unsupported version of SDK");
+            */
         }
 
         private void TestTemplateCreateAndBuild(

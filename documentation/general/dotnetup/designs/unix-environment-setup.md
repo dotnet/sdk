@@ -1,6 +1,14 @@
-# Unix Environment Setup for dotnetup
+# Historical Unix Environment Setup Design for dotnetup
 
 ## Overview
+
+> [!IMPORTANT]
+> This document describes the original environment setup design and is retained
+> for historical context. The `defaultinstall` and `print-env-script` commands
+> described below have been replaced by the [`dotnetup env`](../reference/dotnetup-env.md)
+> command family. Use [`dotnetup env set`](../reference/dotnetup-env-set.md) to
+> configure access and [`dotnetup env script`](../reference/dotnetup-env-script.md)
+> to generate an activation script.
 
 dotnetup (upon user consent) configures the Unix shell environment so that .NET is available in every new terminal session. This involves modifying shell profile files to set the `PATH` and `DOTNET_ROOT` environment variables. The same mechanism also supports PowerShell on any platform.
 

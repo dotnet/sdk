@@ -15,7 +15,10 @@ internal class EnvSetCommand : CommandBase
     private readonly IEnvironmentStateInspector _inspector;
     private readonly IEnvShellProvider? _shellProvider;
 
-    public EnvSetCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null, IEnvironmentStateInspector? inspector = null) : base(result, "env set")
+    public EnvSetCommand(
+        ParseResult result,
+        IDotnetEnvironmentManager? dotnetEnvironment = null,
+        IEnvironmentStateInspector? inspector = null) : base(result, "env set")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _inspector = inspector ?? new EnvironmentStateInspector(_dotnetEnvironment);
@@ -23,6 +26,9 @@ internal class EnvSetCommand : CommandBase
         _dotnetupOnPathArg = result.GetValue(EnvSetCommandParser.DotnetupOnPathOption);
         _shellProvider = result.GetValue(CommonOptions.ShellOption);
     }
+
+    /// <inheritdoc/>
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
 
     protected override void ExecuteCore()
     {
@@ -64,6 +70,8 @@ internal class EnvSetCommand : CommandBase
         // dotnetup-on-PATH: explicit flag wins, otherwise keep the stored value, otherwise default on.
         bool targetDotnetupOnPath = _dotnetupOnPathArg ?? previous?.DotnetupOnPath ?? true;
 
-        EnvSettingsWriter.ApplyAndPersist(targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector);
+        EnvSettingsWriter.ApplyAndPersist(
+            targetEnv, targetDotnetupOnPath, _dotnetEnvironment, _shellProvider, _inspector);
     }
+
 }

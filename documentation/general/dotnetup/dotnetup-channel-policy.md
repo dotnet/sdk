@@ -10,7 +10,7 @@ This document describes the intended audience and quality bar for each `dotnetup
 
 The term `channel` in this document refers to one of three `dotnetup` release qualities. Each channel has a different audience and quality bar.
 
-`channel` may also refer to the .NET SDK or .NET Runtime version subscribed to by `dotnetup`, which is better outlined in [the getting started documentation](README.md#step-1-choose-a-channel).
+`channel` may also refer to the .NET SDK or .NET Runtime version subscribed to by `dotnetup`, which is better outlined in [the getting started documentation](README.md#choose-an-sdk-channel).
 
 `dotnetup` is a standalone tool with a lifecycle that is independent of the .NET SDK lifecycle.
 `dotnetup` releases in three channels:

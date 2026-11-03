@@ -40,6 +40,9 @@ internal static class CommandLineOptionMessageFieldsId
     public const ushort IsHidden = 3;
     public const ushort IsBuiltIn = 4;
     // Reserved: field ID 5 was ObsolescenceMessage, removed as unused.
+    public const ushort ProviderUid = 6;
+    public const ushort MinimumArity = 7;
+    public const ushort MaximumArity = 8;
 }
 
 // Reserved: serializer ID 4 was ModuleSerializer, removed as unused.

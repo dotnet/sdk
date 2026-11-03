@@ -20,18 +20,30 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     internal static DateTime? ParseSourceDateEpoch(string? value)
     {
+        return TryParseSourceDateEpoch(value, out DateTime? timestamp) ? timestamp : null;
+    }
+
+    internal static bool TryParseSourceDateEpoch(string? value, out DateTime? timestamp)
+    {
+        timestamp = null;
+        if (string.IsNullOrEmpty(value))
+        {
+            return true;
+        }
+
         if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
         {
-            return null;
+            return false;
         }
 
         try
         {
-            return DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
+            timestamp = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
+            return true;
         }
         catch (ArgumentOutOfRangeException)
         {
-            return null;
+            return false;
         }
     }
 
@@ -66,6 +78,41 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
+        KnownImageFormats? requestedImageFormat = null;
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
+            {
+                requestedImageFormat = imageFormat;
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
+                return !Log.HasLoggedErrors;
+            }
+        }
+
+        if (!TryParseSourceDateEpoch(SourceDateEpoch, out DateTime? sourceDateEpoch))
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidSourceDateEpoch), SourceDateEpoch);
+            return !Log.HasLoggedErrors;
+        }
+
+        string? archiveIncrementalFingerprint = null;
+        if (EnableArchiveIncrementalCache && !string.IsNullOrEmpty(BaseImageDigest))
+        {
+            archiveIncrementalFingerprint = ContainerArchiveCache.ComputeFingerprint(
+                this,
+                BaseImageDigest,
+                baseImageIsResolved: false,
+                cancellationToken);
+            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return true;
+            }
+        }
+
         bool credentialsSet = false;
         VSHostObject hostObj = new(HostObject, Log);
         if (hostObj.TryGetCredentials() is (string userName, string pass))
@@ -83,7 +130,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         try
         {
-            return await ExecuteAsyncCore(logger, msbuildLoggerFactory, cancellationToken).ConfigureAwait(false);
+            return await ExecuteAsyncCore(logger, msbuildLoggerFactory, archiveIncrementalFingerprint, requestedImageFormat, sourceDateEpoch, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -96,7 +143,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private async Task<bool> ExecuteAsyncCore(ILogger logger, ILoggerFactory msbuildLoggerFactory, CancellationToken cancellationToken)
+    private async Task<bool> ExecuteAsyncCore(
+        ILogger logger,
+        ILoggerFactory msbuildLoggerFactory,
+        string? archiveIncrementalFingerprint,
+        KnownImageFormats? requestedImageFormat,
+        DateTime? sourceDateEpoch,
+        CancellationToken cancellationToken)
     {
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
@@ -165,28 +218,30 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
+        if (EnableArchiveIncrementalCache && archiveIncrementalFingerprint is null)
+        {
+            archiveIncrementalFingerprint = ContainerArchiveCache.ComputeFingerprint(
+                this,
+                imageBuilder.BaseImageManifestDigest,
+                baseImageIsResolved: true,
+                cancellationToken);
+            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return true;
+            }
+        }
+
         (string message, object[] parameters) = SkipPublishing ?
             (Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
             (Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
         Log.LogMessage(MessageImportance.High, message, parameters);
 
-        KnownImageFormats? requestedImageFormat = null;
-        if (ImageFormat is not null)
-        {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                requestedImageFormat = imageFormat;
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
-        }
         imageBuilder.ManifestMediaType = ContainerHelpers.GetManifestMediaType(
             imageBuilder.ManifestMediaType,
             requestedImageFormat,
             destinationImageReference);
-        DateTime createdAt = ParseSourceDateEpoch(SourceDateEpoch) ?? DateTime.UtcNow;
+        DateTime createdAt = sourceDateEpoch ?? DateTime.UtcNow;
         var userId = imageBuilder.IsWindows ? null : ContainerHelpers.TryParseUserId(ContainerUser);
         Layer newLayer = Layer.FromDirectory(
             PublishDirectory,
@@ -266,6 +321,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, NoCache, Log, telemetry, cancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        if (archiveIncrementalFingerprint is not null && !Log.HasLoggedErrors)
+        {
+            ContainerArchiveCache.Save(this, archiveIncrementalFingerprint);
         }
 
         return !Log.HasLoggedErrors;

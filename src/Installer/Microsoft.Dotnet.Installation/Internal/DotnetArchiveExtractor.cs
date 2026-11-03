@@ -6,12 +6,12 @@ using Microsoft.Deployment.DotNet.Releases;
 
 namespace Microsoft.Dotnet.Installation.Internal;
 
-internal class DotnetArchiveExtractor : IDisposable
+internal class DotnetArchiveExtractor : IInstallArtifact
 {
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _resolvedVersion;
     private readonly IProgressTarget? _progressTarget;
-    private readonly IArchiveDownloader _archiveDownloader;
+    private readonly IArtifactDownloader _archiveDownloader;
     private readonly bool _ownsProgressReporter = true;
     private readonly int _versionDisplayWidth;
     internal ITarArchiveExtractor TarArchiveExtractor { get; set; }
@@ -25,12 +25,14 @@ internal class DotnetArchiveExtractor : IDisposable
     /// </summary>
     public IReadOnlyList<string> ExtractedSubcomponents => [.. _extractedSubcomponents];
 
+    public bool RequiresPostInstallValidation => true;
+
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
         IProgressTarget progressTarget,
-        IArchiveDownloader? archiveDownloader = null,
+        IArtifactDownloader? archiveDownloader = null,
         string? cacheDirectory = null)
         : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory, versionDisplayWidth: resolvedVersion.ToString().Length)
     {
@@ -47,7 +49,7 @@ internal class DotnetArchiveExtractor : IDisposable
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
         InstallBatchContext batchContext,
-        IArchiveDownloader? archiveDownloader = null,
+        IArtifactDownloader? archiveDownloader = null,
         string? cacheDirectory = null)
         : this(request, resolvedVersion, releaseManifest, archiveDownloader, cacheDirectory, batchContext.VersionDisplayWidth)
     {
@@ -59,7 +61,7 @@ internal class DotnetArchiveExtractor : IDisposable
         DotnetInstallRequest request,
         ReleaseVersion resolvedVersion,
         ReleaseManifest releaseManifest,
-        IArchiveDownloader? archiveDownloader,
+        IArtifactDownloader? archiveDownloader,
         string? cacheDirectory,
         int versionDisplayWidth)
     {
@@ -105,7 +107,7 @@ internal class DotnetArchiveExtractor : IDisposable
 
         try
         {
-            _archivePath = _archiveDownloader.DownloadArchiveWithVerification(_request, _resolvedVersion, archiveBasePath, reporter);
+            _archivePath = _archiveDownloader.DownloadVerifiedArtifact(_request, _resolvedVersion, archiveBasePath, reporter).Path;
         }
         catch (DotnetInstallException)
         {

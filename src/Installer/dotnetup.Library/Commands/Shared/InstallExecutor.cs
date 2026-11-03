@@ -73,6 +73,10 @@ internal class InstallExecutor
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
         int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);
         command.SetCommandTag(TelemetryTagNames.InstallResult, $"installed:{newlyInstalled},already_installed:{alreadyInstalled}");
+        if (GetRepairTagValue(batchResult) is string repairTag)
+        {
+            command.SetCommandTag(TelemetryTagNames.InstallRepair, repairTag);
+        }
 
         if (batchResult.Failures.Count > 0)
         {
@@ -86,8 +90,22 @@ internal class InstallExecutor
                 primary.AttachAdditionalFailure(batchResult.Failures[i].Exception);
             }
 
+            // DisplayBatchResults already printed every failure message.
+            primary.MarkReportedToUser();
+
             ExceptionDispatchInfo.Capture(primary).Throw();
         }
+    }
+
+    /// <summary>
+    /// The <see cref="TelemetryTagNames.InstallRepair"/> value for a batch, or <c>null</c> when no install
+    /// needed a repair.
+    /// </summary>
+    internal static string? GetRepairTagValue(InstallBatchResult batchResult)
+    {
+        int succeeded = batchResult.Successes.Count(r => r.Repaired);
+        int failed = batchResult.Failures.Count(f => f.Exception.IsRepairFailed());
+        return succeeded + failed == 0 ? null : $"succeeded:{succeeded},failed:{failed}";
     }
 
     /// <summary>

@@ -543,7 +543,7 @@ public class UninstallEndToEndTests : IDisposable
             arguments, captureOutput: true, workingDirectory: environment.TempRoot,
             environmentVariables: new Dictionary<string, string>
             {
-                ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = environment.TempRoot,
+                ["DOTNET_DOTNETUP_DATA_DIR"] = environment.TempRoot,
                 ["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1"
             },
             standardInput: input, timeoutMilliseconds: 60_000);

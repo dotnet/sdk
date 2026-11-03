@@ -110,6 +110,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("DOTNET_TEST_PARALLELIZATION_DIRECTORY", testInstance.Path)
                                     .Execute("--property", $"TestTfmsInParallel={testTfmsInParallel}");
 
             if (testTfmsInParallel)

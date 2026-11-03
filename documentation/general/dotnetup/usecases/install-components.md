@@ -9,8 +9,9 @@ ms.date: 08/07/2026
 
 ## Install SDKs
 
-With no channel, dotnetup uses the nearest usable `global.json` requirement.
-If none exists, it uses `latest`.
+With no channel, `dotnetup` reads the nearest existing `global.json`. If that
+file is malformed, the command fails. If the file has no usable SDK
+requirement, or if no file exists, it uses `latest`.
 
 ```dotnetcli
 dotnetup sdk install
@@ -47,15 +48,21 @@ dotnetup sdk install 10.0 --untracked --install-path .\.dotnet
 ```
 
 `dotnetup` does not list, update, or uninstall an untracked installation.
+Use a root that no tracked dotnetup installation uses. Garbage collection can
+remove untracked component directories inside a tracked root.
 
 Tracked installation protects roots that already contain unmanaged .NET
-artifacts. Use a new root, migrate the installation, or explicitly choose an
-untracked install.
+artifacts. Use a new empty root or explicitly choose an untracked install in a
+separate root.
 
 ## Migrate native-architecture components
 
-To copy matching components from system-managed .NET locations into the
-selected installation root, run:
+`dotnetup` detects SDKs and runtimes in system-managed .NET installations for
+the current architecture. It derives installation requirements and resolves
+them through the normal download process. The resolved version might differ
+from the source installation, and migration leaves the source unchanged.
+
+To install the detected components into the selected root, run:
 
 ```dotnetcli
 dotnetup sdk install --migrate-from-system

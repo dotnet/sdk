@@ -23,7 +23,7 @@ public class SelfUpdateSignatureTests
         var installed = CopySignedHost(files, "installed.exe");
 
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
-            SelfUpdateSignature.VerifyReplacement(installed, files.Paths.StagedPath));
+            SelfUpdateSignature.VerifyReplacementAuthenticodeSignature(installed, files.Paths.StagedPath));
 
         Assert.AreEqual(DotnetInstallErrorCode.SignatureVerificationFailed, exception.ErrorCode);
     }
@@ -37,7 +37,7 @@ public class SelfUpdateSignatureTests
         var installed = CopySignedHost(files, "installed.exe");
         var staged = CopySignedHost(files, "staged.exe");
 
-        SelfUpdateSignature.VerifyReplacement(installed, staged);
+        SelfUpdateSignature.VerifyReplacementAuthenticodeSignature(installed, staged);
     }
 
     [TestMethod]
@@ -45,7 +45,7 @@ public class SelfUpdateSignatureTests
     {
         using var files = new SelfUpdateTestFiles();
 
-        SelfUpdateSignature.VerifyReplacement(files.Paths.InstalledPath, files.Paths.StagedPath);
+        SelfUpdateSignature.VerifyReplacementAuthenticodeSignature(files.Paths.InstalledPath, files.Paths.StagedPath);
     }
 
     [SupportedOSPlatform("windows")]

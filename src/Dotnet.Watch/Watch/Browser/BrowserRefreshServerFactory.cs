@@ -20,14 +20,14 @@ namespace Microsoft.DotNet.Watch;
 /// build wrote to its intermediate output. Loading on connect allows the server to start before
 /// <c>dotnet run</c> builds the application and naturally observes key rotation after a clean.
 /// </summary>
-internal sealed class BrowserRefreshServerFactory : IDisposable
+internal sealed class BrowserRefreshServerFactory : IAsyncDisposable
 {
     private readonly Lock _serversGuard = new();
 
     // Null value is cached for project instances that are not web projects or do not support browser refresh for other reason.
     private readonly Dictionary<ProjectInstanceId, BrowserRefreshServer?> _servers = [];
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         BrowserRefreshServer?[] serversToDispose;
 
@@ -39,7 +39,10 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
         foreach (var server in serversToDispose)
         {
-            server?.Dispose();
+            if (server != null)
+            {
+                await server.DisposeAsync();
+            }
         };
     }
 
@@ -49,30 +52,14 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         bool hasExistingServer;
 
         var key = projectNode.ProjectInstance.GetId();
-        var browserToolsProject = appModel.BrowserToolsProject;
 
         lock (_serversGuard)
         {
             hasExistingServer = _servers.TryGetValue(key, out server);
 
-            if (server != null)
-            {
-                if (BrowserToolsBuildOutputs.TryGetFor(browserToolsProject, server.Logger) is not { } outputs)
-                {
-                    server.Dispose();
-                    _servers.Remove(key);
-                    server = null;
-                    hasExistingServer = false;
-                }
-                else
-                {
-                    server.UpdateSessionKeyFactory(outputs.CreateSessionKey);
-                }
-            }
-
             if (!hasExistingServer)
             {
-                server = appModel.TryCreateRefreshServer(browserToolsProject);
+                server = appModel.TryCreateRefreshServer();
                 _servers.Add(key, server);
             }
         }
@@ -85,8 +72,10 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
         if (!hasExistingServer)
         {
+            var webSocketConfig = await appModel.GetRefreshServerWebSocketConfigAsync(cancellationToken);
+    
             // Start the server we just created:
-            await server.StartAsync(cancellationToken);
+            await server.StartAsync(webSocketConfig, cancellationToken);
         }
 
         return server;

@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.Versioning;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -27,14 +26,11 @@ public class ScopedLockFileProcessTests
         var artifactsRoot = Environment.GetEnvironmentVariable("ArtifactsDir") ?? Path.GetTempPath();
         s_buildDirectory = Path.Combine(artifactsRoot, "lock-process-" + Guid.NewGuid().ToString("N"));
         var outputDirectory = Path.Combine(s_buildDirectory, "out");
-        var framework = new FrameworkName(typeof(ScopedLockFileProcessTests).Assembly
-            .GetCustomAttribute<TargetFrameworkAttribute>()!.FrameworkName);
         var startInfo = new ProcessStartInfo(s_dotnetPath) { UseShellExecute = false, WorkingDirectory = repoRoot };
         startInfo.ArgumentList.Add("build");
-        startInfo.ArgumentList.Add(Path.Combine(repoRoot, "test", "TestAssets", "ScopedLockFileProcess", "ScopedLockFileProcess.csproj"));
+        startInfo.ArgumentList.Add(Path.Combine(repoRoot, "test", "TestAssets", "Dotnetup", "ScopedLockFileProcess", "ScopedLockFileProcess.csproj"));
         startInfo.ArgumentList.Add("--output");
         startInfo.ArgumentList.Add(outputDirectory);
-        startInfo.ArgumentList.Add("/p:CurrentTargetFramework=net" + framework.Version.ToString(2));
         startInfo.ArgumentList.Add("/p:ArtifactsDir=" + s_buildDirectory + Path.DirectorySeparatorChar);
         startInfo.ArgumentList.Add("/p:BaseIntermediateOutputPath=" + Path.Combine(s_buildDirectory, "obj") + Path.DirectorySeparatorChar);
         startInfo.ArgumentList.Add("/nodeReuse:false");

@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate
     /// </summary>
     internal static class SelfUpdateSignature
     {
-        public static void VerifyReplacement(string installedPath, string stagedPath)
+        public static void VerifyReplacementAuthenticodeSignature(string installedPath, string stagedPath)
         {
 #if TARGET_WINDOWS
             if (!OperatingSystem.IsWindowsVersionAtLeast(5, 1, 2600) || Signature.IsAuthenticodeSigned(installedPath) != 0)

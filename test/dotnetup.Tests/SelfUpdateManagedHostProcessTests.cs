@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Reflection;
-using System.Runtime.Versioning;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
@@ -26,15 +25,12 @@ public class SelfUpdateManagedHostProcessTests
         string artifactsRoot = Environment.GetEnvironmentVariable("ArtifactsDir") ?? Path.GetTempPath();
         s_buildDirectory = Path.Combine(artifactsRoot, "managed-dotnetup-" + Guid.NewGuid().ToString("N"));
         string outputDirectory = Path.Combine(s_buildDirectory, "out");
-        var framework = new FrameworkName(typeof(SelfUpdateManagedHostProcessTests).Assembly
-            .GetCustomAttribute<TargetFrameworkAttribute>()!.FrameworkName);
         var startInfo = new ProcessStartInfo(s_dotnetPath) { UseShellExecute = false, WorkingDirectory = repoRoot };
         foreach (string argument in new[]
         {
             "build",
-            Path.Combine(repoRoot, "test", "TestAssets", "ManagedDotnetup", "ManagedDotnetup.csproj"),
+            Path.Combine(repoRoot, "test", "TestAssets", "Dotnetup", "ManagedDotnetup", "ManagedDotnetup.csproj"),
             "--output", outputDirectory,
-            "/p:CurrentTargetFramework=net" + framework.Version.ToString(2),
             "/p:ArtifactsDir=" + s_buildDirectory + Path.DirectorySeparatorChar,
             "/nodeReuse:false",
         })

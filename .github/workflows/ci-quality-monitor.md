@@ -6,7 +6,9 @@ description: Investigates public dotnet/sdk CI failures and identifies actionabl
 on:
   check_suite:
     types: [completed]
-  pull_request:
+  # Use the base-branch context so protected agent environments do not reject
+  # the synthetic refs/pull/<number>/merge ref. Never check out or execute PR code.
+  pull_request_target:
     types: [closed]
   schedule: daily
   workflow_dispatch:
@@ -17,14 +19,19 @@ on:
         type: string
   permissions: {}
 
+# Use explicit main-only checkouts; gh-aw rejects literal refs in its
+# top-level checkout configuration for pull_request_target.
+checkout: false
+
 concurrency:
   # GitHub evaluates workflow concurrency before any job-level `if`. Give
   # irrelevant check suites and unmerged PR closures unique groups so they
   # cannot fill the monitor queue before `collect` skips them. Use a new group
   # for actionable runs to leave the existing, permanently blocked queue
   # behind.
-  group: ${{ ((((github.event_name == 'check_suite' && github.event.check_suite.app.slug == 'azure-pipelines' && github.event.check_suite.conclusion != 'success') || (github.event_name == 'pull_request' && github.event.pull_request.merged == true) || (github.event_name != 'check_suite' && github.event_name != 'pull_request')) && 'ci-quality-monitor-v2') || format('ci-quality-monitor-skip-{0}', github.run_id)) }}
+  group: ${{ ((((github.event_name == 'check_suite' && github.event.check_suite.app.slug == 'azure-pipelines' && github.event.check_suite.conclusion != 'success') || (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true) || (github.event_name != 'check_suite' && github.event_name != 'pull_request_target')) && 'ci-quality-monitor-v2') || format('ci-quality-monitor-skip-{0}', github.run_id)) }}
   queue: max
+  job-discriminator: ${{ github.run_id }}
 
 env:
   DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -32,11 +39,11 @@ env:
 jobs:
   collect:
     if: >-
-      (github.event_name != 'check_suite' && github.event_name != 'pull_request') ||
+      (github.event_name != 'check_suite' && github.event_name != 'pull_request_target') ||
       (github.event_name == 'check_suite' &&
        github.event.check_suite.app.slug == 'azure-pipelines' &&
        github.event.check_suite.conclusion != 'success') ||
-      (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+      (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -50,6 +57,9 @@ jobs:
     steps:
       - name: Check out monitor configuration
         uses: actions/checkout@v7.0.1
+        with:
+          repository: ${{ github.repository }}
+          ref: main
       - name: Resolve Azure build from completed check suite
         if: github.event_name == 'check_suite'
         id: resolve-check-suite
@@ -162,6 +172,8 @@ jobs:
       - name: Check out monitor dispatch helper
         uses: actions/checkout@v7.0.1
         with:
+          repository: ${{ github.repository }}
+          ref: main
           persist-credentials: false
       - name: Dispatch Issue Monster for created issues
         uses: actions/github-script@v9.0.0
@@ -223,6 +235,12 @@ network:
 pre-steps:
   - name: Force fresh Copilot CLI install
     run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
+  - name: Check out monitor source
+    uses: actions/checkout@v7.0.1
+    with:
+      repository: ${{ github.repository }}
+      ref: main
+      persist-credentials: false
 
 tools:
   # cli-proxy + github.mode: gh-proxy route GitHub tools and Safe Outputs through the

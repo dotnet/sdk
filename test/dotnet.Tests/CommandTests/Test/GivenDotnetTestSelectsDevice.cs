@@ -46,6 +46,59 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             // The example hint in the error output should reference 'dotnet test' (not 'dotnet run').
             .And.HaveStdErrContaining("dotnet test --device")
             .And.NotHaveStdErrContaining("dotnet run --device");
+
+        result.StdErr?.Split(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            .Should().HaveCount(2, "the multiple-device diagnostic should be reported only once");
+    }
+
+    [TestMethod]
+    public void ItReportsNoDevicesForExplicitFrameworkWithoutClaimingMultipleDevices()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:NoDevices=true");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable)
+            .And.HaveStdErrContaining($"target framework '{ToolsetInfo.CurrentTargetFramework}'")
+            .And.HaveStdErrContaining(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"))
+            .And.NotHaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ItIdentifiesFrameworkWithNoDevicesDuringMultiTargetSelection(bool failAfterFirstSelection)
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: failAfterFirstSelection.ToString())
+            .WithSource();
+        string frameworkWithNoDevices = failAfterFirstSelection ? ToolsetInfo.CurrentTargetFramework : "net9.0";
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute("-p:SingleDevice=true", $"-p:NoDevicesTargetFramework={frameworkWithNoDevices}", "-bl");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.RunCommandNoDevicesAvailable)
+            .And.HaveStdErrContaining($"target framework '{frameworkWithNoDevices}'")
+            .And.HaveStdErrContaining(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"))
+            .And.NotHaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            .And.NotHaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework"));
+
+        string binlogPath = Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog");
+        AssertTargetInBinlog(
+            binlogPath,
+            "ComputeAvailableDevices",
+            targets => targets.Should().HaveCount(failAfterFirstSelection ? 2 : 1));
+        AssertTargetInBinlog(
+            binlogPath,
+            "DeployToDevice",
+            targets => targets.Should().BeEmpty("device selection must succeed for all frameworks before deployment"));
     }
 
     [TestMethod]
@@ -93,6 +146,63 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:SingleDevice=true");
 
         result.Should().Pass();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void ItPreservesLiteralDeviceIds(bool explicitDevice)
+    {
+        const string DeviceId = "\"device (" + TestConstants.GB18030 + ")\";InjectedProperty=true,OtherProperty=value%3B";
+        const string EscapedDeviceId = "%22device %28" + TestConstants.GB18030 + "%29%22%3bInjectedProperty=true%2COtherProperty=value%253B";
+
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: explicitDevice.ToString())
+            .WithSource();
+        string projectPath = Path.Combine(testInstance.Path, "DotnetTestDevices.csproj");
+        string projectContents = File.ReadAllText(projectPath).Replace(
+            "</Project>",
+            $"""
+              <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+                <ItemGroup>
+                  <Devices Include="{EscapedDeviceId}" />
+                </ItemGroup>
+              </Target>
+            </Project>
+            """);
+
+        foreach (string target in new[] { "CoreCompile", "DeployToDevice", "ComputeRunArguments" })
+        {
+            projectContents = projectContents.Replace(
+                "</Project>",
+                $"""
+                  <Target Name="_ValidateDeviceFor{target}" BeforeTargets="{target}">
+                    <Error Condition="'$(InjectedProperty)' != '' Or '$(Device)' != '{EscapedDeviceId}'"
+                           Text="Device ID was not preserved as a literal property value." />
+                  </Target>
+                </Project>
+                """);
+        }
+
+        File.WriteAllText(projectPath, projectContents);
+
+        var args = new List<string> { "--framework", ToolsetInfo.CurrentTargetFramework, "-bl" };
+        if (explicitDevice)
+        {
+            args.AddRange(["--device", DeviceId]);
+        }
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(args.ToArray())
+            .Should().Pass();
+
+        AssertTargetInBinlog(Path.Combine(testInstance.Path, "msbuild.binlog"), "_ValidateDeviceForCoreCompile",
+            targets => targets.Should().ContainSingle());
+        foreach (string target in new[] { "DeployToDevice", "ComputeRunArguments" })
+        {
+            AssertTargetInBinlog(Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"), $"_ValidateDeviceFor{target}",
+                targets => targets.Should().ContainSingle());
+        }
     }
 
     [TestMethod]
@@ -244,7 +354,9 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
             .And.HaveStdErrContaining("test-device-1")
-            .And.HaveStdErrContaining("test-device-2");
+            .And.HaveStdErrContaining("test-device-2")
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.TestCommandDeviceSelectionFailed, projectPath))
+            .And.NotHaveStdErrContaining("target framework ''");
     }
 
     [TestMethod]

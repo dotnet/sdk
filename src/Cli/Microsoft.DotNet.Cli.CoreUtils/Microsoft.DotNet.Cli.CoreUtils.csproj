@@ -5,12 +5,19 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Nullable>enable</Nullable>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <AllowUnsafeBlocks Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'">true</AllowUnsafeBlocks>
   </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != '$(SdkTargetFramework)'">
+    <Compile Remove="Resources\**\*.cs" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="dotnet" />
     <InternalsVisibleTo Include="dotnet-aot" />
     <InternalsVisibleTo Include="dotnet-aot.Tests" />
+    <InternalsVisibleTo Include="Microsoft.DotNet.Cli.CoreUtils.Tests"
+                        Condition="'$(TargetFramework)' == '$(SdkTargetFramework)'" />
     <InternalsVisibleTo Include="Microsoft.DotNet.Cli.Utils" />
     <InternalsVisibleTo Include="Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver" Key="$(MicrosoftSharedPublicKey)" />
   </ItemGroup>

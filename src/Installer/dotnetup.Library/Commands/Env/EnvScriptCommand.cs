@@ -27,6 +27,8 @@ internal class EnvScriptCommand : CommandBase
         _dotnetupOnly = result.GetValue(EnvScriptCommandParser.DotnetupOnlyOption);
     }
 
+    internal override AdminModeSupport GetAdminModeSupport(Command command) => AdminModeSupport.AnySymbol;
+
     protected override void ExecuteCore()
     {
         DotnetupTelemetry.Instance.IsShellStartupCommand = true;

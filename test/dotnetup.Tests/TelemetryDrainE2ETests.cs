@@ -23,6 +23,9 @@ public class TelemetryDrainE2ETests
         fixtureExitCode.Should().Be(0, fixtureOutput);
         environment.TelemetryBlobPaths.Should().NotBeEmpty(
             "the real persistent exporter should write the telemetry fixture");
+        environment.TelemetryBlobPaths.Select(File.ReadAllText).Should().Contain(
+            blob => blob.Contains("dotnetup.access_mode", StringComparison.Ordinal),
+            "persisted records must carry the producing process's access mode because the drainer uploads them verbatim");
         (int exitCode, string output) = environment.RunDotnetup([Constants.Telemetry.DrainCommand]);
 
         exitCode.Should().Be(0, output);

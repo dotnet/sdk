@@ -137,9 +137,12 @@
     <value>⚠  Daily builds are not code-signed. Only the SHA-512 hash is verified.</value>
     <comment>Warning shown up-front when an install batch may pull from the public blob feed (daily channel or unknown prerelease version) where no detached CMS signature is published.</comment>
   </data>
+  <data name="AdminModeSignatureRequired" xml:space="preserve">
+    <value>Signature validation is required when using admin mode.</value>
+  </data>
   <data name="UnsignedDownloadBlockedByPolicy" xml:space="preserve">
-    <value>An IT policy on this machine requires code-signed downloads. Installing daily or unsigned prerelease builds of {0} {1} is blocked. Choose a released version, or have an administrator clear the policy (registry value HKLM\{2}\{3} on Windows, file {4} on Linux/macOS).</value>
-    <comment>{0}=component name (e.g. SDK), {1}=resolved version, {2}=Windows registry key path, {3}=Windows registry value name, {4}=Unix policy file path.</comment>
+    <value>Current Machine Policy requires signature verification. Installing daily or unsigned prerelease builds is thus blocked. Remove {0} to continue.</value>
+    <comment>{0}=OS-specific policy location: the full registry value path (e.g. HKLM\SOFTWARE\Policies\Microsoft\dotnet\Dotnetup\BlockUnsignedDownloads) on Windows, or the policy file path (e.g. /etc/dotnet/dnup-block-unsigned-downloads) on Linux/macOS.</comment>
   </data>
   <data name="NoUserInstallableArtifact" xml:space="preserve">
     <value>.NET {0} {1} has no released artifacts for user-level installation. Choose a different version or install it at the system level.</value>

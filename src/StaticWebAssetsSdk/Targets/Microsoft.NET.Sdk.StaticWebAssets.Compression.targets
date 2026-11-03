@@ -408,7 +408,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <BrotliCompress Condition="'@(_BrotliCompressedStaticWebAssetsForPublish)' != ''"
       FilesToCompress="@(_BrotliCompressedStaticWebAssetsForPublish)"
-      CompressionLevel="$(_BlazorBrotliCompressionLevel)"
+      CompressionLevel="$(BrotliCompressionLevel)"
       ToolAssembly="$(_StaticWebAssetsSdkToolAssembly)"
       ToolExe="$(_DotNetHostFileName)"
       ToolPath="$(_DotNetHostDirectory)" />

@@ -13,6 +13,11 @@
     <IsRPMBasedDistro Condition="$(HostRid.StartsWith('centos'))">true</IsRPMBasedDistro>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- NetTFMUpdate: Keep template installers on net11 until the bundled packs support targeting net12. -->
+    <TemplateFrameworkVersion>11.0</TemplateFrameworkVersion>
+  </PropertyGroup>
+
   <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
 
   <PropertyGroup>

@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 internal sealed class FormField
 {
     private readonly Func<bool>? _isVisible;
+    private readonly Func<string?>? _lockedValue;
 
     public FormField(
         string label,
@@ -19,7 +20,8 @@ internal sealed class FormField
         string? description = null,
         bool inlineHelp = false,
         bool browseDetailShowsDescription = false,
-        Func<bool>? isVisible = null)
+        Func<bool>? isVisible = null,
+        Func<string?>? lockedValue = null)
     {
         if (choices.Count == 0)
         {
@@ -39,6 +41,7 @@ internal sealed class FormField
         InlineHelp = inlineHelp;
         BrowseDetailShowsDescription = browseDetailShowsDescription;
         _isVisible = isVisible;
+        _lockedValue = lockedValue;
     }
 
     /// <summary>
@@ -47,6 +50,16 @@ internal sealed class FormField
     /// visible.
     /// </summary>
     public bool IsVisible => _isVisible?.Invoke() ?? true;
+
+    /// <summary>
+    /// The value shown in place of the selection when the field does not apply to the current
+    /// choices of other fields, or null when the field can be edited. A locked field stays visible
+    /// so the form does not shift, but it cannot be opened and its selection is ignored.
+    /// </summary>
+    public string? LockedValue => _lockedValue?.Invoke();
+
+    /// <summary>True when <see cref="LockedValue"/> is set.</summary>
+    public bool IsLocked => LockedValue is not null;
 
     /// <summary>The field label shown to the left of the value (e.g. "SDK Channel").</summary>
     public string Label { get; }
@@ -98,8 +111,11 @@ internal sealed class FormField
     /// <summary>The currently selected value's choice.</summary>
     public FieldChoice Selected => Choices[SelectedIndex];
 
-    /// <summary>The value shown for the field: the typed custom value if any, else the selected title.</summary>
-    public string DisplayValue => CustomValue ?? Selected.Title;
+    /// <summary>
+    /// The value shown for the field: the locked value if any, else the typed custom value if any,
+    /// else the selected title.
+    /// </summary>
+    public string DisplayValue => LockedValue ?? CustomValue ?? Selected.Title;
 
     /// <summary>True when the selection differs from the recommended default (drives coloring).</summary>
     public bool IsChangedFromDefault => CustomValue is not null || SelectedIndex != DefaultIndex;

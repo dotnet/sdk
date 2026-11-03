@@ -8,8 +8,8 @@ ms.date: 08/07/2026
 # Repository SDK requirements with dotnetup
 
 `dotnetup` uses `global.json` to associate an SDK requirement with a
-repository or directory tree. From the current directory, it searches for
-`global.json` and then searches each parent directory until it finds one.
+repository or directory tree. It searches from the current directory through
+each parent directory and reads the nearest existing `global.json`.
 
 ## Install from global.json
 
@@ -21,8 +21,13 @@ dotnetup install
 
 If the nearest `global.json` has an `sdk.version`, `dotnetup` derives an
 install specification from the version and `rollForward` value. It records
-the full path to the file as the specification source. If no usable
-`global.json` exists, the command uses the `latest` channel.
+the full path to the file as the specification source. If no `global.json`
+exists in the current directory or its parent directories, the command uses
+the `latest` channel. If the nearest file is malformed or contains comments,
+parsing fails. `dotnetup` doesn't skip that file to search parent directories
+or use the `latest` channel. If the file parses successfully but doesn't
+contain a usable SDK requirement, the command uses `latest` without searching
+parent directories.
 
 ## rollForward mapping
 
@@ -37,11 +42,18 @@ the full path to the file as the specification source. If no usable
 | `disable`, `patch`, `feature`, `minor`, or `major` | `10.0.103` |
 
 The exact-version mappings are pinned and are not advanced by an update.
+The `allowPrerelease` property doesn't affect the channel that `dotnetup`
+derives. This mapping isn't the complete .NET host selection policy. If a
+repository must prohibit prerelease SDKs, install an acceptable released
+version explicitly.
 
 ## Installation path from global.json
 
 If `sdk.paths` contains an entry, `dotnetup` uses the first path. A relative
 path is resolved from the directory that contains `global.json`.
+
+In the current public-preview build, `dotnetup` treats the first entry as a
+path. It doesn't interpret `$host$` as a sentinel or skip empty entries.
 
 Installation-path precedence is:
 
@@ -63,20 +75,28 @@ Only global.json-sourced SDK specifications are updated by the update
 workflow. The modifier preserves the other JSON properties, formatting, and
 detected text encoding.
 
-## Remove a repository requirement
+After you change `sdk.version` or `rollForward`, run `dotnetup sdk install`
+from the repository directory to apply the new requirement. An update
+processes stored requirements before garbage collection refreshes changed
+`global.json` sources, so the first update can still process the previous
+requirement.
+
+## Remove matching repository requirements
 
 A tracked `global.json` specification is refreshed during garbage collection.
 If the file no longer exists or no longer contains an SDK version, the
 specification is removed.
 
-You can also remove it explicitly. Match the stored channel and select the
-`globaljson` source:
+To remove specifications by channel, select the `globaljson` source. This
+command removes every matching specification in the selected installation
+root, not only one repository:
 
 ```dotnetcli
 dotnetup sdk uninstall 10.0.1xx --source globaljson
 ```
 
-Use `dotnetup list` to find the stored channel and source path.
+Use `dotnetup list` to find the stored channel, source path, and installation
+root. Add `--install-path` to select a custom root.
 
 ## See also
 

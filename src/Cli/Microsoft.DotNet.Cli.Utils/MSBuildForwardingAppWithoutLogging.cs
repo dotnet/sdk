@@ -182,6 +182,8 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// </summary>
     public int Execute()
     {
+        using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
+
         if (_forwardingApp != null)
         {
             return GetProcessStartInfo().Execute();
@@ -231,6 +233,22 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     /// </summary>
     internal static IDisposable SetMSBuildRequiredEnvironmentVariables()
         => SetEnvironmentVariables(GetMSBuildRequiredEnvironmentVariables());
+
+    /// <summary>
+    /// Sets the required MSBuild environment variables and additional variables for a direct
+    /// in-process MSBuild operation. Restores their original values when disposed.
+    /// </summary>
+    internal static IDisposable SetMSBuildRequiredEnvironmentVariables(
+        IEnumerable<KeyValuePair<string, string?>> additionalEnvironmentVariables)
+    {
+        Dictionary<string, string?> environmentVariables = GetMSBuildRequiredEnvironmentVariables();
+        foreach (KeyValuePair<string, string?> variable in additionalEnvironmentVariables)
+        {
+            environmentVariables[variable.Key] = variable.Value;
+        }
+
+        return SetEnvironmentVariables(environmentVariables);
+    }
 
     private static IDisposable SetEnvironmentVariables(IEnumerable<KeyValuePair<string, string?>> environmentVariables)
     {

@@ -289,6 +289,11 @@
         <target state="translated">CONTAINER2019: недопустимая семантическая версия SDK "{0}".</target>
         <note>{StrBegins="CONTAINER2019: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidSourceDateEpoch">
+        <source>CONTAINER2032: SOURCE_DATE_EPOCH value '{0}' is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset.</source>
+        <target state="new">CONTAINER2032: SOURCE_DATE_EPOCH value '{0}' is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset.</target>
+        <note>{StrBegins="CONTAINER2032: "}</note>
+      </trans-unit>
       <trans-unit id="InvalidTag">
         <source>CONTAINER2007: Invalid {0} provided: {1}. Image tags must be alphanumeric, underscore, hyphen, or period.</source>
         <target state="translated">CONTAINER2007: предоставлен недопустимый {0}: {1}. В качестве тегов изображений допускаются буквы, цифры, символы подчеркивания, дефисы и точки.</target>
