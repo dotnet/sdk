@@ -55,7 +55,7 @@ public class DotnetArchiveExtractorTests
 
         extractor.Prepare();
         using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest,
-            new DotnetInstall(root, resolvedVersion, component), extractor);
+            new DotnetInstall(root, resolvedVersion, component).WithPayloadVersion(extractor.ProductVersion), extractor);
         var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
 
         result.Install.Version.Should().Be(resolvedVersion);
