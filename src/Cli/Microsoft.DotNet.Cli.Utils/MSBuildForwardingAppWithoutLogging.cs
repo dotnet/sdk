@@ -75,9 +75,9 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
     /// <summary>
     /// The set of environment variables that must be set on the MSBuild process (or the current
-    /// process when executing in-proc) for the build to behave correctly.
+    /// process when executing in-proc), including required settings and SDK defaults.
     /// </summary>
-    private readonly Dictionary<string, string?> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
+    private readonly Dictionary<string, string?> _msbuildEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
     private readonly List<string> _msbuildRequiredParameters = ["-maxcpucount", $"--verbosity:{DefaultVerbosity}"];
 
@@ -99,13 +99,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
 
         MSBuildPath = msbuildPath ?? defaultMSBuildPath;
 
-        // The MSBuild server is enabled by default. Set MSBUILDUSESERVER based on DOTNET_CLI_USE_MSBUILD_SERVER,
-        // unless the user has already set MSBUILDUSESERVER themselves - in which case we leave their value untouched.
-        // An empty value is treated as unset.
-        if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDUSESERVER")))
-        {
-            EnvironmentVariable("MSBUILDUSESERVER", UseMSBuildServer ? "1" : "0");
-        }
+        AddMSBuildDefaultEnvironmentVariables(_msbuildEnvironmentVariables);
 
         // If DOTNET_CLI_RUN_MSBUILD_OUTOFPROC is set, the caller requires it (e.g. the AOT CLI, which
         // cannot host MSBuild in-process), or we're asked to execute a non-default binary, call MSBuild out-of-proc.
@@ -120,7 +114,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         _forwardingApp = new ForwardingAppImplementation(
             MSBuildPath,
             GetAllArguments(),
-            environmentVariables: _msbuildRequiredEnvironmentVariables);
+            environmentVariables: _msbuildEnvironmentVariables);
     }
 
     public ProcessStartInfo GetProcessStartInfo()
@@ -162,7 +156,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         }
         else
         {
-            _msbuildRequiredEnvironmentVariables.Add(name, value);
+            _msbuildEnvironmentVariables.Add(name, value);
         }
 
         if (value == string.Empty || value == "\0")
@@ -173,7 +167,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
             InitializeForOutOfProcForwarding();
 
             // Disable MSBUILDUSESERVER if any env vars are null as those are not properly transferred to build nodes
-            _msbuildRequiredEnvironmentVariables["MSBUILDUSESERVER"] = "0";
+            _msbuildEnvironmentVariables["MSBUILDUSESERVER"] = "0";
         }
     }
 
@@ -209,7 +203,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     [RequiresDynamicCode("Calls MSBuildApp.Main, which is not AOT-safe")]
     public int ExecuteInProc(string[] arguments)
     {
-        using var _ = SetEnvironmentVariables(_msbuildRequiredEnvironmentVariables);
+        using var _ = SetEnvironmentVariables(_msbuildEnvironmentVariables);
         try
         {
             // Execute MSBuild in the current process by calling its Main method.
@@ -248,6 +242,26 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         }
 
         return SetEnvironmentVariables(environmentVariables);
+    }
+
+    private static void AddMSBuildDefaultEnvironmentVariables(Dictionary<string, string?> environmentVariables)
+    {
+        // The MSBuild server is enabled by default. Set MSBUILDUSESERVER based on DOTNET_CLI_USE_MSBUILD_SERVER,
+        // unless the user has already set MSBUILDUSESERVER themselves - in which case we leave their value untouched.
+        // An empty value is treated as unset.
+        string? useServer = Env.GetEnvironmentVariable("MSBUILDUSESERVER");
+        if (string.IsNullOrEmpty(useServer))
+        {
+            useServer = UseMSBuildServer ? "1" : "0";
+            environmentVariables["MSBUILDUSESERVER"] = useServer;
+        }
+
+        // Enable MSBuild multi-threaded mode by default unless the user has set MSBUILDENABLEMULTITHREADED.
+        // Use the environment variable rather than a switch so response files and command-line switches can override the default.
+        if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDENABLEMULTITHREADED")))
+        {
+            environmentVariables["MSBUILDENABLEMULTITHREADED"] = "1";
+        }
     }
 
     private static IDisposable SetEnvironmentVariables(IEnumerable<KeyValuePair<string, string?>> environmentVariables)
