@@ -19,6 +19,28 @@ on:
       if: github.event_name == 'issues' && github.event.action == 'opened'
       run: sleep 120
   roles: all
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  unlock:
+    pre-steps:
+      # gh-aw's built-in unlock does not retry transient GitHub API failures.
+      # Unlock first with retries; the built-in step then observes an unlocked issue.
+      - name: Unlock triaged issue with retries
+        if: (github.event_name == 'issues' || github.event_name == 'issue_comment') && needs.activation.outputs.issue_locked == 'true'
+        uses: actions/github-script@v9.0.0
+        with:
+          retries: 3
+          retry-exempt-status-codes: 400,401,403,404,422
+          script: |
+            const params = { ...context.repo, issue_number: context.issue.number };
+            const { data: issue } = await github.rest.issues.get(params);
+            if (issue.locked && !issue.pull_request) {
+              await github.rest.issues.unlock(params);
+            }
+
 post-steps:
   # missing_data and report_incomplete should make triage visibly fail, but the
   # safe-output settings below intentionally suppress follow-up issue creation.
@@ -59,17 +81,18 @@ engine:
 permissions:
   contents: read
   issues: read
-  copilot-requests: write
 network:
   allowed:
     - defaults
     - github
     - aka.ms
+
 tools:
   # cli-proxy + github.mode: gh-proxy route GitHub tools and Safe Outputs through the
   # generated CLI proxy instead of the native HTTP MCP endpoint on the internal awmg-mcpg
   # gateway, avoiding the firewall TCP_DENIED/403 on that single-label host.
   # See github/gh-aw#45915.
+  bash: ["gh:*", "safeoutputs:*"]
   cli-proxy: true
   web-fetch:
   github:

@@ -2563,8 +2563,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         {
             return argumentCount switch
             {
-                1 => @"(""Item"")",
-                2 => @"(""Item"", out var item)",
+                1 => """"("Item")"""",
+                2 => """"("Item", out var item)"""",
                 _ => throw new NotImplementedException(),
             };
         }

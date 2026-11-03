@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using System.Text.RegularExpressions;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
@@ -209,6 +210,37 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     continue;
                 }
             }
+        }
+
+        [TestMethod]
+        [DataRow("BrotliCompressionLevel")]
+        [DataRow("_BlazorBrotliCompressionLevel")]
+        public void Publish_PassesBrotliCompressionLevel_ToBrotliCompressTask(string propertyName)
+        {
+            var testAsset = "RazorAppWithP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((project, xml) =>
+                {
+                    if (!project.Contains("ClassLibrary"))
+                    {
+                        xml.Descendants("PropertyGroup")
+                            .First().Add(new XElement(propertyName, "Optimal"));
+                    }
+                });
+
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithP2PReference");
+            var result = ExecuteCommand(publish, "-v:diag");
+            result.Should().Pass();
+
+            var brotliTasks = Regex.Matches(
+                result.StdOut!,
+                @"Task ""BrotliCompress"".*?Done executing task ""BrotliCompress""",
+                RegexOptions.Singleline);
+
+            brotliTasks.Cast<Match>().Should().Contain(
+                task => task.Value.Contains("CompressionLevel=Optimal")
+                    && Regex.IsMatch(task.Value, @"^\s*-c\s*\r?\n\s*Optimal\s*$", RegexOptions.Multiline),
+                "the publish-time BrotliCompress task should receive and pass on the Optimal level");
         }
     }
 }

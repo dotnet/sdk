@@ -6,6 +6,8 @@
   "symbols/TargetFrameworkOverride/displayName": "Zielframeworküberschreibung",
   "symbols/Framework/description": "Das Zielframework für das Projekt.",
   "symbols/Framework/displayName": "Framework",
+  "symbols/Framework/choices/net12.0/description": ".NET 12",
+  "symbols/Framework/choices/net12.0-windows/description": ".NET 12 (nur Windows)",
   "symbols/Framework/choices/net11.0/description": ".NET 11",
   "symbols/Framework/choices/net11.0-windows/description": ".NET 11 (nur Windows)",
   "symbols/Framework/choices/net10.0/description": ".NET 10",

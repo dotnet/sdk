@@ -8,6 +8,7 @@ on:
   # agentic job is skipped. The workflow_dispatch API still requires Actions write
   # permission, so unprivileged users cannot trigger the assignment workflow.
   roles: all
+  needs: [assignment-auth]
   # A no-op activation step forces gh-aw to emit a `pre_activation` job, which the
   # pat_pool import requires (`needs: [pre_activation]`). `roles: all` alone leaves no
   # activation logic, so gh-aw would otherwise omit pre_activation and compilation fails
@@ -31,9 +32,8 @@ permissions:
   contents: read
   copilot-requests: write
 
-sandbox:
-  agent:
-    sudo: false
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
 
 # The PAT-backed API proxy cannot price the implicit `auto` alias. Pin the
 # explicitly priced Sol model for both this assignment workflow and the coding
@@ -74,9 +74,32 @@ concurrency:
   queue: max
 
 jobs:
+  assignment-auth:
+    runs-on: ubuntu-slim
+    environment: issue-monster
+    permissions: {}
+    timeout-minutes: 5
+    steps:
+      - name: Validate assignment credential
+        uses: actions/github-script@v9.0.0
+        env:
+          ISSUE_MONSTER_ASSIGNMENT_TOKEN: ${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}
+        with:
+          script: |
+            const token = process.env.ISSUE_MONSTER_ASSIGNMENT_TOKEN;
+            const remediation = "Renew ISSUE_MONSTER_ASSIGNMENT_TOKEN for the issue-monster environment with metadata: read and actions, contents, issues, and pull requests: write. Do not use an inference-pool PAT.";
+            if (!token) {
+              throw new Error(`Assignment credential is missing. ${remediation}`);
+            }
+            try {
+              await getOctokit(token).rest.repos.get(context.repo);
+            } catch (error) {
+              throw new Error(`Assignment credential validation failed (HTTP ${error.status ?? "unknown"}). ${remediation}`);
+            }
   conclusion:
     pre-steps:
       - name: Verify Copilot assignment
+        if: needs.agent.result == 'success'
         shell: bash
         run: |
           if ! grep -Fqx "issue:${{ inputs.issue_number }}:copilot" <<< "${{ needs.safe_outputs.outputs.assign_to_agent_assigned }}"; then
@@ -85,6 +108,7 @@ jobs:
           fi
 
 safe-outputs:
+  report-failure-as-issue: false
   # The inference PAT pool intentionally grants only Copilot Requests access.
   # Process the assignment in the separate environment that owns the
   # repository-write PAT instead of broadening every PAT in the inference pool.
@@ -110,7 +134,7 @@ safe-outputs:
   threat-detection:
     engine:
       id: copilot
-      model: claude-sonnet-4.6
+      model: claude-sonnet-5
       env:
         COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
     steps:

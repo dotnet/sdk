@@ -24,7 +24,7 @@ Each scenario is organized around a narrative, which provides an explanation on 
 These scenarios are focused on console applications and libraries.
 
 # Acquisition
-All of the scenarios below assume that the CLI tools have been acquired in some way. The acquisition of the CLI tools is explained in detail in a [separate specification](cli-install-experience.md). This document only contains a very short summary of that document.
+All of the scenarios below assume that the CLI tools have been acquired in some way. The acquisition of the CLI tools is explained in detail in a [separate specification](cli-installation-scenarios.md). This document only contains a very short summary of that document.
 
 There are two main ways to acquire the CLI toolset:
 1. Using targeted platform's native installers - this approach is used by developers who want to get stable bits on their development machines and don't mind the system-wide installation and need for elevated privileges. 
@@ -442,5 +442,4 @@ As our developer is going further with her usage of the CLI tools, she figures o
 
 ## Steps 
 >**TODO:** at this point, this needs more work to figure out how it will surface; it is listed here so it is not forgotten.
-
 

@@ -38,7 +38,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
     {
         HttpMessageHandler innerHandler = CreateHttpHandler(registryName, baseUri, isInsecureRegistry, logger);
 
-        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, isInsecureRegistry, innerHandler, logger, mode);
+        HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, baseUri, isInsecureRegistry, innerHandler, logger, mode);
 
         if (baseUri.IsAmazonECRRegistry())
         {
@@ -77,7 +77,7 @@ internal class DefaultRegistryAPI : IRegistryAPI
         return new FallbackToHttpMessageHandler(registryName, baseUri.Host, baseUri.Port, socketsHttpHandler, logger);
     }
 
-    private static RemoteCertificateValidationCallback IgnoreCertificateErrorsForSpecificHost(string host)
+    internal static RemoteCertificateValidationCallback IgnoreCertificateErrorsForSpecificHost(string host)
     {
         return (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
         {

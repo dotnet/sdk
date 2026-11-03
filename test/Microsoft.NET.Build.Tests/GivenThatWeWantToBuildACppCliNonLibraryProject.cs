@@ -12,7 +12,6 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/54145")]
         [FullMSBuildOnly]
         public void Given_an_exe_project_It_should_fail_with_error_message()
         {
@@ -21,14 +20,13 @@ namespace Microsoft.NET.Build.Tests
                 .WithSource();
 
             new BuildCommand(testAsset, "NETCoreCppCliTest.sln")
-                .Execute()
+                .Execute("-p:EnableManagedPackageReferenceSupport=false")
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining(Strings.NoSupportCppNonDynamicLibraryDotnetCore);
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/54145")]
         [FullMSBuildOnly]
         public void Given_an_StaticLibrary_project_It_should_fail_with_error_message()
         {
@@ -49,7 +47,7 @@ namespace Microsoft.NET.Build.Tests
                 });
 
             new BuildCommand(testAsset, "NETCoreCppCliTest.sln")
-                .Execute()
+                .Execute("-p:EnableManagedPackageReferenceSupport=false")
                 .Should()
                 .Fail()
                 .And.HaveStdOutContaining(Strings.NoSupportCppNonDynamicLibraryDotnetCore);

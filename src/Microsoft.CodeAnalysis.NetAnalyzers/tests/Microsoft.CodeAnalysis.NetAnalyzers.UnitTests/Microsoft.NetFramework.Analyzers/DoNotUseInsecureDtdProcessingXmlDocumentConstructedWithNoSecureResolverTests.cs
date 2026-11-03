@@ -29,36 +29,37 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            XmlDocument doc = new XmlDocument();
-            doc.XmlResolver = null;
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument();
+                                doc.XmlResolver = null;
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument()
-            doc.XmlResolver = Nothing
-        End Sub
-    End Class
-End Namespace
-"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument()
+                                doc.XmlResolver = Nothing
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -67,38 +68,40 @@ End Namespace
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            XmlDocument doc = new XmlDocument()
-            {
-                XmlResolver = null
-            };
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument()
+                                {
+                                    XmlResolver = null
+                                };
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument() With { _
-                .XmlResolver = Nothing _
-            }
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -107,33 +110,35 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument()
-        {
-            XmlResolver = null
-        };
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument()
+                            {
+                                XmlResolver = null
+                            };
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Public doc As XmlDocument = New XmlDocument() With { _
-            .XmlResolver = Nothing _
-        }
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public doc As XmlDocument = New XmlDocument() With { _
+                                .XmlResolver = Nothing _
+                            }
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -142,31 +147,35 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument() { XmlResolver = new XmlUrlResolver() };
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument() { XmlResolver = new XmlUrlResolver() };
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(8, 54)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public doc As XmlDocument = New XmlDocument() With { _
-            .XmlResolver = New XmlUrlResolver() _
-        }
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public doc As XmlDocument = New XmlDocument() With { _
+                                .XmlResolver = New XmlUrlResolver() _
+                            }
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(7, 13)
             );
         }
@@ -176,29 +185,33 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument();
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument();
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(8, 34)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public doc As XmlDocument = New XmlDocument()
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public doc As XmlDocument = New XmlDocument()
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37)
             );
         }
@@ -208,28 +221,30 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument();
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument();
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Public doc As XmlDocument = New XmlDocument()
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public doc As XmlDocument = New XmlDocument()
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -238,35 +253,37 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod(XmlSecureResolver resolver)
-        {
-            XmlDocument doc = new XmlDocument();
-            doc.XmlResolver = resolver;
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod(XmlSecureResolver resolver)
+                            {
+                                XmlDocument doc = new XmlDocument();
+                                doc.XmlResolver = resolver;
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod(resolver As XmlSecureResolver)
-            Dim doc As New XmlDocument()
-            doc.XmlResolver = resolver
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod(resolver As XmlSecureResolver)
+                                Dim doc As New XmlDocument()
+                                doc.XmlResolver = resolver
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -275,38 +292,40 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod(XmlSecureResolver resolver)
-        {
-            XmlDocument doc = new XmlDocument()
-            {
-                XmlResolver = resolver
-            };
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod(XmlSecureResolver resolver)
+                            {
+                                XmlDocument doc = new XmlDocument()
+                                {
+                                    XmlResolver = resolver
+                                };
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod(resolver As XmlSecureResolver)
-            Dim doc As New XmlDocument() With { _
-                .XmlResolver = resolver _
-            }
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod(resolver As XmlSecureResolver)
+                                Dim doc As New XmlDocument() With { _
+                                    .XmlResolver = resolver _
+                                }
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -315,55 +334,57 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Net;
-using System.Security;
-using System.Security.Permissions;
-using System.Xml;
+                """
+                    using System.Net;
+                    using System.Security;
+                    using System.Security.Permissions;
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            PermissionSet myPermissions = new PermissionSet(PermissionState.None);
-            WebPermission permission = new WebPermission(PermissionState.None);
-            permission.AddPermission(NetworkAccess.Connect, ""http://www.contoso.com/"");
-            permission.AddPermission(NetworkAccess.Connect, ""http://litwareinc.com/data/"");
-            myPermissions.SetPermission(permission);
-            XmlSecureResolver resolver = new XmlSecureResolver(new XmlUrlResolver(), myPermissions);
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                PermissionSet myPermissions = new PermissionSet(PermissionState.None);
+                                WebPermission permission = new WebPermission(PermissionState.None);
+                                permission.AddPermission(NetworkAccess.Connect, "http://www.contoso.com/");
+                                permission.AddPermission(NetworkAccess.Connect, "http://litwareinc.com/data/");
+                                myPermissions.SetPermission(permission);
+                                XmlSecureResolver resolver = new XmlSecureResolver(new XmlUrlResolver(), myPermissions);
 
-            XmlDocument doc = new XmlDocument();
-            doc.XmlResolver = resolver;
-        }
-    }
-}"
+                                XmlDocument doc = new XmlDocument();
+                                doc.XmlResolver = resolver;
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Net
-Imports System.Security
-Imports System.Security.Permissions
-Imports System.Xml
+                """
+                    Imports System.Net
+                    Imports System.Security
+                    Imports System.Security.Permissions
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim myPermissions As New PermissionSet(PermissionState.None)
-            Dim permission As New WebPermission(PermissionState.None)
-            permission.AddPermission(NetworkAccess.Connect, ""http://www.contoso.com/"")
-            permission.AddPermission(NetworkAccess.Connect, ""http://litwareinc.com/data/"")
-            myPermissions.SetPermission(permission)
-            Dim resolver As New XmlSecureResolver(New XmlUrlResolver(), myPermissions)
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim myPermissions As New PermissionSet(PermissionState.None)
+                                Dim permission As New WebPermission(PermissionState.None)
+                                permission.AddPermission(NetworkAccess.Connect, "http://www.contoso.com/")
+                                permission.AddPermission(NetworkAccess.Connect, "http://litwareinc.com/data/")
+                                myPermissions.SetPermission(permission)
+                                Dim resolver As New XmlSecureResolver(New XmlUrlResolver(), myPermissions)
 
-            Dim doc As New XmlDocument()
-            doc.XmlResolver = resolver
-        End Sub
-    End Class
-End Namespace"
+                                Dim doc As New XmlDocument()
+                                doc.XmlResolver = resolver
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -372,43 +393,45 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            XmlDocument doc = new XmlDocument();
-            try
-            {
-                doc.XmlResolver = null;
-            }
-            catch { throw; }
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument();
+                                try
+                                {
+                                    doc.XmlResolver = null;
+                                }
+                                catch { throw; }
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument()
-            Try
-                doc.XmlResolver = Nothing
-            Catch
-                Throw
-            End Try
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument()
+                                Try
+                                    doc.XmlResolver = Nothing
+                                Catch
+                                    Throw
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -417,34 +440,38 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            XmlDocument doc = new XmlDocument();
-        }
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument();
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(10, 31)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument()
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument()
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(7, 24)
             );
         }
@@ -454,33 +481,35 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            XmlDocument doc = new XmlDocument();
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument();
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument()
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument()
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -489,37 +518,41 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            XmlDocument doc = new XmlDocument();
-            doc.XmlResolver = new XmlUrlResolver();     // warn
-        }
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument();
+                                doc.XmlResolver = new XmlUrlResolver();     // warn
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(11, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument()
-            doc.XmlResolver = New XmlUrlResolver()
-            ' warn
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument()
+                                doc.XmlResolver = New XmlUrlResolver()
+                                ' warn
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 13)
             );
         }
@@ -529,45 +562,49 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        { 
-            XmlDocument doc = new XmlDocument();
-            try
-            {
-                doc.XmlResolver = new XmlUrlResolver();    // warn
-            }
-            catch { throw; }
-        }
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument();
+                                try
+                                {
+                                    doc.XmlResolver = new XmlUrlResolver();    // warn
+                                }
+                                catch { throw; }
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(13, 17)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument()
-            Try
-                    ' warn
-                doc.XmlResolver = New XmlUrlResolver()
-            Catch
-                Throw
-            End Try
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument()
+                                Try
+                                        ' warn
+                                    doc.XmlResolver = New XmlUrlResolver()
+                                Catch
+                                    Throw
+                                End Try
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(10, 17)
             );
         }
@@ -577,40 +614,42 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            XmlDocument doc = new XmlDocument();
-            doc = new XmlDocument()
-            {
-                XmlResolver = null
-            };
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument();
+                                doc = new XmlDocument()
+                                {
+                                    XmlResolver = null
+                                };
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument()
-            doc = New XmlDocument() With { _
-                .XmlResolver = Nothing _
-            }
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument()
+                                doc = New XmlDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -619,42 +658,46 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            XmlDocument doc = new XmlDocument()
-            {
-                XmlResolver = null
-            };
-            doc = new XmlDocument();    // warn
-        }
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument()
+                                {
+                                    XmlResolver = null
+                                };
+                                doc = new XmlDocument();    // warn
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(14, 19)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            doc = New XmlDocument()
-            ' warn
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                doc = New XmlDocument()
+                                ' warn
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(10, 19)
             );
         }
@@ -664,40 +707,42 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            XmlDocument doc = new XmlDocument()
-            {
-                XmlResolver = null
-            };
-            doc = new XmlDocument();    // ok
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                XmlDocument doc = new XmlDocument()
+                                {
+                                    XmlResolver = null
+                                };
+                                doc = new XmlDocument();    // ok
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            Dim doc As New XmlDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            doc = New XmlDocument()
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                Dim doc As New XmlDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                doc = New XmlDocument()
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -706,46 +751,50 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            {
-                XmlDocument doc = new XmlDocument(); //warn
-            }
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-            }
-        }
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                {
+                                    XmlDocument doc = new XmlDocument(); //warn
+                                }
+                                {
+                                    XmlDocument doc = new XmlDocument();
+                                    doc.XmlResolver = null;
+                                }
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(11, 35)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            If True Then
-                Dim doc As New XmlDocument()
-            End If
-            If True Then
-                Dim doc As New XmlDocument()
-                doc.XmlResolver = Nothing
-            End If
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                If True Then
+                                    Dim doc As New XmlDocument()
+                                End If
+                                If True Then
+                                    Dim doc As New XmlDocument()
+                                    doc.XmlResolver = Nothing
+                                End If
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 28)
             );
         }
@@ -755,45 +804,47 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            {
-                XmlDocument doc = new XmlDocument(); //ok in 4.5.2
-            }
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.XmlResolver = null;
-            }
-        }
-    }
-}"
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            private static void TestMethod()
+                            {
+                                {
+                                    XmlDocument doc = new XmlDocument(); //ok in 4.5.2
+                                }
+                                {
+                                    XmlDocument doc = new XmlDocument();
+                                    doc.XmlResolver = null;
+                                }
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Private Shared Sub TestMethod()
-            If True Then
-                Dim doc As New XmlDocument()
-            End If
-            If True Then
-                Dim doc As New XmlDocument()
-                doc.XmlResolver = Nothing
-            End If
-        End Sub
-    End Class
-End Namespace"
+                    Namespace TestNamespace
+                        Class TestClass
+                            Private Shared Sub TestMethod()
+                                If True Then
+                                    Dim doc As New XmlDocument()
+                                End If
+                                If True Then
+                                    Dim doc As New XmlDocument()
+                                    doc.XmlResolver = Nothing
+                                End If
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -802,39 +853,43 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument();
+                    using System.Xml;
 
-        public void Method1()
-        {
-            this.doc.XmlResolver = new XmlUrlResolver();
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument();
+
+                            public void Method1()
+                            {
+                                this.doc.XmlResolver = new XmlUrlResolver();
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(8, 34),
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(12, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public doc As XmlDocument = New XmlDocument()
-        ' warn
-        Public Sub Method1()
-            Me.doc.XmlResolver = New XmlUrlResolver()
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public doc As XmlDocument = New XmlDocument()
+                            ' warn
+                            Public Sub Method1()
+                                Me.doc.XmlResolver = New XmlUrlResolver()
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37),
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(9, 13)
             );
@@ -845,39 +900,43 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument(); // ok
+                    using System.Xml;
 
-        public void Method1()
-        {
-            this.doc.XmlResolver = new XmlUrlResolver(); // warn
-        }
-    }
-}",
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument(); // ok
+
+                            public void Method1()
+                            {
+                                this.doc.XmlResolver = new XmlUrlResolver(); // warn
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(12, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public doc As XmlDocument = New XmlDocument()
-        ' ok
-        Public Sub Method1()
-            Me.doc.XmlResolver = New XmlUrlResolver()
-        ' warn
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public doc As XmlDocument = New XmlDocument()
+                            ' ok
+                            Public Sub Method1()
+                                Me.doc.XmlResolver = New XmlUrlResolver()
+                            ' warn
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(9, 13)
             );
         }
@@ -887,49 +946,53 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument();     // warn
+                    using System.Xml;
 
-        public void Method1()
-        {
-            this.doc.XmlResolver = null;
-        }
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument();     // warn
 
-        public void Method2()
-        {
-            this.doc.XmlResolver = new XmlUrlResolver();    // warn
-        }
-    }
-}",
+                            public void Method1()
+                            {
+                                this.doc.XmlResolver = null;
+                            }
+
+                            public void Method2()
+                            {
+                                this.doc.XmlResolver = new XmlUrlResolver();    // warn
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(8, 34),
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(17, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public doc As XmlDocument = New XmlDocument()
-        ' warn
-        Public Sub Method1()
-            Me.doc.XmlResolver = Nothing
-        End Sub
+                    Imports System.Xml
 
-        Public Sub Method2()
-            Me.doc.XmlResolver = New XmlUrlResolver()
-            ' warn
-        End Sub
-    End Class
-End Namespace",
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public doc As XmlDocument = New XmlDocument()
+                            ' warn
+                            Public Sub Method1()
+                                Me.doc.XmlResolver = Nothing
+                            End Sub
+
+                            Public Sub Method2()
+                                Me.doc.XmlResolver = New XmlUrlResolver()
+                                ' warn
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37),
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(13, 13)
             );
@@ -940,47 +1003,51 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument(); // warn
+                    using System.Xml;
 
-        public void Method1()
-        {
-            this.doc.XmlResolver = null;
-        }
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument(); // warn
 
-        public void Method2(XmlReader reader)
-        {
-            this.doc.Load(reader);
-        }
-    }
-}",
+                            public void Method1()
+                            {
+                                this.doc.XmlResolver = null;
+                            }
+
+                            public void Method2(XmlReader reader)
+                            {
+                                this.doc.Load(reader);
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(8, 34)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
-        Public doc As XmlDocument = New XmlDocument()
+                    Imports System.Xml
 
-        Public Sub Method1()
-            Me.doc.XmlResolver = Nothing
-        End Sub
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public doc As XmlDocument = New XmlDocument()
 
-        Public Sub Method2(reader As XmlReader)
-            Me.doc.Load(reader)
-        End Sub
-    End Class
-End Namespace",
+                            Public Sub Method1()
+                                Me.doc.XmlResolver = Nothing
+                            End Sub
+
+                            Public Sub Method2(reader As XmlReader)
+                                Me.doc.Load(reader)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(6, 37)
             );
         }
@@ -990,48 +1057,52 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument();     // ok
+                    using System.Xml;
 
-        public void Method1()
-        {
-            this.doc.XmlResolver = null;
-        }
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument();     // ok
 
-        public void Method2()
-        {
-            this.doc.XmlResolver = new XmlUrlResolver();    // warn
-        }
-    }
-}",
+                            public void Method1()
+                            {
+                                this.doc.XmlResolver = null;
+                            }
+
+                            public void Method2()
+                            {
+                                this.doc.XmlResolver = new XmlUrlResolver();    // warn
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(17, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-            Imports System.Xml
+                """
 
-            Namespace TestNamespace
-                Class TestClass
-                    Public doc As XmlDocument = New XmlDocument()
-                    ' ok
-                    Public Sub Method1()
-                        Me.doc.XmlResolver = Nothing
-                    End Sub
+                                Imports System.Xml
 
-                    Public Sub Method2()
-                        Me.doc.XmlResolver = New XmlUrlResolver()
-                        ' warn
-                    End Sub
-                End Class
-            End Namespace",
+                                Namespace TestNamespace
+                                    Class TestClass
+                                        Public doc As XmlDocument = New XmlDocument()
+                                        ' ok
+                                        Public Sub Method1()
+                                            Me.doc.XmlResolver = Nothing
+                                        End Sub
+
+                                        Public Sub Method2()
+                                            Me.doc.XmlResolver = New XmlUrlResolver()
+                                            ' warn
+                                        End Sub
+                                    End Class
+                                End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(13, 25)
             );
         }
@@ -1041,46 +1112,48 @@ namespace TestNamespace
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        public XmlDocument doc = new XmlDocument();
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
+                            public XmlDocument doc = new XmlDocument();
 
-        public void Method1()
-        {
-            this.doc.XmlResolver = null;
-        }
+                            public void Method1()
+                            {
+                                this.doc.XmlResolver = null;
+                            }
 
-        public void Method2(XmlReader reader)
-        {
-            this.doc.Load(reader);
-        }
-    }
-}"
+                            public void Method2(XmlReader reader)
+                            {
+                                this.doc.Load(reader);
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Public doc As XmlDocument = New XmlDocument()
+                    Namespace TestNamespace
+                        Class TestClass
+                            Public doc As XmlDocument = New XmlDocument()
 
-        Public Sub Method1()
-            Me.doc.XmlResolver = Nothing
-        End Sub
+                            Public Sub Method1()
+                                Me.doc.XmlResolver = Nothing
+                            End Sub
 
-        Public Sub Method2(reader As XmlReader)
-            Me.doc.Load(reader)
-        End Sub
-    End Class
-End Namespace"
+                            Public Sub Method2(reader As XmlReader)
+                                Me.doc.Load(reader)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -1089,41 +1162,45 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    class TestClass
-    {
+                    using System.Xml;
 
-        public void Method1()
-        {
-            Method2(new XmlDocument());
-        }
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
 
-        public void Method2(XmlDocument doc){}
-    }
-}",
+                            public void Method1()
+                            {
+                                Method2(new XmlDocument());
+                            }
+
+                            public void Method2(XmlDocument doc){}
+                        }
+                    }
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverCSharpResultAt(11, 21)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net451.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Class TestClass
+                    Imports System.Xml
 
-        Public Sub Method1()
-            Method2(New XmlDocument())
-        End Sub
+                    Namespace TestNamespace
+                        Class TestClass
 
-        Public Sub Method2(doc As XmlDocument)
-        End Sub
-    End Class
-End Namespace",
+                            Public Sub Method1()
+                                Method2(New XmlDocument())
+                            End Sub
+
+                            Public Sub Method2(doc As XmlDocument)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075XmlDocumentWithNoSecureResolverBasicResultAt(8, 21)
             );
         }
@@ -1133,40 +1210,42 @@ End Namespace",
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
+                    namespace TestNamespace
+                    {
+                        class TestClass
+                        {
 
-        public void Method1()
-        {
-            Method2(new XmlDocument());
-        }
+                            public void Method1()
+                            {
+                                Method2(new XmlDocument());
+                            }
 
-        public void Method2(XmlDocument doc){}
-    }
-}"
+                            public void Method2(XmlDocument doc){}
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
+                    Namespace TestNamespace
+                        Class TestClass
 
-        Public Sub Method1()
-            Method2(New XmlDocument())
-        End Sub
+                            Public Sub Method1()
+                                Method2(New XmlDocument())
+                            End Sub
 
-        Public Sub Method2(doc As XmlDocument)
-        End Sub
-    End Class
-End Namespace"
+                            Public Sub Method2(doc As XmlDocument)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -1175,49 +1254,50 @@ End Namespace"
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass1 : XmlDocument
-    {
-        public TestClass1()
-        {
-            XmlResolver = null;
-        }
-    }     
+                    namespace TestNamespace
+                    {
+                        class TestClass1 : XmlDocument
+                        {
+                            public TestClass1()
+                            {
+                                XmlResolver = null;
+                            }
+                        }
 
-    class TestClass2
-    {
-        void TestMethod()
-        {
-            var c = new TestClass1();
-        }
-    }
-}"
+                        class TestClass2
+                        {
+                            void TestMethod()
+                            {
+                                var c = new TestClass1();
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass1
-        Inherits XmlDocument
-        Public Sub New()
-            XmlResolver = Nothing
-        End Sub
-    End Class
+                    Namespace TestNamespace
+                        Class TestClass1
+                            Inherits XmlDocument
+                            Public Sub New()
+                                XmlResolver = Nothing
+                            End Sub
+                        End Class
 
-    Class TestClass2
-        Private Sub TestMethod()
-            Dim c = New TestClass1()
-        End Sub
-    End Class
-End Namespace
-"
+                        Class TestClass2
+                            Private Sub TestMethod()
+                                Dim c = New TestClass1()
+                            End Sub
+                        End Class
+                    End Namespace
+                    """
             );
         }
 
@@ -1226,42 +1306,44 @@ End Namespace
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
-using System.Xml;
+                """
+                    using System;
+                    using System.Xml;
 
-namespace TestNamespace
-{
-    class DerivedType : XmlDocument {}   
+                    namespace TestNamespace
+                    {
+                        class DerivedType : XmlDocument {}
 
-    class TestClass
-    {
-        void TestMethod()
-        {
-            var c = new DerivedType();
-        }
-    }
-    
-}"
+                        class TestClass
+                        {
+                            void TestMethod()
+                            {
+                                var c = new DerivedType();
+                            }
+                        }
+
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
+                    Imports System.Xml
 
-Namespace TestNamespace
-    Class DerivedType
-        Inherits XmlDocument
-    End Class
+                    Namespace TestNamespace
+                        Class DerivedType
+                            Inherits XmlDocument
+                        End Class
 
-    Class TestClass
-        Private Sub TestMethod()
-            Dim c = New DerivedType()
-        End Sub
-    End Class
+                        Class TestClass
+                            Private Sub TestMethod()
+                                Dim c = New DerivedType()
+                            End Sub
+                        End Class
 
-End Namespace"
+                    End Namespace
+                    """
             );
         }
     }

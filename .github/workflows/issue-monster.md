@@ -47,9 +47,8 @@ permissions:
   issues: read
   copilot-requests: write
 
-sandbox:
-  agent:
-    sudo: false
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
 
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
@@ -101,9 +100,18 @@ safe-outputs:
   # small model that false-positives on gh-aw's own auto-generated anti-injection preamble,
   # which caused every dispatch_workflow output to be aborted under the warn policy.
   threat-detection:
+    prompt: >-
+      The generated issue_monster_assigner tool is an authorized alias for the
+      dispatch-workflow safe output. gh-aw normalizes successful alias calls to
+      dispatch_workflow records before detection. Treat that normalized record
+      as expected only when workflow_name is issue-monster-assigner and its
+      inputs object contains both issue_number and base_branch; do not classify
+      the normalization itself as prompt injection.
     engine:
       id: copilot
-      model: gpt-5.6-luna
+      # OpenAI Responses rejects the CLI's ctc_call IDs after built-in edit calls.
+      # Use the same compatible detector model as the assignment workflow.
+      model: claude-sonnet-5
       env:
         COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
     steps:
@@ -312,7 +320,7 @@ For each selected issue, call the generated `issue_monster_assigner` safe-output
 issue_monster_assigner(issue_number=<issue_number>, base_branch="<base_branch>")
 ```
 
-Do not use the generic `dispatch_workflow` tool. The generated tool requires both workflow inputs and prevents an empty or incomplete dispatch request from being recorded.
+Do not call the generic `dispatch_workflow` tool directly. The generated tool requires both workflow inputs and prevents an empty or incomplete dispatch request from being recorded. gh-aw implements the generated tool through `dispatch_workflow`, so a valid `issue_monster_assigner` call is expected to produce that normalized type with `workflow_name: issue-monster-assigner` and `inputs.issue_number` plus `inputs.base_branch`.
 
 Use the exact field name `issue_number` (underscore). Do **not** use `issue-number` (hyphen), which is invalid and will fail safe-output validation.
 

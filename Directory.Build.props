@@ -66,6 +66,8 @@
     <IsShippingPackage>false</IsShippingPackage>
 
     <!-- TFMs -->
+    <!-- NetTFMUpdate: Target net12.0 using Arcade's net11.0 pack metadata without updating stage 0. -->
+    <NetCurrent>net12.0</NetCurrent>
     <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
 
     <!-- TFM for projects that are deployed to run on .NET shipping with Visual Studio -->

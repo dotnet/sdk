@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 MatchCollection failedTestsMatches = Regex.Matches(result.StdOut!, "failed Test3");
 
                 Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
-                Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
+                Assert.ContainsSingle(currentDotnetProjectMatches);
 
                 Assert.ContainsSingle(failedTestsMatches);
                 Assert.HasCount(2, skippedTestsMatches);
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 Assert.IsGreaterThan(1, previousDotnetProjectMatches.Count);
                 Assert.IsGreaterThan(1, currentDotnetProjectMatches.Count);
-                Assert.IsGreaterThan(1, currentDotnetOtherProjectMatches.Count);
+                Assert.ContainsSingle(currentDotnetOtherProjectMatches);
 
                 Assert.HasCount(2, skippedTestsMatches);
                 Assert.HasCount(2, failedTestsMatches);
@@ -110,6 +110,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("DOTNET_TEST_PARALLELIZATION_DIRECTORY", testInstance.Path)
                                     .Execute("--property", $"TestTfmsInParallel={testTfmsInParallel}");
 
             if (testTfmsInParallel)
@@ -152,6 +153,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)
+                .WithEnvironmentVariable("DOTNET_TEST_PARALLELIZATION_DIRECTORY", testInstance.Path)
                 .Execute([.. projectArguments, "--property", "TestTfmsInParallel=false"])
                 .Should()
                 .Pass();

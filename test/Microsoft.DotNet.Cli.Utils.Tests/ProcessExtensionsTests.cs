@@ -12,8 +12,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 #if NET
     [SupportedOSPlatform("windows")]
 #endif
-    [TestClass]
     [OSCondition(OperatingSystems.Windows)]
+    [TestClass]
     public class ProcessExtensionsTests
     {
         [TestMethod]

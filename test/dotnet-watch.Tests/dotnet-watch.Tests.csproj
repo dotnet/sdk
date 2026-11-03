@@ -10,7 +10,7 @@
     <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
   <ItemGroup>
-    <Using Include="Combinatorial.MSTest" />
+    <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.NET.Build.Tasks.Tests\Mocks\MockBuildEngine.cs" Link="TestUtilities\MockBuildEngine.cs" />
@@ -32,7 +32,6 @@
     <PackageReference Include="Microsoft.Build.Locator" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Spectre.Console.Testing" />
-    <PackageReference Include="Combinatorial.MSTest" />
   </ItemGroup>
 
   <!-- Copies test browser files to test-browser output directory -->

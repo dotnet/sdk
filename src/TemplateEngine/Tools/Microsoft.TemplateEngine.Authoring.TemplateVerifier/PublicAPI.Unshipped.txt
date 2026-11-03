@@ -24,7 +24,6 @@ Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationExceptio
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationException.TemplateVerificationErrorCode.init -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationException.TemplateVerificationException(string! message, Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationErrorCode templateVerificationErrorCode) -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationException.TemplateVerificationException(string! message, Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationErrorCode templateVerificationErrorCode, System.Exception! inner) -> void
-Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerificationException.TemplateVerificationException(System.Runtime.Serialization.SerializationInfo! info, System.Runtime.Serialization.StreamingContext context) -> void
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.CustomDirectoryVerifier.get -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.VerifyDirectory?
 Microsoft.TemplateEngine.Authoring.TemplateVerifier.TemplateVerifierOptions.CustomInstatiation.get -> Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands.RunInstantiation?

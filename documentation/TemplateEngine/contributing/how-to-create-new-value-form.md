@@ -1,6 +1,6 @@
 # How to create a new value form
 
-Available value forms are described [here](../Runnable-Project-Templates---Value-Forms.md).
+Available value forms are described [here](../Value-Forms.md).
 Value form represent the form of the parameter, usually related to specific casing.
 
 We appreciate creating new value forms by the community. 
@@ -22,9 +22,9 @@ Value forms follow the following syntax:
 
 To create new value form, follow the following guideline:
 
-1. Implement [`Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueFormFactory`](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms/IValueFormFactory.cs) interface.
+1. Implement [`Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms.IValueFormFactory`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms/IValueFormFactory.cs) interface.
 
-The existing implementation of value form are located in [`ValueForms`](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms) folder of `Microsoft.TemplateEngine.Orchestrator.RunnableProjects` projects.
+The existing implementation of value form are located in [`ValueForms`](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueForms) folder of `Microsoft.TemplateEngine.Orchestrator.RunnableProjects` projects.
 
 The implementation should have:
 - `Identifier` property - unique identifier of the form
@@ -54,12 +54,12 @@ The very basic implementation may be:
     }
 ```
 
-2. Once the value form is implemented, add it to [value form collection](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueFormRegistry.cs).
+2. Once the value form is implemented, add it to [value form collection](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/ValueFormRegistry.cs).
 
-3. [optional] Update [JSON schema](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Schemas/JSON/template.json) with new value form syntax.
-If you do so, also add [a new test case](../../test/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/SchemaTests/) for testing the syntax.
+3. [optional] Update [JSON schema](../../../src/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Schemas/JSON/template.json) with new value form syntax.
+If you do so, also add [a new test case](../../../test/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/SchemaTests/) for testing the syntax.
 
-4. Add unit tests for new implementation. Macro related unit tests are located in [this folder](../../test/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/ValueFormTests/).
-For more complete scenario, consider adding the full template generation tests to [`RunnableProjectGeneratorTests.cs`](../../test/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/RunnableProjectGeneratorTests.cs).
+4. Add unit tests for new implementation. Macro related unit tests are located in [this folder](../../../test/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/ValueFormTests/).
+For more complete scenario, consider adding the full template generation tests to [`RunnableProjectGeneratorTests.cs`](../../../test/TemplateEngine/Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests/RunnableProjectGeneratorTests.cs).
 
-5. Update documentation in [docs folder](../Runnable-Project-Templates---Value-Forms.md).
+5. Update documentation in [docs folder](../Value-Forms.md).

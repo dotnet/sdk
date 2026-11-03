@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using Microsoft.TemplateEngine.Core.Matching;
 using Microsoft.TemplateEngine.Core.Util;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
@@ -81,6 +82,26 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             pos = 0;
             Assert.IsFalse(t.GetOperation(source6, source6.Length, ref pos, out token));
             Assert.AreEqual(-1, token);
+        }
+
+        [TestMethod]
+        public void NextNodesContainsBranchesAndRemainsStable()
+        {
+            TokenTrie trie = new TokenTrie();
+            trie.AddToken("cat"u8.ToArray());
+            trie.AddToken("car"u8.ToArray());
+
+            Dictionary<byte, TrieNode<Token>> rootNodes = trie.NextNodes;
+            Assert.AreSame(rootNodes, trie.NextNodes);
+            Assert.IsTrue(rootNodes.TryGetValue((byte)'c', out TrieNode<Token>? cNode));
+            Assert.IsTrue(cNode.NextNodes.TryGetValue((byte)'a', out TrieNode<Token>? aNode));
+            Assert.HasCount(2, aNode.NextNodes);
+            Assert.IsTrue(aNode.NextNodes.ContainsKey((byte)'r'));
+            Assert.IsTrue(aNode.NextNodes.ContainsKey((byte)'t'));
+
+            trie.AddToken("dog"u8.ToArray());
+            Assert.HasCount(2, rootNodes);
+            Assert.IsTrue(rootNodes.ContainsKey((byte)'d'));
         }
 
         [TestMethod]

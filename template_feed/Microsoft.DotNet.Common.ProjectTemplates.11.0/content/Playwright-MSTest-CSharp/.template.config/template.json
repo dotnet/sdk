@@ -31,6 +31,14 @@
       "datatype": "choice",
       "choices": [
         {
+          "choice": "net12.0",
+          "description": ".NET 12"
+        },
+        {
+          "choice": "net12.0-windows",
+          "description": ".NET 12 (Windows only)"
+        },
+        {
           "choice": "net11.0",
           "description": ".NET 11"
         },

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Security;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
@@ -201,6 +202,69 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             .Execute()
             .Should().Pass()
             .And.HaveStdOut(expectedStdOut);
+    }
+
+    /// <seealso href="https://github.com/dotnet/sdk/issues/56747"/>
+    [TestMethod]
+    [DataRow("System.CommandLine.dll", false, null)]
+    [DataRow("System.CommandLine.dll", true, null)]
+    [DataRow("Program.dll", false, null)]
+    [DataRow("Program.deps.json", false, null)]
+    [DataRow("Program.runtimeconfig.json", false, null)]
+    [DataRow("System.CommandLine.resources.dll", false, "fr")]
+    public void UpToDate_MissingOutput(string outputFileName, bool modifySource, string? subdirectory)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var code = """
+            #:property PublishAot=false
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            new System.CommandLine.RootCommand("v1");
+            Console.WriteLine("v1");
+            """;
+        File.WriteAllText(programPath, code);
+
+        var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "v1");
+        Build(testInstance, BuildLevel.None, expectedOutput: "v1");
+
+        code = code.Replace("v1", "v2");
+        File.WriteAllText(programPath, code);
+        Build(testInstance, BuildLevel.Csc, expectedOutput: "v2");
+        Build(testInstance, BuildLevel.None, expectedOutput: "v2");
+
+        string outputPath = Path.Join(artifactsDir, "bin", "debug", subdirectory, outputFileName);
+        Assert.IsTrue(File.Exists(outputPath));
+        File.Delete(outputPath);
+
+        if (modifySource)
+        {
+            code = code.Replace("v2", "v3");
+            File.WriteAllText(programPath, code);
+        }
+
+        if (outputFileName == "System.CommandLine.dll")
+        {
+            new DotnetCommand(Log, "run", "--no-build", "--file", programPath)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining("System.IO.FileNotFoundException")
+                .And.HaveStdErrContaining("System.CommandLine");
+            Assert.IsFalse(File.Exists(outputPath));
+        }
+
+        string expectedOutput = modifySource ? "v3" : "v2";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Assert.IsTrue(File.Exists(outputPath));
+        Build(testInstance, BuildLevel.None, expectedOutput: expectedOutput);
+
+        File.Delete(outputPath);
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Assert.IsTrue(File.Exists(outputPath));
+        Build(testInstance, BuildLevel.None, expectedOutput: expectedOutput);
     }
 
     /// <summary>
@@ -786,6 +850,134 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     }
 
     /// <summary>
+    /// <see href="https://github.com/dotnet/sdk/issues/56496"/>
+    /// </summary>
+    [TestMethod]
+    [DataRow("en-US", null, null, "Unreachable code detected")]
+    [DataRow("de-DE", null, null, "Unerreichbarer Code wurde entdeckt.")]
+    [DataRow("de-DE", null, "en-US", "Unreachable code detected")]
+    [DataRow("en-US", null, "de-DE", "Unerreichbarer Code wurde entdeckt.")]
+    [DataRow(null, "1031", null, "Unerreichbarer Code wurde entdeckt.")]
+    [DataRow("en-US", "1031", null, "Unreachable code detected")]
+    public void CscOnly_CompilerDiagnosticsLanguage(
+        string? cliLanguage,
+        string? vsLanguage,
+        string? preferredUILang,
+        string expectedMessage)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(
+            identifier: $"{cliLanguage}_{vsLanguage}_{preferredUILang}",
+            baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine("Hello");
+            if (false)
+            {
+                Console.WriteLine("Unreachable");
+            }
+            """);
+
+        var cliCulture = cliLanguage is null
+            ? CultureInfo.GetCultureInfo(int.Parse(vsLanguage!, CultureInfo.InvariantCulture))
+            : CultureInfo.GetCultureInfo(cliLanguage);
+        var cscMessage = CliCommandStrings.ResourceManager.GetString(
+            nameof(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc), cliCulture);
+        cscMessage.Should().NotBeNullOrEmpty();
+
+        BuildWithLanguage(BuildLevel.Csc);
+
+        File.AppendAllText(programPath, Environment.NewLine);
+        BuildWithLanguage(BuildLevel.Csc);
+
+        File.AppendAllText(programPath, Environment.NewLine);
+        BuildWithLanguage(BuildLevel.All, "--no-cache");
+
+        File.AppendAllText(programPath, Environment.NewLine);
+        BuildWithLanguage(BuildLevel.Csc);
+
+        void BuildWithLanguage(BuildLevel expectedLevel, params string[] args)
+        {
+            string cscNotice = expectedLevel == BuildLevel.Csc
+                ? cscMessage + Environment.NewLine
+                : string.Empty;
+            string expectedPrefix = $"{programPath}(4,5): warning CS0162: {expectedMessage}{Environment.NewLine}{cscNotice}";
+
+            Build(testInstance, expectedLevel, args,
+                expectedOutput: "Hello",
+                customizeCommand: CustomizeCommand,
+                expectedOutputPrefix: expectedPrefix);
+        }
+
+        TestCommand CustomizeCommand(TestCommand command)
+        {
+            foreach ((string name, string? value) in new[]
+            {
+                ("DOTNET_CLI_UI_LANGUAGE", cliLanguage),
+                ("VSLANG", vsLanguage),
+                ("PreferredUILang", preferredUILang),
+            })
+            {
+                if (value is null)
+                {
+                    command.EnvironmentToRemove.Add(name);
+                }
+                else
+                {
+                    command.WithEnvironmentVariable(name, value);
+                }
+            }
+
+            return command;
+        }
+    }
+
+    /// <summary>
+    /// <see href="https://github.com/dotnet/sdk/issues/56496"/>
+    /// </summary>
+    [TestMethod]
+    public void CscOnly_CompilerDiagnosticsLanguage_PropertyDirective()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        const string program = """
+            Console.WriteLine("Hello");
+            if (false)
+            {
+                Console.WriteLine("Unreachable");
+            }
+            """;
+        File.WriteAllText(programPath, $"""
+            #:property PreferredUILang=de-DE
+            {program}
+            """);
+
+        BuildWithLanguage(BuildLevel.All, 5, "Unerreichbarer Code wurde entdeckt.");
+
+        File.AppendAllText(programPath, Environment.NewLine);
+        BuildWithLanguage(BuildLevel.Csc, 5, "Unerreichbarer Code wurde entdeckt.");
+
+        File.WriteAllText(programPath, program);
+        BuildWithLanguage(BuildLevel.Csc, 4, "Unreachable code detected");
+
+        void BuildWithLanguage(BuildLevel expectedLevel, int lineNumber, string expectedMessage)
+        {
+            string cscNotice = expectedLevel == BuildLevel.Csc
+                ? CliCommandStrings.NoBinaryLogBecauseRunningJustCsc + Environment.NewLine
+                : string.Empty;
+            string expectedPrefix = $"{programPath}({lineNumber},5): warning CS0162: {expectedMessage}{Environment.NewLine}{cscNotice}";
+
+            Build(testInstance, expectedLevel,
+                expectedOutput: "Hello",
+                customizeCommand: command =>
+                {
+                    command.EnvironmentToRemove.AddRange(["VSLANG", "PreferredUILang"]);
+                    return command.WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US");
+                },
+                expectedOutputPrefix: expectedPrefix);
+        }
+    }
+
+    /// <summary>
     /// Checks that the <c>DOTNET_ROOT</c> env var is set the same in csc mode as in msbuild mode.
     /// </summary>
     [TestMethod]
@@ -1090,7 +1282,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 
     /// <summary>
     /// Testing optimization <see cref="CscOnly_AfterMSBuild"/>.
-    /// When compilation fails, the obj dll should not be copied to bin directory.
+    /// When compilation fails, the obj dll should not be copied to bin directory and the existing bin dll should remain unchanged.
     /// This prevents spurious errors if the dll file was not even produced by roslyn due to compilation errors.
     /// </summary>
     [TestMethod]
@@ -1116,10 +1308,11 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         new FileInfo(objDll).Should().Exist();
         var binDll = Path.Join(artifactsDir, "bin", "debug", "Program.dll");
         new FileInfo(binDll).Should().Exist();
+        byte[] binDllContents = File.ReadAllBytes(binDll);
+        DateTime binDllLastWriteTimeUtc = File.GetLastWriteTimeUtc(binDll);
 
-        // Delete the dlls
+        // Keep the bin DLL so the missing-output check does not force MSBuild.
         File.Delete(objDll);
-        File.Delete(binDll);
 
         // Write invalid code that causes compilation to fail
         code = code + "\n#error my custom error";
@@ -1135,7 +1328,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
 
         new FileInfo(objDll).Should().NotExist();
-        new FileInfo(binDll).Should().NotExist();
+        new FileInfo(binDll).Should().Exist();
+        Assert.AreSequenceEqual(binDllContents, File.ReadAllBytes(binDll));
+        Assert.AreEqual(binDllLastWriteTimeUtc, File.GetLastWriteTimeUtc(binDll));
     }
 
     /// <summary>
@@ -2135,7 +2330,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         result.ProjectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
 
         // TargetFramework can be evaluated.
-        (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.CurrentTargetFramework);
+        (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.SdkTargetFramework);
     }
 
     [TestMethod, CombinatorialData]
@@ -2548,9 +2743,8 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
         // Generate argument template code.
-        string sdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
-        string dotNetRootPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
-        string nuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
+        CSharpCompilerCommand.SdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
+        CSharpCompilerCommand.NuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
         string artifactsDirNormalized = NormalizePath(artifactsDir);
         string objPath = $"{artifactsDirNormalized}/obj/debug";
         string entryPointPathNormalized = NormalizePath(entryPointPath);
@@ -2558,7 +2752,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var nuGetPackageFilePaths = new List<string>();
         bool referenceSpreadInserted = false;
         bool analyzerSpreadInserted = false;
-        const string NetCoreAppRefPackPath = "packs/Microsoft.NETCore.App.Ref/";
+        const string NetCoreAppRefPackPath = "/microsoft.netcore.app.ref/";
         var code = new StringBuilder();
         code.AppendLine($$"""
             // Licensed to the .NET Foundation under one or more agreements.
@@ -2616,23 +2810,23 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             string msbuildArgToVerify = rewritten;
 
             // Use variable SDK path.
-            if (rewritten.Contains(sdkPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.SdkPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(sdkPath, "{SdkPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.SdkPath, "{" + nameof(CSharpCompilerCommand.SdkPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable .NET root path.
-            if (rewritten.Contains(dotNetRootPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.DotNetRootPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(dotNetRootPath, "{DotNetRootPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.DotNetRootPath, "{" + nameof(CSharpCompilerCommand.DotNetRootPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable NuGet cache path.
-            if (rewritten.Contains(nuGetCachePath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.NuGetCachePath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(nuGetCachePath, "{NuGetCachePath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.NuGetCachePath, "{" + nameof(CSharpCompilerCommand.NuGetCachePath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
                 fromNuGetPackage = true;
             }

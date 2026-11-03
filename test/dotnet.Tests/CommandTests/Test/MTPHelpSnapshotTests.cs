@@ -18,6 +18,7 @@ public partial class MTPHelpSnapshotTests : SdkTest
     }
 
     [TestMethod]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public async Task VerifyMTPHelpOutput()
     {
         TestAsset testInstance = TestAssetsManager

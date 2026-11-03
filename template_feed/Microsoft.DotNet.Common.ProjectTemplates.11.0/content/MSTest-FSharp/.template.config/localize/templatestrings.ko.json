@@ -6,6 +6,8 @@
   "symbols/TargetFrameworkOverride/displayName": "대상 프레임워크 재정의",
   "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
   "symbols/Framework/displayName": "프레임워크",
+  "symbols/Framework/choices/net12.0/description": ".NET 12",
+  "symbols/Framework/choices/net12.0-windows/description": ".NET 12(Windows만 해당)",
   "symbols/Framework/choices/net11.0/description": ".NET 11",
   "symbols/Framework/choices/net11.0-windows/description": ".NET 11(Windows만 해당)",
   "symbols/Framework/choices/net10.0/description": ".NET 10",

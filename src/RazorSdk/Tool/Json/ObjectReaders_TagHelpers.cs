@@ -321,4 +321,15 @@ internal static partial class ObjectReaders
 
         return builder.Build();
     }
+
+    static AssetPathMetadata ReadAssetPathMetadata(JsonDataReader reader)
+    {
+        var builder = new AssetPathMetadata.Builder
+        {
+            Element = reader.ReadNonNullString(nameof(AssetPathMetadata.Element)),
+            Attribute = reader.ReadNonNullString(nameof(AssetPathMetadata.Attribute))
+        };
+
+        return builder.Build();
+    }
 }

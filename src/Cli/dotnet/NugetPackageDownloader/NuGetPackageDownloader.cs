@@ -70,7 +70,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         RestoreActionConfig restoreActionConfig = null,
         Func<IEnumerable<Task>> timer = null,
         bool verifySignatures = false,
-        bool shouldUsePackageSourceMapping = false,
+        bool shouldUsePackageSourceMapping = true,
         VerbosityOptions verbosityOptions = VerbosityOptions.normal,
         string currentWorkingDirectory = null)
     {
@@ -351,6 +351,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                 {
                     string fullPath = Path.GetFullPath(Path.Combine(targetFolder.Value, fileAndPermission.Path));
 
+                    // Because packages are assumed fully trusted, this check exists to prevent improperly authored packages
+                    // from accidentally modifying files they may not have intended to modify. It is not intended to police
+                    // the set of capabilities available to the package.
                     if (!fullPath.StartsWith(Path.GetFullPath(targetFolder.Value) + Path.DirectorySeparatorChar))
                     {
                         throw new GracefulException(string.Format(CliStrings.ResolvedPathEscapesTargetDirectory, fullPath, targetFolder.Value));
@@ -528,7 +531,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             {
                 throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
             }
-            defaultSources = [.. defaultSources.Where(source => sources.Contains(source.Name))];
+            defaultSources = [.. defaultSources.Where(source => sources.Contains(source.Name, StringComparer.OrdinalIgnoreCase))];
             if (defaultSources.Count == 0)
             {
                 throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));

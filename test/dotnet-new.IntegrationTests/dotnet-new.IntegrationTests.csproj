@@ -6,6 +6,8 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsUnitTestProject>true</IsUnitTestProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Several classes intentionally share a custom hive or output root through class fixtures. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

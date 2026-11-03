@@ -122,7 +122,10 @@ namespace Microsoft.NET.TestFramework
                 (propertyName: "RuntimeIdentifier", variableName: "LatestRuntimeIdentifiers", value: ToolsetInfo.LatestRuntimeIdentifiers)
             };
 
-            var packageVersionSubstitutions = (packageVersionPropertySubstitutions ?? ToolsetInfo.GetPackageVersionProperties()).ToArray();
+            var packageVersionSubstitutions = (packageVersionPropertySubstitutions ?? ToolsetInfo.GetPackageVersionProperties()
+                .Select(p => p.versionPropertyName == "MicrosoftAspNetCoreAppRefPackageVersion"
+                    ? (p.versionPropertyName, ToolsetInfo.GetPackageVersion("AspNetTest"))
+                    : p)).ToArray();
 
             //  Apply every property and package-version substitution in a single load/mutate/save
             //  pass per project file, reading from the source and writing the result straight to the

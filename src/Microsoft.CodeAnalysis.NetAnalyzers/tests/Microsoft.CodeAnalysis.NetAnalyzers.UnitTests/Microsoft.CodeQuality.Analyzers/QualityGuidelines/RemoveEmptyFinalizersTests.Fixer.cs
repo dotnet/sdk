@@ -17,95 +17,95 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
         [TestMethod]
         public async Task CA1821CSharpCodeFixTestRemoveEmptyFinalizersAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-public class Class1
-{
-    // Violation occurs because the finalizer is empty.
-    ~[|Class1|]()
+            await VerifyCS.VerifyCodeFixAsync("""
+                public class Class1
+                {
+                    // Violation occurs because the finalizer is empty.
+                    ~[|Class1|]()
+                    {
+                    }
+                }
+                """,
+"""
+    public class Class1
     {
     }
-}
-",
-@"
-public class Class1
-{
-}
-");
+    """);
         }
 
         [TestMethod]
         public async Task CA1821BasicCodeFixTestRemoveEmptyFinalizersAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System.Diagnostics
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System.Diagnostics
 
-Public Class Class1
-    '  Violation occurs because the finalizer is empty.
-    Protected Overrides Sub [|Finalize|]()
+                Public Class Class1
+                    '  Violation occurs because the finalizer is empty.
+                    Protected Overrides Sub [|Finalize|]()
 
-    End Sub
-End Class
-",
-@"
-Imports System.Diagnostics
+                    End Sub
+                End Class
+                """,
+"""
+    Imports System.Diagnostics
 
-Public Class Class1
-End Class
-");
+    Public Class Class1
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1821CSharpCodeFixAllAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-public class Class1
-{
-    ~[|Class1|]()
+            await VerifyCS.VerifyCodeFixAsync("""
+                public class Class1
+                {
+                    ~[|Class1|]()
+                    {
+                    }
+                }
+
+                public class Class2
+                {
+                    ~[|Class2|]()
+                    {
+                    }
+                }
+                """,
+"""
+    public class Class1
     {
     }
-}
 
-public class Class2
-{
-    ~[|Class2|]()
+    public class Class2
     {
     }
-}
-",
-@"
-public class Class1
-{
-}
-
-public class Class2
-{
-}
-");
+    """);
         }
 
         [TestMethod]
         public async Task CA1821BasicCodeFixAllAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Public Class Class1
-    Protected Overrides Sub [|Finalize|]()
+            await VerifyVB.VerifyCodeFixAsync("""
+                Public Class Class1
+                    Protected Overrides Sub [|Finalize|]()
 
-    End Sub
-End Class
+                    End Sub
+                End Class
 
-Public Class Class2
-    Protected Overrides Sub [|Finalize|]()
+                Public Class Class2
+                    Protected Overrides Sub [|Finalize|]()
 
-    End Sub
-End Class
-",
-@"
-Public Class Class1
-End Class
+                    End Sub
+                End Class
+                """,
+"""
+    Public Class Class1
+    End Class
 
-Public Class Class2
-End Class
-");
+    Public Class Class2
+    End Class
+    """);
         }
     }
 }

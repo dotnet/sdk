@@ -16,28 +16,28 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task TestCodeFix()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class C
-{
-    void M(Span<byte> span)
-    {
-        [|span.Fill(0)|];
-    }
-}
-";
-            string expected = @"
-using System;
+                class C
+                {
+                    void M(Span<byte> span)
+                    {
+                        [|span.Fill(0)|];
+                    }
+                }
+                """;
+            string expected = """
+                using System;
 
-class C
-{
-    void M(Span<byte> span)
-    {
-        span.Clear();
-    }
-}
-";
+                class C
+                {
+                    void M(Span<byte> span)
+                    {
+                        span.Clear();
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
@@ -64,28 +64,28 @@ class C
         [DataRow("bool", "false")]
         public async Task TestDefaultValue(string type, string value)
         {
-            string source = $@"
-using System;
+            string source = $$"""
+                using System;
 
-class C
-{{
-    void M(Span<{type}> span)
-    {{
-        [|span.Fill({value})|];
-    }}
-}}
-";
-            string expected = $@"
-using System;
+                class C
+                {
+                    void M(Span<{{type}}> span)
+                    {
+                        [|span.Fill({{value}})|];
+                    }
+                }
+                """;
+            string expected = $$"""
+                using System;
 
-class C
-{{
-    void M(Span<{type}> span)
-    {{
-        span.Clear();
-    }}
-}}
-";
+                class C
+                {
+                    void M(Span<{{type}}> span)
+                    {
+                        span.Clear();
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
@@ -104,258 +104,259 @@ class C
         [DataRow("DateTimeOffset", "default(DateTime)")]
         public async Task TestNonDefaultValue(string type, string value)
         {
-            string source = $@"
-using System;
+            string source = $$"""
+                using System;
 
-class C
-{{
-    void M(Span<{type}> span)
-    {{
-        span.Fill({value});
-    }}
-}}
-";
+                class C
+                {
+                    void M(Span<{{type}}> span)
+                    {
+                        span.Fill({{value}});
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, source);
         }
 
         [TestMethod]
         public async Task TestGeneric_Unconstrained()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class C
-{
-    void M<T>(Span<T> span)
-    {
-        [|span.Fill(default)|];
-    }
-}
-";
-            string expected = @"
-using System;
+                class C
+                {
+                    void M<T>(Span<T> span)
+                    {
+                        [|span.Fill(default)|];
+                    }
+                }
+                """;
+            string expected = """
+                using System;
 
-class C
-{
-    void M<T>(Span<T> span)
-    {
-        span.Clear();
-    }
-}
-";
+                class C
+                {
+                    void M<T>(Span<T> span)
+                    {
+                        span.Clear();
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
         [TestMethod]
         public async Task TestGeneric_Reference_Null()
         {
-            string source = @"
-#nullable enable
+            string source = """
+                #nullable enable
 
-using System;
+                using System;
 
-class C
-{
-    void M<T>(Span<T?> span) where T : class
-    {
-        [|span.Fill(null)|];
-    }
-}
-";
-            string expected = @"
-#nullable enable
+                class C
+                {
+                    void M<T>(Span<T?> span) where T : class
+                    {
+                        [|span.Fill(null)|];
+                    }
+                }
+                """;
+            string expected = """
+                #nullable enable
 
-using System;
+                using System;
 
-class C
-{
-    void M<T>(Span<T?> span) where T : class
-    {
-        span.Clear();
-    }
-}
-";
+                class C
+                {
+                    void M<T>(Span<T?> span) where T : class
+                    {
+                        span.Clear();
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
         [TestMethod]
         public async Task TestGeneric_ValueType_Null()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class C
-{
-    void M<T>(Span<T?> span) where T : struct
-    {
-        [|span.Fill(null)|];
-    }
-}
-";
-            string expected = @"
-using System;
+                class C
+                {
+                    void M<T>(Span<T?> span) where T : struct
+                    {
+                        [|span.Fill(null)|];
+                    }
+                }
+                """;
+            string expected = """
+                using System;
 
-class C
-{
-    void M<T>(Span<T?> span) where T : struct
-    {
-        span.Clear();
-    }
-}
-";
+                class C
+                {
+                    void M<T>(Span<T?> span) where T : struct
+                    {
+                        span.Clear();
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
         [TestMethod]
         public async Task TestGeneric_Reference_DefaultT()
         {
-            string source = @"
-#nullable enable
+            string source = """
+                #nullable enable
 
-using System;
+                using System;
 
-class C
-{
-    void M<T>(Span<T?> span) where T : class
-    {
-        [|span.Fill(default(T))|];
-    }
-}
-";
-            string expected = @"
-#nullable enable
+                class C
+                {
+                    void M<T>(Span<T?> span) where T : class
+                    {
+                        [|span.Fill(default(T))|];
+                    }
+                }
+                """;
+            string expected = """
+                #nullable enable
 
-using System;
+                using System;
 
-class C
-{
-    void M<T>(Span<T?> span) where T : class
-    {
-        span.Clear();
-    }
-}
-";
+                class C
+                {
+                    void M<T>(Span<T?> span) where T : class
+                    {
+                        span.Clear();
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
         [TestMethod]
         public async Task TestGeneric_ValueType_DefaultT()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class C
-{
-    void M<T>(Span<T?> span) where T : struct
-    {
-        span.Fill(default(T));
-    }
-}
-";
+                class C
+                {
+                    void M<T>(Span<T?> span) where T : struct
+                    {
+                        span.Fill(default(T));
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, source);
         }
 
         [TestMethod]
         public async Task TestCustomConversion()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-struct S
-{
-    public static explicit operator S(int value) => throw null;
-    public static explicit operator int(S value) => throw null;
-}
+                struct S
+                {
+                    public static explicit operator S(int value) => throw null;
+                    public static explicit operator int(S value) => throw null;
+                }
 
-class C
-{
-    void M(Span<S> span)
-    {
-        span.Fill((S)0);
-    }
+                class C
+                {
+                    void M(Span<S> span)
+                    {
+                        span.Fill((S)0);
+                    }
 
-    void M(Span<int> span)
-    {
-        span.Fill((int)(S)0);
-    }
-}
-";
+                    void M(Span<int> span)
+                    {
+                        span.Fill((int)(S)0);
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, source);
         }
 
         [TestMethod]
         public async Task TestDerived()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class Base { }
-class Derived : Base { }
+                class Base { }
+                class Derived : Base { }
 
-class C
-{
-    void M(Span<Base> span)
-    {
-        [|span.Fill(default(Derived))|];
-    }
-}
-";
-            string expected = @"
-using System;
+                class C
+                {
+                    void M(Span<Base> span)
+                    {
+                        [|span.Fill(default(Derived))|];
+                    }
+                }
+                """;
+            string expected = """
+                using System;
 
-class Base { }
-class Derived : Base { }
+                class Base { }
+                class Derived : Base { }
 
-class C
-{
-    void M(Span<Base> span)
-    {
-        span.Clear();
-    }
-}
-";
+                class C
+                {
+                    void M(Span<Base> span)
+                    {
+                        span.Clear();
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
         [TestMethod]
         public async Task TestStructParameterlessConstructor()
         {
-            string source = @"
+            string source = """
+                using System;
 
-using System;
+                struct S
+                {
+                    int x;
+                    public S() => x = 4;
+                }
 
-struct S
-{
-    int x;
-    public S() => x = 4;
-}
-
-class C
-{
-    void M(Span<S> span)
-    {
-        span.Fill(new S());
-    }
-}
-";
+                class C
+                {
+                    void M(Span<S> span)
+                    {
+                        span.Fill(new S());
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, source);
         }
 
         [TestMethod]
         public async Task TestBadFillCallAsync()
         {
-            string source = @"
+            string source = """
 
-using System;
 
-class C
-{
-    void M(Span<int> span)
-    {
-        span.Fill();
-    }
-}
-";
+                using System;
+
+                class C
+                {
+                    void M(Span<int> span)
+                    {
+                        span.Fill();
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyAnalyzerAsync(source,
                 DiagnosticResult.CompilerError("CS7036").WithSpan(9, 14, 9, 18));
         }
@@ -363,74 +364,74 @@ class C
         [TestMethod]
         public async Task CS_TwoFillCallsInOneMethod_FixAllRewritesBothAsync()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class C
-{
-    void M(Span<byte> first, Span<int> second)
-    {
-        [|first.Fill(0)|];
-        [|second.Fill(default)|];
-    }
-}
-";
-            string expected = @"
-using System;
+                class C
+                {
+                    void M(Span<byte> first, Span<int> second)
+                    {
+                        [|first.Fill(0)|];
+                        [|second.Fill(default)|];
+                    }
+                }
+                """;
+            string expected = """
+                using System;
 
-class C
-{
-    void M(Span<byte> first, Span<int> second)
-    {
-        first.Clear();
-        second.Clear();
-    }
-}
-";
+                class C
+                {
+                    void M(Span<byte> first, Span<int> second)
+                    {
+                        first.Clear();
+                        second.Clear();
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 
         [TestMethod]
         public async Task CS_FillOnTheResultOfAnotherFilledSpan_FixAllRewritesBothAsync()
         {
-            string source = @"
-using System;
+            string source = """
+                using System;
 
-class C
-{
-    Span<int> Get(Span<int> span) => span;
+                class C
+                {
+                    Span<int> Get(Span<int> span) => span;
 
-    void M(Span<int> span)
-    {
-        [|Get(Wrap(span)).Fill(0)|];
-    }
+                    void M(Span<int> span)
+                    {
+                        [|Get(Wrap(span)).Fill(0)|];
+                    }
 
-    Span<int> Wrap(Span<int> span)
-    {
-        [|span.Fill(0)|];
-        return span;
-    }
-}
-";
-            string expected = @"
-using System;
+                    Span<int> Wrap(Span<int> span)
+                    {
+                        [|span.Fill(0)|];
+                        return span;
+                    }
+                }
+                """;
+            string expected = """
+                using System;
 
-class C
-{
-    Span<int> Get(Span<int> span) => span;
+                class C
+                {
+                    Span<int> Get(Span<int> span) => span;
 
-    void M(Span<int> span)
-    {
-        Get(Wrap(span)).Clear();
-    }
+                    void M(Span<int> span)
+                    {
+                        Get(Wrap(span)).Clear();
+                    }
 
-    Span<int> Wrap(Span<int> span)
-    {
-        span.Clear();
-        return span;
-    }
-}
-";
+                    Span<int> Wrap(Span<int> span)
+                    {
+                        span.Clear();
+                        return span;
+                    }
+                }
+                """;
             await VerifyCSCodeFixAsync(source, expected);
         }
 

@@ -113,13 +113,13 @@ namespace Microsoft.NET.Sdk.Web.Tests
             responseFileContents.Should().Contain("--feature:Microsoft.AspNetCore.Mvc.ApiExplorer.IsEnhancedModelMetadataSupported=false");
             responseFileContents.Should().Contain("--feature:System.Text.Json.JsonSerializer.IsReflectionEnabledByDefault=false");
             responseFileContents.Should().Contain("--feature:System.Diagnostics.Tracing.EventSource.IsSupported=true");
-            responseFileContents.Should().Contain("--runtimeknob:System.GC.DynamicAdaptationMode=1");
+            responseFileContents.Should().NotContain(line => line.StartsWith("--runtimeknob:System.GC.DynamicAdaptationMode=", StringComparison.Ordinal));
             File.Exists(Path.Combine(outputDirectory, "web.config")).Should().BeFalse();
         }
 
         public static IEnumerable<object[]> SupportedTfms { get; } = new List<object[]>
         {
-#if NET11_0
+#if NET12_0
             new object[] { ToolsetInfo.CurrentTargetFramework }
 #else
 #error If building for a newer TFM, please update the values above

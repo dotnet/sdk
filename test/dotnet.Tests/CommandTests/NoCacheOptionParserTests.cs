@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.Tests.ParserTests;
 public class NoCacheOptionParserTests
 {
     [TestMethod]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     [DataRow("1", false, true)]
     [DataRow("0", false, false)]
     [DataRow("false", true, true)]

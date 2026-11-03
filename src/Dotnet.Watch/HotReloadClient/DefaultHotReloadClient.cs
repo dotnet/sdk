@@ -102,6 +102,9 @@ internal sealed class DefaultHotReloadClient(
                 // Initialize process:
                 await SetEnvironmentVariablesAsync(environmentVariables, cancellationToken);
 
+                // Initialize process:
+                await SetEnvironmentVariablesAsync(environmentVariables, cancellationToken);
+
                 // fire and forget:
                 _ = ListenForResponsesAsync(cancellationToken);
 

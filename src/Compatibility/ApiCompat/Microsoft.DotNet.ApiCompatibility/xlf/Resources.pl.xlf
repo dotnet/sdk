@@ -142,6 +142,11 @@
         <target state="translated">Wartość pola „{1}” w wyliczeniu „{0}” zmieniona z „{2}” na „{3}”.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExperimentalApiBecomesStable">
+        <source>API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</source>
+        <target state="new">API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">Indeks {0} powinien należeć do zakresu od zera do {1} włącznie.</target>
@@ -165,6 +170,11 @@
       <trans-unit id="ShouldBeGreaterThanZero">
         <source>Value of '{0}' should be greater than 0.</source>
         <target state="translated">Wartość „{0}” powinna być większa niż 0.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StableApiBecomesExperimental">
+        <source>API '{0}' was previously stable and is now marked experimental. Existing consumers will receive diagnostics when using this API.</source>
+        <target state="new">API '{0}' was previously stable and is now marked experimental. Existing consumers will receive diagnostics when using this API.</target>
         <note />
       </trans-unit>
       <trans-unit id="TypeIsActuallySealed">

@@ -8,7 +8,9 @@ using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
+    // TestToolBuilder maintains a shared package cache and can mutate the NuGet global packages folder.
     [TestClass]
+    [DoNotParallelize]
     public class EndToEndToolTests : SdkTest
     {
         private static readonly TestToolBuilder ToolBuilder = TestToolBuilder.SharedInstance.Value;
