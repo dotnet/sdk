@@ -35,7 +35,7 @@ We will store the manifest in json format.  At the top level it should have a sc
 RTM and servicing daily builds can have a build identity such as
 `11.0.100-rtm.26552.115` but install into `sdk/11.0.100`. In that case, the manifest keeps:
 
-- `version` as `11.0.100-rtm.26552.115` for channel matching and updates, and records
+- `version` as `11.0.100-rtm.26552.115` for channel matching and updates
 - `productVersion` as `11.0.100` for layout validation and stale-entry pruning.
 
 ### Subcomponent
