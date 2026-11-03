@@ -8,6 +8,8 @@ using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.List;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
@@ -25,6 +27,51 @@ public class DotnetArchiveExtractorTests
     public DotnetArchiveExtractorTests(TestContext testContext)
     {
         _log = new TestContextOutputHelper(testContext);
+    }
+
+    [TestMethod]
+    [DataRow("11.0.100-rtm.26552.115", "11.0.100", InstallComponent.SDK, "sdk/11.0.100/dotnet.dll")]
+    [DataRow("10.0.115-servicing.26552.102", "10.0.115", InstallComponent.SDK, "sdk/10.0.115/dotnet.dll")]
+    [DataRow("11.0.0-rtm.26552.115", "11.0.0", InstallComponent.Runtime, "shared/Microsoft.NETCore.App/11.0.0/Microsoft.NETCore.App.deps.json")]
+    public void Commit_DailyReleasePayload_ValidatesAndTracksBothVersions(
+        string buildVersion, string productVersion, InstallComponent component, string markerPath)
+    {
+        using var testEnv = new TestEnvironment();
+        var resolvedVersion = new ReleaseVersion(buildVersion);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var request = new DotnetInstallRequest(root, new UpdateChannel("daily"), component,
+            new InstallRequestOptions { ManifestPath = testEnv.ManifestPath });
+        var resolvedRequest = new ResolvedInstallRequest(request, resolvedVersion);
+        var downloader = new MockArchiveDownloader
+        {
+            ArchiveFileExtension = ".tar.gz",
+            FakeArchiveContent = CreateTarGzWithFiles(
+                (markerPath, "component marker"),
+                (DotnetupUtilities.GetDotnetExeName(), "muxer")),
+            ProductVersion = new ReleaseVersion(productVersion),
+            IsUnsigned = true
+        };
+        using var extractor = new DotnetArchiveExtractor(request, resolvedVersion, new ReleaseManifest(), new NullProgressTarget(), downloader);
+
+        extractor.Prepare();
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest,
+            new DotnetInstall(root, resolvedVersion, component), extractor);
+        var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
+
+        result.Install.Version.Should().Be(resolvedVersion);
+        result.Repaired.Should().BeFalse();
+        new InstallationValidator().Validate(result.Install).Should().BeTrue();
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var installation = manifest.ReadManifest().DotnetRoots.Single().Installations.Single();
+            installation.Version.Should().Be(buildVersion);
+            installation.ProductVersion.Should().Be(productVersion);
+            manifest.InstallAlreadyExists(new DotnetInstall(root, resolvedVersion, component)).Should().BeTrue();
+        }
+        var listed = InstallationLister.GetListData(verify: true, manifestPath: testEnv.ManifestPath).Installations.Single();
+        listed.Version.Should().Be(buildVersion);
+        listed.IsValid.Should().BeTrue();
     }
 
     [TestMethod]

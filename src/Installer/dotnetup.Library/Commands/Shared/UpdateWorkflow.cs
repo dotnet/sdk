@@ -179,7 +179,8 @@ internal class UpdateWorkflow
         // If the manifest says it's installed, validate on disk. If missing, remove the stale record.
         if (alreadyInstalled)
         {
-            var install = new DotnetInstall(installRoot, latestVersion, spec.Component);
+            var install = new DotnetInstall(installRoot, latestVersion, spec.Component,
+                existingInstallation!.ProductVersion is null ? null : new ReleaseVersion(existingInstallation.ProductVersion));
             InstallationValidator validator = new();
             if (!validator.Validate(install))
             {

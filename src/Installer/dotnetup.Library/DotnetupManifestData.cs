@@ -41,6 +41,11 @@ internal class Installation
 {
     public InstallComponent Component { get; set; }
     public string Version { get; set; } = string.Empty;
+
+    /// <summary>The payload's on-disk version when it differs from the tracked build identity.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? ProductVersion { get; set; }
+
     public List<string> Subcomponents { get; set; } = [];
 }
 

@@ -234,7 +234,11 @@ internal class InstallerOrchestratorSingleton
             IInstallArtifact artifact)
         {
             ResolvedRequest = resolvedRequest;
-            Install = install;
+            Install = install with
+            {
+                ProductVersion = artifact.ProductVersion is { } productVersion && !productVersion.Equals(install.Version)
+                    ? productVersion : install.ProductVersion
+            };
             Artifact = artifact;
         }
 
@@ -392,6 +396,7 @@ internal class InstallerOrchestratorSingleton
             {
                 Component = prepared.Request.Component,
                 Version = prepared.Version.ToString(),
+                ProductVersion = prepared.Install.ProductVersion?.ToString(),
                 Subcomponents = [.. prepared.Artifact.ExtractedSubcomponents],
             });
         }

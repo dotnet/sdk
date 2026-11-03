@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.Deployment.DotNet.Releases;
+
 namespace Microsoft.Dotnet.Installation.Internal;
 
 /// <summary>
@@ -19,6 +21,9 @@ internal interface IInstallArtifact : IDisposable
     /// Whether the installed payload should be validated after <see cref="Commit"/> returns.
     /// </summary>
     bool RequiresPostInstallValidation { get; }
+
+    /// <summary>The payload's on-disk version, when it differs from the requested build identity.</summary>
+    ReleaseVersion? ProductVersion => null;
 
     /// <summary>The subcomponents laid down by the last <see cref="Commit"/> call, for manifest tracking.</summary>
     IReadOnlyList<string> ExtractedSubcomponents { get; }

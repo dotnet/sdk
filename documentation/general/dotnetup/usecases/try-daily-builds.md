@@ -27,6 +27,11 @@ dotnetup sdk install 11.0.1xx-daily
 dotnetup sdk install 11.0.1xx-preview.5-daily
 ```
 
+RTM and servicing daily builds can report a release version such as `11.0.100`
+from `dotnet --version`, even though dotnetup tracks a build identity such as
+`11.0.100-rtm.26552.115`. The build identity lets daily-channel updates distinguish
+successive builds with the same release-version filename.
+
 ## Isolate a daily SDK
 
 Use a separate installation root when you do not want daily and stable

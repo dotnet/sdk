@@ -773,8 +773,8 @@ public class DotnetDownloaderBlobFeedTests
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
         ex.Message.Should().Contain(version);
 
-        // On Windows, both tar.gz and zip are probed; on other platforms only tar.gz
-        int expectedProbes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 2 : 1;
+        // Each extension is probed with both the build and release-version filename.
+        int expectedProbes = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? 4 : 2;
         history.Should().HaveCount(expectedProbes);
     }
 
@@ -800,7 +800,7 @@ public class DotnetDownloaderBlobFeedTests
 
         url.Should().Be($"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-{version}-{rid}.zip");
         hash.Should().Be(expectedHash);
-        history.Should().HaveCount(2, "should probe tar.gz first, then fall back to zip");
+        history.Should().HaveCount(3, "should probe both tar.gz filenames first, then fall back to zip");
     }
 
     /// <summary>
@@ -828,6 +828,112 @@ public class DotnetDownloaderBlobFeedTests
     }
 
     // --- UnsignedSourcePolicy coverage ---
+
+    [TestMethod]
+    [DataRow("11.0.1xx-daily", "11.0.100-rtm.26552.115", "11.0.100", InstallComponent.SDK, "Sdk", "dotnet-sdk")]
+    [DataRow("10.0.115-servicing.26552.102", "10.0.115-servicing.26552.102", "10.0.115", InstallComponent.SDK, "Sdk", "dotnet-sdk")]
+    [DataRow("11.0-daily", "11.0.0-rtm.26552.115", "11.0.0", InstallComponent.Runtime, "Runtime", "dotnet-runtime")]
+    [DataRow("11.0-daily", "11.0.0-rtm.26552.115", "11.0.0", InstallComponent.ASPNETCore, "aspnetcore/Runtime", "aspnetcore-runtime")]
+    [DataRow("11.0-daily", "11.0.0-rtm.26552.115", "11.0.0", InstallComponent.WindowsDesktop, "WindowsDesktop", "windowsdesktop-runtime")]
+    public void DownloadVerifiedArtifact_UsesReleaseFilenameInBuildDirectory(
+        string channel, string buildVersion, string productVersion, InstallComponent component, string directory, string prefix)
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        const string content = "daily archive bytes";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        string archiveUrl = $"https://ci.dot.net/public/{directory}/{buildVersion}/{prefix}-{productVersion}-{rid}.tar.gz";
+        string checksumUrl = $"https://ci.dot.net/public-checksums/{directory}/{buildVersion}/{prefix}-{productVersion}-{rid}.tar.gz.sha512";
+        string expectedHash = Convert.ToHexStringLower(System.Security.Cryptography.SHA512.HashData(Encoding.UTF8.GetBytes(content)));
+        var (handler, history) = BuildHandler(new()
+        {
+            [checksumUrl] = (HttpStatusCode.OK, expectedHash),
+            [archiveUrl] = (HttpStatusCode.OK, content),
+        });
+        using var http = new HttpClient(handler);
+        var manifest = new ThrowingReleaseManifest(DotnetInstallErrorCode.VersionNotFound);
+        var downloader = new DotnetDownloader(manifest, http, Path.Combine(testEnv.TempRoot, "cache"), policy: _policy);
+        string destinationBase = Path.Combine(testEnv.TempRoot, "archive");
+
+        VerifiedDownload download = downloader.DownloadVerifiedArtifact(BuildRequest(channel, component), new ReleaseVersion(buildVersion), destinationBase);
+
+        download.ExpectedHash.Should().Be(expectedHash);
+        download.IsUnsigned.Should().BeTrue();
+        download.ProductVersion.Should().Be(new ReleaseVersion(productVersion));
+        File.ReadAllText(download.Path).Should().Be(content);
+        history.Should().Equal(
+            $"https://ci.dot.net/public-checksums/{directory}/{buildVersion}/{prefix}-{buildVersion}-{rid}.tar.gz.sha512",
+            checksumUrl,
+            archiveUrl);
+    }
+
+    [TestMethod]
+    public void ResolveManifestEntry_PrefersBuildFilename_WhenBothChecksumsExist()
+    {
+        const string version = "11.0.100-rtm.26552.115";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        string expectedHash = new string('a', 128);
+        string checksumUrl = $"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}.tar.gz.sha512";
+        var (handler, history) = BuildHandler(new()
+        {
+            [checksumUrl] = (HttpStatusCode.OK, expectedHash),
+            [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-11.0.100-{rid}.tar.gz.sha512"] = (HttpStatusCode.OK, new string('b', 128)),
+        });
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+
+        var (url, hash) = InvokeResolveManifestEntry(downloader, BuildRequest("11.0.1xx-daily", InstallComponent.SDK), new ReleaseVersion(version));
+
+        url.Should().Be($"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-{version}-{rid}.tar.gz");
+        hash.Should().Be(expectedHash);
+        history.Should().Equal(checksumUrl);
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.ServiceUnavailable, "unavailable", DotnetInstallErrorCode.NetworkError)]
+    [DataRow(HttpStatusCode.OK, "invalid hash", DotnetInstallErrorCode.ManifestParseFailed)]
+    public void ResolveManifestEntry_ChecksumError_DoesNotTryReleaseFilename(
+        HttpStatusCode status, string content, DotnetInstallErrorCode expectedError)
+    {
+        const string version = "11.0.100-rtm.26552.115";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        string checksumUrl = $"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-{version}-{rid}.tar.gz.sha512";
+        var (handler, history) = BuildHandler(new()
+        {
+            [checksumUrl] = (status, content),
+            [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-11.0.100-{rid}.tar.gz.sha512"] = (HttpStatusCode.OK, new string('a', 128)),
+        });
+        using var http = new HttpClient(handler);
+        var downloader = CreateDownloader(http, manifestThrows: DotnetInstallErrorCode.VersionNotFound);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            InvokeResolveManifestEntry(downloader, BuildRequest("11.0.1xx-daily", InstallComponent.SDK), new ReleaseVersion(version)));
+
+        ex.ErrorCode.Should().Be(expectedError);
+        history.Should().Equal(checksumUrl);
+    }
+
+    [TestMethod]
+    public void DownloadVerifiedArtifact_ReleaseFilenameHashMismatch_FailsClosed()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+        const string version = "11.0.100-rtm.26552.115";
+        string rid = DotnetupUtilities.GetRuntimeIdentifier(InstallArchitecture.x64);
+        var (handler, _) = BuildHandler(new()
+        {
+            [$"https://ci.dot.net/public-checksums/Sdk/{version}/dotnet-sdk-11.0.100-{rid}.tar.gz.sha512"] = (HttpStatusCode.OK, new string('0', 128)),
+            [$"https://ci.dot.net/public/Sdk/{version}/dotnet-sdk-11.0.100-{rid}.tar.gz"] = (HttpStatusCode.OK, "tampered archive"),
+        });
+        using var http = new HttpClient(handler);
+        var downloader = new DotnetDownloader(new ReleaseManifest(), http, Path.Combine(testEnv.TempRoot, "cache"), policy: _policy);
+        string destinationBase = Path.Combine(testEnv.TempRoot, "archive");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() =>
+            downloader.DownloadVerifiedArtifact(BuildRequest("11.0.1xx-daily", InstallComponent.SDK), new ReleaseVersion(version), destinationBase));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.HashMismatch);
+        File.Exists(destinationBase + ".tar.gz").Should().BeFalse();
+        File.Exists(destinationBase + ".tar.gz.download").Should().BeFalse();
+    }
 
     /// <summary>
     /// Installer bundle requests only accept the .exe bundle from the blob feed; archives are never probed.
@@ -897,7 +1003,7 @@ public class DotnetDownloaderBlobFeedTests
             InvokeResolveManifestEntry(downloader, BuildBundleRequest(version, InstallComponent.Runtime), new ReleaseVersion(version)));
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.VersionNotFound);
-        history.Should().ContainSingle().Which.Should().EndWith(".exe.sha512");
+        history.Should().HaveCount(2).And.OnlyContain(url => url.EndsWith(".exe.sha512", StringComparison.Ordinal));
     }
 
     [TestMethod]
@@ -1065,9 +1171,8 @@ public class DotnetDownloaderBlobFeedTests
         try
         {
             var result = method!.Invoke(downloader, new object[] { request, resolvedVersion });
-            // Tuple comes back as ValueTuple<string, string>; unpack via reflection-friendly cast.
-            var tuple = ((string DownloadUrl, string ExpectedHash))result!;
-            return tuple;
+            var entry = ((string DownloadUrl, string ExpectedHash, ReleaseVersion ProductVersion))result!;
+            return (entry.DownloadUrl, entry.ExpectedHash);
         }
         catch (TargetInvocationException tie) when (tie.InnerException != null)
         {

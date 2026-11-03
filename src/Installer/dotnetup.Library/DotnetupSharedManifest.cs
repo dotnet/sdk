@@ -565,14 +565,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             return null;
         }
 
-        return installation.Component switch
-        {
-            InstallComponent.SDK => Path.Combine(rootPath, "sdk", installation.Version),
-            InstallComponent.Runtime => Path.Combine(rootPath, "shared", InstallComponentExtensions.RuntimeFrameworkName, installation.Version),
-            InstallComponent.ASPNETCore => Path.Combine(rootPath, "shared", InstallComponentExtensions.AspNetCoreFrameworkName, installation.Version),
-            InstallComponent.WindowsDesktop => Path.Combine(rootPath, "shared", InstallComponentExtensions.WindowsDesktopFrameworkName, installation.Version),
-            _ => null,
-        };
+        return InstallationValidator.GetComponentDirectory(rootPath, installation.Component, installation.ProductVersion ?? installation.Version);
     }
 
 }

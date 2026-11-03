@@ -32,4 +32,5 @@ internal interface IArtifactDownloader
 /// True when the hash was obtained without authenticated release metadata, so unsigned-download policy applies.
 /// This does not describe the file's Authenticode signature; installer signature verification is separate.
 /// </param>
-internal sealed record VerifiedDownload(string Path, string ExpectedHash, bool IsUnsigned);
+/// <param name="ProductVersion">The version of the installed payload, which can differ from the daily build identity.</param>
+internal sealed record VerifiedDownload(string Path, string ExpectedHash, bool IsUnsigned, ReleaseVersion? ProductVersion = null);

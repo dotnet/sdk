@@ -8,11 +8,13 @@ namespace Microsoft.Dotnet.Installation.Internal;
 /// <summary>
 /// Represents a .NET installation with a fully specified version.
 /// The MuxerDirectory is the directory of the corresponding .NET host that has visibility into this .NET installation.
+/// ProductVersion identifies the on-disk layout when a daily build identity differs from the payload version.
 /// </summary>
 internal record DotnetInstall(
     DotnetInstallRoot InstallRoot,
     ReleaseVersion Version,
-    InstallComponent Component);
+    InstallComponent Component,
+    ReleaseVersion? ProductVersion = null);
 
 /// <summary>
 /// A lightweight specification for an install request before path resolution and

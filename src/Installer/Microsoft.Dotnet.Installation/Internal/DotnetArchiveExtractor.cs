@@ -27,6 +27,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
 
     public bool RequiresPostInstallValidation => true;
 
+    public ReleaseVersion? ProductVersion { get; private set; }
+
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
         ReleaseVersion resolvedVersion,
@@ -107,7 +109,9 @@ internal class DotnetArchiveExtractor : IInstallArtifact
 
         try
         {
-            _archivePath = _archiveDownloader.DownloadVerifiedArtifact(_request, _resolvedVersion, archiveBasePath, reporter).Path;
+            var download = _archiveDownloader.DownloadVerifiedArtifact(_request, _resolvedVersion, archiveBasePath, reporter);
+            _archivePath = download.Path;
+            ProductVersion = download.ProductVersion;
         }
         catch (DotnetInstallException)
         {
