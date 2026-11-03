@@ -387,7 +387,16 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         string version = request.ResolvedVersion.ToString();
         if (request.Request.Options.Untracked)
         {
-            return version;
+            // No record to consult, so use the untagged folder when only it exists.
+            var resolved = request.ResolvedVersion;
+            string? root = request.Request.InstallRoot.Path;
+            string release = $"{resolved.Major}.{resolved.Minor}.{resolved.Patch}";
+            return root is not null
+                && !string.IsNullOrEmpty(resolved.Prerelease)
+                && !Directory.Exists(InstallationValidator.GetComponentDirectory(root, InstallComponent.SDK, version))
+                && Directory.Exists(InstallationValidator.GetComponentDirectory(root, InstallComponent.SDK, release))
+                ? release
+                : version;
         }
 
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);

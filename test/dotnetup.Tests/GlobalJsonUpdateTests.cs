@@ -258,6 +258,23 @@ public class GlobalJsonUpdateTests : IDisposable
         File.ReadAllText(path).Should().Contain("\"11.0.100\"").And.NotContain("rtm");
     }
 
+    [TestMethod]
+    public void ApplyGlobalJsonModifications_WritesUntaggedVersion_ForUntrackedRtmDailyBuild()
+    {
+        using var testEnv = new TestEnvironment();
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100"));
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, """{ "sdk": { "version": "10.0.100", "rollForward": "disable" } }""");
+        var request = new DotnetInstallRequest(installRoot, new UpdateChannel("11-daily"), InstallComponent.SDK,
+            new InstallRequestOptions { Untracked = true, GlobalJsonPath = path });
+
+        new DotnetEnvironmentManager().ApplyGlobalJsonModifications(
+            [new ResolvedInstallRequest(request, new ReleaseVersion("11.0.100-rtm.26552.115"))]);
+
+        File.ReadAllText(path).Should().Contain("\"11.0.100\"").And.NotContain("rtm");
+    }
+
     // ──────────────────────────────────────────────────────────────
     //  Default behavior: --update-global-json is NOT on by default
     // ──────────────────────────────────────────────────────────────
