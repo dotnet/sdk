@@ -445,7 +445,13 @@ internal static class MSBuildUtility
                 }
             }
 
-            var command = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore);
+            var command = new RestoringCommand(
+                parsedMSBuildArgs,
+                buildOptions.HasNoRestore,
+                msbuildPath: null,
+                userProfileDir: null,
+                advertiseWorkloadUpdates: null,
+                workingDirectory: buildSession.WorkingDirectory);
 
             return buildSession.RequiresOutOfProcessBuild
                 ? command.ExecuteOutOfProc(buildSession.WorkingDirectory)

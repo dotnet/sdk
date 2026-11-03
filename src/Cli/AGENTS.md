@@ -104,3 +104,7 @@ builds and restores out-of-process through
 directory so relative arguments and logs retain their meaning. Keep one coherent preparation binlog,
 target-produced project state, and the session's success/failure cleanup. Cover these boundaries in
 [`GivenDotnetTestProducesBinaryLog`](../../test/dotnet.Tests/CommandTests/Test/GivenDotnetTestProducesBinaryLog.cs).
+
+Parent-process operations must also use the captured invocation directory: pass it through background
+workload updates to both `global.json` discovery and NuGet configuration, and initialize absolute MTP
+trace paths before starting the session. Changing only a child process's directory is insufficient.
