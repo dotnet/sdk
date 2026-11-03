@@ -118,6 +118,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
         forwardedAffectedTests |= responseFileAffectedTests;
         forwardedMinimumExpectedTests |= responseFileMinimumExpectedTests;
 #else
+        // Resolve trace paths before a strict MT build session takes ownership of the process directory.
+        _ = Logger.TraceEnabled;
+
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], "dotnet-test");
         ITestHandler testHandler;
         MSBuildSession? buildSession = null;

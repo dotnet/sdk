@@ -135,13 +135,15 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     /// <param name="reporter">Reporter for user-facing output; defaults to <see cref="NullReporter"/> if not provided.</param>
     /// <param name="restoreActionConfig">NuGet restore configuration; defaults to a new instance if not provided.</param>
     /// <param name="shouldUsePackageSourceMapping">Whether package source mapping is in use; defaults to <see langword="true"/>.</param>
+    /// <param name="currentWorkingDirectory">Captured directory for resolving NuGet configuration.</param>
     public static NuGetPackageDownloader CreateForWorkloads(
         DirectoryPath packageInstallDir,
         bool verifyNuGetSignatures,
         ILogger verboseLogger = null,
         IReporter reporter = null,
         RestoreActionConfig restoreActionConfig = null,
-        bool shouldUsePackageSourceMapping = true)
+        bool shouldUsePackageSourceMapping = true,
+        string currentWorkingDirectory = null)
     {
         return new NuGetPackageDownloader(
             packageInstallDir,
@@ -151,7 +153,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             reporter,
             restoreActionConfig: restoreActionConfig,
             verifySignatures: verifyNuGetSignatures,
-            shouldUsePackageSourceMapping: shouldUsePackageSourceMapping);
+            shouldUsePackageSourceMapping: shouldUsePackageSourceMapping,
+            currentWorkingDirectory: currentWorkingDirectory);
     }
 
     public async Task<string> DownloadPackageAsync(PackageId packageId,

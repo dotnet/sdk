@@ -335,7 +335,8 @@ internal static class MSBuildUtility
                 msbuildPath: null,
                 userProfileDir: null,
                 advertiseWorkloadUpdates: null,
-                CommandServices.CreateDefault());
+                CommandServices.CreateDefault(),
+                workingDirectory: buildSession.WorkingDirectory);
 
             return buildSession.RequiresOutOfProcessBuild
                 ? command.ExecuteOutOfProc(buildSession.WorkingDirectory)
