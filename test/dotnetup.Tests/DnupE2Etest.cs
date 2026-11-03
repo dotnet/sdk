@@ -381,10 +381,12 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     /// from the blob feed → install completes and is recorded in the manifest.
     /// </summary>
     [TestMethod]
-    public void SdkInstall_DailyChannel()
+    [DataRow("daily")]
+    [DataRow("11-daily")]
+    public void SdkInstall_DailyChannel(string channel)
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var args = DotnetupTestUtilities.BuildSdkArguments("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        var args = DotnetupTestUtilities.BuildSdkArguments(channel, testEnv.InstallPath, testEnv.ManifestPath);
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
 
@@ -396,6 +398,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
             install.Version.Should().NotBeNullOrEmpty();
             // Daily versions are always prerelease.
             install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+            VerifyLayoutExists(testEnv, install);
         });
     }
 
@@ -408,10 +411,12 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     /// non-existent runtime archive from the blob feed.
     /// </summary>
     [TestMethod]
-    public void RuntimeInstall_DailyChannel()
+    [DataRow("daily")]
+    [DataRow("11.0-daily")]
+    public void RuntimeInstall_DailyChannel(string channel)
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
-        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec("daily", testEnv.InstallPath, testEnv.ManifestPath);
+        var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec(channel, testEnv.InstallPath, testEnv.ManifestPath);
         (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(args, captureOutput: true, workingDirectory: testEnv.TempRoot);
         exitCode.Should().Be(0, $"dotnetup exited with code {exitCode}. Output:\n{output}");
 
@@ -419,6 +424,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         {
             install.Version.Should().NotBeNullOrEmpty();
             install.Version.Should().Contain("-", "daily-channel installs should resolve to a prerelease version");
+            VerifyLayoutExists(testEnv, install);
         });
     }
 
@@ -511,6 +517,14 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
         var matchingInstall = installs.First(i => i.Component == expectedComponent);
 
         additionalAssertions?.Invoke(matchingInstall);
+    }
+
+    // RTM and servicing daily builds lay down an untagged folder (e.g. sdk/11.0.100) for a tagged build version.
+    private static void VerifyLayoutExists(TestEnvironment testEnv, Installation install)
+    {
+        string? componentDirectory = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, install.Component, install.LayoutVersion);
+        Directory.Exists(componentDirectory).Should().BeTrue(
+            $"'{componentDirectory}' should exist for tracked version '{install.Version}' (productVersion '{install.ProductVersion}')");
     }
 
     /// <summary>

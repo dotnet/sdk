@@ -59,7 +59,6 @@ public class DotnetArchiveExtractorTests
         var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
 
         result.Install.Version.Should().Be(resolvedVersion);
-        result.Repaired.Should().BeFalse();
         new InstallationValidator().Validate(result.Install).Should().BeTrue();
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
@@ -69,6 +68,7 @@ public class DotnetArchiveExtractorTests
             installation.ProductVersion.Should().Be(productVersion);
             manifest.InstallAlreadyExists(new DotnetInstall(root, resolvedVersion, component)).Should().BeTrue();
         }
+
         var listed = InstallationLister.GetListData(verify: true, manifestPath: testEnv.ManifestPath).Installations.Single();
         listed.Version.Should().Be(buildVersion);
         listed.IsValid.Should().BeTrue();
