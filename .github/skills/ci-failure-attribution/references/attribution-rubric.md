@@ -9,155 +9,100 @@
 | External infrastructure | Evidence of an external CI service, agent, queue, or transport mechanism, after accounting for changed source/configuration that could produce similar symptoms. |
 | Inconclusive | Missing controls, incompatible runs, conflicting signals, incomplete identity/coverage, or no causal link. State the next discriminating check. |
 
-Behavior is **Intermittent**, **Deterministic**, or **Unknown**. Use actual execution
-history or a specific deterministic diagnostic. Repeated failures alone do not
-prove determinism. Mixed outcomes in candidate controls alone do not establish
-equivalent conditions or prove a flake is unrelated.
+Set **Behavior** to **Intermittent**, **Deterministic**, or **Unknown** based on
+run history or a clear deterministic error.
 
-`Pre-existing` is relative to the stated comparison window. If build B already
-failed before new commits in build C, that mechanism predates B-to-C. An older
-passing A may bound an A-to-B regression; it does not implicate the C batch.
+`Pre-existing` applies to the commit range under test. If the previous matching
+build already failed with the same error before the new commits were added, mark
+the failure as `Pre-existing` for this commit range, even if an earlier build
+introduced it.
 
 ## Evidence sufficiency and sampling
 
-Distinguish three claims: the mechanism predates the changes, intermittent
-outcomes were observed, and the changes did not contribute to or exacerbate it.
-Evidence for either of the first two does not establish the third.
+Answer three separate questions:
 
-- One verified comparable no-PR failure can establish pre-existence of that
-  mechanism, not absence of PR contribution.
-- One explicit pass and failure under materially equivalent conditions can
-  establish observed intermittency, not a stable flake rate or unrelatedness.
-  One passing control also cannot rule out a PR-introduced intermittent defect.
-- If mechanism-level source/input evidence leaves a broader "unrelated to the PR"
-  conclusion uncertain, seek additional independent comparable executions.
-  Inspect supporting and contrary outcomes rather than stopping at the first
-  match. Repeated report pointers to the same execution are not independent
-  evidence.
-- To assess a frequency change, inspect comparable executed passes and failures
-  on both sides, record the sample sizes and selection limits, and account for
-  material input differences. Failure-only history and a few selected runs cannot
-  establish an unchanged rate. Do not invent a universal minimum or infer absence
-  of an effect merely because a small sample shows no clear difference.
+1. Did this failure happen before the change?
+2. Does this failure happen intermittently?
+3. Did the change cause the failure or make it happen more often?
 
-Choose further samples to resolve a stated uncertainty, not to satisfy a quota.
-If retention, time, or comparability prevents a sufficient comparison, report
-"pre-existence demonstrated; PR exacerbation unassessed" or "observed
-intermittency; PR contribution unresolved" as appropriate. Confidence applies
-to the specific supported claim: High confidence in pre-existence is not High
-confidence that the PR is unrelated.
+Proving (1) or (2) does not answer (3):
+
+- A matching failure without the PR changes proves the problem existed before,
+  and one pass plus one failure under matching conditions proves it is
+  intermittent. Neither result proves that the PR had no effect.
+- If code and input checks do not rule out the PR, check more matching builds
+  (both passes and failures) and record how many runs you checked.
+- If retention limits, time limits, or missing controls prevent enough
+  comparisons, report `pre-existence demonstrated; PR impact unassessed` or
+  `observed intermittency; PR impact unresolved`.
 
 ## Qualitative confidence
 
-Use **High/Medium/Low only**, accompanied by evidence and limitations. Do not
-produce percentages, numeric scores, or invented probabilities.
+Set **Confidence** to **High**, **Medium**, or **Low**:
 
-- **High:** specific diagnostics/artifacts or strongly comparable controls support
-  the assessment, and material alternatives have been checked.
-- **Medium:** supporting evidence forms a coherent assessment, but an important
-  causal link, control, or alternative remains unresolved.
-- **Low:** sparse, conflicting, or weakly comparable evidence. Use Inconclusive
-  when it cannot support attribution; a low-confidence guess is not a finding.
+- **High:** clear logs, artifacts, and matching control builds support the
+  verdict, and you checked other likely causes.
+- **Medium:** the evidence supports one explanation, but a control build, causal
+  step, or alternative cause is still unverified.
+- **Low:** the evidence points to one explanation, but comparisons are indirect
+  or key artifacts are missing. If the evidence does not favor one cause over
+  another, set **Attribution** to `Inconclusive`.
 
-Confidence in the proximate symptom can exceed confidence in its underlying
-cause. For example, the watchdog clearly terminated a hung host, but its reason
-for hanging may remain unknown. State both instead of attaching High confidence
-to an unsupported product/infrastructure diagnosis.
-
-Evidence coverage is separate from causation: collecting all available evidence
-does not itself establish a cause, and understanding one failure does not explain
-other failures.
+You can have high confidence in the immediate symptom (for example, a watchdog
+killed a hung process) and low confidence in the root cause (why the process
+hung). Report both when they differ.
 
 ## Comparability and change windows
 
-Verify the dimensions relevant to the failure mechanism: repository,
-organization/project, pipeline and actual job/scenario, OS/RID, configuration,
-queue, test selection/shard, resolved dependencies/toolchain, pipeline
-parameters/resources, and tested revisions. Different build reasons may select
-different jobs/test modes even in the same pipeline. Inspect the relevant
-pipeline definition at the tested revision rather than assuming equivalent jobs.
+Before using another build as a control, confirm that the relevant settings
+match: repository, organization, project, pipeline, job, OS, RID, build
+configuration, Helix queue, test shard, dependencies, toolset, pipeline
+parameters, and commits. Because PR builds and rolling builds can run different
+jobs or test sets in the same pipeline, check the pipeline YAML at the tested
+commit.
 
-For PRs, establish the tested PR head, merge tree, and historical target SHA.
-Compare against the actual tested baseline, not today's branch head. If source
-and target moved together, neither is automatically responsible.
-
-For standalone builds, verify the preceding candidate scenario execution and the
-last actual passing control separately. Honor explicit baselines only after
-comparability and ancestry checks. Do not use build finish order to infer ancestry.
-A candidate run is not a verified control until its execution and material input
-differences have been inspected.
-
-Rolling builds may contain many commits. Diff the tested range and trace a specific
-change to the failure before naming an introducing commit. Otherwise retain the
-range and acknowledge uncertainty.
-
-For same-SHA scheduled/manual/repeated runs, report no new source commits.
-Investigate resolved dependencies, external resources, parameter changes, machine
-state, and latent source defects. An empty source diff does not prove infrastructure.
+- **Pull requests:** compare against the target commit from the tested merge
+  commit. Do not use the target branch's current head.
+- **Standalone builds:** check both the previous matching build and the last
+  passing build. Use git history to verify commit order, because builds can
+  finish out of commit order.
+- **Rolling builds:** diff the full commit range and connect a specific change
+  to the error before naming a single commit. If you cannot narrow it to one
+  commit, report the full commit range.
+- **Same-SHA scheduled, manual, or repeated runs:** note that no code changed,
+  then check dependencies, external resources, pipeline parameters, machine
+  state, and existing code bugs.
 
 ## Evidence traps
 
-- Known-issue matches are evidence of matching history, not immunity for the PR.
-  Inspect mechanism, chronology, branch/configuration, and potential exacerbation.
-- Build Analysis must cover the exact build. An overridden green check can retain
-  unmatched failures. A partial report cannot establish zero matches.
-- An absent branch Build Analysis report is not proof the branch has no known
-  problems. Mark it not applicable when no report is expected; otherwise report
-  the missing report as a coverage gap.
-- Never infer a pass from missing failed results, test-run summary counts, a skip,
-  or overall build success without verified scenario execution.
-- Synthetic "Work Item" results, exit codes, and assembly names are not named
-  assertion failures or ownership evidence. Recover logs/results when available.
-- Restore/network-looking failures can follow PR changes to URLs, credentials,
-  dependency versions, or configuration. Inspect those changes before assigning
-  external infrastructure.
-- Distinguish CI infrastructure from external dependency and configuration
-  failures. A feed HTTP 401/403, DNS failure for a package source, expired
-  credential, package vulnerability rejection, or invalid external service
-  configuration is not by itself evidence that Azure/Helix infrastructure failed.
-  Attribute it to a PR or new commit only when changed source/configuration
-  causally explains the request or credential; call it pre-existing only when
-  comparable evidence shows the same failure before the stated window. Otherwise
-  use Inconclusive and name the next check (for example, verify feed availability
-  and credential scope).
-- Use External infrastructure for provider-side service outages, agent/queue
-  failures, or transport incidents only when logs, service status, or comparable
-  executions support that mechanism and changed configuration has been considered.
-- Normalize volatile identifiers only. Preserve diagnostic numbers, meaningful
-  paths/versions, endpoints, expected/actual values, and distinct stack mechanisms.
-  Stable GUIDs such as COM CLSIDs and assertion timestamps are meaningful values,
-  not automatically volatile identifiers.
-- Cascades and generic parent jobs remain context, not extra independent causes.
-  When presenting several observations, group only those whose evidence supports
-  the same root mechanism. Preserve contributing observation names/IDs and links
-  for auditability; keep separate assertions, distinct mechanisms, and
-  unexplained failures separate. Never count a proven parent-to-artifact cascade
-  as several independent causes.
-- Authentication failures, truncation, incompatible schemas, and missing artifacts
-  must remain explicit. Do not convert them to successful empty results.
+- **Build Analysis checks:** confirm that the Build Analysis report covers the
+  exact build and failure. A green check that was manually overridden can still
+  hide unmatched failures. If a branch is missing an expected Build Analysis
+  report, note that gap.
+- **Generic parent errors and cascades:** generic `Work Item` failures, exit
+  codes, `Monitor Helix Jobs` failures, and missing-artifact cascades are
+  symptoms. Dig into the child logs to find the root error. Group failures only
+  when they share the same root error.
+- **CI infrastructure vs. dependency or config errors:** a package feed HTTP
+  401/403, DNS error, expired credential, or package vulnerability error is not
+  automatically an Azure DevOps or Helix outage. Check if the PR or commit range
+  changed feeds, URLs, credentials, or package versions, or if earlier builds
+  failed the same way. If you cannot tell, mark the failure `Inconclusive` and
+  list the next check. Use `External infrastructure` only for confirmed CI
+  service, agent, queue, or network outages.
+- **Comparing errors across runs:** ignore run-specific values such as work-item
+  IDs, machine names, and temp paths. Treat differences in error codes, file
+  paths, versions, URLs, expected/actual values, COM CLSIDs, assertion
+  timestamps, or stack traces as different failures.
 
-The existing monitor also separates phase, mechanism, provenance, and causal
-confidence; see its [reasoning rules](../../../workflows/ci-quality-monitor.md)
-and [failure model](../../../ci-quality-monitor/DESIGN.md). Its automatic
-issue-delivery and recurrence gates are not attribution rules for interactive CI.
+The CI Quality Investigator workflow also separates build phase, failure type,
+evidence source, and confidence; see its [decision process](../../../workflows/ci-quality-monitor.md#decision-process)
+and [failure model](../../../ci-quality-monitor/DESIGN.md#failure-model). Its
+automated issue-filing rules do not apply to interactive investigations.
 
-## Examples
+## Example: rolling batch after an existing failure
 
-**PR-introduced intermittency:** a new unguarded environment mutation is reachable
-by a parallel test; source and traces establish that race. Relevant controls ran
-without the mutation. Verdict: PR-related, Intermittent; confidence follows the
-causal evidence, not merely a retry's outcome.
-
-**Latest batch after a pre-existing failure:** A passes the scenario, B fails
-mechanism M, and C fails M after three new commits. Comparable B evidence proves
-M predates the B-to-C window. Verdict: Pre-existing relative to that window;
-the A-to-B introduction remains a separate question. Do not blame C's final commit.
-
-**Scheduled unchanged source:** two runs share a tested SHA, but the failing run
-uses a newly resolved resource version. Report the empty source window and the
-resource difference. Without a mechanism-level explanation, attribution remains
-Inconclusive rather than automatically flaky or infrastructure-owned.
-
-**Mixed failures:** one test matches a verified existing race; a separate compile
-diagnostic traces to a changed target. Report both assessments. A third result-less
-timeout remains Inconclusive if its logs are unavailable. No all-unrelated verdict.
+Build A passes a test, build B fails with error M, and build C fails with error
+M after three new commits. Build B proves that error M existed before build C's
+commits. Mark error M as **Pre-existing** for build C (finding which commit
+between A and B introduced error M is a separate task).
