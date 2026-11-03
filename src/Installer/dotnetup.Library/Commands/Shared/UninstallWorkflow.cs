@@ -52,8 +52,7 @@ internal class UninstallWorkflow
 
         var targetedInstallations = root.Installations
             .Where(i => i.Component == componentFilter &&
-                        matchingSpecs.Any(s => new UpdateChannel(s.VersionOrChannel).Matches(
-                            new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(i.Version))))
+                        matchingSpecs.Any(s => i.IsMatchedBy(new UpdateChannel(s.VersionOrChannel))))
             .ToList();
 
         RemoveSpecsAndRunGc(manifest, manifestData, installRoot, matchingSpecs, targetedInstallations, interactive, confirm);

@@ -56,6 +56,14 @@ internal class Installation
     [JsonIgnore]
     public string LayoutVersion => ProductVersion ?? Version;
 
+    /// <summary>
+    /// Returns true if the channel matches the build version or the on-disk version, since global.json pins
+    /// RTM and servicing daily builds by the version on disk.
+    /// </summary>
+    public bool IsMatchedBy(UpdateChannel channel) =>
+        (ReleaseVersion.TryParse(Version, out var version) && channel.Matches(version)) ||
+        (ProductVersion is not null && ReleaseVersion.TryParse(ProductVersion, out var productVersion) && channel.Matches(productVersion));
+
     public DotnetInstall ToDotnetInstall(DotnetInstallRoot installRoot) =>
         new(installRoot, new ReleaseVersion(Version), Component,
             ProductVersion is null ? null : new ReleaseVersion(ProductVersion));
