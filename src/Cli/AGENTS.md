@@ -89,3 +89,18 @@ Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):
   matching `*.verified.txt`.
 - Volatile lines (paths, timings, versions) are scrubbed via
   `settings.ScrubLinesContaining(...)` — scrub rather than hard-code them.
+
+## MTP build preparation
+
+[`MSBuildSession`](dotnet/MSBuildSession.cs) owns the single-node build and project collection
+for targets MTP invokes directly: restore, device discovery, deployment and run-argument computation.
+Honor explicit `-mt` / `-multiThreaded` values using MSBuild's precedence and environment defaults,
+without adding automatic response-file discovery.
+
+A strict MT session owns the process current directory until it ends; do not restore that directory
+between MT requests. [`MSBuildUtility`](dotnet/Commands/Test/MTP/MSBuildUtility.cs) runs intervening
+builds and restores out-of-process through
+[`RestoringCommand`](dotnet/Commands/Restore/RestoringCommand.cs), using the captured invocation
+directory so relative arguments and logs retain their meaning. Keep one coherent preparation binlog,
+target-produced project state, and the session's success/failure cleanup. Cover these boundaries in
+[`GivenDotnetTestProducesBinaryLog`](../../test/dotnet.Tests/CommandTests/Test/GivenDotnetTestProducesBinaryLog.cs).

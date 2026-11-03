@@ -7,6 +7,9 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using MSBuildApp = Microsoft.Build.CommandLine.MSBuildApp;
+using MSBuildCommandLineParser = Microsoft.Build.CommandLine.Experimental.CommandLineParser;
+using MSBuildCommandLineSwitches = Microsoft.Build.CommandLine.Experimental.CommandLineSwitches;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -37,9 +40,9 @@ namespace Microsoft.DotNet.Cli;
 /// </para>
 /// <para>
 /// The session is started lazily and owns a dedicated <see cref="BuildManager"/> rather than using
-/// <see cref="BuildManager.DefaultBuildManager"/>, so it can stay open across the in-process MSBuild
-/// invocations the CLI makes to build or restore the projects it is working on (which go through the
-/// default build manager and write their own binary log).
+/// <see cref="BuildManager.DefaultBuildManager"/>. Legacy sessions can stay open across in-process
+/// builds using the default manager. A multi-threaded session owns the process current directory until
+/// it ends, so intervening builds must run out-of-process in <see cref="WorkingDirectory"/>.
 /// </para>
 /// </remarks>
 internal sealed class MSBuildSession : IDisposable
@@ -49,6 +52,7 @@ internal sealed class MSBuildSession : IDisposable
     private readonly Lock _lock = new();
 
     private BuildManager? _buildManager;
+    private bool _multiThreaded;
     private bool _disposed;
 
     public MSBuildSession(MSBuildArgs msbuildArgs, FacadeLogger? logger)
@@ -77,6 +81,16 @@ internal sealed class MSBuildSession : IDisposable
     /// its target framework, device or runtime identifier - when it is evaluated.
     /// </remarks>
     public ProjectCollection ProjectCollection { get; }
+
+    /// <summary>
+    /// The caller's directory before the session takes ownership of the process current directory.
+    /// </summary>
+    public string WorkingDirectory { get; } = Directory.GetCurrentDirectory();
+
+    /// <summary>
+    /// Whether an intervening build must use another process to avoid overlapping strict MT scopes.
+    /// </summary>
+    public bool RequiresOutOfProcessBuild => _buildManager is not null && _multiThreaded;
 
     /// <summary>
     /// Builds the given targets of an already evaluated project in the shared build session.
@@ -120,9 +134,12 @@ internal sealed class MSBuildSession : IDisposable
             }
             finally
             {
-                // The in-process node restores its operating environment when the build session ends.
-                // This session spans several requests, so restore the caller's directory after each one.
-                Directory.SetCurrentDirectory(originalWorkingDirectory);
+                if (!_multiThreaded)
+                {
+                    // Legacy nodes restore their operating environment only when the session ends.
+                    // MT owns the process directory for the whole session; changing it violates strict mode.
+                    Directory.SetCurrentDirectory(originalWorkingDirectory);
+                }
             }
         }
     }
@@ -232,11 +249,18 @@ internal sealed class MSBuildSession : IDisposable
         var buildManager = new BuildManager("dotnet-cli-session");
         try
         {
+            // Preparation only consumes explicit MT switches, without discovering response files.
+            var switches = new MSBuildCommandLineSwitches();
+            new MSBuildCommandLineParser().GatherCommandLineSwitches(
+                _msbuildArgs.OtherMSBuildArgs.Where(MSBuildArgumentParser.IsMultiThreadedSwitch), switches);
+            switches.ThrowErrors();
+
             var parameters = new BuildParameters(ProjectCollection)
             {
                 Loggers = CreateLoggers(),
                 // ProjectInstance.Build defaults to a single in-process node, keep that behavior.
                 MaxNodeCount = 1,
+                MultiThreaded = MSBuildApp.IsMultiThreadedEnabled(switches),
                 EnableNodeReuse = false,
             };
 
@@ -248,6 +272,7 @@ internal sealed class MSBuildSession : IDisposable
             }
 
             buildManager.BeginBuild(parameters);
+            _multiThreaded = parameters.MultiThreaded;
         }
         catch
         {

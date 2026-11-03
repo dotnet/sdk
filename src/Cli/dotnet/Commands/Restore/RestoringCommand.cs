@@ -227,19 +227,27 @@ public class RestoringCommand : MSBuildForwardingApp
     private static bool TriggersSilentSeparateRestore(string argument)
         => FlagsThatTriggerSilentSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
-    public override int Execute()
+    public override int Execute() => Execute(workingDirectory: null);
+
+    internal override int ExecuteOutOfProc(string workingDirectory) => Execute(workingDirectory);
+
+    private int Execute(string? workingDirectory)
     {
         int exitCode;
         if (SeparateRestoreCommand != null)
         {
-            exitCode = SeparateRestoreCommand.Execute();
+            exitCode = workingDirectory is null
+                ? SeparateRestoreCommand.Execute()
+                : SeparateRestoreCommand.ExecuteOutOfProc(workingDirectory);
             if (exitCode != 0)
             {
                 return exitCode;
             }
         }
 
-        exitCode = base.Execute();
+        exitCode = workingDirectory is null
+            ? base.Execute()
+            : base.ExecuteOutOfProc(workingDirectory);
         if (AdvertiseWorkloadUpdates)
         {
             WorkloadManifestUpdater.AdvertiseWorkloadUpdates();
