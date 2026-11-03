@@ -79,7 +79,7 @@
     <!-- Pre-crossgen managed assemblies are portable, but their tool apphosts are
          still target-native. Reuse the product generation and macOS signing logic. -->
     <MSBuild Projects="$(RepoRoot)src/Layout/redist/redist.csproj"
-             Targets="PublishRoslyn;CreateMSBuildAppHost"
+             Targets="CreateRoslynAppHosts;CreateMSBuildAppHost"
              Properties="Configuration=$(Configuration);Platform=AnyCPU;OutputPath=$(_TestSdkDirectory);SharedFrameworkRid=$(RuntimeIdentifier)"
              RemoveProperties="RuntimeIdentifier" />
     <Exec Command="chmod +x &quot;$(_TestSdkDirectory)Roslyn/bincore/csc&quot; &quot;$(_TestSdkDirectory)Roslyn/bincore/vbc&quot; &quot;$(_TestSdkDirectory)Roslyn/bincore/VBCSCompiler&quot; &quot;$(_TestSdkDirectory)MSBuild&quot;"

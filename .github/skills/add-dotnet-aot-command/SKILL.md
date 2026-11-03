@@ -319,6 +319,8 @@ ReadyToRun images after `CrossgenLayout` and can fail to load in the host-native
 The pre-crossgen layout still contains target-native compiler and MSBuild apphosts; regenerate
 them for the host RID through the
 [redist targets](../../../src/Layout/redist/targets/GenerateLayout.targets), including their macOS code signing.
+Use `CreateRoslynAppHosts`, not `PublishRoslyn`: the existing SDK already has the compiler
+files, and the original Roslyn package need not be present when CI prepares the test layout.
 The bootstrap SDK is used for compilation, not managed setup or fallback. Do not execute a cross-built
 redist host (for example, arm64 redist on an x64 macOS agent) or overlay host-native binaries into that
 redist. Mixing bootstrap-managed setup with a newly built native CLI can invalidate run-file caches
