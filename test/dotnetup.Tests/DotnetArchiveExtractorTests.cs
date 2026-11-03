@@ -39,23 +39,7 @@ public class DotnetArchiveExtractorTests
         using var testEnv = new TestEnvironment();
         var resolvedVersion = new ReleaseVersion(buildVersion);
         var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-        var request = new DotnetInstallRequest(root, new UpdateChannel("daily"), component,
-            new InstallRequestOptions { ManifestPath = testEnv.ManifestPath });
-        var resolvedRequest = new ResolvedInstallRequest(request, resolvedVersion);
-        var downloader = new MockArchiveDownloader
-        {
-            ArchiveFileExtension = ".tar.gz",
-            FakeArchiveContent = CreateTarGzWithFiles(
-                (markerPath, "component marker"),
-                (DotnetupUtilities.GetDotnetExeName(), "muxer")),
-            ProductVersion = new ReleaseVersion(productVersion),
-            IsUnsigned = true
-        };
-        using var extractor = new DotnetArchiveExtractor(request, resolvedVersion, new ReleaseManifest(), new NullProgressTarget(), downloader);
-
-        extractor.Prepare();
-        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest,
-            new DotnetInstall(root, resolvedVersion, component).WithPayloadVersion(extractor.ProductVersion), extractor);
+        using var prepared = PrepareArchiveInstall(testEnv, component, "daily", buildVersion, productVersion, markerPath, "component marker");
         var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
 
         result.Install.Version.Should().Be(resolvedVersion);
@@ -72,6 +56,74 @@ public class DotnetArchiveExtractorTests
         var listed = InstallationLister.GetListData(verify: true, manifestPath: testEnv.ManifestPath).Installations.Single();
         listed.Version.Should().Be(buildVersion);
         listed.IsValid.Should().BeTrue();
+    }
+
+    [TestMethod]
+    [DataRow("11-daily", "11.0.100-rtm.26552.115", "11.0.100", "11-daily", "11.0.100-rtm.26553.101", "11.0.100", "sdk uninstall 11-daily")]
+    [DataRow("11-daily", "11.0.100-rtm.26552.115", "11.0.100", "11.0.100", "11.0.100", null, "sdk uninstall 11-daily")]
+    [DataRow("11.0.100", "11.0.100", null, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", "sdk uninstall 11.0.100")]
+    public void Commit_DifferentBuildWithSameLayout_RejectsWithoutChangingExistingInstall(
+        string existingChannel, string existingVersion, string? existingPayload,
+        string newChannel, string newVersion, string? newPayload, string expectedUninstall)
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var existing = PrepareArchiveInstall(testEnv, InstallComponent.SDK, existingChannel, existingVersion, existingPayload, markerPath, "existing"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(existing);
+        }
+        using var replacement = PrepareArchiveInstall(testEnv, InstallComponent.SDK, newChannel, newVersion, newPayload, markerPath, "replacement");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(replacement));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+        ex.Message.Should().Contain($".NET SDK {newVersion} replaces .NET SDK {existingVersion}")
+            .And.Contain($"dotnetup {expectedUninstall} --install-path");
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("existing");
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        new DotnetupSharedManifest(testEnv.ManifestPath).ReadManifest().DotnetRoots.Single().Installations
+            .Should().ContainSingle().Which.Version.Should().Be(existingVersion);
+    }
+
+    [TestMethod]
+    public void Commit_UntrackedDailyBuildWithExistingLayout_Rejects()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var existing = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "existing", untracked: true))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(existing);
+        }
+        using var replacement = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "replacement", untracked: true);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(replacement));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+        ex.Message.Should().Contain("Remove '");
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("existing");
+    }
+
+    private static InstallerOrchestratorSingleton.PreparedInstall PrepareArchiveInstall(
+        TestEnvironment testEnv, InstallComponent component, string channel, string version, string? payloadVersion,
+        string markerPath, string markerContent, bool untracked = false)
+    {
+        var resolvedVersion = new ReleaseVersion(version);
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var request = new DotnetInstallRequest(root, new UpdateChannel(channel), component,
+            new InstallRequestOptions { ManifestPath = testEnv.ManifestPath, Untracked = untracked });
+        var downloader = new MockArchiveDownloader
+        {
+            ArchiveFileExtension = ".tar.gz",
+            FakeArchiveContent = CreateTarGzWithFiles(
+                (markerPath, markerContent),
+                (DotnetupUtilities.GetDotnetExeName(), "muxer")),
+            ProductVersion = payloadVersion is null ? null : new ReleaseVersion(payloadVersion),
+            IsUnsigned = true
+        };
+        var extractor = new DotnetArchiveExtractor(request, resolvedVersion, new ReleaseManifest(), new NullProgressTarget(), downloader);
+        extractor.Prepare();
+        return new InstallerOrchestratorSingleton.PreparedInstall(new ResolvedInstallRequest(request, resolvedVersion),
+            new DotnetInstall(root, resolvedVersion, component).WithPayloadVersion(extractor.ProductVersion), extractor);
     }
 
     [TestMethod]

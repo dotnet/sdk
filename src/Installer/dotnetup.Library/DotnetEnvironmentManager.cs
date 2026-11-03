@@ -391,9 +391,11 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         }
 
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var installRoot = request.Request.InstallRoot;
         var installation = new DotnetupSharedManifest(request.Request.Options.ManifestPath)
-            .GetInstallations(request.Request.InstallRoot)
-            .FirstOrDefault(i => i.Component == InstallComponent.SDK && i.Version == version);
+            .ReadManifestWithoutPruning().DotnetRoots
+            .FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, installRoot.Path) && r.Architecture == installRoot.Architecture)?
+            .Installations.FirstOrDefault(i => i.Component == InstallComponent.SDK && i.Version == version);
         return installation?.LayoutVersion ?? version;
     }
 }

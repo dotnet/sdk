@@ -190,6 +190,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>Admin mode will not use a download without signature validation until we add interactive agreement.</summary>
     AdminModeSignatureRequired,
+
+    /// <summary>The install would overwrite a different build of the same component that uses the same on-disk version folder.</summary>
+    InstallLayoutConflict,
 }
 
 /// <summary>

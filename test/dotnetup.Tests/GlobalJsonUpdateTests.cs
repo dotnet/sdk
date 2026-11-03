@@ -238,8 +238,6 @@ public class GlobalJsonUpdateTests : IDisposable
     {
         using var testEnv = new TestEnvironment();
         var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-        // Reading the manifest prunes records whose layout folder is missing.
-        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100"));
         using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
         {
             new DotnetupSharedManifest(testEnv.ManifestPath).AddInstallation(installRoot, new Installation

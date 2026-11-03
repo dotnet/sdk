@@ -447,6 +447,33 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     }
 
     /// <summary>
+    /// Returns a tracked installation of a different build that occupies the same on-disk folder as the install,
+    /// with the install specs that own it. Must be called while holding the install-state mutex.
+    /// </summary>
+    internal (Installation Installation, IReadOnlyList<InstallSpec> OwningSpecs)? FindLayoutConflict(DotnetInstall install)
+    {
+        string version = install.Version.ToString();
+        string layoutVersion = install.LayoutVersion.ToString();
+
+        var root = ReadManifest().DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+        var conflict = root?.Installations.FirstOrDefault(existing =>
+            existing.Component == install.Component &&
+            existing.Version != version &&
+            existing.LayoutVersion == layoutVersion);
+        if (conflict is null)
+        {
+            return null;
+        }
+
+        var conflictVersion = new ReleaseVersion(conflict.Version);
+        var owningSpecs = root!.InstallSpecs
+            .Where(spec => spec.Component == conflict.Component && new UpdateChannel(spec.VersionOrChannel).Matches(conflictVersion))
+            .ToList();
+        return (conflict, owningSpecs);
+    }
+
+    /// <summary>
     /// Returns true if the manifest tracks the given install root.
     /// Must be called while holding the install-state mutex.
     /// </summary>

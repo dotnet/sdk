@@ -32,6 +32,11 @@ from `dotnet --version`, even though dotnetup tracks a build identity such as
 `11.0.100-rtm.26552.115`. The build identity lets daily-channel updates distinguish
 successive builds with the same release-version filename.
 
+Successive RTM or servicing daily builds, and the matching stable release, install
+into the same folder. dotnetup doesn't install one of these builds over another;
+uninstall the existing one first, for example `dotnetup sdk uninstall 11.0.1xx-daily`,
+and then install the newer build.
+
 ## Isolate a daily SDK
 
 Use a separate installation root when you do not want daily and stable

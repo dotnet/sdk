@@ -380,6 +380,8 @@ internal class InstallerOrchestratorSingleton
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
 
+            ThrowIfLayoutConflict(prepared, manifest, validator);
+
             prepared.Artifact.Commit();
 
             repaired = prepared.Artifact.RequiresPostInstallValidation
@@ -400,6 +402,51 @@ internal class InstallerOrchestratorSingleton
         return new InstallResult(prepared.Install, WasAlreadyInstalled: false, Repaired: repaired);
     }
 #pragma warning restore CA1822
+
+    /// <summary>
+    /// Rejects an install whose on-disk version folder already holds a different build of the component,
+    /// because extraction would keep the existing files while recording the new build.
+    /// </summary>
+    private static void ThrowIfLayoutConflict(PreparedInstall prepared, DotnetupSharedManifest? manifest, IInstallationValidator validator)
+    {
+        var install = prepared.Install;
+        string component = install.Component.GetDisplayName();
+        if (manifest?.FindLayoutConflict(install) is { } conflict)
+        {
+            var (existing, owningSpecs) = conflict;
+            string action = owningSpecs.Count == 0
+                ? string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictUninstallVersion, component, existing.Version)
+                : string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictRunCommand,
+                    string.Join(", ", owningSpecs.Select(spec => $"'{GetUninstallCommand(spec, install.InstallRoot)}'")));
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InstallLayoutConflict,
+                string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflict, component, install.Version, existing.Version, install.LayoutVersion, action),
+                version: install.Version.ToString(),
+                component: install.Component.ToString());
+        }
+
+        // Untracked roots don't record which build owns a folder, so an existing folder for a remapped build is a conflict.
+        if (manifest is null
+            && install.PayloadVersionOverride is not null
+            && prepared.Request.Options.InstallMechanism == InstallMechanism.Archive
+            && validator.Validate(install))
+        {
+            string? directory = InstallationValidator.GetComponentDirectory(install.InstallRoot.Path!, install.Component, install.LayoutVersion.ToString());
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InstallLayoutConflict,
+                string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictUntracked, component, install.Version, directory, install.LayoutVersion),
+                version: install.Version.ToString(),
+                component: install.Component.ToString());
+        }
+    }
+
+    private static string GetUninstallCommand(InstallSpec spec, DotnetInstallRoot installRoot)
+    {
+        string target = spec.Component == InstallComponent.SDK
+            ? $"sdk uninstall {spec.VersionOrChannel}"
+            : $"runtime uninstall {Commands.Runtime.Install.RuntimeInstallCommand.FormatComponentSpec(spec.Component, spec.VersionOrChannel)}";
+        return $"dotnetup {target} {CommonOptions.InstallPathOption.Name} \"{installRoot.Path}\"";
+    }
 
     /// <summary>
     /// Handles an install that reported success without its files: repairs the artifact once and validates
