@@ -213,7 +213,8 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               enableDefaultArtifacts: true
               runTests: false
               variables:
@@ -223,7 +224,8 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               enableDefaultArtifacts: true
               runTests: false
               variables:
@@ -253,7 +255,8 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
               enableDefaultArtifacts: true
               runTests: false
@@ -264,7 +267,8 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
               enableDefaultArtifacts: true
               runTests: false
@@ -275,7 +279,8 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
               enableDefaultArtifacts: true
               enableSbom: false
@@ -287,7 +292,8 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
               enableDefaultArtifacts: true
               enableSbom: false
@@ -314,7 +320,8 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               enableDefaultArtifacts: true
               runTests: false
             - categoryName: Dotnetup
@@ -323,7 +330,8 @@ extends:
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
-              projectsArgument: /p:BuildDotnetupVariants=true
+              projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               enableDefaultArtifacts: true
               runTests: false
 

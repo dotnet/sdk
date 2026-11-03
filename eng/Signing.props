@@ -3,7 +3,6 @@
   <!-- Import default TargetRid calculation so it's available to Sign.proj / Publish.proj
        (which import this file but not /Directory.Build.props). -->
   <Import Project="TargetRid.props" />
-  <Import Project="DotnetupVariants.props" />
 
   <PropertyGroup>
     <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
@@ -218,7 +217,7 @@
     </Artifact>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(BuildDotnetupVariants)' == 'true'">
+  <ItemGroup Condition="'$(DotnetupBuildVariant)' == 'daily'">
     <_DotnetupCandidateBinary Include="$(ArtifactsDir)preview\bin\dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt);
                                       $(ArtifactsDir)ga\bin\dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
     <!-- SkipPublish is Arcade's existing sign-only contract: these never enter BAR. -->

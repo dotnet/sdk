@@ -13,7 +13,6 @@
     <DotnetupVersionPrefix>0.3.0</DotnetupVersionPrefix>
     <DotnetupPreReleaseVersionLabel>preview</DotnetupPreReleaseVersionLabel>
     <DotnetupPreReleaseVersionIteration>1</DotnetupPreReleaseVersionIteration>
-    <DotnetupBuildVariant Condition="'$(DotnetupBuildVariant)' == '' and '$(BuildDotnetupVariants)' == 'true'">daily</DotnetupBuildVariant>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotnetupBuildVariant)' == 'daily'">

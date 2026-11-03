@@ -1,7 +1,8 @@
 # Building and releasing dotnetup
 
-The official `dotnet-dnup-official-ci` pipeline builds three variants in one Arcade
-invocation on each RID agent. Intermediate and output directories are isolated; the
+The official `dotnet-dnup-official-ci` pipeline invokes the build command three times
+on each RID agent, selecting preview, GA, then daily branding with
+`DotnetupBuildVariant`. Intermediate and output directories are isolated; the
 channel identity is compiled into dotnetup and its libraries, not changed at promotion.
 
 | Variant | Example version | Default self-update channel | BAR |
@@ -29,13 +30,20 @@ checksums from the publishing manifest. Only daily assets are registered in BAR.
 To produce variants locally:
 
 ```powershell
-.\eng\common\build.ps1 -restore -build -pack -configuration Release `
-    /p:BuildDotnetupVariants=true
+foreach ($variant in @('preview', 'ga', 'daily')) {
+    $artifacts = Join-Path $PWD 'artifacts'
+    if ($variant -ne 'daily') { $artifacts = Join-Path $artifacts $variant }
+    .\eng\common\build.ps1 -restore -build -pack -configuration Release `
+        "/p:Projects=$PWD\dotnetup.slnf" "/p:DotnetupBuildVariant=$variant" `
+        "/p:ArtifactsDir=$artifacts\"
+    if ($LASTEXITCODE -ne 0) { throw "The $variant build failed." }
+}
 ```
 
-The build selects each variant internally. Daily uses the normal `artifacts` root;
+Daily uses the normal `artifacts` root;
 preview and GA use `artifacts\preview` and `artifacts\ga` for their isolated outputs.
-The pipeline additionally signs and publishes the candidates. Local nonofficial
+The final daily invocation additionally signs all three variants, stages the
+candidates, and publishes only daily assets. Local nonofficial
 builds retain Arcade's development versions; an `OfficialBuildId` produces the
 date-stamped identities shown above.
 

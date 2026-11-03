@@ -24,7 +24,7 @@
     <FSharpArtifactVisibility Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">Vertical</FSharpArtifactVisibility>
     <FSharpArtifactVisibility Condition="'$(FSharpArtifactVisibility)' == ''">External</FSharpArtifactVisibility>
   </PropertyGroup>
-  <ItemGroup Condition="'$(BuildDotnetupVariants)' != 'true' and '$(EnableDefaultArtifacts)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
+  <ItemGroup Condition="'$(DotnetupBuildVariant)' == '' and '$(EnableDefaultArtifacts)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
     <Artifact Include="$(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg;
                        $(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
               Kind="Package"
@@ -73,9 +73,13 @@
   </Target>
 
   <Target Name="StageDotnetupReleaseCandidates"
-          Condition="'$(BuildDotnetupVariants)' == 'true'"
+          Condition="'$(DotnetupBuildVariant)' == 'daily'"
           AfterTargets="GenerateChecksumsFromArtifacts"
           BeforeTargets="PublishToAzureDevOpsArtifacts">
+    <ItemGroup>
+      <DotnetupVariant Include="daily" ArtifactsDir="$(ArtifactsDir)" />
+      <DotnetupVariant Include="preview;ga" ArtifactsDir="$(ArtifactsDir)%(Identity)\" />
+    </ItemGroup>
     <MSBuild Projects="$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj"
              Targets="ReturnDotnetupReleaseAsset"
              Properties="DotnetupBuildVariant=%(DotnetupVariant.Identity);ArtifactsDir=%(DotnetupVariant.ArtifactsDir);DotnetupReleaseDirectory=$(ArtifactsDir)dotnetup-release\"
