@@ -1,7 +1,7 @@
-// dotnet-watch browser tools client.
+// Hot Reload browser tools client.
 //
 // This module is part of the application build output. It must never be downloaded from the
-// dotnet-watch provider: the provider is the party this client authenticates, so executable code
+// Hot Reload provider: the provider is the party this client authenticates, so executable code
 // served by it could not be trusted. The generated configuration module pins the provider's public
 // key at build time and passes it to startBrowserTools.
 
@@ -93,7 +93,7 @@ const browserToolsStyles = `
 let browserToolsStylesheet;
 
 /**
- * Connects to the dotnet-watch browser tools provider.
+ * Connects to the Hot Reload browser tools provider.
  *
  * @param {object} config Build-generated configuration.
  * @param {string} config.publicKey Base64 SubjectPublicKeyInfo of the provider's session key.
@@ -113,7 +113,7 @@ export async function startBrowserTools(config) {
   const sharedSecret = await getSecret(publicKey);
   if (!sharedSecret) {
     delete window[scriptInjectedSentinel];
-    console.debug('Unable to protect the dotnet-watch browser tools connection. Browser tools are disabled.');
+    console.debug('Unable to protect the Hot Reload browser tools connection. Browser tools are disabled.');
     return;
   }
 
@@ -160,11 +160,11 @@ export async function startBrowserTools(config) {
     return;
   }
 
-  connection.onerror = function (event) { console.debug('dotnet-watch reload socket error.', event) }
+  connection.onerror = function (event) { console.debug('Hot Reload socket error.', event) }
   connection.onclose = function () {
     delete window[scriptInjectedSentinel];
     failInitialization('The browser tools connection was closed.');
-    console.debug('dotnet-watch reload socket closed.');
+    console.debug('Hot Reload socket closed.');
     if (!closing) {
       // The browser reaches the provider through the application, so the socket dies when the
       // application restarts and any pending Reload message is lost. Reload once it is back.
@@ -174,6 +174,37 @@ export async function startBrowserTools(config) {
 
   if (await initializeSession()) {
     completeInitialization();
+
+    const agent = hotReloadAgentSignal();
+    agent.ready.then(() => {
+      const updates = agent.pendingUpdates;
+      delete agent.pendingUpdates;
+      if (!updates) {
+        return;
+      }
+
+      if (updates.length && !hasDeltaApplyApi()) {
+        console.error('Unable to apply deferred Hot Reload updates because the WebAssembly Hot Reload agent is unavailable.');
+        return;
+      }
+
+      for (const update of updates) {
+        try {
+          const log = applyDeltas(update.deltas, update.responseLoggingLevel);
+          for (const entry of log) {
+            if (entry.severity === AgentMessageSeverity_Error) {
+              console.error(entry.message);
+            } else if (entry.severity === AgentMessageSeverity_Warning) {
+              console.warn(entry.message);
+            } else {
+              console.debug(entry.message);
+            }
+          }
+        } catch (error) {
+          console.error('Unable to apply deferred Hot Reload updates.', error);
+        }
+      }
+    });
   } else {
     closing = true;
     connection.close();
@@ -202,10 +233,10 @@ export async function startBrowserTools(config) {
     let applyError;
     try {
       const updates = payload.updates ?? [];
-      if (updates.length && !(await waitForDeltaApplyApi())) {
+      if (updates.length && !hotReloadAgentSignal().pendingUpdates && !(await waitForDeltaApplyApi())) {
         // Keep initializing: the connection is still useful for reloads, diagnostics and CSS, and
         // failing here would close the socket and reload the page into the same state. Surface the
-        // condition in the dotnet-watch console instead.
+        // condition in the Hot Reload console instead.
         log.push({
           "message": 'The Hot Reload agent did not become available in time, so the updates produced before this browser connected were not applied.',
           "severity": AgentMessageSeverity_Warning
@@ -220,7 +251,7 @@ export async function startBrowserTools(config) {
           }
         } catch (error) {
           // Report the failure without failing the initialization, for the same reason as above:
-          // dotnet-watch prints these entries as errors, while closing the socket would only make
+          // Hot Reload prints these entries as errors, while closing the socket would only make
           // the page reload into a browser that cannot apply updates either.
           console.warn('Unable to replay Hot Reload updates.', error);
           log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
@@ -347,7 +378,14 @@ export async function startBrowserTools(config) {
   }
 
   function applyDeltas(deltas, responseLoggingLevel) {
-    let applyDeltas = hotReloadAgentSignal().applyHotReloadDeltas ?? window.Blazor?._internal?.applyHotReloadDeltas
+    const agent = hotReloadAgentSignal();
+    if (agent.pendingUpdates) {
+      agent.pendingUpdates.push({ deltas, responseLoggingLevel });
+      console.debug('Managed code updates deferred until WebAssembly starts.');
+      return [];
+    }
+
+    let applyDeltas = agent.applyHotReloadDeltas ?? window.Blazor?._internal?.applyHotReloadDeltas
     if (applyDeltas) {
       // Only apply hot reload deltas if Blazor has been initialized.
       // It's possible for Blazor to start after the initial page load, so we don't consider skipping this step
@@ -580,7 +618,12 @@ function getMessageAndStack(error) {
 function hotReloadAgentSignal() {
   const agent = globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT ||= {};
   if (!agent.ready) {
-    agent.ready = new Promise(resolve => { agent.setReady = resolve; });
+    agent.ready = new Promise(resolve => {
+      agent.setReady = () => {
+        agent.isReady = true;
+        resolve();
+      };
+    });
   }
 
   return agent;

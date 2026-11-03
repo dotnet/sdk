@@ -232,6 +232,11 @@
         <target state="translated">파일 {0}이(가) 이미 있습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetInstaller_Error_PackageSourceMappingMatchNotFound">
+        <source>Package source mapping is enabled, but no source was found for package {0}.</source>
+        <target state="new">Package source mapping is enabled, but no source was found for package {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="NuGetInstaller_InstallResult_Error_DownloadFailed">
         <source>Failed to download {0} from {1}.</source>
         <target state="translated">{1}에서 {0}을(를) 다운로드하지 못했습니다.</target>

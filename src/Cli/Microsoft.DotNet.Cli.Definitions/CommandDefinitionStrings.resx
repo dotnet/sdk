@@ -1116,7 +1116,12 @@ The default is to publish a framework-dependent application.</value>
     <comment>{Locked="global.json"}{Locked="Microsoft.Testing.Platform"}{Locked="VSTest"}</comment>
   </data>
   <data name="TestCmdNoLogo" xml:space="preserve">
-    <value>Run test(s), without displaying Microsoft Testplatform banner</value>
+    <value>Run test(s), without displaying the Microsoft Test Platform banner</value>
+    <comment>{Locked="Microsoft Test Platform"}</comment>
+  </data>
+  <data name="TestCmdMTPNoLogo" xml:space="preserve">
+    <value>Run test(s), without displaying Microsoft.Testing.Platform (MTP) banner</value>
+    <comment>{Locked="Microsoft.Testing.Platform"}{Locked="MTP"}</comment>
   </data>
   <data name="TestCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>

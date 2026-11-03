@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class DotNetWatchContext : IDisposable
+internal sealed class DotNetWatchContext : IAsyncDisposable
 {
     public const string DefaultLogComponentName = $"{nameof(DotNetWatchContext)}:Default";
     public const string BuildLogComponentName = $"{nameof(DotNetWatchContext)}:Build";
@@ -37,8 +37,8 @@ internal sealed class DotNetWatchContext : IDisposable
     public required BrowserRefreshServerFactory BrowserRefreshServerFactory { get; init; }
     public required BrowserLauncher BrowserLauncher { get; init; }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        BrowserRefreshServerFactory.Dispose();
+        await BrowserRefreshServerFactory.DisposeAsync();
     }
 }

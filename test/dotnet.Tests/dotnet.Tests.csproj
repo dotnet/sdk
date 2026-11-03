@@ -1,4 +1,6 @@
-﻿<Project Sdk="MSTest.Sdk">
+﻿<Project>
+
+  <Import Project="Sdk.props" Sdk="MSTest.Sdk" />
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
@@ -50,10 +52,6 @@
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>XUnitVersion</_Parameter1>
       <_Parameter2>$(XUnitVersion)</_Parameter2>
-    </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>SdkVersion</_Parameter1>
-      <_Parameter2>$(Version)</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
 
@@ -119,4 +117,19 @@
     </ItemGroup>
     <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles-&gt;Replace('received', 'verified'))" />
   </Target>
+
+  <Import Project="Sdk.targets" Sdk="MSTest.Sdk" />
+
+  <!-- SDK targets initialize Version before it is captured in assembly metadata. -->
+  <PropertyGroup>
+    <_ExpectedSdkVersion Condition="'$(StabilizePackageVersion)' == 'true'">$(VersionPrefix)</_ExpectedSdkVersion>
+    <_ExpectedSdkVersion Condition="'$(_ExpectedSdkVersion)' == ''">$(Version)</_ExpectedSdkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SdkVersion</_Parameter1>
+      <_Parameter2>$(_ExpectedSdkVersion)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
 </Project>

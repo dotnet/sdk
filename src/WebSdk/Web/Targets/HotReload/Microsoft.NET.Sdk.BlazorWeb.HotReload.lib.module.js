@@ -5,7 +5,7 @@
 // is app hosted, so resolving it relative to import.meta.url keeps it correct under any static web
 // asset base path or fingerprinting scheme.
 
-// Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets.
+// Substituted by Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets.
 const settingsPath = '__SETTINGS_PATH__';
 const configModulePath = '__CONFIG_MODULE__';
 const settingsRequestTimeoutMilliseconds = 5000;
@@ -33,7 +33,7 @@ async function isHotReloadEnabled() {
         const settings = await response.json();
         return settings?.hotReload === true;
     } catch (error) {
-        console.debug('Unable to read the dotnet-watch browser tools settings.', error);
+        console.debug('Unable to read the Hot Reload browser tools settings.', error);
         return false;
     } finally {
         clearTimeout(timeout);

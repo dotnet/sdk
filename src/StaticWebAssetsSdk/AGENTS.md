@@ -13,7 +13,7 @@ src/StaticWebAssetsSdk/
 │   ├── Utils/                      # Utilities (PathTokenizer, OSPath, etc.)
 │   └── *.cs                        # Task implementations
 ├── Targets/                        # MSBuild targets (.targets files)
-│   └── DotNetWatch/                # dotnet-watch browser tools client and config template
+│   └── HotReload/                  # Hot Reload browser tools client and config template
 └── Sdk/                            # SDK props and targets
 
 test/Microsoft.NET.Sdk.StaticWebAssets.Tests/
@@ -21,12 +21,12 @@ test/Microsoft.NET.Sdk.StaticWebAssets.Tests/
 └── *.cs                            # Integration tests
 ```
 
-`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets` is shared by the Web and
+`Microsoft.NET.Sdk.StaticWebAssets.HotReload.targets` is shared by the Web and
 WebAssembly SDKs. It exists here, rather than in `dotnet watch`, because the browser tools
 client must be an application static asset: the browser authenticates the watch provider
 with a build-pinned public key, so the provider must not be the source of the executable
 code, nor of the key. This target therefore also generates the keypair (via
-`EnsureDotNetWatchBrowserToolsKey`) into `obj/<config>/<tfm>/dotnet-watch/` and embeds only
+`EnsureHotReloadBrowserToolsKey`) into `obj/<config>/<tfm>/HotReload/` and embeds only
 the public half in the generated configuration module. The existing
 `EnableHotReloadInRuntimeConfigDevFile` property controls generation and defaults to
 `true` for Debug builds; there is no browser-tools-specific watch-to-MSBuild property.
@@ -39,6 +39,9 @@ never reach publish output. Its generated watch initializer also initializes the
 Reload agent on .NET 10+; older target frameworks use the runtime's apply API. Do not add a
 second Hot Reload agent initializer—the shared browser-tools rendezvous carries the SDK
 agent's apply functions directly.
+For client-owned early Web activation, the initializer creates `pendingUpdates` on that
+rendezvous. Retain both replayed and live updates there until the runtime publishes
+readiness, without blocking SSR refresh; do not create this queue for server-only apps.
 Browser-tools UI must remain self-contained and compatible with strict Content Security
 Policy: isolate it in Shadow DOM, use constructable stylesheets, and do not require
 application stylesheets, inline styles, nonces, or `style-src 'unsafe-inline'`.

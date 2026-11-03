@@ -2,9 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Net;
+using System.Net.Sockets;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
+using Microsoft.AspNetCore.Http;
 using Microsoft.DotNet.HotReload;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
@@ -15,7 +19,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 /// before the connection is upgraded so it never gets one at all.
 /// </summary>
 [TestClass]
-public class BrowserToolsEndpointRouterTests : IDisposable
+public class BrowserToolsEndpointRouterTests : IAsyncDisposable
 {
     private const string ConnectPath = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath;
     private const string ClearCachePath = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClearCachePath;
@@ -25,7 +29,7 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     private readonly SharedSecretProvider _sharedSecretProvider;
     private readonly TestBrowserRefreshServer _browserServer;
     private int _sessionKeyLoads;
-    private KestrelWebSocketServer? _server;
+    private IAsyncDisposable? _server;
 
     public TestContext TestContext { get; set; } = null!;
 
@@ -34,42 +38,82 @@ public class BrowserToolsEndpointRouterTests : IDisposable
         using var rsa = RSA.Create(2048);
         _sessionKeyParameters = rsa.ExportParameters(includePrivateParameters: true);
         _sharedSecretProvider = new SharedSecretProvider(_sessionKeyParameters);
-        _browserServer = new TestBrowserRefreshServer((_, _) => { }, () =>
-        {
-            _sessionKeyLoads++;
-            return new SharedSecretProvider(_sessionKeyParameters);
-        });
+        _browserServer = new TestBrowserRefreshServer(
+            middlewareAssemblyPath: Path.GetTempPath(),
+            useGatewayProxy: true,
+            sessionKeyFactory: () =>
+            {
+                _sessionKeyLoads++;
+                return new SharedSecretProvider(_sessionKeyParameters);
+            });
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _server?.Dispose();
-        _browserServer.Dispose();
+        if (_server != null)
+        {
+            await _server.DisposeAsync();
+        }
+
+        await _browserServer.DisposeAsync();
         _sharedSecretProvider.Dispose();
     }
 
-    private async ValueTask<Uri> StartRouterAsync()
+    private async ValueTask<Uri> StartServerAsync()
     {
-        var router = new BrowserToolsEndpointRouter(_browserServer);
-        _server = await KestrelWebSocketServer.StartServerAsync(
-            new WebSocketConfig(port: 0, securePort: null, hostName: null, additionalAllowedOrigins: []),
-            router.HandleAsync,
+#if NET
+        var config = new WebSocketConfig(port: 0, securePort: null, hostName: null, additionalAllowedOrigins: []);
+        var server = await KestrelWebSocketServer.StartServerAsync(
+            config,
+            async context => await _browserServer.HandleRequestAsync(config, context),
             TestContext.CancellationToken);
 
-        return new Uri(_server.HttpServerUrls.Single());
+        _server = server;
+
+        return new Uri(server.HttpServerUrls.Single());
+#else
+        // HttpListener does not support auto-assigned ports, so allocate a free one.
+        var config = new WebSocketConfig(port: GetFreePort(),  securePort: null, hostName: null, additionalAllowedOrigins: []);
+
+        var server = NetFrameworkWebSocketServer.StartServer(
+            config,
+            async (config, context) => await _browserServer.HandleRequestAsync(config, context),
+            NullLogger.Instance);
+
+        _server = server;
+
+        return new Uri(server.HttpServerUrls.Single());
+
+        static int GetFreePort()
+        {
+            var listener = new TcpListener(IPAddress.Loopback, 0);
+            listener.Start();
+            try
+            {
+                return ((IPEndPoint)listener.LocalEndpoint).Port;
+            }
+            finally
+            {
+                listener.Stop();
+            }
+        }
+#endif
     }
 
-    /// <summary>
-    /// Encrypts a browser generated secret the way the client does, using the public half of the
-    /// supplied key. The result is the raw base64 ciphertext; callers that put it on the wire have to
-    /// escape it first because a WebSocket subprotocol is an HTTP token.
-    /// </summary>
-    private static string EncryptSecret(SharedSecretProvider provider, byte[] secret)
+    private static byte[] GetRandomBytes(int count)
     {
-        using var rsa = RSA.Create();
-        rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(provider.GetPublicKey()), out _);
-        return Convert.ToBase64String(rsa.Encrypt(secret, RSAEncryptionPadding.OaepSHA256));
+#if NET
+        return RandomNumberGenerator.GetBytes(count);
+#else
+        var bytes = new byte[count];
+        using var rng = RandomNumberGenerator.Create();
+        rng.GetBytes(bytes);
+        return bytes;
+#endif
     }
+
+    private static string EncryptSecret(SharedSecretProvider provider, byte[] secret)
+        => CryptoExtensions.GetEncryptedSecret(provider.GetPublicKey(), provider.ExportPublicKeyParameters(), secret);
 
     /// <summary>
     /// Matches the client, which sends encodeURIComponent(ciphertext) as the subprotocol.
@@ -80,25 +124,32 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     private async Task<HttpStatusCode> ConnectAsync(Uri baseAddress, params string[] subProtocols)
     {
         using var socket = new ClientWebSocket();
+#if NET
         socket.Options.CollectHttpResponseDetails = true;
-
+#endif
         foreach (var subProtocol in subProtocols)
         {
             socket.Options.AddSubProtocol(subProtocol);
         }
+
+        socket.Options.SetRequestHeader("Origin", "http://localhost");
 
         var address = new UriBuilder(baseAddress) { Scheme = "ws", Path = ConnectPath }.Uri;
 
         await Assert.ThrowsExactlyAsync<WebSocketException>(
             () => socket.ConnectAsync(address, TestContext.CancellationToken));
 
+#if NET
         return socket.HttpStatusCode;
+#else
+        return HttpStatusCode.BadRequest;
+#endif
     }
 
     [TestMethod]
     public async Task Connect_WithoutASubProtocol_IsRejectedBeforeUpgrade()
     {
-        var baseAddress = await StartRouterAsync();
+        var baseAddress = await StartServerAsync();
         Assert.AreEqual(HttpStatusCode.BadRequest, await ConnectAsync(baseAddress));
     }
 
@@ -109,8 +160,8 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     [TestMethod]
     public async Task Connect_WithMoreThanOneSubProtocol_IsRejectedBeforeUpgrade()
     {
-        var baseAddress = await StartRouterAsync();
-        var valid = ToSubProtocol(EncryptSecret(_sharedSecretProvider, RandomNumberGenerator.GetBytes(32)));
+        var baseAddress = await StartServerAsync();
+        var valid = ToSubProtocol(EncryptSecret(_sharedSecretProvider, GetRandomBytes(32)));
 
         Assert.AreEqual(HttpStatusCode.BadRequest, await ConnectAsync(baseAddress, valid, "other-protocol"));
     }
@@ -120,7 +171,7 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     [DataRow("dG9vLXNob3J0", DisplayName = "Well formed base64 that is not ciphertext")]
     public async Task Connect_WithAMalformedSecret_IsRejectedBeforeUpgrade(string subProtocol)
     {
-        var baseAddress = await StartRouterAsync();
+        var baseAddress = await StartServerAsync();
         Assert.AreEqual(HttpStatusCode.BadRequest, await ConnectAsync(baseAddress, subProtocol));
         Assert.AreEqual(1, _sessionKeyLoads);
     }
@@ -128,7 +179,7 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     [TestMethod]
     public async Task Connect_LoadsTheCurrentSessionKeyForEachRequest()
     {
-        var baseAddress = await StartRouterAsync();
+        var baseAddress = await StartServerAsync();
 
         Assert.AreEqual(HttpStatusCode.BadRequest, await ConnectAsync(baseAddress, "not-base64!!"));
         Assert.AreEqual(HttpStatusCode.BadRequest, await ConnectAsync(baseAddress, "not-base64!!"));
@@ -143,10 +194,10 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     [TestMethod]
     public async Task Connect_WithASecretEncryptedForAnotherKey_IsRejectedBeforeUpgrade()
     {
-        var baseAddress = await StartRouterAsync();
+        var baseAddress = await StartServerAsync();
 
         using var otherProvider = new SharedSecretProvider();
-        var encryptedForOtherKey = ToSubProtocol(EncryptSecret(otherProvider, RandomNumberGenerator.GetBytes(32)));
+        var encryptedForOtherKey = ToSubProtocol(EncryptSecret(otherProvider, GetRandomBytes(32)));
 
         Assert.AreEqual(HttpStatusCode.BadRequest, await ConnectAsync(baseAddress, encryptedForOtherKey));
     }
@@ -158,7 +209,7 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     [TestMethod]
     public void DecryptSecret_RoundTripsASecretEncryptedWithThePinnedPublicKey()
     {
-        var secret = RandomNumberGenerator.GetBytes(32);
+        var secret = GetRandomBytes(32);
         var encrypted = EncryptSecret(_sharedSecretProvider, secret);
 
         Assert.AreEqual(Convert.ToBase64String(secret), _sharedSecretProvider.DecryptSecret(encrypted));
@@ -167,30 +218,26 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     [TestMethod]
     public async Task ClearCache_RespondsWithClearSiteData()
     {
-        var baseAddress = await StartRouterAsync();
-        using var client = new HttpClient { BaseAddress = baseAddress };
+        var baseAddress = await StartServerAsync();
 
-        using var response = await client.GetAsync(ClearCachePath, TestContext.CancellationToken);
+        var response = await TestHttpClient.GetAsync(baseAddress, ClearCachePath, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.AreEqual("\"cache\"", response.Headers.GetValues("Clear-Site-Data").Single());
-        Assert.AreEqual("no-store", response.Headers.CacheControl?.ToString());
+        Assert.AreEqual("\"cache\"", response.GetHeader("Clear-Site-Data"));
+        Assert.AreEqual("no-store", response.GetHeader("Cache-Control"));
     }
 
     [TestMethod]
     public async Task HotReloadSettings_ReportsProviderAvailability()
     {
-        var baseAddress = await StartRouterAsync();
-        using var client = new HttpClient { BaseAddress = baseAddress };
+        var baseAddress = await StartServerAsync();
 
-        using var response = await client.GetAsync(HotReloadSettingsPath, TestContext.CancellationToken);
+        var response = await TestHttpClient.GetAsync(baseAddress, HotReloadSettingsPath, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
-        Assert.AreEqual("application/json", response.Content.Headers.ContentType?.MediaType);
-        Assert.AreEqual("no-store", response.Headers.CacheControl?.ToString());
-        Assert.AreEqual(
-            "{ \"hotReload\": true }",
-            await response.Content.ReadAsStringAsync(TestContext.CancellationToken));
+        Assert.AreEqual("application/json", response.MediaType);
+        Assert.AreEqual("no-store", response.GetHeader("Cache-Control"));
+        Assert.AreEqual("{ \"hotReload\": true }", response.Body);
         Assert.AreEqual(0, _sessionKeyLoads);
     }
 
@@ -205,10 +252,9 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     [DataRow(BrowserToolsProtocol.RoutePrefix + "/")]
     public async Task UnknownPaths_RespondWithNotFound(string path)
     {
-        var baseAddress = await StartRouterAsync();
-        using var client = new HttpClient { BaseAddress = baseAddress };
+        var baseAddress = await StartServerAsync();
 
-        using var response = await client.GetAsync(path, TestContext.CancellationToken);
+        var response = await TestHttpClient.GetAsync(baseAddress, path, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -216,10 +262,9 @@ public class BrowserToolsEndpointRouterTests : IDisposable
     [TestMethod]
     public async Task NonGetRequests_RespondWithMethodNotAllowed()
     {
-        var baseAddress = await StartRouterAsync();
-        using var client = new HttpClient { BaseAddress = baseAddress };
+        var baseAddress = await StartServerAsync();
 
-        using var response = await client.PostAsync(ClearCachePath, content: null, TestContext.CancellationToken);
+        var response = await TestHttpClient.PostAsync(baseAddress, ClearCachePath, TestContext.CancellationToken);
 
         Assert.AreEqual(HttpStatusCode.MethodNotAllowed, response.StatusCode);
     }
