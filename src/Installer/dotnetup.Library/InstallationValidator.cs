@@ -45,7 +45,7 @@ internal sealed class InstallationValidator : IInstallationValidator
         {
             if (install.Component == InstallComponent.WindowsDesktop)
             {
-                string resolvedVersionLayout = (install.ProductVersion ?? install.Version).ToString();
+                string resolvedVersionLayout = install.LayoutVersion.ToString();
                 if (ValidateComponentLayout(installRoot, resolvedVersionLayout, install.Component))
                 {
                     return true;
@@ -55,7 +55,7 @@ internal sealed class InstallationValidator : IInstallationValidator
             return false;
         }
 
-        string resolvedVersion = (install.ProductVersion ?? install.Version).ToString();
+        string resolvedVersion = install.LayoutVersion.ToString();
         if (!ValidateComponentLayout(installRoot, resolvedVersion, install.Component))
         {
             string expectedDir = GetComponentDirectory(installRoot, install.Component, resolvedVersion) ?? "<unknown>";

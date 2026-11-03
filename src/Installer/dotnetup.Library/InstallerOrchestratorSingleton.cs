@@ -234,11 +234,7 @@ internal class InstallerOrchestratorSingleton
             IInstallArtifact artifact)
         {
             ResolvedRequest = resolvedRequest;
-            Install = install with
-            {
-                ProductVersion = artifact.ProductVersion is { } productVersion && !productVersion.Equals(install.Version)
-                    ? productVersion : install.ProductVersion
-            };
+            Install = install;
             Artifact = artifact;
         }
 
@@ -284,7 +280,7 @@ internal class InstallerOrchestratorSingleton
             throw;
         }
 
-        return new PreparedInstall(resolvedRequest, install, artifact);
+        return new PreparedInstall(resolvedRequest, install.WithPayloadVersion(artifact.ProductVersion), artifact);
     }
 #pragma warning restore CA1822
 
@@ -396,7 +392,7 @@ internal class InstallerOrchestratorSingleton
             {
                 Component = prepared.Request.Component,
                 Version = prepared.Version.ToString(),
-                ProductVersion = prepared.Install.ProductVersion?.ToString(),
+                ProductVersion = prepared.Install.PayloadVersionOverride?.ToString(),
                 Subcomponents = [.. prepared.Artifact.ExtractedSubcomponents],
             });
         }

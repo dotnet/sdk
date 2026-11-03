@@ -1,6 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
+using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
@@ -43,10 +47,18 @@ internal class Installation
     public string Version { get; set; } = string.Empty;
 
     /// <summary>The payload's on-disk version when it differs from the tracked build identity.</summary>
-    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ProductVersion { get; set; }
 
     public List<string> Subcomponents { get; set; } = [];
+
+    /// <summary>The version folder on disk.</summary>
+    [JsonIgnore]
+    public string LayoutVersion => ProductVersion ?? Version;
+
+    public DotnetInstall ToDotnetInstall(DotnetInstallRoot installRoot) =>
+        new(installRoot, new ReleaseVersion(Version), Component,
+            ProductVersion is null ? null : new ReleaseVersion(ProductVersion));
 }
 
 /// <summary>

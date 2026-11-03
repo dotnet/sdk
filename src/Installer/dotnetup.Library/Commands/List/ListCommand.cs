@@ -105,12 +105,7 @@ internal static class InstallationLister
 
             if (verify)
             {
-                var dotnetInstall = new DotnetInstall(
-                    installRoot,
-                    new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.Version),
-                    installation.Component,
-                    installation.ProductVersion is null ? null : new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(installation.ProductVersion));
-                isValid = validator.Validate(dotnetInstall, out validationFailure);
+                isValid = validator.Validate(installation.ToDotnetInstall(installRoot), out validationFailure);
             }
 
             installations.Add(new InstallationInfo

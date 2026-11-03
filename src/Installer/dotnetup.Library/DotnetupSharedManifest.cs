@@ -565,7 +565,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
             return null;
         }
 
-        return InstallationValidator.GetComponentDirectory(rootPath, installation.Component, installation.ProductVersion ?? installation.Version);
+        return InstallationValidator.GetComponentDirectory(rootPath, installation.Component, installation.LayoutVersion);
     }
 
 }
