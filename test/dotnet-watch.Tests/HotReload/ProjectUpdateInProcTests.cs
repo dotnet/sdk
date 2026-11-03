@@ -116,10 +116,13 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
 
         AssertEx.ContainsSubstring("Resolving 'Dependency, Version=1.0.0.0'", w.Reporter.ProcessOutput);
 
+        // Application output can arrive before the watcher reports update completion.
+        using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await managedCodeChangesApplied.WaitAsync(waitCts.Token);
+
         Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
         Assert.Equal(1, projectsRebuilt.CurrentCount);
         Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, managedCodeChangesApplied.CurrentCount);
     }
 
     [Fact]
@@ -174,9 +177,12 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
 
         AssertEx.ContainsSubstring("Resolving 'Newtonsoft.Json, Version=13.0.0.0'", w.Reporter.ProcessOutput);
 
+        // Application output can arrive before the watcher reports update completion.
+        using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        await managedCodeChangesApplied.WaitAsync(waitCts.Token);
+
         Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
         Assert.Equal(0, projectsRebuilt.CurrentCount);
         Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
-        Assert.Equal(1, managedCodeChangesApplied.CurrentCount);
     }
 }
