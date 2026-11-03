@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-update" "1" "2026-08-28" "" ".NET Documentation"
+.TH "dotnet-tool-update" "1" "2026-10-30" "" ".NET Documentation"
 .hy
 .SH dotnet tool update
 .PP
@@ -158,6 +158,10 @@ Include prerelease versions.
 \f[B]\f[VB]--source <SOURCE>\f[B]\f[R]
 .PP
 Specifies the source for NuGet packages.
+.RS
+.PP
+[!CAUTION] This option completely replaces existing NuGet configuration, including Package Source Mapping.
+.RE
 .IP \[bu] 2
 \f[B]\f[VB]--tool-manifest <PATH>\f[B]\f[R]
 .RS 2
