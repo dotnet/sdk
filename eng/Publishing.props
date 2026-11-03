@@ -72,14 +72,17 @@
     </MSBuild>
   </Target>
 
+  <ItemGroup Condition="'$(DotnetupBuildVariant)' == 'daily'">
+    <DotnetupVariant Include="daily" ArtifactsDir="$(ArtifactsDir)" />
+    <DotnetupVariant Include="preview;ga">
+      <ArtifactsDir>$(ArtifactsDir)%(Identity)\</ArtifactsDir>
+    </DotnetupVariant>
+  </ItemGroup>
+
   <Target Name="StageDotnetupReleaseCandidates"
           Condition="'$(DotnetupBuildVariant)' == 'daily'"
           AfterTargets="GenerateChecksumsFromArtifacts"
           BeforeTargets="PublishToAzureDevOpsArtifacts">
-    <ItemGroup>
-      <DotnetupVariant Include="daily" ArtifactsDir="$(ArtifactsDir)" />
-      <DotnetupVariant Include="preview;ga" ArtifactsDir="$(ArtifactsDir)%(Identity)\" />
-    </ItemGroup>
     <MSBuild Projects="$(RepoRoot)src\Installer\dotnetup\dotnetup.csproj"
              Targets="ReturnDotnetupReleaseAsset"
              Properties="DotnetupBuildVariant=%(DotnetupVariant.Identity);ArtifactsDir=%(DotnetupVariant.ArtifactsDir);DotnetupReleaseDirectory=$(ArtifactsDir)dotnetup-release\"

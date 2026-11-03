@@ -27,8 +27,6 @@ parameters:
   default: false
 
 variables:
-- name: DOTNET_CLI_TELEMETRY_SESSIONID
-  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
@@ -186,7 +184,7 @@ extends:
                 variables:
                   _SignType: real
       ############### BUILD / PACK / SIGN / PUBLISH ###############
-      # Standard Arcade flow.  Set projectsArgument to only build dotnetup, not the whole SDK.
+      # Build preview and GA first; the final daily command signs/stages all three and publishes daily only.
       - stage: build_dotnetup
         displayName: 🛠️ Build dotnetup
         dependsOn: []
