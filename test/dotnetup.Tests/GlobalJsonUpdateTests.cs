@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -228,6 +231,33 @@ public class GlobalJsonUpdateTests : IDisposable
 
         File.ReadAllText(path).Should().Be(original);
         File.GetLastWriteTimeUtc(path).Should().Be(lastWrite);
+    }
+
+    [TestMethod]
+    public void ApplyGlobalJsonModifications_WritesInstalledLayoutVersion_ForRtmDailyBuild()
+    {
+        using var testEnv = new TestEnvironment();
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        // Reading the manifest prunes records whose layout folder is missing.
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100"));
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            new DotnetupSharedManifest(testEnv.ManifestPath).AddInstallation(installRoot, new Installation
+            {
+                Component = InstallComponent.SDK,
+                Version = "11.0.100-rtm.26552.115",
+                ProductVersion = "11.0.100",
+            });
+        }
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, """{ "sdk": { "version": "10.0.100", "rollForward": "disable" } }""");
+        var request = new DotnetInstallRequest(installRoot, new UpdateChannel("11-daily"), InstallComponent.SDK,
+            new InstallRequestOptions { ManifestPath = testEnv.ManifestPath, GlobalJsonPath = path });
+
+        new DotnetEnvironmentManager().ApplyGlobalJsonModifications(
+            [new ResolvedInstallRequest(request, new ReleaseVersion("11.0.100-rtm.26552.115"))]);
+
+        File.ReadAllText(path).Should().Contain("\"11.0.100\"").And.NotContain("rtm");
     }
 
     // ──────────────────────────────────────────────────────────────

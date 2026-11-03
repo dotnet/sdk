@@ -522,6 +522,35 @@ public class ManifestTests
     }
 
     [TestMethod]
+    public void ManifestValidation_InvalidProductVersion_ThrowsUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry
+                {
+                    Path = testEnv.InstallPath,
+                    Architecture = InstallerUtilities.GetDefaultInstallArchitecture(),
+                    Installations =
+                    [
+                        new Installation { Component = InstallComponent.SDK, Version = "11.0.100-rtm.26552.115", ProductVersion = "not-a-version" }
+                    ]
+                }
+            ]
+        };
+        File.WriteAllText(testEnv.ManifestPath, JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData));
+        File.WriteAllText(testEnv.ManifestPath + ".sha256", "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("Invalid product version 'not-a-version'");
+    }
+
+    [TestMethod]
     public void ManifestValidation_ValidData_DoesNotThrow()
     {
         using var testEnv = new TestEnvironment();

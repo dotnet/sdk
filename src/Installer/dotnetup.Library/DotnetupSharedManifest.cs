@@ -299,6 +299,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 {
                     errors.Add($"Invalid version '{installation.Version}' for {installation.Component} in root '{root.Path}'.");
                 }
+
+                if (installation.ProductVersion is not null && !ReleaseVersion.TryParse(installation.ProductVersion, out _))
+                {
+                    errors.Add($"Invalid product version '{installation.ProductVersion}' for {installation.Component} in root '{root.Path}'.");
+                }
             }
 
             foreach (var spec in root.InstallSpecs)

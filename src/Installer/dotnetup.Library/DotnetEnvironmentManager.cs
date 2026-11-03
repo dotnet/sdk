@@ -376,8 +376,24 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             string? globalJsonPath = request.Request.Options.GlobalJsonPath;
             if (globalJsonPath is not null && request.Request.Component == InstallComponent.SDK)
             {
-                GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, request.ResolvedVersion.ToString());
+                GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, GetInstalledSdkVersion(request));
             }
         }
+    }
+
+    // The host resolves global.json against sdk/<version>, which is untagged for RTM and servicing daily builds.
+    private static string GetInstalledSdkVersion(ResolvedInstallRequest request)
+    {
+        string version = request.ResolvedVersion.ToString();
+        if (request.Request.Options.Untracked)
+        {
+            return version;
+        }
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var installation = new DotnetupSharedManifest(request.Request.Options.ManifestPath)
+            .GetInstallations(request.Request.InstallRoot)
+            .FirstOrDefault(i => i.Component == InstallComponent.SDK && i.Version == version);
+        return installation?.LayoutVersion ?? version;
     }
 }
