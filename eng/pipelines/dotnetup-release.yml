@@ -2,6 +2,13 @@ trigger: none
 pr: none
 
 parameters:
+- name: variant
+  displayName: dotnetup build variant
+  type: string
+  default: preview
+  values:
+  - preview
+  - daily
 - name: dryRun
   displayName: Dry run (prepare artifacts without publishing to ESRP)
   type: boolean
@@ -68,18 +75,16 @@ extends:
           fetchDepth: 1
           fetchTags: false
 
-        - task: DownloadBuildArtifacts@1
-          displayName: 📥 Download the signed build's blob artifacts
+        - task: DownloadPipelineArtifact@2
+          displayName: 📥 Download the signed build's ${{ parameters.variant }} candidates
           inputs:
             buildType: specific
             project: internal
-            pipeline: 1544
+            definition: 1544
             buildVersionToDownload: specific
             buildId: $(resources.pipeline.dotnetup.runID)
-            downloadType: single
-            artifactName: BlobArtifacts
-            downloadPath: $(Agent.TempDirectory)/dotnetup-source
-            checkDownloadedFiles: true
+            itemPattern: Dotnetup_Dotnetup_*/${{ parameters.variant }}/**
+            targetPath: $(Agent.TempDirectory)/dotnetup-source
 
         - pwsh: |
             $ErrorActionPreference = 'Stop'
@@ -95,13 +100,10 @@ extends:
             $headers = @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
             $sourceBuild = Invoke-RestMethod -Headers $headers -Uri "https://dev.azure.com/dnceng/internal/_apis/build/builds/$sourceBuildId`?api-version=7.1"
 
-            # Read the version and asset inventory from the selected run's downloaded manifest.
-            $sourceDirectory = "$(Agent.TempDirectory)/dotnetup-source/BlobArtifacts"
-            $manifestPath = Join-Path $sourceDirectory 'MergedManifest.xml'
-            $manifest = [xml](Get-Content -LiteralPath $manifestPath -Raw)
-
-            # Check release eligibility and construct the expected versioned file inventory.
-            $release = Get-DotnetupRelease -SourceBuild $sourceBuild -Manifest $manifest
+            # Validate the selected variant's per-RID manifests against the source run.
+            $sourceDirectory = "$(Agent.TempDirectory)/dotnetup-source"
+            $release = Get-DotnetupRelease -SourceBuild $sourceBuild `
+              -SourceDirectory $sourceDirectory -Variant '${{ parameters.variant }}'
 
             # Restore dotnetup/<version>/ paths under the ESRP publishing root and record file hashes.
             Copy-DotnetupReleaseAssets -Release $release `
@@ -111,9 +113,13 @@ extends:
             # Prepare publishes this metadata as an artifact for the separate Publish job.
             $sourceBuild | ConvertTo-Json -Depth 20 | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'source-build.json')
             $release | ConvertTo-Json -Depth 10 | Set-Content (Join-Path $env:RELEASEMETADATADIRECTORY 'release.json')
-            Copy-Item -LiteralPath $manifestPath -Destination $env:RELEASEMETADATADIRECTORY
+            foreach ($candidate in $release.candidates) {
+              $manifestDirectory = Join-Path $env:RELEASEMETADATADIRECTORY "candidates/$($candidate.rid)"
+              New-Item -ItemType Directory -Path $manifestDirectory -Force -ErrorAction Stop | Out-Null
+              Copy-Item -LiteralPath (Join-Path $sourceDirectory $candidate.sourceManifest) -Destination $manifestDirectory
+            }
 
-            Write-Host "Selected dotnetup $($release.version), Azure DevOps run $($release.azureDevOpsBuildId), commit $($release.commit)."
+            Write-Host "Selected dotnetup $($release.version) ($($release.variant)), Azure DevOps run $($release.azureDevOpsBuildId), commit $($release.commit)."
             Write-Host "Source build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$($release.azureDevOpsBuildId)"
             Write-Host "Branch: $($sourceBuild.sourceBranch). Eligibility checks passed: successful, non-test, PME-signed."
             [long]$totalBytes = 0
@@ -129,7 +135,7 @@ extends:
             } else {
               Write-Host 'Publish will submit these files to ESRP and verify the resulting CDN downloads.'
             }
-          displayName: 🔎 Validate the build and manifest and stage release files
+          displayName: 🔎 Validate the build and candidates and stage release files
           env:
             SOURCE_BUILD_ID: $(resources.pipeline.dotnetup.runID)
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)

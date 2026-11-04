@@ -99,7 +99,12 @@ and `DotnetupReleaseInputs` for the build record, manifest, and release metadata
 No ESRP submission or CDN verification occurs. Set `dryRun` to `false` in the
 **Run pipeline** pane to publish the prepared release through ESRP.
 
-Both modes log the source build URL, branch, version, commit, eligibility result, and
+The `variant` parameter selects `preview` (the default) or `daily`. Each selection consumes
+that variant's already-built, signed candidates; it does not rebrand daily binaries.
+GA candidates are placeholders and cannot be selected. Selecting a variant does not change
+aka.ms links.
+
+Both modes log the source build URL, branch, variant, version, commit, eligibility result, and
 staged relative paths and sizes, including total bytes. Dry runs explicitly report that ESRP
 submission and CDN verification are skipped. Set the pipeline variable `System.Debug`
 to `true` for detailed eligibility, manifest, staging-path, per-file SHA-512, and CDN
@@ -107,19 +112,22 @@ verification diagnostics. Authentication headers and full API responses are not 
 
 The pipeline resource fixes the source pipeline and project. The selected run must be
 successful, non-test, and PME-signed. The artifact download selects that exact run;
-the pipeline uses its `MergedManifest.xml` to identify the version and expected asset inventory.
+the pipeline downloads `Dotnetup_Dotnetup_*` pipeline artifacts, filtering to
+`<variant>/<version>/` for the selected variant. These candidate artifacts are separate
+from the V4 publishing artifacts and `AssetManifests`, which describe only daily assets.
+The pipeline uses each candidate's `release.json` to validate its schema, source build ID,
+commit, variant, version, RID, and non-placeholder status.
 It does not require a BAR ID or BAR tag. Manual resource selection can override
 the default branch and tag filters, so these checks also reject selections from other
-branches and unsigned or failed builds. All eight RID binaries, both
-bootstrap scripts, and their SHA-512 sidecars must be listed under one dotnetup
-version and available in that run's `BlobArtifacts`.
-Manifest entries use versioned paths, but `BlobArtifacts` stores files by their flat
-filenames. The pipeline restores the manifest's `dotnetup/<version>/<filename>` layout
-under the ESRP publishing root, matching the binary paths in
-[`eng/Publishing.props`](../../../eng/Publishing.props):
+branches and unsigned or failed builds. Exactly one candidate for each of the eight RIDs
+must agree on a single version with the selected variant's prerelease label. Both bootstrap
+scripts come from the Windows x64 candidate. All binaries, scripts, and SHA-512 sidecars
+must be present and nonempty, and each sidecar must match its payload.
+The [staging helper](../../../eng/pipelines/dotnetup-publishing.ps1) combines the selected
+files into `dotnetup/<version>/<filename>` under the ESRP publishing root:
 `dotnetup/<version>/dotnetup-<rid>` (with `.exe` on Windows). The bootstrap scripts and
-all SHA-512 sidecars share the same version directory. Only the expected release files
-are staged, not `MergedManifest.xml`.
+all SHA-512 sidecars share the same version directory. Only the 20 expected release files
+are staged, not candidate manifests, other variants, or artifact signing metadata.
 
 The regular `Prepare` job stages the source assets and records their hashes for CDN
 verification. That job publishes the staged files, release
@@ -135,8 +143,8 @@ matches the corresponding source asset, including checksum files.
 Inspect the `DotnetupCdnRelease` pipeline artifact:
 
 - `source-build.json`: the selected Azure DevOps build record.
-- `MergedManifest.xml`: the source build's validated asset manifest.
-- `release.json`: source run, commit, version, file paths, and hashes.
+- `candidates/<rid>/release.json`: each validated source candidate manifest.
+- `release.json`: source run, commit, variant, version, source and staged file paths, and hashes.
 - `esrp-release-details.json`: the raw ESRP publishing result, when returned.
 - `cdn-release.json`: the verified per-file CDN URLs and hashes, written only after
   every download passes verification.
@@ -158,7 +166,8 @@ layout to pin binary and checksum downloads to the same build. Validate the actu
 URL layout and establish a compatible transition for already-installed clients before
 enabling alias updates.
 
-To run offline fixtures for build eligibility, asset completeness, staging hashes,
+To run offline fixtures for build eligibility, variant selection, candidate provenance,
+asset completeness, checksum validation, staging hashes,
 and ESRP result and CDN download validation locally without publishing or downloading anything:
 
 ```pwsh
