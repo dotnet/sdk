@@ -42,38 +42,7 @@ alone does not provide this admission gate. Keep this dependency in the
 [source workflow](../workflows/ci-quality-monitor.md): a no-op run waiting on
 environment admission would otherwise hold the workflow-wide concurrency lock.
 Environment admission can still stall an actionable investigation; a job timeout
-does not bound that wait. The independent
-[`admission recovery workflow`](../workflows/ci-quality-monitor-recovery.yml)
-checks every 15 minutes for `pre_activation` or `pat_pool` jobs waiting at least
-30 minutes without a runner or steps. It only targets this investigator on the
-default branch and does not share the investigator's concurrency group or PAT
-environment.
-
-The [recovery helper](admission-recovery.js) records run/job metadata, environment
-and custom-app protection rules, pending deployments, review history, and GraphQL deployment
-status. The workflow uploads that report as `ci-quality-admission-diagnostics`
-before requesting cancellation, then rechecks the run attempt, stalled job and
-current protection rules. It refuses to cancel reviewer, timer, custom-app or
-other-environment waits, and never approves or bypasses a protection rule.
-Manual dispatch defaults to diagnostic-only `dry_run=true`; scheduled runs request
-cancellation. API failures surface as workflow failures rather than permitting
-cancellation without evidence.
-
-Recovery is best-effort: scheduled Actions can be delayed, and GitHub must accept
-and complete cancellation. It covers the two observed admission jobs, not every
-possible workflow hang. Recovery does not automatically retry inference:
-checkpointed builds still need deliberate manual replay with `build_id`.
-
-For the October 6 stall, the [deployment status history](https://api.github.com/repos/dotnet/sdk/deployments/6880298958/statuses)
-contains an unexplained `waiting` transition at 09:21:09 UTC. The
-[collector log](https://github.com/dotnet/sdk/actions/runs/37442110088/job/112198875305)
-shows the cache write warning at 09:21:23 UTC, after successful checkpoint upload;
-the collector succeeded. GitHub documents that
-[read-only cache denials are warnings](https://github.blog/changelog/2026-06-26-read-only-actions-cache-for-untrusted-triggers/),
-not environment-admission failures. The protected job never received a runner
-or executed gh-aw code. Available REST/GraphQL diagnostics do not establish why
-admission failed; the recovery report preserves those diagnostics before a
-future cancellation clears pending-review state.
+does not bound that wait, so stale waiting runs require operational cancellation.
 
 The collector code follows these boundaries:
 
