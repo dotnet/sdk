@@ -705,10 +705,6 @@ Or open a new terminal.</value>
     <value>Uninstall {0} {1} first to proceed.</value>
     <comment>{0} is the component display name, such as .NET SDK. {1} is the installed version.</comment>
   </data>
-  <data name="InstallLayoutConflictUntracked" xml:space="preserve">
-    <value>{0} {1} replaces the existing {0} in '{2}' because they share the on-disk version {3}. Remove '{2}' first to proceed.</value>
-    <comment>{0} is the component display name, such as .NET SDK. {1} is the requested version. {2} is the existing component directory. {3} is the version folder name on disk.</comment>
-  </data>
   <data name="ConfirmationOptionsWithKeyboardHints" xml:space="preserve">
     <value>([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)</value>
     <comment>Confirmation hint. Y/N key bindings are not localized. {Locked="[bold underline]Y[/]/n"}</comment>

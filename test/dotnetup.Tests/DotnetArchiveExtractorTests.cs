@@ -143,9 +143,65 @@ public class DotnetArchiveExtractorTests
         ex.Message.Should().Contain("--source globaljson").And.Contain($"--manifest-path \"{testEnv.ManifestPath}\"");
     }
 
+    [TestMethod]
+    [DataRow("daily-build", false)]
+    [DataRow("release-build", true)]
+    public void Commit_UntrackedReleaseOverDailyBuild_ChecksBuildCommit(string releaseCommit, bool expectConflict)
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "daily-build", untracked: true))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        using var release = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, releaseCommit, untracked: true);
+
+        if (expectConflict)
+        {
+            var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(release));
+            ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+            ex.Message.Should().Contain("holds a different build");
+        }
+        else
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(release).WasAlreadyInstalled.Should().BeTrue();
+        }
+
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("daily-build");
+    }
+
+    [TestMethod]
+    [DataRow("runtime-build", false)]
+    [DataRow("other-runtime-build", true)]
+    public void Commit_SdkBundlingExistingRuntimeFolder_ChecksBuildCommit(string bundledRuntimeCommit, bool expectConflict)
+    {
+        using var testEnv = new TestEnvironment();
+        const string runtimeFolder = "shared/Microsoft.NETCore.App/11.0.0";
+        using (var runtime = PrepareArchiveInstall(testEnv, InstallComponent.Runtime, "11.0-daily", "11.0.0-rtm.26552.115", "11.0.0",
+            $"{runtimeFolder}/Microsoft.NETCore.App.deps.json", "runtime-build"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(runtime);
+        }
+        using var sdk = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100",
+            "sdk/11.0.100/dotnet.dll", "sdk-build", extraFiles: ($"{runtimeFolder}/.version", $"{bundledRuntimeCommit}\n11.0.0"));
+
+        if (expectConflict)
+        {
+            var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(sdk));
+            ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+            ex.Message.Should().Contain("Microsoft.NETCore.App");
+            Directory.Exists(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100")).Should().BeFalse();
+        }
+        else
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(sdk).WasAlreadyInstalled.Should().BeFalse();
+        }
+    }
+
     private static InstallerOrchestratorSingleton.PreparedInstall PrepareArchiveInstall(
         TestEnvironment testEnv, InstallComponent component, string channel, string version, string? payloadVersion,
-        string markerPath, string markerContent, bool untracked = false, string? globalJsonPath = null)
+        string markerPath, string markerContent, bool untracked = false, string? globalJsonPath = null,
+        params (string path, string content)[] extraFiles)
     {
         var resolvedVersion = new ReleaseVersion(version);
         var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
@@ -158,9 +214,11 @@ public class DotnetArchiveExtractorTests
         var downloader = new MockArchiveDownloader
         {
             ArchiveFileExtension = ".tar.gz",
-            FakeArchiveContent = CreateTarGzWithFiles(
+            FakeArchiveContent = CreateTarGzWithFiles([
                 (markerPath, markerContent),
-                (DotnetupUtilities.GetDotnetExeName(), "muxer")),
+                ($"{markerPath[..markerPath.LastIndexOf('/')]}/.version", $"{markerContent}\n{version}"),
+                (DotnetupUtilities.GetDotnetExeName(), "muxer"),
+                .. extraFiles]),
             ProductVersion = payloadVersion is null ? null : new ReleaseVersion(payloadVersion),
             IsUnsigned = true
         };

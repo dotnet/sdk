@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Formats.Tar;
 using System.IO.Compression;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -19,6 +20,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
     private readonly HashSet<string> _extractedSubcomponents = [];
+    private bool _existingLayoutVerified;
 
     /// <summary>
     /// Gets the list of subcomponent identifiers that were extracted during the last Commit() call.
@@ -153,9 +155,125 @@ internal class DotnetArchiveExtractor : IInstallArtifact
             throw new InvalidOperationException("Prepare() must be called before Commit().");
         }
 
+        ThrowIfExistingLayoutDiffers();
+
         ExtractWithExceptionHandling(_archivePath, _request.InstallRoot.Path!, installTask);
 
         ProgressTracker.CompleteExtraction(installTask);
+    }
+
+    /// <summary>
+    /// Compares the commit on the first line of each <c>.version</c> file in the archive's SDK and shared framework folders
+    /// with the folder already on disk. Folders with the same name can hold different builds, such as an RTM daily build and the release.
+    /// </summary>
+    public void ThrowIfExistingLayoutDiffers()
+    {
+        if (_existingLayoutVerified)
+        {
+            return;
+        }
+
+        if (_archivePath is null)
+        {
+            throw new InvalidOperationException("Prepare() must be called before ThrowIfExistingLayoutDiffers().");
+        }
+
+        string targetDir = _request.InstallRoot.Path!;
+        if (Directory.Exists(Path.Combine(targetDir, "sdk")) || Directory.Exists(Path.Combine(targetDir, "shared")))
+        {
+            foreach (var (subcomponent, archiveCommit) in ReadVersionCommits(_archivePath))
+            {
+                ThrowIfSubcomponentDiffers(targetDir, subcomponent, archiveCommit);
+            }
+        }
+
+        _existingLayoutVerified = true;
+    }
+
+    private void ThrowIfSubcomponentDiffers(string targetDir, string subcomponent, string archiveCommit)
+    {
+        string directory = Path.Combine(targetDir, subcomponent.Replace('/', Path.DirectorySeparatorChar));
+        if (!Directory.Exists(directory))
+        {
+            return;
+        }
+
+        string versionFile = Path.Combine(directory, ".version");
+        string? existingCommit = File.Exists(versionFile) ? File.ReadLines(versionFile).FirstOrDefault()?.Trim() : null;
+        if (string.IsNullOrEmpty(existingCommit))
+        {
+            Console.Error.WriteLine($"Warning: Could not verify that '{directory}' holds the same build as {_request.Component.GetDisplayName()} {_resolvedVersion} because it has no .version file. Keeping the existing files.");
+            return;
+        }
+
+        if (!string.Equals(existingCommit, archiveCommit, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new DotnetInstallException(
+                DotnetInstallErrorCode.InstallLayoutConflict,
+                $"'{directory}' holds a different build than {_request.Component.GetDisplayName()} {_resolvedVersion} includes, and installing would keep the existing files. Remove '{directory}' or uninstall the component that installed it first to proceed.",
+                version: _resolvedVersion.ToString(),
+                component: _request.Component.ToString());
+        }
+    }
+
+    /// <summary>Reads the commit from each <c>sdk/*</c> and <c>shared/*/*</c> <c>.version</c> file in the archive.</summary>
+    private static List<(string Subcomponent, string Commit)> ReadVersionCommits(string archivePath)
+    {
+        var commits = new List<(string, string)>();
+        if (archivePath.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
+        {
+            using var zip = ZipFile.OpenRead(archivePath);
+            foreach (var entry in zip.Entries)
+            {
+                if (GetVersionFileSubcomponent(entry.FullName) is { } subcomponent)
+                {
+                    using var stream = entry.Open();
+                    AddCommit(commits, subcomponent, stream);
+                }
+            }
+
+            return commits;
+        }
+
+        using var archiveStream = File.OpenRead(archivePath);
+        using Stream tarStream = archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase)
+            ? new GZipStream(archiveStream, CompressionMode.Decompress)
+            : archiveStream;
+        using var tarReader = new TarReader(tarStream);
+        while (tarReader.GetNextEntry() is { } entry)
+        {
+            if (entry.DataStream is not null && GetVersionFileSubcomponent(entry.Name) is { } subcomponent)
+            {
+                AddCommit(commits, subcomponent, entry.DataStream);
+            }
+        }
+
+        return commits;
+    }
+
+    private static string? GetVersionFileSubcomponent(string entryName)
+    {
+        string name = entryName.Replace('\\', '/');
+        name = name.StartsWith("./", StringComparison.Ordinal) ? name[2..] : name;
+        if (!name.StartsWith("sdk/", StringComparison.OrdinalIgnoreCase) && !name.StartsWith("shared/", StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        string? subcomponent = SubcomponentResolver.Resolve(name);
+        return subcomponent is not null && string.Equals(name, $"{subcomponent}/.version", StringComparison.OrdinalIgnoreCase)
+            ? subcomponent
+            : null;
+    }
+
+    private static void AddCommit(List<(string, string)> commits, string subcomponent, Stream stream)
+    {
+        using var reader = new StreamReader(stream, leaveOpen: true);
+        string? commit = reader.ReadLine()?.Trim();
+        if (!string.IsNullOrEmpty(commit))
+        {
+            commits.Add((subcomponent, commit));
+        }
     }
 
     private void ExtractWithExceptionHandling(string archivePath, string targetPath, IProgressTask installTask)

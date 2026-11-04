@@ -22,7 +22,7 @@ public class InstallerOrchestratorTests
     #region InstallAlreadyExists
 
     [TestMethod]
-    public void PrepareInstall_UntrackedAlreadyInstalled_ReturnsAlreadyInstalledResult()
+    public void PrepareInstall_UntrackedBundleAlreadyInstalled_ReturnsAlreadyInstalledResult()
     {
         using var testEnv = new TestEnvironment();
         var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
@@ -34,6 +34,7 @@ public class InstallerOrchestratorTests
             new InstallRequestOptions
             {
                 Untracked = true,
+                InstallMechanism = InstallMechanism.WindowsInstallerBundle,
                 ManifestPath = testEnv.ManifestPath
             });
         var resolvedRequest = new ResolvedInstallRequest(request, resolvedVersion);

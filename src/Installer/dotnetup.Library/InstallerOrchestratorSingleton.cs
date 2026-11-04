@@ -307,7 +307,10 @@ internal class InstallerOrchestratorSingleton
         // skipped. Fall back to a filesystem check using the same validation
         // that CommitPreparedInstall uses post-install. This runs inside the
         // mutex so another dotnetup process can't be mid-extraction when we probe.
-        if (installRequest.Options.Untracked && installationValidator.Validate(install))
+        // Archive installs defer this until the download shows whether the existing folder holds the same build.
+        if (installRequest.Options.Untracked
+            && installRequest.Options.InstallMechanism != InstallMechanism.Archive
+            && installationValidator.Validate(install))
         {
             return new InstallResult(install, WasAlreadyInstalled: true);
         }
@@ -381,6 +384,14 @@ internal class InstallerOrchestratorSingleton
             }
 
             ThrowIfLayoutConflict(prepared, manifest);
+            prepared.Artifact.ThrowIfExistingLayoutDiffers();
+
+            if (manifest is null
+                && prepared.Request.Options.InstallMechanism == InstallMechanism.Archive
+                && validator.Validate(prepared.Install))
+            {
+                return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
+            }
 
             prepared.Artifact.Commit();
 
@@ -404,7 +415,7 @@ internal class InstallerOrchestratorSingleton
 #pragma warning restore CA1822
 
     /// <summary>
-    /// Rejects an install whose on-disk version folder already holds a different build of the component,
+    /// Rejects an install whose on-disk version folder is tracked for a different build of the component,
     /// because extraction would keep the existing files while recording the new build.
     /// </summary>
     private static void ThrowIfLayoutConflict(PreparedInstall prepared, DotnetupSharedManifest? manifest)
@@ -421,28 +432,6 @@ internal class InstallerOrchestratorSingleton
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.InstallLayoutConflict,
                 string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflict, component, install.Version, existing.Version, install.LayoutVersion, action),
-                version: install.Version.ToString(),
-                component: install.Component.ToString());
-        }
-
-        // A folder not recorded for this component (untracked root, or a tracked root with untracked files) has no known
-        // owning build, so an existing folder for a remapped build is a conflict. Extraction skips any existing folder.
-        // Assumption: only RTM or servicing daily builds (PayloadVersionOverride set) reach this, so other existing installs don't fail here.
-        if (install.PayloadVersionOverride is null
-            || prepared.Request.Options.InstallMechanism != InstallMechanism.Archive
-            || InstallationValidator.GetComponentDirectory(install.InstallRoot.Path!, install.Component, install.LayoutVersion.ToString()) is not { } directory
-            || !Directory.Exists(directory))
-        {
-            return;
-        }
-
-        // A folder bundled with a tracked installation (such as an SDK's runtime) is left to the existing behavior.
-        string subcomponent = Path.GetRelativePath(install.InstallRoot.Path!, directory).Replace('\\', '/');
-        if (manifest?.GetInstallations(install.InstallRoot).Any(i => i.Subcomponents.Contains(subcomponent, StringComparer.OrdinalIgnoreCase)) != true)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.InstallLayoutConflict,
-                string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictUntracked, component, install.Version, directory, install.LayoutVersion),
                 version: install.Version.ToString(),
                 component: install.Component.ToString());
         }

@@ -481,11 +481,6 @@ Or open a new terminal.</target>
         <target state="new">Uninstall {0} {1} first to proceed.</target>
         <note>{0} is the component display name, such as .NET SDK. {1} is the installed version.</note>
       </trans-unit>
-      <trans-unit id="InstallLayoutConflictUntracked">
-        <source>{0} {1} replaces the existing {0} in '{2}' because they share the on-disk version {3}. Remove '{2}' first to proceed.</source>
-        <target state="new">{0} {1} replaces the existing {0} in '{2}' because they share the on-disk version {3}. Remove '{2}' first to proceed.</target>
-        <note>{0} is the component display name, such as .NET SDK. {1} is the requested version. {2} is the existing component directory. {3} is the version folder name on disk.</note>
-      </trans-unit>
       <trans-unit id="InstallSpecSource">
         <source>(source: {0})</source>
         <target state="new">(source: {0})</target>

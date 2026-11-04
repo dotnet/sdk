@@ -29,6 +29,11 @@ internal interface IInstallArtifact : IDisposable
     IReadOnlyList<string> ExtractedSubcomponents { get; }
 
     /// <summary>
+    /// Throws when an existing folder the artifact would install into holds a different build, since installing keeps existing folders.
+    /// </summary>
+    void ThrowIfExistingLayoutDiffers() { }
+
+    /// <summary>
     /// Repairs a committed artifact whose files are missing after <see cref="Commit"/> reported success.
     /// Returns <c>false</c> when the artifact cannot be repaired.
     /// </summary>
