@@ -589,20 +589,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     /// Returns true if the primary on-disk directory for the given installation
     /// still exists under <paramref name="rootPath"/>.
     /// </summary>
-    private static bool InstallationExistsOnDisk(string rootPath, Installation installation)
-    {
-        string? componentDir = GetComponentDirectory(rootPath, installation);
-        return componentDir is not null && Directory.Exists(componentDir);
-    }
-
-    internal static string? GetComponentDirectory(string rootPath, Installation installation)
-    {
-        if (string.IsNullOrEmpty(installation.Version))
-        {
-            return null;
-        }
-
-        return InstallationValidator.GetComponentDirectory(rootPath, installation.Component, installation.LayoutVersion);
-    }
+    private static bool InstallationExistsOnDisk(string rootPath, Installation installation) =>
+        !string.IsNullOrEmpty(installation.Version)
+            && Directory.Exists(Path.Combine(rootPath, installation.LayoutPath.Replace('/', Path.DirectorySeparatorChar)));
 
 }

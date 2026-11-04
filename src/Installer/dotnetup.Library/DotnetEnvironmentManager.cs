@@ -84,6 +84,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             .Select(i => i.Version.ToString())];
     }
 
+    // hostfxr only sees folders, so Version is the on-disk version, not an RTM or servicing daily build's identity.
     public List<DotnetInstall> GetExistingSystemInstalls()
     {
         var installs = new List<DotnetInstall>();

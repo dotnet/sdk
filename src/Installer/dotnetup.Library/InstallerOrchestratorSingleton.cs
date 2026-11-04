@@ -227,15 +227,16 @@ internal class InstallerOrchestratorSingleton
         public ResolvedInstallRequest ResolvedRequest { get; }
         public DotnetInstallRequest Request => ResolvedRequest.Request;
         public ReleaseVersion Version => ResolvedRequest.ResolvedVersion;
-        public DotnetInstall Install { get; }
         public IInstallArtifact Artifact { get; }
 
-        public PreparedInstall(ResolvedInstallRequest resolvedRequest, DotnetInstall install,
-            IInstallArtifact artifact)
+        /// <summary>The install, including the product version of the prepared payload.</summary>
+        public DotnetInstall Install { get; }
+
+        public PreparedInstall(ResolvedInstallRequest resolvedRequest, IInstallArtifact artifact)
         {
             ResolvedRequest = resolvedRequest;
-            Install = install;
             Artifact = artifact;
+            Install = new DotnetInstall(Request.InstallRoot, Version, Request.Component).WithProductVersion(artifact.ProductVersion);
         }
 
         public void Dispose() => Artifact.Dispose();
@@ -280,7 +281,7 @@ internal class InstallerOrchestratorSingleton
             throw;
         }
 
-        return new PreparedInstall(resolvedRequest, install.WithPayloadVersion(artifact.ProductVersion), artifact);
+        return new PreparedInstall(resolvedRequest, artifact);
     }
 #pragma warning restore CA1822
 
@@ -401,13 +402,8 @@ internal class InstallerOrchestratorSingleton
 
             manifest?.RecordInstallSpec(prepared.Request);
 
-            manifest?.AddInstallation(prepared.Request.InstallRoot, new Installation
-            {
-                Component = prepared.Request.Component,
-                Version = prepared.Version.ToString(),
-                ProductVersion = prepared.Install.PayloadVersionOverride?.ToString(),
-                Subcomponents = [.. prepared.Artifact.ExtractedSubcomponents],
-            });
+            manifest?.AddInstallation(prepared.Request.InstallRoot,
+                Installation.FromDotnetInstall(prepared.Install, prepared.Artifact.ExtractedSubcomponents));
         }
 
         return new InstallResult(prepared.Install, WasAlreadyInstalled: false, Repaired: repaired);

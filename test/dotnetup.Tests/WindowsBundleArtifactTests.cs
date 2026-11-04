@@ -503,8 +503,7 @@ public class WindowsBundleArtifactTests : IDisposable
     {
         artifact.Prepare();
         var resolvedRequest = new ResolvedInstallRequest(CreateRequest(channel), new ReleaseVersion("10.0.100"));
-        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
-        return new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+        return new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, artifact);
     }
 
     private static InstallResult CommitWithoutValidation(InstallerOrchestratorSingleton.PreparedInstall prepared)

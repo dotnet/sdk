@@ -14,16 +14,22 @@ internal record DotnetInstall(
     DotnetInstallRoot InstallRoot,
     ReleaseVersion Version,
     InstallComponent Component,
-    ReleaseVersion? PayloadVersionOverride = null)
+    ReleaseVersion? ProductVersion = null)
 {
     /// <summary>The version folder on disk, which is also what <c>dotnet --version</c> reports.</summary>
-    public ReleaseVersion LayoutVersion => PayloadVersionOverride ?? Version;
+    public ReleaseVersion LayoutVersion => ProductVersion ?? Version;
 
-    /// <summary>Records the downloaded payload's version, keeping the override null when it matches <see cref="Version"/>.</summary>
-    public DotnetInstall WithPayloadVersion(ReleaseVersion? payloadVersion) =>
-        payloadVersion is null || payloadVersion.Equals(Version)
+    /// <summary>The install's folder relative to the install root, such as <c>sdk/10.0.100</c>.</summary>
+    public string LayoutPath => Component.GetLayoutPath(LayoutVersion.ToString());
+
+    /// <summary>The install's folder on disk.</summary>
+    public string ComponentDirectory => Path.Combine(InstallRoot.Path!, LayoutPath.Replace('/', Path.DirectorySeparatorChar));
+
+    /// <summary>Records the payload's product version, keeping it null when it matches <see cref="Version"/>.</summary>
+    public DotnetInstall WithProductVersion(ReleaseVersion? productVersion) =>
+        productVersion is null || productVersion.Equals(Version)
             ? this
-            : this with { PayloadVersionOverride = payloadVersion };
+            : this with { ProductVersion = productVersion };
 }
 
 /// <summary>

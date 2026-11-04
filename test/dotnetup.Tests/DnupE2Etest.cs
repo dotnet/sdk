@@ -522,7 +522,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     // RTM and servicing daily builds lay down an untagged folder (e.g. sdk/11.0.100) for a tagged build version.
     private static void VerifyLayoutExists(TestEnvironment testEnv, Installation install)
     {
-        string? componentDirectory = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, install.Component, install.LayoutVersion);
+        string? componentDirectory = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, install);
         Directory.Exists(componentDirectory).Should().BeTrue(
             $"'{componentDirectory}' should exist for tracked version '{install.Version}' (productVersion '{install.ProductVersion}')");
     }

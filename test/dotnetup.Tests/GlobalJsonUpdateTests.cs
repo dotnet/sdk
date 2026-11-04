@@ -245,7 +245,7 @@ public class GlobalJsonUpdateTests : IDisposable
         var request = new DotnetInstallRequest(installRoot, new UpdateChannel("11-daily"), InstallComponent.SDK,
             new InstallRequestOptions { GlobalJsonPath = path });
         var install = new DotnetInstall(installRoot, buildVersion, InstallComponent.SDK)
-            .WithPayloadVersion(payloadVersion is null ? null : new ReleaseVersion(payloadVersion));
+            .WithProductVersion(payloadVersion is null ? null : new ReleaseVersion(payloadVersion));
 
         new DotnetEnvironmentManager().ApplyGlobalJsonModifications(
             [new ResolvedInstallRequest(request, buildVersion)], [new InstallResult(install, WasAlreadyInstalled: false)]);

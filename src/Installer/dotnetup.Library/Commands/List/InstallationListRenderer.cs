@@ -21,15 +21,17 @@ internal static class InstallationListRenderer
     {
         var versions = installations.Select(i => i.Version).Distinct(StringComparer.Ordinal)
             .ToDictionary(v => v, v => ReleaseVersion.TryParse(v, out var version) ? version : null, StringComparer.Ordinal);
+        var records = installations.ToDictionary(i => new Installation
+        {
+            Component = i.Component, Version = i.Version, ProductVersion = i.ProductVersion
+        });
+        var recordList = records.Keys.ToList();
         var rows = new List<InstallationListRow>();
         foreach (var spec in specs)
         {
-            var selected = installations
-                .Where(i => i.Component == spec.Component
-                    && versions[i.Version] is not null
-                    && Installation.IsOwnedBy(i.Version, i.ProductVersion, spec.Source, spec.VersionOrChannel))
-                .OrderByDescending(i => versions[i.Version])
-                .FirstOrDefault();
+            var selected = GarbageCollector.ResolveLatestMatchingInstallation(
+                new InstallSpec { Component = spec.Component, VersionOrChannel = spec.VersionOrChannel, InstallSource = spec.Source },
+                recordList) is { } record ? records[record] : null;
             rows.Add(new InstallationListRow
             {
                 Component = spec.Component,

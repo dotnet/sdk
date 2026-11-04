@@ -318,8 +318,7 @@ public class DotnetArchiveExtractorTests
         };
         var extractor = new DotnetArchiveExtractor(request, resolvedVersion, new ReleaseManifest(), new NullProgressTarget(), downloader);
         extractor.Prepare();
-        return new InstallerOrchestratorSingleton.PreparedInstall(new ResolvedInstallRequest(request, resolvedVersion),
-            new DotnetInstall(root, resolvedVersion, component).WithPayloadVersion(extractor.ProductVersion), extractor);
+        return new InstallerOrchestratorSingleton.PreparedInstall(new ResolvedInstallRequest(request, resolvedVersion), extractor);
     }
 
     [TestMethod]
