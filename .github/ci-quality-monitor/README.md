@@ -29,7 +29,20 @@ job runs before the agent:
   branch-scoped durable artifact checkpoint.
 6. Skip the agent when there are no selected failed builds or actionable
   pipeline-health observations.
-7. Give the agent a structured dossier when investigation is required.
+7. Upload the dossier as the current run's `ci-quality-evidence` artifact and
+   download it into the agent workspace when investigation is required. Job
+   outputs carry only the admission flag and failure count; evidence can exceed
+   GitHub's 1 MB job-output limit.
+
+The workflow's `on.needs` dependency makes protected pre-activation wait for the
+environment-free `investigation_required` job. That job runs only when collection
+emits `should_run=true`; otherwise it and the dependent PAT-backed jobs are
+skipped without requesting the `copilot-pat-pool` environment. A top-level `if`
+alone does not provide this admission gate. Keep this dependency in the
+[source workflow](../workflows/ci-quality-monitor.md): a no-op run waiting on
+environment admission would otherwise hold the workflow-wide concurrency lock.
+Environment admission can still stall an actionable investigation; a job timeout
+does not bound that wait, so stale waiting runs require operational cancellation.
 
 The collector code follows these boundaries:
 

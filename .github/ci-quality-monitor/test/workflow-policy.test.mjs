@@ -4,6 +4,13 @@ import test from "node:test";
 
 const workflowUrl = new URL("../../workflows/ci-quality-monitor.md", import.meta.url);
 
+function getJob(workflow, name)
+{
+    const job = workflow.match(new RegExp(`^  ${name}:\\r?\\n(?:(?: {4}[^\\r\\n]*|)\\r?\\n)*`, "m"))?.[0];
+    assert.ok(job, `Missing ${name} job`);
+    return job;
+}
+
 test("every created issue receives live-build-incident", async () =>
 {
     const workflow = await readFile(workflowUrl, "utf8");
@@ -103,4 +110,38 @@ test("compiled monitor checkouts preserve the main pin", async () =>
     }
     assert.doesNotMatch(workflow, /- name: Checkout PR branch/);
     assert.doesNotMatch(workflow, /- name: Checkout repository\r?\n/);
+});
+
+test("no-op collection skips protected environment admission", async () =>
+{
+    const source = await readFile(workflowUrl, "utf8");
+    const compiled = await readFile(new URL("../../workflows/ci-quality-monitor.lock.yml", import.meta.url), "utf8");
+
+    assert.match(source, /^  needs: \[collect, investigation_required\]$/m);
+    for (const workflow of [source, compiled])
+    {
+        const admission = getJob(workflow, "investigation_required");
+        assert.match(admission, /^    needs: collect$/m);
+        assert.match(admission, /^    if: needs\.collect\.outputs\.should_run == 'true'$/m);
+        assert.doesNotMatch(admission, /^    environment:/m);
+    }
+
+    const preActivation = getJob(compiled, "pre_activation");
+    assert.match(preActivation, /^    needs:\r?\n +\- collect\r?\n +\- investigation_required$/m);
+    assert.doesNotMatch(preActivation, /^    if:/m);
+    assert.match(getJob(compiled, "pat_pool"), /^    needs: pre_activation$/m);
+});
+
+test("CI evidence uses a same-run artifact instead of job outputs", async () =>
+{
+    const source = await readFile(workflowUrl, "utf8");
+    const compiled = await readFile(new URL("../../workflows/ci-quality-monitor.lock.yml", import.meta.url), "utf8");
+
+    for (const workflow of [source, compiled])
+    {
+        assert.doesNotMatch(workflow, /needs\.collect\.outputs\.dossier|steps\.collect\.outputs\.dossier/);
+        assert.match(workflow, /name: Upload public CI evidence[\s\S]*?name: ci-quality-evidence/);
+        assert.match(workflow, /name: Download public CI evidence[\s\S]*?name: ci-quality-evidence/);
+    }
+    assert.match(source, /Read the supplied public CI evidence from `\.ci-quality-monitor\/dossier\.json`/);
 });
