@@ -141,7 +141,7 @@ internal class GarbageCollector
     /// <summary>
     /// Finds the latest installation record that matches an install spec.
     /// </summary>
-    private static Installation? ResolveLatestMatchingInstallation(InstallSpec spec, List<Installation> installations)
+    internal static Installation? ResolveLatestMatchingInstallation(InstallSpec spec, List<Installation> installations)
     {
         var matchingInstallations = installations
             .Where(i => i.IsOwnedBy(spec))

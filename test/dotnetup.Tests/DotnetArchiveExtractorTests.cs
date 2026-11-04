@@ -104,6 +104,26 @@ public class DotnetArchiveExtractorTests
     }
 
     [TestMethod]
+    public void Commit_LayoutConflict_SuggestsOnlySpecsThatKeepTheConflictingInstall()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var pinned = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "existing"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(pinned);
+        }
+        using (var band = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.1xx", "11.0.105", null, "sdk/11.0.105/dotnet.dll", "newer"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(band);
+        }
+        using var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "daily");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily));
+
+        ex.Message.Should().Contain("sdk uninstall 11.0.100 ").And.NotContain("11.0.1xx");
+    }
+
+    [TestMethod]
     public void Commit_UntrackedDailyBuildWithExistingLayout_Rejects()
     {
         using var testEnv = new TestEnvironment();

@@ -454,7 +454,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     /// <summary>
     /// Returns a tracked installation of a different build that occupies the same on-disk folder as the install,
-    /// with the install specs that own it. Must be called while holding the install-state mutex.
+    /// with the install specs that keep it, as garbage collection selects them. Must be called while holding the install-state mutex.
     /// </summary>
     internal (Installation Installation, IReadOnlyList<InstallSpec> OwningSpecs)? FindLayoutConflict(DotnetInstall install)
     {
@@ -473,7 +473,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
 
         var owningSpecs = root!.InstallSpecs
-            .Where(conflict.IsOwnedBy)
+            .Where(spec => GarbageCollector.ResolveLatestMatchingInstallation(spec, root.Installations) == conflict)
             .ToList();
         return (conflict, owningSpecs);
     }
