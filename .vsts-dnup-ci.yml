@@ -192,7 +192,6 @@ extends:
         ############### WINDOWS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
-            publishingVersion: 4
             pool:
               name: $(DncEngInternalBuildPool)
               image: windows.vs2026.amd64
@@ -233,7 +232,6 @@ extends:
         ############### LINUX ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
-            publishingVersion: 4
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
@@ -302,7 +300,6 @@ extends:
         ############### MACOS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
-            publishingVersion: 4
             pool:
               name: Azure Pipelines
               image: macOS-latest

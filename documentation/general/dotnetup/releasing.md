@@ -31,8 +31,8 @@ Daily publication uses Arcade V4 publishing. Each RID job additionally uploads a
 `<job-name>_Artifacts` pipeline artifact containing staged daily assets and a V4
 manifest. The BAR job merges these manifests into the `AssetManifests` pipeline
 artifact. Preview and GA remain exclusively in the `Dotnetup_<job-name>` candidate
-artifacts; the release pipeline's input contract is unchanged. Ordinary SDK builds
-retain their existing publishing configuration.
+artifacts; the release pipeline's input contract is unchanged. The shared SDK build
+job templates use V4 publishing without a V3 compatibility option.
 
 To produce variants locally:
 

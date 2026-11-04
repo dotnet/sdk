@@ -4,7 +4,7 @@
     <!-- This repo does its own symbol package generation to avoid generating symbols for a bunch of unrelated test packages. -->
     <AutoGenerateSymbolPackages>false</AutoGenerateSymbolPackages>
     <ProducesDotNetReleaseShippingAssets>true</ProducesDotNetReleaseShippingAssets>
-    <PublishingVersion Condition="'$(DotnetupBuildVariant)' != ''">4</PublishingVersion>
+    <PublishingVersion>4</PublishingVersion>
   </PropertyGroup>
 
   <!-- FSharp needs to push different packages to nuget.org depending on whether the SDK is preview or not,
