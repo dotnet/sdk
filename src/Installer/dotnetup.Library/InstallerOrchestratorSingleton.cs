@@ -400,7 +400,8 @@ internal class InstallerOrchestratorSingleton
                 return alreadyInstalled;
             }
 
-            if (prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
+            if (!prepared.Request.Options.Untracked
+                && prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
                 && validator.Validate(prepared.Install))
             {
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
