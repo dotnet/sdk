@@ -24,7 +24,7 @@ function Assert-Fails {
 function Invoke-WebRequest {
     param($Uri, $OutFile, $MaximumRetryCount, $RetryIntervalSec, $TimeoutSec, $ErrorAction)
     $name = ([Uri]$Uri).Segments[-1]
-    Copy-Item -LiteralPath (Join-Path $source $name) -Destination $OutFile
+    Copy-Item -LiteralPath (Join-Path $destination "dotnetup/$($release.version)/$name") -Destination $OutFile
     if ($script:corruptDownload) { Add-Content -LiteralPath $OutFile -Value 'corrupted' }
 }
 
@@ -45,31 +45,6 @@ try {
     $script:assertions++
     $env:SYSTEM_DEBUG = 'false'
 
-    New-Item -ItemType Directory -Path $source -Force | Out-Null
-    $names = @(
-        'dotnetup-win-x64.exe', 'dotnetup-win-arm64.exe',
-        'dotnetup-linux-x64', 'dotnetup-linux-arm64',
-        'dotnetup-linux-musl-x64', 'dotnetup-linux-musl-arm64',
-        'dotnetup-osx-x64', 'dotnetup-osx-arm64',
-        'get-dotnetup.ps1', 'get-dotnetup.sh'
-    )
-    [xml]$manifest = @"
-<Build>
-  <Blob Id="assets/manifests/dotnet-sdk/20261027.2/MergedManifest.xml" NonShipping="True" />
-</Build>
-"@
-    foreach ($name in $names) {
-        $path = Join-Path $source $name
-        Set-Content -LiteralPath $path -Value "signed fixture $name"
-        $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA512).Hash
-        Set-Content -LiteralPath "$path.sha512" -Value "$hash  $name"
-        foreach ($fileName in @($name, "$name.sha512")) {
-            $blob = $manifest.CreateElement('Blob')
-            $blob.SetAttribute('Id', "dotnetup/0.3.0-preview.1/$fileName")
-            [void]$manifest.DocumentElement.AppendChild($blob)
-        }
-    }
-    $manifest.Save((Join-Path $source 'MergedManifest.xml'))
     $build = @{
         id = 123
         repository = @{ name = 'dotnet-sdk' }; sourceBranch = 'refs/heads/release/dnup'
@@ -78,20 +53,51 @@ try {
         tags = @('PME Signed')
     }
 
-    $release = Get-DotnetupRelease -SourceBuild $build -Manifest $manifest
+    $artifacts = [ordered]@{
+        'windows_x64' = 'win-x64'; 'windows_arm64' = 'win-arm64'
+        'linux_x64_crossBuildLinuxX64' = 'linux-x64'; 'linux_arm64_crossBuildLinuxArm64' = 'linux-arm64'
+        'linux_x64_crossBuildMuslX64' = 'linux-musl-x64'; 'linux_arm64_crossBuildMuslArm64' = 'linux-musl-arm64'
+        'macOS_x64' = 'osx-x64'; 'macOS_arm64' = 'osx-arm64'
+    }
+    foreach ($variant in @('preview', 'daily', 'ga')) {
+        $version = switch ($variant) {
+            preview { '0.3.0-preview.1' }
+            daily { '0.3.0-daily.26554.2' }
+            ga { '0.3.0' }
+        }
+        foreach ($artifact in $artifacts.GetEnumerator()) {
+            $directory = Join-Path $source "Dotnetup_Dotnetup_$($artifact.Key)/$variant/$version"
+            New-Item -ItemType Directory -Path $directory -Force | Out-Null
+            @{
+                schemaVersion = 1; buildId = [string]$build.id; commit = $build.sourceVersion
+                variant = $variant; version = $version; rid = $artifact.Value; placeholder = ($variant -eq 'ga')
+            } | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $directory 'release.json')
+            $names = @("dotnetup-$($artifact.Value)$(if ($artifact.Value.StartsWith('win-')) { '.exe' })")
+            if ($artifact.Value -eq 'win-x64') { $names += 'get-dotnetup.ps1', 'get-dotnetup.sh' }
+            foreach ($name in $names) {
+                $path = Join-Path $directory $name
+                Set-Content -LiteralPath $path -Value "signed $variant fixture $name"
+                $hash = (Get-FileHash -LiteralPath $path -Algorithm SHA512).Hash
+                Set-Content -LiteralPath "$path.sha512" -Value $hash
+            }
+        }
+    }
+
+    $release = Get-DotnetupRelease -SourceBuild $build -SourceDirectory $source -Variant preview
     if ($release.files.Count -ne 20 -or $release.version -ne '0.3.0-preview.1' -or
+        $release.variant -ne 'preview' -or $release.candidates.Count -ne 8 -or
         $release.azureDevOpsBuildId -ne $build.id -or
         $release.buildNumber -ne $build.buildNumber -or $release.commit -ne $build.sourceVersion) {
         throw 'Incorrect release inventory.'
     }
     $script:assertions++
     $env:SYSTEM_DEBUG = 'true'
-    $debugOutput = @(Get-DotnetupRelease -SourceBuild $build -Manifest $manifest 6>&1)
+    $debugOutput = @(Get-DotnetupRelease -SourceBuild $build -SourceDirectory $source -Variant preview 6>&1)
     $messages = @($debugOutput | Where-Object { $_ -is [System.Management.Automation.InformationRecord] })
     if ($messages.Count -ne 3 -or
         [string]$messages[0] -notlike '*runTestBuild=False, PME Signed=True*' -or
         [string]$messages[1] -notlike '*eligibility checks passed*' -or
-        [string]$messages[2] -notlike '*0.3.0-preview.1, 20 files*' -or
+        [string]$messages[2] -notlike '*0.3.0-preview.1 (preview), 20 files*' -or
         @($debugOutput | Where-Object { $_ -isnot [System.Management.Automation.InformationRecord] }).Count -ne 1) {
         throw 'Eligibility and manifest diagnostics must not change the release output.'
     }
@@ -99,7 +105,7 @@ try {
     $env:SYSTEM_DEBUG = 'false'
     $release = $release | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashtable
     $build.templateParameters.runTestBuild = $false
-    $null = Get-DotnetupRelease -SourceBuild $build -Manifest $manifest
+    $null = Get-DotnetupRelease -SourceBuild $build -SourceDirectory $source -Variant preview
     $script:assertions++
     $build.templateParameters.runTestBuild = 'False'
 
@@ -115,23 +121,66 @@ try {
     )) {
         $bad = $build | ConvertTo-Json -Depth 10 | ConvertFrom-Json -AsHashtable
         & $mutation
-        Assert-Fails { Get-DotnetupRelease -SourceBuild $bad -Manifest $manifest } 'source run'
+        Assert-Fails { Get-DotnetupRelease -SourceBuild $bad -SourceDirectory $source -Variant preview } 'source run'
     }
-    Assert-Fails { Get-DotnetupRelease -SourceBuild $build -Manifest ([xml]'<Other />') } 'Build root element'
+    Assert-Fails { Get-DotnetupRelease $build $source ga } 'ValidateSet'
+    $manifestPath = Join-Path $source 'Dotnetup_Dotnetup_windows_x64/preview/0.3.0-preview.1/release.json'
+    $originalManifest = Get-Content -LiteralPath $manifestPath -Raw
     foreach ($mutation in @(
-        { [void]$bad.DocumentElement.RemoveChild($bad.Build.Blob[1]) },
-        { $bad.Build.Blob[1].SetAttribute('Id', 'dotnetup/0.3.0-preview.1/unexpected.exe') },
-        { $bad.Build.Blob[1].SetAttribute('Id', $bad.Build.Blob[2].Id) },
-        { $bad.Build.Blob[1].SetAttribute('Id', 'dotnetup/0.4.0/dotnetup-win-x64.exe') },
-        { $bad.Build.Blob[1].SetAttribute('Id', 'dotnetup/../dotnetup-win-x64.exe') }
+        { $bad.schemaVersion = 2 },
+        { $bad.buildId = '124' },
+        { $bad.commit = 'b' * 40 },
+        { $bad.variant = 'daily' },
+        { $bad.placeholder = $true },
+        { $bad.placeholder = 'false' },
+        { $bad.Remove('placeholder') },
+        { $bad.rid = 'win-arm64' },
+        { $bad.rid = 'other' },
+        { $bad.version = '0.3.0-daily.26554.2' },
+        { $bad.version = '../0.3.0-preview.1' },
+        { $bad.version = '0.3.0-preview.1/other' }
     )) {
-        $bad = [xml]$manifest.OuterXml
+        $bad = $originalManifest | ConvertFrom-Json -AsHashtable
         & $mutation
-        Assert-Fails { Get-DotnetupRelease -SourceBuild $build -Manifest $bad } ''
+        $bad | ConvertTo-Json | Set-Content -LiteralPath $manifestPath
+        Assert-Fails { Get-DotnetupRelease $build $source preview } ''
+        Set-Content -LiteralPath $manifestPath -Value $originalManifest
     }
+    Set-Content -LiteralPath $manifestPath -Value '{invalid json'
+    Assert-Fails { Get-DotnetupRelease $build $source preview } ''
+    Remove-Item -LiteralPath $manifestPath
+    Assert-Fails { Get-DotnetupRelease $build $source preview } 'candidate manifests'
+    Set-Content -LiteralPath $manifestPath -Value $originalManifest
+
+    $duplicateDirectory = Join-Path $source 'Dotnetup_Dotnetup_duplicate/preview/0.3.0-preview.1'
+    New-Item -ItemType Directory -Path $duplicateDirectory -Force | Out-Null
+    Set-Content -LiteralPath (Join-Path $duplicateDirectory 'release.json') -Value $originalManifest
+    Assert-Fails { Get-DotnetupRelease $build $source preview } 'candidate manifests'
+    Remove-Item -LiteralPath (Join-Path $source 'Dotnetup_Dotnetup_duplicate') -Recurse -Force
+
+    $otherVersion = Join-Path $source 'Dotnetup_Dotnetup_windows_x64/preview/0.4.0-preview.1'
+    Move-Item -LiteralPath (Split-Path $manifestPath) -Destination $otherVersion
+    $bad = $originalManifest | ConvertFrom-Json -AsHashtable
+    $bad.version = '0.4.0-preview.1'
+    $bad | ConvertTo-Json | Set-Content -LiteralPath (Join-Path $otherVersion 'release.json')
+    Assert-Fails { Get-DotnetupRelease $build $source preview } 'same version'
+    Move-Item -LiteralPath $otherVersion -Destination (Split-Path $manifestPath)
+    Set-Content -LiteralPath $manifestPath -Value $originalManifest
+
+    $daily = Get-DotnetupRelease $build $source daily
+    $dailyDestination = Join-Path $root 'daily-staging'
+    Copy-DotnetupReleaseAssets $daily $source $dailyDestination
+    if ($daily.variant -ne 'daily' -or $daily.version -ne '0.3.0-daily.26554.2' -or
+        $daily.files.Count -ne 20 -or
+        @(Get-ChildItem -LiteralPath $dailyDestination -File -Recurse).Count -ne 20 -or
+        @($daily.files | Where-Object { $_.sourceRelativePath -notlike '*/daily/0.3.0-daily.26554.2/*' }).Count -ne 0 -or
+        (Get-Content -LiteralPath (Join-Path $dailyDestination "dotnetup/$($daily.version)/dotnetup-win-x64.exe") -Raw) -notlike '*signed daily fixture*') {
+        throw 'Daily selection must stage only daily payloads and sidecars.'
+    }
+    $script:assertions++
 
     $destination = Join-Path $root 'staging'
-    $binary = Join-Path $source 'dotnetup-win-x64.exe'
+    $binary = Join-Path (Split-Path $manifestPath) 'dotnetup-win-x64.exe'
     $original = Get-Content -LiteralPath $binary -Raw
     Set-Content -LiteralPath $binary -Value '' -NoNewline
     Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } 'Missing or empty release asset'
@@ -143,6 +192,13 @@ try {
     Set-Content -LiteralPath $sidecar -Value $originalChecksum -NoNewline
 
     Add-Content -LiteralPath $binary -Value 'fixture content without a matching sidecar'
+    Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } 'Checksum does not match'
+    if (Test-Path -LiteralPath $destination) { throw 'Checksum failures must not stage any files.' }
+    $script:assertions++
+    Set-Content -LiteralPath $binary -Value $original -NoNewline
+    Set-Content -LiteralPath $sidecar -Value 'invalid checksum'
+    Assert-Fails { Copy-DotnetupReleaseAssets $release $source $destination } 'Checksum does not match'
+    Set-Content -LiteralPath $sidecar -Value $originalChecksum -NoNewline
     Copy-DotnetupReleaseAssets $release $source $destination
     if (@(Get-ChildItem -LiteralPath $destination -File -Recurse).Count -ne 20 -or
         @(Get-ChildItem -LiteralPath $destination -File).Count -ne 0 -or
@@ -217,7 +273,7 @@ try {
     }
     $script:assertions++
     $cdnRelease = $cdnRelease[0]
-    if ($cdnRelease.files.Count -ne 20 -or $cdnRelease.azureDevOpsBuildId -ne 123 -or
+    if ($cdnRelease.files.Count -ne 20 -or $cdnRelease.azureDevOpsBuildId -ne 123 -or $cdnRelease.variant -ne 'preview' -or
         @($cdnRelease.files | Where-Object { -not $_.downloadUrl -or -not $_.sha512 }).Count -ne 0) {
         throw 'Incorrect CDN release output.'
     }

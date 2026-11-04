@@ -12,7 +12,8 @@ function Write-DotnetupDebug {
 function Get-DotnetupRelease {
     param(
         [Parameter(Mandatory)]$SourceBuild,
-        [Parameter(Mandatory)][xml]$Manifest
+        [Parameter(Mandatory)][string]$SourceDirectory,
+        [Parameter(Mandatory)][ValidateSet('preview', 'daily')][string]$Variant
     )
 
     Write-DotnetupDebug "Checking build $($SourceBuild.id): branch=$($SourceBuild.sourceBranch), status=$($SourceBuild.status), result=$($SourceBuild.result), runTestBuild=$($SourceBuild.templateParameters.runTestBuild), PME Signed=$($SourceBuild.tags -contains 'PME Signed')."
@@ -27,51 +28,67 @@ function Get-DotnetupRelease {
     }
     Write-DotnetupDebug 'Build eligibility checks passed.'
 
-    $build = $Manifest.DocumentElement
-    if ($build.LocalName -cne 'Build') {
-        throw 'The asset manifest must have a Build root element.'
-    }
-
-    $fileNames = @(
-        'dotnetup-win-x64.exe', 'dotnetup-win-arm64.exe',
-        'dotnetup-linux-x64', 'dotnetup-linux-arm64',
-        'dotnetup-linux-musl-x64', 'dotnetup-linux-musl-arm64',
-        'dotnetup-osx-x64', 'dotnetup-osx-arm64',
-        'get-dotnetup.ps1', 'get-dotnetup.sh'
+    $rids = @(
+        'win-x64', 'win-arm64', 'linux-x64', 'linux-arm64',
+        'linux-musl-x64', 'linux-musl-arm64', 'osx-x64', 'osx-arm64'
     )
-    $expectedNames = @($fileNames | ForEach-Object { $_; "$_.sha512" })
-    $assets = @($build.SelectNodes('Blob') | ForEach-Object { $_.GetAttribute('Id') } |
-        Where-Object { $_ -like 'dotnetup/*' })
-    if ($assets.Count -ne $expectedNames.Count) {
-        throw "Expected $($expectedNames.Count) dotnetup assets in the manifest; found $($assets.Count)."
+    $manifests = @(Get-ChildItem -Path (Join-Path $SourceDirectory "Dotnetup_Dotnetup_*/$Variant/*/release.json") -File -ErrorAction Stop)
+    if ($manifests.Count -ne $rids.Count) {
+        throw "Expected $($rids.Count) $Variant candidate manifests; found $($manifests.Count)."
     }
 
-    $versions = @($assets | ForEach-Object {
-        if ($_ -notmatch '^dotnetup/([0-9]+\.[0-9]+\.[0-9]+(?:-[0-9A-Za-z.-]+)?)/([^/]+)$') {
-            throw "Invalid dotnetup asset path '$_'."
+    $seenRids = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $version = $null
+    $files = @()
+    $candidates = @()
+    foreach ($manifest in $manifests) {
+        $candidate = Get-Content -LiteralPath $manifest.FullName -Raw -ErrorAction Stop | ConvertFrom-Json -ErrorAction Stop
+        if ($candidate.schemaVersion -ne 1 -or
+            [string]$candidate.buildId -cne [string]$SourceBuild.id -or
+            $candidate.commit -cne $SourceBuild.sourceVersion -or
+            $candidate.variant -cne $Variant -or
+            $candidate.placeholder -isnot [bool] -or $candidate.placeholder -ne $false -or
+            $rids -cnotcontains $candidate.rid -or -not $seenRids.Add($candidate.rid)) {
+            throw "Invalid $Variant candidate provenance, RID, or placeholder flag in '$($manifest.FullName)'."
         }
-        $Matches[1]
-    } | Sort-Object -Unique)
-    if ($versions.Count -ne 1) {
-        throw 'All dotnetup assets must have the same version.'
-    }
 
-    $version = $versions[0]
-    foreach ($name in $expectedNames) {
-        if (@($assets | Where-Object { $_ -ceq "dotnetup/$version/$name" }).Count -ne 1) {
-            throw "Expected exactly one manifest asset named 'dotnetup/$version/$name'."
+        if ($candidate.version -cnotmatch "^[0-9]+\.[0-9]+\.[0-9]+-$Variant\.[0-9]+(?:\.[0-9]+)*$" -or
+            $manifest.Directory.Name -cne $candidate.version) {
+            throw "Invalid $Variant candidate version or directory in '$($manifest.FullName)'."
+        }
+        if ($null -ne $version -and $candidate.version -cne $version) {
+            throw 'All dotnetup candidates must have the same version.'
+        }
+        $version = $candidate.version
+        $sourcePath = [IO.Path]::GetRelativePath($SourceDirectory, $manifest.Directory.FullName).Replace('\', '/')
+        $names = @("dotnetup-$($candidate.rid)$(if ($candidate.rid.StartsWith('win-')) { '.exe' })")
+        if ($candidate.rid -ceq 'win-x64') {
+            $names += 'get-dotnetup.ps1', 'get-dotnetup.sh'
+        }
+        foreach ($name in $names) {
+            foreach ($fileName in @($name, "$name.sha512")) {
+                $files += [ordered]@{
+                    name = $fileName
+                    relativePath = "dotnetup/$version/$fileName"
+                    sourceRelativePath = "$sourcePath/$fileName"
+                }
+            }
+        }
+        $candidates += [ordered]@{
+            rid = $candidate.rid
+            sourceManifest = "$sourcePath/release.json"
         }
     }
-    Write-DotnetupDebug "Manifest validated: dotnetup $version, $($expectedNames.Count) files."
+    Write-DotnetupDebug "Candidates validated: dotnetup $version ($Variant), $($files.Count) files."
 
     [ordered]@{
         azureDevOpsBuildId = $SourceBuild.id
         buildNumber = $SourceBuild.buildNumber
         commit = $SourceBuild.sourceVersion
+        variant = $Variant
         version = $version
-        files = @($expectedNames | ForEach-Object {
-            [ordered]@{ name = $_; relativePath = "dotnetup/$version/$_" }
-        })
+        candidates = $candidates
+        files = $files
     }
 }
 
@@ -87,19 +104,24 @@ function Copy-DotnetupReleaseAssets {
     }
     Write-DotnetupDebug "Staging $($Release.files.Count) files from '$SourceDirectory' to '$DestinationDirectory'."
 
-    # Read flat BlobArtifacts, but restore the manifest's versioned paths when staging for ESRP.
     # Validate the complete set before staging anything for ESRP.
     foreach ($file in $Release.files) {
-        $path = Join-Path $SourceDirectory $file.name
+        $path = Join-Path $SourceDirectory $file.sourceRelativePath
         if (-not (Test-Path -LiteralPath $path -PathType Leaf) -or (Get-Item -LiteralPath $path).Length -eq 0) {
             throw "Missing or empty release asset '$($file.relativePath)'."
+        }
+        $file.sha512 = (Get-FileHash -LiteralPath $path -Algorithm SHA512).Hash.ToLowerInvariant()
+    }
+    foreach ($file in $Release.files | Where-Object { -not $_.name.EndsWith('.sha512') }) {
+        $checksum = (Get-Content -LiteralPath (Join-Path $SourceDirectory "$($file.sourceRelativePath).sha512") -Raw).Trim()
+        if ($checksum -notmatch '^[0-9a-fA-F]{128}$' -or $checksum -ne $file.sha512) {
+            throw "Checksum does not match release asset '$($file.relativePath)'."
         }
     }
 
     New-Item -ItemType Directory -Path (Join-Path $DestinationDirectory "dotnetup/$($Release.version)") -Force -ErrorAction Stop | Out-Null
     foreach ($file in $Release.files) {
-        $path = Join-Path $SourceDirectory $file.name
-        $file.sha512 = (Get-FileHash -LiteralPath $path -Algorithm SHA512).Hash.ToLowerInvariant()
+        $path = Join-Path $SourceDirectory $file.sourceRelativePath
         Copy-Item -LiteralPath $path -Destination (Join-Path $DestinationDirectory $file.relativePath) -ErrorAction Stop
         Write-DotnetupDebug "Staged $($file.relativePath): $((Get-Item -LiteralPath $path).Length) bytes, SHA-512=$($file.sha512)."
     }
@@ -158,6 +180,7 @@ function Get-DotnetupCdnRelease {
         azureDevOpsBuildId = $Release.azureDevOpsBuildId
         buildNumber = $Release.buildNumber
         commit = $Release.commit
+        variant = $Release.variant
         version = $Release.version
         files = @($Release.files | ForEach-Object {
             [ordered]@{ name = $_.name; sha512 = $_.sha512; downloadUrl = $urls[$_.name] }
