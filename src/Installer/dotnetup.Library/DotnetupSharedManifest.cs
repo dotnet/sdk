@@ -456,29 +456,29 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     }
 
     /// <summary>
-    /// Returns a tracked installation of a different build that occupies the same on-disk folder as the install,
-    /// with the install specs that keep it, as garbage collection selects them. Must be called while holding the install-state mutex.
+    /// Returns the tracked installations of other builds that occupy the same on-disk folder as the install,
+    /// with the install specs that keep any of them, as garbage collection selects them. Must be called while holding the install-state mutex.
     /// </summary>
-    internal (Installation Installation, IReadOnlyList<InstallSpec> OwningSpecs)? FindLayoutConflict(DotnetInstall install)
+    internal (IReadOnlyList<Installation> Installations, IReadOnlyList<InstallSpec> OwningSpecs)? FindLayoutConflict(DotnetInstall install)
     {
         string version = install.Version.ToString();
         string layoutVersion = install.LayoutVersion.ToString();
 
         var root = ReadManifest().DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
-        var conflict = root?.Installations.FirstOrDefault(existing =>
+        var conflicts = root?.Installations.Where(existing =>
             existing.Component == install.Component &&
             existing.Version != version &&
-            existing.LayoutVersion == layoutVersion);
-        if (conflict is null)
+            existing.LayoutVersion == layoutVersion).ToList();
+        if (conflicts is null or [])
         {
             return null;
         }
 
         var owningSpecs = root!.InstallSpecs
-            .Where(spec => GarbageCollector.ResolveLatestMatchingInstallation(spec, root.Installations) == conflict)
+            .Where(spec => GarbageCollector.ResolveLatestMatchingInstallation(spec, root.Installations) is { } kept && conflicts.Contains(kept))
             .ToList();
-        return (conflict, owningSpecs);
+        return (conflicts, owningSpecs);
     }
 
     /// <summary>
