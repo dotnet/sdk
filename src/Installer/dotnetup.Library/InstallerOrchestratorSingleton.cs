@@ -298,24 +298,9 @@ internal class InstallerOrchestratorSingleton
 
         using var finalizeLock = ModifyInstallStateMutex();
 
-        bool fromGlobalJson = installRequest.Options.InstallSource == InstallRequestSource.GlobalJson;
-        if (manifest?.FindExistingInstall(install, matchLayoutVersion: fromGlobalJson) is { } existingInstall)
+        if (FindAlreadyInstalled(installRequest, install, manifest, installationValidator) is { } alreadyInstalled)
         {
-            manifest.RecordInstallSpec(installRequest);
-            return new InstallResult(existingInstall, WasAlreadyInstalled: true);
-        }
-
-        // For --untracked installs the manifest is null, so the check above is
-        // skipped. Fall back to a filesystem check using the same validation
-        // that CommitPreparedInstall uses post-install. This runs inside the
-        // mutex so another dotnetup process can't be mid-extraction when we probe.
-        // Archive installs defer this until the download shows whether the existing folder holds the same build,
-        // except for global.json requests, which the host satisfies with whatever build is in the folder.
-        if (installRequest.Options.Untracked
-            && (installRequest.Options.InstallMechanism != InstallMechanism.Archive || fromGlobalJson)
-            && installationValidator.Validate(install))
-        {
-            return new InstallResult(install, WasAlreadyInstalled: true);
+            return alreadyInstalled;
         }
 
         if (!installRequest.Options.Untracked
@@ -337,6 +322,36 @@ internal class InstallerOrchestratorSingleton
             && installRequest.InstallRoot.Path is not null)
         {
             MuxerHandler.EnsureMuxerIsWritable(installRequest.InstallRoot.Path);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Returns an already-installed result when the manifest records the install, or for global.json requests a build
+    /// in the same folder, recording the install spec. Must be called while holding the install-state mutex.
+    /// </summary>
+    private static InstallResult? FindAlreadyInstalled(
+        DotnetInstallRequest installRequest,
+        DotnetInstall install,
+        DotnetupSharedManifest? manifest,
+        IInstallationValidator installationValidator)
+    {
+        bool fromGlobalJson = installRequest.Options.InstallSource == InstallRequestSource.GlobalJson;
+        if (manifest?.FindExistingInstall(install, matchLayoutVersion: fromGlobalJson) is { } existingInstall)
+        {
+            manifest.RecordInstallSpec(installRequest);
+            return new InstallResult(existingInstall, WasAlreadyInstalled: true);
+        }
+
+        // For --untracked installs the manifest is null, so fall back to a filesystem check.
+        // Archive installs defer this until the download shows whether the existing folder holds the same build,
+        // except for global.json requests, which the host satisfies with whatever build is in the folder.
+        if (installRequest.Options.Untracked
+            && (installRequest.Options.InstallMechanism != InstallMechanism.Archive || fromGlobalJson)
+            && installationValidator.Validate(install))
+        {
+            return new InstallResult(install, WasAlreadyInstalled: true);
         }
 
         return null;
@@ -379,9 +394,14 @@ internal class InstallerOrchestratorSingleton
         using (var finalizeLock = ModifyInstallStateMutex())
         {
             IInstallationValidator validator = installationValidator ?? CreateInstallationValidator();
-            if (manifest?.InstallAlreadyExists(prepared.Install) == true
-                || (prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
-                    && validator.Validate(prepared.Install)))
+            // Another process may have installed a matching build while this one downloaded.
+            if (FindAlreadyInstalled(prepared.Request, prepared.Install, manifest, validator) is { } alreadyInstalled)
+            {
+                return alreadyInstalled;
+            }
+
+            if (prepared.Request.Options.InstallMechanism == InstallMechanism.WindowsInstallerBundle
+                && validator.Validate(prepared.Install))
             {
                 return new InstallResult(prepared.Install, WasAlreadyInstalled: true);
             }
@@ -422,7 +442,7 @@ internal class InstallerOrchestratorSingleton
     {
         var install = prepared.Install;
         string component = install.Component.GetDisplayName();
-        if (manifest?.FindLayoutConflict(install) is { } conflict)
+        if (manifest?.FindLayoutConflict(install) is { } layoutConflict)
         {
             if (prepared.Request.Options.InstallMechanism == InstallMechanism.Archive)
             {
@@ -436,7 +456,7 @@ internal class InstallerOrchestratorSingleton
                 }
             }
 
-            var (existing, owningSpecs) = conflict;
+            var (existing, owningSpecs) = layoutConflict;
             string existingVersions = string.Join(", ", existing.Select(installation => installation.Version));
             string action = owningSpecs.Count == 0
                 ? string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictUninstallVersion, component, existingVersions)

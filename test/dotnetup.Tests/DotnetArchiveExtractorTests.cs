@@ -144,6 +144,33 @@ public class DotnetArchiveExtractorTests
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void Commit_GlobalJsonPinSatisfiedByBuildInstalledDuringDownload_ReturnsExistingInstall(bool untracked)
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        var globalJson = Path.Combine(testEnv.TempRoot, "global.json");
+        File.WriteAllText(globalJson, """{"sdk":{"version":"11.0.100","rollForward":"disable"}}""");
+        using var pinned = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "release",
+            untracked, globalJsonPath: globalJson);
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "daily", untracked))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+
+        InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(pinned).WasAlreadyInstalled.Should().BeTrue();
+
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("daily");
+        if (!untracked)
+        {
+            using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+            new DotnetupSharedManifest(testEnv.ManifestPath).ReadManifest().DotnetRoots.Single().InstallSpecs
+                .Should().Contain(spec => spec.InstallSource == InstallSource.GlobalJson);
+        }
+    }
+
+    [TestMethod]
     public void Commit_UntrackedDailyBuildWithExistingLayout_Rejects()
     {
         using var testEnv = new TestEnvironment();
