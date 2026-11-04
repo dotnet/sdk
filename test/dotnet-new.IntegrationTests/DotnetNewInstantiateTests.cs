@@ -37,6 +37,14 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And
                 .NotHaveStdErr();
+
+            new DotnetNewCommand(log, "install", TemplatePackagesPaths.MicrosoftDotNetCommonProjectTemplates100Path)
+                .WithCustomHive(s_mstestTemplateSelectionHome)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And
+                .NotHaveStdErr();
         }
 
         [ClassCleanup]
@@ -61,6 +69,44 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr()
                 .And.HaveStdOutContaining("The template \"Console App\" was created successfully.");
+        }
+
+        [TestMethod]
+        [DataRow("console", "C#", "csproj")]
+        [DataRow("console", "F#", "fsproj")]
+        [DataRow("console", "VB", "vbproj")]
+        [DataRow("classlib", "C#", "csproj")]
+        [DataRow("classlib", "F#", "fsproj")]
+        [DataRow("classlib", "VB", "vbproj")]
+        [DataRow("mstest", "C#", "csproj")]
+        [DataRow("mstest", "F#", "fsproj")]
+        [DataRow("mstest", "VB", "vbproj")]
+        [DataRow("nunit", "C#", "csproj")]
+        [DataRow("nunit", "F#", "fsproj")]
+        [DataRow("nunit", "VB", "vbproj")]
+        [DataRow("xunit", "C#", "csproj")]
+        [DataRow("xunit", "F#", "fsproj")]
+        [DataRow("xunit", "VB", "vbproj")]
+        [DataRow("nunit-playwright", "C#", "csproj")]
+        [DataRow("mstest-playwright", "C#", "csproj")]
+        public void CommonProjectTemplates_DefaultToCurrentFrameworkWithOlderTemplatesInstalled(
+            string templateName, string language, string projectExtension)
+        {
+            const string projectName = "TemplateProject";
+            string workingDirectory = CreateTemporaryFolder();
+            string outputDirectory = Path.Combine(workingDirectory, projectName);
+
+            new DotnetNewCommand(_log, templateName, "--no-restore", "--language", language,
+                    "--name", projectName, "--output", outputDirectory)
+                .WithCustomHive(s_mstestTemplateSelectionHome)
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr();
+
+            string projectContents = File.ReadAllText(Path.Combine(outputDirectory, $"{projectName}.{projectExtension}"));
+            projectContents.Should().Contain($"<TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>");
         }
 
         [TestMethod]
