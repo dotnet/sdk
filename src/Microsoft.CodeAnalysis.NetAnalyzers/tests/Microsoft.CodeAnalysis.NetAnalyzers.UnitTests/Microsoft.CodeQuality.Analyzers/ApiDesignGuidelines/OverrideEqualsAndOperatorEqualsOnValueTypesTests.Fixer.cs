@@ -17,368 +17,336 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task CSharpCodeFixNoEqualsOverrideOrEqualityOperatorsAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public struct A
-                {
-                    public int X;
-                }
-
-                """,
+            await VerifyCS.VerifyCodeFixAsync(@"
+public struct A
+{
+    public int X;
+}
+",
                 new[]
                 {
                     VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule).WithSpan(2, 15, 2, 16).WithArguments("A"),
                     VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule).WithSpan(2, 15, 2, 16).WithArguments("A"),
                 },
-"""
+@"
+public struct A
+{
+    public int X;
 
-    public struct A
+    public override bool Equals(object obj)
     {
-        public int X;
-
-        public override bool Equals(object obj)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override int GetHashCode()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public static bool operator ==(A left, A right)
-        {
-            return left.Equals(right);
-        }
-
-        public static bool operator !=(A left, A right)
-        {
-            return !(left == right);
-        }
+        throw new System.NotImplementedException();
     }
 
-    """);
+    public override int GetHashCode()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public static bool operator ==(A left, A right)
+    {
+        return left.Equals(right);
+    }
+
+    public static bool operator !=(A left, A right)
+    {
+        return !(left == right);
+    }
+}
+");
         }
 
         [TestMethod]
         public async Task CSharpCodeFixNoEqualsOverrideAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public struct A
-                {
-                    public static bool operator ==(A left, A right)
-                    {
-                        throw new System.NotImplementedException();
-                    }
-
-                    public static bool operator !=(A left, A right)
-                    {
-                        throw new System.NotImplementedException();
-                    }
-                }
-
-                """,
-                VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule).WithSpan(2, 15, 2, 16).WithArguments("A"),
-"""
-
-    public struct A
+            await VerifyCS.VerifyCodeFixAsync(@"
+public struct A
+{
+    public static bool operator ==(A left, A right)
     {
-        public static bool operator ==(A left, A right)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public static bool operator !=(A left, A right)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override bool Equals(object obj)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override int GetHashCode()
-        {
-            throw new System.NotImplementedException();
-        }
+        throw new System.NotImplementedException();
     }
 
-    """);
+    public static bool operator !=(A left, A right)
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
+                VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule).WithSpan(2, 15, 2, 16).WithArguments("A"),
+@"
+public struct A
+{
+    public static bool operator ==(A left, A right)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public static bool operator !=(A left, A right)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override bool Equals(object obj)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override int GetHashCode()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+");
         }
 
         [TestMethod]
         public async Task CSharpCodeFixNoEqualityOperatorAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public struct A
-                {
-                    public override bool Equals(object obj)
-                    {
-                        throw new System.NotImplementedException();
-                    }
-
-                    public override int GetHashCode()
-                    {
-                        throw new System.NotImplementedException();
-                    }
-
-                    public static bool operator {|CS0216:!=|}(A left, A right)   // error CS0216: The operator requires a matching operator '==' to also be defined
-                    {
-                        throw new System.NotImplementedException();
-                    }
-                }
-
-                """,
-                VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule).WithSpan(2, 15, 2, 16).WithArguments("A"),
-"""
-
-    public struct A
+            await VerifyCS.VerifyCodeFixAsync(@"
+public struct A
+{
+    public override bool Equals(object obj)
     {
-        public override bool Equals(object obj)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override int GetHashCode()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public static bool operator !=(A left, A right)   // error CS0216: The operator requires a matching operator '==' to also be defined
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public static bool operator ==(A left, A right)
-        {
-            return left.Equals(right);
-        }
+        throw new System.NotImplementedException();
     }
 
-    """);
+    public override int GetHashCode()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public static bool operator {|CS0216:!=|}(A left, A right)   // error CS0216: The operator requires a matching operator '==' to also be defined
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
+                VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule).WithSpan(2, 15, 2, 16).WithArguments("A"),
+@"
+public struct A
+{
+    public override bool Equals(object obj)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override int GetHashCode()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public static bool operator !=(A left, A right)   // error CS0216: The operator requires a matching operator '==' to also be defined
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public static bool operator ==(A left, A right)
+    {
+        return left.Equals(right);
+    }
+}
+");
         }
 
         [TestMethod]
         public async Task CSharpCodeFixNoInequalityOperatorAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync("""
-
-                public struct A
-                {
-                    public override bool Equals(object obj)
-                    {
-                        throw new System.NotImplementedException();
-                    }
-
-                    public override int GetHashCode()
-                    {
-                        throw new System.NotImplementedException();
-                    }
-
-                    public static bool operator {|CS0216:==|}(A left, A right)   // error CS0216: The operator requires a matching operator '!=' to also be defined
-                    {
-                        throw new System.NotImplementedException();
-                    }
-                }
-
-                """,
-                VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule).WithSpan(2, 15, 2, 16).WithArguments("A"),
-"""
-
-    public struct A
+            await VerifyCS.VerifyCodeFixAsync(@"
+public struct A
+{
+    public override bool Equals(object obj)
     {
-        public override bool Equals(object obj)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public override int GetHashCode()
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public static bool operator ==(A left, A right)   // error CS0216: The operator requires a matching operator '!=' to also be defined
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public static bool operator !=(A left, A right)
-        {
-            return !(left == right);
-        }
+        throw new System.NotImplementedException();
     }
 
-    """);
+    public override int GetHashCode()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public static bool operator {|CS0216:==|}(A left, A right)   // error CS0216: The operator requires a matching operator '!=' to also be defined
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
+                VerifyCS.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule).WithSpan(2, 15, 2, 16).WithArguments("A"),
+@"
+public struct A
+{
+    public override bool Equals(object obj)
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override int GetHashCode()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public static bool operator ==(A left, A right)   // error CS0216: The operator requires a matching operator '!=' to also be defined
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public static bool operator !=(A left, A right)
+    {
+        return !(left == right);
+    }
+}
+");
         }
         [TestMethod]
         public async Task BasicCodeFixNoEqualsOverrideOrEqualityOperatorsAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
-
-                Public Structure A
-                    Public X As Integer
-                End Structure
-
-                """,
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Structure A
+    Public X As Integer
+End Structure
+",
                 new[]
                 {
                     VerifyVB.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule).WithSpan(2, 18, 2, 19).WithArguments("A"),
                     VerifyVB.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule).WithSpan(2, 18, 2, 19).WithArguments("A"),
                 },
-"""
+@"
+Public Structure A
+    Public X As Integer
 
-    Public Structure A
-        Public X As Integer
+    Public Overrides Function Equals(obj As Object) As Boolean
+        Throw New System.NotImplementedException()
+    End Function
 
-        Public Overrides Function Equals(obj As Object) As Boolean
-            Throw New System.NotImplementedException()
-        End Function
+    Public Overrides Function GetHashCode() As Integer
+        Throw New System.NotImplementedException()
+    End Function
 
-        Public Overrides Function GetHashCode() As Integer
-            Throw New System.NotImplementedException()
-        End Function
+    Public Shared Operator =(left As A, right As A) As Boolean
+        Return left.Equals(right)
+    End Operator
 
-        Public Shared Operator =(left As A, right As A) As Boolean
-            Return left.Equals(right)
-        End Operator
-
-        Public Shared Operator <>(left As A, right As A) As Boolean
-            Return Not left = right
-        End Operator
-    End Structure
-
-    """);
+    Public Shared Operator <>(left As A, right As A) As Boolean
+        Return Not left = right
+    End Operator
+End Structure
+");
         }
 
         [TestMethod]
         public async Task BasicCodeFixNoEqualsOverrideAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Structure A
+    Public Shared Operator =(left As A, right As A) As Boolean
+        Throw New System.NotImplementedException()
+    End Operator
 
-                Public Structure A
-                    Public Shared Operator =(left As A, right As A) As Boolean
-                        Throw New System.NotImplementedException()
-                    End Operator
-
-                    Public Shared Operator <>(left As A, right As A) As Boolean
-                        Throw New System.NotImplementedException()
-                    End Operator
-                End Structure
-
-                """,
+    Public Shared Operator <>(left As A, right As A) As Boolean
+        Throw New System.NotImplementedException()
+    End Operator
+End Structure
+",
                 VerifyVB.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.EqualsRule).WithSpan(2, 18, 2, 19).WithArguments("A"),
-"""
+@"
+Public Structure A
+    Public Shared Operator =(left As A, right As A) As Boolean
+        Throw New System.NotImplementedException()
+    End Operator
 
-    Public Structure A
-        Public Shared Operator =(left As A, right As A) As Boolean
-            Throw New System.NotImplementedException()
-        End Operator
+    Public Shared Operator <>(left As A, right As A) As Boolean
+        Throw New System.NotImplementedException()
+    End Operator
 
-        Public Shared Operator <>(left As A, right As A) As Boolean
-            Throw New System.NotImplementedException()
-        End Operator
+    Public Overrides Function Equals(obj As Object) As Boolean
+        Throw New System.NotImplementedException()
+    End Function
 
-        Public Overrides Function Equals(obj As Object) As Boolean
-            Throw New System.NotImplementedException()
-        End Function
-
-        Public Overrides Function GetHashCode() As Integer
-            Throw New System.NotImplementedException()
-        End Function
-    End Structure
-
-    """);
+    Public Overrides Function GetHashCode() As Integer
+        Throw New System.NotImplementedException()
+    End Function
+End Structure
+");
         }
 
         [TestMethod]
         public async Task BasicCodeFixNoEqualityOperatorAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Structure A
+    Public Overrides Function Equals(obj As Object) As Boolean
+        Throw New System.NotImplementedException()
+    End Function
 
-                Public Structure A
-                    Public Overrides Function Equals(obj As Object) As Boolean
-                        Throw New System.NotImplementedException()
-                    End Function
+    Public Overrides Function GetHashCode() As Integer
+        Throw New System.NotImplementedException()
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Throw New System.NotImplementedException()
-                    End Function
-
-                    Public Shared Operator {|BC33033:<>|}(left As A, right As A) As Boolean   ' error BC33033: Matching '=' operator is required
-                        Throw New System.NotImplementedException()
-                    End Operator
-                End Structure
-
-                """,
+    Public Shared Operator {|BC33033:<>|}(left As A, right As A) As Boolean   ' error BC33033: Matching '=' operator is required
+        Throw New System.NotImplementedException()
+    End Operator
+End Structure
+",
                 VerifyVB.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule).WithSpan(2, 18, 2, 19).WithArguments("A"),
-"""
+@"
+Public Structure A
+    Public Overrides Function Equals(obj As Object) As Boolean
+        Throw New System.NotImplementedException()
+    End Function
 
-    Public Structure A
-        Public Overrides Function Equals(obj As Object) As Boolean
-            Throw New System.NotImplementedException()
-        End Function
+    Public Overrides Function GetHashCode() As Integer
+        Throw New System.NotImplementedException()
+    End Function
 
-        Public Overrides Function GetHashCode() As Integer
-            Throw New System.NotImplementedException()
-        End Function
+    Public Shared Operator <>(left As A, right As A) As Boolean   ' error BC33033: Matching '=' operator is required
+        Throw New System.NotImplementedException()
+    End Operator
 
-        Public Shared Operator <>(left As A, right As A) As Boolean   ' error BC33033: Matching '=' operator is required
-            Throw New System.NotImplementedException()
-        End Operator
-
-        Public Shared Operator =(left As A, right As A) As Boolean
-            Return left.Equals(right)
-        End Operator
-    End Structure
-
-    """);
+    Public Shared Operator =(left As A, right As A) As Boolean
+        Return left.Equals(right)
+    End Operator
+End Structure
+");
         }
 
         [TestMethod]
         public async Task BasicCodeFixNoInequalityOperatorAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync("""
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Structure A
+    Public Overrides Function Equals(obj As Object) As Boolean
+        Throw New System.NotImplementedException()
+    End Function
 
-                Public Structure A
-                    Public Overrides Function Equals(obj As Object) As Boolean
-                        Throw New System.NotImplementedException()
-                    End Function
+    Public Overrides Function GetHashCode() As Integer
+        Throw New System.NotImplementedException()
+    End Function
 
-                    Public Overrides Function GetHashCode() As Integer
-                        Throw New System.NotImplementedException()
-                    End Function
-
-                    Public Shared Operator {|BC33033:=|}(left As A, right As A) As Boolean   ' error BC33033: Matching '<>' operator is required
-                        Throw New System.NotImplementedException()
-                    End Operator
-                End Structure
-
-                """,
+    Public Shared Operator {|BC33033:=|}(left As A, right As A) As Boolean   ' error BC33033: Matching '<>' operator is required
+        Throw New System.NotImplementedException()
+    End Operator
+End Structure
+",
                 VerifyVB.Diagnostic(OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer.OpEqualityRule).WithSpan(2, 18, 2, 19).WithArguments("A"),
-"""
+@"
+Public Structure A
+    Public Overrides Function Equals(obj As Object) As Boolean
+        Throw New System.NotImplementedException()
+    End Function
 
-    Public Structure A
-        Public Overrides Function Equals(obj As Object) As Boolean
-            Throw New System.NotImplementedException()
-        End Function
+    Public Overrides Function GetHashCode() As Integer
+        Throw New System.NotImplementedException()
+    End Function
 
-        Public Overrides Function GetHashCode() As Integer
-            Throw New System.NotImplementedException()
-        End Function
+    Public Shared Operator =(left As A, right As A) As Boolean   ' error BC33033: Matching '<>' operator is required
+        Throw New System.NotImplementedException()
+    End Operator
 
-        Public Shared Operator =(left As A, right As A) As Boolean   ' error BC33033: Matching '<>' operator is required
-            Throw New System.NotImplementedException()
-        End Operator
-
-        Public Shared Operator <>(left As A, right As A) As Boolean
-            Return Not left = right
-        End Operator
-    End Structure
-
-    """);
+    Public Shared Operator <>(left As A, right As A) As Boolean
+        Return Not left = right
+    End Operator
+End Structure
+");
         }
     }
 }

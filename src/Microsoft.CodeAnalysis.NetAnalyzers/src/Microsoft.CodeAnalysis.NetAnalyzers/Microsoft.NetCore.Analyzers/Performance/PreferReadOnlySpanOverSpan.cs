@@ -139,8 +139,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             }
 
             // Walk up the parent chain to find how this reference is being used.
-            IOperation previous = reference;
-            for (var current = reference.Parent; current is not null; previous = current, current = current.Parent)
+            for (var current = reference.Parent; current is not null; current = current.Parent)
             {
                 switch (current)
                 {
@@ -216,7 +215,6 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     case IBlockOperation:
                     case IConditionalAccessOperation:
                     case IConstantPatternOperation:
-                    case IConversionOperation { Parent: IConversionOperation or IForEachLoopOperation }:
                     case IDeclarationPatternOperation:
                     case IExpressionStatementOperation:
                     case IIsPatternOperation:
@@ -233,15 +231,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     // These operation just read. They're safe and we can stop walking as the span/memory consumption ends in these constructs.
                     case IBinaryOperation:
                     case ICoalesceOperation:
-                    case IConversionOperation:
+                    case IConversionOperation conversion:
+                    case IForEachLoopOperation:
                     case IInterpolatedStringOperation:
                     case IUnaryOperation:
-                        return true;
-
-                    case IForEachLoopOperation forEachLoop when forEachLoop.Collection == previous:
-                        return forEachLoop.LoopControlVariable is not IVariableDeclaratorOperation { Symbol.RefKind: RefKind.Ref };
-
-                    case IForEachLoopOperation:
                         return true;
 
                     // Anything else treat as unsafe.
@@ -281,37 +274,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             return readOnlyCounterpart.Construct(instanceType.TypeArguments.ToArray())
                 .GetMembers(invocation.TargetMethod.Name)
                 .OfType<IMethodSymbol>()
-                .Any(m => m.ParametersAreSame(invocation.TargetMethod) &&
-                    AreReturnTypesCompatible(invocation.TargetMethod.ReturnType, m.ReturnType, span, memory, readOnlySpan, readOnlyMemory));
-        }
-
-        private static bool AreReturnTypesCompatible(
-            ITypeSymbol writableReturnType,
-            ITypeSymbol readOnlyReturnType,
-            INamedTypeSymbol span,
-            INamedTypeSymbol memory,
-            INamedTypeSymbol readOnlySpan,
-            INamedTypeSymbol readOnlyMemory)
-        {
-            if (SymbolEqualityComparer.Default.Equals(writableReturnType, readOnlyReturnType))
-            {
-                return true;
-            }
-
-            if (writableReturnType is not INamedTypeSymbol writableNamedType ||
-                readOnlyReturnType is not INamedTypeSymbol readOnlyNamedType ||
-                writableNamedType.TypeArguments.Length is not 1 ||
-                readOnlyNamedType.TypeArguments.Length is not 1 ||
-                !SymbolEqualityComparer.Default.Equals(writableNamedType.TypeArguments[0], readOnlyNamedType.TypeArguments[0]))
-            {
-                return false;
-            }
-
-            return
-                (SymbolEqualityComparer.Default.Equals(writableNamedType.OriginalDefinition, span) &&
-                 SymbolEqualityComparer.Default.Equals(readOnlyNamedType.OriginalDefinition, readOnlySpan)) ||
-                (SymbolEqualityComparer.Default.Equals(writableNamedType.OriginalDefinition, memory) &&
-                 SymbolEqualityComparer.Default.Equals(readOnlyNamedType.OriginalDefinition, readOnlyMemory));
+                .Any(m => m.ParametersAreSame(invocation.TargetMethod));
         }
 
         private static bool IsPropertyAccessSafe(IPropertyReferenceOperation propRef, IMethodSymbol containingMethod)
@@ -322,13 +285,33 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return false;
             }
 
-            // GetValueUsageInfo covers writable ref locals only through an initializer.
-            if (propRef.Parent is IVariableDeclaratorOperation { Symbol.RefKind: RefKind.Ref })
+            // Unsafe if indexer is part of increment/decrement operation (e.g., data[i]++)
+            if (propRef.Parent is IIncrementOrDecrementOperation)
             {
                 return false;
             }
 
-            // GetValueUsageInfo uses the nearest nested function's return kind, not necessarily containingMethod's.
+            // Unsafe if indexer result is passed as ref/out
+            if (propRef.Parent is IArgumentOperation argument &&
+                argument.Parameter?.RefKind is RefKind.Ref or RefKind.Out)
+            {
+                return false;
+            }
+
+            // Unsafe if stored in ref local
+            // Check both direct parent and through initializer (ref int x = ref data[0])
+            IVariableDeclaratorOperation? declarator = propRef.Parent as IVariableDeclaratorOperation;
+            if (declarator is null && propRef.Parent is IVariableInitializerOperation initializer)
+            {
+                declarator = initializer.Parent as IVariableDeclaratorOperation;
+            }
+            
+            if (declarator is not null && declarator.Symbol.RefKind != RefKind.None)
+            {
+                return false;
+            }
+
+            // Unsafe if returned as ref (indexer result from readonly span doesn't support ref returns)
             if (propRef.Parent is IReturnOperation && containingMethod.ReturnsByRef)
             {
                 return false;

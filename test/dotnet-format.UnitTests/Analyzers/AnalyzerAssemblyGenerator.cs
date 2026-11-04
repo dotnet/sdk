@@ -15,12 +15,15 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
 {
     public static class AnalyzerAssemblyGenerator
     {
-        private static readonly Lazy<Task<IEnumerable<MetadataReference>>> s_references = new(ResolveReferencesAsync);
+        private static IEnumerable<MetadataReference> s_references;
 
-        private static Task<IEnumerable<MetadataReference>> GetReferencesAsync() => s_references.Value;
-
-        private static async Task<IEnumerable<MetadataReference>> ResolveReferencesAsync()
+        private static async Task<IEnumerable<MetadataReference>> GetReferencesAsync()
         {
+            if (s_references is not null)
+            {
+                return s_references;
+            }
+
             var references = new List<MetadataReference>()
             {
                 MetadataReference.CreateFromFile(typeof(ImmutableArray).Assembly.Location),
@@ -42,6 +45,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Analyzers
             var netcoreMetadataReferences = await sdkTargetFrameworkReferenceAssemblies.ResolveAsync(LanguageNames.CSharp, CancellationToken.None);
             references.AddRange(netcoreMetadataReferences.Where(reference => Path.GetFileName(reference.Display) != "System.Collections.Immutable.dll"));
 
+            s_references = references;
             return references;
         }
 

@@ -345,15 +345,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp([verbosity, shouldShowPassedTests]);
 
-            new DotnetCommand(Log, "build")
-                .WithWorkingDirectory(testProjectDirectory)
-                .Execute("--no-restore")
-                .Should().Pass();
-
-            // Keep MSBuild output from interleaving with the console logger's test-result lines.
+            // Call test
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
                                         .WithWorkingDirectory(testProjectDirectory)
-                                        .Execute("--no-build", "-v", verbosity);
+                                        .Execute("-v", verbosity);
 
             // Verify
             if (!SdkTestContext.IsLocalized())

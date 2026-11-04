@@ -12,7 +12,6 @@ using Task = System.Threading.Tasks.Task;
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
 [TestClass]
-[ResourceLock(TestSettings.DockerDaemonResource)]
 public class CreateImageIndexTests : SdkTest
 {
     [TestMethod]
@@ -22,7 +21,7 @@ public class CreateImageIndexTests : SdkTest
         DirectoryInfo newProjectDir = CreateNewProject();
         (IBuildEngine buildEngine, List<string?> errors) = SetupBuildEngine();
         string outputRegistry = DockerRegistryManager.LocalRegistry;
-        string repository = $"dotnet/create-image-index-baseline-{TestSettings.TestRunId}";
+        string repository = "dotnet/create-image-index-baseline";
         string[] tags = new[] { "tag1", "tag2" };
 
         // Create images for 2 rids
@@ -160,3 +159,4 @@ public class CreateImageIndexTests : SdkTest
 
     private static string FormatBuildMessages(List<string?> messages) => string.Join("\r\n", messages);
 }
+

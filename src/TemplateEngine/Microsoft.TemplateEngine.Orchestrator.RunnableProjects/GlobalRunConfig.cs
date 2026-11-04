@@ -9,13 +9,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
 {
     internal class GlobalRunConfig
     {
-        private readonly Lazy<IReadOnlyList<IMacroConfig>> _sortedMacros;
-
-        internal GlobalRunConfig()
-        {
-            _sortedMacros = new(() => MacroProcessor.SortMacroConfigsByDependencies(SymbolNames, Macros));
-        }
-
         public IReadOnlyList<IOperationProvider> Operations { get; init; } = [];
 
         public IVariableConfig VariableSetup { get; init; } = VariableConfig.Default;
@@ -27,7 +20,5 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects
         public IReadOnlyList<string> SymbolNames { get; init; } = [];
 
         public IReadOnlyList<IMacroConfig> Macros { get; init; } = [];
-
-        internal IReadOnlyList<IMacroConfig> SortedMacros => _sortedMacros.Value;
     }
 }

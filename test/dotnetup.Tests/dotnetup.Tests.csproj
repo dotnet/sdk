@@ -1,4 +1,6 @@
 ﻿<Project Sdk="MSTest.Sdk">
+  <!-- Keep transitive telemetry packages at the versions dotnetup ships with. -->
+  <Import Project="$(RepoRoot)eng\DotnetupTelemetryPackageVersions.props" />
 
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>

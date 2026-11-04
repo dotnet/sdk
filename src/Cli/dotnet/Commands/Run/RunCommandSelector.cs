@@ -195,7 +195,6 @@ internal sealed class RunCommandSelector : IDisposable
     /// </summary>
     private bool OpenProjectIfNeeded([NotNullWhen(true)] out ProjectInstance? projectInstance)
     {
-        using var activity = Activities.PerformanceSource.StartActivity("project-selection");
         if (_project is null)
         {
             try
@@ -375,8 +374,6 @@ internal sealed class RunCommandSelector : IDisposable
         {
             return false;
         }
-
-        using var activity = Activities.PerformanceSource.StartActivity("device-discovery");
 
         // If restore is allowed, run restore first so device computation sees the restored assets
         if (!noRestore)
@@ -631,6 +628,6 @@ internal sealed class RunCommandSelector : IDisposable
             yield return _binaryLogger;
 
         if (!LoggerUtility.HasNoConsoleLoggerArgument(_msbuildArgs.OtherMSBuildArgs))
-            yield return CommonRunHelpers.GetConsoleLogger(_msbuildArgs, CommandServices.CreateDefault());
+            yield return CommonRunHelpers.GetConsoleLogger(_msbuildArgs);
     }
 }

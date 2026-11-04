@@ -60,9 +60,10 @@ else
   node_reuse=${node_reuse:-true}
 fi
 
-# Set to true to build with MSBuild's multi-threaded mode (-mt). Enabled by default for both local and CI builds.
+# Set to true to build with MSBuild's multi-threaded mode (-mt). Opt-in for now, so off unless it was
+# explicitly requested. It's intended to become the default for local builds once it has proven out.
 msbuild_multi_threaded=$(NormalizeBoolArg "${msbuild_multi_threaded:-}")
-msbuild_multi_threaded=${msbuild_multi_threaded:-true}
+msbuild_multi_threaded=${msbuild_multi_threaded:-false}
 
 # Configures warning treatment in msbuild.
 warn_as_error=$(NormalizeBoolArg "${warn_as_error:-}")
@@ -145,12 +146,6 @@ function InitializeDotNetCli {
     export DOTNET_CLI_TELEMETRY_OPTOUT=1
   fi
 
-  # Keep repo builds isolated from machine-installed SDK state and workload advertising.
-  # This avoids preview SDK builds picking up mismatched workloads on CI images.
-  export DOTNET_MULTILEVEL_LOOKUP=0
-  export DOTNET_SKIP_FIRST_TIME_EXPERIENCE=1
-  export DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE=1
-
   # LTTNG is the logging infrastructure used by Core CLR. Need this variable set
   # so it doesn't output warnings to the console.
   export LTTNG_HOME="$HOME"
@@ -196,9 +191,6 @@ function InitializeDotNetCli {
   Write-PipelinePrependPath -path "$dotnet_root"
 
   Write-PipelineSetVariable -name "DOTNET_NOLOGO" -value "1"
-  Write-PipelineSetVariable -name "DOTNET_MULTILEVEL_LOOKUP" -value "0"
-  Write-PipelineSetVariable -name "DOTNET_SKIP_FIRST_TIME_EXPERIENCE" -value "1"
-  Write-PipelineSetVariable -name "DOTNET_CLI_WORKLOAD_UPDATE_NOTIFY_DISABLE" -value "1"
 
   # return value
   _InitializeDotNetCli="$dotnet_root"
@@ -343,7 +335,7 @@ function GetDotNetInstallScript {
     local download_time=$(cat "$timestamp_file" 2>/dev/null || echo "0")
     local current_time=$(date +%s)
     local age_seconds=$((current_time - download_time))
-
+    
     # 30 days = 30 * 24 * 60 * 60 = 2592000 seconds
     if [[ $age_seconds -gt 2592000 ]]; then
       echo "Existing install script is too old, re-downloading..."
@@ -382,7 +374,7 @@ function GetDotNetInstallScript {
         ExitWithExitCode $exit_code
       }
     fi
-
+    
     # Create timestamp file to track download time in seconds from epoch
     date +%s > "$timestamp_file"
   fi
@@ -411,7 +403,7 @@ function InitializeBuildTool {
   _InitializeBuildToolCommand="msbuild"
 }
 
-function GetNuGetPackageCachePath {
+function InitializeNuGetPackageCachePath {
   if [[ -z ${NUGET_PACKAGES:-} ]]; then
     if [[ "$use_global_nuget_cache" == true ]]; then
       export NUGET_PACKAGES="$HOME/.nuget/packages/"
@@ -421,7 +413,7 @@ function GetNuGetPackageCachePath {
   fi
 
   # return value
-  _GetNuGetPackageCachePath=$NUGET_PACKAGES
+  _InitializeNuGetPackageCachePath=$NUGET_PACKAGES
 }
 
 function InitializeNativeTools() {
@@ -442,8 +434,6 @@ function InitializeToolset {
   if [[ -n "${_InitializeToolset:-}" ]]; then
     return
   fi
-
-  GetNuGetPackageCachePath
 
   ReadGlobalVersion "Microsoft.DotNet.Arcade.Sdk"
 
@@ -467,7 +457,7 @@ function InitializeToolset {
     ExitWithExitCode 2
   fi
 
-  local download_args=("package" "download" "Microsoft.DotNet.Arcade.Sdk@$toolset_version" "--verbosity" "minimal" "--prerelease" "--output" "$_GetNuGetPackageCachePath")
+  local download_args=("package" "download" "Microsoft.DotNet.Arcade.Sdk@$toolset_version" "--verbosity" "minimal" "--prerelease" "--output" "$_InitializeNuGetPackageCachePath")
   local nuget_config="${NUGET_CONFIG:-}"
   if [[ -z "$nuget_config" ]]; then
     # Search for any variation of nuget.config in the RepoRoot
@@ -493,7 +483,7 @@ function InitializeToolset {
     DotNet "${download_args[@]}" --source "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-eng/nuget/v3/index.json"
   fi
 
-  local package_dir="$_GetNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
+  local package_dir="$_InitializeNuGetPackageCachePath/microsoft.dotnet.arcade.sdk/$toolset_version"
 
   if [[ ! -d "$package_dir/toolset" ]]; then
     Write-PipelineTelemetryError -category 'InitializeToolset' "Arcade SDK package does not contain a toolset folder: $package_dir"
@@ -564,19 +554,6 @@ function DotNet {
 }
 
 function MSBuild {
-  local args=( "$@" )
-
-  if [[ "$ci" == true ]]; then
-    export NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS=20
-    export NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS=20
-    Write-PipelineSetVariable -name "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS" -value "20"
-    Write-PipelineSetVariable -name "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS" -value "20"
-  fi
-
-  MSBuild-Core "${args[@]}"
-}
-
-function MSBuild-Core {
   if [[ "$ci" == true ]]; then
     if [[ "$binary_log" != true && "$exclude_ci_binary_log" != true ]]; then
       Write-PipelineTelemetryError -category 'Build'  "Binary log must be enabled in CI build, or explicitly opted-out from with the --excludeCIBinarylog switch."
@@ -639,12 +616,7 @@ function MSBuild-Core {
     warnnotaserror_switch="/warnnotaserror:$warn_not_as_error /p:AdditionalWarningsNotAsErrors=${warn_not_as_error//;/%3B}"
   fi
 
-  local workload_resolver_switch=""
-  if [[ "$ci" == true && -n "${_InitializeBuildToolCommand:-}" ]]; then
-    workload_resolver_switch="/p:MSBuildEnableWorkloadResolver=false"
-  fi
-
-  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch $workload_resolver_switch ${logger_switch[@]+"${logger_switch[@]}"} /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
+  RunBuildTool "$_InitializeBuildToolCommand" /m /nologo /clp:Summary /v:$verbosity /nr:$node_reuse $warnaserror_switch $mt_switch $warnnotaserror_switch ${logger_switch[@]+"${logger_switch[@]}"} /p:TreatWarningsAsErrors=$warn_as_error /p:ContinuousIntegrationBuild=$ci "$@"
 }
 
 function GetDarc {
@@ -735,3 +707,6 @@ fi
 if [[ -n "${useInstalledDotNetCli:-}" ]]; then
   use_installed_dotnet_cli="$useInstalledDotNetCli"
 fi
+
+# Initialize the nuget package cache vars
+InitializeNuGetPackageCachePath

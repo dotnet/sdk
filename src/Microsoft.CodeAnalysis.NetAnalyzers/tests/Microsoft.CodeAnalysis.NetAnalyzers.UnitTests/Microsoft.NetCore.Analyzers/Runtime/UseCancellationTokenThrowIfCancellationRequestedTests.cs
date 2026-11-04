@@ -45,19 +45,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 static IEnumerable<string> ConditionalFormatStrings()
                 {
-                    yield return "if ({0}) {1}";
-                    yield return """
-
-                        if ({0})
-                            {1}
-                        """;
-                    yield return """
-
-                        if ({0})
-                        {{
-                            {1}
-                        }}
-                        """;
+                    yield return @"if ({0}) {1}";
+                    yield return @"
+if ({0})
+    {1}";
+                    yield return @"
+if ({0})
+{{
+    {1}
+}}";
                 }
 
                 return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings(), LanguageVersionsToTest_CS);
@@ -71,9 +67,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             string testStatements = Markup(
                 FormatInvariant(
                     simpleConditionalFormatString,
-                    "token.IsCancellationRequested",
-                    $"""throw new {operationCanceledExceptionCtor};"""), 0);
-            string fixedStatements = "token.ThrowIfCancellationRequested();";
+                    @"token.IsCancellationRequested",
+                    $@"throw new {operationCanceledExceptionCtor};"), 0);
+            string fixedStatements = @"token.ThrowIfCancellationRequested();";
             var parsedVersion = (CodeAnalysis.CSharp.LanguageVersion)Enum.Parse(typeof(CodeAnalysis.CSharp.LanguageVersion), languageVersion);
 
             var test = new VerifyCS.Test
@@ -90,21 +86,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task NestedChecks_AreAllReportedAndFixed_CSAsync()
         {
-            string testStatements = """
-                {|#0:if (token.IsCancellationRequested)
-                    throw new OperationCanceledException();
-                else
-                {
-                    {|#1:if (token.IsCancellationRequested)
-                        throw new OperationCanceledException();|}
-                    Console.WriteLine();
-                }|}
-                """;
-            string fixedStatements = """
-                token.ThrowIfCancellationRequested();
-                token.ThrowIfCancellationRequested();
-                Console.WriteLine();
-                """;
+            string testStatements = @"{|#0:if (token.IsCancellationRequested)
+    throw new OperationCanceledException();
+else
+{
+    {|#1:if (token.IsCancellationRequested)
+        throw new OperationCanceledException();|}
+    Console.WriteLine();
+}|}";
+            string fixedStatements = @"token.ThrowIfCancellationRequested();
+token.ThrowIfCancellationRequested();
+Console.WriteLine();";
 
             var test = new VerifyCS.Test
             {
@@ -122,21 +114,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task NestedChecks_AreAllReportedAndFixed_VBAsync()
         {
-            string testStatements = """
-                {|#0:If token.IsCancellationRequested Then
-                    Throw New OperationCanceledException()
-                Else
-                    {|#1:If token.IsCancellationRequested Then
-                        Throw New OperationCanceledException()
-                    End If|}
-                    Console.WriteLine()
-                End If|}
-                """;
-            string fixedStatements = """
-                token.ThrowIfCancellationRequested()
-                token.ThrowIfCancellationRequested()
-                Console.WriteLine()
-                """;
+            string testStatements = @"{|#0:If token.IsCancellationRequested Then
+    Throw New OperationCanceledException()
+Else
+    {|#1:If token.IsCancellationRequested Then
+        Throw New OperationCanceledException()
+    End If|}
+    Console.WriteLine()
+End If|}";
+            string fixedStatements = @"token.ThrowIfCancellationRequested()
+token.ThrowIfCancellationRequested()
+Console.WriteLine()";
 
             var test = new VerifyVB.Test
             {
@@ -157,13 +145,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 static IEnumerable<string> ConditionalFormatStrings()
                 {
-                    yield return "If {0} Then {1}";
-                    yield return """
-
-                        If {0} Then
-                            {1}
-                        End If
-                        """;
+                    yield return @"If {0} Then {1}";
+                    yield return @"
+If {0} Then
+    {1}
+End If";
                 }
 
                 return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
@@ -180,7 +166,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     "token.IsCancellationRequested",
                     $"Throw New {operationCanceledExceptionCtor}"),
                 0);
-            string fixedStatements = "token.ThrowIfCancellationRequested()";
+            string fixedStatements = @"token.ThrowIfCancellationRequested()";
 
             var test = new VerifyVB.Test
             {
@@ -198,47 +184,37 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 static IEnumerable<string> ConditionalFormatStrings()
                 {
-                    yield return """
-
-                        if ({0}) {1}
-                        else {2}
-                        """;
-                    yield return """
-
-                        if ({0})
-                            {1}
-                        else
-                            {2}
-                        """;
-                    yield return """
-
-                        if ({0})
-                        {{
-                            {1}
-                        }}
-                        else
-                        {{
-                            {2}
-                        }}
-                        """;
-                    yield return """
-
-                        if ({0})
-                            {1}
-                        else
-                        {{
-                            {2}
-                        }}
-                        """;
-                    yield return """
-
-                        if ({0})
-                        {{
-                            {1}
-                        }}
-                        else
-                            {2}
-                        """;
+                    yield return @"
+if ({0}) {1}
+else {2}";
+                    yield return @"
+if ({0})
+    {1}
+else
+    {2}";
+                    yield return @"
+if ({0})
+{{
+    {1}
+}}
+else
+{{
+    {2}
+}}";
+                    yield return @"
+if ({0})
+    {1}
+else
+{{
+    {2}
+}}";
+                    yield return @"
+if ({0})
+{{
+    {1}
+}}
+else
+    {2}";
                 }
 
                 return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings(), LanguageVersionsToTest_CS);
@@ -250,46 +226,44 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             var test = new VerifyCS.Test
             {
-                TestCode = """
-                    using System;
-                    using System.Threading;
+                TestCode = @"
+using System;
+using System.Threading;
 
-                    public class C
-                    {
-                        private CancellationToken token;
+public class C
+{
+    private CancellationToken token;
 
-                        public void M()
-                        {
-                            {|#0:if (token.IsCancellationRequested)
-                            {
-                                throw new OperationCanceledException();
-                            }
-                            else
-                            {
-                                Frob();
-                            }|}
-                        }
+    public void M()
+    {
+        {|#0:if (token.IsCancellationRequested)
+        {
+            throw new OperationCanceledException();
+        }
+        else
+        {
+            Frob();
+        }|}
+    }
+    
+    private void Frob() { }
+}",
+                FixedCode = @"
+using System;
+using System.Threading;
 
-                        private void Frob() { }
-                    }
-                    """,
-                FixedCode = """
-                    using System;
-                    using System.Threading;
+public class C
+{
+    private CancellationToken token;
 
-                    public class C
-                    {
-                        private CancellationToken token;
-
-                        public void M()
-                        {
-                            token.ThrowIfCancellationRequested();
-                            Frob();
-                        }
-
-                        private void Frob() { }
-                    }
-                    """,
+    public void M()
+    {
+        token.ThrowIfCancellationRequested();
+        Frob();
+    }
+    
+    private void Frob() { }
+}",
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
@@ -301,41 +275,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             var test = new VerifyVB.Test
             {
-                TestCode = """
-                    Imports System
-                    Imports System.Threading
+                TestCode = @"
+Imports System
+Imports System.Threading
 
-                    Public Class C
-                        Private token As CancellationToken
+Public Class C
+    Private token As CancellationToken
 
-                        Public Sub M()
-                            {|#0:If token.IsCancellationRequested Then
-                                Throw New OperationCanceledException()
-                            Else
-                                Frob()
-                            End If|}
-                        End Sub
+    Public Sub M()
+        {|#0:If token.IsCancellationRequested Then
+            Throw New OperationCanceledException()
+        Else
+            Frob()
+        End If|}
+    End Sub
 
-                        Private Sub Frob()
-                        End Sub
-                    End Class
-                    """,
-                FixedCode = """
-                    Imports System
-                    Imports System.Threading
+    Private Sub Frob()
+    End Sub
+End Class",
+                FixedCode = @"
+Imports System
+Imports System.Threading
 
-                    Public Class C
-                        Private token As CancellationToken
+Public Class C
+    Private token As CancellationToken
 
-                        Public Sub M()
-                            token.ThrowIfCancellationRequested()
-                            Frob()
-                        End Sub
+    Public Sub M()
+        token.ThrowIfCancellationRequested()
+        Frob()
+    End Sub
 
-                        Private Sub Frob()
-                        End Sub
-                    End Class
-                    """,
+    Private Sub Frob()
+    End Sub
+End Class",
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
@@ -347,39 +319,37 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             var test = new VerifyCS.Test
             {
-                TestCode = """
-                    using System;
-                    using System.Threading;
+                TestCode = @"
+using System;
+using System.Threading;
 
-                    public class C
-                    {
-                        private CancellationToken token;
+public class C
+{
+    private CancellationToken token;
 
-                        public void M()
-                        {
-                            {|#0:if (token.IsCancellationRequested)
-                            {
-                                // Comment
-                                throw new OperationCanceledException();
-                            }|}
-                        }
-                    }
-                    """,
-                FixedCode = """
-                    using System;
-                    using System.Threading;
+    public void M()
+    {
+        {|#0:if (token.IsCancellationRequested)
+        {
+            // Comment
+            throw new OperationCanceledException();
+        }|}
+    }
+}",
+                FixedCode = @"
+using System;
+using System.Threading;
 
-                    public class C
-                    {
-                        private CancellationToken token;
+public class C
+{
+    private CancellationToken token;
 
-                        public void M()
-                        {
-                            // Comment
-                            token.ThrowIfCancellationRequested();
-                        }
-                    }
-                    """,
+    public void M()
+    {
+        // Comment
+        token.ThrowIfCancellationRequested();
+    }
+}",
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
@@ -392,11 +362,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             var parsedVersion = (CodeAnalysis.CSharp.LanguageVersion)Enum.Parse(typeof(CodeAnalysis.CSharp.LanguageVersion), languageVersion);
 
-            const string members = """
-
-                private CancellationToken token;
-                private void DoSomething() { }
-                """;
+            const string members = @"
+private CancellationToken token;
+private void DoSomething() { }";
             string testStatements = Markup(
                 FormatInvariant(
                     conditionalFormatString,
@@ -404,11 +372,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     "DoSomething();",
                     $"throw new {operationCanceledExceptionCtor};"),
                 0);
-            string fixedStatements = """
-
-                token.ThrowIfCancellationRequested();
-                DoSomething();
-                """;
+            string fixedStatements = @"
+token.ThrowIfCancellationRequested();
+DoSomething();";
 
             var test = new VerifyCS.Test
             {
@@ -427,14 +393,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 static IEnumerable<string> ConditionalFormatStrings()
                 {
-                    return Enumerable.Repeat("""
-
-                        If {0} Then
-                            {1}
-                        Else
-                            {2}
-                        End If
-                        """, 1);
+                    return Enumerable.Repeat(@"
+If {0} Then
+    {1}
+Else
+    {2}
+End If", 1);
                 }
 
                 return CartesianProduct(OperationCanceledExceptionCtors, ConditionalFormatStrings());
@@ -445,12 +409,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DynamicData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_VB))]
         public async Task NegatedCheckWithElse_ReportedAndFixed_VBAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
-            const string members = """
-
-                Private token As CancellationToken
-                Private Sub DoSomething()
-                End Sub
-                """;
+            const string members = @"
+Private token As CancellationToken
+Private Sub DoSomething()
+End Sub";
             string testStatements = Markup(
                 FormatInvariant(
                     conditionalFormatString,
@@ -458,11 +420,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                     "DoSomething()",
                     $"Throw New {operationCanceledExceptionCtor}"),
                 0);
-            string fixedStatements = """
-
-                token.ThrowIfCancellationRequested()
-                DoSomething()
-                """;
+            string fixedStatements = @"
+token.ThrowIfCancellationRequested()
+DoSomething()";
 
             var test = new VerifyVB.Test
             {
@@ -477,30 +437,24 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task NegatedCheckWithElse_MultipleOperationsInTrueBranch_ReportedAndFixed_CSAsync()
         {
-            const string members = """
-
-                private CancellationToken token;
-                private void Fooble() { }
-                private void Barble() { }
-                """;
-            string testStatements = Markup("""
-
-                if (!token.IsCancellationRequested)
-                {
-                    Fooble();
-                    Barble();
-                }
-                else
-                {
-                    throw new OperationCanceledException();
-                }
-                """, 0);
-            string fixedStatements = """
-
-                token.ThrowIfCancellationRequested();
-                Fooble();
-                Barble();
-                """;
+            const string members = @"
+private CancellationToken token;
+private void Fooble() { }
+private void Barble() { }";
+            string testStatements = Markup(@"
+if (!token.IsCancellationRequested)
+{
+    Fooble();
+    Barble();
+}
+else
+{
+    throw new OperationCanceledException();
+}", 0);
+            string fixedStatements = @"
+token.ThrowIfCancellationRequested();
+Fooble();
+Barble();";
 
             var test = new VerifyCS.Test
             {
@@ -515,29 +469,23 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task NegatedCheckWithElse_MultpleOperationsInTrueBranch_ReportedAndFixed_VBAsync()
         {
-            const string members = """
-
-                Private token As CancellationToken
-                Private Sub Fooble()
-                End Sub
-                Private Sub Barble()
-                End Sub
-                """;
-            string testStatements = Markup("""
-
-                If Not token.IsCancellationRequested Then
-                    Fooble()
-                    Barble()
-                Else
-                    Throw New OperationCanceledException()
-                End If
-                """, 0);
-            string fixedStatements = """
-
-                token.ThrowIfCancellationRequested()
-                Fooble()
-                Barble()
-                """;
+            const string members = @"
+Private token As CancellationToken
+Private Sub Fooble()
+End Sub
+Private Sub Barble()
+End Sub";
+            string testStatements = Markup(@"
+If Not token.IsCancellationRequested Then
+    Fooble()
+    Barble()
+Else
+    Throw New OperationCanceledException()
+End If", 0);
+            string fixedStatements = @"
+token.ThrowIfCancellationRequested()
+Fooble()
+Barble()";
 
             var test = new VerifyVB.Test
             {
@@ -554,14 +502,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task MultipleConditions_NoDiagnostic_CSAsync()
         {
-            const string members = """
-                private CancellationToken token;
-                private bool otherCondition;
-                """;
-            const string testStatements = """
-                if (token.IsCancellationRequested && otherCondition)
-                    throw new OperationCanceledException();
-                """;
+            const string members = @"
+private CancellationToken token;
+private bool otherCondition;";
+            const string testStatements = @"
+if (token.IsCancellationRequested && otherCondition)
+    throw new OperationCanceledException();";
 
             var test = new VerifyCS.Test
             {
@@ -574,17 +520,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task MultipleConditions_NoDiagnostic_VBAsync()
         {
-            const string members = """
-
-                Private token As CancellationToken
-                Private otherCondition As Boolean
-                """;
-            const string testStatements = """
-
-                If token.IsCancellationRequested AndAlso otherCondition Then
-                    Throw New OperationCanceledException()
-                End If
-                """;
+            const string members = @"
+Private token As CancellationToken
+Private otherCondition As Boolean";
+            const string testStatements = @"
+If token.IsCancellationRequested AndAlso otherCondition Then
+    Throw New OperationCanceledException()
+End If";
 
             var test = new VerifyVB.Test
             {
@@ -597,17 +539,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_CSAsync()
         {
-            const string members = """
-                private CancellationToken token;
-                private void SomeOtherAction() { }
-                """;
-            const string testStatements = """
-                if (token.IsCancellationRequested)
-                {
-                    SomeOtherAction();
-                    throw new OperationCanceledException();
-                }
-                """;
+            const string members = @"
+private CancellationToken token;
+private void SomeOtherAction() { }";
+            const string testStatements = @"
+if (token.IsCancellationRequested)
+{
+    SomeOtherAction();
+    throw new OperationCanceledException();
+}";
 
             var test = new VerifyCS.Test
             {
@@ -620,19 +560,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_VBAsync()
         {
-            const string members = """
-
-                Private token As CancellationToken
-                Private Sub SomeOtherAction()
-                End Sub
-                """;
-            const string testStatements = """
-
-                If token.IsCancellationRequested Then
-                    SomeOtherAction()
-                    Throw New OperationCanceledException()
-                End If
-                """;
+            const string members = @"
+Private token As CancellationToken
+Private Sub SomeOtherAction()
+End Sub";
+            const string testStatements = @"
+If token.IsCancellationRequested Then
+    SomeOtherAction()
+    Throw New OperationCanceledException()
+End If";
 
             var test = new VerifyVB.Test
             {
@@ -657,15 +593,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
         public async Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_CSAsync(string ctorArguments)
         {
-            const string members = """
-                private CancellationToken token;
-                private string text;
-                private Exception exception;
-                """;
-            string testStatements = """
-                if (token.IsCancellationRequested)
-                    throw new OperationCanceledException(
-                """ + ctorArguments + ");";
+            const string members = @"
+private CancellationToken token;
+private string text;
+private Exception exception;";
+            string testStatements = @"
+if (token.IsCancellationRequested)
+    throw new OperationCanceledException(" + ctorArguments + @");";
 
             var test = new VerifyCS.Test
             {
@@ -679,20 +613,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
         public async Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_VBAsync(string ctorArguments)
         {
-            const string members = """
-
-                Private token As CancellationToken
-                Private text As String
-                private exception As Exception
-                """;
-            string testStatements = """
-
-                If token.IsCancellationRequested Then
-                    Throw New OperationCanceledException(
-                """ + ctorArguments + """
-        )
-        End If
-        """;
+            const string members = @"
+Private token As CancellationToken
+Private text As String
+private exception As Exception";
+            string testStatements = @"
+If token.IsCancellationRequested Then
+    Throw New OperationCanceledException(" + ctorArguments + @")
+End If";
 
             var test = new VerifyVB.Test
             {
@@ -706,18 +634,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
         public async Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_CSAsync(string ctorArguments)
         {
-            const string members = """
-                private CancellationToken token;
-                private string text;
-                private Exception exception;
-                private void DoSomething() { }
-                """;
-            string testStatements = """
-                if (!token.IsCancellationRequested)
-                    DoSomething();
-                else
-                    throw new OperationCanceledException(
-                """ + ctorArguments + ");";
+            const string members = @"
+private CancellationToken token;
+private string text;
+private Exception exception;
+private void DoSomething() { }";
+            string testStatements = @"
+if (!token.IsCancellationRequested)
+    DoSomething();
+else
+    throw new OperationCanceledException(" + ctorArguments + @");";
 
             var test = new VerifyCS.Test
             {
@@ -731,24 +657,18 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
         public async Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_VBAsync(string ctorArguments)
         {
-            const string members = """
-
-                Private token As CancellationToken
-                Private text As String
-                Private exception As Exception
-                Private Sub DoSomething()
-                End Sub
-                """;
-            string testStatements = """
-
-                If Not token.IsCancellationRequested Then
-                    DoSomething()
-                Else
-                    Throw New OperationCanceledException(
-                """ + ctorArguments + """
-        )
-        End If
-        """;
+            const string members = @"
+Private token As CancellationToken
+Private text As String
+Private exception As Exception
+Private Sub DoSomething()
+End Sub";
+            string testStatements = @"
+If Not token.IsCancellationRequested Then
+    DoSomething()
+Else
+    Throw New OperationCanceledException(" + ctorArguments + @")
+End If";
 
             var test = new VerifyVB.Test
             {
@@ -762,65 +682,49 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #region Helpers
         private static class CS
         {
-            public const string Usings = """
-
-                using System;
-                using System.Threading;
-                """;
+            public const string Usings = @"
+using System;
+using System.Threading;";
 
             public static string CreateBlock(string statements, string members)
             {
-                return Usings + """
-
-                    public partial class Body
-                    {
-
-                    """ + IndentLines(members, "    ") + """
-
-        public void Run()
-        {
-
-    """ + IndentLines(statements, "        ") + """
-
-        }
+                return Usings + @"
+public partial class Body
+{
+" + IndentLines(members, "    ") + @"
+    public void Run()
+    {
+" + IndentLines(statements, "        ") + @"
     }
-    """;
+}";
             }
 
             /// <summary>
             /// Creates a test class with a single private CancellationToken member called 'token'.
             /// </summary>
-            public static string CreateBlock(string statements) => CreateBlock(statements, "private CancellationToken token;");
+            public static string CreateBlock(string statements) => CreateBlock(statements, @"private CancellationToken token;");
 
             public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyCS.Diagnostic(Rule).WithLocation(markupKey);
         }
 
         private static class VB
         {
-            public const string Usings = """
-
-                Imports System
-                Imports System.Threading
-                """;
+            public const string Usings = @"
+Imports System
+Imports System.Threading";
 
             public static string CreateBlock(string statements, string members)
             {
-                return Usings + """
-
-                    Partial Public Class Body
-
-                    """ + IndentLines(members, "    ") + """
-
-        Public Sub Run()
-
-    """ + IndentLines(statements, "        ") + """
-
-        End Sub
-    End Class
-    """;
+                return Usings + @"
+Partial Public Class Body
+" + IndentLines(members, "    ") + @"
+    Public Sub Run()
+" + IndentLines(statements, "        ") + @"
+    End Sub
+End Class";
             }
 
-            public static string CreateBlock(string statements) => CreateBlock(statements, "Private token As CancellationToken");
+            public static string CreateBlock(string statements) => CreateBlock(statements, @"Private token As CancellationToken");
 
             public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyVB.Diagnostic(Rule).WithLocation(markupKey);
         }

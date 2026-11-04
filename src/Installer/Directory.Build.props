@@ -8,11 +8,16 @@
        Keep the Arcade SDK version in this directory's global.json aligned with the repo-level global.json
        so direct Installer builds use the same targeting-framework support as builds through test projects. -->
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+  <Import Project="$(RepoRoot)eng\DotnetupTelemetryPackageVersions.props" />
   <PropertyGroup>
     <!-- Shared version for dotnetup CLI and Microsoft.Dotnet.Installation library. -->
     <DotnetupVersionPrefix>0.3.0</DotnetupVersionPrefix>
     <DotnetupPreReleaseVersionLabel>preview</DotnetupPreReleaseVersionLabel>
     <DotnetupPreReleaseVersionIteration>1</DotnetupPreReleaseVersionIteration>
+    <!-- dotnetup ships on .NET 11 and release/dnup is fed from the newest .NET 11 band
+         (see github-merge-flow-dnup.jsonc on main). Moving dotnetup to a newer .NET must be a
+         deliberate change to this value, not a side effect of an inter-branch merge. -->
+    <DotnetupRequiredTargetFramework>net11.0</DotnetupRequiredTargetFramework>
   </PropertyGroup>
 
   <!-- Shared properties for the dotnetup family of projects (dotnetup, dotnetup.Library,

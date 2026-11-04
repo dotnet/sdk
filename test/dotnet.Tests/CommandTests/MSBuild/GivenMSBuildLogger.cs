@@ -294,8 +294,6 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
-        // ActivitySource listeners are process-wide and can observe activities from tests that do not use a matching resource lock.
-        [DoNotParallelize]
         public void ItCreatesAnInternalActivityForEachBuild()
         {
             ActivitySource activitySource = Activities.Source;
@@ -332,7 +330,6 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
-        // ActivitySource listeners are process-wide and can observe activities from tests that do not use a matching resource lock.
         [DoNotParallelize]
         public void ItUsesTheCurrentParentContextForEachServerBuild()
         {

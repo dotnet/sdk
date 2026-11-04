@@ -266,7 +266,7 @@ extends:
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
               enableDefaultArtifacts: true
               runTests: false
-            - categoryName: Dotnetup
+            - categoryName: DotnetupMusl
               container: crossBuildMuslX64
               targetArchitecture: x64
               runtimeIdentifier: linux-musl-x64
@@ -278,7 +278,7 @@ extends:
               enableDefaultArtifacts: true
               enableSbom: false
               runTests: false
-            - categoryName: Dotnetup
+            - categoryName: DotnetupMusl
               container: crossBuildMuslArm64
               targetArchitecture: arm64
               runtimeIdentifier: linux-musl-arm64

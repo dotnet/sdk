@@ -41,6 +41,27 @@ public class MobileHotReloadTests : DotNetWatchTestBase
     }
 
     [TestMethod]
+    public async Task BootstrapValuesAreNotInheritedByRunOrBuild()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchMobileApp").WithSource()
+            .WithProjectChanges(project =>
+            {
+                project.Root!.Add(
+                    new XElement("Target",
+                        new XAttribute("Name", "CheckHotReloadBootstrapEnvironment"),
+                        new XAttribute("BeforeTargets", "Build;ComputeRunArguments"),
+                        new XElement("Error",
+                            new XAttribute("Condition", "'$(DOTNET_WATCH_HOTRELOAD_WEBSOCKET_ENDPOINT)' != '' or '$(DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY)' != ''"),
+                            new XAttribute("Text", "Hot Reload bootstrap values must not be inherited by run or build."))));
+            });
+
+        App.Start(testAsset, []);
+        await App.WaitUntilOutputContains("Started");
+        await App.WaitUntilOutputContains("WebSocket client connected");
+        App.AssertOutputDoesNotContain("Hot Reload bootstrap values must not be inherited");
+    }
+
+    [TestMethod]
     public async Task CtrlC_ShutsDownCleanly()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchMobileApp")

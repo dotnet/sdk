@@ -21,6 +21,10 @@ LoadLibraryEx
 LocalFree
 NtQueryInformationProcess
 PropVariantClear
+RmEndSession
+RmGetList
+RmRegisterResources
+RmStartSession
 SafeArrayCreate
 SafeArrayCreateVector
 SafeArrayDestroy
@@ -61,6 +65,8 @@ MAX_PATH
 MUTZ_ISFILE
 PROCESS_BASIC_INFORMATION
 REGDB_E_CLASSNOTREG
+RM_PROCESS_INFO
+RM_UNIQUE_PROCESS
 SAFEARRAY
 S_OK
 S_FALSE

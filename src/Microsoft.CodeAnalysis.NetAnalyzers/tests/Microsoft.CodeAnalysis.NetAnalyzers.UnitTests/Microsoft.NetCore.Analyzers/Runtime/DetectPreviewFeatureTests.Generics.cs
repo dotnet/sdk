@@ -16,33 +16,31 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestNonPreviewMethodWithGenericPreviewParameter()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+        public bool GenericMethod<T>()
+        {
+            return true;
+        }
 
-                    class Program
-                    {
-                        public bool GenericMethod<T>()
-                        {
-                            return true;
-                        }
+        static void Main(string[] args)
+        {
+            Program program = new Program();
+            {|#0:program.GenericMethod<Foo>()|};
+        }
+    }
 
-                        static void Main(string[] args)
-                        {
-                            Program program = new Program();
-                            {|#0:program.GenericMethod<Foo>()|};
-                        }
-                    }
+    [RequiresPreviewFeatures(""Lib is in preview."", Url = ""https://aka.ms/aspnet/kestrel/http3reqs"")]
+    public class Foo
+    {
+    }
 
-                    [RequiresPreviewFeatures("Lib is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
-                    public class Foo
-                    {
-                    }
-
-                }
-                """;
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(0).WithArguments("Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
@@ -52,48 +50,45 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericMethodWithPreviewClass()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+    class Program
+    {
+        public bool GenericMethod<T>()
+            where T : {|#0:Foo|}, ICloneable
+        {
+            return true;
+        }
+    }
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
-                    class Program
-                    {
-                        public bool GenericMethod<T>()
-                            where T : {|#0:Foo|}, ICloneable
-                        {
-                            return true;
-                        }
-                    }
-
-                    [RequiresPreviewFeatures("Lib is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
-                    public class Foo
-                    {
-                    }
-                }
-                """;
+    [RequiresPreviewFeatures(""Lib is in preview."", Url = ""https://aka.ms/aspnet/kestrel/http3reqs"")]
+    public class Foo
+    {
+    }
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("GenericMethod", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             await test.RunAsync(CancellationToken.None);
 
-            var vbInput = """
+            var vbInput = @" 
+Imports System.Runtime.Versioning
+Imports System
 
-                Imports System.Runtime.Versioning
-                Imports System
+Namespace Preview_Feature_Scratch
+    Class Program
+        Public Function GenericMethod(Of T As {{|#0:Foo|}, ICloneable})() As Boolean
+            Return True
+        End Function
+    End Class
 
-                Namespace Preview_Feature_Scratch
-                    Class Program
-                        Public Function GenericMethod(Of T As {{|#0:Foo|}, ICloneable})() As Boolean
-                            Return True
-                        End Function
-                    End Class
-
-                    <RequiresPreviewFeatures("Lib is in preview.", Url:="https://aka.ms/aspnet/kestrel/http3reqs")>
-                    Public Class Foo
-                    End Class
-                End Namespace
-                """;
+    <RequiresPreviewFeatures(""Lib is in preview."", Url:=""https://aka.ms/aspnet/kestrel/http3reqs"")>
+    Public Class Foo
+    End Class
+End Namespace
+";
             var vbTest = TestVB(vbInput);
             vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("GenericMethod", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             await vbTest.RunAsync(CancellationToken.None);
@@ -102,48 +97,45 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericMethodHavingConstraintsWithPreviewInterface()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+    class Program
+    {
+        public bool GenericMethod<T>()
+            where T : ICloneable, {|#0:IFoo|}
+        {
+            return true;
+        }
+    }
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
-                    class Program
-                    {
-                        public bool GenericMethod<T>()
-                            where T : ICloneable, {|#0:IFoo|}
-                        {
-                            return true;
-                        }
-                    }
-
-                    [RequiresPreviewFeatures("Lib is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
-                    public interface IFoo
-                    {
-                    }
-                }
-                """;
+    [RequiresPreviewFeatures(""Lib is in preview."", Url = ""https://aka.ms/aspnet/kestrel/http3reqs"")]
+    public interface IFoo
+    {
+    }
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("GenericMethod", "IFoo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             await test.RunAsync(CancellationToken.None);
 
-            var vbInput = """
+            var vbInput = @" 
+Imports System.Runtime.Versioning
+Imports System
 
-                Imports System.Runtime.Versioning
-                Imports System
+Namespace Preview_Feature_Scratch
+    Class Program
+        Public Function GenericMethod(Of T As {ICloneable, {|#0:IFoo|}})() As Boolean
+            Return True
+        End Function
+    End Class
 
-                Namespace Preview_Feature_Scratch
-                    Class Program
-                        Public Function GenericMethod(Of T As {ICloneable, {|#0:IFoo|}})() As Boolean
-                            Return True
-                        End Function
-                    End Class
-
-                    <RequiresPreviewFeatures("Lib is in preview.", Url:="https://aka.ms/aspnet/kestrel/http3reqs")>
-                    Public Interface IFoo
-                    End Interface
-                End Namespace
-                """;
+    <RequiresPreviewFeatures(""Lib is in preview."", Url:=""https://aka.ms/aspnet/kestrel/http3reqs"")>
+    Public Interface IFoo
+    End Interface
+End Namespace
+";
             var vbTest = TestVB(vbInput);
             vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("GenericMethod", "IFoo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             await vbTest.RunAsync(CancellationToken.None);
@@ -152,34 +144,32 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericMethodWithNullablePreviewClass()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+#nullable enable
+        public bool GenericMethod<T>()
+            where T : {|#0:Foo?|}
+        {
+            return true;
+        }
+#nullable disable
 
-                    class Program
-                    {
-                #nullable enable
-                        public bool GenericMethod<T>()
-                            where T : {|#0:Foo?|}
-                        {
-                            return true;
-                        }
-                #nullable disable
+        static void Main(string[] args)
+        {
+        }
+    }
 
-                        static void Main(string[] args)
-                        {
-                        }
-                    }
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
 
-                    [RequiresPreviewFeatures]
-                    public class Foo
-                    {
-                    }
-
-                }
-                """;
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("GenericMethod", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -189,28 +179,26 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericClassWithNullablePreviewClass()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+#nullable enable
+    class Program<T>
+        where T : {|#0:Foo?|}
+    {
+        static void Main(string[] args)
+        {
+        }
+    }
+#nullable disable
 
-                #nullable enable
-                    class Program<T>
-                        where T : {|#0:Foo?|}
-                    {
-                        static void Main(string[] args)
-                        {
-                        }
-                    }
-                #nullable disable
-
-                    [RequiresPreviewFeatures("Lib is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
-                    public class Foo
-                    {
-                    }
-                }
-                """;
+    [RequiresPreviewFeatures(""Lib is in preview."", Url = ""https://aka.ms/aspnet/kestrel/http3reqs"")]
+    public class Foo
+    {
+    }
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("Program", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
@@ -220,33 +208,31 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericMethodInsidePreviewClass()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    [RequiresPreviewFeatures]
+    class Program
+    {
+        public bool GenericMethod<T>()
+            where T : Foo
+        {
+            return true;
+        }
 
-                    [RequiresPreviewFeatures]
-                    class Program
-                    {
-                        public bool GenericMethod<T>()
-                            where T : Foo
-                        {
-                            return true;
-                        }
+        static void Main(string[] args)
+        {
+        }
+    }
 
-                        static void Main(string[] args)
-                        {
-                        }
-                    }
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
 
-                    [RequiresPreviewFeatures]
-                    public class Foo
-                    {
-                    }
-
-                }
-                """;
+}";
 
             var test = TestCS(csInput);
             await test.RunAsync(CancellationToken.None);
@@ -255,36 +241,34 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestTwoLevelGenericMethodInsidePreviewClass()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    [RequiresPreviewFeatures]
+    class Program
+    {
+        class NestedClass
+        {
+            public bool GenericMethod<T>()
+                where T : Foo
+            {
+                return true;
+            }
+        }
 
-                    [RequiresPreviewFeatures]
-                    class Program
-                    {
-                        class NestedClass
-                        {
-                            public bool GenericMethod<T>()
-                                where T : Foo
-                            {
-                                return true;
-                            }
-                        }
+        static void Main(string[] args)
+        {
+        }
+    }
 
-                        static void Main(string[] args)
-                        {
-                        }
-                    }
+    [RequiresPreviewFeatures]
+    public class Foo
+    {
+    }
 
-                    [RequiresPreviewFeatures]
-                    public class Foo
-                    {
-                    }
-
-                }
-                """;
+}";
 
             var test = TestCS(csInput);
             await test.RunAsync(CancellationToken.None);
@@ -293,40 +277,38 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericClassWithoutPreviewInterface()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            A<Foo> aFooInstance = {|#0:new A<Foo>()|};
+        }
+    }
 
-                    class Program
-                    {
-                        static void Main(string[] args)
-                        {
-                            A<Foo> aFooInstance = {|#0:new A<Foo>()|};
-                        }
-                    }
+class A<T> where T : IFoo, new()
+{
+    public A()
+    {
+        new T().Bar();
+    }
+}
 
-                class A<T> where T : IFoo, new()
-                {
-                    public A()
-                    {
-                        new T().Bar();
-                    }
-                }
+[RequiresPreviewFeatures]
+class Foo : IFoo
+{
+    public void Bar() { }
+}
 
-                [RequiresPreviewFeatures]
-                class Foo : IFoo
-                {
-                    public void Bar() { }
-                }
-
-                interface IFoo
-                {
-                    void Bar();
-                }
-                }
-                """;
+interface IFoo
+{
+    void Bar();
+}
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -336,41 +318,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericClassWithCustomMessageAndUrl()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            A<Foo> aFooInstance = new A<Foo>();
+        }
+    }
 
-                    class Program
-                    {
-                        static void Main(string[] args)
-                        {
-                            A<Foo> aFooInstance = new A<Foo>();
-                        }
-                    }
+class A<T> where T : {|#1:IFoo|}, new()
+{
+    public A()
+    {
+        IFoo foo = new T();
+        {|#0:foo.Bar()|};
+    }
+}
 
-                class A<T> where T : {|#1:IFoo|}, new()
-                {
-                    public A()
-                    {
-                        IFoo foo = new T();
-                        {|#0:foo.Bar()|};
-                    }
-                }
+class Foo : {|#2:IFoo|}
+{
+    public void {|#3:Bar|}() { }
+}
 
-                class Foo : {|#2:IFoo|}
-                {
-                    public void {|#3:Bar|}() { }
-                }
-
-                [RequiresPreviewFeatures("Lib is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
-                interface IFoo
-                {
-                    void Bar();
-                }
-                }
-                """;
+[RequiresPreviewFeatures(""Lib is in preview."", Url = ""https://aka.ms/aspnet/kestrel/http3reqs"")]
+interface IFoo
+{
+    void Bar();
+}
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Bar", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -383,41 +363,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericClass()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            A<Foo> aFooInstance = new A<Foo>();
+        }
+    }
 
-                    class Program
-                    {
-                        static void Main(string[] args)
-                        {
-                            A<Foo> aFooInstance = new A<Foo>();
-                        }
-                    }
+class A<T> where T : {|#1:IFoo|}, new()
+{
+    public A()
+    {
+        IFoo foo = new T();
+        {|#0:foo.Bar()|};
+    }
+}
 
-                class A<T> where T : {|#1:IFoo|}, new()
-                {
-                    public A()
-                    {
-                        IFoo foo = new T();
-                        {|#0:foo.Bar()|};
-                    }
-                }
+class Foo : {|#2:IFoo|}
+{
+    public void {|#3:Bar|}() { }
+}
 
-                class Foo : {|#2:IFoo|}
-                {
-                    public void {|#3:Bar|}() { }
-                }
-
-                [RequiresPreviewFeatures]
-                interface IFoo
-                {
-                    void Bar();
-                }
-                }
-                """;
+[RequiresPreviewFeatures]
+interface IFoo
+{
+    void Bar();
+}
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Bar", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -430,29 +408,27 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestClassImplementsGenericInterface()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+class A : {|#0:IFoo<PreviewClass>|}
+{
+    static void Main(string[] args)
+    {
+    }
+}
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
-                class A : {|#0:IFoo<PreviewClass>|}
-                {
-                    static void Main(string[] args)
-                    {
-                    }
-                }
+[RequiresPreviewFeatures]
+interface IFoo<T>
+{
+}
 
-                [RequiresPreviewFeatures]
-                interface IFoo<T>
-                {
-                }
-
-                [RequiresPreviewFeatures]
-                class PreviewClass
-                {
-                }
-                }
-                """;
+[RequiresPreviewFeatures]
+class PreviewClass
+{
+}
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(0).WithArguments("A", "IFoo", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -462,24 +438,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestClassExtendsGenericPreviewClass()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+namespace Preview_Feature_Scratch
+{
+class A : {|#0:PreviewClass<int>|}
+{
+    static void Main(string[] args)
+    {
+    }
+}
 
-                using System.Runtime.Versioning; using System;
-                namespace Preview_Feature_Scratch
-                {
-                class A : {|#0:PreviewClass<int>|}
-                {
-                    static void Main(string[] args)
-                    {
-                    }
-                }
-
-                [RequiresPreviewFeatures]
-                class PreviewClass<T>
-                {
-                }
-                }
-                """;
+[RequiresPreviewFeatures]
+class PreviewClass<T>
+{
+}
+}";
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.DerivesFromPreviewClassRule).WithLocation(0).WithArguments("A", "PreviewClass", DetectPreviewFeatureAnalyzer.DefaultURL));
@@ -489,46 +463,43 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task TestGenericClassWithPreviewDependency()
         {
-            var csInput = """
+            var csInput = @" 
+using System.Runtime.Versioning; using System;
+using Library;
+namespace Preview_Feature_Scratch
+{
 
-                using System.Runtime.Versioning; using System;
-                using Library;
-                namespace Preview_Feature_Scratch
-                {
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            A<Foo> aFooInstance = new A<Foo>();
+        }
+    }
+class A<T> where T : {|#1:IFoo|}, new()
+{
+    public A()
+    {
+        IFoo foo = new T();
+        {|#0:foo.Bar()|};
+    }
+}
+}";
+            string csDependencyCode = @"
+using System.Runtime.Versioning; using System;
+namespace Library
+{
+public class Foo : {|#2:IFoo|}
+{
+    public void {|#3:Bar|}() { }
+}
 
-                    class Program
-                    {
-                        static void Main(string[] args)
-                        {
-                            A<Foo> aFooInstance = new A<Foo>();
-                        }
-                    }
-                class A<T> where T : {|#1:IFoo|}, new()
-                {
-                    public A()
-                    {
-                        IFoo foo = new T();
-                        {|#0:foo.Bar()|};
-                    }
-                }
-                }
-                """;
-            string csDependencyCode = """
-                using System.Runtime.Versioning; using System;
-                namespace Library
-                {
-                public class Foo : {|#2:IFoo|}
-                {
-                    public void {|#3:Bar|}() { }
-                }
-
-                [RequiresPreviewFeatures]
-                public interface IFoo
-                {
-                    void Bar();
-                }
-                }
-                """;
+[RequiresPreviewFeatures]
+public interface IFoo
+{
+    void Bar();
+}
+}";
 
             var test = SetupDependencyAndTestCSWithOneSourceFile(csInput, csDependencyCode);
 

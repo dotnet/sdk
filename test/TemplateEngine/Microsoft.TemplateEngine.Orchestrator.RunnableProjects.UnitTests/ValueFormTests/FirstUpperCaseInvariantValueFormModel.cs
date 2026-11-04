@@ -18,21 +18,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [DataRow("ındigo", "ındigo", "tr-TR")]
         public void FirstUpperCaseInvariantWorksAsExpected(string input, string expected, string? culture)
         {
-            CultureInfo originalCulture = CultureInfo.CurrentCulture;
-            try
+            if (!string.IsNullOrEmpty(culture))
             {
-                if (!string.IsNullOrEmpty(culture))
-                {
-                    CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
-                }
-                IValueForm model = new FirstUpperCaseInvariantValueFormFactory().Create("test");
-                string actual = model.Process(input, new Dictionary<string, IValueForm>());
-                Assert.AreEqual(expected, actual);
+                CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
             }
-            finally
-            {
-                CultureInfo.CurrentCulture = originalCulture;
-            }
+            IValueForm model = new FirstUpperCaseInvariantValueFormFactory().Create("test");
+            string actual = model.Process(input, new Dictionary<string, IValueForm>());
+            Assert.AreEqual(expected, actual);
         }
 
         [TestMethod]

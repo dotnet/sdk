@@ -9,15 +9,15 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
-public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath, CommandServices services) : MSBuildForwardingApp(msbuildArgs, msbuildPath, services)
+public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) : MSBuildForwardingApp(msbuildArgs, msbuildPath)
 {
-    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices services)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
         var result = Parser.Parse(["dotnet", "clean", .. args]);
-        return FromParseResult(result, msbuildPath, services);
+        return FromParseResult(result, msbuildPath);
     }
 
-    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath, CommandServices services)
+    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
     {
         var definition = (CleanCommandDefinition)result.CommandResult.Command;
 
@@ -25,17 +25,16 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath, C
         return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
-            createVirtualCommand: (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
+            createVirtualCommand: static (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: appFilePath,
-                msbuildArgs: msbuildArgs,
-                services: services)
+                msbuildArgs: msbuildArgs)
             {
                 NoBuild = false,
                 NoRestore = true,
                 NoCache = true,
                 NoWriteBuildMarkers = true,
             },
-            createPhysicalCommand: (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath, services),
+            createPhysicalCommand: static (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath),
             optionsToUseWhenParsingMSBuildFlags:
             [
                 CommonOptions.CreatePropertyOption(),
@@ -52,6 +51,6 @@ public sealed class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath, C
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();
-        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
+        return FromParseResult(parseResult).Execute();
     }
 }

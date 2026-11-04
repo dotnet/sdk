@@ -40,111 +40,101 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
             await new VerifyCS.Test
             {
-                TestCode = """
+                TestCode = @"
+using System;
 
-                    using System;
-
-                    class C : Attribute
-                    {
-                    }
-
-                    """,
+class C : Attribute
+{
+}
+",
                 ExpectedDiagnostics = { GetCA1018CSharpResultAt(4, 7, "C"), },
                 CodeActionIndex = codeActionIndex,
                 CodeActionEquivalenceKey = attributeTargetsValue,
-                FixedCode = """
+                FixedCode = @"
+using System;
 
-                    using System;
-
-                    [AttributeUsage(
-                    """ + attributeTargetsValue + """
-    )]
-    class C : Attribute
-    {
-    }
-
-    """,
+[AttributeUsage(" + attributeTargetsValue + @")]
+class C : Attribute
+{
+}
+",
             }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
-                TestCode = """
+                TestCode = @"
+Imports System
 
-                    Imports System
-
-                    Class C
-                        Inherits Attribute
-                    End Class
-
-                    """,
+Class C
+    Inherits Attribute
+End Class
+",
                 ExpectedDiagnostics = { GetCA1018BasicResultAt(4, 7, "C"), },
-                FixedCode = """
+                FixedCode = @"
+Imports System
 
-                    Imports System
-
-                    <AttributeUsage(AttributeTargets.All)>
-                    Class C
-                        Inherits Attribute
-                    End Class
-
-                    """,
+<AttributeUsage(AttributeTargets.All)>
+Class C
+    Inherits Attribute
+End Class
+",
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
         public async Task TestCSInheritedAttributeClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                [AttributeUsage(AttributeTargets.Method)]
-                class C : Attribute
-                {
-                }
-                class D : C
-                {
-                }
-                """);
+[AttributeUsage(AttributeTargets.Method)]
+class C : Attribute
+{
+}
+class D : C
+{
+}
+");
         }
 
         [TestMethod]
         public async Task TestCSAbstractAttributeClassAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync("""
-                using System;
+            await VerifyCS.VerifyAnalyzerAsync(@"
+using System;
 
-                abstract class C : Attribute
-                {
-                }
-                """);
+abstract class C : Attribute
+{
+}
+");
         }
 
         [TestMethod, WorkItem(1732, "https://github.com/dotnet/roslyn-analyzers/issues/1732")]
         public async Task TestVBInheritedAttributeClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                <AttributeUsage(AttributeTargets.Method)>
-                Class C
-                    Inherits Attribute
-                End Class
-                Class D
-                    Inherits C
-                End Class
-                """);
+<AttributeUsage(AttributeTargets.Method)>
+Class C
+    Inherits Attribute
+End Class
+Class D
+    Inherits C
+End Class
+");
         }
 
         [TestMethod]
         public async Task TestVBAbstractAttributeClassAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync("""
-                Imports System
+            await VerifyVB.VerifyAnalyzerAsync(@"
+Imports System
 
-                MustInherit Class C
-                    Inherits Attribute
-                End Class
-                """);
+MustInherit Class C
+    Inherits Attribute
+End Class
+");
         }
 
         private static DiagnosticResult GetCA1018CSharpResultAt(int line, int column, string objectName)
@@ -159,19 +149,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         {
             await new VerifyCS.Test
             {
-                TestCode = """
+                TestCode = @"
+using System;
 
-                    using System;
+class C : Attribute
+{
+}
 
-                    class C : Attribute
-                    {
-                    }
-
-                    class D : Attribute
-                    {
-                    }
-
-                    """,
+class D : Attribute
+{
+}
+",
                 ExpectedDiagnostics =
                 {
                     GetCA1018CSharpResultAt(4, 7, "C"),
@@ -179,21 +167,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 },
                 CodeActionIndex = 10,
                 CodeActionEquivalenceKey = "AttributeTargets.Method",
-                FixedCode = """
+                FixedCode = @"
+using System;
 
-                    using System;
+[AttributeUsage(AttributeTargets.Method)]
+class C : Attribute
+{
+}
 
-                    [AttributeUsage(AttributeTargets.Method)]
-                    class C : Attribute
-                    {
-                    }
-
-                    [AttributeUsage(AttributeTargets.Method)]
-                    class D : Attribute
-                    {
-                    }
-
-                    """,
+[AttributeUsage(AttributeTargets.Method)]
+class D : Attribute
+{
+}
+",
             }.RunAsync(CancellationToken.None);
         }
 
@@ -202,19 +188,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         {
             await new VerifyVB.Test
             {
-                TestCode = """
+                TestCode = @"
+Imports System
 
-                    Imports System
+Class C
+    Inherits Attribute
+End Class
 
-                    Class C
-                        Inherits Attribute
-                    End Class
-
-                    Class D
-                        Inherits Attribute
-                    End Class
-
-                    """,
+Class D
+    Inherits Attribute
+End Class
+",
                 ExpectedDiagnostics =
                 {
                     GetCA1018BasicResultAt(4, 7, "C"),
@@ -222,21 +206,19 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 },
                 CodeActionIndex = 10,
                 CodeActionEquivalenceKey = "AttributeTargets.Method",
-                FixedCode = """
+                FixedCode = @"
+Imports System
 
-                    Imports System
+<AttributeUsage(AttributeTargets.Method)>
+Class C
+    Inherits Attribute
+End Class
 
-                    <AttributeUsage(AttributeTargets.Method)>
-                    Class C
-                        Inherits Attribute
-                    End Class
-
-                    <AttributeUsage(AttributeTargets.Method)>
-                    Class D
-                        Inherits Attribute
-                    End Class
-
-                    """,
+<AttributeUsage(AttributeTargets.Method)>
+Class D
+    Inherits Attribute
+End Class
+",
             }.RunAsync(CancellationToken.None);
         }
 

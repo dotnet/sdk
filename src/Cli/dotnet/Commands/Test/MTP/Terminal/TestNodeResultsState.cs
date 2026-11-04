@@ -50,11 +50,6 @@ internal sealed class TestNodeResultsState(long id)
 
     public IEnumerable<TestDetailState> GetRunningTasks(int maxCount)
     {
-        if (maxCount <= 0)
-        {
-            yield break;
-        }
-
         var sortedDetails = _testNodeProgressStates
             .Select(d => d.Value)
             .OrderByDescending(d => d.Stopwatch?.Elapsed ?? TimeSpan.Zero)
