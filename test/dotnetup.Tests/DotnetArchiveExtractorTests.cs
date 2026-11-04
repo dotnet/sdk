@@ -198,9 +198,44 @@ public class DotnetArchiveExtractorTests
         }
     }
 
+    [TestMethod]
+    public void Commit_ExistingLayoutWithoutVersionFile_Rejects()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100"));
+        File.WriteAllText(Path.Combine(testEnv.InstallPath, markerPath), "existing");
+        using var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "daily", untracked: true);
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+        ex.Message.Should().Contain("has no .version file");
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("existing");
+    }
+
+    [TestMethod]
+    public void Commit_SdkFromSameCommitWithDifferentBuildVersion_Rejects()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var first = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "first",
+            untracked: true, versionFile: "commit\n11.0.100\nwin-x64\n11.0.100-rtm.26552.115\n11.0.100"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(first);
+        }
+        using var rebuild = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.116", "11.0.100", markerPath, "rebuild",
+            untracked: true, versionFile: "commit\n11.0.100\nwin-x64\n11.0.100-rtm.26552.116\n11.0.100");
+
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(rebuild));
+
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallLayoutConflict);
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("first");
+    }
+
     private static InstallerOrchestratorSingleton.PreparedInstall PrepareArchiveInstall(
         TestEnvironment testEnv, InstallComponent component, string channel, string version, string? payloadVersion,
-        string markerPath, string markerContent, bool untracked = false, string? globalJsonPath = null,
+        string markerPath, string markerContent, bool untracked = false, string? globalJsonPath = null, string? versionFile = null,
         params (string path, string content)[] extraFiles)
     {
         var resolvedVersion = new ReleaseVersion(version);
@@ -216,7 +251,7 @@ public class DotnetArchiveExtractorTests
             ArchiveFileExtension = ".tar.gz",
             FakeArchiveContent = CreateTarGzWithFiles([
                 (markerPath, markerContent),
-                ($"{markerPath[..markerPath.LastIndexOf('/')]}/.version", $"{markerContent}\n{version}"),
+                ($"{markerPath[..markerPath.LastIndexOf('/')]}/.version", versionFile ?? $"{markerContent}\n{payloadVersion ?? version}"),
                 (DotnetupUtilities.GetDotnetExeName(), "muxer"),
                 .. extraFiles]),
             ProductVersion = payloadVersion is null ? null : new ReleaseVersion(payloadVersion),
