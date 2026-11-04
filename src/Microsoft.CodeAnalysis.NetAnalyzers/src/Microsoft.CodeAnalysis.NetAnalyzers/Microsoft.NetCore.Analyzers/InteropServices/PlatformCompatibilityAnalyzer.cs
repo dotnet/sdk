@@ -254,7 +254,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
             static ImmutableArray<string> GetSupportedPlatforms(AnalyzerOptions options, Compilation compilation) =>
                 options.GetMSBuildItemMetadataValues(MSBuildItemOptionNames.SupportedPlatform, compilation);
 
-            static bool NameAndParametersValid(IMethodSymbol method) => method.Name.StartsWith(IsPrefix, StringComparison.Ordinal) &&
+            // IsApplePlatform defines its platform set through guard attributes, not its name.
+            static bool NameAndParametersValid(IMethodSymbol method) => method.Name != IsApplePlatform &&
+                    method.Name.StartsWith(IsPrefix, StringComparison.Ordinal) &&
                     (method.Parameters.Length == 0 || method.Name.EndsWith(OptionalSuffix, StringComparison.Ordinal));
 
             static bool HasCrossPlatformProperty(AnalyzerOptions options, Compilation compilation)

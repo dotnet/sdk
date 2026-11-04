@@ -26,6 +26,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
             {
                 public static class OperatingSystem
                 {
+                    [System.Runtime.Versioning.SupportedOSPlatformGuard("macos")]
+                    [System.Runtime.Versioning.SupportedOSPlatformGuard("ios")]
+                    [System.Runtime.Versioning.SupportedOSPlatformGuard("tvos")]
+                    [System.Runtime.Versioning.SupportedOSPlatformGuard("maccatalyst")]
                     public static bool IsApplePlatform() => throw new NotImplementedException();
                 }
             }
@@ -147,6 +151,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 
                 Namespace System
                     Public Class OperatingSystem
+                        <SupportedOSPlatformGuard("macos"), SupportedOSPlatformGuard("ios"),
+                         SupportedOSPlatformGuard("tvos"), SupportedOSPlatformGuard("maccatalyst")>
                         Public Shared Function IsApplePlatform() As Boolean
                             Throw New NotImplementedException()
                         End Function
@@ -189,6 +195,134 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                 """;
 
             await VerifyAnalyzerVBAsync(source, ApplePlatformMsBuildPlatforms);
+        }
+
+        [TestMethod]
+        [DataRow("macos")]
+        [DataRow("maccatalyst")]
+        [DataRow("ios")]
+        [DataRow("tvos")]
+        [DataRow("watchos")]
+        [DataRow("windows")]
+        public async Task IsApplePlatform_UsesGuardAttributesAsync(string platform)
+        {
+            var source = $$"""
+                using System;
+                using System.Runtime.Versioning;
+
+                namespace System
+                {
+                    public static class OperatingSystem
+                    {
+                        [SupportedOSPlatformGuard("{{platform}}")]
+                        public static bool IsApplePlatform() => throw new NotImplementedException();
+                    }
+                }
+
+                class Test
+                {
+                    void M()
+                    {
+                        if (OperatingSystem.IsApplePlatform())
+                        {
+                            Supported();
+                            [|Unsupported()|];
+                        }
+                        else
+                        {
+                            [|Supported()|];
+                            Unsupported();
+                        }
+
+                        if (!OperatingSystem.IsApplePlatform())
+                        {
+                            [|Supported()|];
+                            Unsupported();
+                        }
+                        else
+                        {
+                            Supported();
+                            [|Unsupported()|];
+                        }
+                    }
+
+                    [SupportedOSPlatform("{{platform}}")]
+                    void Supported() { }
+
+                    [UnsupportedOSPlatform("{{platform}}")]
+                    void Unsupported() { }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms);
+        }
+
+        [TestMethod]
+        public async Task IsApplePlatform_PreservesIosMacCatalystRelationshipAsync()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                namespace System
+                {
+                    public static class OperatingSystem
+                    {
+                        [SupportedOSPlatformGuard("maccatalyst")]
+                        public static bool IsIOS() => throw new NotImplementedException();
+
+                        public static bool IsMacCatalyst() => throw new NotImplementedException();
+
+                        [SupportedOSPlatformGuard("macos")]
+                        [SupportedOSPlatformGuard("ios")]
+                        [SupportedOSPlatformGuard("tvos")]
+                        [SupportedOSPlatformGuard("maccatalyst")]
+                        public static bool IsApplePlatform() => throw new NotImplementedException();
+                    }
+                }
+
+                class Test
+                {
+                    void M()
+                    {
+                        if (OperatingSystem.IsIOS())
+                        {
+                            SupportedIos();
+                            [|UnsupportedMacCatalyst()|];
+                        }
+
+                        if (OperatingSystem.IsMacCatalyst())
+                        {
+                            SupportedIos();
+                            [|UnsupportedIos()|];
+                        }
+
+                        if (OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst())
+                        {
+                            SupportedIos();
+                            UnsupportedMacCatalyst();
+                        }
+
+                        if (OperatingSystem.IsApplePlatform())
+                        {
+                            [|SupportedIos()|];
+                            [|UnsupportedIos()|];
+                            [|UnsupportedMacCatalyst()|];
+                        }
+                    }
+
+                    [SupportedOSPlatform("ios")]
+                    void SupportedIos() { }
+
+                    [UnsupportedOSPlatform("ios")]
+                    void UnsupportedIos() { }
+
+                    [UnsupportedOSPlatform("maccatalyst")]
+                    void UnsupportedMacCatalyst() { }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms);
         }
 
         public static IEnumerable<object[]> NamedArgumentsData()
