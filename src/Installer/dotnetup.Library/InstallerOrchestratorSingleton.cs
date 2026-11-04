@@ -4,7 +4,6 @@
 using System.Globalization;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
@@ -443,15 +442,7 @@ internal class InstallerOrchestratorSingleton
     {
         var install = prepared.Install;
         string component = install.Component.GetDisplayName();
-        var conflict = manifest?.FindLayoutConflict(install);
-        if (conflict is { OwningSpecs.Count: 0 })
-        {
-            // No install spec keeps these records, so garbage collection removes them and their folders.
-            GarbageCollectionRunner.RunAndDisplay(prepared.Request.Options.ManifestPath, install.InstallRoot);
-            conflict = manifest!.FindLayoutConflict(install);
-        }
-
-        if (conflict is { } layoutConflict)
+        if (manifest?.FindLayoutConflict(install) is { } layoutConflict)
         {
             if (prepared.Request.Options.InstallMechanism == InstallMechanism.Archive)
             {
