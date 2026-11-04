@@ -33,9 +33,15 @@ from `dotnet --version`, even though dotnetup tracks a build identity such as
 successive builds with the same release-version filename.
 
 Successive RTM or servicing daily builds, and the matching stable release, install
-into the same folder. dotnetup doesn't install one of these builds over another;
-uninstall the existing one first, for example `dotnetup sdk uninstall 11.0.1xx-daily`,
+into the same folder. When the stable release was built from the same commit as the
+installed daily build, dotnetup installs it alongside the daily build, since the files
+are identical. Otherwise dotnetup doesn't install one build over another; uninstall
+the existing one first, for example `dotnetup sdk uninstall 11.0.1xx-daily`,
 and then install the newer build.
+
+With `--update-global-json`, dotnetup writes the version the folder uses, such as
+`11.0.100`, because that's what the host resolves `global.json` against. Installing
+from that `global.json` later uses the daily build already in the folder.
 
 ## Isolate a daily SDK
 
