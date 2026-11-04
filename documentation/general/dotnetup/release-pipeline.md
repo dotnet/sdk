@@ -3,7 +3,7 @@
 The manual `dotnetup-release` pipeline, defined in
 [`.vsts-dotnetup-release.yml`](../../../.vsts-dotnetup-release.yml), consumes
 prebuilt preview or placeholder GA candidates from `dotnet-dnup-official-ci`.
-That official pipeline also builds and signs a self-contained Windows x64 release
+That official pipeline also builds an unsigned self-contained Windows x64 release
 tool and publishes it as the `DotnetupReleaseTools` pipeline artifact. The release
 pipeline runs that executable from the selected build in a formal 1ES release job
 (`templateContext.type: releaseJob`, `isProduction: false`). It does not check out

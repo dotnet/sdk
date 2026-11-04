@@ -155,13 +155,13 @@ extends:
         - template: /eng/common/templates-official/job/job.yml@self
           parameters:
             name: DotnetupReleaseTools
-            displayName: Build and sign self-contained release tool
+            displayName: Build self-contained release tool
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
             timeoutInMinutes: 30
-            enableMicrobuild: true
+            enableMicrobuild: false
             enablePublishBuildAssets: false
             enableTelemetry: true
             templateContext:
@@ -185,14 +185,6 @@ extends:
                   --output artifacts\dotnetup-release-tools
                 exit $LASTEXITCODE
               displayName: Publish self-contained release tool
-            - powershell: eng/common/build.ps1
-                -restore -sign -ci -configuration Release -msbuildEngine dotnet
-                /p:Projects=$(Build.SourcesDirectory)\eng\dotnetup-release\dotnetup-release.csproj
-                /p:EnableDefaultArtifacts=false /p:PublishBinariesAndBadge=false
-                /p:SignDotnetupReleaseTool=true
-                $(_officialBuildProperties)
-                /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
-              displayName: Sign release tool
 
       - stage: tests
         displayName: 🧪 dotnetup tests

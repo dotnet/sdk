@@ -233,9 +233,4 @@
     </Artifact>
   </ItemGroup>
 
-  <ItemGroup Condition="'$(SignDotnetupReleaseTool)' == 'true'">
-    <Artifact Remove="@(Artifact)" />
-    <Artifact Include="$(ArtifactsDir)dotnetup-release-tools\*.exe;$(ArtifactsDir)dotnetup-release-tools\*.dll" Kind="Blob" SkipPublish="true" />
-  </ItemGroup>
-
 </Project>
