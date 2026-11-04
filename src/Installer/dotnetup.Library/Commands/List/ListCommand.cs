@@ -112,6 +112,7 @@ internal static class InstallationLister
             {
                 Component = installation.Component,
                 Version = installation.Version,
+                ProductVersion = installation.ProductVersion,
                 InstallRoot = root.Path,
                 Architecture = root.Architecture,
                 IsValid = isValid,
@@ -157,6 +158,13 @@ internal class InstallationInfo
 {
     public InstallComponent Component { get; set; }
     public string Version { get; set; } = string.Empty;
+
+    /// <summary>
+    /// The on-disk version, when it differs from <see cref="Version"/> (RTM and servicing daily builds).
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? ProductVersion { get; set; }
+
     public string InstallRoot { get; set; } = string.Empty;
     public InstallArchitecture Architecture { get; set; }
 

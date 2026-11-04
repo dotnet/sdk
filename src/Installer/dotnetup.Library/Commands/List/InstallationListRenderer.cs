@@ -24,10 +24,10 @@ internal static class InstallationListRenderer
         var rows = new List<InstallationListRow>();
         foreach (var spec in specs)
         {
-            var channel = new UpdateChannel(spec.VersionOrChannel);
             var selected = installations
                 .Where(i => i.Component == spec.Component
-                    && versions[i.Version] is { } version && channel.Matches(version))
+                    && versions[i.Version] is not null
+                    && Installation.IsOwnedBy(i.Version, i.ProductVersion, spec.Source, spec.VersionOrChannel))
                 .OrderByDescending(i => versions[i.Version])
                 .FirstOrDefault();
             rows.Add(new InstallationListRow
