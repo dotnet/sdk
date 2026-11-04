@@ -196,8 +196,9 @@ jobs:
       - name: Dispatch Issue Monster for created issues
         uses: actions/github-script@v9.0.0
         env:
-          # gh-aw exports only the first issue directly; the map contains all
-          # created issues when create-issue produces up to its configured max.
+          # gh-aw exports only the first issue directly. v0.89 no longer exports
+          # the temporary ID map, so the helper also finds this run's issues by
+          # gh-aw's provenance marker.
           CREATED_ISSUE_NUMBER: ${{ needs.safe_outputs.outputs.created_issue_number }}
           CREATED_ISSUE_MAP: ${{ needs.safe_outputs.outputs.process_safe_outputs_temporary_id_map }}
           TARGET_REF: ${{ github.ref_name }}
