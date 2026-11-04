@@ -416,7 +416,9 @@ internal class InstallerOrchestratorSingleton
 
     /// <summary>
     /// Rejects an install whose on-disk version folder is tracked for a different build of the component,
-    /// because extraction would keep the existing files while recording the new build.
+    /// because extraction would keep the existing files while recording the new build. Archive installs are
+    /// allowed when the folder's <c>.version</c> files match the archive, such as a release over the daily
+    /// build it was promoted from; both records then reference the folder.
     /// </summary>
     private static void ThrowIfLayoutConflict(PreparedInstall prepared, DotnetupSharedManifest? manifest)
     {
@@ -424,6 +426,18 @@ internal class InstallerOrchestratorSingleton
         string component = install.Component.GetDisplayName();
         if (manifest?.FindLayoutConflict(install) is { } conflict)
         {
+            if (prepared.Request.Options.InstallMechanism == InstallMechanism.Archive)
+            {
+                try
+                {
+                    prepared.Artifact.ThrowIfExistingLayoutDiffers();
+                    return;
+                }
+                catch (DotnetInstallException ex) when (ex.ErrorCode == DotnetInstallErrorCode.InstallLayoutConflict)
+                {
+                }
+            }
+
             var (existing, owningSpecs) = conflict;
             string action = owningSpecs.Count == 0
                 ? string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictUninstallVersion, component, existing.Version)

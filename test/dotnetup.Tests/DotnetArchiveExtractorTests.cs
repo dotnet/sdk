@@ -86,6 +86,24 @@ public class DotnetArchiveExtractorTests
     }
 
     [TestMethod]
+    public void Commit_TrackedReleaseOverDailyBuildFromSameCommit_RecordsBothInstallations()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "same-build"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        using var release = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11.0.100", "11.0.100", null, markerPath, "same-build");
+
+        InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(release).WasAlreadyInstalled.Should().BeFalse();
+
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        new DotnetupSharedManifest(testEnv.ManifestPath).ReadManifest().DotnetRoots.Single().Installations
+            .Should().HaveCount(2).And.OnlyContain(i => i.LayoutVersion == "11.0.100" && i.Subcomponents.Contains("sdk/11.0.100"));
+    }
+
+    [TestMethod]
     public void Commit_UntrackedDailyBuildWithExistingLayout_Rejects()
     {
         using var testEnv = new TestEnvironment();

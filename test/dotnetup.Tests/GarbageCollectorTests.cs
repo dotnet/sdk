@@ -138,6 +138,34 @@ public class GarbageCollectorTests
     }
 
     [TestMethod]
+    public void CreatePlan_RemovingDailyBuildKeepsFolderSharedWithRelease()
+    {
+        using var environment = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(environment.ManifestPath);
+        var root = new DotnetInstallRoot(environment.InstallPath, InstallArchitecture.x64);
+        environment.StubComponentDirectories(root.Path, (InstallComponent.SDK, "11.0.100"));
+        manifest.AddInstallation(root, new Installation
+        {
+            Component = InstallComponent.SDK, Version = "11.0.100-rtm.26552.115", ProductVersion = "11.0.100",
+            Subcomponents = ["sdk/11.0.100"]
+        });
+        manifest.AddInstallation(root, new Installation
+        {
+            Component = InstallComponent.SDK, Version = "11.0.100", Subcomponents = ["sdk/11.0.100"]
+        });
+        manifest.AddInstallSpec(root, new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "11.0.100", InstallSource = InstallSource.Explicit
+        });
+
+        var plan = GarbageCollector.CreatePlan(root, manifest.ReadManifest());
+
+        plan.InstallationsToRemove.Should().ContainSingle().Which.Version.Should().Be("11.0.100-rtm.26552.115");
+        plan.PathsToDelete.Should().BeEmpty();
+    }
+
+    [TestMethod]
     public void RemovesUnreferencedInstallationRecords()
     {
         using var testEnv = new TestEnvironment();
