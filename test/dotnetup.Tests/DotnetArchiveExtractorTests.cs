@@ -144,6 +144,32 @@ public class DotnetArchiveExtractorTests
     }
 
     [TestMethod]
+    public void Commit_LayoutConflictKeptByNoSpec_RemovesUnusedInstallAndInstalls()
+    {
+        using var testEnv = new TestEnvironment();
+        const string markerPath = "sdk/11.0.100/dotnet.dll";
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100", markerPath, "old-build"))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var data = manifest.ReadManifest();
+            data.DotnetRoots.Single().InstallSpecs.Clear();
+            manifest.WriteManifest(data);
+        }
+        using var nextDaily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26553.101", "11.0.100", markerPath, "new-build");
+
+        InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(nextDaily).WasAlreadyInstalled.Should().BeFalse();
+
+        File.ReadAllText(Path.Combine(testEnv.InstallPath, markerPath)).Should().Be("new-build");
+        using var readMutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        new DotnetupSharedManifest(testEnv.ManifestPath).ReadManifest().DotnetRoots.Single().Installations
+            .Should().ContainSingle().Which.Version.Should().Be("11.0.100-rtm.26553.101");
+    }
+
+    [TestMethod]
     [DataRow(false)]
     [DataRow(true)]
     public void Commit_GlobalJsonPinSatisfiedByBuildInstalledDuringDownload_ReturnsExistingInstall(bool untracked)
