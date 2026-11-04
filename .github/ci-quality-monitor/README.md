@@ -3,9 +3,9 @@
 The CI Quality Investigator is a GitHub Agentic Workflow that reviews public
 Azure DevOps builds and creates issues for actionable, previously untracked SDK
 build, test, and CI-integration failures. It does not require an Azure DevOps
-service hook or credential. The workflow uses the GitHub Actions token for Copilot
-inference through the scoped `copilot-requests: write` permission and keeps all
-repository writes in GitHub AW safe-output jobs. See [`DESIGN.md`](DESIGN.md)
+service hook or credential. The workflow uses the protected Copilot PAT pool for
+inference and keeps repository issue writes in GitHub AW safe-output jobs.
+See [`DESIGN.md`](DESIGN.md)
 for policy, state semantics, and safety invariants.
 
 ## Architecture
@@ -42,7 +42,38 @@ alone does not provide this admission gate. Keep this dependency in the
 [source workflow](../workflows/ci-quality-monitor.md): a no-op run waiting on
 environment admission would otherwise hold the workflow-wide concurrency lock.
 Environment admission can still stall an actionable investigation; a job timeout
-does not bound that wait, so stale waiting runs require operational cancellation.
+does not bound that wait. The independent
+[`admission recovery workflow`](../workflows/ci-quality-monitor-recovery.yml)
+checks every 15 minutes for `pre_activation` or `pat_pool` jobs waiting at least
+30 minutes without a runner or steps. It only targets this investigator on the
+default branch and does not share the investigator's concurrency group or PAT
+environment.
+
+The [recovery helper](admission-recovery.js) records run/job metadata, environment
+and custom-app protection rules, pending deployments, review history, and GraphQL deployment
+status. The workflow uploads that report as `ci-quality-admission-diagnostics`
+before requesting cancellation, then rechecks the run attempt, stalled job and
+current protection rules. It refuses to cancel reviewer, timer, custom-app or
+other-environment waits, and never approves or bypasses a protection rule.
+Manual dispatch defaults to diagnostic-only `dry_run=true`; scheduled runs request
+cancellation. API failures surface as workflow failures rather than permitting
+cancellation without evidence.
+
+Recovery is best-effort: scheduled Actions can be delayed, and GitHub must accept
+and complete cancellation. It covers the two observed admission jobs, not every
+possible workflow hang. Recovery does not automatically retry inference:
+checkpointed builds still need deliberate manual replay with `build_id`.
+
+For the October 6 stall, the [deployment status history](https://api.github.com/repos/dotnet/sdk/deployments/6880298958/statuses)
+contains an unexplained `waiting` transition at 09:21:09 UTC. The
+[collector log](https://github.com/dotnet/sdk/actions/runs/37442110088/job/112198875305)
+shows the cache write warning at 09:21:23 UTC, after successful checkpoint upload;
+the collector succeeded. GitHub documents that
+[read-only cache denials are warnings](https://github.blog/changelog/2026-06-26-read-only-actions-cache-for-untrusted-triggers/),
+not environment-admission failures. The protected job never received a runner
+or executed gh-aw code. Available REST/GraphQL diagnostics do not establish why
+admission failed; the recovery report preserves those diagnostics before a
+future cancellation clears pending-review state.
 
 The collector code follows these boundaries:
 
@@ -75,7 +106,10 @@ heartbeat state. Manual dispatch ignores the processed-build ledger for the
 selected build, which makes repeatable validation possible.
 
 Merged-PR delivery uses `pull_request_target` so protected environments evaluate
-the trusted base branch instead of `refs/pull/<number>/merge`. The collector,
+the trusted default branch instead of `refs/pull/<number>/merge`, including for
+PRs targeting release branches. See
+[GitHub's default-branch execution semantics](https://github.blog/changelog/2025-11-07-actions-pull_request_target-and-environment-branch-protections-changes/).
+The collector,
 agent source checkout, and dispatch helper explicitly check out
 `main` from the workflow repository: monitor fixes are not serviced onto release
 branches. Pull request head code is never checked out or executed.

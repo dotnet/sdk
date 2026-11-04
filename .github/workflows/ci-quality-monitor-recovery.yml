@@ -1,0 +1,63 @@
+name: Recover stalled CI Investigator admission
+
+on:
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Record diagnostics without cancelling stalled investigator runs.
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: ci-quality-monitor-recovery
+  queue: max
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  recover:
+    if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      actions: write
+      checks: read
+      contents: read
+      deployments: read
+    steps:
+      - name: Check out trusted recovery helper
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Capture stalled admission diagnostics
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const {writeFile} = require('node:fs/promises');
+            const {collectAdmissionDiagnostics} = require('./.github/ci-quality-monitor/admission-recovery.js');
+            const report = await collectAdmissionDiagnostics({github, context, core});
+            await writeFile('admission-diagnostics.json', JSON.stringify(report, null, 2));
+      - name: Preserve diagnostics before requesting cancellation
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: ci-quality-admission-diagnostics
+          path: admission-diagnostics.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Cancel confirmed stale admission
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          DRY_RUN: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run }}
+        with:
+          script: |
+            const {readFile} = require('node:fs/promises');
+            const {recoverStalledAdmissions} = require('./.github/ci-quality-monitor/admission-recovery.js');
+            const report = JSON.parse(await readFile('admission-diagnostics.json', 'utf8'));
+            await recoverStalledAdmissions({
+              github, context, core, report, dryRun: process.env.DRY_RUN !== 'false',
+            });

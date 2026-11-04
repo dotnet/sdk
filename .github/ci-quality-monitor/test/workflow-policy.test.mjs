@@ -145,3 +145,19 @@ test("CI evidence uses a same-run artifact instead of job outputs", async () =>
     }
     assert.match(source, /Read the supplied public CI evidence from `\.ci-quality-monitor\/dossier\.json`/);
 });
+
+test("admission recovery runs independently and preserves diagnostics before cancellation", async () =>
+{
+    const workflow = await readFile(new URL("../../workflows/ci-quality-monitor-recovery.yml", import.meta.url), "utf8");
+
+    assert.match(workflow, /cron: '7,22,37,52 \* \* \* \*'/);
+    assert.match(workflow, /group: ci-quality-monitor-recovery/);
+    assert.match(workflow, /if: github\.ref == format\('refs\/heads\/\{0\}', github\.event\.repository\.default_branch\)/);
+    assert.match(workflow, /actions: write/);
+    assert.match(workflow, /deployments: read/);
+    assert.match(workflow, /persist-credentials: false/);
+    assert.match(workflow, /DOTNET_CLI_TELEMETRY_SESSIONID:/);
+    assert.doesNotMatch(workflow, /^\s+(?:environment|pull_request_target|workflow_run):/m);
+    assert.ok(workflow.indexOf("name: Preserve diagnostics") < workflow.indexOf("name: Cancel confirmed"));
+    assert.match(workflow, /dryRun: process\.env\.DRY_RUN !== 'false'/);
+});
