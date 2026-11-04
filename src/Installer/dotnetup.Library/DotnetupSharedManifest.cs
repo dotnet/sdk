@@ -467,7 +467,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         }
 
         var owningSpecs = root!.InstallSpecs
-            .Where(spec => spec.Component == conflict.Component && conflict.IsMatchedBy(new UpdateChannel(spec.VersionOrChannel)))
+            .Where(conflict.IsOwnedBy)
             .ToList();
         return (conflict, owningSpecs);
     }

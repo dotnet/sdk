@@ -144,7 +144,7 @@ internal class GarbageCollector
     private static Installation? ResolveLatestMatchingInstallation(InstallSpec spec, List<Installation> installations)
     {
         var matchingInstallations = installations
-            .Where(i => i.Component == spec.Component && i.IsMatchedBy(new UpdateChannel(spec.VersionOrChannel)))
+            .Where(i => i.IsOwnedBy(spec))
             .ToList();
 
         if (matchingInstallations.Count == 0)

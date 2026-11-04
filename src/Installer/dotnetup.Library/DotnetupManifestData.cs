@@ -57,12 +57,21 @@ internal class Installation
     public string LayoutVersion => ProductVersion ?? Version;
 
     /// <summary>
-    /// Returns true if the channel matches the build version or the on-disk version, since global.json pins
-    /// RTM and servicing daily builds by the version on disk.
+    /// Returns true if the spec owns this installation. Only global.json specs match the on-disk version, which the host
+    /// resolves global.json against; other channels match the build version so a daily build can't satisfy channels like latest.
     /// </summary>
-    public bool IsMatchedBy(UpdateChannel channel) =>
-        (ReleaseVersion.TryParse(Version, out var version) && channel.Matches(version)) ||
-        (ProductVersion is not null && ReleaseVersion.TryParse(ProductVersion, out var productVersion) && channel.Matches(productVersion));
+    public bool IsOwnedBy(InstallSpec spec) =>
+        spec.Component == Component && IsOwnedBy(Version, ProductVersion, spec.InstallSource, spec.VersionOrChannel);
+
+    internal static bool IsOwnedBy(string version, string? productVersion, InstallSource source, string versionOrChannel)
+    {
+        var channel = new UpdateChannel(versionOrChannel);
+        return Matches(channel, version)
+            || (source == InstallSource.GlobalJson && productVersion is not null && Matches(channel, productVersion));
+    }
+
+    private static bool Matches(UpdateChannel channel, string version) =>
+        ReleaseVersion.TryParse(version, out var parsed) && channel.Matches(parsed);
 
     public DotnetInstall ToDotnetInstall(DotnetInstallRoot installRoot) =>
         new(installRoot, new ReleaseVersion(Version), Component,

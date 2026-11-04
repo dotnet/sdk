@@ -107,6 +107,37 @@ public class GarbageCollectorTests
     }
 
     [TestMethod]
+    public void CreatePlan_StableChannelsDoNotMatchRtmDailyBuildByOnDiskVersion()
+    {
+        using var environment = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(environment.ManifestPath);
+        var root = new DotnetInstallRoot(environment.InstallPath, InstallArchitecture.x64);
+        environment.StubComponentDirectories(root.Path, (InstallComponent.SDK, "10.0.105"), (InstallComponent.SDK, "11.0.100"));
+        manifest.AddInstallation(root, new Installation
+        {
+            Component = InstallComponent.SDK, Version = "10.0.105", Subcomponents = ["sdk/10.0.105"]
+        });
+        manifest.AddInstallation(root, new Installation
+        {
+            Component = InstallComponent.SDK, Version = "11.0.100-rtm.26552.115", ProductVersion = "11.0.100",
+            Subcomponents = ["sdk/11.0.100"]
+        });
+        foreach (var channel in new[] { "latest", "11-daily" })
+        {
+            manifest.AddInstallSpec(root, new InstallSpec
+            {
+                Component = InstallComponent.SDK, VersionOrChannel = channel, InstallSource = InstallSource.Explicit
+            });
+        }
+
+        var plan = GarbageCollector.CreatePlan(root, manifest.ReadManifest());
+
+        plan.InstallationsToRemove.Should().BeEmpty();
+        plan.InstallSpecsByInstallation.Single(p => p.Value.Any(s => s.VersionOrChannel == "latest")).Key.Version.Should().Be("10.0.105");
+    }
+
+    [TestMethod]
     public void RemovesUnreferencedInstallationRecords()
     {
         using var testEnv = new TestEnvironment();

@@ -72,7 +72,8 @@ internal static class UninstallPreview
     }
 
     private static bool MatchesRequest(Installation installation, InstallComponent component, UpdateChannel channel) =>
-        installation.Component == component && installation.IsMatchedBy(channel);
+        installation.Component == component &&
+        ReleaseVersion.TryParse(installation.Version, out var version) && channel.Matches(version);
 
     private static void DisplayRemovalSummary(IReadOnlyList<InstallSpec> specsToRemove)
     {
