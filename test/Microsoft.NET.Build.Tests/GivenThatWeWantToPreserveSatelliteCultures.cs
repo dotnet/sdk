@@ -1,13 +1,169 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.IO.Compression;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyModel;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
 
 namespace Microsoft.NET.Build.Tests;
 
 [TestClass]
 public class GivenThatWeWantToPreserveSatelliteCultures : SdkTest
 {
+    [TestMethod]
+    [CombinatorialData]
+    public void It_loads_lowercase_pseudo_locale_satellites(bool publish, bool mixedCase, bool filter)
+        => TestPseudoLocaleSatellites(publish, mixedCase, filter, useNls: false);
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [CombinatorialData]
+    public void It_loads_lowercase_pseudo_locale_satellites_after_building_with_NLS(bool publish, bool mixedCase, bool filter)
+        => TestPseudoLocaleSatellites(publish, mixedCase, filter, useNls: true);
+
+    private void TestPseudoLocaleSatellites(bool publish, bool mixedCase, bool filter, bool useNls)
+    {
+        string identifier = $"{publish}-{mixedCase}-{filter}-{useNls}";
+        string[] cultures = mixedCase
+            ? ["qps-Ploc", "qps-Plocm", "qps-Ploca", "de"]
+            : ["qps-ploc", "qps-plocm", "qps-ploca", "de"];
+        string[] selectedCultures = filter ? cultures.Take(3).ToArray() : cultures;
+        var packageProject = new TestProject
+        {
+            Name = "PseudoLocales",
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            SourceFiles =
+            {
+                ["Marker.cs"] = "namespace PseudoLocales; public class Marker { }"
+            }
+        };
+        foreach (string culture in cultures)
+        {
+            packageProject.EmbeddedResources[$"Strings.{culture}.resx"] = $"""
+                <root>
+                  <data name="Greeting" xml:space="preserve"><value>Resource for {culture.ToLowerInvariant()}</value></data>
+                </root>
+                """;
+        }
+
+        var packageAsset = TestAssetsManager.CreateTestProject(packageProject, identifier: identifier);
+        string packageDirectory = Path.Combine(packageAsset.TestRoot, "feed");
+        string packageProjectPath = Path.Combine(packageAsset.TestRoot, packageProject.Name, "PseudoLocales.csproj");
+        new DotnetPackCommand(Log, packageProjectPath, "-c", "Debug", "-o", packageDirectory,
+            "/p:UseSharedCompilation=false", "/nr:false")
+            .WithEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_USENLS", useNls ? "1" : "0")
+            .WithEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "0")
+            .Execute()
+            .Should().Pass();
+
+        var appProject = new TestProject
+        {
+            Name = "PseudoLocaleConsumer",
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            IsExe = true,
+            SourceFiles =
+            {
+                ["Program.cs"] = """
+                    using System;
+                    using System.Globalization;
+                    using System.Resources;
+                    using PseudoLocales;
+
+                    foreach (string name in args)
+                    {
+                        var resources = new ResourceManager("PseudoLocales.Strings", typeof(Marker).Assembly);
+                        var culture = CultureInfo.GetCultureInfo(name);
+                        var resourceSet = resources.GetResourceSet(culture, createIfNotExists: true, tryParents: false);
+                        string actual = resourceSet?.GetString("Greeting");
+                        string expected = $"Resource for {name.ToLowerInvariant()}";
+                        if (actual != expected)
+                            throw new Exception($"Expected '{expected}' for {culture.Name}, got '{actual}'.");
+                        Console.WriteLine(actual);
+                    }
+                    """
+            }
+        };
+        string packageFile = Path.Combine(packageDirectory, "PseudoLocales.1.0.0.nupkg");
+        appProject.PackageReferences.Add(new TestPackageReference(packageProject.Name, "1.0.0", packageFile));
+        appProject.AdditionalProperties["RestoreAdditionalProjectSources"] = packageDirectory;
+        appProject.AdditionalProperties["RestorePackagesPath"] = "$(MSBuildProjectDirectory)/packages";
+        if (filter)
+        {
+            appProject.AdditionalProperties["SatelliteResourceLanguages"] = "QPS-PLOC;qps-Plocm;qps-PLOCA";
+        }
+        appProject.ProjectChanges.Add(project => project.Root!.Add(XElement.Parse("""
+            <Target Name="RecordResourceCultures" AfterTargets="ResolvePackageAssets">
+              <WriteLinesToFile File="$(IntermediateOutputPath)resource-cultures.txt"
+                                Lines="@(ResourceCopyLocalItems->'%(Culture)|%(DestinationSubDirectory)|%(DestinationSubPath)|%(PathInPackage)')"
+                                Overwrite="true" />
+            </Target>
+            """)));
+
+        var appAsset = TestAssetsManager.CreateTestProject(appProject, identifier: identifier);
+        MSBuildCommand command = publish ? new PublishCommand(appAsset) : new BuildCommand(appAsset);
+        command.WithEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_USENLS", useNls ? "1" : "0")
+            .WithEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "0")
+            .Execute("/p:UseSharedCompilation=false", "/nr:false")
+            .Should().Pass()
+            .And.NotHaveStdOutContaining("NETSDK1187")
+            .And.NotHaveStdOutContaining("NETSDK1188");
+
+        string metadataPath = Path.Combine(
+            command.GetIntermediateDirectory(appProject.TargetFrameworks).FullName, "resource-cultures.txt");
+        File.ReadAllLines(metadataPath).Should().BeEquivalentTo(selectedCultures.Select(culture =>
+            $"{culture.ToLowerInvariant()}|{culture.ToLowerInvariant()}{Path.DirectorySeparatorChar}|{Path.Combine(culture.ToLowerInvariant(), "PseudoLocales.resources.dll")}|lib/{packageProject.TargetFrameworks}/{culture}/PseudoLocales.resources.dll"));
+
+        string outputDirectory = command.GetOutputDirectory(appProject.TargetFrameworks).FullName;
+        Directory.GetDirectories(outputDirectory).Select(Path.GetFileName)
+            .Should().Contain(selectedCultures.Select(culture => culture.ToLowerInvariant()));
+        Directory.GetDirectories(outputDirectory).Select(Path.GetFileName)
+            .Where(name => name!.StartsWith("qps-", StringComparison.OrdinalIgnoreCase))
+            .Should().BeEquivalentTo(["qps-ploc", "qps-plocm", "qps-ploca"]);
+        if (filter)
+        {
+            Directory.Exists(Path.Combine(outputDirectory, "de")).Should().BeFalse();
+        }
+
+        using var package = ZipFile.OpenRead(packageFile);
+        using var depsStream = File.OpenRead(Path.Combine(outputDirectory, "PseudoLocaleConsumer.deps.json"));
+        using var depsReader = new DependencyContextJsonReader();
+        var resourceEntries = depsReader.Read(depsStream).RuntimeLibraries.Single(library => library.Name == "PseudoLocales").ResourceAssemblies;
+        resourceEntries.Select(resource => (resource.Path, resource.Locale, resource.LocalPath))
+            .Should().BeEquivalentTo(selectedCultures.Select(culture =>
+                ($"lib/{packageProject.TargetFrameworks}/{culture}/PseudoLocales.resources.dll",
+                    culture.ToLowerInvariant(), $"{culture.ToLowerInvariant()}/PseudoLocales.resources.dll")));
+
+        foreach (string culture in selectedCultures)
+        {
+            string satellitePath = Path.Combine(outputDirectory, culture.ToLowerInvariant(), "PseudoLocales.resources.dll");
+            using var originalStream = package.GetEntry($"lib/{packageProject.TargetFrameworks}/{culture}/PseudoLocales.resources.dll")!.Open();
+            using var original = new MemoryStream();
+            originalStream.CopyTo(original);
+            File.ReadAllBytes(satellitePath).Should().Equal(original.ToArray());
+
+            using var satelliteStream = File.OpenRead(satellitePath);
+            using var peReader = new PEReader(satelliteStream);
+            var metadata = peReader.GetMetadataReader();
+            metadata.GetString(metadata.GetAssemblyDefinition().Culture).Should().Be(culture);
+            metadata.ManifestResources.Select(handle => metadata.GetString(metadata.GetManifestResource(handle).Name))
+                .Should().Contain($"PseudoLocales.Strings.{culture}.resources");
+        }
+
+        string[] lookupNames = selectedCultures.SelectMany(culture => new[] { culture.ToLowerInvariant(), culture.ToUpperInvariant() }).ToArray();
+        string[] runtimeModes = OperatingSystem.IsWindows() ? ["0", "1"] : ["0"];
+        foreach (string runtimeMode in runtimeModes)
+        {
+            new DotnetCommand(Log, Path.Combine(outputDirectory, "PseudoLocaleConsumer.dll"))
+                .WithEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_USENLS", runtimeMode)
+                .WithEnvironmentVariable("DOTNET_SYSTEM_GLOBALIZATION_INVARIANT", "0")
+                .Execute(lookupNames)
+                .Should().Pass();
+        }
+    }
+
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     [DataRow(false)]
