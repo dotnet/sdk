@@ -58,7 +58,7 @@ variables:
   # The OfficialBuilder property is set to Microsoft for the official build only.
   # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
   # This constant is used in CompileOptions.cs to set both TelemetryOptOutDefault and TelemetryOptOutDefaultString.
-  value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+  value: /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 - name: _SignType
   value: real
 
@@ -192,6 +192,7 @@ extends:
         ############### WINDOWS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            publishingVersion: 4
             pool:
               name: $(DncEngInternalBuildPool)
               image: windows.vs2026.amd64
@@ -232,6 +233,7 @@ extends:
         ############### LINUX ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            publishingVersion: 4
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
@@ -300,6 +302,7 @@ extends:
         ############### MACOS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            publishingVersion: 4
             pool:
               name: Azure Pipelines
               image: macOS-latest
@@ -341,7 +344,7 @@ extends:
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
-            publishUsingPipelines: true
+            publishingVersion: 4
             publishAssetsImmediately: true
             isAssetlessBuild: false
             repositoryAlias: self

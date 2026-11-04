@@ -36,6 +36,7 @@ parameters:
   # Defaults to empty, which builds the repo's default solution.
   projectsArgument: ''
   buildVariants: ['']
+  publishingVersion: 3
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -68,7 +69,11 @@ jobs:
     enableMicrobuild: true
     enablePublishBuildAssets: true
     enableTelemetry: true
-    enablePublishUsingPipelines: true
+    ${{ if eq(parameters.publishingVersion, 4) }}:
+      publishingVersion: 4
+      enablePublishing: true
+    ${{ else }}:
+      enablePublishUsingPipelines: true
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}

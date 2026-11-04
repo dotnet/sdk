@@ -27,6 +27,13 @@ All native variants are signed in the normal Arcade signing phase. Preview and G
 use Arcade's `Artifact.SkipPublish` sign-only contract, which also excludes their
 checksums from the publishing manifest. Only daily assets are registered in BAR.
 
+Daily publication uses Arcade V4 publishing. Each RID job additionally uploads a
+`<job-name>_Artifacts` pipeline artifact containing staged daily assets and a V4
+manifest. The BAR job merges these manifests into the `AssetManifests` pipeline
+artifact. Preview and GA remain exclusively in the `Dotnetup_<job-name>` candidate
+artifacts; the release pipeline's input contract is unchanged. Ordinary SDK builds
+retain their existing publishing configuration.
+
 To produce variants locally:
 
 ```powershell

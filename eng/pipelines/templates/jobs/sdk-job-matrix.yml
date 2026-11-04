@@ -5,6 +5,7 @@ parameters:
   runTests: true
   timeoutInMinutes: ''
   buildVariants: ['']
+  publishingVersion: 3
   additionalWindowsJobParameterSets: []
   ### WINDOWS ###
   windowsJobParameterSets:
