@@ -66,11 +66,11 @@ internal class Installation
     internal static bool IsOwnedBy(string version, string? productVersion, InstallSource source, string versionOrChannel)
     {
         var channel = new UpdateChannel(versionOrChannel);
-        return Matches(channel, version)
-            || (source == InstallSource.GlobalJson && productVersion is not null && Matches(channel, productVersion));
+        return IsSatisfiedBy(channel, version)
+            || (source == InstallSource.GlobalJson && productVersion is not null && IsSatisfiedBy(channel, productVersion));
     }
 
-    private static bool Matches(UpdateChannel channel, string version) =>
+    private static bool IsSatisfiedBy(UpdateChannel channel, string version) =>
         ReleaseVersion.TryParse(version, out var parsed) && channel.Matches(parsed);
 
     public DotnetInstall ToDotnetInstall(DotnetInstallRoot installRoot) =>
