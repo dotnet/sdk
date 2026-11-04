@@ -459,7 +459,7 @@ internal class InstallerOrchestratorSingleton
             var (existing, owningSpecs) = layoutConflict;
             string existingVersions = string.Join(", ", existing.Select(installation => installation.Version));
             string action = owningSpecs.Count == 0
-                ? string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictUninstallVersion, component, existingVersions)
+                ? string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictRemoveFolder, component, existingVersions, install.ComponentDirectory)
                 : string.Format(CultureInfo.CurrentCulture, Strings.InstallLayoutConflictRunCommand,
                     string.Join(", ", owningSpecs.Select(spec => $"'{GetUninstallCommand(spec, install.InstallRoot, prepared.Request.Options.ManifestPath)}'")));
             throw new DotnetInstallException(

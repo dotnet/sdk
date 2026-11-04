@@ -701,9 +701,9 @@ Or open a new terminal.</value>
     <value>Run {0} first to proceed.</value>
     <comment>{0} is one or more quoted dotnetup uninstall commands.</comment>
   </data>
-  <data name="InstallLayoutConflictUninstallVersion" xml:space="preserve">
-    <value>Uninstall {0} {1} first to proceed.</value>
-    <comment>{0} is the component display name, such as .NET SDK. {1} is the installed version.</comment>
+  <data name="InstallLayoutConflictRemoveFolder" xml:space="preserve">
+    <value>No install spec keeps {0} {1}. Remove '{2}' first to proceed.</value>
+    <comment>{0} is the component display name, such as .NET SDK. {1} is one or more installed versions. {2} is the folder path on disk.</comment>
   </data>
   <data name="ConfirmationOptionsWithKeyboardHints" xml:space="preserve">
     <value>([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)</value>
