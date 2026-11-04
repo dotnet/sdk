@@ -56,7 +56,9 @@ internal interface IDotnetEnvironmentManager
     /// Updates the global.json file to reflect the installed SDK version,
     /// if a global.json exists and the install was global.json-sourced.
     /// </summary>
-    void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests);
+    /// <param name="requests">The resolved install requests.</param>
+    /// <param name="installs">The completed installs, which carry the on-disk version global.json must reference.</param>
+    void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests, IReadOnlyList<InstallResult> installs);
 }
 
 public class GlobalJsonInfo

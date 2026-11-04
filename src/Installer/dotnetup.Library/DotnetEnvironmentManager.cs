@@ -369,42 +369,23 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             : dotnetRoot;
 
     /// <inheritdoc />
-    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests)
+    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests, IReadOnlyList<InstallResult> installs)
     {
         foreach (var request in requests)
         {
             string? globalJsonPath = request.Request.Options.GlobalJsonPath;
             if (globalJsonPath is not null && request.Request.Component == InstallComponent.SDK)
             {
-                GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, GetInstalledSdkVersion(request));
+                GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, GetInstalledSdkVersion(request, installs));
             }
         }
     }
 
     // The host resolves global.json against sdk/<version>, which is untagged for RTM and servicing daily builds.
-    private static string GetInstalledSdkVersion(ResolvedInstallRequest request)
-    {
-        string version = request.ResolvedVersion.ToString();
-        if (request.Request.Options.Untracked)
-        {
-            // No record to consult, so use the untagged folder when only it exists.
-            var resolved = request.ResolvedVersion;
-            string? root = request.Request.InstallRoot.Path;
-            string release = $"{resolved.Major}.{resolved.Minor}.{resolved.Patch}";
-            return root is not null
-                && !string.IsNullOrEmpty(resolved.Prerelease)
-                && !Directory.Exists(InstallationValidator.GetComponentDirectory(root, InstallComponent.SDK, version))
-                && Directory.Exists(InstallationValidator.GetComponentDirectory(root, InstallComponent.SDK, release))
-                ? release
-                : version;
-        }
-
-        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var installRoot = request.Request.InstallRoot;
-        var installation = new DotnetupSharedManifest(request.Request.Options.ManifestPath)
-            .ReadManifestWithoutPruning().DotnetRoots
-            .FirstOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, installRoot.Path) && r.Architecture == installRoot.Architecture)?
-            .Installations.FirstOrDefault(i => i.Component == InstallComponent.SDK && i.Version == version);
-        return installation?.LayoutVersion ?? version;
-    }
+    private static string GetInstalledSdkVersion(ResolvedInstallRequest request, IReadOnlyList<InstallResult> installs) =>
+        installs.FirstOrDefault(result => result.Install.Component == InstallComponent.SDK
+            && result.Install.Version == request.ResolvedVersion
+            && DotnetupUtilities.PathsEqual(result.Install.InstallRoot.Path, request.Request.InstallRoot.Path))?
+            .Install.LayoutVersion.ToString()
+        ?? request.ResolvedVersion.ToString();
 }

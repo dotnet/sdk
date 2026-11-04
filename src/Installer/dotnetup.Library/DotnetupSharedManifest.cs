@@ -436,14 +436,20 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     /// Returns true if the manifest already records an installation matching the given install.
     /// Must be called while holding the install-state mutex.
     /// </summary>
-    internal bool InstallAlreadyExists(DotnetInstall install)
+    internal bool InstallAlreadyExists(DotnetInstall install) => FindExistingInstall(install) is not null;
+
+    /// <summary>
+    /// Returns the recorded installation matching the given install, including its on-disk version.
+    /// Must be called while holding the install-state mutex.
+    /// </summary>
+    internal DotnetInstall? FindExistingInstall(DotnetInstall install)
     {
         var manifestData = ReadManifest();
         var root = manifestData.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
-        return root?.Installations.Any(existing =>
+        return root?.Installations.FirstOrDefault(existing =>
             existing.Version == install.Version.ToString() &&
-            existing.Component == install.Component) ?? false;
+            existing.Component == install.Component)?.ToDotnetInstall(install.InstallRoot);
     }
 
     /// <summary>

@@ -234,45 +234,23 @@ public class GlobalJsonUpdateTests : IDisposable
     }
 
     [TestMethod]
-    public void ApplyGlobalJsonModifications_WritesInstalledLayoutVersion_ForRtmDailyBuild()
+    [DataRow("11.0.100", "\"11.0.100\"")]
+    [DataRow(null, "\"11.0.100-rtm.26552.115\"")]
+    public void ApplyGlobalJsonModifications_WritesInstalledLayoutVersion(string? payloadVersion, string expected)
     {
-        using var testEnv = new TestEnvironment();
-        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
-        {
-            new DotnetupSharedManifest(testEnv.ManifestPath).AddInstallation(installRoot, new Installation
-            {
-                Component = InstallComponent.SDK,
-                Version = "11.0.100-rtm.26552.115",
-                ProductVersion = "11.0.100",
-            });
-        }
+        var installRoot = new DotnetInstallRoot(Path.Combine(_testDir, "dotnet"), InstallerUtilities.GetDefaultInstallArchitecture());
+        var buildVersion = new ReleaseVersion("11.0.100-rtm.26552.115");
         var path = Path.Combine(_testDir, "global.json");
         File.WriteAllText(path, """{ "sdk": { "version": "10.0.100", "rollForward": "disable" } }""");
         var request = new DotnetInstallRequest(installRoot, new UpdateChannel("11-daily"), InstallComponent.SDK,
-            new InstallRequestOptions { ManifestPath = testEnv.ManifestPath, GlobalJsonPath = path });
+            new InstallRequestOptions { GlobalJsonPath = path });
+        var install = new DotnetInstall(installRoot, buildVersion, InstallComponent.SDK)
+            .WithPayloadVersion(payloadVersion is null ? null : new ReleaseVersion(payloadVersion));
 
         new DotnetEnvironmentManager().ApplyGlobalJsonModifications(
-            [new ResolvedInstallRequest(request, new ReleaseVersion("11.0.100-rtm.26552.115"))]);
+            [new ResolvedInstallRequest(request, buildVersion)], [new InstallResult(install, WasAlreadyInstalled: false)]);
 
-        File.ReadAllText(path).Should().Contain("\"11.0.100\"").And.NotContain("rtm");
-    }
-
-    [TestMethod]
-    public void ApplyGlobalJsonModifications_WritesUntaggedVersion_ForUntrackedRtmDailyBuild()
-    {
-        using var testEnv = new TestEnvironment();
-        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
-        Directory.CreateDirectory(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100"));
-        var path = Path.Combine(_testDir, "global.json");
-        File.WriteAllText(path, """{ "sdk": { "version": "10.0.100", "rollForward": "disable" } }""");
-        var request = new DotnetInstallRequest(installRoot, new UpdateChannel("11-daily"), InstallComponent.SDK,
-            new InstallRequestOptions { Untracked = true, GlobalJsonPath = path });
-
-        new DotnetEnvironmentManager().ApplyGlobalJsonModifications(
-            [new ResolvedInstallRequest(request, new ReleaseVersion("11.0.100-rtm.26552.115"))]);
-
-        File.ReadAllText(path).Should().Contain("\"11.0.100\"").And.NotContain("rtm");
+        File.ReadAllText(path).Should().Contain(expected);
     }
 
     // ──────────────────────────────────────────────────────────────

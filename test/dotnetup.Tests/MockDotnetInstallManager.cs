@@ -96,6 +96,6 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
         LastDotnetupOnUserPathEnabled = enabled;
     }
 
-    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests)
+    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests, IReadOnlyList<InstallResult> installs)
         => ApplyGlobalJsonModificationsCallCount++;
 }

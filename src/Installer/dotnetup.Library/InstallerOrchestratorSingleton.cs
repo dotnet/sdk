@@ -297,10 +297,10 @@ internal class InstallerOrchestratorSingleton
 
         using var finalizeLock = ModifyInstallStateMutex();
 
-        if (manifest?.InstallAlreadyExists(install) == true)
+        if (manifest?.FindExistingInstall(install) is { } existingInstall)
         {
             manifest.RecordInstallSpec(installRequest);
-            return new InstallResult(install, WasAlreadyInstalled: true);
+            return new InstallResult(existingInstall, WasAlreadyInstalled: true);
         }
 
         // For --untracked installs the manifest is null, so the check above is
