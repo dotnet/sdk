@@ -112,6 +112,7 @@ jobs:
         - powershell: eng/common/build.ps1
             -restore -build -pack -ci -nativeToolsOnMachine
             -configuration $(buildConfiguration)
+            ${{ iif(ne(variant, ''), format('-binaryLogName Build-{0}.binlog', variant), '') }}
             ${{ parameters.projectsArgument }}
             /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
@@ -139,6 +140,7 @@ jobs:
             . $(Build.SourcesDirectory)/eng/common/build.sh \
             -restore -build -pack -ci \
             -configuration $(buildConfiguration) \
+            ${{ iif(ne(variant, ''), format('-binaryLogName Build-{0}.binlog', variant), '') }} \
             ${{ iif(or(eq(variant, ''), eq(variant, 'daily')), parameters.publishArgument, '') }} \
             ${{ iif(or(eq(variant, ''), eq(variant, 'daily')), parameters.signArgument, '') }} \
             ${{ parameters.projectsArgument }} \
