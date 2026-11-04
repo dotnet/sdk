@@ -440,16 +440,19 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     /// <summary>
     /// Returns the recorded installation matching the given install, including its on-disk version.
-    /// Must be called while holding the install-state mutex.
+    /// With <paramref name="matchLayoutVersion"/>, an installation whose folder is the install's version also matches,
+    /// as the host resolves global.json against folders. Must be called while holding the install-state mutex.
     /// </summary>
-    internal DotnetInstall? FindExistingInstall(DotnetInstall install)
+    internal DotnetInstall? FindExistingInstall(DotnetInstall install, bool matchLayoutVersion = false)
     {
+        string version = install.Version.ToString();
         var manifestData = ReadManifest();
         var root = manifestData.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
         return root?.Installations.FirstOrDefault(existing =>
-            existing.Version == install.Version.ToString() &&
-            existing.Component == install.Component)?.ToDotnetInstall(install.InstallRoot);
+            existing.Component == install.Component &&
+            (existing.Version == version || (matchLayoutVersion && existing.LayoutVersion == version)))?
+            .ToDotnetInstall(install.InstallRoot);
     }
 
     /// <summary>

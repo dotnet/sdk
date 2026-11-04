@@ -292,6 +292,36 @@ public class DotnetArchiveExtractorTests
         result.Install.LayoutVersion.ToString().Should().Be("11.0.100");
     }
 
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void PrepareInstall_GlobalJsonPinSatisfiedByDailyBuildFolder_DoesNotDownload(bool untracked)
+    {
+        using var testEnv = new TestEnvironment();
+        using (var daily = PrepareArchiveInstall(testEnv, InstallComponent.SDK, "11-daily", "11.0.100-rtm.26552.115", "11.0.100",
+            "sdk/11.0.100/dotnet.dll", "daily", untracked))
+        {
+            InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(daily);
+        }
+        var globalJson = Path.Combine(testEnv.TempRoot, "global.json");
+        File.WriteAllText(globalJson, """{"sdk":{"version":"11.0.100","rollForward":"disable"}}""");
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        var request = new DotnetInstallRequest(root, new UpdateChannel("11.0.100"), InstallComponent.SDK,
+            new InstallRequestOptions
+            {
+                ManifestPath = testEnv.ManifestPath, Untracked = untracked,
+                GlobalJsonPath = globalJson, InstallSource = InstallRequestSource.GlobalJson,
+            });
+        using var reporter = new LazyProgressReporter(new NullProgressTarget());
+
+        var prepared = InstallerOrchestratorSingleton.Instance.PrepareInstall(
+            new ResolvedInstallRequest(request, new ReleaseVersion("11.0.100")), new InstallBatchContext(reporter, 0), out var result);
+
+        prepared.Should().BeNull();
+        result!.WasAlreadyInstalled.Should().BeTrue();
+        result.Install.LayoutVersion.ToString().Should().Be("11.0.100");
+    }
+
     private static InstallerOrchestratorSingleton.PreparedInstall PrepareArchiveInstall(
         TestEnvironment testEnv, InstallComponent component, string channel, string version, string? payloadVersion,
         string markerPath, string markerContent, bool untracked = false, string? globalJsonPath = null, string? versionFile = null,

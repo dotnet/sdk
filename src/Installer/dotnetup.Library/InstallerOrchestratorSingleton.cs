@@ -298,7 +298,8 @@ internal class InstallerOrchestratorSingleton
 
         using var finalizeLock = ModifyInstallStateMutex();
 
-        if (manifest?.FindExistingInstall(install) is { } existingInstall)
+        bool fromGlobalJson = installRequest.Options.InstallSource == InstallRequestSource.GlobalJson;
+        if (manifest?.FindExistingInstall(install, matchLayoutVersion: fromGlobalJson) is { } existingInstall)
         {
             manifest.RecordInstallSpec(installRequest);
             return new InstallResult(existingInstall, WasAlreadyInstalled: true);
@@ -308,9 +309,10 @@ internal class InstallerOrchestratorSingleton
         // skipped. Fall back to a filesystem check using the same validation
         // that CommitPreparedInstall uses post-install. This runs inside the
         // mutex so another dotnetup process can't be mid-extraction when we probe.
-        // Archive installs defer this until the download shows whether the existing folder holds the same build.
+        // Archive installs defer this until the download shows whether the existing folder holds the same build,
+        // except for global.json requests, which the host satisfies with whatever build is in the folder.
         if (installRequest.Options.Untracked
-            && installRequest.Options.InstallMechanism != InstallMechanism.Archive
+            && (installRequest.Options.InstallMechanism != InstallMechanism.Archive || fromGlobalJson)
             && installationValidator.Validate(install))
         {
             return new InstallResult(install, WasAlreadyInstalled: true);
