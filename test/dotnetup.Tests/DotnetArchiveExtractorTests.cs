@@ -302,7 +302,9 @@ public class DotnetArchiveExtractorTests
         var request = new DotnetInstallRequest(root, new UpdateChannel(channel), component,
             new InstallRequestOptions
             {
-                ManifestPath = testEnv.ManifestPath, Untracked = untracked, GlobalJsonPath = globalJsonPath,
+                ManifestPath = testEnv.ManifestPath,
+                Untracked = untracked,
+                GlobalJsonPath = globalJsonPath,
                 InstallSource = globalJsonPath is null ? InstallRequestSource.Explicit : InstallRequestSource.GlobalJson,
             });
         var downloader = new MockArchiveDownloader

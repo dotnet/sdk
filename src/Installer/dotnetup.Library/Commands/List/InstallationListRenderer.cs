@@ -23,7 +23,9 @@ internal static class InstallationListRenderer
             .ToDictionary(v => v, v => ReleaseVersion.TryParse(v, out var version) ? version : null, StringComparer.Ordinal);
         var records = installations.ToDictionary(i => new Installation
         {
-            Component = i.Component, Version = i.Version, ProductVersion = i.ProductVersion
+            Component = i.Component,
+            Version = i.Version,
+            ProductVersion = i.ProductVersion
         });
         var recordList = records.Keys.ToList();
         var rows = new List<InstallationListRow>();

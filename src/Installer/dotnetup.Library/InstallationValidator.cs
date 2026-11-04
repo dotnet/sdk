@@ -11,13 +11,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 internal sealed class InstallationValidator : IInstallationValidator
 {
-    private static readonly Dictionary<InstallComponent, string> s_runtimeMonikerByComponent = new()
-    {
-        [InstallComponent.Runtime] = InstallComponentExtensions.RuntimeFrameworkName,
-        [InstallComponent.ASPNETCore] = InstallComponentExtensions.AspNetCoreFrameworkName,
-        [InstallComponent.WindowsDesktop] = InstallComponentExtensions.WindowsDesktopFrameworkName
-    };
-
 #pragma warning disable CA1822 // Validate methods implement IInstallationValidator and cannot be made static
     public bool Validate(DotnetInstall install)
     {
@@ -53,8 +46,7 @@ internal sealed class InstallationValidator : IInstallationValidator
 
         if (!ValidateComponentLayout(install))
         {
-            string expectedDir = GetComponentDirectory(install) ?? "<unknown>";
-            failureReason = $"Component layout validation failed. Expected '{expectedDir}' to contain {(install.Component == InstallComponent.SDK ? "dotnet.dll" : "the framework .deps.json")}.";
+            failureReason = $"Component layout validation failed. Expected '{install.ComponentDirectory}' to contain {(install.Component == InstallComponent.SDK ? "dotnet.dll" : "the framework .deps.json")}.";
             return false;
         }
 
@@ -70,40 +62,12 @@ internal sealed class InstallationValidator : IInstallationValidator
     /// </summary>
     private static bool ValidateComponentLayout(DotnetInstall install)
     {
-        string? componentDirectory = GetComponentDirectory(install);
-        if (componentDirectory is null)
-        {
-            return false;
-        }
-
         string markerFile = install.Component == InstallComponent.SDK
             ? "dotnet.dll"
-            : s_runtimeMonikerByComponent[install.Component] + ".deps.json";
-        return File.Exists(Path.Combine(componentDirectory, markerFile));
+            : install.Component.GetFrameworkName() + ".deps.json";
+        return File.Exists(Path.Combine(install.ComponentDirectory, markerFile));
     }
 
     /// <summary>Gets the path of the <c>dotnet</c> muxer in an install root.</summary>
     internal static string GetMuxerPath(string installRoot) => Path.Combine(installRoot, DotnetupUtilities.GetDotnetExeName());
-
-    /// <summary>Gets the on-disk folder of an install, or null for an unknown component.</summary>
-    internal static string? GetComponentDirectory(DotnetInstall install) =>
-        GetComponentDirectory(install.InstallRoot.Path!, install.Component, install.LayoutVersion.ToString());
-
-    /// <summary>Gets the on-disk folder of a tracked installation under <paramref name="installRoot"/>, or null if unknown.</summary>
-    internal static string? GetComponentDirectory(string installRoot, Installation installation) =>
-        string.IsNullOrEmpty(installation.Version)
-            ? null
-            : GetComponentDirectory(installRoot, installation.Component, installation.LayoutVersion);
-
-    private static string? GetComponentDirectory(string installRoot, InstallComponent component, string layoutVersion)
-    {
-        if (component == InstallComponent.SDK)
-        {
-            return Path.Combine(installRoot, "sdk", layoutVersion);
-        }
-
-        return s_runtimeMonikerByComponent.TryGetValue(component, out string? runtimeMoniker)
-            ? Path.Combine(installRoot, "shared", runtimeMoniker, layoutVersion)
-            : null;
-    }
 }

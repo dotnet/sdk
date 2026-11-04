@@ -109,7 +109,7 @@ public class InstallationValidatorTests
         using var testEnv = new TestEnvironment();
         WriteMuxer(testEnv.InstallPath);
         var install = MakeInstall(testEnv.InstallPath) with { Component = component };
-        string componentPath = InstallationValidator.GetComponentDirectory(install)!;
+        string componentPath = install.ComponentDirectory;
         Directory.CreateDirectory(componentPath);
         File.WriteAllText(Path.Combine(componentPath, "payload"), string.Empty);
 
@@ -153,8 +153,8 @@ public class InstallationValidatorTests
 
     private static void WriteMarker(string root, InstallComponent component, string version)
     {
-        string componentPath = InstallationValidator.GetComponentDirectory(
-            new DotnetInstall(new DotnetInstallRoot(root, InstallArchitecture.x64), new ReleaseVersion(version), component))!;
+        string componentPath =
+            new DotnetInstall(new DotnetInstallRoot(root, InstallArchitecture.x64), new ReleaseVersion(version), component).ComponentDirectory;
         Directory.CreateDirectory(componentPath);
         string marker = component switch
         {

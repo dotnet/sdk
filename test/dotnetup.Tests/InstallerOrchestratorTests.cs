@@ -379,7 +379,7 @@ public class InstallerOrchestratorTests
             OnRepair = () =>
             {
                 File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
-                string sdkDirectory = InstallationValidator.GetComponentDirectory(install)!;
+                string sdkDirectory = install.ComponentDirectory;
                 Directory.CreateDirectory(sdkDirectory);
                 File.WriteAllText(Path.Combine(sdkDirectory, "dotnet.dll"), string.Empty);
                 return true;
