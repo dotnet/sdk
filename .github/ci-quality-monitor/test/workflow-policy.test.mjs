@@ -53,7 +53,7 @@ test("closed incidents provide context but do not suppress resurfaced failures",
 
         assert.match(workflow, /Recently closed issues are historical context only and must not block filing a resurfaced failure\./);
         assert.match(workflow, /only when it is open and its observable failure and mechanism materially match/);
-        assert.match(workflow, /do not create a duplicate when an existing open issue already tracks it/);
+        assert.match(workflow, /do not create a duplicate when an existing open issue already tracks either one/);
 });
 
 test("failed Azure check suites trigger build ID resolution", async () =>
@@ -144,4 +144,33 @@ test("CI evidence uses a same-run artifact instead of job outputs", async () =>
         assert.match(workflow, /name: Download public CI evidence[\s\S]*?name: ci-quality-evidence/);
     }
     assert.match(source, /Read the supplied public CI evidence from `\.ci-quality-monitor\/dossier\.json`/);
+});
+
+test("only collection shares a concurrency queue", async () =>
+{
+    const compiled = await readFile(new URL("../../workflows/ci-quality-monitor.lock.yml", import.meta.url), "utf8");
+
+    assert.match(compiled, /^concurrency:\r?\n  group: ci-quality-monitor-run-\$\{\{ github\.run_id \}\}\r?\n/m);
+    const sharedGroups = [...compiled.matchAll(/^ +group: (.*)$/gm)]
+        .map(match => match[1])
+        .filter(group => !/github\.run_id \}\}"?$/.test(group) && !group.includes("'ci-quality-monitor-collect'"));
+    assert.equal(sharedGroups.length, 0, `Unexpected shared groups: ${sharedGroups.join(", ")}`);
+
+    const collect = getJob(compiled, "collect");
+    assert.match(collect, /'ci-quality-monitor-collect'\) \|\| format\('ci-quality-monitor-skip-\{0\}', github\.run_id\)/);
+    assert.match(collect, /^      cancel-in-progress: false$/m);
+    assert.match(collect, /^      queue: max$/m);
+    for (const job of ["pre_activation", "pat_pool", "agent", "detection", "safe_outputs"])
+    {
+        assert.doesNotMatch(getJob(compiled, job), /^    concurrency:/m);
+    }
+});
+
+test("created issues expose cross-run deduplication keys", async () =>
+{
+    const workflow = await readFile(workflowUrl, "utf8");
+
+    assert.match(workflow, /\*\*Failure fingerprint:\*\*/);
+    assert.match(workflow, /\*\*Mechanism fingerprint:\*\*/);
+    assert.match(workflow, /search for both exact visible values/);
 });

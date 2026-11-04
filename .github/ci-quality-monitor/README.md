@@ -40,9 +40,18 @@ emits `should_run=true`; otherwise it and the dependent PAT-backed jobs are
 skipped without requesting the `copilot-pat-pool` environment. A top-level `if`
 alone does not provide this admission gate. Keep this dependency in the
 [source workflow](../workflows/ci-quality-monitor.md): a no-op run waiting on
-environment admission would otherwise hold the workflow-wide concurrency lock.
-Environment admission can still stall an actionable investigation; a job timeout
-does not bound that wait, so stale waiting runs require operational cancellation.
+environment admission would otherwise waste a protected deployment.
+
+Only the `collect` job shares a concurrency queue (`ci-quality-monitor-collect`,
+`queue: max`); every other job uses a per-run group. An actionable run whose
+environment admission stalls, for example when GitHub Actions
+[loses execution state](https://stspg.io/f0yg8jk2gm80), therefore blocks only
+itself; a job timeout does not bound that wait, so such runs still require
+operational cancellation. Investigations and issue creation may run in parallel,
+so cross-run deduplication relies on the exact `Failure fingerprint` and
+`Mechanism fingerprint` lines in each issue body plus `deduplicate-by-title`.
+Rare duplicates remain possible when two agents investigate the same failure
+before either issue exists.
 
 The collector code follows these boundaries:
 
@@ -205,9 +214,9 @@ This prevents a lost cache and artifact checkpoint from spending AI credits or
 creating a burst of historical issues.
 
 The checkpoint contains no credentials or untrusted executable content. It is
-JSON build metadata only. Workflow concurrency queues scheduled runs under one
-group, preventing two collectors from claiming the same newly completed build
-at once.
+JSON build metadata only. The `collect` job's concurrency group queues
+collectors, preventing two of them from claiming the same newly completed build
+at once. The checkpoint is restored, updated, and saved entirely within that job.
 
 ## Issue Policy
 

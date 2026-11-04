@@ -26,13 +26,10 @@ on:
 checkout: false
 
 concurrency:
-  # GitHub evaluates workflow concurrency before any job-level `if`. Give
-  # irrelevant check suites and unmerged PR closures unique groups so they
-  # cannot fill the monitor queue before `collect` skips them. Use a new group
-  # for actionable runs to leave the existing, permanently blocked queue
-  # behind.
-  group: ${{ ((((github.event_name == 'check_suite' && github.event.check_suite.app.slug == 'azure-pipelines' && github.event.check_suite.conclusion != 'success') || (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true) || (github.event_name != 'check_suite' && github.event_name != 'pull_request_target')) && 'ci-quality-monitor-v2') || format('ci-quality-monitor-skip-{0}', github.run_id)) }}
-  queue: max
+  # Serialize only `collect`, which owns the processed-build ledger. A per-run
+  # workflow group replaces gh-aw's default workflow-wide group so a protected
+  # job stalled at environment admission blocks only its own run.
+  group: ci-quality-monitor-run-${{ github.run_id }}
   job-discriminator: ${{ github.run_id }}
 
 env:
@@ -53,6 +50,12 @@ jobs:
        github.event.check_suite.conclusion != 'success') ||
       (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
+    # Serialize the ledger's restore-update-save sequence. Irrelevant events get
+    # unique groups so they can never occupy the shared queue.
+    concurrency:
+      group: ${{ ((((github.event_name == 'check_suite' && github.event.check_suite.app.slug == 'azure-pipelines' && github.event.check_suite.conclusion != 'success') || (github.event_name == 'pull_request_target' && github.event.pull_request.merged == true) || (github.event_name != 'check_suite' && github.event_name != 'pull_request_target')) && 'ci-quality-monitor-collect') || format('ci-quality-monitor-skip-{0}', github.run_id)) }}
+      cancel-in-progress: false
+      queue: max
     permissions:
       actions: read
       checks: read
@@ -293,7 +296,6 @@ safe-outputs:
     create-issue: false
   report-incomplete:
     create-issue: false
-  concurrency-group: ci-quality-monitor-issues
   allowed-domains:
     - "dev.azure.com"
     - "github.com"
@@ -337,7 +339,7 @@ Follow these steps in order:
 7. A specific `compiler-error`, `configuration-error`, `package-policy-error`, or deterministic `tool-execution-error` may be actionable after one occurrence when the preceding build passed and the diagnostic clearly identifies an SDK-owned break. Do not apply this exception to generic exit codes, `unknown-error`, or `evidence-unavailable`.
 8. A `pipeline-not-triggered` heartbeat is actionable only when the collector reports `actionable: true`. The 90-minute threshold is only the minimum branch-head age for recording a miss; actionability requires misses in two consecutive daily routines, so ordinary detection latency is approximately 24–48 hours. Search for pipeline outages or disabled triggers before filing.
 9. Determine ownership before searching or filing. This output can create issues only in the SDK repository. A repository-specific test, product build break, or SDK-owned CI integration is in scope. A broad Azure DevOps, Helix, machine-pool, source-control, or external-feed outage with no SDK-specific mechanism belongs in `dotnet/dnceng`; call `noop` for that candidate and identify the routing reason instead of filing it here.
-10. Search open and recently closed issues in `${{ github.repository }}` for each proposed mechanism. Search the exact test/diagnostic/status first, then one shorter mechanism phrase. Make at most six searches total. Recently closed issues are historical context only and must not block filing a resurfaced failure.
+10. Search open and recently closed issues in `${{ github.repository }}` for each proposed mechanism. Search the exact test/diagnostic/status first, then one shorter mechanism phrase. Make at most eight searches total. Recently closed issues are historical context only and must not block filing a resurfaced failure.
 11. Treat an issue as covering the failure only when it is open and its observable failure and mechanism materially match. Generic task or assembly names are insufficient.
 12. For each remaining candidate, form an evidence-bounded causal chain: the observed failure, its proximate cause, any supported trigger or contributing condition, and the resulting impact. Separate facts from inference. Explicitly reject generic parent failures and artifact cascades as causes.
 13. Assign `High`, `Medium`, or `Low` confidence. Use `High` only when a specific diagnostic or artifact establishes the causal chain; recurrence alone establishes a flake pattern, not its underlying cause. Never call a failure flaky, infrastructure, PR-related, or safe to retry without the corresponding evidence in the dossier.
@@ -355,7 +357,7 @@ Use a concise title containing the failing component and stable symptom. The bod
 - `## Error Details` with a short exact excerpt copied from the observation. For work-item crashes/timeouts, include exit code, console URL, and dump/result links. State when named test results were unavailable.
 - `## Root Cause Analysis` with `Observed`, `Assessment`, `Confidence`, and `Alternatives / Unknowns` bold labels. Give the most specific supported causal chain at a reasonable depth; do not merely restate the failed test, task, or build status. State explicitly when the underlying cause is not yet established.
 - `## Suggested Investigation` with the next discriminating check first, followed by concrete source, binlog, dump, or comparison steps. Do not claim an unverified root cause.
-- A `- **Failure fingerprint:** \`EXACT_FINGERPRINT\`` item under `## Build Information`, copying the exact actionable observation `fingerprint` from the dossier. Before creating an issue, search for that exact visible fingerprint and do not create a duplicate when an existing open issue already tracks it. GitHub AW also applies native title deduplication as a backstop.
+- A `- **Failure fingerprint:** \`EXACT_FINGERPRINT\`` item under `## Build Information`, copying the exact actionable observation `fingerprint` from the dossier, followed by a `- **Mechanism fingerprint:** \`EXACT_MECHANISM_FINGERPRINT\`` item copying that observation's `mechanismFingerprint` when present. Before creating an issue, search for both exact visible values and do not create a duplicate when an existing open issue already tracks either one. Concurrent investigator runs can file in parallel, so these visible values are the cross-run deduplication key. GitHub AW also applies native title deduplication as a backstop.
 
 ## Test Known Build Error requirements
 
