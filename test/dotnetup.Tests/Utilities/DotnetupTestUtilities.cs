@@ -418,68 +418,14 @@ internal static class DotnetupTestUtilities
             }
         }
 
-        int effectiveTimeoutMilliseconds = timeout is { } limit
-            ? checked((int)limit.TotalMilliseconds)
-            : timeoutMilliseconds;
-        string timeoutDescription = timeout is null ? $"{timeoutMilliseconds} ms" : timeout.ToString()!;
-        if (standardInput is null)
+        TimeSpan effectiveTimeout = timeout ?? TimeSpan.FromMilliseconds(timeoutMilliseconds);
+        var result = ChildProcessRunner.Run(startInfo, effectiveTimeout, standardInput);
+        if (result.TimedOut)
         {
-            using var cancellation = new System.Threading.CancellationTokenSource(effectiveTimeoutMilliseconds);
-            string output = string.Empty;
-            try
-            {
-                ProcessExitStatus status;
-                if (captureOutput)
-                {
-                    var result = Process.RunAndCaptureTextAsync(startInfo, cancellation.Token).GetAwaiter().GetResult();
-                    status = result.ExitStatus;
-                    output = NormalizeCapturedOutput(result.StandardOutput) + NormalizeCapturedOutput(result.StandardError);
-                }
-                else
-                {
-                    status = Process.RunAsync(startInfo, cancellation.Token).GetAwaiter().GetResult();
-                }
-
-                if (!status.Canceled)
-                {
-                    return (status.ExitCode, output);
-                }
-            }
-            catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
-            {
-            }
-
-            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {timeoutDescription}. Output:\n{output}");
+            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {effectiveTimeout}.");
         }
 
-        // Interactive callers need access to the child's stdin before waiting for exit.
-        using var process = new Process { StartInfo = startInfo };
-        process.Start();
-        var outputTask = captureOutput ? process.ReadAllTextAsync() : null;
-        process.StandardInput.Write(standardInput);
-        process.StandardInput.Close();
-
-        bool exitedWithinTimeout = process.WaitForExit(effectiveTimeoutMilliseconds);
-        bool terminated = exitedWithinTimeout;
-        if (!exitedWithinTimeout)
-        {
-            process.Kill(entireProcessTree: true);
-            terminated = process.WaitForExit(10_000);
-        }
-
-        string capturedOutput = string.Empty;
-        if (outputTask is not null && terminated)
-        {
-            var (standardOutput, standardError) = outputTask.GetAwaiter().GetResult();
-            capturedOutput = NormalizeCapturedOutput(standardOutput) + NormalizeCapturedOutput(standardError);
-        }
-
-        if (!exitedWithinTimeout)
-        {
-            throw new TimeoutException($"dotnetup {string.Join(' ', args)} did not exit within {timeoutDescription}. Output:\n{capturedOutput}");
-        }
-
-        return (process.ExitCode, capturedOutput);
+        return (result.ExitCode, NormalizeCapturedOutput(result.StandardOutput) + NormalizeCapturedOutput(result.StandardError));
     }
 
     private static string NormalizeCapturedOutput(string output)

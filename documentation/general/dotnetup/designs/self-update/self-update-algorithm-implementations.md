@@ -137,7 +137,7 @@ See the algorithm's [rollback behavior](self-update-algorithm.md#roll-back).
 
 [Workflow tests](../../../../../test/dotnetup.Tests/SelfUpdateWorkflowTests.cs) inject a reported kill error or termination timeout through the existing verification hook and exercise real file rollback and lock retention. This tests the recovery policy without launching an unkillable process; it does not test an operating-system termination failure itself.
 
-[SelfUpdateVerifier](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs) reports cancellation as a verification timeout. [SelfUpdateWorkflow](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) retains the original verification exception when reporting verification or rollback failure.
+[SelfUpdateVerifier](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateVerifier.cs) reports cancellation as a verification timeout. A failed kill or termination wait is reported as a termination failure that preserves the original verification failure, aggregating both when present, and [SelfUpdateWorkflow](../../../../../src/Installer/dotnetup.Library/SelfUpdate/SelfUpdateWorkflow.cs) retains that exception when reporting verification or rollback failure. [Verifier tests](../../../../../test/dotnetup.Tests/SelfUpdateVerifierTests.cs) inject the termination failure against a live verification child.
 
 Let `rejectedPath` be `D/dotnetup.exe.old.<t>.rejected`, a transaction-specific sibling path that must not already exist. When the canonical path exists, `P` first renames the rejected executable aside, then renames the original backup back to the canonical path:
 

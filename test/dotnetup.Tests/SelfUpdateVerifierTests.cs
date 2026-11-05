@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text;
@@ -148,6 +149,44 @@ public class SelfUpdateVerifierTests
 
         File.Move(files.Paths.InstalledPath, files.BackupPath);
         Assert.IsTrue(File.Exists(files.BackupPath));
+    }
+
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    [DataRow(true, true)]
+    public async Task TerminationFailurePreservesVerificationFailure(bool hasVerificationFailure, bool terminationTimedOut)
+    {
+        using var files = new SelfUpdateTestFiles(executable: true, "timeout");
+        using var process = Process.Start(new ProcessStartInfo(files.Paths.InstalledPath, "--version") { UseShellExecute = false })!;
+        try
+        {
+            var verificationFailure = hasVerificationFailure ? new IOException("The verification child exceeded its timeout.") : null;
+            Exception terminationFailure = terminationTimedOut
+                ? new OperationCanceledException("Injected termination wait timeout.")
+                : new Win32Exception(5, "Injected process termination failure.");
+
+            var exception = await Assert.ThrowsExactlyAsync<IOException>(() =>
+                SelfUpdateVerifier.TerminateAsync(process, verificationFailure, _ => Task.FromException(terminationFailure)));
+
+            Assert.Contains("could not be terminated", exception.Message);
+            if (hasVerificationFailure)
+            {
+                var failures = Assert.IsInstanceOfType<AggregateException>(exception.InnerException);
+                Assert.AreSame(verificationFailure, failures.InnerExceptions[0]);
+                Assert.AreSame(terminationFailure, failures.InnerExceptions[1]);
+            }
+            else
+            {
+                Assert.AreSame(terminationFailure, exception.InnerException);
+            }
+        }
+        finally
+        {
+            process.Kill(entireProcessTree: true);
+            Assert.IsTrue(process.WaitForExit(10_000));
+        }
     }
 
     [TestMethod]

@@ -38,9 +38,9 @@ public class ScopedLockFileProcessTests
         startInfo.ArgumentList.Add("/p:ArtifactsDir=" + s_buildDirectory + Path.DirectorySeparatorChar);
         startInfo.ArgumentList.Add("/p:BaseIntermediateOutputPath=" + Path.Combine(s_buildDirectory, "obj") + Path.DirectorySeparatorChar);
         startInfo.ArgumentList.Add("/nodeReuse:false");
-        var status = Process.Run(startInfo, TimeSpan.FromMinutes(2));
-        Assert.IsFalse(status.Canceled, "Lock process asset build timed out.");
-        Assert.AreEqual(0, status.ExitCode, "Lock process asset build failed.");
+        var result = ChildProcessRunner.Run(startInfo, TimeSpan.FromMinutes(2));
+        Assert.IsFalse(result.TimedOut, "Lock process asset build timed out.");
+        Assert.AreEqual(0, result.ExitCode, "Lock process asset build failed.");
 
         s_assemblyPath = Path.Combine(outputDirectory, "ScopedLockFileProcess.dll");
     }

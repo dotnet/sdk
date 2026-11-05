@@ -45,9 +45,9 @@ internal sealed class LockFileTestProcess : IDisposable
 
     public static int Probe(string dotnetPath, string assemblyPath, string mode, string lockPath)
     {
-        var status = Process.Run(CreateStartInfo(dotnetPath, assemblyPath, mode, lockPath), TimeSpan.FromSeconds(30));
-        Assert.IsFalse(status.Canceled, "Lock acquisition must not block.");
-        return status.ExitCode;
+        var result = ChildProcessRunner.Run(CreateStartInfo(dotnetPath, assemblyPath, mode, lockPath), TimeSpan.FromSeconds(30));
+        Assert.IsFalse(result.TimedOut, "Lock acquisition must not block.");
+        return result.ExitCode;
     }
 
     public void Kill() => Stop(_process);

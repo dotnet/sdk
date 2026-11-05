@@ -148,4 +148,35 @@ public class DotnetupTestUtilitiesTests
             // The terminated child may already have been reaped.
         }
     }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void RunDotnetupProcess_TimeoutTerminatesDescendants(bool captureOutput)
+    {
+        using var files = new SelfUpdateTestFiles(mode: "tree-timeout");
+
+        Assert.ThrowsExactly<TimeoutException>(() => DotnetupTestUtilities.RunDotnetupProcess(
+            ["--version"], captureOutput: captureOutput, executablePath: files.Paths.InstalledPath,
+            timeout: TimeSpan.FromSeconds(10)));
+
+        AssertTerminated(files.Paths.InstalledPath + ".pid");
+        AssertTerminated(files.Paths.InstalledPath + ".child.pid");
+    }
+
+    private static void AssertTerminated(string pidPath)
+    {
+        Assert.IsTrue(File.Exists(pidPath), $"The fixture must have written '{pidPath}' before timing out.");
+        var processId = int.Parse(File.ReadAllText(pidPath), System.Globalization.CultureInfo.InvariantCulture);
+        try
+        {
+            using var process = Process.GetProcessById(processId);
+            // Termination is asynchronous for descendants; a surviving fixture would sleep for minutes.
+            Assert.IsTrue(process.WaitForExit(10_000), $"Process {processId} from '{pidPath}' must be terminated.");
+        }
+        catch (ArgumentException)
+        {
+            // The terminated process may already have been reaped.
+        }
+    }
 }

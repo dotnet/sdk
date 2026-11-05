@@ -12,6 +12,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
 internal static class SelfUpdateVerifier
 {
     internal const string Utf8EnvironmentVariable = "DOTNETUP_PRIVATE_VERSION_UTF8";
+    private static readonly TimeSpan s_terminationTimeout = TimeSpan.FromSeconds(5);
 
     public static string ReadVersion(string installedPath) => ReadVersion(installedPath, TimeSpan.FromSeconds(15));
 
@@ -83,10 +84,27 @@ internal static class SelfUpdateVerifier
         startInfo.StandardInputHandle = standardInput;
         using var cancellation = new CancellationTokenSource(timeout);
         using var process = Process.Start(startInfo)!;
+        string version;
         try
         {
-            var (stdout, stderr) = await process.ReadAllTextAsync(cancellation.Token).ConfigureAwait(false);
-            await process.WaitForExitAsync(cancellation.Token).ConfigureAwait(false);
+            version = await CaptureVersionAsync(process, cancellation.Token).ConfigureAwait(false);
+        }
+        catch (Exception failure)
+        {
+            await TerminateAsync(process, failure).ConfigureAwait(false);
+            throw;
+        }
+
+        await TerminateAsync(process, failure: null).ConfigureAwait(false);
+        return version;
+    }
+
+    private static async Task<string> CaptureVersionAsync(Process process, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var (stdout, stderr) = await process.ReadAllTextAsync(cancellationToken).ConfigureAwait(false);
+            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
 
             var version = stdout.Trim();
             if (process.ExitCode != 0 || !ReleaseVersion.TryParse(version, out _))
@@ -101,22 +119,42 @@ internal static class SelfUpdateVerifier
         {
             throw new IOException("The verification child exceeded its timeout.", exception);
         }
-        finally
-        {
-            if (!process.HasExited)
-            {
-                try
-                {
-                    process.Kill(entireProcessTree: true);
-                }
-                catch (InvalidOperationException) when (process.HasExited)
-                {
-                }
+    }
 
-                using var termination = new CancellationTokenSource(TimeSpan.FromSeconds(5));
-                await process.WaitForExitAsync(termination.Token).ConfigureAwait(false);
-            }
+    /// <summary>
+    /// Ensures the verification child and its descendants have exited before file operations resume. A termination
+    /// failure is reported with <paramref name="failure"/> preserved, so a cleanup error never hides why verification failed.
+    /// </summary>
+    internal static async Task TerminateAsync(Process process, Exception? failure, Func<Process, Task>? terminate = null)
+    {
+        if (process.HasExited)
+        {
+            return;
         }
+
+        try
+        {
+            await (terminate ?? KillTreeAsync)(process).ConfigureAwait(false);
+        }
+        catch (Exception exception) when (exception is Win32Exception or InvalidOperationException or OperationCanceledException)
+        {
+            throw new IOException($"The verification child could not be terminated within {s_terminationTimeout.TotalSeconds:0} seconds.",
+                failure is null ? exception : new AggregateException(failure, exception));
+        }
+    }
+
+    private static async Task KillTreeAsync(Process process)
+    {
+        try
+        {
+            process.Kill(entireProcessTree: true);
+        }
+        catch (InvalidOperationException) when (process.HasExited)
+        {
+        }
+
+        using var termination = new CancellationTokenSource(s_terminationTimeout);
+        await process.WaitForExitAsync(termination.Token).ConfigureAwait(false);
     }
 
     private static ProcessStartInfo CreateStartInfo(string installedPath)

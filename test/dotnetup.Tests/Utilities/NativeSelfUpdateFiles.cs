@@ -129,19 +129,17 @@ internal sealed class NativeSelfUpdateFiles : IDisposable
 
     public string Run(string[] arguments, bool succeeds = true, bool enableTelemetry = false)
     {
-        var startInfo = CreateStartInfo(arguments, enableTelemetry);
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
-        var result = Process.RunAndCaptureTextAsync(startInfo, timeout.Token).GetAwaiter().GetResult();
-        Assert.IsFalse(result.ExitStatus.Canceled, "Native dotnetup timed out.");
+        var result = ChildProcessRunner.Run(CreateStartInfo(arguments, enableTelemetry), TimeSpan.FromSeconds(20));
+        Assert.IsFalse(result.TimedOut, "Native dotnetup timed out.");
         var output = result.StandardOutput + result.StandardError;
         if (succeeds)
         {
-            Assert.AreEqual(0, result.ExitStatus.ExitCode, output);
+            Assert.AreEqual(0, result.ExitCode, output);
             Assert.AreEqual(string.Empty, result.StandardError);
         }
         else
         {
-            Assert.AreNotEqual(0, result.ExitStatus.ExitCode, output);
+            Assert.AreNotEqual(0, result.ExitCode, output);
         }
 
         return output;
