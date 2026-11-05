@@ -2,7 +2,7 @@
 title: dotnetup channels and versions
 description: Learn how dotnetup resolves stable, preview, daily, numeric, and exact .NET version specifications.
 ms.topic: conceptual
-ms.date: 08/07/2026
+ms.date: 11/05/2026
 ---
 
 # dotnetup channels and versions
@@ -33,6 +33,17 @@ selected component.
 | Exact prerelease SDK version | `11.0.100-preview.7.26381.103` (out of date; RC available) | Only that prerelease SDK version |
 
 An exact version is pinned. `dotnetup update` does not replace it.
+
+## Install multiple channels concurrently
+
+SDK and runtime install commands accept multiple channel or version
+specifications. In a single command, `dotnetup` resolves each specification
+and downloads the components concurrently:
+
+```dotnetcli
+dotnetup sdk install 10.0 11.0
+dotnetup runtime install runtime@10.0 aspnetcore@10.0
+```
 
 ## Runtime channels and versions
 
