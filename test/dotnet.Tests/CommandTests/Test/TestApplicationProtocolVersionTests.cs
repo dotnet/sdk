@@ -31,4 +31,21 @@ public class TestApplicationProtocolVersionTests
 
         supportedVersion.Should().Be(expectedVersion);
     }
+
+    [TestMethod]
+    [DataRow("1", true)]
+    [DataRow("2", false)]
+    [DataRow("", false)]
+    [DataRow(null, false)]
+    public void SupportsCoverageSummary_RequiresExactIndependentCapability(string? version, bool expected)
+    {
+        var properties = new Dictionary<byte, string>();
+        if (version is not null)
+        {
+            properties[HandshakeMessagePropertyNames.CoverageSummaryVersion] = version;
+        }
+
+        TestApplication.SupportsCoverageSummary(new HandshakeMessage(properties)).Should().Be(expected);
+        ProtocolConstants.SupportedVersions.Split(';').Should().NotContain("1.4.0");
+    }
 }

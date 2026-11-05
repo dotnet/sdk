@@ -50,7 +50,7 @@ internal abstract class InstallingWorkloadCommandDefinition : WorkloadCommandDef
         Hidden = true
     };
 
-    public readonly Option<string> ConfigOption = CreateConfigOption();
+    public readonly Option<FileInfo> ConfigOption = CreateConfigOption();
 
     public readonly Option<string[]> SourceOption = CreateSourceOption();
 

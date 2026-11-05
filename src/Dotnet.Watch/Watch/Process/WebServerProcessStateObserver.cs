@@ -15,19 +15,14 @@ internal static partial class WebServerProcessStateObserver
     private static readonly Regex s_nowListeningRegex = GetNowListeningOnRegex();
     private static readonly Regex s_aspireDashboardUrlRegex = GetAspireDashboardUrlRegex();
 
-    [GeneratedRegex(@"Now listening on: (?<url>.*)\s*$", RegexOptions.Compiled)]
+    [GeneratedRegex(@"Now listening on: (?<url>[^\s]+)\s*$", RegexOptions.Compiled)]
     private static partial Regex GetNowListeningOnRegex();
 
-    [GeneratedRegex(@"Login to the dashboard at (?<url>.*)\s*$", RegexOptions.Compiled)]
+    [GeneratedRegex(@"Login to the dashboard at (?<url>[^\s]+)\s*$", RegexOptions.Compiled)]
     private static partial Regex GetAspireDashboardUrlRegex();
 
-    public static Action<OutputLine> GetObserver(ProjectGraphNode serverProject, Action<string> onServerListening)
+    public static Action<OutputLine> GetObserver(bool isAspireHost, Action<string> onServerListening)
     {
-        // Workaround for Aspire dashboard launching: scan for "Login to the dashboard at " prefix in the output and use the URL.
-        // TODO: https://github.com/dotnet/sdk/issues/9038
-        // Share launch profile processing logic as implemented in VS with dotnet-run and implement browser launching there.
-        bool isAspireHost = serverProject.GetCapabilities().Contains(AspireServiceFactory.AppHostProjectCapability);
-
         var _notified = false;
 
         return line =>
@@ -43,8 +38,17 @@ internal static partial class WebServerProcessStateObserver
                 return;
             }
 
+            var launchUrl = match.Groups["url"].Value;
+
+            // only match valid URLs:
+            if (!Uri.TryCreate(launchUrl, UriKind.Absolute, out var validUrl) ||
+                (validUrl.Scheme != Uri.UriSchemeHttp && validUrl.Scheme != Uri.UriSchemeHttps))
+            {
+                return;
+            }
+
             _notified = true;
-            onServerListening(match.Groups["url"].Value);
+            onServerListening(launchUrl);
         };
     }
 }

@@ -31,22 +31,50 @@ Key insight: All post-processing steps read from `@(IntermediateAssembly)` (obj)
 
 ### PublishAot (Native AOT)
 
-**Status: Optimized**
+**Status: Opt-in optimization in .NET 11**
 
 - `IlcCompile` reads `@(IntermediateAssembly)` from `obj\` and produces a native binary
 - The full `Build` was running a self-contained deployment to `bin\<config>\<tfm>\<rid>\`,
   including apphost, managed DLLs, deps.json, runtimeconfig.json, and runtime pack files
 - **None of these files are used** by the AOT pipeline
 - **Optimization**: Replace `Build` with `Compile` (plus resource/satellite targets)
-- **Opt-out**: Set `UseOptimizedPublish=false` to restore full Build behavior
+- **Opt-in**: Set `UseOptimizedPublish=true` to enable the optimization. The default is
+  `false` in .NET 11, preserving full `Build` behavior.
 - `UseOptimizedPublish` currently has no effect when `PublishAot` is not enabled
+- `--no-build` continues to skip the build regardless of `UseOptimizedPublish`
 
 Target chain for optimized AOT publish:
 ```
-BuildOnlySettings → PrepareForBuild → PrepareResources → Compile → CreateSatelliteAssemblies
+_CheckForInvalidConfigurationAndPlatform → BuildOnlySettings → PrepareForBuild → PreBuildEvent → ResolveReferences → PrepareResources → ResolveKeySource → Compile → CreateSatelliteAssemblies
 ```
 
-Where `Compile` includes `ResolveReferences → ResolveProjectReferences → CoreCompile`.
+`ResolveReferences` builds project references before resource preparation, and `Compile`
+includes `CoreCompile`.
+The optimized path retains the configuration/platform validation target and its SDK
+hooks, including runtime identifier/platform compatibility and apphost/hosting checks.
+`NoBuild=true` continues to use the separate no-build publish path.
+
+After compilation and additional optimized-build targets, `IncrementalClean` records
+the current intermediate outputs and removes tracked outputs that are no longer produced.
+This also removes obsolete managed build-directory outputs from an earlier full build.
+If the optimized build fails, `_CleanRecordFileWrites` preserves prior and newly generated
+file tracking without deleting stale outputs. A subsequent `dotnet clean` can remove the
+tracked compiler outputs, including intermediate DLL, PDB, and generated XML documentation.
+This retains build cleanup bookkeeping; it does not add tracking for every native compiler
+or publish artifact.
+
+For tool projects (`PackAsTool=true`) with explicit `PackAsToolShimRuntimeIdentifiers`,
+the PackTool SDK adds `GenerateShimsAssets` to the optimized-build extension point.
+Shims are generated before incremental cleanup and publish file collection, so requested
+`publish\shims\<rid>\` assets are preserved without copying the managed deployment to
+the build directory. Projects without requested shims do not add this step, and no-build
+publish continues to locate and reuse shims from a previous build rather than generate them.
+Generation, incremental-build discovery, and no-build discovery share the staging directory
+`$(PackagedShimOutputRootDirectory)\shims\$(TargetFramework)\`. It does not depend on
+`SelfContained`, which can be inferred differently during build and publish. This allows
+both Build and optimized publish outputs to be reused by a subsequent no-build publish.
+Relative staging roots, including the default `$(OutDir)`, are resolved against the
+project directory rather than the MSBuild process working directory.
 
 ### PublishTrimmed (IL Trimming)
 
@@ -82,49 +110,53 @@ applies when the outermost mode is optimized:
 
 | Combination | Optimized? | Notes |
 |---|---|---|
-| PublishAot (implies trimmed) | ✅ Yes | AOT is the outermost mode |
+| PublishAot (implies trimmed) | ✅ Opt-in | Requires `UseOptimizedPublish=true` |
 | PublishTrimmed + PublishSingleFile | ❌ Not yet | Future candidate |
 | PublishReadyToRun + PublishSingleFile | ❌ Not yet | Future candidate |
 | PublishTrimmed alone | ❌ Not yet | Future candidate |
 | PublishReadyToRun alone | ❌ Not yet | Future candidate |
 
-## Breaking Change: AOT Publish Build Optimization
+## Opt-In Behavior: AOT Publish Build Optimization
 
 ### What Changed
 
-Starting in .NET 11, `dotnet publish` with `PublishAot=true` no longer runs a full `Build`
-before publish. Instead, it runs only `Compile` (and resource/satellite assembly targets).
+In .NET 11, `dotnet publish` with `PublishAot=true` still runs a full `Build` by default.
+The default rollout of the optimization is deferred while compatibility issues are addressed.
+When explicitly enabled with `UseOptimizedPublish=true`, publish runs only `Compile`
+(and resource/satellite assembly targets) instead of a full `Build`.
 
-### Impact
+### Impact When Opted In
 
 - **BeforeBuild / AfterBuild targets**: These will not execute during AOT publish. If you have
   custom targets attached to `BeforeBuild`, `AfterBuild`, or using
   `BeforeTargets="Build"` / `AfterTargets="Build"`, they will not run.
   - **Workaround**: Attach your targets to `BeforeTargets="Publish"` / `AfterTargets="Publish"`,
     or to `BeforeTargets="Compile"` / `AfterTargets="Compile"` instead.
-- **PreBuildEvent / PostBuildEvent**: These will not execute during AOT publish (consistent
-  with `--no-build` behavior).
+- **PreBuildEvent / PostBuildEvent**: `PreBuildEvent` still executes when the optimization
+  is enabled; `PostBuildEvent` is skipped. Both are skipped with `--no-build`.
 - **Third-party NuGet Build hooks**: Targets from NuGet packages that hook into `Build` will be
   skipped (consistent with `--no-build` behavior).
 - **Output directory**: `bin\<config>\<tfm>\<rid>\` will no longer contain managed apphost,
   DLLs, deps.json, runtimeconfig.json, or runtime pack files. Only `native\` and `publish\`
-  subdirectories will be present.
+  subdirectories will be present, along with `shims\` for explicitly requested tool shims.
 
-### Opt-Out
+### Opt-In
 
-To restore the previous behavior of running a full `Build` before AOT publish, set:
+To enable the optimization for AOT publish, set:
 
 ```xml
 <PropertyGroup>
-  <UseOptimizedPublish>false</UseOptimizedPublish>
+  <UseOptimizedPublish>true</UseOptimizedPublish>
 </PropertyGroup>
 ```
 
 Or pass it on the command line:
 
 ```
-dotnet publish /p:UseOptimizedPublish=false
+dotnet publish /p:UseOptimizedPublish=true
 ```
+
+To retain full `Build` behavior, omit the property or set `UseOptimizedPublish=false`.
 
 ## Future Work
 

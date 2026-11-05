@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!--
     Microsoft ResX Schema
@@ -252,9 +252,17 @@
     <value>authentication challenge origin '{0}' does not match registry origin '{1}'</value>
     <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the origin that returned the authentication challenge; {1} is the expected registry origin.</comment>
   </data>
-  <data name="InvalidAuthResponse_PrivateIpLiteralRealm" xml:space="preserve">
-    <value>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</value>
-    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</comment>
+  <data name="InvalidAuthResponse_RealmBlockedBySsrfPolicy" xml:space="preserve">
+    <value>the token request to bearer realm '{0}' was blocked by server-side request forgery (SSRF) protection: {1} If the realm is trusted, add its IP addresses to the {2} environment variable, or change the policy with the {3} environment variable</value>
+    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is a non-localized detail message from the SSRF protection library; {2} and {3} are environment variable names and must not be translated.</comment>
+  </data>
+  <data name="InvalidAuthRealmPolicy" xml:space="preserve">
+    <value>CONTAINER2034: The {0} environment variable has the value '{1}', which is not a valid policy. Valid values are 'Public', 'AllowlistOnly', and 'None'.</value>
+    <comment>{StrBegins="CONTAINER2034: "} {0} is an environment variable name; {1} is its value. Do not translate 'Public', 'AllowlistOnly', or 'None'.</comment>
+  </data>
+  <data name="InvalidAuthRealmAllowedAddress" xml:space="preserve">
+    <value>CONTAINER2033: The {0} environment variable contains '{1}', which is not a valid IP address or CIDR range. Separate entries with semicolons.</value>
+    <comment>{StrBegins="CONTAINER2033: "} {0} is an environment variable name; {1} is the invalid entry.</comment>
   </data>
   <data name="InvalidTokenResponse" xml:space="preserve">
     <value>CONTAINER1003: Token response had neither token nor access_token.</value>

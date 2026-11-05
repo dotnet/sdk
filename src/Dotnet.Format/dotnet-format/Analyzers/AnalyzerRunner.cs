@@ -93,22 +93,25 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             return;
 
+            // Checks each transitive dependency once via the solution's cached dependency graph. Recursing
+            // through ProjectReferences instead revisits shared projects on every path through the graph,
+            // which is exponential in the graph's depth.
             static async Task<bool> AllReferencedProjectsLoadedAsync(Project project, CancellationToken cancellationToken)
             {
-                var compilation = await project.GetCompilationAsync(cancellationToken);
-                if (compilation is null)
-                    return false;
+                var solution = project.Solution;
+                var dependencies = solution.GetProjectDependencyGraph().GetProjectsThatThisProjectTransitivelyDependsOn(project.Id);
 
-                // If we don't have a System.Object this project is clearly missing references and we shouldn't try to process it further
-                if (compilation.ObjectType.TypeKind == TypeKind.Error)
-                    return false;
-
-                foreach (var projectReference in project.ProjectReferences)
+                foreach (var projectId in dependencies.Prepend(project.Id))
                 {
-                    var referencedProject = project.Solution.GetProject(projectReference.ProjectId);
-                    Debug.Assert(referencedProject is not null);
+                    var dependency = solution.GetProject(projectId);
+                    Debug.Assert(dependency is not null);
 
-                    if (!await AllReferencedProjectsLoadedAsync(referencedProject, cancellationToken))
+                    var compilation = await dependency.GetCompilationAsync(cancellationToken);
+                    if (compilation is null)
+                        return false;
+
+                    // If we don't have a System.Object this project is clearly missing references and we shouldn't try to process it further
+                    if (compilation.ObjectType.TypeKind == TypeKind.Error)
                         return false;
                 }
 
