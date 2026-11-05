@@ -81,6 +81,77 @@ public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
     }
 
     [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void CollectStaticWebAssetInputsDesignTime_IncludesServiceWorkerSources(bool outsideWebRoot)
+    {
+        var serviceWorkerPath = outsideWebRoot ? "custom-service-worker.js" : Path.Combine("wwwroot", "service-worker.js");
+        var testAsset = CreateAspNetSdkTestAsset("VanillaWasm", identifier: outsideWebRoot.ToString())
+            .WithProjectChanges(project =>
+            {
+                project.Root.Add(
+                    new XElement("PropertyGroup",
+                        new XElement("ServiceWorkerAssetsManifest", "service-worker-assets.js")),
+                    new XElement("ItemGroup",
+                        new XElement("ServiceWorker",
+                            new XAttribute("Include", serviceWorkerPath),
+                            new XAttribute("PublishedContent", Path.Combine("wwwroot", "service-worker.published.js"))),
+                        new XElement("UpToDateCheckInput",
+                            new XAttribute("Include", "Program.cs"),
+                            new XAttribute("Set", "StaticWebAssets"))));
+            });
+
+        var sourcePath = Path.GetFullPath(Path.Combine(testAsset.Path, serviceWorkerPath));
+        var publishedSourcePath = Path.Combine(testAsset.Path, "wwwroot", "service-worker.published.js");
+        File.WriteAllText(sourcePath, "// Development service worker");
+        File.WriteAllText(publishedSourcePath, "// Published service worker");
+
+        var msbuild = CreateMSBuildCommand(
+            testAsset,
+            string.Empty,
+            "ResolveStaticWebAssetsConfiguration;ResolveProjectStaticWebAssets;CollectStaticWebAssetInputsDesignTime");
+        var result = msbuild.Execute(
+            "/p:DesignTimeBuild=true",
+            "/p:BuildingInsideVisualStudio=true",
+            "-getItem:UpToDateCheckInput",
+            "-nologo");
+        result.Should().Pass();
+
+        using var output = JsonDocument.Parse(result.StdOut);
+        var inputs = output.RootElement.GetProperty("Items").GetProperty("UpToDateCheckInput")
+            .EnumerateArray().Select(item => item.GetProperty("FullPath").GetString()).ToArray();
+
+        inputs.Should().Contain(sourcePath);
+        inputs.Should().Contain(Path.Combine(testAsset.Path, "wwwroot", "main.js"));
+        inputs.Should().Contain(Path.Combine(testAsset.Path, "Program.cs"));
+        inputs.Should().NotContain(publishedSourcePath);
+    }
+
+    [TestMethod]
+    public void CollectStaticWebAssetInputsDesignTime_WithoutServiceWorkerPreservesStaticAssets()
+    {
+        var testAsset = CreateAspNetSdkTestAsset("VanillaWasm");
+        var msbuild = CreateMSBuildCommand(
+            testAsset,
+            string.Empty,
+            "ResolveStaticWebAssetsConfiguration;ResolveProjectStaticWebAssets;CollectStaticWebAssetInputsDesignTime");
+        var result = msbuild.Execute(
+            "/p:DesignTimeBuild=true",
+            "/p:BuildingInsideVisualStudio=true",
+            "-getItem:UpToDateCheckInput",
+            "-nologo");
+        result.Should().Pass();
+
+        using var output = JsonDocument.Parse(result.StdOut);
+        var inputs = output.RootElement.GetProperty("Items").GetProperty("UpToDateCheckInput")
+            .EnumerateArray().Select(item => item.GetProperty("FullPath").GetString()).ToArray();
+
+        inputs.Should().Contain(Path.Combine(testAsset.Path, "wwwroot", "main.js"));
+        inputs.Should().Contain(Path.Combine(testAsset.Path, "wwwroot", "index.html"));
+        inputs.Should().NotContain(Path.Combine(testAsset.Path, "wwwroot", "service-worker.js"));
+    }
+
+    [TestMethod]
     public void CollectUpToDateCheckInputOutputsDesignTime_ReportsAddedFiles()
     {
         // Arrange
