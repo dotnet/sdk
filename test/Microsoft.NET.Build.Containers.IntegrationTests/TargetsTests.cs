@@ -186,7 +186,8 @@ public class TargetsTests
         Dictionary<string, string> properties = new()
         {
             ["ContainerImageFormat"] = "OCI",
-            ["Description"] = "SDK container"
+            ["Description"] = "SDK container",
+            ["ContainerRegistry"] = "example.com"
         };
         if (generateAnnotations.Length > 0)
         {
@@ -214,6 +215,24 @@ public class TargetsTests
         {
             annotations.Should().BeEmpty();
         }
+    }
+
+    [TestMethod]
+    [DataRow("", "", false)]
+    [DataRow("example.com", "", true)]
+    [DataRow("", "image.tar", true)]
+    public void OciAnnotationDefaultsRespectPublishingDestination(string registry, string archive, bool shouldGenerate)
+    {
+        var (project, logger, directory) = ProjectInitializer.InitProject(new()
+        {
+            ["ContainerImageFormat"] = "OCI",
+            ["ContainerRegistry"] = registry,
+            ["ContainerArchiveOutputPath"] = archive
+        });
+        using var _ = directory;
+        var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
+        instance.Build([ComputeContainerConfig], [logger]).Should().BeTrue(string.Join(Environment.NewLine, logger.AllMessages));
+        instance.GetItems("ContainerAnnotation").Any().Should().Be(shouldGenerate);
     }
 
     [DataRow("", true, "OCI")]
