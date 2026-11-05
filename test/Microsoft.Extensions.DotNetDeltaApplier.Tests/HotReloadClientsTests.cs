@@ -14,7 +14,7 @@ public class HotReloadClientsTests
 
         var client1 = new TestHotReloadClient { ApplyImpl = _ => client1Apply.Task };
         var client2 = new TestHotReloadClient { ApplyImpl = _ => client2Apply.Task };
-        using var refreshServer = new TestBrowserRefreshServer();
+        await using var refreshServer = new TestBrowserRefreshServer();
 
         using var clients = new HotReloadClients([client1, client2], refreshServer, useRefreshServerToApplyStaticAssets: false);
 

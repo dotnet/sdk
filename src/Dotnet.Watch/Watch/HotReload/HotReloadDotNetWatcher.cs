@@ -1265,7 +1265,7 @@ internal sealed class HotReloadDotNetWatcher
 
         if (device != null)
         {
-            arguments.Add($"-p:Device={device.Id}");
+            arguments.Add($"-p:Device={MSBuildPropertyEscaping.Escape(device.Id)}");
 
             if (!string.IsNullOrEmpty(device.RuntimeIdentifier))
             {

@@ -9,6 +9,8 @@
   Basically: In this file, choose the highest version when resolving merge conflicts.
  -->
   <PropertyGroup>
+    <!-- Downlevel .NET 11 packs and test runtimes must stay aligned during the net12 transition. -->
+    <Net110PackageVersion>11.0.0-preview.7.26381.103</Net110PackageVersion>
     <!-- NetTFMUpdate: Keep test dependencies and bundled templates on net11 until the SDK can target net12. -->
     <AspNetTestPackageVersion>11.0.0-rc.1.26453.118</AspNetTestPackageVersion>
     <MicrosoftDotNetWebItemTemplates110PackageVersion>11.0.0-rc.1.26453.118</MicrosoftDotNetWebItemTemplates110PackageVersion>
