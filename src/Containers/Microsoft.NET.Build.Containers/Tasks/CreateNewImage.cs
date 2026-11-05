@@ -25,26 +25,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     internal static bool TryParseSourceDateEpoch(string? value, out DateTime? timestamp)
     {
-        timestamp = null;
-        if (string.IsNullOrEmpty(value))
-        {
-            return true;
-        }
-
-        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
-        {
-            return false;
-        }
-
-        try
-        {
-            timestamp = DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
-            return true;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            return false;
-        }
+        timestamp = SourceDateEpochParser.Parse(value);
+        return string.IsNullOrEmpty(value) || timestamp.HasValue;
     }
 
     public override bool Execute()
@@ -293,7 +275,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 (baseImageLabel, baseImageDigest) = imageBuilder.AddBaseImageDigestLabel();
             }
         }
-
         else
         {
             if (GenerateDigestLabel)
@@ -304,7 +285,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         foreach (ITaskItem annotation in manifestAnnotations)
         {
-            string value = annotation.GetMetadata("Value");
+            string value = ContainerAnnotationScopes.GetValue(annotation, createdAt);
             if (annotation.ItemSpec == ImageBuilder.BaseImageDigestName && string.IsNullOrEmpty(value))
             {
                 imageBuilder.AddBaseImageDigestAnnotation();

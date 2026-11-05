@@ -164,7 +164,6 @@
       <ContainerVersion Condition="'$(ContainerVersion)' == '' and '$(PackageVersion)' != ''">$(PackageVersion)</ContainerVersion>
       <ContainerLicenseExpression Condition="'$(ContainerLicenseExpression)' == '' and '$(PackageLicenseExpression)' != ''">$(PackageLicenseExpression)</ContainerLicenseExpression>
       <ContainerTitle Condition="'$(ContainerTitle)' == '' and '$(Title)' != ''">$(Title)</ContainerTitle>
-      <_ContainerImageCreated>$([System.DateTime]::UtcNow.ToString('o'))</_ContainerImageCreated>
     </PropertyGroup>
 
     <!-- Labels generated from descriptions from the spec at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys -->
@@ -186,7 +185,8 @@
 
     <!-- OCI annotations describe the manifest or index itself. Architecture-neutral metadata is emitted on both; image-specific metadata is emitted only on manifests. -->
     <ItemGroup Label="Conventional Annotation assignment" Condition="'$(ContainerGenerateAnnotations)' == 'true'">
-      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageCreated)' == 'true'" Include="org.opencontainers.image.created" Value="$(_ContainerImageCreated)" />
+      <!-- The tasks resolve an empty generated creation annotation from SOURCE_DATE_EPOCH, falling back to the current UTC time. -->
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageCreated)' == 'true'" Include="org.opencontainers.image.created" />
       <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageDescription)' == 'true' and '$(ContainerDescription)' != ''" Include="org.opencontainers.image.description" Value="$(ContainerDescription)" />
       <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageAuthors)' == 'true' and '$(ContainerAuthors)' != ''" Include="org.opencontainers.image.authors" Value="$(ContainerAuthors)" />
       <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageUrl)' == 'true' and '$(ContainerInformationUrl)' != ''" Include="org.opencontainers.image.url" Value="$(ContainerInformationUrl)" />
@@ -431,6 +431,7 @@
                       Repository="$(ContainerRepository)"
                       ImageTags="@(ContainerImageTags)"
                       Annotations="@(ContainerAnnotation)"
+                      SourceDateEpoch="$(SOURCE_DATE_EPOCH)"
                       BaseRegistry="$(ContainerBaseRegistry)"
                       BaseImageName="$(ContainerBaseName)"
                       BaseImageTag="$(ContainerBaseTag)"
