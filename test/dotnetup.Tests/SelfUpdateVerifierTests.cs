@@ -13,8 +13,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [TestClass]
 public class SelfUpdateVerifierTests
 {
-    public TestContext TestContext { get; set; } = null!;
-
     [TestMethod]
     [DataRow("valid")]
     [DataRow("none")]
@@ -65,7 +63,7 @@ public class SelfUpdateVerifierTests
     }
 
     [TestMethod]
-    public async Task PublishedFixtureUsesRelativeRuntimeInsteadOfEnvironment()
+    public void PublishedFixtureUsesRelativeRuntimeInsteadOfEnvironment()
     {
         using var files = new SelfUpdateTestFiles(executable: true);
         var startInfo = new ProcessStartInfo(files.Paths.InstalledPath)
@@ -80,11 +78,9 @@ public class SelfUpdateVerifierTests
             startInfo.Environment[variable] = Path.Combine(files.Paths.DirectoryPath, "missing-runtime");
         }
 
-        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(TestContext.CancellationToken);
-        cancellation.CancelAfter(TimeSpan.FromSeconds(20));
-        var result = await Process.RunAndCaptureTextAsync(startInfo, cancellation.Token);
-        Assert.IsFalse(result.ExitStatus.Canceled, "Version process timed out.");
-        Assert.AreEqual(0, result.ExitStatus.ExitCode, result.StandardError);
+        var result = ChildProcessRunner.Run(startInfo, TimeSpan.FromSeconds(20));
+        Assert.IsFalse(result.TimedOut, "Version process timed out.");
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
         Assert.AreEqual(SelfUpdateTestFiles.OriginalVersion + Environment.NewLine, result.StandardOutput);
     }
 
