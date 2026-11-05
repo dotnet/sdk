@@ -469,6 +469,7 @@ Adds a new JSON property in an existing JSON file.
    - `newJsonPropertyName (string)`: The name that must be given to the new property.
    - `newJsonPropertyValue (string)`: The value that must be assigned to the new property. This must be a valid JSON.
    - `allowPropertyOverwrite (bool)` (optional, .NET 12 SDK or later): Whether an existing property may be replaced with a different value. The default is `true` for compatibility. When `false`, an existing equal value is accepted, but a conflicting value causes the post action to fail with a diagnostic and leaves the file unchanged. Missing properties can still be added.
+   - `ignorePropertyValueCase (bool)` (optional, .NET 12 SDK or later): When `allowPropertyOverwrite` is `false`, compare scalar string values using `OrdinalIgnoreCase` and retain an existing matching value. The default is `false`. This does not change object property names or strings nested inside objects or arrays.
    - Starting in .NET 10 SDK, the following are also supported:
        - `detectRepositoryRoot (bool)`: Whether or not a detection logic to find repo root is enabled. When the JSON file is not found, it will be created in the detected repo root if this option is true. Also when searching for an existing JSON file, the search will stop at the repo root and won't consider any parent directories. The default is `false`.
        - `includeAllDirectoriesInSearch (bool)`: Whether or not sub-directories are searched for a matching json file (i.e, use `SearchOption.AllDirectories`). The default is `true`.
@@ -479,9 +480,12 @@ Adds a new JSON property in an existing JSON file.
 
 The built-in MSTest, Playwright MSTest, NUnit, and xUnit v3 templates set
 the [JSON post-action's](../../src/Cli/Microsoft.TemplateEngine.Cli/PostActionProcessors/AddJsonPropertyPostActionProcessor.cs)
-`allowPropertyOverwrite` to `false` when selecting Microsoft.Testing.Platform in
+`allowPropertyOverwrite` to `false` and `ignorePropertyValueCase` to `true` when selecting Microsoft.Testing.Platform in
 `global.json`. An explicit conflicting runner is preserved rather than silently
-migrating every project in that file's scope. Project creation still succeeds because
+migrating every project in that file's scope. Runner comparison matches the
+[CLI's case-insensitive resolution](../../src/Cli/Microsoft.DotNet.Cli.Definitions/Commands/Test/TestCommandDefinition.cs),
+without changing the JSON post-action's default case-sensitive comparison.
+Project creation still succeeds because
 these post actions use [`continueOnError`](../../src/Cli/Microsoft.TemplateEngine.Cli/PostActionDispatcher.cs), but the diagnostic and manual instructions
 require the user to resolve the runner choice. If no runner is configured, the templates
 still add Microsoft.Testing.Platform; existing projects in that scope must be compatible.

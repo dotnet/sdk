@@ -286,11 +286,13 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
-        [DataRow(null)]
-        [DataRow("{}")]
-        [DataRow("""{"test":{}}""")]
-        [DataRow("""{"test":{"runner":"Microsoft.Testing.Platform"}}""")]
-        public void ProjectTemplate_MtpRunnerCreatesOrUpdatesCompatibleGlobalJson(string? originalGlobalJson)
+        [DataRow(null, "Microsoft.Testing.Platform")]
+        [DataRow("{}", "Microsoft.Testing.Platform")]
+        [DataRow("""{"test":{}}""", "Microsoft.Testing.Platform")]
+        [DataRow("""{"test":{"runner":"Microsoft.Testing.Platform"}}""", "Microsoft.Testing.Platform")]
+        [DataRow("""{"test":{"runner":"microsoft.testing.platform"}}""", "microsoft.testing.platform")]
+        [DataRow("""{"test":{"runner":"mIcRoSoFt.TeStInG.PlAtFoRm"}}""", "mIcRoSoFt.TeStInG.PlAtFoRm")]
+        public void ProjectTemplate_MtpRunnerCreatesOrUpdatesCompatibleGlobalJson(string? originalGlobalJson, string expectedRunner)
         {
             string repositoryDirectory = CreateTemporaryFolder();
             Directory.CreateDirectory(Path.Combine(repositoryDirectory, ".git"));
@@ -312,7 +314,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             using JsonDocument globalJson = JsonDocument.Parse(File.ReadAllText(globalJsonPath));
             globalJson.RootElement.GetProperty("test").GetProperty("runner").GetString()
-                .Should().Be("Microsoft.Testing.Platform");
+                .Should().Be(expectedRunner);
             File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeFalse();
 
             DeleteDirectoryWithRetry(repositoryDirectory);
@@ -324,6 +326,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow("VSTest", true)]
         [DataRow("Microsoft.Testing.Platform", false)]
         [DataRow("Microsoft.Testing.Platform", true)]
+        [DataRow("microsoft.testing.platform", false)]
+        [DataRow("mIcRoSoFt.TeStInG.PlAtFoRm", true)]
         public void MtpProjectCreation_PreservesExistingTestProjects(string testRunner, bool useMSTestSdk)
         {
             string repositoryDirectory = CreateTemporaryFolder();
@@ -340,9 +344,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 """;
             File.WriteAllText(globalJsonPath, originalGlobalJson);
             string[] sdkArgs = useMSTestSdk ? ["--sdk"] : [];
+            string templateRunner = testRunner.Equals("Microsoft.Testing.Platform", StringComparison.OrdinalIgnoreCase)
+                ? "Microsoft.Testing.Platform"
+                : testRunner;
 
             new DotnetNewCommand(_log, ["mstest", "-n", "ExistingTests", "-o", existingProjectDirectory,
-                "-f", ToolsetInfo.SdkTargetFramework, "--test-runner", testRunner, "--no-restore", .. sdkArgs])
+                "-f", ToolsetInfo.SdkTargetFramework, "--test-runner", templateRunner, "--no-restore", .. sdkArgs])
                 .WithCustomHive(home)
                 .WithWorkingDirectory(repositoryDirectory)
                 .Execute()
@@ -375,6 +382,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithWorkingDirectory(repositoryDirectory)
                 .Execute();
             creationResult.Should().Pass();
+            using JsonDocument updatedGlobalJson = JsonDocument.Parse(File.ReadAllText(globalJsonPath));
+            updatedGlobalJson.RootElement.GetProperty("test").GetProperty("runner").GetString()
+                .Should().Be(testRunner);
 
             if (testRunner == "VSTest")
             {

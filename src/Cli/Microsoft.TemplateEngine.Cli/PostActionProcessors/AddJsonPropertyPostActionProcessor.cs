@@ -16,6 +16,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
         private const string AllowFileCreationArgument = "allowFileCreation";
         private const string AllowPathCreationArgument = "allowPathCreation";
         private const string AllowPropertyOverwriteArgument = "allowPropertyOverwrite";
+        private const string IgnorePropertyValueCaseArgument = "ignorePropertyValueCase";
         private const string JsonFileNameArgument = "jsonFileName";
         private const string ParentPropertyPathArgument = "parentPropertyPath";
         private const string NewJsonPropertyNameArgument = "newJsonPropertyName";
@@ -194,6 +195,12 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return null;
             }
 
+            if (!bool.TryParse(action.Args.GetValueOrDefault(IgnorePropertyValueCaseArgument, "false"), out bool ignorePropertyValueCase))
+            {
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, IgnorePropertyValueCaseArgument));
+                return null;
+            }
+
             JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, propertyPathSeparator, createPath);
 
             if (parentProperty == null)
@@ -213,9 +220,20 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
             }
 
             if (!allowPropertyOverwrite &&
-                parentProperty.AsObject().TryGetPropertyValue(newJsonPropertyName, out JsonNode? existingValue) &&
-                !JsonNode.DeepEquals(existingValue, newValue))
+                parentProperty.AsObject().TryGetPropertyValue(newJsonPropertyName, out JsonNode? existingValue))
             {
+                bool valuesEqual = JsonNode.DeepEquals(existingValue, newValue) ||
+                    (ignorePropertyValueCase &&
+                    existingValue is JsonValue existingPrimitive &&
+                    newValue is JsonValue newPrimitive &&
+                    existingPrimitive.TryGetValue<string>(out string? existingString) &&
+                    newPrimitive.TryGetValue<string>(out string? newString) &&
+                    string.Equals(existingString, newString, StringComparison.OrdinalIgnoreCase));
+                if (valuesEqual)
+                {
+                    return jsonContent;
+                }
+
                 string fullPropertyPath = string.IsNullOrEmpty(propertyPath)
                     ? newJsonPropertyName
                     : propertyPath + propertyPathSeparator + newJsonPropertyName;
