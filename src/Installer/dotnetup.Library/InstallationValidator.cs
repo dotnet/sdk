@@ -81,10 +81,15 @@ internal sealed class InstallationValidator : IInstallationValidator
             return false;
         }
 
-        string markerFile = component == InstallComponent.SDK
-            ? "dotnet.dll"
-            : s_runtimeMonikerByComponent[component] + ".deps.json";
-        return File.Exists(Path.Combine(componentDirectory, markerFile));
+        return IsInstallDirectory(componentDirectory,
+            component == InstallComponent.SDK ? null : s_runtimeMonikerByComponent[component]);
+    }
+
+    /// <summary>Checks the marker shared by installation validation and system install enumeration.</summary>
+    internal static bool IsInstallDirectory(string versionDirectory, string? frameworkName = null)
+    {
+        string markerFile = frameworkName is null ? "dotnet.dll" : frameworkName + ".deps.json";
+        return File.Exists(Path.Combine(versionDirectory, markerFile));
     }
 
     /// <summary>Gets the path of the <c>dotnet</c> muxer in an install root.</summary>
