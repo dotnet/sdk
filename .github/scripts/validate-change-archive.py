@@ -17,7 +17,8 @@ It:
     ``--scope`` is given, any file outside that directory);
   * extracts into a private scratch directory and copies only the validated
     files into the destination working tree, preserving repository-relative
-    paths and refusing to write outside the destination;
+    paths and refusing to write outside the destination or through existing
+    destination symlinks (including symlinked parent directories);
   * prints the NUL-separated list of staged repository-relative paths to stdout
     so the caller can ``git add`` exactly those paths.
 
@@ -116,7 +117,12 @@ def main() -> int:
                 source = os.path.join(scratch, member.name)
                 if not os.path.isfile(source) or os.path.islink(source):
                     fail(f"Extracted member is missing or not a regular file: {member.name}")
-                destination = os.path.realpath(os.path.join(dest_root, member.name))
+                destination = dest_root
+                for component in member.name.split("/"):
+                    destination = os.path.join(destination, component)
+                    if os.path.islink(destination):
+                        fail(f"Refusing to write through destination symlink: {member.name}")
+                destination = os.path.realpath(destination)
                 if destination != dest_root and not destination.startswith(dest_root + os.sep):
                     fail(f"Refusing to write outside destination: {member.name}")
                 os.makedirs(os.path.dirname(destination), exist_ok=True)
