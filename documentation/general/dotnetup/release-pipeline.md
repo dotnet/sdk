@@ -47,7 +47,7 @@ checksum generation, that target stages each RID's binary, checksums, and (for
 win-x64) bootstrap scripts under `<variant>/<version>/`, then writes `release.json`
 alongside them. The manifest records schema version, build ID, commit, variant,
 version, RID, and whether the GA candidate is a placeholder. Each RID's
-`Dotnetup_Dotnetup_*` pipeline artifact contains this layout; the release tool reads,
+`Build_Dotnetup_*` pipeline artifact contains this layout; the release tool reads,
 rather than generates, these manifests.
 
 Preview plans use `dotnet/dotnetup/preview/` shortlinks. GA plans use the product's

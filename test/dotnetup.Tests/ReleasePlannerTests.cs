@@ -117,7 +117,7 @@ public sealed class ReleasePlannerTests
                 File.Delete(ManifestPath("linux-x64"));
                 break;
             case "duplicate-rid":
-                string duplicate = Path.Combine(_root, "Dotnetup_duplicate", "preview", "0.3.0-preview.1.26530.1");
+                string duplicate = Path.Combine(_root, "Build_Dotnetup_duplicate", "preview", "0.3.0-preview.1.26530.1");
                 Directory.CreateDirectory(duplicate);
                 File.Copy(ManifestPath("linux-x64"), Path.Combine(duplicate, "release.json"));
                 break;
@@ -157,7 +157,7 @@ public sealed class ReleasePlannerTests
         ReleasePlanner.CreateAsync(_root, quality, BuildId, Commit, new AkaOwnership("test-owners", "test-actor", "test-group"));
 
     private string ManifestPath(string rid, string quality = "preview", string version = "0.3.0-preview.1.26530.1") =>
-        Path.Combine(_root, "Dotnetup_" + rid, quality, version, "release.json");
+        Path.Combine(_root, "Build_Dotnetup_" + rid, quality, version, "release.json");
 
     private void WriteCandidates(string quality = "preview", string version = "0.3.0-preview.1.26530.1")
     {

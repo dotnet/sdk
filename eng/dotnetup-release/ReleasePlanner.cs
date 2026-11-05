@@ -129,7 +129,7 @@ public static partial class ReleasePlanner
     private static void ValidateManifest(CandidateManifest manifest, string path, string root, string buildId, string commit, string quality)
     {
         string[] parts = Path.GetRelativePath(root, path).Split(Path.DirectorySeparatorChar);
-        if (parts.Length != 4 || !parts[0].StartsWith("Dotnetup_", StringComparison.Ordinal) || parts[1] != quality || parts[2] != manifest.Version
+        if (parts.Length != 4 || !parts[0].StartsWith("Build_", StringComparison.Ordinal) || parts[1] != quality || parts[2] != manifest.Version
             || manifest.SchemaVersion != 1 || manifest.BuildId != buildId || manifest.Commit != commit
             || !s_rids.Contains(manifest.Rid, StringComparer.Ordinal) || manifest.Placeholder != (quality == "ga")
             || !(quality == "ga" ? StableVersionPattern() : PreviewVersionPattern()).IsMatch(manifest.Version))
