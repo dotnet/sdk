@@ -73,6 +73,11 @@ partial class CreateImageIndex
     public ITaskItem[] Annotations { get; set; }
 
     /// <summary>
+    /// The Unix timestamp used to make generated container artifacts reproducible.
+    /// </summary>
+    public string SourceDateEpoch { get; set; }
+
+    /// <summary>
     /// The generated archive output path.
     /// </summary>
     [Output]
@@ -97,6 +102,7 @@ partial class CreateImageIndex
         Repository = string.Empty;
         ImageTags = Array.Empty<string>();
         Annotations = Array.Empty<ITaskItem>();
+        SourceDateEpoch = string.Empty;
         GeneratedArchiveOutputPath = string.Empty;
         GeneratedImageIndex = string.Empty;
 

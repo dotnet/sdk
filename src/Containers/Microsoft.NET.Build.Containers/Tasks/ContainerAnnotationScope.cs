@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.Resources;
@@ -16,6 +17,16 @@ internal enum ContainerAnnotationScope
 
 internal static class ContainerAnnotationScopes
 {
+    internal const string CreatedAnnotationName = "org.opencontainers.image.created";
+
+    internal static string GetValue(ITaskItem annotation, DateTime createdAt)
+    {
+        string value = annotation.GetMetadata("Value");
+        return annotation.ItemSpec == CreatedAnnotationName && string.IsNullOrEmpty(value)
+            ? createdAt.ToString("o", CultureInfo.InvariantCulture)
+            : value;
+    }
+
     internal static bool TryFilter(ITaskItem[] annotations, ContainerAnnotationScope requestedScope, TaskLoggingHelper log, out ITaskItem[] filtered)
     {
         List<ITaskItem> result = new(annotations.Length);

@@ -121,6 +121,39 @@ public class CreateNewImageTests
     }
 
     [TestMethod]
+    [DataRow("Identity")]
+    [DataRow("Value")]
+    [DataRow("Scope")]
+    public void ArchiveIncrementalFingerprintTracksAnnotations(string changedField)
+    {
+        string publishDirectory = CreateTempDirectory();
+        try
+        {
+            CreateNewImage task = CreateIncrementalTask(publishDirectory);
+            TaskItem annotation = new("example.annotation");
+            annotation.SetMetadata("Value", "first");
+            annotation.SetMetadata("Scope", "Manifest");
+            task.Annotations = [annotation];
+            string initial = ComputeResolvedFingerprint(task);
+
+            if (changedField == "Identity")
+            {
+                annotation.ItemSpec = "example.changed";
+            }
+            else
+            {
+                annotation.SetMetadata(changedField, changedField == "Scope" ? "Index" : "second");
+            }
+
+            Assert.AreNotEqual(initial, ComputeResolvedFingerprint(task));
+        }
+        finally
+        {
+            Directory.Delete(publishDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ArchiveIncrementalFingerprintIgnoresDisabledLabels()
     {
         string publishDirectory = CreateTempDirectory();

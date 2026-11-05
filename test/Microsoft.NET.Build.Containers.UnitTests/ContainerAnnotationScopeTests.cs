@@ -43,6 +43,24 @@ public class ContainerAnnotationScopeTests
         Assert.IsTrue(task.Log.HasLoggedErrors);
     }
 
+    [TestMethod]
+    public void ResolvesEmptyCreatedAnnotationFromBuildTimestamp()
+    {
+        DateTime createdAt = DateTimeOffset.FromUnixTimeSeconds(1636374896).UtcDateTime;
+        TaskItem annotation = new(ContainerAnnotationScopes.CreatedAnnotationName);
+
+        Assert.AreEqual("2021-11-08T12:34:56.0000000Z", ContainerAnnotationScopes.GetValue(annotation, createdAt));
+    }
+
+    [TestMethod]
+    public void PreservesExplicitCreatedAnnotationValue()
+    {
+        TaskItem annotation = new(ContainerAnnotationScopes.CreatedAnnotationName);
+        annotation.SetMetadata("Value", "explicit");
+
+        Assert.AreEqual("explicit", ContainerAnnotationScopes.GetValue(annotation, DateTime.UnixEpoch));
+    }
+
     private sealed class TestTask : Microsoft.Build.Utilities.Task
     {
         public override bool Execute() => true;
