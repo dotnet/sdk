@@ -826,6 +826,9 @@ If not specified the file will be generated inside the default 'TestResults' dir
   <data name="ListSolutionFoldersArgumentDescription" xml:space="preserve">
     <value>Display solution folder paths.</value>
   </data>
+  <data name="SolutionListFormatOptionDescription" xml:space="preserve">
+    <value>The output format for the list of paths. JSON output is an array of paths.</value>
+  </data>
   <data name="ManifestOption" xml:space="preserve">
     <value>MANIFEST</value>
   </data>

@@ -1887,6 +1887,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionListFormatOptionDescription">
+        <source>The output format for the list of paths. JSON output is an array of paths.</source>
+        <target state="new">The output format for the list of paths. JSON output is an array of paths.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">要操作的项目或解决方案文件。如果没有指定文件，则命令将在当前目录里搜索一个文件。</target>

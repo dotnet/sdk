@@ -20,6 +20,19 @@ public class CliSchemaTests : SdkTest
   "description": "List all projects in a solution file.",
   "hidden": false,
   "options": {
+    "--format": {
+      "description": "The output format for the list of paths. JSON output is an array of paths.",
+      "hidden": false,
+      "valueType": "System.String",
+      "hasDefaultValue": true,
+      "defaultValue": "table",
+      "arity": {
+        "minimum": 1,
+        "maximum": 1
+      },
+      "required": false,
+      "recursive": false
+    },
     "--solution-folders": {
       "description": "Display solution folder paths.",
       "hidden": false,
