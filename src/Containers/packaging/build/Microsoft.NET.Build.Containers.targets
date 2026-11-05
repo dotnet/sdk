@@ -137,7 +137,8 @@
       <ContainerGenerateLabelsImageBaseDigest Condition="'$(ContainerGenerateLabelsImageBaseDigest)' == ''">true</ContainerGenerateLabelsImageBaseDigest>
       <ContainerGenerateLabelsImageBaseName Condition="'$(ContainerGenerateLabelsImageBaseName)' == ''">true</ContainerGenerateLabelsImageBaseName>
       <ContainerGenerateLabelsDotnetToolset Condition="'$(ContainerGenerateLabelsDotnetToolset)' == ''">true</ContainerGenerateLabelsDotnetToolset>
-      <!-- Manifest annotations default on for explicitly requested OCI output. Otherwise they remain opt-in because the default format follows the base image for compatibility. -->
+      <!-- Local image stores may discard OCI annotations. Generate them by default only for registry or archive output. -->
+      <ContainerGenerateAnnotations Condition="'$(ContainerGenerateAnnotations)' == '' and '$(ContainerRegistry)' == '' and '$(ContainerArchiveOutputPath)' == ''">false</ContainerGenerateAnnotations>
       <ContainerGenerateAnnotations Condition="'$(ContainerGenerateAnnotations)' == '' and '$(ContainerImageFormat)' == 'OCI'">true</ContainerGenerateAnnotations>
       <ContainerGenerateAnnotations Condition="'$(ContainerGenerateAnnotations)' == ''">false</ContainerGenerateAnnotations>
       <ContainerGenerateAnnotationsImageCreated Condition="'$(ContainerGenerateAnnotationsImageCreated)' == ''">$(ContainerGenerateLabelsImageCreated)</ContainerGenerateAnnotationsImageCreated>
