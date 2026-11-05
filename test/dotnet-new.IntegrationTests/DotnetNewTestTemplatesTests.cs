@@ -224,6 +224,186 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
+        [DataRow("mstest", Languages.CSharp, false)]
+        [DataRow("mstest", Languages.CSharp, true)]
+        [DataRow("mstest", Languages.FSharp, false)]
+        [DataRow("mstest", Languages.FSharp, true)]
+        [DataRow("mstest", Languages.VisualBasic, false)]
+        [DataRow("mstest", Languages.VisualBasic, true)]
+        [DataRow("mstest-playwright", Languages.CSharp, false)]
+        [DataRow("mstest-playwright", Languages.CSharp, true)]
+        [DataRow("nunit", Languages.CSharp, false)]
+        [DataRow("nunit", Languages.FSharp, false)]
+        [DataRow("nunit", Languages.VisualBasic, false)]
+        [DataRow("xunit", Languages.CSharp, false)]
+        [DataRow("xunit", Languages.FSharp, false)]
+        [DataRow("xunit", Languages.VisualBasic, false)]
+        public void ProjectTemplate_MtpRunnerDoesNotOverwriteExistingRunner(string projectTemplate, string language, bool useMSTestSdk)
+        {
+            string repositoryDirectory = CreateTemporaryFolder();
+            string outputDirectory = Path.Combine(repositoryDirectory, "tests", "NewTests");
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string globalJsonPath = Path.Combine(repositoryDirectory, "global.json");
+            const string originalGlobalJson = """
+                {
+                  // Preserve the repository's existing runner and unrelated settings.
+                  "test": { "runner": "VSTest" },
+                  "unrelated": { "value": "keep" },
+                }
+                """;
+            File.WriteAllText(globalJsonPath, originalGlobalJson);
+
+            List<string> args =
+            [
+                projectTemplate, "-n", "NewTests", "-lang", language, "-o", outputDirectory,
+                "--test-runner", "Microsoft.Testing.Platform", "--no-restore"
+            ];
+            if (useMSTestSdk)
+            {
+                args.Add("--sdk");
+            }
+
+            if (projectTemplate == "xunit")
+            {
+                args.AddRange(["--xunit-version", "v3"]);
+            }
+
+            var result = new DotnetNewCommand(_log, args.ToArray())
+                .WithCustomHive(home)
+                .WithWorkingDirectory(repositoryDirectory)
+                .Execute();
+
+            File.ReadAllText(globalJsonPath).Should().Be(originalGlobalJson);
+            Directory.GetFiles(outputDirectory, "*.*proj").Should().ContainSingle();
+            File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeFalse();
+            result.Should().Pass()
+                .And.HaveStdErrContaining("test:runner")
+                .And.HaveStdErrContaining("already has a different value")
+                .And.NotHaveStdOutContaining("Successfully modified global.json.");
+
+            DeleteDirectoryWithRetry(repositoryDirectory);
+            DeleteDirectoryWithRetry(home);
+        }
+
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("{}")]
+        [DataRow("""{"test":{}}""")]
+        [DataRow("""{"test":{"runner":"Microsoft.Testing.Platform"}}""")]
+        public void ProjectTemplate_MtpRunnerCreatesOrUpdatesCompatibleGlobalJson(string? originalGlobalJson)
+        {
+            string repositoryDirectory = CreateTemporaryFolder();
+            Directory.CreateDirectory(Path.Combine(repositoryDirectory, ".git"));
+            string outputDirectory = Path.Combine(repositoryDirectory, "NewTests");
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string globalJsonPath = Path.Combine(repositoryDirectory, "global.json");
+            if (originalGlobalJson is not null)
+            {
+                File.WriteAllText(globalJsonPath, originalGlobalJson);
+            }
+
+            new DotnetNewCommand(_log, "mstest", "-n", "NewTests", "-o", outputDirectory,
+                "--test-runner", "Microsoft.Testing.Platform", "--no-restore")
+                .WithCustomHive(home)
+                .WithWorkingDirectory(repositoryDirectory)
+                .Execute()
+                .Should().Pass()
+                .And.NotHaveStdErr();
+
+            using JsonDocument globalJson = JsonDocument.Parse(File.ReadAllText(globalJsonPath));
+            globalJson.RootElement.GetProperty("test").GetProperty("runner").GetString()
+                .Should().Be("Microsoft.Testing.Platform");
+            File.Exists(Path.Combine(outputDirectory, "global.json")).Should().BeFalse();
+
+            DeleteDirectoryWithRetry(repositoryDirectory);
+            DeleteDirectoryWithRetry(home);
+        }
+
+        [TestMethod]
+        [DataRow("VSTest", false)]
+        [DataRow("VSTest", true)]
+        [DataRow("Microsoft.Testing.Platform", false)]
+        [DataRow("Microsoft.Testing.Platform", true)]
+        public void MtpProjectCreation_PreservesExistingTestProjects(string testRunner, bool useMSTestSdk)
+        {
+            string repositoryDirectory = CreateTemporaryFolder();
+            string existingProjectDirectory = Path.Combine(repositoryDirectory, "ExistingTests");
+            string newProjectDirectory = Path.Combine(repositoryDirectory, "NewTests");
+            string home = CreateTemporaryFolder(folderName: "Home");
+            string globalJsonPath = Path.Combine(repositoryDirectory, "global.json");
+            string originalGlobalJson = $$"""
+                {
+                  "test": {
+                    "runner": "{{testRunner}}"
+                  }
+                }
+                """;
+            File.WriteAllText(globalJsonPath, originalGlobalJson);
+            string[] sdkArgs = useMSTestSdk ? ["--sdk"] : [];
+
+            new DotnetNewCommand(_log, ["mstest", "-n", "ExistingTests", "-o", existingProjectDirectory,
+                "-f", ToolsetInfo.SdkTargetFramework, "--test-runner", testRunner, "--no-restore", .. sdkArgs])
+                .WithCustomHive(home)
+                .WithWorkingDirectory(repositoryDirectory)
+                .Execute()
+                .Should().Pass();
+
+            string[] testArgs = testRunner == "VSTest"
+                ? [existingProjectDirectory]
+                : ["--project", existingProjectDirectory];
+            new DotnetTestCommand(_log, false)
+                .WithWorkingDirectory(repositoryDirectory)
+                .WithEnvironmentVariable("DOTNET_TEST_RUNNER", string.Empty)
+                .Execute(testArgs)
+                .Should().Pass();
+
+            if (testRunner == "VSTest")
+            {
+                File.WriteAllText(globalJsonPath, originalGlobalJson.Replace("VSTest", "Microsoft.Testing.Platform"));
+                new DotnetTestCommand(_log, false)
+                    .WithWorkingDirectory(repositoryDirectory)
+                    .WithEnvironmentVariable("DOTNET_TEST_RUNNER", string.Empty)
+                    .Execute("--project", existingProjectDirectory, "--no-restore")
+                    .Should().Fail()
+                    .And.HaveStdErrContaining("All projects must use that test runner.");
+                File.WriteAllText(globalJsonPath, originalGlobalJson);
+            }
+
+            var creationResult = new DotnetNewCommand(_log, ["mstest", "-n", "NewTests", "-o", newProjectDirectory,
+                "-f", ToolsetInfo.SdkTargetFramework, "--test-runner", "Microsoft.Testing.Platform", "--no-restore", .. sdkArgs])
+                .WithCustomHive(home)
+                .WithWorkingDirectory(repositoryDirectory)
+                .Execute();
+            creationResult.Should().Pass();
+
+            if (testRunner == "VSTest")
+            {
+                File.ReadAllText(globalJsonPath).Should().Be(originalGlobalJson);
+                creationResult.Should().HaveStdErrContaining("already has a different value");
+            }
+            else
+            {
+                creationResult.Should().NotHaveStdErr();
+                new DotnetTestCommand(_log, false)
+                    .WithWorkingDirectory(repositoryDirectory)
+                    .WithEnvironmentVariable("DOTNET_TEST_RUNNER", string.Empty)
+                    .Execute("--project", newProjectDirectory)
+                    .Should().Pass()
+                    .And.HaveStdOutContaining("succeeded: 1");
+            }
+
+            var existingProjectResult = new DotnetTestCommand(_log, false)
+                .WithWorkingDirectory(repositoryDirectory)
+                .WithEnvironmentVariable("DOTNET_TEST_RUNNER", string.Empty)
+                .Execute(testArgs);
+            existingProjectResult.Should().Pass();
+            existingProjectResult.StdOut.Should().MatchRegex(testRunner == "VSTest" ? @"Passed:\s*1" : "succeeded: 1");
+
+            DeleteDirectoryWithRetry(repositoryDirectory);
+            DeleteDirectoryWithRetry(home);
+        }
+
+        [TestMethod]
         [DynamicData(nameof(GetTemplateProjectsToTest))]
         public void ProjectTemplate_CanBeInstalledAndTestsArePassing(string targetFramework, string projectTemplate, string language, bool runDotnetTest)
         {

@@ -15,6 +15,7 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
     {
         private const string AllowFileCreationArgument = "allowFileCreation";
         private const string AllowPathCreationArgument = "allowPathCreation";
+        private const string AllowPropertyOverwriteArgument = "allowPropertyOverwrite";
         private const string JsonFileNameArgument = "jsonFileName";
         private const string ParentPropertyPathArgument = "parentPropertyPath";
         private const string NewJsonPropertyNameArgument = "newJsonPropertyName";
@@ -187,6 +188,12 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return null;
             }
 
+            if (!bool.TryParse(action.Args.GetValueOrDefault(AllowPropertyOverwriteArgument, "true"), out bool allowPropertyOverwrite))
+            {
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, AllowPropertyOverwriteArgument));
+                return null;
+            }
+
             JsonNode? parentProperty = FindJsonNode(jsonContent, propertyPath, propertyPathSeparator, createPath);
 
             if (parentProperty == null)
@@ -195,14 +202,28 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 return null;
             }
 
+            JsonNode? newValue;
             try
             {
-                parentProperty[newJsonPropertyName] = JsonNode.Parse(newJsonPropertyValue);
+                newValue = JsonNode.Parse(newJsonPropertyValue);
             }
             catch (JsonException)
             {
-                parentProperty[newJsonPropertyName] = newJsonPropertyValue;
+                newValue = JsonValue.Create(newJsonPropertyValue);
             }
+
+            if (!allowPropertyOverwrite &&
+                parentProperty.AsObject().TryGetPropertyValue(newJsonPropertyName, out JsonNode? existingValue) &&
+                !JsonNode.DeepEquals(existingValue, newValue))
+            {
+                string fullPropertyPath = string.IsNullOrEmpty(propertyPath)
+                    ? newJsonPropertyName
+                    : propertyPath + propertyPathSeparator + newJsonPropertyName;
+                Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_PropertyAlreadyExists, fullPropertyPath, targetJsonFile));
+                return null;
+            }
+
+            parentProperty[newJsonPropertyName] = newValue;
 
             return jsonContent;
         }
