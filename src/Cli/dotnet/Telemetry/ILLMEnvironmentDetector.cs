@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal interface ILLMEnvironmentDetector
+public interface ILLMEnvironmentDetector
 {
     /// <summary>
     /// Checks the current environment for known indicators of LLM usage and returns a string identifying the LLM environment if detected.

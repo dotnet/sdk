@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Security.Cryptography;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
@@ -12,17 +13,17 @@ using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 
 /// <summary>
-/// Mock implementation of IArchiveDownloader for testing without network access.
+/// Mock implementation of IArtifactDownloader for testing without network access.
 /// </summary>
-internal class MockArchiveDownloader : IArchiveDownloader
+internal class MockArchiveDownloader : IArtifactDownloader
 {
     /// <summary>
-    /// Records all calls to DownloadArchiveWithVerification for verification.
+    /// Records all calls to DownloadVerifiedArtifact for verification.
     /// </summary>
     public List<DownloadCall> DownloadCalls { get; } = new();
 
     /// <summary>
-    /// If set, DownloadArchiveWithVerification will throw this exception.
+    /// If set, DownloadVerifiedArtifact will throw this exception.
     /// </summary>
     public Exception? ExceptionToThrow { get; set; }
 
@@ -50,7 +51,18 @@ internal class MockArchiveDownloader : IArchiveDownloader
     /// </summary>
     public string ArchiveFileExtension { get; set; } = DotnetupTestUtilities.DefaultArchiveFileExtension;
 
-    public string DownloadArchiveWithVerification(
+    /// <summary>
+    /// The expected hash reported by <see cref="DownloadVerifiedArtifact"/>. Defaults to the SHA-512 of
+    /// <see cref="FakeArchiveContent"/>; set it to simulate a file that changed after verification.
+    /// </summary>
+    public string? ExpectedHash { get; set; }
+
+    /// <summary>
+    /// Whether <see cref="DownloadVerifiedArtifact"/> reports the download as coming from the unsigned blob feed.
+    /// </summary>
+    public bool IsUnsigned { get; set; }
+
+    public VerifiedDownload DownloadVerifiedArtifact(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion,
         string destinationBasePath,
@@ -80,6 +92,7 @@ internal class MockArchiveDownloader : IArchiveDownloader
         // Report progress completion
         progress?.Report(new DownloadProgress(100, 100));
 
-        return destinationPath;
+        string expectedHash = ExpectedHash ?? Convert.ToHexStringLower(SHA512.HashData(FakeArchiveContent));
+        return new VerifiedDownload(destinationPath, expectedHash, IsUnsigned);
     }
 }

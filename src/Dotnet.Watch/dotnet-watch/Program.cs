@@ -272,7 +272,7 @@ internal sealed class Program(
                 logger.LogInformation("Polling file watcher is enabled");
             }
 
-            using var context = CreateContext(processRunner);
+            await using var context = CreateContext(processRunner);
 
             if (IsHotReloadEnabled())
             {

@@ -24,15 +24,17 @@ dotnetup sdk install [<CHANNEL>...] [options]
 One or more SDK channels or exact versions. Multiple values are resolved
 before installation and can be installed concurrently.
 
-When no value is present, `dotnetup` derives the channel from the nearest
-`global.json`. If no usable file exists, it selects `latest`.
+When no value is present, `dotnetup` reads the nearest existing `global.json`
+and derives a channel from it. A malformed file causes the command to fail. If
+the file has no usable SDK requirement, or if no file exists, it selects
+`latest`.
 
 ## Options
 
 | Option | Description |
 | --- | --- |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
-| `--set-default-install [<true\|false>]` | The current parser accepts this option. The current install handler does not apply its environment changes. Use `dotnetup env set` after installation. |
+| `--set-default-install [<true\|false>]` | Accepted for compatibility. This option does not configure environment access. Use `dotnetup env set` after installation. |
 | `--migrate-from-system [<true\|false>]` | Install matching native-architecture SDKs from a system-managed installation into the selected installation root. |
 | `--update-global-json [<true\|false>]` | Replace `sdk.version` in the applicable `global.json` with the installed version. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
@@ -40,7 +42,7 @@ When no value is present, `dotnetup` derives the channel from the nearest
 | `--no-progress [<true\|false>]` | Disable progress display. |
 | `-v`, `--verbosity <normal\|detailed>` | Set output verbosity. The default is `normal`. |
 | `--require-muxer-update [<true\|false>]` | Fail if the command cannot update the `dotnet` executable. By default, installation continues with a warning. |
-| `--untracked [<true\|false>]` | Install without adding a manifest record. |
+| `--untracked [<true\|false>]` | Install without tracking the requirement. Use a separate root that no tracked installation uses. |
 | `-?`, `-h`, `--help` | Show command help. |
 
 ## Examples

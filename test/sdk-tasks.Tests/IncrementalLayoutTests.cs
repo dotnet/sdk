@@ -295,6 +295,7 @@ public class IncrementalLayoutTests : SdkTest
 
         string staleOutput = CreateFile(project.Root, "layout", "stale.nupkg", "stale");
         File.WriteAllText(source, "changed-before-copy");
+        File.SetLastWriteTimeUtc(source, File.GetLastWriteTimeUtc(project.CompletionFile).AddSeconds(2));
         project.BuildShouldFail("AfterDelete");
 
         File.Exists(staleOutput).Should().BeFalse();
@@ -305,6 +306,7 @@ public class IncrementalLayoutTests : SdkTest
         File.ReadAllText(project.Output("template.nupkg")).Should().Be("changed-before-copy");
 
         File.WriteAllText(source, "changed-before-completion");
+        File.SetLastWriteTimeUtc(source, File.GetLastWriteTimeUtc(project.CompletionFile).AddSeconds(2));
         project.BuildShouldFail("AfterCopy");
 
         File.ReadAllText(project.Output("template.nupkg")).Should().Be("changed-before-completion");
@@ -340,6 +342,7 @@ public class IncrementalLayoutTests : SdkTest
 
                   <PropertyGroup>
                     <MajorMinorVersion>11.0</MajorMinorVersion>
+                    <TemplateFrameworkVersion>11.0</TemplateFrameworkVersion>
                     <ProductMonikerRid>win-x64</ProductMonikerRid>
                     <BundledInputRoot>{{Escape(Path.GetDirectoryName(bundledTemplate)!)}}</BundledInputRoot>
                     <IntermediateOutputPath>{{Escape(Path.Combine(root, "obj"))}}/</IntermediateOutputPath>
@@ -727,45 +730,14 @@ public class IncrementalLayoutTests : SdkTest
         GetLayoutTargetsPath("BundledTemplates.targets");
 
     private static string GetTemplatesWixProjectPath() =>
-        GetLayoutFilePath(
+        LayoutFiles.GetPath(
             "templates.wixproj",
             Path.Combine("src", "Layout", "pkg", "windows", "msis", "templates", "templates.wixproj"));
 
     private static string GetLayoutTargetsPath(string fileName) =>
-        GetLayoutFilePath(
+        LayoutFiles.GetPath(
             fileName,
             Path.Combine("src", "Layout", "redist", "targets", fileName));
-
-    private static string GetLayoutFilePath(string deployedFileName, string repositoryRelativePath)
-    {
-        string deployedPath = Path.Combine(
-            SdkTestContext.Current.TestExecutionDirectory,
-            "Layout",
-            deployedFileName);
-        if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_EXECUTION_DIRECTORY"))
-            && File.Exists(deployedPath))
-        {
-            return deployedPath;
-        }
-
-        string? repoRoot = SdkTestContext.Current.ToolsetUnderTest.RepoRoot
-            ?? SdkTestContext.GetRepoRoot();
-        if (repoRoot is not null)
-        {
-            string repoPath = Path.Combine(repoRoot, repositoryRelativePath);
-            if (File.Exists(repoPath))
-            {
-                return repoPath;
-            }
-        }
-
-        if (File.Exists(deployedPath))
-        {
-            return deployedPath;
-        }
-
-        throw new InvalidOperationException($"Could not find {deployedFileName}.");
-    }
 
     private static string Escape(string value) => SecurityElement.Escape(value)!;
 

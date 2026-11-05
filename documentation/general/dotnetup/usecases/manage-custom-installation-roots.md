@@ -39,9 +39,7 @@ dotnetup sdk uninstall 10.0 --install-path D:\tools\dotnet
 Use `--manifest-path` when the tracking state must also be separate:
 
 ```dotnetcli
-dotnetup sdk install 10.0 \
-  --install-path D:\tools\dotnet \
-  --manifest-path D:\tools\dotnetup_manifest.json
+dotnetup sdk install 10.0 --install-path D:\tools\dotnet --manifest-path D:\tools\dotnetup_manifest.json
 ```
 
 Repeat `--manifest-path` for later list, update, and uninstall operations.
@@ -53,7 +51,7 @@ file or change the default installation root.
 Run its executable directly, or activate it for the current shell:
 
 ```powershell
-dotnetup env script --shell pwsh --dotnet \
+dotnetup env script --shell pwsh --dotnet `
   --dotnet-install-path D:\tools\dotnet |
   Invoke-Expression
 ```
@@ -62,9 +60,10 @@ dotnetup env script --shell pwsh --dotnet \
 
 ## Avoid concurrent manifest writes
 
-`dotnetup` coordinates manifest access with a lock. Do not run concurrent write
-commands against the same manifest. Use separate manifests for independent
-automation.
+Separate manifests isolate tracking state, but installation-changing workflows
+still use a shared process lock. Independent jobs can therefore wait on one
+another even when they use different roots and manifests. Serialize jobs when
+lock contention is unacceptable.
 
 ## See also
 

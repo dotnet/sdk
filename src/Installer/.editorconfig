@@ -678,12 +678,9 @@ dotnet_diagnostic.ASPIREEVENTING001.severity = none
 # Meziantou.Analyzer rules scoped to dotnetup projects only
 [{dotnetup.Library/**.cs,Microsoft.Dotnet.Installation/**.cs,dotnetup.Tests/**.cs}]
 
-# MA0051: Method is too long (max 60 lines; enforced as build error via TreatWarningsAsErrors)
-dotnet_diagnostic.MA0051.severity = warning
-dotnet_code_quality.MA0051.maximum_lines_per_method = 60
-dotnet_code_quality.MA0051.skip_local_functions = true
-
 # Suppress rules we don't want to enforce in dotnetup
+# MA0051: Method length alone isn't a useful reason to split a method
+dotnet_diagnostic.MA0051.severity = none
 # MA0026/MA0025: TODO/FIXME comments and throw NotImplementedException are acceptable
 dotnet_diagnostic.MA0026.severity = none
 dotnet_diagnostic.MA0025.severity = none

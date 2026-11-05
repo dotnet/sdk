@@ -14,7 +14,9 @@ modes, see
 
 ## Use command forwarding
 
-The least persistent option is the `none` mode. In this mode, no changes are made to your shell profile or user environment. Instead, `dotnetup dotnet` allows you to run `dotnet` commands via the `dotnetup`-managed installation:
+The `none` mode doesn't add the managed .NET installation to `PATH` or set
+`DOTNET_ROOT`. The following command also adds the `dotnetup` executable to
+`PATH` so you can run it from any directory:
 
 ```dotnetcli
 dotnetup env set none --dotnetup-on-path true
@@ -22,7 +24,9 @@ dotnetup dotnet -- --info
 dotnetup dotnet build
 ```
 
-The managed `dotnet` is not added to your shell `PATH`.
+To avoid that `PATH` change, set `--dotnetup-on-path false`. The
+`dotnetup dotnet` command runs .NET from the managed installation without
+adding its `dotnet` executable to `PATH`.
 
 ## Configure a shell profile
 

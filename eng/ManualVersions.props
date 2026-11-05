@@ -9,6 +9,11 @@
   Basically: In this file, choose the highest version when resolving merge conflicts.
  -->
   <PropertyGroup>
+    <!-- NetTFMUpdate: Keep test dependencies and bundled templates on net11 until the SDK can target net12. -->
+    <AspNetTestPackageVersion>11.0.0-rc.1.26453.118</AspNetTestPackageVersion>
+    <MicrosoftDotNetWebItemTemplates110PackageVersion>11.0.0-rc.1.26453.118</MicrosoftDotNetWebItemTemplates110PackageVersion>
+    <MicrosoftDotNetWebProjectTemplates110PackageVersion>11.0.0-rc.1.26453.118</MicrosoftDotNetWebProjectTemplates110PackageVersion>
+    <MicrosoftMcpServerProjectTemplates110PackageVersion>11.0.0-rc.1.26453.118</MicrosoftMcpServerProjectTemplates110PackageVersion>
     <MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>10.0.17763.87</MicrosoftWindowsSDKNETRef10_0_17763PackageVersion>
     <MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>10.0.18362.87</MicrosoftWindowsSDKNETRef10_0_18362PackageVersion>
     <MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>10.0.19041.87</MicrosoftWindowsSDKNETRef10_0_19041PackageVersion>

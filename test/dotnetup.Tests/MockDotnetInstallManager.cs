@@ -31,6 +31,8 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
     public bool? LastIncludeDotnetForTerminalProfileModifications { get; private set; }
     public bool? LastIncludeDotnetupForTerminalProfileModifications { get; private set; }
     public bool? LastDotnetupOnUserPathEnabled { get; private set; }
+    public Action? BeforeEnvironmentChange { get; set; }
+    public int ApplyGlobalJsonModificationsCallCount { get; private set; }
 
     public MockDotnetInstallManager(
         string defaultInstallPath,
@@ -65,6 +67,7 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public void ApplyEnvironmentModifications(InstallType installType, string? dotnetRoot = null)
     {
+        BeforeEnvironmentChange?.Invoke();
         ApplyEnvironmentModificationsCallCount++;
         if (installType == InstallType.User)
         {
@@ -79,6 +82,7 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public void ApplyTerminalProfileModifications(string dotnetRoot, bool includeDotnet = true, bool includeDotnetup = true, IEnvShellProvider? shellProvider = null)
     {
+        BeforeEnvironmentChange?.Invoke();
         ApplyTerminalProfileModificationsCallCount++;
         LastDotnetRootForTerminalProfileModifications = dotnetRoot;
         LastIncludeDotnetForTerminalProfileModifications = includeDotnet;
@@ -87,9 +91,11 @@ internal class MockDotnetInstallManager : IDotnetEnvironmentManager
 
     public void ApplyDotnetupOnUserPath(bool enabled)
     {
+        BeforeEnvironmentChange?.Invoke();
         ApplyDotnetupOnUserPathCallCount++;
         LastDotnetupOnUserPathEnabled = enabled;
     }
 
-    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests) { }
+    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests)
+        => ApplyGlobalJsonModificationsCallCount++;
 }

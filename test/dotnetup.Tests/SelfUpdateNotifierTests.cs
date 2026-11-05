@@ -4,12 +4,14 @@
 using System.Globalization;
 using System.Reflection;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Update;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 using Microsoft.DotNet.Tools.Bootstrapper.SelfUpdate;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Spectre.Console;
 using BootstrapperStrings = Microsoft.DotNet.Tools.Bootstrapper.Strings;
 
@@ -212,7 +214,7 @@ public class SelfUpdateNotifierTests : IDisposable
     [TestMethod]
     public void Start_ReturnsNullWhenNotInteractive()
     {
-        SelfUpdateNotifier.Start(interactive: false).Should().BeNull();
+        SelfUpdateNotifier.Start(interactive: false, new DotnetupPolicy(new FakeDotnetupPolicyStore())).Should().BeNull();
     }
 
     [TestMethod]

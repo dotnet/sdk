@@ -2664,6 +2664,14 @@ Proceed?</value>
   <data name="TestCommandUseProject" xml:space="preserve">
     <value>Specifying a project for 'dotnet test' should be via '--project'.</value>
   </data>
+  <data name="TestCommandDeviceSelectionFailed" xml:space="preserve">
+    <value>Device selection failed for project '{0}'.</value>
+    <comment>{0} is the project file path.</comment>
+  </data>
+  <data name="TestCommandDeviceSelectionFailedForTargetFramework" xml:space="preserve">
+    <value>Device selection failed for project '{0}' (target framework '{1}').</value>
+    <comment>{0} is the project file path and {1} is the target framework.</comment>
+  </data>
   <data name="TestCommandUseTestModules" xml:space="preserve">
     <value>Specifying dlls or executables for 'dotnet test' should be via '--test-modules'.</value>
   </data>

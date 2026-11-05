@@ -93,7 +93,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
         MSBuildArgs msbuildArgs,
-        string? artifactsPath = null)
+        CommandServices services,
+        string? artifactsPath = null) : base(services)
     {
         MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(
             CommonRunHelpers.CreateFileBasedRunGlobalProperties().AsReadOnly());
@@ -117,7 +118,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ? null
             : minimizeStdOut
             ? new SimpleErrorLogger()
-            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
+            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]), Services);
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         FileBasedAppCacheInfo? cache = null;
@@ -213,7 +214,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         IDisposable? environmentScope = null;
         try
         {
-            environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+            Dictionary<string, string?> additionalEnvironmentVariables = [];
+            if (!NoRestore && !evalOnly)
+            {
+                NuGetSignatureVerificationEnabler.ConditionallyEnable(additionalEnvironmentVariables);
+            }
+
+            environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables(
+                additionalEnvironmentVariables);
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
@@ -235,6 +243,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 MultiThreaded = multiThreaded,
             };
 
+            using var activity = Activities.PerformanceSource.StartActivity("msbuild-submission");
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             int exitCode = 0;

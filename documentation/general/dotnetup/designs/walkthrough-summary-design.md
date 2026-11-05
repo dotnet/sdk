@@ -17,17 +17,17 @@ branches a customer can reach.
   whether to change anything.
 - Reuse the existing default-resolution and install/migration logic. The summary
   flow must **not** duplicate the logic that builds install requests, resolves
-  the path preference, or executes migrations.
+  the access mode, or executes migrations.
 
 ## Vocabulary
 
 | Term | Meaning |
 | --- | --- |
 | **Walkthrough / init flow** | The interactive onboarding orchestrated by `InitWorkflows.InitWalkthrough`. |
-| **Path preference / Mode** | How the user accesses dotnetup-managed .NET (`PathPreference`: Isolation, Terminal Profile, Replacement). Persisted in `dotnetup.config.json`. |
-| **Configured** | A `dotnetup.config.json` exists with a saved `PathPreference` (`DotnetupConfig.ReadPathPreference()` is non-null). |
-| **Unconfigured** | No saved `PathPreference` (first run). |
-| **Defaults** | The recommended channel, the recommended path preference, and whether to migrate the system installs or not. |
+| **Access mode** | How the user accesses dotnetup-managed .NET (`DotnetAccessMode`: None, Shell, Everywhere). Persisted in `dotnetup.config.json`. |
+| **Configured** | A `dotnetup.config.json` exists with a saved access mode (`DotnetupConfig.ReadAccessMode()` is non-null). |
+| **Unconfigured** | No saved access mode (first run). |
+| **Defaults** | The recommended channel, the recommended access mode, and whether to migrate the system installs or not. |
 
 ## Entry points that reach the summary
 
@@ -48,7 +48,7 @@ the unconditional `InitWorkflows.InitWalkthrough` call for `init`:
 ShouldRunFirstUseOnboarding = !migrateFromSystem
     && interactive
     && installPath is null
-    && DotnetupConfig.ReadPathPreference() is null
+    && DotnetupConfig.ReadAccessMode() is null
 ```
 
 ### Why `dotnetup init` always starts with the summary
@@ -90,7 +90,7 @@ Welcome to dotnetup!
 Would you like to install .NET with the recommended settings?
 
 SDK Channel:   10.0 (determined from global.json at <global_json_path>)
-Mode:          Terminal Profile (recommended)
+Mode:          Shell (recommended)
 
 System installs to migrate:
   • SDK 10.0.300 (x64)
@@ -105,8 +105,8 @@ Lines:
   from `Parser.Version` (commit hash trimmed).
 - **SDK Channel** — The resolved default channel. Append
   `(determined from global.json at <path>)` when the channel was implied by a `global.json`, otherwise omit the parenthetical.
-- **Mode** — The recommended `PathPreference` display name plus a short
-  parenthetical, e.g. `Terminal Profile (recommended)`.
+- **Mode** — The recommended `DotnetAccessMode` display name plus a short
+  parenthetical, e.g. `Shell (recommended)`.
 - **System installs to migrate** — Up to 3 candidates in an indented bullet
   list, reusing `InitWorkflows.FormatMigrationDisplayItems`. If more candidates
   exist, append `... and N more`. Omit this section entirely when there are no
@@ -119,7 +119,7 @@ Lines:
 - Recommended **default** values are rendered in the brand/accent color
   (magenta) — the same color used elsewhere for key values.
 - When re-running in **configured** mode, the value that is *currently
-  configured* (the saved `PathPreference`) is rendered in **yellow** (the
+  configured* (the saved `DotnetAccessMode`) is rendered in **yellow** (the
   existing `ThemeColors.Warning` color) so the user can distinguish "what you
   have now" from "what we recommend".
 
@@ -161,9 +161,9 @@ Behavior:
 
 1. Use the already-computed default install requests (resolved channel) — no
    channel prompt.
-2. Use the recommended `PathPreference` — no mode selector.
+2. Use the recommended `DotnetAccessMode` — no mode selector.
 3. Migrate **all** of the listed system installs — no migration prompt.
-4. Install, save the config (overwriting any existing `PathPreference`), and
+4. Install, save the config (overwriting any existing `DotnetAccessMode`), and
    apply the environment changes for the chosen mode.
 
 No further prompts are shown after the single summary confirmation.
@@ -173,7 +173,7 @@ No further prompts are shown after the single summary confirmation.
 Runs the existing walkthrough exactly as it behaves today:
 
 1. Channel prompt (`PromptChannel`).
-2. Mode selector (`PromptPathPreference`).
+2. Access mode field (`InitFormModel`).
 3. Migration prompt (`PromptUserForMigration`).
 
 then installs, saves config, and applies environment changes. The summary acts

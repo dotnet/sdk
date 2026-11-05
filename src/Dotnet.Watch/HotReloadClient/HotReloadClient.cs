@@ -139,7 +139,7 @@ internal abstract class HotReloadClient(ILogger logger, ILogger agentLogger) : I
     /// <summary>
     /// Queues a batch of updates to be applied in the target process.
     /// </summary>
-    protected Task<bool> QueueUpdateBatch(Func<int, ValueTask<bool>> sendAndReceive, CancellationToken applyOperationCancellationToken)
+    protected Task<bool> QueueUpdateBatchAsync(Func<int, ValueTask<bool>> sendAndReceive, CancellationToken applyOperationCancellationToken)
     {
         var completionSource = new TaskCompletionSource<bool>();
 

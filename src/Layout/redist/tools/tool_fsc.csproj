@@ -34,9 +34,8 @@
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'==''">Shipping</FSharpCorePath>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='prerelease'">PreRelease</FSharpCorePath>
       <FSharpCorePath Condition="'$(DotNetFinalVersionKind)'=='release'">Release</FSharpCorePath>
-      <!-- The Microsoft.FSharp.Compiler package lays its assemblies under lib/<FSharpNetCoreProductTargetFramework>,
-           which tracks the current product TFM ($(NetCurrent)) in every build mode. -->
-      <FSharpTfm>$(NetCurrent)</FSharpTfm>
+      <!-- NetTFMUpdate: Restore $(NetCurrent) when the F# compiler package targets net12.0. -->
+      <FSharpTfm>net11.0</FSharpTfm>
     </PropertyGroup>
 
     <ItemGroup>

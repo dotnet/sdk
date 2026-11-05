@@ -190,7 +190,7 @@ internal class SelfUpdateWorkflow
 
         try
         {
-            SelfUpdateSignature.VerifyReplacement(_paths.InstalledPath, _paths.StagedPath);
+            SelfUpdateSignature.VerifyReplacementAuthenticodeSignature(_paths.InstalledPath, _paths.StagedPath);
         }
         catch (DotnetInstallException)
         {

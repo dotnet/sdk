@@ -44,7 +44,7 @@ internal static class EnvSettingsApplier
         if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(targetEnv))
         {
             throw new PlatformNotSupportedException(
-                $"{nameof(DotnetAccessMode)}.{nameof(DotnetAccessMode.Everywhere)} is only supported on Windows.");
+                string.Format(CultureInfo.InvariantCulture, Strings.EnvModeWindowsOnly, AccessModeCliParsing.ToToken(targetEnv)));
         }
 
         // Windows user-scope dotnet env vars (PATH + DOTNET_ROOT) are wired only by Everywhere mode.

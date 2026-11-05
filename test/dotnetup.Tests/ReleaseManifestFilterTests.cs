@@ -292,4 +292,186 @@ public class ReleaseManifestFilterTests
 
         result.Status.Should().Be(FindReleaseFileStatus.NoMatchingFile);
     }
+
+    // ---- Windows installer bundle selection ----
+
+    [TestMethod]
+    [DataRow("dotnet-sdk-win-x64.exe", InstallComponent.SDK, true)]
+    [DataRow("dotnet-runtime-win-x64.exe", InstallComponent.Runtime, true)]
+    [DataRow("aspnetcore-runtime-win-x64.exe", InstallComponent.ASPNETCore, true)]
+    [DataRow("windowsdesktop-runtime-3.1.32-win-x64.exe", InstallComponent.WindowsDesktop, true)]
+    [DataRow("DOTNET-SDK-WIN-ARM64.EXE", InstallComponent.SDK, true)]
+    [DataRow("dotnet-hosting-win.exe", InstallComponent.ASPNETCore, false)]
+    [DataRow("dotnet-runtime-win-x64.exe", InstallComponent.SDK, false)]
+    [DataRow("dotnet-sdk-win-x64.zip", InstallComponent.SDK, false)]
+    [DataRow("dotnet-sdk-win-x64.exe.sha512", InstallComponent.SDK, false)]
+    public void IsInstallerBundleFor_MatchesOnlyTheComponentBundle(string fileName, InstallComponent component, bool expected)
+    {
+        ReleaseManifest.IsInstallerBundleFor(fileName, component).Should().Be(expected);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(InstallComponent.SDK, "dotnet-sdk-win-x64.exe")]
+    [DataRow(InstallComponent.Runtime, "dotnet-runtime-win-x64.exe")]
+    [DataRow(InstallComponent.ASPNETCore, "aspnetcore-runtime-win-x64.exe")]
+    [DataRow(InstallComponent.WindowsDesktop, "windowsdesktop-runtime-win-x64.exe")]
+    public void ResolveReleaseFile_BundleMechanism_SelectsComponentBundle(InstallComponent component, string expectedName)
+    {
+        var result = ReleaseManifest.ResolveReleaseFile(GetFixtureComponent(component), BuildRequest(component, InstallMechanism.WindowsInstallerBundle));
+
+        result.Status.Should().Be(FindReleaseFileStatus.Found);
+        result.File!.Name.Should().Be(expectedName);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DataRow(InstallComponent.SDK, "dotnet-sdk-win-x64.zip")]
+    [DataRow(InstallComponent.Runtime, "dotnet-runtime-win-x64.zip")]
+    [DataRow(InstallComponent.ASPNETCore, "aspnetcore-runtime-win-x64.zip")]
+    [DataRow(InstallComponent.WindowsDesktop, "windowsdesktop-runtime-win-x64.zip")]
+    public void ResolveReleaseFile_ArchiveMechanism_StillSelectsArchive(InstallComponent component, string expectedName)
+    {
+        var result = ReleaseManifest.ResolveReleaseFile(GetFixtureComponent(component), BuildRequest(component, InstallMechanism.Archive));
+
+        result.Status.Should().Be(FindReleaseFileStatus.Found);
+        result.File!.Name.Should().Be(expectedName);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void ResolveReleaseFile_BundleMechanism_WithoutBundle_IsUserInstallableArtifactMiss()
+    {
+        // The fixture's x86 RID lists only an archive for the SDK.
+        var request = BuildRequest(InstallComponent.SDK, InstallMechanism.WindowsInstallerBundle, InstallArchitecture.x86);
+
+        var result = ReleaseManifest.ResolveReleaseFile(GetFixtureComponent(InstallComponent.SDK), request);
+
+        result.Status.Should().Be(FindReleaseFileStatus.NoUserInstallableArtifact);
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void ResolveReleaseFile_BundleMechanism_WithoutFilesForRid_IsNoMatchingFile()
+    {
+        var request = BuildRequest(InstallComponent.Runtime, InstallMechanism.WindowsInstallerBundle, InstallArchitecture.arm64);
+
+        var result = ReleaseManifest.ResolveReleaseFile(GetFixtureComponent(InstallComponent.Runtime), request);
+
+        result.Status.Should().Be(FindReleaseFileStatus.NoMatchingFile);
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void ResolveReleaseFile_BundleMechanism_NeverSelectsBundleOffWindows()
+    {
+        var result = ReleaseManifest.ResolveReleaseFile(GetFixtureComponent(InstallComponent.SDK), BuildRequest(InstallComponent.SDK, InstallMechanism.WindowsInstallerBundle));
+
+        result.Status.Should().NotBe(FindReleaseFileStatus.Found);
+    }
+
+    private static DotnetInstallRequest BuildRequest(InstallComponent component, InstallMechanism mechanism, InstallArchitecture architecture = InstallArchitecture.x64) =>
+        new(
+            new DotnetInstallRoot(Path.Combine(Path.GetTempPath(), "dotnetup-unused-root"), architecture),
+            new UpdateChannel("9.0.0"),
+            component,
+            new InstallRequestOptions { Untracked = true, InstallMechanism = mechanism });
+
+    private static Microsoft.Deployment.DotNet.Releases.ReleaseComponent GetFixtureComponent(InstallComponent component)
+    {
+        var release = s_fixtureRelease.Value;
+        return component switch
+        {
+            InstallComponent.SDK => release.Sdks.Single(),
+            InstallComponent.Runtime => release.Runtime,
+            InstallComponent.ASPNETCore => release.AspNetCoreRuntime,
+            InstallComponent.WindowsDesktop => release.WindowsDesktopRuntime,
+            _ => throw new ArgumentOutOfRangeException(nameof(component)),
+        };
+    }
+
+    private static readonly Lazy<Microsoft.Deployment.DotNet.Releases.ProductRelease> s_fixtureRelease = new(ParseFixtureRelease);
+
+    private static Microsoft.Deployment.DotNet.Releases.ProductRelease ParseFixtureRelease()
+    {
+        string json = $$"""
+        {
+          "releases": [
+            {
+              "release-date": "2024-11-12",
+              "release-version": "9.0.0",
+              "security": false,
+              "runtime": {
+                "version": "9.0.0",
+                "version-display": "9.0.0",
+                "files": [
+                  {{FixtureFile("dotnet-apphost-pack-win-x64.zip", "win-x64")}},
+                  {{FixtureFile("dotnet-runtime-win-x64.exe", "win-x64")}},
+                  {{FixtureFile("dotnet-runtime-win-x64.zip", "win-x64")}},
+                  {{FixtureFile("dotnet-runtime-linux-x64.tar.gz", "linux-x64")}}
+                ]
+              },
+              "sdk": {
+                "version": "9.0.100",
+                "version-display": "9.0.100",
+                "runtime-version": "9.0.0",
+                "files": [
+                  {{FixtureFile("dotnet-sdk-win-x64.exe", "win-x64")}},
+                  {{FixtureFile("dotnet-sdk-win-x64.zip", "win-x64")}},
+                  {{FixtureFile("dotnet-sdk-win-x86.zip", "win-x86")}},
+                  {{FixtureFile("dotnet-sdk-linux-x64.tar.gz", "linux-x64")}}
+                ]
+              },
+              "sdks": [
+                {
+                  "version": "9.0.100",
+                  "version-display": "9.0.100",
+                  "runtime-version": "9.0.0",
+                  "files": [
+                    {{FixtureFile("dotnet-sdk-win-x64.exe", "win-x64")}},
+                    {{FixtureFile("dotnet-sdk-win-x64.zip", "win-x64")}},
+                    {{FixtureFile("dotnet-sdk-win-x86.zip", "win-x86")}},
+                    {{FixtureFile("dotnet-sdk-linux-x64.tar.gz", "linux-x64")}}
+                  ]
+                }
+              ],
+              "aspnetcore-runtime": {
+                "version": "9.0.0",
+                "version-display": "9.0.0",
+                "files": [
+                  {{FixtureFile("aspnetcore-runtime-composite-win-x64.exe", "win-x64")}},
+                  {{FixtureFile("dotnet-hosting-win.exe", "win-x64")}},
+                  {{FixtureFile("aspnetcore-runtime-win-x64.exe", "win-x64")}},
+                  {{FixtureFile("aspnetcore-runtime-win-x64.zip", "win-x64")}},
+                  {{FixtureFile("aspnetcore-runtime-linux-x64.tar.gz", "linux-x64")}}
+                ]
+              },
+              "windowsdesktop": {
+                "version": "9.0.0",
+                "version-display": "9.0.0",
+                "files": [
+                  {{FixtureFile("windowsdesktop-runtime-win-x64.exe", "win-x64")}},
+                  {{FixtureFile("windowsdesktop-runtime-win-x64.zip", "win-x64")}}
+                ]
+              }
+            }
+          ]
+        }
+        """;
+
+        string path = Path.Combine(Path.GetTempPath(), "dotnetup-test-releases-" + Guid.NewGuid().ToString("N") + ".json");
+        File.WriteAllText(path, json);
+        try
+        {
+            return Microsoft.Deployment.DotNet.Releases.Product.GetReleasesAsync(path).GetAwaiter().GetResult().Single();
+        }
+        finally
+        {
+            try { File.Delete(path); } catch { /* best-effort cleanup */ }
+        }
+    }
+
+    private static string FixtureFile(string name, string rid) => $$"""
+        { "name": "{{name}}", "rid": "{{rid}}", "url": "https://example.test/{{name}}", "hash": "{{new string('0', 128)}}" }
+        """;
 }

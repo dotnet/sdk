@@ -55,7 +55,9 @@ internal sealed class SelfUpdateNotifier
     /// <c>null</c> when notifications do not apply to this invocation. Never throws: a best-effort
     /// notice must not fail the command.
     /// </summary>
-    public static SelfUpdateNotifier? Start(bool interactive)
+    /// <param name="interactive">Whether the command runs interactively.</param>
+    /// <param name="policy">The machine policy; no notifier is returned when it blocks self-update.</param>
+    public static SelfUpdateNotifier? Start(bool interactive, DotnetupPolicy policy)
     {
         // Redirected output is read by a program, even when --interactive true allows prompts.
         if (!interactive ||
@@ -67,7 +69,7 @@ internal sealed class SelfUpdateNotifier
 
         try
         {
-            if (!DotnetupConfig.ReadUpdateNotificationsEnabled() || UnsignedSourcePolicy.IsUnsignedDownloadBlocked())
+            if (!DotnetupConfig.ReadUpdateNotificationsEnabled() || policy.IsUnsignedDownloadBlocked())
             {
                 return null;
             }

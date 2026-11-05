@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+    <!-- NetTFMUpdate: Remove the extra target when Arcade's source-built workload tasks move to net12.0. -->
+    <TargetFrameworks Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(TargetFrameworks);net11.0</TargetFrameworks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
