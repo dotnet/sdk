@@ -5,6 +5,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 /// <summary>
 /// Outcome of a child process run by <see cref="ChildProcessRunner"/>. Output is empty when it was not
-/// redirected or when the run timed out.
+/// redirected or when the run timed out; <see cref="ExitCode"/> is meaningful only when <see cref="TimedOut"/> is false.
 /// </summary>
 internal sealed record ChildProcessResult(int ExitCode, string StandardOutput, string StandardError, bool TimedOut);
