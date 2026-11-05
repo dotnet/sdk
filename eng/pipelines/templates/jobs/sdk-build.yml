@@ -298,7 +298,7 @@ jobs:
         displayName: Publish dotnetup daily, preview, and GA candidates
         inputs:
           targetPath: $(Build.SourcesDirectory)/artifacts/dotnetup-release
-          artifactName: Dotnetup_$(System.PhaseName)
+          artifactName: Build_$(System.PhaseName)
 
     - task: CopyFiles@2
       displayName: 🟣 Copy Logs

@@ -16,7 +16,7 @@ branding so the build/release handoff can be exercised before GA support is enab
 
 ## Artifact contract
 
-Each RID job uploads a `Dotnetup_<job-name>` pipeline artifact containing
+Each RID job uploads a `Build_<job-name>` pipeline artifact containing
 `<variant>/<version>/`. Each directory contains the RID-suffixed executable, its
 SHA-512 checksum, and `release.json` with the source Azure DevOps build ID, commit,
 version, variant, RID, schema version, and placeholder flag. The win-x64 artifact
@@ -30,7 +30,7 @@ checksums from the publishing manifest. Only daily assets are registered in BAR.
 Daily publication uses Arcade V4 publishing. Each RID job additionally uploads a
 `<job-name>_Artifacts` pipeline artifact containing staged daily assets and a V4
 manifest. The BAR job merges these manifests into the `AssetManifests` pipeline
-artifact. Preview and GA remain exclusively in the `Dotnetup_<job-name>` candidate
+artifact. Preview and GA remain exclusively in the `Build_<job-name>` candidate
 artifacts; the release pipeline's input contract is unchanged. The shared SDK build
 job templates use V4 publishing without a V3 compatibility option.
 
