@@ -29,6 +29,7 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.Api;
 using Microsoft.DotNet.Cli.Commands.Sdk;
+using Microsoft.DotNet.Cli.Commands.SelfSign;
 using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Tool;
@@ -117,6 +118,7 @@ internal sealed class DotNetCommandDefinition : RootCommand
     public readonly VSTestCommandDefinition VSTestCommand;
     public readonly HelpCommandDefinition HelpCommand;
     public readonly SdkCommandDefinition SdkCommand;
+    public readonly SelfSignCommandDefinition SelfSignCommand;
     public readonly InternalReportInstallSuccessCommandDefinition InternalReportInstallSuccessCommand;
     public readonly WorkloadCommandDefinition WorkloadCommand;
     public readonly TestCommandDefinition TestCommand;
@@ -169,6 +171,7 @@ internal sealed class DotNetCommandDefinition : RootCommand
         Subcommands.Add(VSTestCommand = new());
         Subcommands.Add(HelpCommand = new());
         Subcommands.Add(SdkCommand = new());
+        Subcommands.Add(SelfSignCommand = new());
         Subcommands.Add(InternalReportInstallSuccessCommand = new());
         Subcommands.Add(WorkloadCommand = new());
         Subcommands.Add(CompletionsCommand = new());
