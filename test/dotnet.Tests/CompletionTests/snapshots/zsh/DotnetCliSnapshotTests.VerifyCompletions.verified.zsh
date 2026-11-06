@@ -1518,7 +1518,7 @@ _testhost_commands() {
         'package:' \
         'project:' \
         'publish:Publisher for the .NET Platform' \
-        'reference:.NET Remove Command' \
+        'reference:Add, remove, or list ProjectReferences for a .NET project.' \
         'restore:.NET dependency restorer' \
         'run:.NET Run Command' \
         'solution:.NET modify solution file command' \
