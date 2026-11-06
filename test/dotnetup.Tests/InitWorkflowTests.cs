@@ -315,6 +315,44 @@ public class InitWorkflowTests : IDisposable
     // ── ResolveDefaultMigrations ──
 
     [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void ResolveFormDefaults_AcceptsComments()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "global.json"), """
+            {
+              // SDK policy
+              "sdk": {
+                "version": "10.0.103",
+                "rollForward": "latestPatch",
+                "paths": ["$host$"]
+              }
+            }
+            """);
+        var mock = new MockDotnetInstallManager(defaultInstallPath: _tempDir, existingSystemInstalls: []);
+        var command = new InitCommand(Parser.Parse(["init"]));
+
+        var defaults = RunFromTempDirectory(() => InitDefaultsResolver.ResolveFormDefaults(command, null, mock));
+
+        defaults.ChannelDisplay.ChannelLabel.Should().Be("10.0.1xx");
+        defaults.InstallRoot.Path.Should().Be(_tempDir);
+        RunFromTempDirectory(InitWorkflows.HasLocalSdkPathGlobalJson).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void ResolveFormDefaults_ReportsMalformedGlobalJsonAsContextResolutionFailure()
+    {
+        File.WriteAllText(Path.Combine(_tempDir, "global.json"), "{broken");
+        var mock = new MockDotnetInstallManager(defaultInstallPath: _tempDir);
+        var command = new InitCommand(Parser.Parse(["init"]));
+
+        var resolve = () => RunFromTempDirectory(() => InitDefaultsResolver.ResolveFormDefaults(command, null, mock));
+
+        resolve.Should().Throw<DotnetInstallException>()
+            .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.ContextResolutionFailed);
+    }
+
+    [TestMethod]
     public void ResolveDefaultMigrations_ReturnsCandidates()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();

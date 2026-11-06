@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json.Serialization;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
@@ -29,9 +31,14 @@ internal class DotnetRootEntry
 internal class InstallSpec
 {
     public InstallComponent Component { get; set; }
+    // Repository entries use the saved channel and constraints only when GlobalJsonPath cannot be read.
     public string VersionOrChannel { get; set; } = string.Empty;
     public InstallSource InstallSource { get; set; }
     public string? GlobalJsonPath { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? MinimumVersion { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public bool? AllowPrerelease { get; set; }
 }
 
 /// <summary>
@@ -42,14 +49,4 @@ internal class Installation
     public InstallComponent Component { get; set; }
     public string Version { get; set; } = string.Empty;
     public List<string> Subcomponents { get; set; } = [];
-}
-
-/// <summary>
-/// The source of an install spec.
-/// </summary>
-internal enum InstallSource
-{
-    Explicit,
-    GlobalJson,
-    All,
 }

@@ -11,12 +11,18 @@ internal class UpdateChannel
     private const string DailyKeyword = "daily";
 
     public string Name { get; }
+    // Optional constraints supplied by repository requirements. Standalone channels
+    // keep their existing named-channel and prerelease behavior.
+    public ReleaseVersion? MinimumVersion { get; }
+    public bool? AllowPrerelease { get; }
 
     private static bool IsStableRelease(ReleaseVersion version) => string.IsNullOrEmpty(version.Prerelease);
 
-    public UpdateChannel(string name)
+    public UpdateChannel(string name, ReleaseVersion? minimumVersion = null, bool? allowPrerelease = null)
     {
         Name = name;
+        MinimumVersion = minimumVersion;
+        AllowPrerelease = allowPrerelease;
     }
 
     public bool IsFullySpecifiedVersion()
@@ -184,12 +190,30 @@ internal class UpdateChannel
     }
 
     /// <summary>
-    /// Checks if the given version matches this channel pattern.
-    /// Supports exact versions, named channels (latest, lts, preview, daily),
-    /// major-only, major.minor, and feature band patterns (each of these may
-    /// also carry a <c>-daily</c> suffix to narrow the match to prerelease versions).
+    /// Checks whether a version satisfies the channel name, minimum version,
+    /// and prerelease policy. A false <see cref="AllowPrerelease"/> excludes all
+    /// prereleases; null leaves eligibility to the channel's defaults.
+    /// A true value permits prereleases for <c>latest</c>, but does not override
+    /// restrictions inherent to other channel names, such as stable-only <c>lts</c>.
+    /// This checks eligibility, not whether the version is the latest match or
+    /// whether its product is still in support.
     /// </summary>
     public bool Matches(ReleaseVersion version)
+    {
+        return (MinimumVersion is null || version.CompareTo(MinimumVersion) >= 0)
+            && (AllowPrerelease != false || IsStableRelease(version))
+            && MatchesChannelPattern(version);
+    }
+
+    /// <summary>
+    /// Checks the channel-name rules: exact versions, named channels, major,
+    /// major.minor, feature bands, and scoped daily channels.
+    /// Does not enforce <see cref="MinimumVersion"/> or the blanket prerelease
+    /// exclusion from <see cref="Matches"/>. Named channels apply their own
+    /// prerelease rules, including the <see cref="AllowPrerelease"/> override for
+    /// <c>latest</c>; daily channels require prereleases.
+    /// </summary>
+    private bool MatchesChannelPattern(ReleaseVersion version)
     {
         if (string.IsNullOrEmpty(Name))
         {
@@ -270,17 +294,17 @@ internal class UpdateChannel
             return true;
         }
 
-        // "latest" should only match stable releases so a preview SDK doesn't satisfy the
-        // stable channel during garbage collection. "preview" continues to allow stable
-        // matches so existing preview specs can keep a GA SDK when no preview exists yet.
+        // "latest" defaults to stable releases, but repository requirements can
+        // explicitly permit prereleases through AllowPrerelease.
         if (Name.Equals("latest", StringComparison.OrdinalIgnoreCase))
         {
-            versionMatchesChannel = IsStableRelease(version);
+            versionMatchesChannel = AllowPrerelease == true || IsStableRelease(version);
             return true;
         }
 
         if (Name.Equals("preview", StringComparison.OrdinalIgnoreCase))
         {
+            // "preview" includes stable releases: GA supersedes its earlier previews.
             versionMatchesChannel = true;
             return true;
         }
