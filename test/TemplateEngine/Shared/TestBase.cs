@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Xml.Linq;
 using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.TestHelper;
 
@@ -81,14 +82,20 @@ namespace Microsoft.TemplateEngine.Tests
         }
 
         /// <summary>
-        /// Creates a NuGet.config in the specified directory with sources for both
-        /// shipping packages and locally-built test packages.
+        /// Creates a NuGet.config in the specified directory with sources for shipping
+        /// packages, locally-built test packages, and dependencies from the test NuGet.config.
         /// </summary>
         internal static void SetupNuGetConfigForPackagesLocation(string projectDirectory)
         {
             TestUtils.SetupNuGetConfigForPackagesLocation(
                 projectDirectory,
-                new[] { ShippingPackagesLocation, SdkTestContext.Current.TestPackages });
+                new[] { ShippingPackagesLocation, SdkTestContext.Current.TestPackages }
+                    .Concat(
+                        XDocument.Load(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "NuGet.config"))
+                            .Root!
+                            .Element("packageSources")!
+                            .Elements("add")
+                            .Select(source => source.Attribute("value")!.Value)));
         }
     }
 }
