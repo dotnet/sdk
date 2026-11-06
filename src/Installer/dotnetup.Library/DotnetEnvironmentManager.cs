@@ -85,22 +85,24 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     }
 
     public List<DotnetInstall> GetExistingSystemInstalls()
+        => GetExistingSystemInstalls(GetSystemDotnetPaths());
+
+    internal static List<DotnetInstall> GetExistingSystemInstalls(IEnumerable<string> systemPaths)
     {
         var installs = new List<DotnetInstall>();
 
-        foreach (var systemPath in GetSystemDotnetPaths())
+        foreach (var systemPath in systemPaths)
         {
             try
             {
-                installs.AddRange(HostFxrWrapper.getInstalls(systemPath));
+                var installRoot = new DotnetInstallRoot(systemPath, InstallerUtilities.GetDefaultInstallArchitecture());
+                installs.AddRange(SystemInstallEnumerator.GetInstalls(installRoot));
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
-                // Log the failure rather than silently swallowing — aids debugging
-                // when hostfxr is missing or the path is inaccessible.
-                Metrics.Tag(TelemetryTagNames.HostfxrEnumerationFailed, "true");
-                Metrics.Tag(TelemetryTagNames.HostfxrEnumerationError, ex.GetType().Name);
-                Metrics.Tag(TelemetryTagNames.HostfxrEnumerationPath, systemPath);
+                Metrics.Tag(TelemetryTagNames.SystemInstallEnumerationFailed, "true");
+                Metrics.Tag(TelemetryTagNames.SystemInstallEnumerationError, ex.GetType().Name);
+                Metrics.Tag(TelemetryTagNames.SystemInstallEnumerationPath, systemPath);
                 AnsiConsole.MarkupLine(DotnetupTheme.Dim(
                     $"[{DotnetupTheme.Current.Warning}]Warning:[/] Could not enumerate installs at {systemPath.EscapeMarkup()}: {ex.Message.EscapeMarkup()}"));
             }
