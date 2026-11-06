@@ -85,18 +85,30 @@ namespace Microsoft.DotNet.Tools.Run.Tests
         {
             // Arrange
             string[] receivedArgs = null;
+            using var cancellationTokenSource = new CancellationTokenSource();
             var testCommandRunner = new Mock<ICommandRunner>();
             testCommandRunner
-                .Setup(x => x.Run(It.IsAny<string[]>()))
-                .Callback<string[]>(s => receivedArgs = s)
+                .Setup(x => x.Run(It.IsAny<string[]>(), cancellationTokenSource.Token))
+                .Callback<string[], CancellationToken>((s, _) => receivedArgs = s)
                 .Returns(0);
 
             // Act
-            var returned = NuGetCommand.Run(inputArgs, testCommandRunner.Object);
+            var returned = NuGetCommand.Run(inputArgs, testCommandRunner.Object, cancellationTokenSource.Token);
 
             // Assert
             receivedArgs.Should().BeEquivalentTo(inputArgs);
             returned.Should().Be(result);
+        }
+
+        [TestMethod]
+        public void ItDoesNotRunNuGetAfterCancellation()
+        {
+            using var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            Action run = () => NuGetCommand.Run([], cancellationTokenSource.Token, isFileBasedApp: true);
+
+            run.Should().Throw<OperationCanceledException>();
         }
 
         [TestMethod]

@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal static class DotnetCommandCallbacks
 {
-    internal static bool AddPackageReference(string projectPath, string packageName, string? version)
+    internal static bool AddPackageReference(string projectPath, string packageName, string? version, CancellationToken cancellationToken)
     {
         PathUtility.EnsureAllPathsExist([projectPath], CliStrings.CommonFileNotFound, allowDirectories: false);
         IEnumerable<string> commandArgs = ["add", projectPath, "package", packageName];
@@ -28,10 +28,10 @@ internal static class DotnetCommandCallbacks
         AddCommandParser.ConfigureCommand(addCommand);
 
         var addPackageReferenceCommand = new PackageAddCommand(addCommand.Parse([.. commandArgs]));
-        return addPackageReferenceCommand.Execute() == 0;
+        return addPackageReferenceCommand.Execute(cancellationToken) == 0;
     }
 
-    internal static bool AddProjectReference(string projectPath, string projectToAdd)
+    internal static bool AddProjectReference(string projectPath, string projectToAdd, CancellationToken cancellationToken)
     {
         PathUtility.EnsureAllPathsExist([projectPath], CliStrings.CommonFileNotFound, allowDirectories: false);
         PathUtility.EnsureAllPathsExist([projectToAdd], CliStrings.CommonFileNotFound, allowDirectories: false);
@@ -41,17 +41,17 @@ internal static class DotnetCommandCallbacks
         AddCommandParser.ConfigureCommand(addCommand);
 
         var addProjectReferenceCommand = new ReferenceAddCommand(addCommand.Parse([.. commandArgs]));
-        return addProjectReferenceCommand.Execute() == 0;
+        return addProjectReferenceCommand.Execute(cancellationToken) == 0;
     }
 
-    internal static bool RestoreProject(string pathToRestore)
+    internal static bool RestoreProject(string pathToRestore, CancellationToken cancellationToken)
     {
         PathUtility.EnsureAllPathsExist([pathToRestore], CliStrings.CommonFileNotFound, allowDirectories: true);
         // for the implicit restore we do not want the terminal logger to emit any output unless there are errors
-        return RestoreCommand.Run([pathToRestore, "-tlp:verbosity=quiet", "--no-logo"]) == 0;
+        return RestoreCommand.Run([pathToRestore, "-tlp:verbosity=quiet", "--no-logo"], cancellationToken) == 0;
     }
 
-    internal static bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder, bool? inRoot)
+    internal static bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder, bool? inRoot, CancellationToken cancellationToken)
     {
         PathUtility.EnsureAllPathsExist([solutionPath], CliStrings.CommonFileNotFound, allowDirectories: false);
         PathUtility.EnsureAllPathsExist(projectsToAdd, CliStrings.CommonFileNotFound, allowDirectories: false);
@@ -70,6 +70,6 @@ internal static class DotnetCommandCallbacks
         SolutionCommandParser.ConfigureCommand(solutionCommand);
 
         var addProjectToSolutionCommand = new SolutionAddCommand(solutionCommand.Parse([.. commandArgs]));
-        return addProjectToSolutionCommand.Execute() == 0;
+        return addProjectToSolutionCommand.Execute(cancellationToken) == 0;
     }
 }

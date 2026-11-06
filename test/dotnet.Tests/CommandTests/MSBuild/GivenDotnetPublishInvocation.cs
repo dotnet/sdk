@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (PublishCommand)PublishCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
+                var command = (PublishCommand)PublishCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
 
                 command.SeparateRestoreCommand
                     .Should()
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void MsbuildInvocationIsCorrectForSeparateRestore(string[] args, string[] expectedAdditionalArgs)
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
+            var command = (PublishCommand)PublishCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
 
             var restoreTokens =
                 command.SeparateRestoreCommand! // for this scenario, we expect a separate restore command
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void MsbuildInvocationIsCorrectForNoBuild()
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "--no-build" }, msbuildPath, TestCommandServices.CreateNonLLM());
+            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "--no-build" }, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
 
             command.SeparateRestoreCommand
                    .Should()
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void CommandAcceptsMultipleCustomProperties()
         {
             var msbuildPath = "<msbuildpath>";
-            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "/p:Prop1=prop1", "/p:Prop2=prop2" }, msbuildPath, TestCommandServices.CreateNonLLM());
+            var command = (PublishCommand)PublishCommand.FromArgs(new[] { "/p:Prop1=prop1", "/p:Prop2=prop2" }, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
 
             command.GetArgumentTokensToMSBuild()
                .Should()
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             File.WriteAllText(msbuildPath, "");
 
             string[] args = [projectPath, "--configuration", "Debug", .. separateRestore ? new[] { "--framework", "tfm" } : []];
-            var command = (PublishCommand)PublishCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM());
+            var command = (PublishCommand)PublishCommand.FromArgs(args, TestContext.CancellationToken, msbuildPath, TestCommandServices.CreateNonLLM());
 
             // MSBuild is a managed DLL, so the dotnet host executes the custom path.
             var expectedArgumentPrefix = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(["exec", msbuildPath]) + " ";

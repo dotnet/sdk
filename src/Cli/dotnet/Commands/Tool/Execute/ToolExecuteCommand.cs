@@ -53,7 +53,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     }
 
-    public override int Execute() => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+    public override int Execute(CancellationToken cancellationToken) => ExecuteAsync(cancellationToken).GetAwaiter().GetResult();
 
     internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
@@ -110,7 +110,12 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     _toolManifestFinder,
                     localToolsResolverCache);
 
-                return ToolRunCommand.ExecuteCommand(localToolsCommandResolver, toolManifestPackage.CommandNames.Single().Value, _forwardArguments, _allowRollForward);
+                return ToolRunCommand.ExecuteCommand(
+                    localToolsCommandResolver,
+                    toolManifestPackage.CommandNames.Single().Value,
+                    _forwardArguments,
+                    _allowRollForward,
+                    cancellationToken);
             }
         }
 
@@ -187,6 +192,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
             toolPackage = _toolPackageDownloader.InstallPackage(
                 downloadPackageLocation,
                 packageId: packageId,
+                cancellationToken: cancellationToken,
                 verbosity: _verbosity,
                 versionRange: new VersionRange(bestVersion!, true, bestVersion!, true),
                 isGlobalToolRollForward: false,

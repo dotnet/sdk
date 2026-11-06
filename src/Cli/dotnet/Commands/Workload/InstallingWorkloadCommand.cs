@@ -187,7 +187,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
         return InstallStateContents.FromPath(path);
     }
 
-    protected void UpdateWorkloadManifests(WorkloadHistoryRecorder recorder, ITransactionContext context, DirectoryPath? offlineCache)
+    protected void UpdateWorkloadManifests(
+        WorkloadHistoryRecorder recorder,
+        ITransactionContext context,
+        CancellationToken cancellationToken,
+        DirectoryPath? offlineCache)
     {
         var shouldUseWorkloadSetsPerInstallState = WorkloadManifestUpdater.ShouldUseWorkloadSetMode(_sdkFeatureBand, _workloadRootDir);
         var updateToLatestWorkloadSet = _shouldUseWorkloadSets ?? shouldUseWorkloadSetsPerInstallState && !SpecifiedWorkloadSetVersionInGlobalJson;
@@ -237,6 +241,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                     _workloadSetVersionFromCommandLine,
                     _workloadResolver,
                     numberOfWorkloadSetsToTake: 1,
+                    cancellationToken,
                     _packageSourceLocation,
                     RestoreActionConfiguration);
 
@@ -262,7 +267,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
 
         if (string.IsNullOrWhiteSpace(resolvedWorkloadSetVersion) && !UseRollback && !FromHistory)
         {
-            _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(_includePreviews, updateToLatestWorkloadSet, offlineCache).Wait();
+            _workloadManifestUpdater.UpdateAdvertisingManifestsAsync(
+                cancellationToken,
+                _includePreviews,
+                updateToLatestWorkloadSet,
+                offlineCache).GetAwaiter().GetResult();
             if (updateToLatestWorkloadSet)
             {
                 resolvedWorkloadSetVersion = _workloadManifestUpdater.GetAdvertisedWorkloadSetVersion();
@@ -288,7 +297,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
         }
 
         IEnumerable<ManifestVersionUpdate> manifestsToUpdate =
-            resolvedWorkloadSetVersion != null ? InstallWorkloadSet(context, resolvedWorkloadSetVersion) :
+            resolvedWorkloadSetVersion != null ? InstallWorkloadSet(context, resolvedWorkloadSetVersion, cancellationToken) :
                                    UseRollback ? _workloadManifestUpdater.CalculateManifestRollbacks(_fromRollbackDefinition, recorder) :
                                    FromHistory ? _workloadManifestUpdater.CalculateManifestUpdatesFromHistory(_WorkloadHistoryRecord) :
                                                  _workloadManifestUpdater.CalculateManifestUpdates().Select(m => m.ManifestUpdate);
@@ -300,7 +309,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             {
                 foreach (var manifestUpdate in manifestsToUpdate)
                 {
-                    _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, offlineCache);
+                    _workloadInstaller.InstallWorkloadManifest(manifestUpdate, context, cancellationToken, offlineCache);
                 }
 
                 if (!SpecifiedWorkloadSetVersionInGlobalJson)
@@ -359,15 +368,23 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             });
     }
 
-    private IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(ITransactionContext context, string workloadSetVersion)
+    private IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(
+        ITransactionContext context,
+        string workloadSetVersion,
+        CancellationToken cancellationToken)
     {
         Reporter.WriteLine(string.Format(CliCommandStrings.NewWorkloadSet, workloadSetVersion));
-        var workloadSet = _workloadInstaller.InstallWorkloadSet(context, workloadSetVersion);
+        var workloadSet = _workloadInstaller.InstallWorkloadSet(context, workloadSetVersion, cancellationToken);
 
         return workloadSet is null ? [] : _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
     }
 
-    protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null,
+    protected async Task<List<WorkloadDownload>> GetDownloads(
+        IEnumerable<WorkloadId> workloadIds,
+        CancellationToken cancellationToken,
+        bool skipManifestUpdate,
+        bool includePreview,
+        string downloadFolder = null,
         IReporter reporter = null, INuGetPackageDownloader packageDownloader = null)
     {
         reporter ??= Reporter;
@@ -392,7 +409,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                     folderForManifestDownloads = tempPath.Value;
                 }
 
-                var manifestDownloads = await _workloadManifestUpdater.GetManifestPackageDownloadsAsync(includePreview, new SdkFeatureBand(_targetSdkVersion), _sdkFeatureBand);
+                var manifestDownloads = await _workloadManifestUpdater.GetManifestPackageDownloadsAsync(
+                    cancellationToken,
+                    includePreview,
+                    new SdkFeatureBand(_targetSdkVersion),
+                    _sdkFeatureBand);
 
                 if (!manifestDownloads.Any())
                 {
@@ -405,11 +426,14 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                     ret.Add(download);
 
                     //  Download package
-                    var downloadedPackagePath = await packageDownloader.DownloadPackageAsync(new PackageId(download.NuGetPackageId), new NuGetVersion(download.NuGetPackageVersion),
+                    var downloadedPackagePath = await packageDownloader.DownloadPackageAsync(new PackageId(download.NuGetPackageId), cancellationToken, new NuGetVersion(download.NuGetPackageVersion),
                         _packageSourceLocation, downloadFolder: folderForManifestDownloads);
 
                     //  Extract manifest from package
-                    await _workloadInstaller.ExtractManifestAsync(downloadedPackagePath, Path.Combine(extractedManifestsPath, download.Id));
+                    await _workloadInstaller.ExtractManifestAsync(
+                        downloadedPackagePath,
+                        Path.Combine(extractedManifestsPath, download.Id),
+                        cancellationToken);
                 }
 
                 //  Use updated, extracted manifests to resolve packs
@@ -429,7 +453,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                 {
                     reporter.WriteLine(string.Format(CliCommandStrings.DownloadingPackToCacheMessage, packDownload.NuGetPackageId, packDownload.NuGetPackageVersion, downloadFolder));
 
-                    await packageDownloader.DownloadPackageAsync(new PackageId(packDownload.NuGetPackageId), new NuGetVersion(packDownload.NuGetPackageVersion),
+                    await packageDownloader.DownloadPackageAsync(new PackageId(packDownload.NuGetPackageId), cancellationToken, new NuGetVersion(packDownload.NuGetPackageVersion),
                         _packageSourceLocation, downloadFolder: downloadFolderDirectoryPath);
                 }
             }

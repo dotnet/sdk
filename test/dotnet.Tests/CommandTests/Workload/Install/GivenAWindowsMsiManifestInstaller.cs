@@ -50,8 +50,11 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
         using var temporaryDirectory = new TemporaryDirectory();
         string? expectedMsiPath = null;
         var downloader = new Mock<INuGetPackageDownloader>();
-        downloader.Setup(d => d.ExtractPackageAsync(It.IsAny<string>(), It.IsAny<DirectoryPath>()))
-            .Returns((string _, DirectoryPath targetFolder) =>
+        downloader.Setup(d => d.ExtractPackageAsync(
+                It.IsAny<string>(),
+                It.IsAny<DirectoryPath>(),
+                It.IsAny<CancellationToken>()))
+            .Returns((string _, DirectoryPath targetFolder, CancellationToken _) =>
             {
                 string dataPath = Path.Combine(targetFolder.Value, "data");
                 Directory.CreateDirectory(dataPath);
@@ -72,7 +75,10 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
             });
 
         var exception = await Assert.ThrowsExactlyAsync<VerificationCallbackInvokedException>(
-            () => installer.ExtractManifestAsync("manifest.nupkg", Path.Combine(temporaryDirectory.DirectoryPath, "target")));
+            () => installer.ExtractManifestAsync(
+                "manifest.nupkg",
+                Path.Combine(temporaryDirectory.DirectoryPath, "target"),
+                TestContext.CancellationToken));
 
         Assert.AreSame(expectedException, exception);
         Assert.AreEqual(expectedMsiPath, verifiedMsiPath);

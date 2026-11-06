@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
     [TestClass]
     public class DotnetAddPostActionTests
     {
+        public TestContext TestContext { get; set; } = null!;
+
         private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
 
         [TestInitialize]
@@ -174,7 +176,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(projFileFullPath, callback.Target);
             Assert.AreEqual(referencedProjFileFullPath, callback.Reference);
@@ -201,7 +204,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(projFileFullPath, callback.Target);
             Assert.AreEqual(referencedProjFileFullPath, callback.Reference);
@@ -244,7 +248,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(existingProjectFileFullPath, callback.Target);
             Assert.AreEqual(referencedProjectFileFullPath, callback.Reference);
@@ -270,7 +275,8 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(projFileFullPath, callback.Target);
             Assert.AreEqual("System.Net.Json", callback.Reference);
@@ -297,10 +303,46 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 postAction,
                 creationEffects,
                 new MockCreationResult(),
-                targetBasePath);
+                targetBasePath,
+                TestContext.CancellationToken);
 
             Assert.AreEqual(projFileFullPath, callback.Target);
             Assert.AreEqual("System.Net.Json", callback.Reference);
+        }
+
+        [TestMethod]
+        [DataRow("package")]
+        [DataRow("project")]
+        public void AddRefPropagatesCancellation(string referenceType)
+        {
+            DotnetAddPostActionProcessor actionProcessor = new(
+                (_, _, _, cancellationToken) => throw new OperationCanceledException(cancellationToken),
+                (_, _, cancellationToken) => throw new OperationCanceledException(cancellationToken));
+
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            var args = new Dictionary<string, string>()
+            {
+                { "targetFiles", "[\"MyApp.csproj\"]" },
+                { "referenceType", referenceType },
+                { "reference", referenceType == "package" ? "System.Net.Json" : "./Reference.csproj" },
+            };
+            var postAction = new MockPostAction(default, default, default, default, default!)
+            {
+                ActionId = DotnetAddPostActionProcessor.ActionProcessorId,
+                Args = args,
+            };
+            MockCreationEffects creationEffects = new MockCreationEffects()
+                .WithFileChange(new MockFileChange("./MyApp.csproj", "./MyApp.csproj", ChangeKind.Create));
+            using CancellationTokenSource cancellationTokenSource = new();
+            cancellationTokenSource.Cancel();
+
+            Assert.ThrowsExactly<OperationCanceledException>(() => actionProcessor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                creationEffects,
+                new MockCreationResult(),
+                targetBasePath,
+                cancellationTokenSource.Token));
         }
 
         private class MockAddProjectReferenceCallback
@@ -309,7 +351,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
 
             public string? Reference { get; private set; }
 
-            public bool AddProjectReference(string target, string reference)
+            public bool AddProjectReference(string target, string reference, CancellationToken cancellationToken = default)
             {
                 if (Target != null)
                 {
@@ -322,7 +364,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 return true;
             }
 
-            public bool AddPackageReference(string target, string reference, string? version)
+            public bool AddPackageReference(string target, string reference, string? version, CancellationToken cancellationToken = default)
             {
                 if (Target != null)
                 {

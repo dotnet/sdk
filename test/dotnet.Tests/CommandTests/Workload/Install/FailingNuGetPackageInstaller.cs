@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             Directory.CreateDirectory(MockPackageDir);
         }
 
-        public Task<string> DownloadPackageAsync(PackageId packageId, NuGetVersion packageVersion,
+        public Task<string> DownloadPackageAsync(PackageId packageId, CancellationToken cancellationToken, NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false,
             bool? includeUnlisted = null,
@@ -32,22 +32,23 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(mockPackagePath);
         }
 
-        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+        public Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder, CancellationToken cancellationToken)
         {
             Directory.CreateDirectory(targetFolder.Value);
             File.WriteAllText(Path.Combine(targetFolder.Value, "testfile.txt"), string.Empty);
             throw new Exception("Test Failure");
         }
 
-        public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => throw new NotImplementedException();
-        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => throw new NotImplementedException();
-        public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
+        public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, CancellationToken cancellationToken, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => throw new NotImplementedException();
+        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, CancellationToken cancellationToken, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => throw new NotImplementedException();
+        public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, CancellationToken cancellationToken, PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
 
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
-            VersionRange versionRange, PackageSourceLocation packageSourceLocation = null,
-            CancellationToken cancellationToken = default) => throw new NotImplementedException();
+            VersionRange versionRange, CancellationToken cancellationToken,
+            PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
 
         public Task<string> GetPackageUrl(PackageId packageId,
+            CancellationToken cancellationToken,
             NuGetVersion packageVersion,
             PackageSourceLocation packageSourceLocation = null,
             bool includePreview = false)

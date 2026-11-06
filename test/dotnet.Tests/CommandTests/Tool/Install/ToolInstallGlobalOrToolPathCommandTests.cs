@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
             _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }
 
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             // It is hard to simulate shell behavior. Only Assert shim can point to executable dll
             _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _parseResult,
                 toolInstallGlobalOrToolPathCommand);
 
-            toolInstallCommand.Execute().Should().Be(0);
+            toolInstallCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
         }
@@ -188,7 +188,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             // Should not find the package because it is in the wrong feed
-            var ex = Assert.ThrowsExactly<NuGetPackageNotFoundException>(() => toolInstallGlobalOrToolPathCommand.Execute());
+            var ex = Assert.ThrowsExactly<NuGetPackageNotFoundException>(() => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None));
             ex.Message.Should().Contain(PackageId);
         }
 
@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             // It is hard to simulate shell behavior. Only Assert shim can point to executable dll
             _fileSystem.File.Exists(ExpectedCommandPath())
@@ -226,7 +226,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.First().Should().Be(EnvironmentPathInstructionMock.MockInstructionText);
         }
@@ -249,7 +249,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.First().Should().Be(CliStrings.FormatVersionIsHigher.Yellow());
             _reporter.Lines.Skip(1).First().Should().Be(EnvironmentPathInstructionMock.MockInstructionText);
@@ -269,7 +269,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            Action a = () => toolInstallGlobalOrToolPathCommand.Execute();
+            Action a = () => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(ErrorMessage);
@@ -289,7 +289,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            Action a = () => toolInstallGlobalOrToolPathCommand.Execute();
+            Action a = () => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
@@ -316,9 +316,13 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(new BufferedReporter(), _pathToPlaceShim, true),
                 new BufferedReporter());
 
-            Task<int> firstInstall = Task.Run(firstCommand.Execute, TestContext.CancellationToken);
+            Task<int> firstInstall = Task.Run(
+                () => firstCommand.Execute(TestContext.CancellationToken),
+                TestContext.CancellationToken);
             await blockingShellShimRepository.CreateStarted;
-            Task<int> secondInstall = Task.Run(secondCommand.Execute, TestContext.CancellationToken);
+            Task<int> secondInstall = Task.Run(
+                () => secondCommand.Execute(TestContext.CancellationToken),
+                TestContext.CancellationToken);
 
             Task firstCompleted = await Task.WhenAny(
                 secondInstall,
@@ -348,7 +352,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            Action a = () => toolInstallGlobalOrToolPathCommand.Execute();
+            Action a = () => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -369,7 +373,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -392,7 +396,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -417,7 +421,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            Action action = () => toolInstallGlobalOrToolPathCommand.Execute();
+            Action action = () => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None);
 
             action
                 .Should().Throw<GracefulException>()
@@ -438,7 +442,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -462,7 +466,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -474,7 +478,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
             _reporter.Clear();
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().Equal(string.Format(CliCommandStrings.ToolAlreadyInstalled, PackageId, PackageVersion).Green());
         }
@@ -490,7 +494,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            command.Execute().Should().Be(0);
+            command.Execute(TestContext.CancellationToken).Should().Be(0);
 
             Func<Task> execute = () => command.ExecuteAsync(new CancellationToken(canceled: true));
 
@@ -511,7 +515,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -532,7 +536,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand2.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand2.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -558,7 +562,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -579,7 +583,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand2.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand2.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -605,7 +609,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -626,7 +630,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            Action a = () => toolInstallGlobalOrToolPathCommand2.Execute();
+            Action a = () => toolInstallGlobalOrToolPathCommand2.Execute(CancellationToken.None);
             a.Should().Throw<GracefulException>();
         }
 
@@ -642,7 +646,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -678,7 +682,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 currentWorkingDirectory: testDir,
                 verifySignatures: false);
 
-            toolInstallCommand.Execute().Should().Be(0);
+            toolInstallCommand.Execute(CancellationToken.None).Should().Be(0);
 
             // Uninstall the unlisted package
             var toolUninstallCommand = new ToolUninstallGlobalOrToolPathCommand(Parser.Parse("dotnet tool uninstall -g " + UnlistedPackageId),
@@ -690,7 +694,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     fileSystem: _fileSystem,
                     appHostShellShimMaker: new AppHostShellShimMakerMock(_fileSystem),
                     filePermissionSetter: new NoOpFilePermissionSetter()));
-            toolUninstallCommand.Execute().Should().Be(0);
+            toolUninstallCommand.Execute(CancellationToken.None).Should().Be(0);
         }
 
         [TestMethod]
@@ -719,7 +723,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -745,7 +749,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            Action a = () => toolInstallGlobalOrToolPathCommand.Execute();
+            Action a = () => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None);
             a.Should().Throw<GracefulException>();
         }
 
@@ -821,7 +825,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            Action a = () => toolInstallGlobalOrToolPathCommand.Execute();
+            Action a = () => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None);
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(CliStrings.IsNotFoundInNuGetFeeds, $"Version 5.0 of {PackageId}", "{MockFeeds}"));
@@ -841,7 +845,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter
                 .Lines
@@ -865,7 +869,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim),
                 _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _reporter.Lines.Should().NotContain(l => l.Contains(EnvironmentPathInstructionMock.MockInstructionText));
         }
@@ -880,7 +884,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                  environmentPathInstruction: new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim, true),
                  reporter: _reporter);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
             _reporter.Lines.Should().NotContain(l => l.Contains(CliStrings.NuGetPackageSignatureVerificationSkipped));
         }
 
@@ -913,7 +917,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim),
                 _reporter);
 
-            installCommand.Execute().Should().Be(0);
+            installCommand.Execute(CancellationToken.None).Should().Be(0);
 
             _fileSystem.File.ReadAllText(ExpectedCommandPath()).Should().Be(tokenToIdentifyPackagedShim);
         }
@@ -930,7 +934,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            var exceptionThrown = Assert.ThrowsExactly<AggregateException>(() => toolInstallGlobalOrToolPathCommand.Execute());
+            var exceptionThrown = Assert.ThrowsExactly<AggregateException>(() => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None));
             exceptionThrown.Message.Should().Contain("-invalid is invalid");
         }
 
@@ -948,7 +952,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter,
                 nugetPackageDownloader);
 
-            toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
+            toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None).Should().Be(0);
             nugetPackageDownloader.DownloadCallParams.Count.Should().Be(1);
             nugetPackageDownloader.ExtractCallParams.Count.Should().Be(1);
             nugetPackageDownloader.DownloadCallParams.First().Item1.Should().Be(new PackageId("microsoft.netcore.app.host.win-arm64"));

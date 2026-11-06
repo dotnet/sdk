@@ -13,20 +13,21 @@ namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
 internal class NuGetCommand
 {
-    public static int Run(string[] args, bool isFileBasedApp = false)
+    public static int Run(string[] args, CancellationToken cancellationToken, bool isFileBasedApp = false)
     {
 #if CLI_AOT
         // The in-process NuGet runner relies on NuGet.CommandLine.XPlat, which isn't AOT-compatible,
         // so AOT always forwards to the out-of-process NuGet CLI.
-        return Run(args, new NuGetCommandRunner());
+        return Run(args, new NuGetCommandRunner(), cancellationToken);
 #else
         return Run(args, isFileBasedApp
             ? new InProcessNuGetCommandRunner(NuGetVirtualProjectBuilder.Instance)
-            : new NuGetCommandRunner());
+            : new NuGetCommandRunner(),
+            cancellationToken);
 #endif
     }
 
-    public static int Run(ParseResult parseResult)
+    public static int Run(ParseResult parseResult, CancellationToken cancellationToken)
     {
         ICommandRunner runner;
 
@@ -46,10 +47,10 @@ internal class NuGetCommand
         }
 #endif
 
-        return Run(parseResult.GetArguments(), runner);
+        return Run(parseResult.GetArguments(), runner, cancellationToken);
     }
 
-    public static int Run(string[] args, ICommandRunner nugetCommandRunner)
+    public static int Run(string[] args, ICommandRunner nugetCommandRunner, CancellationToken cancellationToken)
     {
         DebugHelper.HandleDebugSwitch(ref args);
 
@@ -63,16 +64,16 @@ internal class NuGetCommand
             if (args[i] == "-?")
                 args[i] = "--help";
         }
-        return nugetCommandRunner.Run(args);
+        return nugetCommandRunner.Run(args, cancellationToken);
     }
 
     private class NuGetCommandRunner : ICommandRunner
     {
-        public int Run(string[] args)
+        public int Run(string[] args, CancellationToken cancellationToken)
         {
             var nugetApp = new NuGetForwardingApp(args);
             nugetApp.WithEnvironmentVariable(EnvironmentVariableNames.DOTNET_HOST_PATH, GetDotnetPath());
-            return nugetApp.Execute();
+            return nugetApp.Execute(cancellationToken);
         }
     }
 
@@ -84,13 +85,17 @@ internal class NuGetCommand
             "IL2026",
             Justification =
                 "This runner is excluded from CLI_AOT builds")]
-        public int Run(string[] args)
+        public int Run(string[] args, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             var originalDotNetHostPath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_HOST_PATH);
             Environment.SetEnvironmentVariable(EnvironmentVariableNames.DOTNET_HOST_PATH, GetDotnetPath());
             try
             {
-                return global::NuGet.CommandLine.XPlat.Program.Run(args, virtualProjectBuilder);
+                int exitCode = global::NuGet.CommandLine.XPlat.Program.Run(args, virtualProjectBuilder);
+                cancellationToken.ThrowIfCancellationRequested();
+                return exitCode;
             }
             finally
             {

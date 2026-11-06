@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 workloadManifestUpdater: manifestUpdater,
                 tempDirPath: testDirectory);
 
-            var exitCode = command.Execute();
+            var exitCode = command.Execute(CancellationToken.None);
 
             // Should exit successfully but show deprecation message
             exitCode.Should().Be(0);
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 workloadManifestUpdater: manifestUpdater,
                 tempDirPath: testDirectory);
 
-            var exitCode = command.Execute();
+            var exitCode = command.Execute(CancellationToken.None);
 
             // Should exit successfully, show deprecation message, but install android workload
             exitCode.Should().Be(0);
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 workloadManifestUpdater: manifestUpdater,
                 tempDirPath: testDirectory);
 
-            var exitCode = command.Execute();
+            var exitCode = command.Execute(CancellationToken.None);
 
             // Should exit successfully and show deprecation message only once
             exitCode.Should().Be(0);
