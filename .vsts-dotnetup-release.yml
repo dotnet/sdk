@@ -1,0 +1,179 @@
+# Pipeline: https://dev.azure.com/dnceng/internal/_build?definitionId=1710
+trigger: none
+pr: none
+
+parameters:
+- name: variant
+  displayName: dotnetup build variant
+  type: string
+  default: preview
+  values:
+  - preview
+  - daily
+- name: dryRun
+  displayName: Dry run (prepare artifacts without publishing to blob storage)
+  type: boolean
+  default: true
+- name: blobServiceConnection
+  displayName: Azure service connection for dotnetcli blob publishing
+  type: string
+  default: dotnetup-release
+
+variables:
+- template: /eng/common/templates-official/variables/pool-providers.yml
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
+- name: ReleaseMetadataDirectory
+  value: $(Build.ArtifactStagingDirectory)/release-metadata
+- name: ReleaseStagingDirectory
+  value: $(Agent.TempDirectory)/dotnetup-cdn-staging
+- name: ReleaseToolsDirectory
+  value: $(Pipeline.Workspace)/dotnetup-release-tools
+
+resources:
+  pipelines:
+  - pipeline: dotnetup
+    project: internal
+    source: \dotnet\sdk\dotnet-dnup-official-ci
+    branch: refs/heads/release/dnup
+    tags:
+    - PME Signed
+    trigger: none
+  repositories:
+  - repository: MicroBuildTemplates
+    type: git
+    name: 1ESPipelineTemplates/MicroBuildTemplate
+    ref: refs/tags/release
+
+extends:
+  template: azure-pipelines/1ES.Official.Publish.yml@MicroBuildTemplates
+  parameters:
+    pool:
+      name: $(DncEngInternalBuildPool)
+      image: 1es-windows-2022
+      os: windows
+    stages:
+    - stage: PublishToBlobStorage
+      displayName: Publish dotnetup to dotnetcli blob storage
+      jobs:
+      - job: Release
+        displayName: Validate candidates and optionally publish versioned blobs
+        timeoutInMinutes: 180
+        templateContext:
+          type: releaseJob
+          isProduction: ${{ eq(parameters.dryRun, false) }}
+          inputs:
+          - input: pipelineArtifact
+            pipeline: dotnetup
+            artifactName: DotnetupReleaseTools
+            targetPath: $(ReleaseToolsDirectory)
+          - input: pipelineArtifact
+            pipeline: dotnetup
+            artifactName: Dotnetup_Dotnetup_windows_x64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_windows_x64
+          - input: pipelineArtifact
+            pipeline: dotnetup
+            artifactName: Dotnetup_Dotnetup_windows_arm64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_windows_arm64
+          - input: pipelineArtifact
+            pipeline: dotnetup
+            artifactName: Dotnetup_Dotnetup_linux_x64_crossBuildLinuxX64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_linux_x64_crossBuildLinuxX64
+          - input: pipelineArtifact
+            pipeline: dotnetup
+            artifactName: Dotnetup_Dotnetup_linux_arm64_crossBuildLinuxArm64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_linux_arm64_crossBuildLinuxArm64
+          - input: pipelineArtifact
+            pipeline: dotnetup
+            artifactName: Dotnetup_Dotnetup_linux_x64_crossBuildMuslX64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_linux_x64_crossBuildMuslX64
+          - input: pipelineArtifact
+            pipeline: dotnetup
+            artifactName: Dotnetup_Dotnetup_linux_arm64_crossBuildMuslArm64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_linux_arm64_crossBuildMuslArm64
+          - input: pipelineArtifact
+            pipeline: dotnetup
+            artifactName: Dotnetup_Dotnetup_macOS_x64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_macOS_x64
+          - input: pipelineArtifact
+            pipeline: dotnetup
+            artifactName: Dotnetup_Dotnetup_macOS_arm64
+            targetPath: $(Pipeline.Workspace)/candidate/Dotnetup_Dotnetup_macOS_arm64
+          mb:
+            publish:
+              enabled: false
+        steps:
+        - pwsh: |
+            $ErrorActionPreference = 'Stop'
+            New-Item -ItemType Directory -Path $env:RELEASEMETADATADIRECTORY -ErrorAction Stop | Out-Null
+            $sourceBuildId = [int]$env:SOURCE_BUILD_ID
+            $headers = @{ Authorization = "Bearer $env:SYSTEM_ACCESSTOKEN" }
+            $sourceBuild = Invoke-RestMethod -Headers $headers -Uri "https://dev.azure.com/dnceng/internal/_apis/build/builds/$sourceBuildId`?api-version=7.1"
+            $sourceBuildPath = Join-Path $env:RELEASEMETADATADIRECTORY 'source-build.json'
+            $sourceBuild | ConvertTo-Json -Depth 20 | Set-Content -LiteralPath $sourceBuildPath
+            & (Join-Path $env:RELEASETOOLSDIRECTORY 'dotnetup-release.exe') prepare `
+              "$(Pipeline.Workspace)/candidate" '${{ parameters.variant }}' `
+              $env:SOURCE_BUILD_ID $env:SOURCE_COMMIT $sourceBuildPath `
+              $env:RELEASESTAGINGDIRECTORY $env:RELEASEMETADATADIRECTORY
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+            if ('${{ parameters.dryRun }}' -eq 'true') {
+              Write-Host 'DRY RUN: candidates staged and aka.ms plan recorded. Blob uploads and public download verification are skipped.'
+            }
+          displayName: Validate signed candidates, stage files, and snapshot aka.ms targets
+          env:
+            SOURCE_BUILD_ID: $(resources.pipeline.dotnetup.runID)
+            SOURCE_COMMIT: $(resources.pipeline.dotnetup.sourceCommit)
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            SYSTEM_DEBUG: $(System.Debug)
+
+        - ${{ if eq(parameters.dryRun, false) }}:
+          - task: AzureCLI@2
+            displayName: Publish create-only blobs and verify their SHA-512 hashes
+            inputs:
+              azureSubscription: ${{ parameters.blobServiceConnection }}
+              scriptType: pscore
+              scriptLocation: inlineScript
+              visibleAzLogin: false
+              inlineScript: |
+                $ErrorActionPreference = 'Stop'
+                $env:BLOB_ACCESS_TOKEN = az account get-access-token --resource https://storage.azure.com/ --query accessToken --output tsv
+                if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($env:BLOB_ACCESS_TOKEN)) {
+                  throw 'Failed to acquire an Azure Storage access token.'
+                }
+                Write-Host "##vso[task.setsecret]$env:BLOB_ACCESS_TOKEN"
+                try {
+                  & (Join-Path $env:RELEASETOOLSDIRECTORY 'dotnetup-release.exe') publish `
+                    $env:RELEASESTAGINGDIRECTORY $env:RELEASEMETADATADIRECTORY
+                  if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+                }
+                finally {
+                  $env:BLOB_ACCESS_TOKEN = $null
+                }
+            env:
+              SYSTEM_DEBUG: $(System.Debug)
+
+          - pwsh: |
+              $ErrorActionPreference = 'Stop'
+              & (Join-Path $env:RELEASETOOLSDIRECTORY 'dotnetup-release.exe') verify `
+                $env:RELEASEMETADATADIRECTORY `
+                (Join-Path $env:RELEASEMETADATADIRECTORY 'blob-publication.json') `
+                "$(Agent.TempDirectory)/dotnetup-blob-verification"
+              exit $LASTEXITCODE
+            displayName: Verify anonymous blob downloads and record disabled aka.ms changes
+            env:
+              SYSTEM_DEBUG: $(System.Debug)
+
+        - pwsh: |
+            $ErrorActionPreference = 'Stop'
+            if (Test-Path -LiteralPath $env:RELEASEMETADATADIRECTORY) {
+              foreach ($file in Get-ChildItem -LiteralPath $env:RELEASEMETADATADIRECTORY -File) {
+                Write-Host "##vso[task.uploadfile]$($file.FullName)"
+              }
+              if (@(Get-ChildItem -LiteralPath $env:RELEASEMETADATADIRECTORY -File -Recurse).Count -gt 0) {
+                $archive = "$(Build.ArtifactStagingDirectory)/dotnetup-release-metadata.zip"
+                Compress-Archive -Path "$env:RELEASEMETADATADIRECTORY/*" -DestinationPath $archive -Force
+                Write-Host "##vso[task.uploadfile]$archive"
+              }
+            }
+          displayName: Attach release metadata, source manifests, and aka.ms plan
+          condition: always()
