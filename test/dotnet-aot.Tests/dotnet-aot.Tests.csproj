@@ -4,6 +4,9 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
+    <!-- Matches dotnet-aot.csproj: without the ASP.NET Core runtime, AotSourceFiles.props
+         compiles AspNetCoreCertificateGenerator.cs with an empty body via EXCLUDE_ASPNETCORE. -->
+    <DefineConstants Condition="'$(IncludeAspNetCoreRuntime)' == 'false'">$(DefineConstants);EXCLUDE_ASPNETCORE</DefineConstants>
     <RootNamespace>Microsoft.DotNet.Cli.Tests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <!-- Methods within a class share fixtures and process state. Audited classes use
@@ -33,6 +36,13 @@
   <!-- Shared AOT dependencies and source files. -->
   <Import Project="..\..\src\Cli\dotnet-aot\AotDependencies.props" />
   <Import Project="..\..\src\Cli\dotnet-aot\AotSourceFiles.props" />
+
+  <ItemGroup>
+    <!-- CA1418: OpenHarmony is not in the analyzer's known-platform list yet (no OHOS TFM,
+         no guard method in the target framework); this project compiles the same AOT sources
+         as dotnet-aot, including OpenHarmonyEnvironmentDefaults.cs. -->
+    <SupportedPlatform Include="openharmony" />
+  </ItemGroup>
 
   <!-- NativeEntryPoint for ExecuteCore tests (ManagedHost is stubbed in TestManagedHost.cs) -->
   <ItemGroup>

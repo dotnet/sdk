@@ -26,6 +26,13 @@
     <BuiltinManifests Include="microsoft.net.workload.mono.toolchain.net11" />
   </ItemGroup>
 
+  <!-- OpenHarmony ships no workloads: the Mono runtime and the platform SDK packs it would
+       reference are not part of the ohos build, so drop every bundled and built-in manifest. -->
+  <ItemGroup Condition="'$(OSName)' == 'openharmony'">
+    <BundledManifests Remove="@(BundledManifests)" />
+    <BuiltinManifests Remove="@(BuiltinManifests)" />
+  </ItemGroup>
+
   <!-- Calculate NuGet package IDs for bundled manifests -->
   <PropertyGroup>
     <!-- TODO: Not exactly sure how this value should be calculated -->

@@ -23,6 +23,13 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required]
         public string MicrosoftAspNetCoreAppVersion { get; set; }
 
+        /// <summary>
+        /// Optional runtime host configuration options to write into every runtimeconfig.
+        /// Used for the OpenHarmony sandbox defaults on the SDK's own tools, so they are not
+        /// inherited by user applications.
+        /// </summary>
+        public ITaskItem[] RuntimeHostConfigurationOptions { get; set; }
+
         public override bool Execute()
         {
             if (DestinationPaths is not null && DestinationPaths.Length != RuntimeConfigPaths.Length)
@@ -56,6 +63,31 @@ namespace Microsoft.DotNet.Build.Tasks
             else if (framework != null)
             {
                 UpdateFramework(framework);
+            }
+
+            if (RuntimeHostConfigurationOptions is { Length: > 0 })
+            {
+                var runtimeOptions = config["runtimeOptions"] as JsonObject;
+                if (runtimeOptions == null)
+                {
+                    runtimeOptions = new JsonObject();
+                    config["runtimeOptions"] = runtimeOptions;
+                }
+
+                var configProperties = runtimeOptions["configProperties"] as JsonObject;
+                if (configProperties == null)
+                {
+                    configProperties = new JsonObject();
+                    runtimeOptions["configProperties"] = configProperties;
+                }
+
+                foreach (var option in RuntimeHostConfigurationOptions)
+                {
+                    var value = option.GetMetadata("Value");
+                    configProperties[option.ItemSpec] = bool.TryParse(value, out bool boolValue)
+                        ? JsonValue.Create(boolValue)
+                        : JsonValue.Create(value);
+                }
             }
 
             PublishMutationUtilities.WriteFileIfDifferent(destination, config.ToJsonString(s_writeOptions));

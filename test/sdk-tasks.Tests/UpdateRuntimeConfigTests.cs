@@ -221,4 +221,45 @@ public class UpdateRuntimeConfigTests : SdkTest
         }
         File.ReadAllText(destination).Should().Be("previous result");
     }
+
+    [TestMethod]
+    public void ItAddsRuntimeHostConfigurationOptions()
+    {
+        var dir = TestAssetsManager.CreateTestDirectory().Path;
+        var configPath = Path.Combine(dir, "options.runtimeconfig.json");
+        File.WriteAllText(configPath, """
+            {
+              "runtimeOptions": {
+                "framework": {
+                  "name": "Microsoft.NETCore.App",
+                  "version": "1.0.0"
+                },
+                "configProperties": {
+                  "Existing": "value"
+                }
+              }
+            }
+            """);
+
+        var task = new UpdateRuntimeConfig
+        {
+            BuildEngine = new MockBuildEngine(),
+            RuntimeConfigPaths = [new TaskItem(configPath)],
+            MicrosoftNetCoreAppVersion = "12.0.0",
+            MicrosoftAspNetCoreAppVersion = "12.0.0",
+            RuntimeHostConfigurationOptions =
+            [
+                new TaskItem("System.Runtime.EnableWriteXorExecute", new Dictionary<string, string> { ["Value"] = "false" }),
+                new TaskItem("System.Globalization.Invariant", new Dictionary<string, string> { ["Value"] = "true" }),
+            ]
+        };
+
+        task.Execute().Should().BeTrue();
+
+        var result = File.ReadAllText(configPath);
+        result.Should().Contain("\"System.Runtime.EnableWriteXorExecute\": false");
+        result.Should().Contain("\"System.Globalization.Invariant\": true");
+        result.Should().Contain("\"Existing\": \"value\"");
+        result.Should().Contain("\"version\": \"12.0.0\"");
+    }
 }
