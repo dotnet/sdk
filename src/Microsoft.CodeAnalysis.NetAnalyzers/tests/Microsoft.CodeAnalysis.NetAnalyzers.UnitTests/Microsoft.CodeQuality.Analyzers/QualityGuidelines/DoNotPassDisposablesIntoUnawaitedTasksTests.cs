@@ -14,6 +14,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
     [TestClass]
     public class DoNotPassDisposablesIntoUnawaitedTasksTests
     {
+        public TestContext TestContext { get; set; }
+
         #region Diagnostic
 
         [TestMethod]
@@ -807,6 +809,72 @@ End Class
                     End Function
                 End Class
                 """);
+        }
+
+        [TestMethod]
+        public async Task TupleStateWithWhenAnyAndForeachDispose_NoDiagnosticAsync()
+        {
+            await new VerifyCS.Test
+            {
+                LanguageVersion = Microsoft.CodeAnalysis.CSharp.LanguageVersion.CSharp9,
+                TestCode = """
+                    using System;
+                    using System.IO;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    class C
+                    {
+                        public async Task M()
+                        {
+                            var toServerReader = new object();
+                            var toServerWriter = new Endpoint();
+                            var fromServerReader = new Endpoint();
+                            var fromServerWriter = new object();
+                            IDisposable[] streams = new[] { toServerWriter.AsStream(), fromServerReader.AsStream() };
+
+                            var server = Task.Factory.StartNew(
+                                static state =>
+                                {
+                                    var (serverRoot, input, output) = ((string, object, object))state;
+                                    RunServer(serverRoot, input, output);
+                                },
+                                ("root", toServerReader, fromServerWriter),
+                                CancellationToken.None,
+                                TaskCreationOptions.LongRunning,
+                                TaskScheduler.Default);
+
+                            var connecting = ConnectAsync(toServerWriter.AsStream(), fromServerReader.AsStream());
+
+                            if (await Task.WhenAny(connecting, server) == server)
+                            {
+                                await server;
+                            }
+
+                            await connecting;
+                            foreach (var stream in streams)
+                            {
+                                stream.Dispose();
+                            }
+                        }
+
+                        private static async Task<string> ConnectAsync(Stream output, Stream input)
+                        {
+                            await Task.Yield();
+                            return "connected";
+                        }
+
+                        private static void RunServer(string root, object input, object output)
+                        {
+                        }
+
+                        private sealed class Endpoint
+                        {
+                            public Stream AsStream() => new MemoryStream();
+                        }
+                    }
+                    """
+            }.RunAsync(TestContext.CancellationToken);
         }
 
         #endregion No Diagnostic
