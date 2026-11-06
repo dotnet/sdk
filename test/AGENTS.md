@@ -38,6 +38,10 @@ Guidance for changes under `test/`.
   for local retention and response-file behavior.
 - **Test asset placement.** Put test inputs (projects, packages, workloads, etc.) in
   `test/TestAssets/`. They are automatically deployed to Helix via `test/UnitTests.proj`.
+- **Select inner builds explicitly with `GetValuesCommand`.** For multi-targeted
+  projects, call `Execute($"/p:TargetFramework={targetFramework}")`. The constructor's
+  framework argument selects result-file paths, not the MSBuild target framework; see
+  [`GetValuesCommand`](Microsoft.NET.TestFramework/Commands/GetValuesCommand.cs).
 - **Audit before raising parallelism.** New MSTest projects are repo-defaulted to `None`
   in `test/Directory.Build.props` until their shared resources have been audited.
   Runnable test projects override that default with `ClassLevel` or `MethodLevel` when
