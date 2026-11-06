@@ -428,6 +428,10 @@ public static class Parser
 
             DotnetHelpBuilder dotnetHelpBuilder = new(windowWidth);
 
+            var propertyOption = RootCommand.BuildCommand.ImplicitRestoreOptions.PropertiesOption;
+            dotnetHelpBuilder.CustomizeSymbol(propertyOption,
+                firstColumnText: $"-p, --property <{propertyOption.HelpName}>");
+
             return dotnetHelpBuilder;
         });
 
