@@ -44,14 +44,16 @@ Everywhere Mode to configure all applications. For more information, see
 
 `ARGUMENT`
 
-Zero or more arguments to pass to `dotnet`. The optional `--` separator makes
-the forwarding boundary explicit and should be used whenever an argument passed to `dotnet` could overlap with an option that `dotnetup dotnet` also accepts.
+Zero or more arguments to pass to `dotnet`. A help option immediately after
+`dotnetup dotnet` shows dotnetup help; help options after a `dotnet` command,
+such as `dotnetup dotnet format --help`, are forwarded. Use the optional `--`
+separator to forward a help option that would otherwise come first.
 
 ## Options
 
 | Option | Description |
 | --- | --- |
-| `-?`, `-h`, `--help` | Show dotnetup command help. Add `--` before a `dotnet` help option when necessary. |
+| `-?`, `-h`, `--help` | Show dotnetup command help when used before any forwarded argument. |
 
 ## Examples
 

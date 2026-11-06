@@ -106,6 +106,36 @@ public class DotnetCommandTests
         parseResult.UnmatchedTokens.Should().Equal("test", "--filter", "Name~Foo");
     }
 
+    [TestMethod]
+    [DataRow("dotnet")]
+    [DataRow("do")]
+    public void Parser_ForwardsHelpAfterSubcommand(string commandName)
+    {
+        var parseResult = Parser.Parse([commandName, "format", "--help"]);
+
+        parseResult.Errors.Should().BeEmpty();
+        parseResult.Action.Should().BeSameAs(DotnetCommandParser.GetCommand().Action);
+        parseResult.UnmatchedTokens.Should().Equal("format", "--help");
+    }
+
+    [TestMethod]
+    public void Parser_ExplicitSeparator_IsNotForwarded()
+    {
+        var parseResult = Parser.Parse(["dotnet", "--", "format", "--help"]);
+
+        parseResult.UnmatchedTokens.Should().Equal("format", "--help");
+    }
+
+    [TestMethod]
+    public void Parser_DotnetHelp_ShowsWrapperHelp()
+    {
+        var parseResult = Parser.Parse(["dotnet", "--help"]);
+
+        parseResult.UnmatchedTokens.Should().BeEmpty();
+        parseResult.CommandResult.Command.Should().BeSameAs(DotnetCommandParser.GetCommand());
+        parseResult.Action.Should().NotBeSameAs(DotnetCommandParser.GetCommand().Action);
+    }
+
     // ── Command execution: dotnet not found ──────────────────────────────
 
     [TestMethod]
