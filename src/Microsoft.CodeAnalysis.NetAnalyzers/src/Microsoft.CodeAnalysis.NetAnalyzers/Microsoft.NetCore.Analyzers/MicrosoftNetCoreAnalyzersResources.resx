@@ -2352,4 +2352,18 @@ Widening and user defined conversions are not supported with generic types.</val
     <value>Use ReadOnlySpan&lt;T&gt; property</value>
     <comment>{Locked="ReadOnlySpan&lt;T&gt;"}</comment>
   </data>
+  <data name="PreferValueTupleOverTupleTitle" xml:space="preserve">
+    <value>Prefer 'ValueTuple' over 'Tuple'</value>
+    <comment>{Locked="ValueTuple"}{Locked="Tuple"}</comment>
+  </data>
+  <data name="PreferValueTupleOverTupleMessage" xml:space="preserve">
+    <value>Use a value tuple instead of '{0}'</value>
+  </data>
+  <data name="PreferValueTupleOverTupleDescription" xml:space="preserve">
+    <value>'ValueTuple' is a struct, so it avoids the heap allocation of each 'Tuple'. A tuple is only reported when every use of it, and of everything it is stored in, passed to or returned from, works the same with a value tuple.</value>
+    <comment>{Locked="ValueTuple"}{Locked="Tuple"}</comment>
+  </data>
+  <data name="PreferValueTupleOverTupleCodeFixTitle" xml:space="preserve">
+    <value>Use a tuple literal</value>
+  </data>
 </root>
