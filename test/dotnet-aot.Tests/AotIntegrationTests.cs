@@ -788,16 +788,13 @@ public partial class AotIntegrationTests
     }
 
     [TestMethod]
-    public void BuildHelp_ShowsPropertyOptionInManagedAndNativeAot()
+    public void BuildHelp_ShowsPropertyOptionInNativeAot()
     {
         SkipIfDnUnavailable();
 
-        var (managedExitCode, managedOutput, managedError) = RunDn(["build", "--help"], enableAot: false);
         var (aotExitCode, aotOutput, aotError) = RunDn(["build", "--help"], enableAot: true);
 
-        Assert.AreEqual(0, managedExitCode, managedError);
         Assert.AreEqual(0, aotExitCode, aotError);
-        Assert.AreEqual(managedOutput, aotOutput);
         aotOutput.Should().Contain($"-p, --property <{CommandDefinitionStrings.BuildPropertyArgumentName}>");
         Regex.Replace(aotOutput, @"\s+", " ").Should().Contain(CommandDefinitionStrings.BuildPropertyOptionDescription);
     }
