@@ -4,6 +4,10 @@ parameters:
   locBranch: ''
   runTests: true
   timeoutInMinutes: ''
+  buildVariants:
+  - name: ''
+    properties: ''
+    stagingDirectory: ''
   additionalWindowsJobParameterSets: []
   ### WINDOWS ###
   windowsJobParameterSets:

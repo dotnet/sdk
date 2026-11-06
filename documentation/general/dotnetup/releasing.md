@@ -9,6 +9,14 @@ https://aka.ms/dotnet/dotnetup/preview/
 
 Publishing an older build through the same process rolls those links back without rebuilding.
 
+The [CI pipeline](../../../.vsts-dnup-ci.yml) prebuilds signed `daily` and `preview` candidates from the same commit and
+registers them as separate BAR builds. Only the daily candidate is published automatically.
+Promotion publishes the existing preview candidate; it does not rebuild, restamp, or sign it.
+
+The pipeline requires an Arcade update with V4 `buildVariant` registration support,
+including its shared templates, and matching variant discovery in Maestro Build Promotion.
+Roll out the promotion support before enabling variant registration.
+
 ## Select a build
 
 Use a successful
@@ -19,7 +27,9 @@ run from the `release/dnup` branch. The build's tags include:
 BAR ID - <build-id>
 ```
 
-If the build tags do not include a BAR ID, you can find it at the end of the job `📤 Publish to BAR`, under the step `Publish Using Darc`.
+There are two BAR IDs. Select the preview ID from the `Publish Build Assets` step in
+`Asset_Registry_Publishpreview`, or from the first line of
+`ReleaseConfigs_preview/ReleaseConfigs.txt`. Do not use the daily BAR ID for preview promotion.
 
 Use that numeric Build Asset Registry (BAR) ID when promoting the build. Normal non-test runs
 of the official pipeline are PME-signed and have a `PME Signed` tag. Use the tag to confirm
@@ -33,13 +43,18 @@ pipeline with these parameters:
 
 | Parameter | Value |
 | --- | --- |
-| `BARBuildId` | The BAR ID from the selected build |
+| `BARBuildId` | The preview BAR ID from the selected CI run |
 | `PromoteToChannelIds` | `10506` (`dotnetup Daily`) |
 | `ArtifactsPublishingAdditionalParameters` ( NOT `symbol` parameters ) | `/p:BuildQuality=preview` |
 
 Leave the remaining parameters at their defaults. The Maestro channel retains its historical
 `dotnetup Daily` name; `BuildQuality=preview` controls the quality segment in the generated
 aka.ms links.
+
+The promotion pipeline uses the selected BAR record to locate `AssetManifests_preview`.
+No asset allowlist or `BlobBasePath` override is needed. Daily and preview have different
+embedded version labels; the preview is the prebuilt counterpart of the dogfooded daily,
+not byte-identical to it.
 
 The overall pipeline can report `PartiallySucceeded` because optional artifacts are downloaded
 with `continueOnError`. The `Publish packages, blobs and symbols` step must succeed.

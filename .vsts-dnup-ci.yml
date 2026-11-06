@@ -27,6 +27,8 @@ parameters:
   default: false
 
 variables:
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
@@ -61,6 +63,10 @@ variables:
   value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 - name: _SignType
   value: real
+- name: _DotnetupDailyProperties
+  value: /p:PublishingVersion=4 /p:EnableDefaultArtifacts=false /p:DotnetupPreReleaseVersionLabel=daily /p:ArtifactsDir=$(Build.SourcesDirectory)/artifacts/dotnetup-daily/ /p:ArtifactsPublishStagingDir=$(Build.ArtifactStagingDirectory)/dotnetup-daily/ /p:FutureArtifactName=$(System.PhaseName)_daily_Artifacts /p:AssetManifestFileName=$(System.PhaseName)-daily.xml
+- name: _DotnetupPreviewProperties
+  value: /p:PublishingVersion=4 /p:EnableDefaultArtifacts=false /p:DotnetupPreReleaseVersionLabel=preview /p:ArtifactsDir=$(Build.SourcesDirectory)/artifacts/dotnetup-preview/ /p:ArtifactsPublishStagingDir=$(Build.ArtifactStagingDirectory)/dotnetup-preview/ /p:FutureArtifactName=$(System.PhaseName)_preview_Artifacts /p:AssetManifestFileName=$(System.PhaseName)-preview.xml
 
 resources:
   repositories:
@@ -192,6 +198,13 @@ extends:
         ############### WINDOWS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            buildVariants:
+            - name: daily
+              properties: $(_DotnetupDailyProperties)
+              stagingDirectory: $(Build.ArtifactStagingDirectory)/dotnetup-daily
+            - name: preview
+              properties: $(_DotnetupPreviewProperties)
+              stagingDirectory: $(Build.ArtifactStagingDirectory)/dotnetup-preview
             pool:
               name: $(DncEngInternalBuildPool)
               image: windows.vs2026.amd64
@@ -230,6 +243,13 @@ extends:
         ############### LINUX ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            buildVariants:
+            - name: daily
+              properties: $(_DotnetupDailyProperties)
+              stagingDirectory: $(Build.ArtifactStagingDirectory)/dotnetup-daily
+            - name: preview
+              properties: $(_DotnetupPreviewProperties)
+              stagingDirectory: $(Build.ArtifactStagingDirectory)/dotnetup-preview
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-ubuntu-2204
@@ -294,6 +314,13 @@ extends:
         ############### MACOS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
           parameters:
+            buildVariants:
+            - name: daily
+              properties: $(_DotnetupDailyProperties)
+              stagingDirectory: $(Build.ArtifactStagingDirectory)/dotnetup-daily
+            - name: preview
+              properties: $(_DotnetupPreviewProperties)
+              stagingDirectory: $(Build.ArtifactStagingDirectory)/dotnetup-preview
             pool:
               name: Azure Pipelines
               image: macOS-latest
@@ -333,8 +360,24 @@ extends:
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
+            publishingVersion: 4
+            buildVariant: daily
+            assetManifestsPattern: '*_daily_Artifacts/manifests/**/*.xml'
             publishUsingPipelines: true
-            publishAssetsImmediately: true
+            publishAssetsImmediately: ${{ and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}
+            isAssetlessBuild: false
+            repositoryAlias: self
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-windows-2022
+              os: windows
+        - template: /eng/common/templates-official/job/publish-build-assets.yml@self
+          parameters:
+            publishingVersion: 4
+            buildVariant: preview
+            assetManifestsPattern: '*_preview_Artifacts/manifests/**/*.xml'
+            publishUsingPipelines: true
+            publishAssetsImmediately: false
             isAssetlessBuild: false
             repositoryAlias: self
             pool:
