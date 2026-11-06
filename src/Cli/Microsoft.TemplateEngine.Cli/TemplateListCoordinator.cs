@@ -51,6 +51,16 @@ namespace Microsoft.TemplateEngine.Cli
 
             if (resolutionResult.TemplateGroupsWithMatchingTemplateInfoAndParameters.Any())
             {
+                if (args.Format == NewListOutputFormat.json)
+                {
+                    TemplateGroupDisplay.DisplayTemplateListJson(
+                        _engineEnvironmentSettings,
+                        resolutionResult.TemplateGroupsWithMatchingTemplateInfoAndParameters,
+                        reporter: Reporter.Output,
+                        selectedLanguage: args.Language);
+                    return NewCommandStatus.Success;
+                }
+
                 Reporter.Output.WriteLine(LocalizableStrings.TemplatesFoundMatchingInputParameters, GetInputParametersString(args));
                 Reporter.Output.WriteLine();
 
@@ -69,6 +79,16 @@ namespace Microsoft.TemplateEngine.Cli
                 // If there is no criteria and filters, it means that dotnet new list was run but there are no templates installed.
                 if (args.ListNameCriteria == null && !args.AppliedFilters.Any())
                 {
+                    if (args.Format == NewListOutputFormat.json)
+                    {
+                        TemplateGroupDisplay.DisplayTemplateListJson(
+                            _engineEnvironmentSettings,
+                            [],
+                            reporter: Reporter.Output,
+                            selectedLanguage: args.Language);
+                        return NewCommandStatus.Success;
+                    }
+
                     // No templates installed.
                     Reporter.Output.WriteLine(LocalizableStrings.NoTemplatesFound);
                     Reporter.Output.WriteLine();

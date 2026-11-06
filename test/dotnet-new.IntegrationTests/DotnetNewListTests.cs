@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
@@ -40,6 +41,38 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutMatching("Console App\\s+console\\s+\\[C#\\],F#,VB\\s+Common/Console")
                 .And.NotHaveStdOutMatching("dotnet gitignore file\\s+gitignore\\s+Config")
                 .And.HaveStdOutMatching("Class Library\\s+classlib\\s+\\[C#\\],F#,VB\\s+Common/Library");
+        }
+
+        [TestMethod]
+        [DataRow("list c --format json")]
+        [DataRow("--list c --format json")]
+        public void CanListTemplatesInJsonFormat(string command)
+        {
+            CommandResult result = new DotnetNewCommand(_log, command.Split(" "))
+                .WithCustomHive(_sharedHome.HomeDirectory)
+                .Execute();
+
+            result
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.NotHaveStdOutContaining("These templates matched your input");
+
+            using JsonDocument document = JsonDocument.Parse(result.StdOut!);
+            Assert.AreEqual(1, document.RootElement.GetProperty("version").GetInt32());
+
+            JsonElement data = document.RootElement.GetProperty("data");
+            Assert.AreEqual(JsonValueKind.Array, data.ValueKind);
+
+            JsonElement consoleTemplate = data.EnumerateArray().Single(e => e.GetProperty("name").GetString() == "Console App");
+            Assert.Contains("console", consoleTemplate.GetProperty("shortNames").EnumerateArray().Select(e => e.GetString()));
+            Assert.Contains("project", consoleTemplate.GetProperty("types").EnumerateArray().Select(e => e.GetString()));
+            Assert.Contains("Microsoft", consoleTemplate.GetProperty("authors").EnumerateArray().Select(e => e.GetString()));
+            Assert.Contains("Common", consoleTemplate.GetProperty("classifications").EnumerateArray().Select(e => e.GetString()));
+            Assert.Contains("Console", consoleTemplate.GetProperty("classifications").EnumerateArray().Select(e => e.GetString()));
+
+            JsonElement csharpLang = consoleTemplate.GetProperty("languages").EnumerateArray().Single(e => e.GetProperty("id").GetString() == "C#");
+            Assert.IsTrue(csharpLang.GetProperty("default").GetBoolean());
         }
 
         [TestMethod]
