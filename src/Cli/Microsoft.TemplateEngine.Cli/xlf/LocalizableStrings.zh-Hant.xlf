@@ -874,6 +874,11 @@ The header is followed by the list of parameters and their errors (might be seve
         <target state="translated">無法周遊父屬性路徑 '{0}'。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PostAction_ModifyJson_Error_PropertyAlreadyExists">
+        <source>Cannot set JSON property '{0}' in '{1}' because it already has a different value. The file was not modified.</source>
+        <target state="new">Cannot set JSON property '{0}' in '{1}' because it already has a different value. The file was not modified.</target>
+        <note>{0} is the JSON property path, such as test:runner. {1} is the path to the JSON file.</note>
+      </trans-unit>
       <trans-unit id="PostAction_ModifyJson_Succeeded">
         <source>Successfully modified {0}.</source>
         <target state="translated">已成功修改 {0}。</target>

@@ -946,6 +946,10 @@ The header is followed by the list of parameters and their errors (might be seve
   <data name="PostAction_ModifyJson_Error_ParentPropertyPathInvalid" xml:space="preserve">
     <value>Parent property path '{0}' could not be traversed.</value>
   </data>
+  <data name="PostAction_ModifyJson_Error_PropertyAlreadyExists" xml:space="preserve">
+    <value>Cannot set JSON property '{0}' in '{1}' because it already has a different value. The file was not modified.</value>
+    <comment>{0} is the JSON property path, such as test:runner. {1} is the path to the JSON file.</comment>
+  </data>
   <data name="PostAction_ModifyJson_Succeeded" xml:space="preserve">
     <value>Successfully modified {0}.</value>
   </data>
