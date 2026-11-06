@@ -6,6 +6,7 @@
 using System.Reflection;
 using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
+using NuGet.ProjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
 using static Microsoft.NET.Build.Tasks.ResolvePackageAssets;
 
@@ -76,6 +77,150 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             newHash.Should().BeEquivalentTo(oldHash,
                 because: $"{nameof(task.DesignTimeBuild)} should not be included in hash.");
+        }
+
+        [TestMethod]
+        [DataRow("NU1510", "net10.0", true)]
+        [DataRow("NU1603", "net10.0/win-x64", false)]
+        [DataRow("NU1605", ".NETCoreApp,Version=v10.0/win-x64", true)]
+        public void It_rebinds_cached_restore_diagnostics_to_current_source(string code, string graph, bool designTimeBuild)
+        {
+            WithDiagnosticAssetsTask((task, assets, origin) =>
+            {
+                var diagnostic = assets["logs"][0];
+                diagnostic["code"] = code;
+                diagnostic["targetGraphs"] = new JsonArray(graph);
+                bool isError = code == "NU1605";
+                diagnostic["level"] = isError ? "Error" : "Warning";
+                File.WriteAllText(task.ProjectAssetsFile, assets.ToJsonString());
+                task.DesignTimeBuild = designTimeBuild;
+                string sourceFile = origin.GetMetadata("DefiningProjectFullPath");
+
+                // Exercise the pinned NuGet reader, not an in-process restore object.
+                var persisted = new LockFileFormat().Read(task.ProjectAssetsFile).LogMessages.Single();
+                persisted.FilePath.Should().Be(sourceFile);
+                persisted.StartLineNumber.Should().Be(3);
+                persisted.StartColumnNumber.Should().Be(5);
+
+                task.Execute().Should().Be(!isError);
+                AssertDiagnostic(task, code, sourceFile, 3, 5, isError);
+                byte[] assetsBytes = File.ReadAllBytes(task.ProjectAssetsFile);
+                DateTime assetsTime = File.GetLastWriteTimeUtc(task.ProjectAssetsFile);
+                byte[] cacheBytes = File.ReadAllBytes(task.ProjectAssetsCacheFile);
+                DateTime cacheTime = File.GetLastWriteTimeUtc(task.ProjectAssetsCacheFile);
+                byte[] settings = task.HashSettings();
+
+                foreach (int currentLine in new[] { 3, 8 })
+                {
+                    origin.SetMetadata("_SourceProjectFile", sourceFile);
+                    origin.SetMetadata("_SourceProjectLine", currentLine.ToString());
+                    origin.SetMetadata("_SourceProjectColumn", "5");
+                    origin.SetMetadata("DefiningProjectFullPath", task.ProjectPath);
+                    origin.SetMetadata("DefiningProjectLineNumber", "99");
+                    File.WriteAllText(sourceFile, new string('\n', currentLine - 1) + "<PackageReference />");
+                    task.BuildEngine = new MockBuildEngine();
+                    task.Execute().Should().Be(!isError);
+                    AssertDiagnostic(task, code, sourceFile, currentLine, 5, isError);
+                    ((MockBuildEngine)task.BuildEngine).RegisteredTaskObjectsQueries.Should().Be(0, "the binary cache must be reused");
+                    task.HashSettings().Should().Equal(settings);
+                    File.ReadAllBytes(task.ProjectAssetsFile).Should().Equal(assetsBytes);
+                    File.GetLastWriteTimeUtc(task.ProjectAssetsFile).Should().Be(assetsTime);
+                    File.ReadAllBytes(task.ProjectAssetsCacheFile).Should().Equal(cacheBytes);
+                    File.GetLastWriteTimeUtc(task.ProjectAssetsCacheFile).Should().Be(cacheTime);
+                }
+                using (var stream = File.OpenWrite(task.ProjectAssetsCacheFile))
+                using (var writer = new BinaryWriter(stream))
+                {
+                    stream.Position = sizeof(int);
+                    writer.Write(13);
+                }
+                task.BuildEngine = new MockBuildEngine();
+                task.Execute().Should().Be(!isError);
+                AssertDiagnostic(task, code, sourceFile, 8, 5, isError);
+                ((MockBuildEngine)task.BuildEngine).RegisteredTaskObjectsQueries.Should().BeGreaterThan(0, "the old cache must be regenerated");
+                using var reader = new BinaryReader(File.OpenRead(task.ProjectAssetsCacheFile));
+                reader.ReadInt32();
+                reader.ReadInt32().Should().BeGreaterThan(13);
+            });
+        }
+
+        [TestMethod]
+        [DataRow("unlocated")]
+        [DataRow("missing")]
+        [DataRow("incomplete-snapshot")]
+        [DataRow("malformed")]
+        [DataRow("negative-column")]
+        [DataRow("unavailable")]
+        [DataRow("ambiguous")]
+        [DataRow("central")]
+        [DataRow("transitive")]
+        [DataRow("other-framework")]
+        [DataRow("other-code")]
+        public void It_keeps_project_fallback_for_unproven_restore_origins(string scenario)
+        {
+            WithDiagnosticAssetsTask((task, assets, origin) =>
+            {
+                var diagnostic = assets["logs"][0];
+                switch (scenario)
+                {
+                    case "unlocated": diagnostic["startLineNumber"] = 0; break;
+                    case "missing": origin.RemoveMetadata("DefiningProjectLineNumber"); break;
+                    case "incomplete-snapshot": origin.SetMetadata("_SourceProjectFile", origin.GetMetadata("DefiningProjectFullPath")); break;
+                    case "malformed": origin.SetMetadata("DefiningProjectLineNumber", "3.0"); break;
+                    case "negative-column": origin.SetMetadata("DefiningProjectColumnNumber", "-1"); break;
+                    case "unavailable": origin.SetMetadata("DefiningProjectFullPath", Path.Combine(Path.GetDirectoryName(task.ProjectPath), "missing.props")); break;
+                    case "ambiguous": task.PackageReferences = [origin, origin]; break;
+                    case "central": origin.RemoveMetadata(MetadataKeys.Version); break;
+                    case "transitive": origin.ItemSpec = "Other.Package"; break;
+                    case "other-framework": diagnostic["targetGraphs"] = new JsonArray("net9.0"); break;
+                    case "other-code": diagnostic["code"] = "NU1901"; break;
+                }
+                File.WriteAllText(task.ProjectAssetsFile, assets.ToJsonString());
+                string code = diagnostic["code"].GetValue<string>();
+                for (int run = 0; run < 2; run++)
+                {
+                    task.BuildEngine = new MockBuildEngine();
+                    task.Execute().Should().BeTrue();
+                    AssertDiagnostic(task, code, task.ProjectPath, 0, 0);
+                }
+            });
+        }
+
+        private void WithDiagnosticAssetsTask(Action<ResolvePackageAssets, JsonNode, MockTaskItem> test)
+        {
+            WithResourceAssetsTask("net10.0", "en", task =>
+            {
+                string sourceFile = Path.Combine(Path.GetDirectoryName(task.ProjectPath), "references%3B.props");
+                File.WriteAllText(sourceFile, "\n\n    <PackageReference />");
+                var origin = new MockTaskItem("Example.Package", new()
+                {
+                    [MetadataKeys.Version] = "1.0.0",
+                    ["DefiningProjectFullPath"] = sourceFile,
+                    ["DefiningProjectLineNumber"] = "3",
+                    ["DefiningProjectColumnNumber"] = "5"
+                });
+                var assets = JsonNode.Parse(File.ReadAllText(task.ProjectAssetsFile));
+                assets["logs"] = JsonNode.Parse("""
+                    [{
+                      "code": "NU1603", "level": "Warning", "message": "Restore diagnostic.",
+                      "libraryId": "Example.Package", "targetGraphs": ["net10.0"],
+                      "startLineNumber": 3, "startColumnNumber": 5
+                    }]
+                    """);
+                assets["logs"][0]["filePath"] = sourceFile;
+                task.PackageReferences = [origin];
+                task.EmitAssetsLogMessages = true;
+                File.WriteAllText(task.ProjectAssetsFile, assets.ToJsonString());
+                test(task, assets, origin);
+            });
+        }
+
+        private static void AssertDiagnostic(ResolvePackageAssets task, string code, string file, int line, int column, bool isError = false)
+        {
+            var engine = (MockBuildEngine)task.BuildEngine;
+            engine.Errors.Select(error => (error.Code, error.Message, error.File, error.LineNumber, error.ColumnNumber, IsError: true))
+                .Concat(engine.Warnings.Select(warning => (warning.Code, warning.Message, warning.File, warning.LineNumber, warning.ColumnNumber, IsError: false)))
+                .Should().Equal((code, "Restore diagnostic.", file, line, column, isError));
         }
 
         [TestMethod]
