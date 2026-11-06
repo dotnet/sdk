@@ -6,6 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "Remplacement du cadre cible",
   "symbols/Framework/description": "Infrastructure cible du projet.",
   "symbols/Framework/displayName": "Infrastructure",
+  "symbols/Framework/choices/net12.0/description": "Target net12.0",
   "symbols/Framework/choices/net11.0/description": "Net11.0 cible",
   "symbols/XUnitVersion/description": "Version de xUnit.net à utiliser.",
   "symbols/XUnitVersion/displayName": "version xUnit.net",

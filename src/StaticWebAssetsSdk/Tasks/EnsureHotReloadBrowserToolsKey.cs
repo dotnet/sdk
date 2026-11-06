@@ -3,8 +3,8 @@
 
 #nullable disable
 
-using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -59,38 +59,8 @@ public class EnsureHotReloadBrowserToolsKey : Task
     {
         try
         {
-            if (TryReuseExistingKeyPair(out var existingPublicKey))
-            {
-                PublicKey = existingPublicKey;
-                Regenerated = false;
-                Log.LogMessage(MessageImportance.Low, "Reusing the existing HotReload browser tools key pair.");
-                return true;
-            }
-
-            var (publicKey, parameters) = BrowserToolsKeyPair.Create();
-
-            var directory = Path.GetDirectoryName(PrivateKeyPath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            directory = Path.GetDirectoryName(PublicKeyPath);
-            if (!string.IsNullOrEmpty(directory))
-            {
-                Directory.CreateDirectory(directory);
-            }
-
-            // The private half is written first. If the process is interrupted between the two
-            // writes the public document is missing, which the reuse check treats as invalid, so an
-            // interrupted run can never leave a public key that no private key matches.
-            File.WriteAllBytes(PrivateKeyPath, BrowserToolsKeyPair.CreatePrivateKeyDocument(publicKey, parameters));
-            File.WriteAllBytes(PublicKeyPath, BrowserToolsKeyPair.CreatePublicKeyDocument(publicKey));
-
-            PublicKey = publicKey;
-            Regenerated = true;
-
-            Log.LogMessage(MessageImportance.Low, "Generated a new Hot Reload browser tools key pair.");
+            (PublicKey, Regenerated) = HotReloadKeyPair.GetOrCreate(PublicKeyPath, PrivateKeyPath,
+                message => Log.LogMessage(MessageImportance.Low, message));
             return true;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -99,43 +69,5 @@ public class EnsureHotReloadBrowserToolsKey : Task
             Log.LogError("Unable to create the Hot Reload browser tools key pair: {0}", ex.Message);
             return false;
         }
-    }
-
-    private bool TryReuseExistingKeyPair(out string publicKey)
-    {
-        publicKey = null;
-
-        var publicDocument = BrowserToolsKeyPair.TryReadPublicKeyFile(PublicKeyPath);
-        if (!publicDocument.IsValid)
-        {
-            Log.LogMessage(MessageImportance.Low, "Regenerating the Hot Reload browser tools key pair because the public key document is not usable: {0}.", publicDocument.Reason);
-            return false;
-        }
-
-        var privateDocument = BrowserToolsKeyPair.TryReadPrivateKeyFile(PrivateKeyPath);
-        if (!privateDocument.IsValid)
-        {
-            Log.LogMessage(MessageImportance.Low, "Regenerating the Hot Reload browser tools key pair because the private key document is not usable: {0}.", privateDocument.Reason);
-            return false;
-        }
-
-        if (!string.Equals(publicDocument.PublicKey, privateDocument.PublicKey, StringComparison.Ordinal))
-        {
-            Log.LogMessage(MessageImportance.Low, "Regenerating the Hot Reload browser tools key pair because the two documents describe different keys.");
-            return false;
-        }
-
-        // The recorded public key is not trusted on its own: it is re-derived from the private
-        // components so that a hand edited or partially written pair cannot pin a key that the
-        // provider is unable to use.
-        if (!BrowserToolsKeyPair.TryDerivePublicKey(privateDocument.Parameters, out var derivedPublicKey) ||
-            !string.Equals(derivedPublicKey, publicDocument.PublicKey, StringComparison.Ordinal))
-        {
-            Log.LogMessage(MessageImportance.Low, "Regenerating the Hot Reload browser tools key pair because the private key does not match the public key.");
-            return false;
-        }
-
-        publicKey = publicDocument.PublicKey;
-        return true;
     }
 }

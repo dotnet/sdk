@@ -6,6 +6,7 @@
   "symbols/TargetFrameworkOverride/displayName": "Přepsání cílové architektury",
   "symbols/Framework/description": "Cílová architektura pro projekt.",
   "symbols/Framework/displayName": "Framework",
+  "symbols/Framework/choices/net12.0/description": "Target net12.0",
   "symbols/Framework/choices/net11.0/description": "Cílový net11.0",
   "symbols/XUnitVersion/description": "Verze xUnit.net, která se použije.",
   "symbols/XUnitVersion/displayName": "Verze xUnit.net",
