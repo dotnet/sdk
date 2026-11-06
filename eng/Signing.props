@@ -138,6 +138,7 @@
 
     <!-- Avoid SignTool flagging the .sh script as missing sign info. -->
     <FileSignInfo Include="get-dotnetup.sh" CertificateName="None" />
+    <FileSignInfo Include="dotnetup-release.exe" CertificateName="MicrosoftDotNet500" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetOS)' == 'osx'">
