@@ -11,5 +11,4 @@ internal enum InstallSource
     Explicit,
     GlobalJson,
     Migration,
-    All,
 }

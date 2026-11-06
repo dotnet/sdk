@@ -450,7 +450,7 @@ public class UninstallEndToEndTests : IDisposable
     }
 
     [TestMethod]
-    public void SourceMismatch_GuidanceUsesCurrentOptionNameAndAllValue()
+    public void RepositoryOnly_GuidanceExplainsHowToChangeRequirement()
     {
         _fixture.AddInstallation(InstallComponent.SDK, "11.0.100");
         var directory = Path.Combine(_fixture.Environment.TempRoot, "[repository]");
@@ -467,18 +467,22 @@ public class UninstallEndToEndTests : IDisposable
         var output = Run(["sdk", "uninstall", "11.0"], out var exitCode);
 
         exitCode.Should().Be(1, output);
-        output.Should().Contain(
-            $"Use {CommonOptions.SourceOption.Name} {InstallSource.All.ToString().ToLowerInvariant()} to target these specs.");
+        output.Should().Contain(BootstrapperStrings.UninstallRepositoryRequirement).And.Contain(globalJson);
+        output.Should().NotContain("--source");
         File.ReadAllText(_fixture.Environment.ManifestPath).Should().Be(before);
     }
 
     [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
-    public void SourceAll_ListsEachSpecBeforeConfirmationWithoutDeletingGlobalJson(bool accept)
+    public void StandaloneSpecs_ListsEachSpecBeforeConfirmationAndPreservesGlobalJson(bool accept)
     {
         _fixture.AddInstallation(InstallComponent.SDK, "11.0.100");
         _fixture.AddSpecs(InstallComponent.SDK, "11.0", "11");
+        _fixture.AlterManifest(root => root.InstallSpecs.Add(new InstallSpec
+        {
+            Component = InstallComponent.SDK, VersionOrChannel = "11.0", InstallSource = InstallSource.Migration
+        }));
         var directory = Path.Combine(_fixture.Environment.TempRoot, "[repository]");
         Directory.CreateDirectory(directory);
         var globalJson = Path.Combine(directory, "global.json");
@@ -492,22 +496,26 @@ public class UninstallEndToEndTests : IDisposable
         var before = File.ReadAllText(_fixture.Environment.ManifestPath);
 
         var output = Run(["sdk", "uninstall", "11.0"], out var exitCode,
-            accept ? "y\n" : "n\n", "--source", "all");
+            accept ? "y\n" : "n\n");
 
         exitCode.Should().Be(accept ? 0 : 1, output);
         AssertWarningCounts(output, retained: 1, unexpected: 0, prompts: 1);
         Count(output, "will be removed from tracking.").Should().Be(2);
         var explicitMessage = "Install spec '11.0' (.NET SDK; source: Explicit) will be removed from tracking.";
-        var globalJsonMessage = $"Install spec '11.0' (.NET SDK; source: {globalJson}) will be removed from tracking.";
-        output.Should().Contain(explicitMessage).And.Contain(globalJsonMessage);
+        var migrationMessage = "Install spec '11.0' (.NET SDK; source: Migration) will be removed from tracking.";
+        output.Should().Contain(explicitMessage).And.Contain(migrationMessage);
+        output.Should().NotContain($"Install spec '11.0' (.NET SDK; source: {globalJson}) will be removed from tracking.");
         output.IndexOf(explicitMessage, StringComparison.Ordinal)
             .Should().BeLessThan(output.IndexOf("Proceed with uninstall?", StringComparison.Ordinal));
-        output.IndexOf(globalJsonMessage, StringComparison.Ordinal)
+        output.IndexOf(migrationMessage, StringComparison.Ordinal)
             .Should().BeLessThan(output.IndexOf("Proceed with uninstall?", StringComparison.Ordinal));
         File.ReadAllText(globalJson).Should().Be(GlobalJsonContents);
         if (accept)
         {
-            _fixture.ReadRoot().InstallSpecs.Should().ContainSingle().Which.VersionOrChannel.Should().Be("11");
+            var specs = _fixture.ReadRoot().InstallSpecs;
+            specs.Should().HaveCount(2);
+            specs.Should().ContainSingle(s => s.InstallSource == InstallSource.Explicit && s.VersionOrChannel == "11");
+            specs.Should().ContainSingle(s => s.InstallSource == InstallSource.GlobalJson && s.GlobalJsonPath == globalJson);
         }
         else
         {

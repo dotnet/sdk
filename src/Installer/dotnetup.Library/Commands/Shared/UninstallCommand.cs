@@ -12,7 +12,6 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 /// </summary>
 internal abstract class UninstallCommand : CommandBase
 {
-    private readonly InstallSource _sourceFilter;
     private readonly string? _manifestPath;
     private readonly string? _installPath;
     private readonly bool _interactive;
@@ -20,7 +19,6 @@ internal abstract class UninstallCommand : CommandBase
     protected UninstallCommand(ParseResult parseResult, string commandName)
         : base(parseResult, commandName)
     {
-        _sourceFilter = parseResult.GetValue(CommonOptions.SourceOption);
         _manifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);
         _installPath = parseResult.GetValue(CommonOptions.InstallPathOption);
         _interactive = parseResult.GetValue(CommonOptions.InteractiveOption)
@@ -33,7 +31,6 @@ internal abstract class UninstallCommand : CommandBase
             _manifestPath,
             _installPath,
             versionOrChannel,
-            _sourceFilter,
             component,
             _interactive);
     }
