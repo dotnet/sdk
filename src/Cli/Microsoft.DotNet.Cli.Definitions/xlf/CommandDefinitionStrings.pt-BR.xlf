@@ -1735,6 +1735,11 @@ O padrão é publicar uma aplicação dependente de framework.</target>
         <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
+      <trans-unit id="ReferenceCommandDescription">
+        <source>Add, remove, or list ProjectReferences for a .NET project.</source>
+        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ReferenceListAppFullName">
         <source>List all project-to-project references of the project.</source>
         <target state="translated">Listar todas as referências de projeto a projeto do projeto.</target>

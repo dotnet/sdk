@@ -33,7 +33,7 @@ internal sealed class ReferenceCommandDefinition : Command
     public readonly ReferenceRemoveCommandDefinition RemoveCommand = new();
 
     public ReferenceCommandDefinition()
-        : base(Name, CommandDefinitionStrings.NetRemoveCommand)
+        : base(Name, CommandDefinitionStrings.ReferenceCommandDescription)
     {
         this.DocsLink = Link;
 
