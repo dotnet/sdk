@@ -474,6 +474,36 @@ namespace Microsoft.NET.ToolPack.Tests
         }
 
         [TestMethod]
+        public void It_packs_with_RuntimeIdentifiers_when_RID_specific_packages_are_disabled()
+        {
+            var testProject = new TestProject("ToolWithRuntimeIdentifiers")
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties["PackAsTool"] = "true";
+            testProject.AdditionalProperties["ImplicitUsings"] = "enable";
+            testProject.AdditionalProperties["RuntimeIdentifiers"] = "win-x64;linux-x64";
+            testProject.AdditionalProperties["CreateRidSpecificToolPackages"] = "false";
+            testProject.AdditionalProperties["UseAppHost"] = "false";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var packCommand = new PackCommand(testAsset);
+
+            packCommand.Execute().Should().Pass();
+
+            packCommand.GetPackageDirectory().Should().HaveFile($"{testProject.Name}.1.0.0.nupkg");
+            packCommand.GetPackageDirectory().Should().NotHaveFile($"{testProject.Name}.win-x64.1.0.0.nupkg");
+            packCommand.GetPackageDirectory().Should().NotHaveFile($"{testProject.Name}.linux-x64.1.0.0.nupkg");
+
+            using var nupkgReader = new PackageArchiveReader(packCommand.GetNuGetPackage());
+            var toolItems = nupkgReader.GetToolItems().SelectMany(group => group.Items);
+            toolItems.Should().Contain($"tools/{testProject.TargetFrameworks}/any/{testProject.Name}.dll");
+            toolItems.Should().Contain($"tools/{testProject.TargetFrameworks}/any/{testProject.Name}.runtimeconfig.json");
+            toolItems.Should().Contain($"tools/{testProject.TargetFrameworks}/any/DotnetToolSettings.xml");
+        }
+
+        [TestMethod]
         public void Framework_dependent_tool_should_target_base_runtime_version()
         {
             // This test verifies that framework-dependent tools (FDD) correctly target the .0 patch version
