@@ -23,7 +23,7 @@ internal sealed class PublishCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.PublishOutputOptionDescription,
         HelpName = CommandDefinitionStrings.PublishOutputOption
-    }.ForwardAsOutputPath("PublishDir");
+    };
 
     public readonly Option<IEnumerable<string>> ManifestOption = new Option<IEnumerable<string>>("--manifest")
     {

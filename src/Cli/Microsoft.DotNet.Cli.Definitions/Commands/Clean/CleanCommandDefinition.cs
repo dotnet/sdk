@@ -22,7 +22,7 @@ internal sealed class CleanCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.CleanCmdOutputDirDescription,
         HelpName = CommandDefinitionStrings.CleanCmdOutputDir
-    }.ForwardAsOutputPath("OutputPath");
+    };
 
     public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 

@@ -9,6 +9,7 @@ internal static class BuildCommandParser
 {
     public static void ConfigureCommand(BuildCommandDefinition command)
     {
+        command.OutputOption.ForwardAsOutputPath("OutputPath");
         command.SetAction(BuildCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);

@@ -11,6 +11,7 @@ internal static class CleanCommandParser
 {
     public static void ConfigureCommand(CleanCommandDefinition command)
     {
+        command.OutputOption.ForwardAsOutputPath("OutputPath");
         command.SetAction(CleanCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);

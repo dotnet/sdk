@@ -42,6 +42,12 @@ to `dotnet` and `Microsoft.DotNet.Cli.Utils`. Internal parser APIs are accessibl
 signed `dotnet` assembly through MSBuild's `InternalsVisibleTo`; keep those calls
 managed-only rather than introducing MSBuild dependencies into `Definitions`.
 
+Output-path forwarding is wired by the managed command parsers through
+[`MSBuildOptionExtensions`](dotnet/Extensions/MSBuildOptionExtensions.cs). It uses
+[`MSBuildPropertyEscaping`](../Microsoft.DotNet.ProjectTools/MSBuildPropertyEscaping.cs)
+to escape CLI-owned literal paths with MSBuild's API before adding command-line quotes.
+Keep explicit `-p:` values on their existing MSBuild-syntax path; they are not literals.
+
 ## Where things live
 
 `src/Cli` is a set of projects, not one app. The three above carry commands; the

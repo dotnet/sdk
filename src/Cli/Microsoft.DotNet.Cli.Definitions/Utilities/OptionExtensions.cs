@@ -29,39 +29,6 @@ public static class OptionExtensions
 
 
     /// <summary>
-    /// Set up an option to be forwarded as an output path to MSBuild
-    /// </summary>
-    /// <param name="option">The command line option</param>
-    /// <param name="outputPropertyName">The property name for the output path (such as OutputPath or PublishDir)</param>
-    /// <param name="surroundWithDoubleQuotes">Whether the path should be surrounded with double quotes.  This may not be necessary but preserves the previous behavior of "dotnet test"</param>
-    /// <returns>The option</returns>
-    public static Option<string> ForwardAsOutputPath(this Option<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false)
-    {
-        return option.SetForwardingFunction((string? o) =>
-        {
-            if (o is null)
-            {
-                return [];
-            }
-            string argVal = CommandDirectoryContext.GetFullPath(o);
-            if (!Path.EndsInDirectorySeparator(argVal))
-            {
-                argVal += Path.DirectorySeparatorChar;
-            }
-            if (surroundWithDoubleQuotes)
-            {
-                //  Not sure if this is necessary, but this is what "dotnet test" previously did and so we are
-                //  preserving the behavior here after refactoring
-                argVal = MSBuildPropertyParser.SurroundWithDoubleQuotes(argVal);
-            }
-            return [
-                $"--property:{outputPropertyName}={argVal}",
-                "--property:_CommandLineDefinedOutputPath=true"
-            ];
-        });
-    }
-
-    /// <summary>
     /// Set up an option to be forwarded as an MSBuild property
     /// This will parse the values as MSBuild properties and forward them in the format <c>optionName:key=value</c>.
     /// For example, if the option is named "--property", and the values are "A=B" and "C=D", it will be forwarded as:

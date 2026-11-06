@@ -11,6 +11,7 @@ internal static class StoreCommandParser
 {
     public static void ConfigureCommand(StoreCommandDefinition command)
     {
+        command.OutputOption.ForwardAsOutputPath("ComposeDir");
         command.SetAction(StoreCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
     }
