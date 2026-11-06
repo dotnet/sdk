@@ -81,13 +81,17 @@ public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
     }
 
     [TestMethod]
-    [DataRow(false)]
-    [DataRow(true)]
-    public void CollectStaticWebAssetInputsDesignTime_IncludesServiceWorkerSources(bool outsideWebRoot)
+    [DataRow(false, true)]
+    [DataRow(true, true)]
+    [DataRow(false, false)]
+    [DataRow(true, false)]
+    public void CollectStaticWebAssetInputsDesignTime_TracksOnlyExistingServiceWorkerSources(bool outsideWebRoot, bool sourceExists)
     {
-        var serviceWorkerPath = outsideWebRoot ? "custom-service-worker.js" : Path.Combine("wwwroot", "service-worker.js");
-        var testAsset = CreateAspNetSdkTestAsset("VanillaWasm", identifier: outsideWebRoot.ToString())
-            .WithProjectChanges(project =>
+        var serviceWorkerPath = outsideWebRoot ? "custom-service-worker.js" : Path.Combine("wwwroot", "serviceworkers", "my-service-worker.js");
+        var testAsset = CreateAspNetSdkTestAsset(outsideWebRoot ? "VanillaWasm" : "BlazorHosted", identifier: $"{outsideWebRoot}_{sourceExists}");
+        if (outsideWebRoot)
+        {
+            testAsset = testAsset.WithProjectChanges(project =>
             {
                 project.Root.Add(
                     new XElement("PropertyGroup",
@@ -100,15 +104,30 @@ public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
                             new XAttribute("Include", "Program.cs"),
                             new XAttribute("Set", "StaticWebAssets"))));
             });
+        }
 
-        var sourcePath = Path.GetFullPath(Path.Combine(testAsset.Path, serviceWorkerPath));
-        var publishedSourcePath = Path.Combine(testAsset.Path, "wwwroot", "service-worker.published.js");
-        File.WriteAllText(sourcePath, "// Development service worker");
-        File.WriteAllText(publishedSourcePath, "// Published service worker");
+        var projectPath = outsideWebRoot ? testAsset.Path : Path.Combine(testAsset.Path, "blazorwasm");
+        var sourcePath = Path.GetFullPath(Path.Combine(projectPath, serviceWorkerPath));
+        var publishedSourcePath = outsideWebRoot
+            ? Path.Combine(projectPath, "wwwroot", "service-worker.published.js")
+            : Path.Combine(projectPath, "wwwroot", "serviceworkers", "my-prod-service-worker.js");
+        if (outsideWebRoot)
+        {
+            File.WriteAllText(sourcePath, "// Development service worker");
+            File.WriteAllText(publishedSourcePath, "// Published service worker");
+        }
+
+        if (!sourceExists)
+        {
+            File.Delete(sourcePath);
+        }
+
+        File.Exists(sourcePath).Should().Be(sourceExists);
+        File.Exists(publishedSourcePath).Should().BeTrue();
 
         var msbuild = CreateMSBuildCommand(
             testAsset,
-            string.Empty,
+            outsideWebRoot ? string.Empty : "blazorwasm",
             "ResolveStaticWebAssetsConfiguration;ResolveProjectStaticWebAssets;CollectStaticWebAssetInputsDesignTime");
         var result = msbuild.Execute(
             "/p:DesignTimeBuild=true",
@@ -121,9 +140,23 @@ public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
         var inputs = output.RootElement.GetProperty("Items").GetProperty("UpToDateCheckInput")
             .EnumerateArray().Select(item => item.GetProperty("FullPath").GetString()).ToArray();
 
-        inputs.Should().Contain(sourcePath);
-        inputs.Should().Contain(Path.Combine(testAsset.Path, "wwwroot", "main.js"));
-        inputs.Should().Contain(Path.Combine(testAsset.Path, "Program.cs"));
+        if (sourceExists)
+        {
+            inputs.Should().Contain(sourcePath);
+        }
+        else
+        {
+            inputs.Should().NotContain(sourcePath);
+        }
+
+        inputs.Should().Contain(outsideWebRoot
+            ? Path.Combine(projectPath, "wwwroot", "main.js")
+            : Path.Combine(projectPath, "wwwroot", "css", "app.css"));
+        if (outsideWebRoot)
+        {
+            inputs.Should().Contain(Path.Combine(projectPath, "Program.cs"));
+        }
+
         inputs.Should().NotContain(publishedSourcePath);
     }
 
