@@ -4,7 +4,11 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 #if !CLI_AOT
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
+using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 #endif
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -219,6 +223,31 @@ internal static class CommonRunHelpers
     }
 
 #if !CLI_AOT
+    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
+    internal static bool BuildProject(
+        ProjectInstance project,
+        ProjectCollection collection,
+        string[] targets,
+        bool multiThreaded,
+        IEnumerable<ILogger> loggers,
+        out IDictionary<string, TargetResult> targetOutputs)
+    {
+        ILogger[] buildLoggers = loggers.ToArray();
+        var parameters = new BuildParameters(collection)
+        {
+            Loggers = buildLoggers,
+            MaxNodeCount = 1,
+            MultiThreaded = multiThreaded,
+        };
+        parameters.LogTaskInputs |= buildLoggers.Any(logger => logger.Verbosity == LoggerVerbosity.Diagnostic);
+        parameters.EnableTargetOutputLogging |= buildLoggers.Any(logger => logger.Verbosity == LoggerVerbosity.Diagnostic);
+
+        BuildResult result = BuildManager.DefaultBuildManager.Build(
+            parameters, new BuildRequestData(project, targets, hostServices: null, BuildRequestDataFlags.None));
+        targetOutputs = result.ResultsByTarget;
+        return result.OverallResult == BuildResultCode.Success;
+    }
+
     /// <summary>
     /// Creates a TerminalLogger or ConsoleLogger based on the provided MSBuild arguments.
     /// If the environment is detected to be an LLM environment, the logger is adjusted to
