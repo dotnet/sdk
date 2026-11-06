@@ -141,7 +141,7 @@ verification diagnostics. Authentication headers and full API responses are not 
 
 The pipeline resource fixes the source pipeline and project. The selected run must be
 successful, non-test, and PME-signed. The artifact download selects that exact run;
-the release job declares the tooling bundle and eight `Dotnetup_Dotnetup_*` candidate
+the release job declares the tooling bundle and eight `Build_Dotnetup_*` candidate
 pipeline artifacts as inputs, and the tool selects `<variant>/<version>/` locally.
 These candidate artifacts are separate
 from the V4 publishing artifacts and `AssetManifests`, which describe only daily assets.

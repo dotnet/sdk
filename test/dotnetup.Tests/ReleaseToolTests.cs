@@ -160,10 +160,10 @@ public sealed class ReleaseToolTests : SdkTest
         switch (mutation)
         {
             case "missing-rid":
-                Directory.Delete(Path.Combine(_root, "Dotnetup_Dotnetup_linux-x64"), recursive: true);
+                Directory.Delete(Path.Combine(_root, "Build_Dotnetup_linux-x64"), recursive: true);
                 break;
             case "extra-candidate":
-                string duplicate = Path.Combine(_root, "Dotnetup_Dotnetup_duplicate", "preview", "0.3.0-preview.1.26554.2");
+                string duplicate = Path.Combine(_root, "Build_Dotnetup_duplicate", "preview", "0.3.0-preview.1.26554.2");
                 Directory.CreateDirectory(duplicate);
                 File.Copy(ManifestPath("linux-x64"), Path.Combine(duplicate, "release.json"));
                 break;
@@ -594,7 +594,7 @@ public sealed class ReleaseToolTests : SdkTest
     });
 
     private string ManifestPath(string rid, string variant = "preview", string version = "0.3.0-preview.1.26554.2") =>
-        Path.Combine(_root, "Dotnetup_Dotnetup_" + rid, variant, version, "release.json");
+        Path.Combine(_root, "Build_Dotnetup_" + rid, variant, version, "release.json");
 
     private async Task WriteCandidatesAsync(string variant = "preview", string version = "0.3.0-preview.1.26554.2")
     {
