@@ -39,7 +39,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
         {
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not TInvocationExpression { Parent: not null })
+            if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not TInvocationExpression { Parent: SyntaxNode statement } || !CanRewrite(statement))
             {
                 return;
             }
@@ -81,14 +81,14 @@ namespace Microsoft.NetCore.Analyzers.Usage
 
             // Both fixes target the statement the call sits in, and a `ThrowIfNull` call returns void, so no
             // two of this rule's diagnostics can nest and the statement needs no re-reading.
-            if (editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) is not TInvocationExpression { Parent: SyntaxNode statement } invocation)
+            if (editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) is not TInvocationExpression { Parent: SyntaxNode statement } invocation || !CanRewrite(statement))
             {
                 return;
             }
 
             if (diagnostic.Id == DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NonNullableValueRuleId)
             {
-                editor.RemoveNode(statement, SyntaxRemoveOptions.KeepNoTrivia);
+                RemoveStatement(statement, editor);
             }
             else
             {
@@ -102,6 +102,18 @@ namespace Microsoft.NetCore.Analyzers.Usage
             DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.NullableStructRuleId => MicrosoftNetCoreAnalyzersResources.DoNotPassNullableStructToArgumentNullExceptionThrowIfNullCodeFixTitle,
             _ => null,
         };
+
+        /// <summary>
+        /// Whether the fix can rewrite <paramref name="statement"/>, the node the call sits in. A call that is the body
+        /// of an expression-bodied lambda has no statement of its own to remove or replace, so no fix is offered there.
+        /// </summary>
+        protected abstract bool CanRewrite(SyntaxNode statement);
+
+        /// <summary>
+        /// Removes <paramref name="statement"/>, the statement the call sits in.
+        /// </summary>
+        protected virtual void RemoveStatement(SyntaxNode statement, SyntaxEditor editor)
+            => editor.RemoveNode(statement, SyntaxRemoveOptions.KeepNoTrivia);
 
         /// <summary>
         /// Replaces <paramref name="statement"/> — the statement <paramref name="invocation"/> sits in — with an
