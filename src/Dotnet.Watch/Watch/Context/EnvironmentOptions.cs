@@ -43,7 +43,8 @@ internal sealed record EnvironmentOptions(
     WebSocketConfig BrowserWebSocketConfig = default,
     WebSocketConfig AgentWebSocketConfig = default,
     TestFlags TestFlags = TestFlags.None,
-    string TestOutput = "")
+    string TestOutput = "",
+    string? DotNetStartupHooks = null)
 {
     public static EnvironmentOptions FromEnvironment(string? sdkDirectory, string logMessagePrefix) => new
     (
@@ -71,7 +72,8 @@ internal sealed record EnvironmentOptions(
             hostName: null,
             additionalAllowedOrigins: []),
         TestFlags: EnvironmentVariables.TestFlags,
-        TestOutput: EnvironmentVariables.TestOutputDir
+        TestOutput: EnvironmentVariables.TestOutputDir,
+        DotNetStartupHooks: EnvironmentVariables.DotNetStartupHooks
     );
 
     public TimeSpan GetProcessCleanupTimeout()
