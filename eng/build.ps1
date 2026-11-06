@@ -34,19 +34,17 @@ if ($arch) { $arguments += " /p:TargetArchitecture=$arch" }
 
 if ($test) { $arguments += " -test" }
 if ($pack) {
-  $arguments += " -pack /p:SkipUsingCrossgen=false /p:SkipBuildingInstallers=false"
+  $arguments += " -pack"
+  if (-not $skipCrossgen) { $arguments += " /p:SkipUsingCrossgen=false" }
+  if (-not $skipInstallers) { $arguments += " /p:SkipBuildingInstallers=false /p:SkipBuildingArchives=false" }
 } else {
-  if ($skipCrossgen -or -not $pack) {
-    $arguments += " /p:SkipUsingCrossgen=true"
-  }
-  if ($skipInstallers -or -not $pack) {
-    $arguments += " /p:SkipBuildingInstallers=true"
-  }
+  $arguments += " /p:SkipUsingCrossgen=true /p:SkipBuildingInstallers=true /p:SkipBuildingArchives=true "
 }
 
 if ($properties) { $arguments += " " + ($properties -join " ") }
 
 $arguments += " /tlp:summary"
+$arguments += " /graph"
 
 $env:DOTNET_SYSTEM_NET_SECURITY_NOREVOCATIONCHECKBYDEFAULT = "true"
 

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "SourceNameForms",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.SourceNameForms",
+  "precedence": "100",
+  "identity": "TestAssets.SourceNameForms",
+  "shortName": "TestAssets.SourceNameForms",
+  "sourceName": "Good.Source.Name.1",
+  "symbols": {
+    "sourceNameLc": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "lc",
+      "replaces": "replace_name_lc",
+      "fileRename": "fileRename-name-lc"
+    }
+  },
+  "forms": {
+    "lc": {
+      "identifier": "lowerCaseInvariant" 
+    }
+  }
+}

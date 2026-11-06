@@ -10,6 +10,7 @@
         "Microsoft.NET.Runtime.WebAssembly.Sdk.${NetVersion}",
         "Microsoft.NET.Sdk.WebAssembly.Pack.${NetVersion}",
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.browser-wasm",
+        "Microsoft.NETCore.App.Runtime.${NetVersion}.browser-wasm",
         "Microsoft.NETCore.App.Runtime.AOT.Cross.${NetVersion}.browser-wasm"
       ],
       "extends": [ "microsoft-net-runtime-mono-tooling", "microsoft-net-sdk-emscripten" ],
@@ -25,7 +26,7 @@
       "platforms": [ "win-x64", "win-arm64", "linux-x64", "linux-arm64", "linux-musl-x64", "linux-musl-arm64", "osx-x64", "osx-arm64" ]
     },
     "wasi-experimental": {
-      "description": ".NET WASI experimental tooing for ${NetVersion}.0",
+      "description": ".NET WASI experimental tooling for ${NetVersion}.0",
       "packs": [
         "Microsoft.NET.Runtime.WebAssembly.Wasi.Sdk.${NetVersion}",
         "Microsoft.NETCore.App.Runtime.Mono.${NetVersion}.wasi-wasm",
@@ -456,6 +457,13 @@
       "version": "${RuntimeVersion}",
       "alias-to": {
         "any": "Microsoft.NETCore.App.Runtime.Mono.browser-wasm"
+      }
+    },
+    "Microsoft.NETCore.App.Runtime.${NetVersion}.browser-wasm" : {
+      "kind": "framework",
+      "version": "${RuntimeVersion}",
+      "alias-to": {
+        "any": "Microsoft.NETCore.App.Runtime.browser-wasm"
       }
     },
     "Microsoft.NETCore.App.Runtime.Mono.multithread.${NetVersion}.browser-wasm" : {

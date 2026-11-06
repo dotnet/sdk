@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsFixer>;
@@ -14,17 +13,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
-        [Theory]
-        [InlineData("byte", "AdvSimd.Add")]
-        [InlineData("sbyte", "AdvSimd.Add")]
-        [InlineData("short", "AdvSimd.Add")]
-        [InlineData("ushort", "AdvSimd.Add")]
-        [InlineData("int", "AdvSimd.Add")]
-        [InlineData("uint", "AdvSimd.Add")]
-        [InlineData("long", "AdvSimd.AddScalar")]
-        [InlineData("ulong", "AdvSimd.AddScalar")]
-        [InlineData("float", "AdvSimd.Add")]
-        [InlineData("double", "AdvSimd.AddScalar")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Add")]
+        [DataRow("sbyte", "AdvSimd.Add")]
+        [DataRow("short", "AdvSimd.Add")]
+        [DataRow("ushort", "AdvSimd.Add")]
+        [DataRow("int", "AdvSimd.Add")]
+        [DataRow("uint", "AdvSimd.Add")]
+        [DataRow("long", "AdvSimd.AddScalar")]
+        [DataRow("ulong", "AdvSimd.AddScalar")]
+        [DataRow("float", "AdvSimd.Add")]
+        [DataRow("double", "AdvSimd.AddScalar")]
         public async Task Fixer_opAdditionArmV64Async(string type, string method)
         {
             // lang=C#-test
@@ -59,11 +58,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("float", "AdvSimd.AddScalar")]
+        [TestMethod]
+        [DataRow("float", "AdvSimd.AddScalar")]
         public async Task Fixer_opAdditionArmV64Async_NoReplacement(string type, string method)
         {
             // lang=C#-test
@@ -87,20 +86,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 ExpectedDiagnostics = { },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "AdvSimd.Add")]
-        [InlineData("sbyte", "AdvSimd.Add")]
-        [InlineData("short", "AdvSimd.Add")]
-        [InlineData("ushort", "AdvSimd.Add")]
-        [InlineData("int", "AdvSimd.Add")]
-        [InlineData("uint", "AdvSimd.Add")]
-        [InlineData("long", "AdvSimd.Add")]
-        [InlineData("ulong", "AdvSimd.Add")]
-        [InlineData("float", "AdvSimd.Add")]
-        [InlineData("double", "AdvSimd.Arm64.Add")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Add")]
+        [DataRow("sbyte", "AdvSimd.Add")]
+        [DataRow("short", "AdvSimd.Add")]
+        [DataRow("ushort", "AdvSimd.Add")]
+        [DataRow("int", "AdvSimd.Add")]
+        [DataRow("uint", "AdvSimd.Add")]
+        [DataRow("long", "AdvSimd.Add")]
+        [DataRow("ulong", "AdvSimd.Add")]
+        [DataRow("float", "AdvSimd.Add")]
+        [DataRow("double", "AdvSimd.Arm64.Add")]
         public async Task Fixer_opAdditionArmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -135,20 +134,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "PackedSimd.Add")]
-        [InlineData("sbyte", "PackedSimd.Add")]
-        [InlineData("short", "PackedSimd.Add")]
-        [InlineData("ushort", "PackedSimd.Add")]
-        [InlineData("int", "PackedSimd.Add")]
-        [InlineData("uint", "PackedSimd.Add")]
-        [InlineData("long", "PackedSimd.Add")]
-        [InlineData("ulong", "PackedSimd.Add")]
-        [InlineData("float", "PackedSimd.Add")]
-        [InlineData("double", "PackedSimd.Add")]
+        [TestMethod]
+        [DataRow("byte", "PackedSimd.Add")]
+        [DataRow("sbyte", "PackedSimd.Add")]
+        [DataRow("short", "PackedSimd.Add")]
+        [DataRow("ushort", "PackedSimd.Add")]
+        [DataRow("int", "PackedSimd.Add")]
+        [DataRow("uint", "PackedSimd.Add")]
+        [DataRow("long", "PackedSimd.Add")]
+        [DataRow("ulong", "PackedSimd.Add")]
+        [DataRow("float", "PackedSimd.Add")]
+        [DataRow("double", "PackedSimd.Add")]
         public async Task Fixer_opAdditionWasmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -183,20 +182,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "Sse2.Add")]
-        [InlineData("sbyte", "Sse2.Add")]
-        [InlineData("short", "Sse2.Add")]
-        [InlineData("ushort", "Sse2.Add")]
-        [InlineData("int", "Sse2.Add")]
-        [InlineData("uint", "Sse2.Add")]
-        [InlineData("long", "Sse2.Add")]
-        [InlineData("ulong", "Sse2.Add")]
-        [InlineData("float", "Sse.Add")]
-        [InlineData("double", "Sse2.Add")]
+        [TestMethod]
+        [DataRow("byte", "Sse2.Add")]
+        [DataRow("sbyte", "Sse2.Add")]
+        [DataRow("short", "Sse2.Add")]
+        [DataRow("ushort", "Sse2.Add")]
+        [DataRow("int", "Sse2.Add")]
+        [DataRow("uint", "Sse2.Add")]
+        [DataRow("long", "Sse2.Add")]
+        [DataRow("ulong", "Sse2.Add")]
+        [DataRow("float", "Sse.Add")]
+        [DataRow("double", "Sse2.Add")]
         public async Task Fixer_opAdditionx86V128Async(string type, string method)
         {
             // lang=C#-test
@@ -231,20 +230,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "Avx2.Add")]
-        [InlineData("sbyte", "Avx2.Add")]
-        [InlineData("short", "Avx2.Add")]
-        [InlineData("ushort", "Avx2.Add")]
-        [InlineData("int", "Avx2.Add")]
-        [InlineData("uint", "Avx2.Add")]
-        [InlineData("long", "Avx2.Add")]
-        [InlineData("ulong", "Avx2.Add")]
-        [InlineData("float", "Avx.Add")]
-        [InlineData("double", "Avx.Add")]
+        [TestMethod]
+        [DataRow("byte", "Avx2.Add")]
+        [DataRow("sbyte", "Avx2.Add")]
+        [DataRow("short", "Avx2.Add")]
+        [DataRow("ushort", "Avx2.Add")]
+        [DataRow("int", "Avx2.Add")]
+        [DataRow("uint", "Avx2.Add")]
+        [DataRow("long", "Avx2.Add")]
+        [DataRow("ulong", "Avx2.Add")]
+        [DataRow("float", "Avx.Add")]
+        [DataRow("double", "Avx.Add")]
         public async Task Fixer_opAdditionx86V256Async(string type, string method)
         {
             // lang=C#-test
@@ -279,20 +278,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "Avx512BW.Add")]
-        [InlineData("sbyte", "Avx512BW.Add")]
-        [InlineData("short", "Avx512BW.Add")]
-        [InlineData("ushort", "Avx512BW.Add")]
-        [InlineData("int", "Avx512F.Add")]
-        [InlineData("uint", "Avx512F.Add")]
-        [InlineData("long", "Avx512F.Add")]
-        [InlineData("ulong", "Avx512F.Add")]
-        [InlineData("float", "Avx512F.Add")]
-        [InlineData("double", "Avx512F.Add")]
+        [TestMethod]
+        [DataRow("byte", "Avx512BW.Add")]
+        [DataRow("sbyte", "Avx512BW.Add")]
+        [DataRow("short", "Avx512BW.Add")]
+        [DataRow("ushort", "Avx512BW.Add")]
+        [DataRow("int", "Avx512F.Add")]
+        [DataRow("uint", "Avx512F.Add")]
+        [DataRow("long", "Avx512F.Add")]
+        [DataRow("ulong", "Avx512F.Add")]
+        [DataRow("float", "Avx512F.Add")]
+        [DataRow("double", "Avx512F.Add")]
         public async Task Fixer_opAdditionx86V512Async(string type, string method)
         {
             // lang=C#-test
@@ -327,7 +326,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

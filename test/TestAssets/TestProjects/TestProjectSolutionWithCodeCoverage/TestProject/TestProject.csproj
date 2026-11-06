@@ -8,5 +8,8 @@
 	</PropertyGroup>
 
 	<!-- references to the code to test -->
+	<ItemGroup>
+		<ProjectReference Include="..\Lib\Lib.csproj" />
+	</ItemGroup>
 
 </Project>

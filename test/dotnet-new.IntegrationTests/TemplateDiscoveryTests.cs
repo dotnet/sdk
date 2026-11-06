@@ -1,24 +1,31 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.TestHelper;
+using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public class TemplateDiscoveryTests : BaseIntegrationTest, IClassFixture<TemplateDiscoveryTool>
+    [TestClass]
+    public class TemplateDiscoveryTests : BaseIntegrationTest
     {
-        private readonly ITestOutputHelper _log;
-        private readonly TemplateDiscoveryTool _templateDiscoveryTool;
+        private ITestOutputHelper _log => Log;
+        private static TemplateDiscoveryTool s_templateDiscoveryTool = null!;
 
-        public TemplateDiscoveryTests(ITestOutputHelper log, TemplateDiscoveryTool templateDiscoveryTool) : base(log)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext ctx)
         {
-            _log = log;
-            _templateDiscoveryTool = templateDiscoveryTool;
+            s_templateDiscoveryTool = new TemplateDiscoveryTool(new TestContextOutputHelper(ctx));
         }
 
-#pragma warning disable xUnit1004 // Test methods should not be skipped
-        [PlatformSpecificFact(SkipPlatforms = TestPlatforms.OSX, SkipArchitecture = Architecture.Arm64, SkipReason = "https://github.com/dotnet/sdk/issues/53569")]
-#pragma warning restore xUnit1004 // Test methods should not be skipped
+        [ClassCleanup]
+        public static void ClassCleanup() => s_templateDiscoveryTool?.Dispose();
+
+        private TemplateDiscoveryTool _templateDiscoveryTool => s_templateDiscoveryTool;
+
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [Microsoft.NET.TestFramework.ArchitectureCondition(ConditionMode.Exclude, Architecture.Arm64)]
         public async Task CanRunDiscoveryTool()
         {
             string testDir = CreateTemporaryFolder();
@@ -27,13 +34,15 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string packagePath = await packageManager.GetNuGetPackage(
                 templatePackName: "Microsoft.Azure.WebJobs.ProjectTemplates",
                 downloadDirectory: Path.GetDirectoryName(testTemplatesPackagePath));
+            TestUtils.SetupNuGetConfigForPackagesLocation(testDir, Path.GetDirectoryName(packagePath)!);
+            string discoveryPackagesPath = CreateDiscoveryPackagesDirectory(testTemplatesPackagePath, packagePath);
 
             _templateDiscoveryTool.Run(
                 _log,
                 "--basePath",
                 testDir,
                 "--packagesPath",
-                Path.GetDirectoryName(packagePath) ?? throw new Exception("Couldn't get package location directory"),
+                discoveryPackagesPath,
                 "-v");
 
             string[] cacheFilePaths = new[]
@@ -45,7 +54,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             foreach (var cacheFilePath in cacheFilePaths)
             {
-                Assert.True(File.Exists(cacheFilePath));
+                Assert.IsTrue(File.Exists(cacheFilePath));
                 new DotnetNewCommand(_log)
                     .WithCustomHive(settingsPath)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
@@ -57,6 +66,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
                 new DotnetNewCommand(_log, "search", "func")
                     .WithCustomHive(settingsPath)
+                    .WithWorkingDirectory(testDir)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()
@@ -68,8 +78,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
         }
 
+        private static string CreateDiscoveryPackagesDirectory(params string[] packagePaths)
+        {
+            string directory = TestUtils.CreateTemporaryFolder();
+            foreach (string packagePath in packagePaths)
+            {
+                using PackageArchiveReader packageReader = new(packagePath);
+                var identity = packageReader.GetIdentity();
+                File.Copy(packagePath, Path.Combine(directory, $"{identity.Id}##{identity.Version}.nupkg"));
+            }
+            return directory;
+        }
+
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanReadCliData()
         {
@@ -94,7 +117,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42541")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/42541")]
 #pragma warning restore xUnit1004 // Test methods should not be skipped
         public void CanReadCliDataFromDiff()
         {
@@ -145,7 +169,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             foreach (var cacheFilePath in cacheFilePaths)
             {
-                Assert.True(File.Exists(cacheFilePath));
+                Assert.IsTrue(File.Exists(cacheFilePath));
                 new DotnetNewCommand(_log)
                       .WithCustomHive(settingsPath)
                       .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)

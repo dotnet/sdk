@@ -2,17 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.CodeAnalysis.Razor.Formatting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
 {
     internal static class MSBuildWorkspaceLoader
     {
+        private static readonly MefHostServices s_hostServices = MefHostServices.Create(
+            MefHostServices.DefaultAssemblies.Add(typeof(RazorFormatter).Assembly));
+
         // Used in tests for locking around MSBuild invocations
         internal static readonly SemaphoreSlim Guard = new SemaphoreSlim(1, 1);
 
-        public static async Task<Workspace?> LoadAsync(
+        public static async Task<LoadedWorkspace?> LoadAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
             string? binaryLogPath,
@@ -34,7 +39,8 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 properties["TargetFramework"] = targetFramework;
             }
 
-            var workspace = MSBuildWorkspace.Create(properties);
+            var workspace = MSBuildWorkspace.Create(properties, s_hostServices);
+            ProjectId? projectId = null;
 
             Build.Framework.ILogger? binlog = null;
             if (binaryLogPath is not null)
@@ -48,13 +54,14 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 
             if (workspaceType == WorkspaceType.Solution)
             {
-                await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
+                await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken);
             }
             else
             {
                 try
                 {
-                    await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
+                    var project = await workspace.OpenProjectAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken);
+                    projectId = project.Id;
                 }
                 catch (InvalidOperationException)
                 {
@@ -66,7 +73,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
 
             LogWorkspaceDiagnostics(logger, logWorkspaceWarnings, workspace.Diagnostics);
 
-            return workspace;
+            return new LoadedWorkspace(workspace, projectId);
 
             static void LogWorkspaceDiagnostics(ILogger logger, bool logWorkspaceWarnings, ImmutableList<WorkspaceDiagnostic> diagnostics)
             {
@@ -93,5 +100,11 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 }
             }
         }
+    }
+
+    /// <param name="ProjectId">Set to the project if the workspace is loaded in "project" mode.</param>
+    internal sealed record LoadedWorkspace(Workspace Workspace, ProjectId? ProjectId) : IDisposable
+    {
+        public void Dispose() => Workspace.Dispose();
     }
 }

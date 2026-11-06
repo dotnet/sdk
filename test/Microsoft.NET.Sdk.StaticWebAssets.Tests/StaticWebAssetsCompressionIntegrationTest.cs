@@ -1,17 +1,23 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.IO.Compression;
+using System.Text.RegularExpressions;
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
+    [TestClass]
     public class StaticWebAssetsCompressionIntegrationTest : AspNetSdkBaselineTest
     {
-        public StaticWebAssetsCompressionIntegrationTest(ITestOutputHelper log) : base(log, GenerateBaselines) { }
+        [TestMethod]
 
-        [Fact]
         public void Build_Detects_PrecompressedAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -94,7 +100,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CanEnable_CompressionOnAllAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -126,7 +132,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(finalPath).Should().Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishWorks_With_PrecompressedAssets()
         {
             var expectedManifest = LoadBuildManifest();
@@ -204,6 +210,37 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                     continue;
                 }
             }
+        }
+
+        [TestMethod]
+        [DataRow("BrotliCompressionLevel")]
+        [DataRow("_BlazorBrotliCompressionLevel")]
+        public void Publish_PassesBrotliCompressionLevel_ToBrotliCompressTask(string propertyName)
+        {
+            var testAsset = "RazorAppWithP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((project, xml) =>
+                {
+                    if (!project.Contains("ClassLibrary"))
+                    {
+                        xml.Descendants("PropertyGroup")
+                            .First().Add(new XElement(propertyName, "Optimal"));
+                    }
+                });
+
+            var publish = CreatePublishCommand(ProjectDirectory, "AppWithP2PReference");
+            var result = ExecuteCommand(publish, "-v:diag");
+            result.Should().Pass();
+
+            var brotliTasks = Regex.Matches(
+                result.StdOut!,
+                @"Task ""BrotliCompress"".*?Done executing task ""BrotliCompress""",
+                RegexOptions.Singleline);
+
+            brotliTasks.Cast<Match>().Should().Contain(
+                task => task.Value.Contains("CompressionLevel=Optimal")
+                    && Regex.IsMatch(task.Value, @"^\s*-c\s*\r?\n\s*Optimal\s*$", RegexOptions.Multiline),
+                "the publish-time BrotliCompress task should receive and pass on the Optimal level");
         }
     }
 }

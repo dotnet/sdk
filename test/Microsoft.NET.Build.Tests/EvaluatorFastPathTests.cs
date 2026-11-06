@@ -3,14 +3,11 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class EvaluatorFastPathTests : SdkTest
     {
-        public EvaluatorFastPathTests(ITestOutputHelper log) : base(log)
-        {
 
-        }
-
-        [Fact]
+        [TestMethod]
         public void FastPathDoesNotNeedReflection()
         {
             var testAsset = TestAssetsManager
@@ -29,9 +26,9 @@ namespace Microsoft.NET.Build.Tests
             File.Exists(logPath).Should().BeFalse();
         }
 
-        [Theory]
-        [InlineData("console")]
-        [InlineData("webapp")]
+        [TestMethod]
+        [DataRow("console")]
+        [DataRow("webapp")]
         public void EnsureDotnetCommonProjectPropertyFunctionsOnFastPath(string alias)
         {
             var testDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -55,8 +52,15 @@ namespace Microsoft.NET.Build.Tests
             // This verification should be changed to no log file created once it is done.
             var toolLocationHelper_GetPlatformSDKLocation = "ReceiverType=Microsoft.Build.Utilities.ToolLocationHelper; ObjectInstanceType=; MethodName=GetPlatformSDKLocation(String, String)";
             var toolLocationHelper_GetPlatformSDKDisplayName = "ReceiverType=Microsoft.Build.Utilities.ToolLocationHelper; ObjectInstanceType=; MethodName=GetPlatformSDKDisplayName(String, String)";
+            // The dotnet-watch browser tools targets read checked-in JavaScript templates as exact
+            // multiline text. Add a dedicated MSBuild fast path before removing this exception:
+            // https://github.com/dotnet/msbuild/issues/12029.
+            var file_ReadAllText = "ReceiverType=System.IO.File; ObjectInstanceType=; MethodName=ReadAllText(String)";
             var lines = File.ReadAllLines(logPath);
-            var allOnFastPathWithExceptions = lines.All(l => (toolLocationHelper_GetPlatformSDKLocation.Equals(l) || toolLocationHelper_GetPlatformSDKDisplayName.Equals(l)));
+            var allOnFastPathWithExceptions = lines.All(l =>
+                toolLocationHelper_GetPlatformSDKLocation.Equals(l) ||
+                toolLocationHelper_GetPlatformSDKDisplayName.Equals(l) ||
+                file_ReadAllText.Equals(l));
             allOnFastPathWithExceptions.Should().BeTrue("If this test fails, file a bug to add the new fast path in MSBuild like https://github.com/dotnet/msbuild/issues/12029. You may add an exclusion with a comment in this test while that is in process.");
         }
     }

@@ -7,15 +7,13 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAClickOnceProject : SdkTest
     {
-        public GivenThatWeWantToPublishAClickOnceProject(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [FullMSBuildOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [FullMSBuildOnly]
+        [DataRow(false)]
+        [DataRow(true)]
         public void PublishClickOnceWithPublishProfile(bool? publishSingleFile)
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;

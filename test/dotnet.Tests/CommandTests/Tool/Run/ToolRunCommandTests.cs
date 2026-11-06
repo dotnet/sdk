@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
@@ -13,17 +13,18 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolRunCommandTests: SdkTest
     {
         private const string ManifestFilename = "dotnet-tools.json";
         private DirectoryPath _nugetGlobalPackagesFolder;
 
-        public ToolRunCommandTests(ITestOutputHelper log) : base(log)
+        public ToolRunCommandTests()
         {
             _nugetGlobalPackagesFolder = new DirectoryPath(NuGetGlobalPackagesFolder.GetLocation());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithRollForwardOptionItShouldIncludeRollForwardInNativeHost()
         {
             var parseResult = Parser.Parse($"dotnet tool run dotnet-a --allow-roll-forward");
@@ -43,7 +44,25 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             result.Args.Should().ContainAll("--roll-forward", "Major", fakeExecutable.Value);
         }
 
-        [Fact]
+        [TestMethod]
+        public void WhenRunWithRollForwardOptionItShouldPreserveDuplicateArgumentsForwardedToTool()
+        {
+            (FilePath fakeExecutable, LocalToolsCommandResolver localToolsCommandResolver) = DefaultSetup("a");
+            IEnumerable<string> testForwardArgument = ["--var", "a", "--var", "b"];
+
+            var result = localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+            {
+                CommandName = "dotnet-a",
+                CommandArguments = testForwardArgument
+            }, allowRollForward: true);
+
+            result.Should().NotBeNull();
+            result.Args.Should().ContainAll("--roll-forward", "Major", fakeExecutable.Value);
+            // Verify duplicate forwarded arguments are preserved in order.
+            result.Args.Should().Contain("--var a --var b");
+        }
+
+        [TestMethod]
         public void WhenRunWithoutRollForwardOptionItShouldNotIncludeRollForwardInNativeHost()
         {
             var parseResult = Parser.Parse($"dotnet tool run dotnet-a");

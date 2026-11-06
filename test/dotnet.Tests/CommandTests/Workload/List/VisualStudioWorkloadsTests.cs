@@ -13,6 +13,7 @@ using Windows.Win32.System.Variant;
 
 namespace Microsoft.DotNet.Cli.Workload.List.Tests;
 
+[TestClass]
 public unsafe class VisualStudioWorkloadsTests
 {
     private static readonly WorkloadResolver.WorkloadInfo[] s_workloadInfo =
@@ -50,7 +51,8 @@ public unsafe class VisualStudioWorkloadsTests
     // lookup prefaced with "Microsoft.NET.Component.". Key names have dashes replaced with periods.
 
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_Basic()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -87,7 +89,8 @@ public unsafe class VisualStudioWorkloadsTests
 
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_NoVSInstances_ReturnsEmpty()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -103,7 +106,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEmpty();
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_NoSdkPackageInstalled_ReturnsEmpty()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -129,7 +133,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEmpty();
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_EmptyPackageId_SkipsPackage()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -160,7 +165,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_InvalidSdkVersion_SkipsInstance()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -185,7 +191,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEmpty();
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_FeatureBandMismatch_SkipsInstance()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -212,7 +219,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEmpty();
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_FeatureBandMatch_ReturnsWorkloads()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -243,7 +251,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_NullFeatureBand_ReturnsAllWorkloads()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -273,7 +282,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_MultipleVSInstances_ReturnsWorkloadsFromAll()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -314,7 +324,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_MultipleVSInstances_OnlyMatchingFeatureBand()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -353,7 +364,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_NewStyleComponentId_MatchesWorkload()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -385,7 +397,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_UnknownPackageId_Ignored()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -416,7 +429,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_DuplicateWorkloadInInstance_AddedOnce()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -448,7 +462,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_AllSupportedVSProducts_ReturnsWorkloads()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -495,7 +510,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_SdkBeforeWorkloads_StillMatches()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -527,7 +543,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_NoWorkloadPackages_ReturnsEmpty()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -552,7 +569,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEmpty();
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_EmptyPackageList_ReturnsEmpty()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -573,7 +591,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEmpty();
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_WorkloadWithDashesMatchesDotNotation()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);
@@ -607,7 +626,8 @@ public unsafe class VisualStudioWorkloadsTests
         installedWorkloads.AsEnumerable().Should().BeEquivalentTo(expected);
     }
 
-    [WindowsOnlyFact]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
     public void GetInstalledWorkloads_MultipleSdkVersions_UsesFirstMatchingFeatureBand()
     {
         MockWorkloadResolver workloadResolver = new(s_workloadInfo);

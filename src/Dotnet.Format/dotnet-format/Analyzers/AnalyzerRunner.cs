@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Diagnostics;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 
@@ -37,17 +38,16 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                 return;
             }
 
-            // For projects targeting NetStandard, the Runtime references are resolved from the project.assets.json.
-            // This file is generated during a `dotnet restore`.
-            if (!AllReferencedProjectsLoaded(project))
+            var compilation = await project.GetCompilationAsync(cancellationToken);
+            if (compilation is null)
             {
-                logger.LogWarning(Resources.Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting, project.Name);
                 return;
             }
 
-            var compilation = await project.GetCompilationAsync(cancellationToken).ConfigureAwait(false);
-            if (compilation is null)
+            // If we didn't get a useful set of references, then we really don't want to be trying to run analyzers.
+            if (!await AllReferencedProjectsLoadedAsync(project, cancellationToken))
             {
+                logger.LogWarning(Resources.Required_references_did_not_load_for_0_or_referenced_project_Run_dotnet_restore_prior_to_formatting, project.Name);
                 return;
             }
 
@@ -74,7 +74,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     reportSuppressedDiagnostics: false);
                 var analyzerCompilation = compilation.WithAnalyzers(analyzers, analyzerOptions);
 
-                diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken).ConfigureAwait(false);
+                diagnostics = await analyzerCompilation.GetAnalyzerDiagnosticsAsync(cancellationToken);
                 diagnostics = diagnostics.AddRange(compilerDiagnostics);
             }
 
@@ -93,17 +93,29 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             return;
 
-            static bool AllReferencedProjectsLoaded(Project project)
+            // Checks each transitive dependency once via the solution's cached dependency graph. Recursing
+            // through ProjectReferences instead revisits shared projects on every path through the graph,
+            // which is exponential in the graph's depth.
+            static async Task<bool> AllReferencedProjectsLoadedAsync(Project project, CancellationToken cancellationToken)
             {
-                // Use mscorlib to represent Runtime references being loaded.
-                if (!project.MetadataReferences.Any(reference => reference.Display?.EndsWith("mscorlib.dll") == true))
+                var solution = project.Solution;
+                var dependencies = solution.GetProjectDependencyGraph().GetProjectsThatThisProjectTransitivelyDependsOn(project.Id);
+
+                foreach (var projectId in dependencies.Prepend(project.Id))
                 {
-                    return false;
+                    var dependency = solution.GetProject(projectId);
+                    Debug.Assert(dependency is not null);
+
+                    var compilation = await dependency.GetCompilationAsync(cancellationToken);
+                    if (compilation is null)
+                        return false;
+
+                    // If we don't have a System.Object this project is clearly missing references and we shouldn't try to process it further
+                    if (compilation.ObjectType.TypeKind == TypeKind.Error)
+                        return false;
                 }
 
-                return project.ProjectReferences
-                    .Select(projectReference => project.Solution.GetProject(projectReference.ProjectId))
-                    .All(referencedProject => referencedProject != null && AllReferencedProjectsLoaded(referencedProject));
+                return true;
             }
         }
     }

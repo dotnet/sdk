@@ -3,7 +3,7 @@
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
-    public abstract class BaseTest
+    public abstract class BaseTest : VerifyBase
     {
         /// <summary>
         /// Gets a path to the folder with dotnet new test assets.

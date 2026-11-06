@@ -1,0 +1,440 @@
+# `dotnet test` artifact post-processing (Microsoft.Testing.Platform)
+
+## Overview
+
+When `dotnet test` runs a solution (or several projects) on
+[Microsoft.Testing.Platform](https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-intro)
+(MTP), every test application produces its own artifacts — one TRX report per module, one
+code-coverage file per module, and so on. Left as-is, the run summary lists each of those
+files individually, and downstream consumers (Azure DevOps `PublishTestResults`,
+`ReportGenerator`, CI dashboards) have to glob dozens of paths or merge them out of band.
+
+**Artifact post-processing** consolidates compatible artifacts produced by different test
+applications into a single merged artifact, so a multi-project run surfaces one report per
+format instead of one per module. It is on by default and runs automatically; nothing in the
+project or the command line is required to opt in.
+
+This document describes what the .NET SDK actually does. The upstream concept is defined by
+microsoft/testfx
+[RFC 018](https://github.com/microsoft/testfx/blob/main/docs/RFCs/018-Artifact-Post-Processing.md);
+where the two differ, this document reflects the SDK's behavior.
+
+> This feature applies only to the Microsoft.Testing.Platform runner for `dotnet test`. It is
+> unrelated to the VSTest artifact post-processing described under [Caveats](#caveats).
+
+## Code coverage summary
+
+Coverage producers that implement the negotiated MTP coverage-summary contract also supply
+measurements to the SDK's terminal reporter. For a single test application, its overall
+measurements appear in the run summary. For several applications, the SDK uses measurements
+read by the coverage post-processor from the **actual merged artifact**:
+
+```text
+  Code Coverage Summary:
+    Total - Line: 98.9%
+```
+
+The SDK never adds or averages per-application percentages or counts: different applications
+can cover the same assembly. `Total` is reserved for a complete, unambiguous merge whose
+explicit input provenance represents every test application. Without such a merge, available
+measurements remain application- or artifact-scoped, not a purported run total. This includes
+`--no-artifact-post-processing`, partial or unsuccessful merges, and cancelled runs.
+
+Completeness includes balanced session lifecycle and the association between each execution,
+test-host instance, and session, not just matching their separate counts. Missing sibling
+coverage, ambiguous controller/legacy identity, or a path overwritten by another source
+keeps coverage scoped. Fallback labels retain instance/session identity. Replacing an output
+path also invalidates its previous coverage metadata, including when its new metadata is
+absent or invalid.
+
+Percentages use a decimal point and one decimal place, independently of the current numeric
+culture. Labels are localized. Set `DOTNET_CLI_UI_LANGUAGE=en` when a CI parser needs the
+English labels; for example, the following regular expression captures the line percentage:
+
+```regex
+^\s*Total - Line: ([0-9]+(?:\.[0-9]+)?)%$
+```
+
+An explicit measurement with no coverable data is rendered as `no coverable data`, not as
+zero or full coverage. Missing or unsupported summary metadata does not invent a measurement.
+Older MTP or coverage-extension versions continue to run and report artifacts as before,
+without the new summary. Summary reporting does not change threshold evaluation or exit codes.
+
+## When it runs
+
+Post-processing happens after every test application has exited and before the run summary is
+rendered. To keep the merged report trustworthy, the SDK
+[skips it entirely](../../src/Cli/dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs)
+when any of the following is true:
+
+- `--help` was requested (`dotnet test --help`).
+- `--list-tests` was requested (test discovery, not execution).
+- `--collect-test-map` was requested (mapping collection, not test execution).
+- `--no-artifact-post-processing` was passed.
+- The run was cancelled with <kbd>Ctrl</kbd>+<kbd>C</kbd>.
+
+Runs cut short by `--maximum-failed-tests` or `--timeout` are handled differently. The SDK
+plans only artifact groups whose processor explicitly advertised support for policy-truncated
+runs. Other groups remain untouched, preventing an authoritative merger such as TRX or coverage
+from making an incomplete run look complete while still allowing summary-style processors to
+describe the truncation accurately.
+
+Post-processing can never change the run's exit code; it only affects which artifacts are
+listed. See [Failure behavior](#failure-behavior).
+
+## How the SDK decides what to merge
+
+The SDK never inspects artifact contents to decide what is mergeable. It works entirely from
+data it already has: the capabilities each test application advertised during the MTP
+handshake, and the artifacts that streamed live over the `dotnet-test` pipe during the run.
+The grouping and election logic lives in
+[`ArtifactPostProcessingPlanner`](../../src/Cli/dotnet/Commands/Test/MTP/ArtifactPostProcessingPlanner.cs).
+
+### Capability comes from the handshake
+
+During its handshake, each MTP test application reports the post-processors registered inside
+it through two properties: `SupportedPostProcessorKinds` (reverse-DNS artifact *kinds*, e.g.
+`microsoft.testing.trx`) and `SupportedPostProcessorExtensionsLegacy` (lowercase file
+extensions, for producers that do not tag a kind). Both are semicolon-separated.
+`SupportedTruncatedRunPostProcessorKinds` and
+`SupportedTruncatedRunPostProcessorExtensionsLegacy` advertise the subsets whose processors
+can consume the incomplete set of complete artifacts observed before
+`--maximum-failed-tests` or `--timeout` stopped the run. An application that advertises no
+capability applicable to the current run does not participate. The handshake property ids are
+defined in [`CliConstants`](../../src/Cli/dotnet/Commands/Test/CliConstants.cs).
+
+`RequiredPostProcessorKinds` (field 18) identifies the subset of supported kinds that
+must be processed even for a single input. The SDK replies with
+`RequiredPostProcessingSupported=true` (field 19) only for accepted handshakes in
+eligible runs. That promise includes both singleton processing and the authoritative
+manifest summary described below. It is not a protocol-version bump or a coverage
+capability. Unsupported HTTP/WebAssembly workers, help, discovery, collection, and
+explicit opt-out do not receive that promise.
+
+### Grouping
+
+Artifacts are de-duplicated by path and then grouped:
+
+1. **Kind first.** Artifacts that carry a reverse-DNS `Kind` are grouped by that kind.
+2. **Extension fallback.** Artifacts with no kind are grouped by lowercase file extension.
+
+A group is a merge candidate only if a compatible application advertised the matching kind or
+extension for the current run's completeness. Optional complete-run groups require
+**at least two inputs**. Required kinds and explicitly supported policy-truncated groups
+can run with **one input**. Required groups elect an application that advertises the
+required kind, not an older optional-only processor. Zero-input jobs are not run.
+(A kind group and a matching extension group that
+individually have one input each can still be merged together when a shared application supports
+both and the combined count reaches two.)
+
+For binary code-coverage artifacts (kind `microsoft.codecoverage` / extension `.coverage`),
+an application is a candidate only when its architecture matches the inputs. Coverage blobs
+are architecture-specific, so an `x64` application is not asked to merge `arm64` coverage.
+This constraint applies only to coverage; TRX and other text formats are
+architecture-agnostic.
+
+### Election
+
+Multiple applications may be able to merge the same group. The planner runs a greedy minimal
+[set-cover](https://en.wikipedia.org/wiki/Set_cover_problem): it repeatedly elects the
+application that covers the most still-uncovered groups, so the **fewest** test applications
+are relaunched. Ties are broken deterministically — preferring an application that produced
+more of the inputs, then the higher target-framework version, then path order — so a given
+input set always produces the same plan.
+
+Applications whose worker transport is unsupported are removed **before** election. An
+unsupported application must not win more groups and then be discarded, losing a required
+job that a desktop application could have processed.
+
+## How the merge is performed
+
+Each elected application is relaunched **once** — not to run tests, but as an MTP tool. The tool
+name is passed as the first argument, followed by the manifest
+(`<test application> internal-merge-artifacts --manifest <manifest.json>`), and the process is
+connected to a fresh `dotnet-test` pipe. The launch, timeout, and argument construction live in
+[`TestApplication`](../../src/Cli/dotnet/Commands/Test/MTP/TestApplication.cs); the tool name
+and manifest option are defined in
+[`CliConstants`](../../src/Cli/dotnet/Commands/Test/CliConstants.cs).
+
+The SDK writes a JSON manifest listing the input artifacts (path, kind, producing module,
+target framework, architecture, execution id) and the output directory, then hands it to the
+relaunched tool. On a policy-truncated run, the manifest also contains `truncationReason` with
+the value `maximumFailedTests` or `timeout`; Microsoft.Testing.Platform exposes that through
+`ArtifactPostProcessingContext`.
+
+The producing module is the identity from the accepted handshake, which may be a managed
+assembly behind the selected apphost. The executable launch path is retained separately.
+An unavailable target framework is left null: the runtime reported by a handshake is not
+proof of the assembly's compilation target, particularly with roll-forward or platform
+suffixes.
+
+Every manifest includes a `runSummary` object with integer `totalTests`, `passedTests`,
+`failedTests`, `skippedTests`, `durationTicks`, `exitCode`, and `testModuleCount`. The SDK
+captures it once after test-process and data-channel completion and after applying
+cancellation, handshake, minimum-test, aggregate zero-test, and ignored-exit policies.
+Counts come from the parent reporter's logical live results, not summed retry fragments
+or recovered files. Duration is parent wall-clock test execution before artifact processing,
+not the sum of module durations. The module count includes selected modules without
+fragments. Every elected worker receives the same snapshot.
+
+The processed artifacts flow **back over the same pipe** as ordinary
+file-artifact messages, together with the exact manifest input paths represented by each output,
+so they re-enter the normal reporter path. In the summary, the SDK
+[removes only those consumed inputs and adds the processed output](../../src/Cli/dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
+in their place. This provenance keeps an unrelated artifact listed even when it happens to share
+the processed output's file extension. Older hosts that do not report provenance retain the
+previous kind-and-extension inference for compatibility.
+
+Coverage summary support is negotiated independently of the base protocol: handshake property
+`CoverageSummaryVersion` (id 20) must be `"1"` on both sides. Session measurements use
+`CoverageSummaryMessages` (serializer id 15), while a successfully processed artifact can carry
+its own counts in the optional `FileArtifactMessage.CoverageSummary` field (id 9).
+The SDK stages this metadata with the artifact and only accepts it after successful
+post-processing; legacy kind/extension inference alone is insufficient to establish a
+coverage total. No coverage report parser or new collector dependency is included in the SDK.
+
+The original per-module artifacts are **never deleted from disk** — only the run summary
+changes. If you need the individual files (for example a per-module TRX), they are still where
+each module wrote them.
+
+## Where the merged artifact lands
+
+The output directory is chosen by
+[`ArtifactPostProcessingManager`](../../src/Cli/dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs):
+
+- **With `--results-directory <dir>`**, the merged artifact is written under that directory.
+- **Without `--results-directory`**, each application writes beside its own binaries and no
+  single directory belongs to the run, so the SDK picks the directory of an input produced by
+  the elected application (falling back to the first input directory in path order). The
+  merged artifact then lands next to the reports it summarizes instead of inside an unrelated
+  project's output.
+
+The merging extension — not the SDK — decides the final file name and may nest its output. The
+version of `Microsoft.Testing.Extensions.TrxReport` currently referenced by the SDK names its output
+`merged-<runId>.trx`, where `runId` is derived from the inputs, and writes it into a `merged/`
+subdirectory of the supplied output directory. Because the merged report is nested, a non-recursive
+`*.trx` glob over the results directory picks up the per-module inputs but not the merged report, so
+it does not double-count tests. CI that wants the merged report must target the `merged/` subdirectory
+explicitly, for example with `merged/merged-*.trx`; a broad recursive glob would also pick up the
+per-module inputs and double-count tests.
+
+## What currently merges
+
+Microsoft.Testing.Platform extensions provide post-processors for **TRX, Microsoft code
+coverage, JUnit, CTRF, and HTML reports**. The formats available to a run still depend on which
+extensions its test applications reference and enable; the SDK does not install a processor or
+infer mergeability from a file name.
+
+Compatible GitHub Actions and Azure DevOps extensions use the **required** handoff to
+produce a run-level summary. They defer standalone publication only after the SDK confirms
+the capability. A single summary fragment is processed just like a multi-module group.
+Older SDKs, undeclared capabilities, and explicit opt-out retain the extensions' per-module
+fallback. Successful TRX/CTRF/JUnit merging alone does not demonstrate this summary handoff.
+
+### Required-summary contract decision
+
+The SDK consumes TestFx's existing additive contract rather than inventing a report-specific
+merger or parsing CI fragments itself. The
+[required interface and run-summary invariants](https://github.com/microsoft/testfx/blob/f4d8d35bf45ce0ece75a66e1b197c96684767e48/src/Platform/Microsoft.Testing.Platform/Extensions/ArtifactPostProcessing/IArtifactPostProcessor.cs),
+[handshake capability definitions](https://github.com/microsoft/testfx/blob/f4d8d35bf45ce0ece75a66e1b197c96684767e48/src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs),
+and [manifest consumer](https://github.com/microsoft/testfx/blob/f4d8d35bf45ce0ece75a66e1b197c96684767e48/src/Platform/Microsoft.Testing.Platform/Extensions/ArtifactPostProcessing/ArtifactPostProcessingManifest.cs)
+define the producer/consumer boundary. TestFx owns fragment validation, provider rendering,
+and compatible standalone fallback; the SDK owns election, invocation lifetime, and the
+final test-policy verdict. The managed and Native AOT CLI share this implementation.
+
+An incomplete set of complete files is different from a malformed file. Policy-truncated
+processing requires the explicit truncation capability and reason. Missing or partially
+written files can fail the worker and degrade reporting; they never justify fabricated
+results or an altered test verdict. Module details come only from supplied fragments,
+while the authoritative totals and selected-module denominator cover the whole invocation.
+No new dependency pins, coverage-summary protocol, or general cancellation mechanism are
+part of this contract.
+
+Other formats continue to be listed individually until their producing extension ships a
+post-processor. The contract for adding one is public; see
+[Extending it to another artifact format](#extending-it-to-another-artifact-format).
+
+## Extending it to another artifact format
+
+The post-processing contract is **public API on `Microsoft.Testing.Platform`**, so a third-party
+extension can consolidate its own format without any change to the SDK. It is gated behind the
+`TPEXP` experimental diagnostic, so it can still change; suppressing that diagnostic is how you
+opt in.
+
+The relevant public types live in `Microsoft.Testing.Platform.Extensions.ArtifactPostProcessing`:
+
+| Type | Role |
+|---|---|
+| `IArtifactPostProcessor` | The contract: `SupportedModes`, `SupportsTruncatedRuns`, `SupportedKinds`, `SupportedFileExtensionsFallback`, and `ProcessAsync(inputs, outputDirectory, context, cancellationToken)`. |
+| `IArtifactPostProcessorRequiresPostProcessing` | Marks internal coordination formats that require processing even for one input. |
+| `IArtifactPostProcessingManager` | Registration, via `AddArtifactPostProcessor(Func<IServiceProvider, IArtifactPostProcessor>)`. |
+| `ArtifactPostProcessingContext` | Truncation reason, processing mode, and the authoritative `RunSummary`. |
+| `ArtifactPostProcessingRunSummary` | Parent live totals, wall-clock test duration, final policy exit code, and selected-module count. |
+| `InputArtifact` | One input: path, kind, producing test module, target framework, architecture, execution id. |
+| `ProcessedArtifact` | The merged result: path, kind, display name, description. |
+
+The dispatcher that runs post-processors, the manifest, and the handshake plumbing are all
+internal — an extension never interacts with them.
+
+A minimal processor:
+
+```csharp
+#pragma warning disable TPEXP // Artifact post-processing is experimental.
+internal sealed class MyArtifactPostProcessor : IArtifactPostProcessor
+{
+    public string Uid => "Contoso.MyReport.PostProcessor";
+    public string Version => "1.0.0";
+    public string DisplayName => "Contoso report merger";
+    public string Description => "Merges Contoso reports.";
+
+    public IReadOnlyList<ArtifactPostProcessingMode> SupportedModes { get; } = [ArtifactPostProcessingMode.TestModules];
+    public bool SupportsTruncatedRuns => false;
+    public IReadOnlyList<string> SupportedKinds { get; } = ["contoso.myreport"];
+    public IReadOnlyList<string> SupportedFileExtensionsFallback { get; } = [".myreport"];
+
+    public Task<bool> IsEnabledAsync() => Task.FromResult(true);
+
+    public async Task<ProcessedArtifact?> ProcessAsync(
+        IReadOnlyList<InputArtifact> inputs,
+        string outputDirectory,
+        ArtifactPostProcessingContext context,
+        CancellationToken cancellationToken)
+    {
+        if (inputs.Count < 2)
+        {
+            return null; // Nothing worth merging; the originals stay listed.
+        }
+
+        string output = Path.Combine(outputDirectory, "merged.myreport");
+        await MergeAsync(inputs.Select(i => i.Path), output, cancellationToken);
+        return new ProcessedArtifact(output, "contoso.myreport", "Contoso report (merged)", null);
+    }
+}
+#pragma warning restore TPEXP
+```
+
+What `dotnet test` expects of a processor:
+
+- **Tag the artifacts you produce with the same `Kind` you advertise.** Grouping is by kind first;
+  the file-extension list is only a fallback for producers that have not adopted kinds.
+- **Do not claim an overly generic fallback extension.** Claiming something like `.xml`, which
+  several unrelated formats use, opts your extension into groups of artifacts that are not yours.
+  Prefer kind-only routing for formats whose file extension is not distinctive.
+- **Return `null` rather than throwing** when there is nothing to do. This remains a legal
+  successful no-op for a required processor: required means it must be invoked, not that it
+  must produce an output or affect the test verdict. The originals remain listed.
+- **Treat inputs as read-only** and write under the supplied `outputDirectory`. Never return one of
+  the inputs as your output, and never delete a source file.
+- **Set `Kind` on the artifact you return.** The MTP dispatcher pairs the result with the exact
+  inputs supplied to that processor, and the SDK uses that provenance to replace only those
+  originals in the run summary.
+- **Set `SupportsTruncatedRuns` only when the output can accurately describe an incomplete run.**
+  When enabled, inspect `context.TruncationReason` and make the truncation visible in the result.
+  The capability covers an incomplete set of complete artifacts, not malformed or partially
+  written files.
+- **Be deterministic**: the same set of inputs should produce the same output path.
+
+Two SDK behaviors are worth knowing about. The SDK relaunches the *fewest* test applications that
+cover all mergeable groups, so a processor may be asked to merge artifacts produced by a different
+test application than the one hosting it. And architecture compatibility is enforced only for code
+coverage (kind `microsoft.codecoverage` / extension `.coverage`), because that format is a binary
+blob; every other kind may be elected regardless of architecture.
+
+The design behind all of this, including the election algorithm and the reasoning for kinds over
+file extensions, is
+[microsoft/testfx RFC 018](https://github.com/microsoft/testfx/blob/main/docs/RFCs/018-Artifact-Post-Processing.md).
+
+## Failure behavior
+
+Post-processing is a best-effort convenience layered on top of an already-completed run, so it
+**cannot change the run's exit code**. A merge failure, a non-zero exit from the merge host, or
+a timeout is degraded to a warning, and the original per-module artifacts stay listed. A run
+whose tests all passed still reports success even if merging failed.
+
+The final summary also prints `Reporting: degraded (...)` separately from the test verdict.
+This includes failures while planning or starting post-processing, not just a failed merge
+process. Cancellation does not create an additional reporting-failure warning.
+
+A successful worker exit still requires a valid worker handshake and completed reporting
+connection before its outputs are applied. Ctrl+C during a worker stops that process tree
+without waiting for the normal artifact timeout. The parent reevaluates cancellation after
+processing; a user-requested abort is distinct from a best-effort reporting failure.
+
+When a test host exits without completing its test session, the SDK labels its **live
+results as incomplete**. A TRX or another report recovered by an extension can contain more
+results than the SDK received over IPC. The SDK neither adds those recovered counts to the
+live counts nor changes a crash into a passing run.
+
+## CI progress and summaries
+
+On terminals that cannot update a progress area in place, the
+[parent SDK renderer](../../src/Cli/dotnet/Commands/Test/MTP/Terminal/SilenceDrivenHeartbeatRenderer.cs) prints a bounded
+progress line after 60 seconds without visible reporter output. Hidden passing results do
+not reset that interval. The line includes cumulative completed/failed counts across both
+finished and active modules, active-module count, and the age of the last completion (or an
+explicit indication that no test has completed). Slow tests use exponential reporting
+backoff. `--no-progress` or forwarded `--progress off` disables progress;
+`MTP_PROGRESS_SILENCE_SECONDS=0` disables the silence heartbeat, while
+`MTP_PROGRESS_SLOW_TEST_SECONDS=0` disables slow-test messages. Nonnegative integer values
+override the corresponding 60-second default.
+
+Parent progress uses each selected module's
+[effective run and launch-profile arguments](../../src/Cli/dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs),
+resolving response files against that module's working directory. Because the progress
+display is shared, an effective opt-out in any selected module disables parent heartbeats
+and slow-test messages for the invocation. `--no-launch-profile-arguments` also excludes
+profile arguments from that decision.
+
+Non-cursor final summaries put the verdict, counts, and module/handshake failure context
+before the artifact paths. Successful module summaries are not repeated if they were
+already printed at completion. Interactive cursor-based summary ordering is unchanged.
+
+[`--collect-test-map` has a separate parent lifecycle](../../src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.Collection.cs) because collection intentionally
+suppresses child test-result reporting. Its progress counts **finished modules**, not
+passed tests or successful maps. Its final `Test map collection: Completed/Failed/Aborted`
+status follows the existing exit-code and cancellation policy, without a zero-test run
+summary. Discovery/planning counts and mapped source paths are not test outcomes.
+When discovery is requested, the final summary keeps the discovery format instead of
+switching to collection status; test applications still validate their option combinations.
+
+## Configuration
+
+| Knob | Effect |
+|---|---|
+| `--no-artifact-post-processing` | Skip post-processing entirely. Each test application's artifacts are listed individually, one per module. |
+| `DOTNET_CLI_TEST_ARTIFACT_POST_PROCESSING_TIMEOUT_SECONDS` | Override the default 15-minute bound on a single merge host. `0` removes the timer (useful for attaching a debugger), as does any value too large for the runtime to wait on (above roughly 49.7 days). User cancellation still stops the worker. An absent, non-numeric, or negative value keeps the default. |
+| `--results-directory` | Determines the output directory recorded in the manifest (see [Where the merged artifact lands](#where-the-merged-artifact-lands)). It is not passed to the merge host on the command line — the merged output location travels in the manifest so the SDK keeps control of it even when it has to be derived. |
+| `--config-file` | Forwarded to the merge host, so it resolves and enables the same extensions as the test run. |
+| `--diagnostic` and `--diagnostic-output-directory` | Forwarded together when requested, preserving MTP's diagnostic validation and placing worker logs beside the run's. |
+| `--diagnostic-verbosity`, `--diagnostic-file-prefix`, `--diagnostic-synchronous-write` | Preserved for the worker, including when provided through response files or launch-profile arguments. Test filters, retries, collection switches, and test timeouts are not forwarded to the worker. |
+
+## Caveats
+
+- **`--no-build` uses whatever binary is on disk.** If that binary no longer advertises the
+  kind (for example it was rebuilt without the TRX extension), post-processing silently does
+  nothing — there is no candidate to elect.
+- **Merging is scoped to a single `dotnet test` invocation.** There is deliberately no
+  cross-invocation correlation. Artifacts produced by separate `dotnet test` runs are never
+  merged together.
+- **This is not VSTest artifact post-processing.** The VSTest runner has its own, unrelated
+  two-phase flow (`--artifactsProcessingMode-collect` / `--artifactsProcessingMode-postprocess`
+  with a `--testSessionCorrelationId`) and its own opt-out environment variable,
+  `VSTEST_DISABLE_ARTIFACTS_POSTPROCESSING`. That variable has **no effect on MTP runs**, and
+  `--no-artifact-post-processing` has **no effect on VSTest runs**. The two mechanisms are
+  independent.
+- **Retried tests.** `Microsoft.Testing.Extensions.Retry` re-runs only previously failed
+  tests, so each attempt's report holds a different subset of results. De-duplicating across
+  attempts is the responsibility of the merging extension, not the SDK.
+
+## Troubleshooting
+
+- **Did post-processing run?** When it starts, the SDK prints
+  `Merging compatible artifacts produced by different test applications...`. If merging
+  succeeded, the artifacts list shows a single merged path in place of the per-module inputs.
+  If the line never appears, no group met the [criteria for merging](#how-the-sdk-decides-what-to-merge)
+  (for example, only one artifact of a kind, or no installed extension advertised a
+  post-processor for it).
+- **Merge host command line and failures.** Setting `DOTNET_CLI_TEST_TRACEFILE` to a file path
+  enables SDK trace logging, which records the merge host command line and any failure details.
+  This is the fastest way to see exactly which application was relaunched and why a merge did
+  not happen.

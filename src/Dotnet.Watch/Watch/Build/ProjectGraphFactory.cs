@@ -3,11 +3,10 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Reflection;
-using System.Runtime.Versioning;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -16,9 +15,10 @@ namespace Microsoft.DotNet.Watch;
 
 internal sealed class ProjectGraphFactory(
     ImmutableArray<ProjectRepresentation> rootProjects,
-    string? virtualProjectTargetFramework,
     ImmutableDictionary<string, string> buildProperties,
-    ILogger logger)
+    ILogger logger,
+    GlobalOptions globalOptions,
+    EnvironmentOptions environmentOptions)
 {
     /// <summary>
     /// Reuse <see cref="ProjectCollection"/> with XML element caching to improve performance.
@@ -37,30 +37,25 @@ internal sealed class ProjectGraphFactory(
         useAsynchronousLogging: false,
         reuseProjectRootElementCache: true);
 
-    private readonly string _virtualProjectTargetFramework = virtualProjectTargetFramework ?? GetProductTargetFramework();
-
     public ILogger Logger => logger;
-
-    private static string GetProductTargetFramework()
-    {
-        var attribute = typeof(VirtualProjectBuilder).Assembly.GetCustomAttribute<TargetFrameworkAttribute>() ?? throw new InvalidOperationException();
-        var version = new FrameworkName(attribute.FrameworkName).Version;
-        return $"net{version.Major}.{version.Minor}";
-    }
 
     /// <summary>
     /// Tries to create a project graph by running the build evaluation phase on root projects.
     /// </summary>
-    public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, CancellationToken cancellationToken)
+    public LoadedProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, string? virtualProjectTargetFramework, CancellationToken cancellationToken)
     {
+        virtualProjectTargetFramework ??= $"net{FileBasedProgramDefaults.TargetFrameworkVersion}";
+
         var entryPoints = rootProjects.Select(p => new ProjectGraphEntryPoint(p.ProjectGraphPath, buildProperties));
         try
         {
             var stopwatch = Stopwatch.StartNew();
             var graph = new LoadedProjectGraph(
-                new ProjectGraph(entryPoints, _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, logger), cancellationToken),
+                new ProjectGraph(entryPoints, _collection, (path, globalProperties, collection) => CreateProjectInstance(path, globalProperties, collection, virtualProjectTargetFramework, logger), cancellationToken),
                 _collection,
-                logger);
+                logger,
+                globalOptions,
+                environmentOptions);
 
             logger.LogDebug("Project graph loaded in {Time}s.", stopwatch.Elapsed.TotalSeconds.ToString("0.0"));
             return graph;
@@ -108,7 +103,7 @@ internal sealed class ProjectGraphFactory(
         return null;
     }
 
-    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection, ILogger logger)
+    private ProjectInstance CreateProjectInstance(string projectPath, Dictionary<string, string> globalProperties, ProjectCollection projectCollection, string virtualProjectTargetFramework, ILogger logger)
     {
         if (!File.Exists(projectPath))
         {
@@ -123,22 +118,23 @@ internal sealed class ProjectGraphFactory(
 
             var anyError = false;
 
-            var projectInstance = VirtualProjectBuilder.CreateProjectInstance(
+            var projectInstance = VirtualProjectBuilder.CreateProjectInstanceAsync(
+                BuildService.Instance,
                 entryPointFilePath,
-                _virtualProjectTargetFramework,
-                projectCollection,
+                virtualProjectTargetFramework,
+                projectCollection.Wrap(),
                 (path, line, message) =>
                 {
                     anyError = true;
                     logger.LogError("{Path}({Line}): {Message}", path, line, message);
-                });
+                }).AsTask().GetAwaiter().GetResult();
 
             if (anyError)
             {
                 throw new ProjectCreationFailedException();
             }
 
-            return projectInstance;
+            return projectInstance.Unwrap();
         }
 
         return new ProjectInstance(

@@ -1,0 +1,20 @@
+<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
+    <!-- Keep each integration-test class serial because TemplateDiscoveryTests methods pack into
+         shared package output locations and invoke tools against class-local hives. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(TemplateEngSrcDir)Tools/Microsoft.TemplateSearch.TemplateDiscovery\Microsoft.TemplateSearch.TemplateDiscovery.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+</Project>

@@ -7,8 +7,12 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class ComputeEndpointsForReferenceStaticWebAssets : Task
+[MSBuildMultiThreadableTask]
+public class ComputeEndpointsForReferenceStaticWebAssets : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public ITaskItem[] Assets { get; set; }
 
@@ -20,9 +24,9 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
 
     public override bool Execute()
     {
-        var assets = StaticWebAsset.ToAssetDictionary(Assets);
+        var assets = StaticWebAsset.ToAssetDictionary(Assets, TaskEnvironment);
 
-        var result = CandidateEndpoints;
+        var result = new List<ITaskItem>(CandidateEndpoints.Length);
 
         var routeSegments = new List<PathTokenizer.Segment>();
         var basePathSegments = new List<PathTokenizer.Segment>();
@@ -61,17 +65,17 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
 
                     Log.LogMessage(MessageImportance.Low, "Adding endpoint {0} for asset {1} with updated route {2}.", candidateEndpoint.Route, candidateEndpoint.AssetFile, candidateEndpoint.Route);
 
-                    result[i] = candidateEndpoint.ToTaskItem();
                 }
+
+                result.Add(candidateEndpoint.ToTaskItem());
             }
             else
             {
                 Log.LogMessage(MessageImportance.Low, "Skipping endpoint {0} because the asset {1} was not found.", candidateEndpoint.Route, candidateEndpoint.AssetFile);
-                result[i] = null;
             }
         }
 
-        Endpoints = result;
+        Endpoints = result.ToArray();
 
         return true;
     }

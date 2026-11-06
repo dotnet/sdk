@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Composition;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
@@ -16,7 +17,7 @@ using Microsoft.NetCore.Analyzers.Runtime;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp)]
+    [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed partial class CSharpForwardCancellationTokenToInvocationsFixer : ForwardCancellationTokenToInvocationsFixer<ArgumentSyntax>
     {
         protected override bool TryGetInvocation(

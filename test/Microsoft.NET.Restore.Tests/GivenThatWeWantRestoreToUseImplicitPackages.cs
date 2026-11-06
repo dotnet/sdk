@@ -9,13 +9,10 @@ using NuGet.ProjectModel;
 
 namespace Microsoft.NET.Restore.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToRestoreToUseImplicitPackages : SdkTest
     {
-        public GivenThatWeWantToRestoreToUseImplicitPackages(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_uses_NetstandardLibrary20x_as_the_implicit_version_for_NetStandard20()
         {
             const string testProjectName = "NetStandard2Library";
@@ -49,7 +46,7 @@ namespace Microsoft.NET.Restore.Tests
             netStandardLibrary.Version.ToString().Should().Be("2.0.3");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_uses_MicrosoftNETCoreApp20x_as_the_implicit_version_for_NetCoreApp20()
         {
             const string testProjectName = "NetCoreApp2";

@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Win32.SafeHandles;
+#if !TARGET_WINDOWS && NET
+using System.ComponentModel;
+#endif
 #if TARGET_WINDOWS
 using Windows.Win32.System.JobObjects;
 #endif
@@ -29,6 +32,7 @@ internal class ProcessReaper : IDisposable
 {
     private readonly Process _process;
 
+#if TARGET_WINDOWS
     private sealed class WindowsProcessReaper : ProcessReaper
     {
         public WindowsProcessReaper(Process process) : base(process)
@@ -44,15 +48,11 @@ internal class ProcessReaper : IDisposable
             EnableWindowsCtrlCHandling();
         }
 
-        private static void EnableWindowsCtrlCHandling()
+        private unsafe static void EnableWindowsCtrlCHandling()
         {
-            SetConsoleCtrlHandler(null, false);
-
-            [DllImport("kernel32.dll", SetLastError = true)]
-            static extern bool SetConsoleCtrlHandler(Delegate? handler, bool add);
+            PInvoke.SetConsoleCtrlHandler(null, false);
         }
 
-#if TARGET_WINDOWS
         private SafeWaitHandle? _job;
 
         public override void NotifyProcessStarted()
@@ -124,16 +124,32 @@ internal class ProcessReaper : IDisposable
 
             base.Dispose();
         }
-#endif
     }
+#endif
 
+    // The Unix reaper is only relevant to a Unix runtime, which is always a modern .NET
+    // (NET) target. .NET Framework (net472) runs only on Windows and must not compile this
+    // code. TARGET_WINDOWS reflects the build's TargetOS, not the runtime, and is not
+    // defined when net472 is cross-compiled on a non-Windows build - hence "&& NET" here
+    // rather than relying on TARGET_WINDOWS alone.
+#if !TARGET_WINDOWS && NET
     private sealed class UnixProcessReaper : ProcessReaper
     {
-        private readonly Mutex _shutdownMutex;
+        // Coordinates Dispose (typically the main thread) with HandleProcessExit,
+        // which is raised on the AppDomain.ProcessExit thread when the CLI itself is
+        // shutting down (for example when a SIGTERM handler calls Environment.Exit).
+        //
+        // A System.Threading.Lock is used here rather than a Mutex on purpose. The prior
+        // Mutex based design disposed the mutex in Dispose while a concurrent ProcessExit
+        // callback could still call WaitOne on it, throwing "Cannot access a disposed
+        // object" during shutdown (dotnet/sdk#55096). A managed lock has no disposable
+        // wait handle to race on, and the _shuttingDown flag closes the window so a
+        // ProcessExit callback that starts after Dispose has run simply becomes a no-op.
+        private readonly Lock _shutdownLock = new();
+        private bool _shuttingDown;
 
         public UnixProcessReaper(Process process) : base(process)
         {
-            _shutdownMutex = new Mutex();
             AppDomain.CurrentDomain.ProcessExit += HandleProcessExit;
         }
 
@@ -141,60 +157,76 @@ internal class ProcessReaper : IDisposable
         {
             AppDomain.CurrentDomain.ProcessExit -= HandleProcessExit;
 
-            // If there's been a shutdown via the process exit handler,
-            // this will block the current thread so we don't race with the CLR shutdown
-            // from the signal handler.
-            _shutdownMutex.WaitOne();
-            _shutdownMutex.ReleaseMutex();
-            _shutdownMutex.Dispose();
+            // If a ProcessExit driven shutdown is already running on another thread,
+            // block here until it finishes so we don't race with the CLR shutdown from
+            // the signal handler. Setting _shuttingDown also makes any ProcessExit
+            // callback that starts after this point a no-op.
+            lock (_shutdownLock)
+            {
+                _shuttingDown = true;
+            }
 
             base.Dispose();
         }
 
         private void HandleProcessExit(object? sender, EventArgs args)
         {
-            int processId;
-            try
+            lock (_shutdownLock)
             {
-                processId = _process.Id;
+                if (_shuttingDown)
+                {
+                    // Dispose has already run (or is running on another thread); there
+                    // is nothing to do and the process state may already be torn down.
+                    return;
+                }
+
+                _shuttingDown = true;
+
+                try
+                {
+                    // If the target is still running, forward SIGTERM so it can shut
+                    // down as well. Signal returns false if the process already exited,
+                    // and throws Win32Exception if the signal could not be delivered.
+                    if (!_process.WaitForExit(0))
+                    {
+                        _process.SafeHandle.Signal(PosixSignal.SIGTERM);
+                    }
+
+                    // If SIGTERM was ignored by the target, then we'll still wait.
+                    _process.WaitForExit();
+
+                    Environment.ExitCode = _process.ExitCode;
+                }
+                catch (InvalidOperationException)
+                {
+                    // The process hasn't started yet, or no exit code is available;
+                    // nothing to signal or wait for.
+                }
+                catch (Win32Exception)
+                {
+                    // The signal could not be delivered (for example, insufficient
+                    // permissions). Don't wait on a process we couldn't signal.
+                }
             }
-            catch (InvalidOperationException)
-            {
-                // The process hasn't started yet; nothing to signal
-                return;
-            }
-
-            // Take ownership of the shutdown mutex; this will ensure that the other
-            // thread also waiting on the process to exit won't complete CLR shutdown before
-            // this one does.
-            _shutdownMutex?.WaitOne();
-
-#if NET
-            if (!_process.WaitForExit(0) && NativeMethods.Posix.kill(processId, NativeMethods.Posix.SIGTERM) != 0)
-            {
-                // Couldn't send the signal, don't wait
-                return;
-            }
-#endif
-
-            // If SIGTERM was ignored by the target, then we'll still wait
-            _process.WaitForExit();
-
-            Environment.ExitCode = _process.ExitCode;
         }
     }
+#endif
 
     /// <inheritdoc cref="ProcessReaper(Process)"/>
     public static ProcessReaper Create(Process process)
     {
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-            return new WindowsProcessReaper(process);
-        }
-        else
-        {
-            return new UnixProcessReaper(process);
-        }
+#if TARGET_WINDOWS
+        return new WindowsProcessReaper(process);
+#elif NET
+        return new UnixProcessReaper(process);
+#else
+        // .NET Framework only runs on Windows, so the Unix reaper is never relevant and
+        // the CsWin32 based Windows reaper is only compiled for Windows TargetOS builds.
+        // This branch is reached only when the net472 target is cross-compiled on a
+        // non-Windows build (not a shipping configuration); fall back to the base reaper,
+        // which still suppresses Ctrl+C so the target process can handle it.
+        return new ProcessReaper(process);
+#endif
     }
 
     /// <summary>

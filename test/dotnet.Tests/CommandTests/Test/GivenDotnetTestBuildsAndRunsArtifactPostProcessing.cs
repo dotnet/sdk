@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,21 +9,22 @@ using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnetTestBuildsAndRunsArtifactPostProcessing : SdkTest
     {
         private static object s_dataCollectorInitLock = new();
         private static string s_dataCollectorDll;
         private static string s_dataCollectorNoMergeDll;
 
-        public GivenDotnetTestBuildsAndRunsArtifactPostProcessing(ITestOutputHelper log) : base(log)
+        public GivenDotnetTestBuildsAndRunsArtifactPostProcessing()
         {
             BuildDataCollector();
             BuildDataCollectorNoMerge();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ArtifactPostProcessing_SolutionProjects(bool merge)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
@@ -45,9 +46,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             AssertOutput(result.StdOut, merge);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ArtifactPostProcessing_TestContainers(bool merge)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
@@ -74,9 +75,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             AssertOutput(result.StdOut, merge);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ArtifactPostProcessing_VSTest_TestContainers(bool merge)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("VSTestMultiProjectSolution", Guid.NewGuid().ToString())
@@ -167,7 +168,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                         .Should()
                         .Pass();
 
-                    return Directory.GetFiles(testProjectDirectory, "AttachmentProcessorDataCollector.dll", SearchOption.AllDirectories).Single(x => x.Contains("bin"));
+                    // Avoid hitting random paths with directories that include "bin", e.g. 4binkypz.fkl
+                    return Directory.GetFiles(Path.Combine(testProjectDirectory, "bin"), "AttachmentProcessorDataCollector.dll", SearchOption.AllDirectories).Single(x => x.Contains("bin"));
                 });
 
         private void BuildDataCollectorNoMerge()
@@ -182,7 +184,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                             .Should()
                             .Pass();
 
-                return Directory.GetFiles(testProjectDirectory, "AttachmentProcessorDataCollector.dll", SearchOption.AllDirectories).Single(x => x.Contains("bin"));
+                // Avoid hitting random paths with directories that include "bin", e.g. 4binkypz.fkl
+                return Directory.GetFiles(Path.Combine(testProjectDirectory, "bin"), "AttachmentProcessorDataCollector.dll", SearchOption.AllDirectories).Single(x => x.Contains("bin"));
             });
 
         private static string GetRunsetting(string directory)

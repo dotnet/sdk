@@ -9,7 +9,7 @@ namespace Analyzer.Utilities
     internal static partial class EditorConfigOptionNames
     {
         // =============================================================================================================
-        // NOTE: Keep this file in sync with documentation at '<%REPO_ROOT%>\docs\Analyzer Configuration.md'
+        // NOTE: Keep this file in sync with documentation at '<%REPO_ROOT%>\docs\analyzer-configuration.md'
         // =============================================================================================================
 
         /// <summary>

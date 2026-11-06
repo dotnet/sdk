@@ -1,13 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.ConflictResolution
 {
-    public class ResolvePackageFileConflicts : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class ResolvePackageFileConflicts : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         private HashSet<ITaskItem?> referenceConflicts = new();
         private HashSet<ITaskItem?> analyzerConflicts = new();
         private HashSet<ITaskItem?> copyLocalConflicts = new();
@@ -69,7 +73,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
                 compilePlatformItems = TargetFrameworkDirectories.SelectMany(tfd =>
                 {
-                    return frameworkListReader.GetConflictItems(Path.Combine(tfd.ItemSpec, "RedistList", "FrameworkList.xml"), log);
+                    AbsolutePath frameworkListPath = TaskEnvironment.GetAbsolutePath(Path.Combine(tfd.ItemSpec, "RedistList", "FrameworkList.xml"));
+                    return frameworkListReader.GetConflictItems(frameworkListPath, log);
                 }).ToArray();
             }
 
@@ -128,7 +133,17 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             // we only commit the platform items since its not a conflict if other items share the same filename.
             using (var platformConflictScope = new ConflictResolver<ConflictItem>(packageRanks, packageOverrides, log))
             {
-                var platformItems = PlatformManifests?.SelectMany(pm => PlatformManifestReader.LoadConflictItems(pm.ItemSpec, log)) ?? Enumerable.Empty<ConflictItem>();
+                var platformItems = PlatformManifests?.SelectMany(pm =>
+                {
+                    if (string.IsNullOrEmpty(pm.ItemSpec))
+                    {
+                        log.LogError(string.Format(CultureInfo.CurrentCulture, Strings.CouldNotLoadPlatformManifest, pm.ItemSpec));
+                        return Enumerable.Empty<ConflictItem>();
+                    }
+
+                    AbsolutePath manifestPath = TaskEnvironment.GetAbsolutePath(pm.ItemSpec);
+                    return PlatformManifestReader.LoadConflictItems(manifestPath, log);
+                }) ?? Enumerable.Empty<ConflictItem>();
 
                 if (compilePlatformItems != null)
                 {
@@ -227,7 +242,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
         private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[]? items, ConflictItemType itemType)
         {
-            return (items != null) ? items.Select(i => new ConflictItem(i, itemType)) : Enumerable.Empty<ConflictItem>();
+            return (items != null) ? items.Select(i => new ConflictItem(i, itemType, TaskEnvironment)) : Enumerable.Empty<ConflictItem>();
         }
 
         private void HandleCompileConflict(ConflictItem winner, ConflictItem loser)

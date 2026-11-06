@@ -31,7 +31,7 @@ namespace Test.Utilities
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static Task VerifyCodeFixAsync(string source, string fixedSource)
@@ -49,7 +49,7 @@ namespace Test.Utilities
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -7,7 +7,7 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.ProjectTools;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 
@@ -132,13 +132,10 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
                     CleanFileBasedAppArtifactsCommandDefinition.AutomaticOptionName,
                 ]),
                 UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
                 CreateNoWindow = true,
             };
 
-            Process.Start(startInfo);
+            _ = Process.StartAndForget(startInfo);
         }
     }
 

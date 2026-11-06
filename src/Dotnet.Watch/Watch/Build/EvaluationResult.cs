@@ -14,12 +14,11 @@ internal sealed class EvaluationResult(
     LoadedProjectGraph projectGraph,
     IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> restoredProjectInstances,
     IReadOnlyDictionary<string, FileItem> files,
-    IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests,
-    ProjectBuildManager buildManager)
+    IReadOnlyDictionary<ProjectInstanceId, StaticWebAssetsManifest> staticWebAssetsManifests)
 {
     public IReadOnlyDictionary<string, FileItem> Files => files;
     public LoadedProjectGraph ProjectGraph => projectGraph;
-    public ProjectBuildManager BuildManager => buildManager;
+    public ProjectBuildManager BuildManager => projectGraph.BuildManager;
 
     public readonly FilePathExclusions ItemExclusions
         = projectGraph != null ? FilePathExclusions.Create(projectGraph.Graph) : FilePathExclusions.Empty;
@@ -39,13 +38,11 @@ internal sealed class EvaluationResult(
             includeSubdirectories: true);
     }
 
-    public static ImmutableDictionary<string, string> GetGlobalBuildProperties(IEnumerable<string> buildArguments, EnvironmentOptions environmentOptions)
+    public static ImmutableDictionary<string, string> GetGlobalBuildProperties(IEnumerable<string> buildArguments)
     {
         // See https://github.com/dotnet/project-system/blob/main/docs/well-known-project-properties.md
 
-        return BuildUtilities.ParseBuildProperties(buildArguments)
-            .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value)
-            .SetItem(PropertyNames.DotNetWatchBuild, "true")
+        return BuildUtilities.ParseBuildPropertiesToImmutableDictionary(buildArguments)
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
             .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
@@ -70,14 +67,11 @@ internal sealed class EvaluationResult(
         var projectLoadingStopwatch = Stopwatch.StartNew();
         var stopwatch = Stopwatch.StartNew();
 
-        var buildReporter = new BuildReporter(projectGraph.Logger, globalOptions, environmentOptions);
-        var buildManager = new ProjectBuildManager(projectGraph.ProjectCollection, buildReporter);
-
         if (restore)
         {
             var restoreRequests = projectGraph.Graph.GraphRoots.Select(node => BuildRequest.Create(node.ProjectInstance, [TargetNames.Restore])).ToArray();
 
-            if (await buildManager.BuildAsync(
+            if (await projectGraph.BuildManager.BuildAsync(
                 restoreRequests,
                 onFailure: failedInstance =>
                 {
@@ -99,16 +93,14 @@ internal sealed class EvaluationResult(
 
         // Capture the snapshot of original project instances after Restore target has been run.
         // These instances can be used to evaluate additional targets (e.g. deployment) if needed.
-        var restoredProjectInstances = projectGraph.Graph.ProjectNodes.ToDictionary(
-            keySelector: node => node.ProjectInstance.GetId(),
-            elementSelector: node => node.ProjectInstance.DeepCopy());
+        var restoredProjectInstances = projectGraph.GetProjectInstanceMap(deepCopy: true);
 
         // Update the project instances of the graph with design-time build results.
         // The properties and items set by DTB will be used by the Workspace to create Roslyn representation of projects.
 
         var buildRequests = CreateDesignTimeBuildRequests(projectGraph.Graph, mainProjectTargetFramework, environmentOptions.SuppressHandlingStaticWebAssets).ToImmutableArray();
 
-        var buildResults = await buildManager.BuildAsync(
+        var buildResults = await projectGraph.BuildManager.BuildAsync(
             buildRequests,
             onFailure: failedInstance =>
             {
@@ -132,7 +124,7 @@ internal sealed class EvaluationResult(
 
         BuildReporter.ReportWatchedFiles(logger, fileItems);
 
-        return new EvaluationResult(projectGraph, restoredProjectInstances, fileItems, staticWebAssetManifests, buildManager);
+        return new EvaluationResult(projectGraph, restoredProjectInstances, fileItems, staticWebAssetManifests);
     }
 
     // internal for testing
@@ -187,13 +179,9 @@ internal sealed class EvaluationResult(
             {
                 staticWebAssetManifestsBuilder.Add(projectInstance.GetId(), manifest);
 
-                // watch asset files, but not bundle files as they are regenarated when scoped CSS files are updated:
-                foreach (var (relativeUrl, filePath) in manifest.UrlToPathMap)
+                foreach (var (filePath, relativeUrl) in manifest.GetFilesToWatch())
                 {
-                    if (!StaticWebAsset.IsCompressedAssetFile(filePath) && !StaticWebAsset.IsScopedCssBundleFile(filePath))
-                    {
-                        AddFile(filePath, staticWebAssetRelativeUrl: relativeUrl);
-                    }
+                    AddFile(filePath, staticWebAssetRelativeUrl: relativeUrl);
                 }
             }
 

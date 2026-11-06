@@ -30,6 +30,11 @@ namespace Microsoft.DotNet.Build.Tasks
         public bool IncludeBaseDirectory { get; set; }
 
         /// <summary>
+        /// Whether to normalize archive ownership for source-build artifacts.
+        /// </summary>
+        public bool NormalizeSourceBuildOwnership { get; set; }
+
+        /// <summary>
         /// An item group of regular expressions for content to exclude from the archive.
         /// </summary>
         public ITaskItem[] ExcludePatterns { get; set; }
@@ -108,7 +113,14 @@ namespace Microsoft.DotNet.Build.Tasks
             }
         }
 
-        private string GetDestinationArchive() => $"-czf {DestinationArchive}";
+        private string GetDestinationArchive()
+        {
+            string ownershipArguments = NormalizeSourceBuildOwnership
+                ? "--numeric-owner --owner=2001 --group=2001 "
+                : string.Empty;
+
+            return $"{ownershipArguments}-czf {DestinationArchive}";
+        }
 
         private string GetExcludes()
         {

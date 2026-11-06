@@ -18,7 +18,7 @@ public class AppBaseDllCommandResolver : ICommandResolver
         }
         if (commandResolverArguments.CommandName.EndsWith(FileNameSuffixes.DotNet.DynamicLib))
         {
-            var localPath = Path.Combine(AppContext.BaseDirectory,
+            var localPath = Path.Combine(SdkPaths.SdkDirectory,
                 commandResolverArguments.CommandName);
             if (File.Exists(localPath))
             {

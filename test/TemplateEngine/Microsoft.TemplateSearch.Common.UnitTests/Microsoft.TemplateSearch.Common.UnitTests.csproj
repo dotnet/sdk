@@ -1,0 +1,28 @@
+<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <IsTestProject>true</IsTestProject>
+    <!-- Test classes use separate virtualized environments, while methods within each class share
+         an EnvironmentSettingsHelper and, in some cases, mutable search-provider fixtures. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FakeItEasy" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateSearch.Common\Microsoft.TemplateSearch.Common.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.Mocks\Microsoft.TemplateEngine.Mocks.csproj" />
+    <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="NuGetTemplateSearchInfoWithInvalidData.json;
+                  NuGetTemplateSearchInfo.json;
+                  NuGetTemplateSearchInfo_v2.json"
+          CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

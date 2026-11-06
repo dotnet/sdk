@@ -1,8 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -10,9 +15,10 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[TestClass]
 public class ComputeEndpointsForReferenceStaticWebAssetsTest
 {
-    [Fact]
+    [TestMethod]
     public void IncludesEndpointsForAssetsFromCurrentProject()
     {
         var errorMessages = new List<string>();
@@ -37,7 +43,7 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
         task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdatesLabelAsNecessary_ForChosenEndpoints()
     {
         var errorMessages = new List<string>();
@@ -66,7 +72,7 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
         properties[0].Value.Should().Be("base/label-value");
     }
 
-    [Fact]
+    [TestMethod]
     public void FiltersOutEndpointsForAssetsNotFound()
     {
         var errorMessages = new List<string>();
@@ -89,12 +95,58 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
 
         // Assert
         result.Should().Be(true);
-        task.Endpoints.Where(e => e != null).Should().ContainSingle();
+        task.Endpoints.Should().ContainSingle();
         task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
         task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
     }
 
-    [Fact]
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void DoesNotModifyCandidateEndpoints(bool alreadyPrefixed)
+    {
+        var route = alreadyPrefixed ? "base/candidate.js" : "candidate.js";
+        var matching = CreateCandidateEndpoint(route, Path.Combine("wwwroot", "candidate.js"), addLabel: true);
+        var missing = CreateCandidateEndpoint("missing.js", Path.Combine("wwwroot", "missing.js"));
+        ITaskItem[] candidates = [missing, matching, missing];
+        var originalItems = candidates.ToArray();
+        var originalProperties = matching.GetMetadata("EndpointProperties");
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = new Mock<IBuildEngine>().Object,
+            Assets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All")],
+            CandidateEndpoints = candidates
+        };
+
+        task.Execute().Should().BeTrue();
+
+        candidates.Should().Equal(originalItems);
+        matching.ItemSpec.Should().Be(route);
+        matching.GetMetadata("EndpointProperties").Should().Be(originalProperties);
+        missing.ItemSpec.Should().Be("missing.js");
+        task.Endpoints.Should().ContainSingle();
+        task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
+    }
+
+    [TestMethod]
+    public void ReturnsEmptyEndpointsWhenNoAssetsMatch()
+    {
+        ITaskItem[] candidates = [CreateCandidateEndpoint("missing.js", Path.Combine("wwwroot", "missing.js"))];
+        var original = candidates[0];
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = new Mock<IBuildEngine>().Object,
+            Assets = [],
+            CandidateEndpoints = candidates
+        };
+
+        task.Execute().Should().BeTrue();
+
+        task.Endpoints.Should().BeEmpty();
+        candidates.Should().Equal(original);
+    }
+
+    [TestMethod]
     public void AppliesBasePathWhenRouteStartsWithBasePathButNotAsPathSegment()
     {
         // This test verifies the fix for a bug where routes like "App1.styles.css"
@@ -133,7 +185,7 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
         task.Endpoints[0].ItemSpec.Should().Be("App1/App1.styles.css");
     }
 
-    [Fact]
+    [TestMethod]
     public void SkipsBasePathApplicationWhenRouteAlreadyHasBasePathAsPathSegment()
     {
         // This test verifies that routes already starting with "BasePath/" are correctly skipped

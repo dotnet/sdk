@@ -40,6 +40,19 @@ namespace Microsoft.DotNet.Cli.Commands;
 
 internal sealed class DotNetCommandDefinition : RootCommand
 {
+    // RootCommand names the root command after the running executable, falling back to the
+    // "System.CommandLine.ExecutableName" AppContext value (emitted by the System.CommandLine build
+    // targets) and then to "app". Ensure the fallback is "dotnet" when the host provides neither,
+    // so help usage lines and completion scripts never read "app <command>".
+    static DotNetCommandDefinition()
+    {
+        const string ExecutableNameKey = "System.CommandLine.ExecutableName";
+        if (AppContext.GetData(ExecutableNameKey) is not string { Length: > 0 })
+        {
+            AppContext.SetData(ExecutableNameKey, "dotnet");
+        }
+    }
+
     public readonly Argument<string> DotnetSubCommand = new("subcommand")
     {
         Arity = ArgumentArity.ZeroOrOne,
@@ -58,6 +71,14 @@ internal sealed class DotNetCommandDefinition : RootCommand
         Arity = ArgumentArity.Zero
     };
 
+    public readonly Option<bool> CliSchemaOption = new("--cli-schema")
+    {
+        Description = CommandDefinitionStrings.SDKSchemaCommandDefinition,
+        Arity = ArgumentArity.Zero,
+        Recursive = true,
+        Hidden = true,
+    };
+
     public readonly Option<bool> ListSdksOption = new("--list-sdks")
     {
         Arity = ArgumentArity.Zero
@@ -66,14 +87,6 @@ internal sealed class DotNetCommandDefinition : RootCommand
     public readonly Option<bool> ListRuntimesOption = new("--list-runtimes")
     {
         Arity = ArgumentArity.Zero
-    };
-
-    public readonly Option<bool> CliSchemaOption = new("--cli-schema")
-    {
-        Description = CommandDefinitionStrings.SDKSchemaCommandDefinition,
-        Arity = ArgumentArity.Zero,
-        Recursive = true,
-        Hidden = true,
     };
 
     public readonly AddCommandDefinition AddCommand;
@@ -121,9 +134,11 @@ internal sealed class DotNetCommandDefinition : RootCommand
         Options.Add(DiagOption);
         Options.Add(VersionOption);
         Options.Add(InfoOption);
+        Options.Add(CliSchemaOption);
+
+        // Host-handled options. Only defined to be shown in help.
         Options.Add(ListSdksOption);
         Options.Add(ListRuntimesOption);
-        Options.Add(CliSchemaOption);
 
         Subcommands.Add(AddCommand = new());
         Subcommands.Add(BuildCommand = new());

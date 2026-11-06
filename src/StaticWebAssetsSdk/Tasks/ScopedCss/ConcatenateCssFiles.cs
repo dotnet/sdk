@@ -10,7 +10,8 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class ConcatenateCssFiles : Task
+[MSBuildMultiThreadableTask]
+public class ConcatenateCssFiles : Task, IMultiThreadableTask
 {
     private static readonly char[] _separator = ['/'];
 
@@ -28,6 +29,8 @@ public class ConcatenateCssFiles : Task
 
     [Required]
     public string OutputFile { get; set; }
+
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
 
     public override bool Execute()
     {
@@ -84,7 +87,7 @@ public class ConcatenateCssFiles : Task
 #else
             builder.AppendLine(CultureInfo.InvariantCulture, $"/* {NormalizePath(current.GetMetadata("BasePath"))}/{NormalizePath(current.GetMetadata("RelativePath"))} */");
 #endif
-            foreach (var line in File.ReadLines(current.GetMetadata("FullPath")))
+            foreach (var line in File.ReadLines(TaskEnvironment.GetAbsolutePath(current.ItemSpec)))
             {
                 builder.AppendLine(line);
             }
@@ -92,10 +95,11 @@ public class ConcatenateCssFiles : Task
 
         var content = builder.ToString();
 
-        if (!File.Exists(OutputFile) || !SameContent(content, OutputFile))
+        string outputFile = string.IsNullOrWhiteSpace(OutputFile) ? OutputFile : TaskEnvironment.GetAbsolutePath(OutputFile);
+        if (!File.Exists(outputFile) || !SameContent(content, outputFile))
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(OutputFile));
-            File.WriteAllText(OutputFile, content);
+            Directory.CreateDirectory(Path.GetDirectoryName(outputFile));
+            File.WriteAllText(outputFile, content);
         }
 
         return !Log.HasLoggedErrors;

@@ -5,6 +5,9 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers.LocalDaemons;
 
+/// <summary>
+/// Writes built images to a local archive instead of loading them into a container runtime.
+/// </summary>
 internal class ArchiveFileRegistry : ILocalRegistry
 {
     public string ArchiveOutputPath { get; private set; }
@@ -18,7 +21,36 @@ internal class ArchiveFileRegistry : ILocalRegistry
         DestinationImageReference destinationReference, CancellationToken cancellationToken,
         Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc)
     {
-        var fullPath = Path.GetFullPath(ArchiveOutputPath);
+        var fullPath = GetArchiveOutputPath(ArchiveOutputPath, destinationReference.Repository);
+
+        // create parent directory if required.
+        var parentDirectory = Path.GetDirectoryName(fullPath);
+        if (parentDirectory != null && !Directory.Exists(parentDirectory))
+        {
+            Directory.CreateDirectory(parentDirectory);
+        }
+
+        ArchiveOutputPath = fullPath;
+        string temporaryPath = $"{fullPath}.{Guid.NewGuid():N}.tmp";
+        try
+        {
+            await using (var fileStream = File.Create(temporaryPath))
+            {
+                // Call the delegate to write the image to the stream
+                await writeStreamFunc(image, sourceReference, destinationReference, fileStream, cancellationToken).ConfigureAwait(false);
+            }
+
+            File.Move(temporaryPath, fullPath, overwrite: true);
+        }
+        finally
+        {
+            File.Delete(temporaryPath);
+        }
+    }
+
+    internal static string GetArchiveOutputPath(string archiveOutputPath, string repository)
+    {
+        var fullPath = Path.GetFullPath(archiveOutputPath);
 
         var directorySeparatorChar = Path.DirectorySeparatorChar;
 
@@ -31,37 +63,30 @@ internal class ArchiveFileRegistry : ILocalRegistry
         // pointing to a directory? -> append default name
         if (fullPath.EndsWith(directorySeparatorChar))
         {
-            fullPath = Path.Combine(fullPath, destinationReference.Repository + ".tar.gz");
+            fullPath = Path.Combine(fullPath, repository + ".tar.gz");
         }
 
-        // create parent directory if required.
-        var parentDirectory = Path.GetDirectoryName(fullPath);
-        if (parentDirectory != null && !Directory.Exists(parentDirectory))
-        {
-            Directory.CreateDirectory(parentDirectory);
-        }
-
-        ArchiveOutputPath = fullPath;
-        await using var fileStream = File.Create(fullPath);
-
-        // Call the delegate to write the image to the stream
-        await writeStreamFunc(image, sourceReference, destinationReference, fileStream, cancellationToken).ConfigureAwait(false);
+        return fullPath;
     }
 
+    /// <inheritdoc />
     public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         CancellationToken cancellationToken) 
         => await LoadAsync(image, sourceReference, destinationReference, cancellationToken,
-            DockerCli.WriteImageToStreamAsync);
+            ContainerArchive.WriteImageToStreamAsync);
 
+    /// <inheritdoc />
     public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
         CancellationToken cancellationToken) 
         => await LoadAsync(multiArchImage, sourceReference, destinationReference, cancellationToken,
-            DockerCli.WriteMultiArchOciImageToStreamAsync);
+            ContainerArchive.WriteMultiArchOciImageToStreamAsync);
 
+    /// <inheritdoc />
     public Task<bool> IsAvailableAsync(CancellationToken cancellationToken) => Task.FromResult(true);
 
+    /// <inheritdoc />
     public bool IsAvailable() => true;
 
     public override string ToString()

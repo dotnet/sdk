@@ -4,9 +4,10 @@
 
 namespace Microsoft.DotNet.Cli.Package.Remove.Tests;
 
-public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public sealed class GivenDotnetPackageRemove : SdkTest
 {
-    [Fact]
+    [TestMethod]
     public void WhenPackageIsRemovedWithoutProjectArgument()
     {
         var projectDirectory = TestAssetsManager
@@ -28,7 +29,7 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
             .And.NotHaveStdErr();
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenPackageIsRemovedWithProjectOption()
     {
         var projectDirectory = TestAssetsManager
@@ -50,7 +51,7 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
             .And.NotHaveStdErr();
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenNoPackageIsPassedCommandFails()
     {
         var projectDirectory = TestAssetsManager
@@ -65,7 +66,7 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
             .Fail();
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenMultiplePackagesArePassedCommandFails()
     {
         var projectDirectory = TestAssetsManager

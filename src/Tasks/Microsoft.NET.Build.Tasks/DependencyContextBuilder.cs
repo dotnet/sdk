@@ -263,7 +263,7 @@ namespace Microsoft.NET.Build.Tasks
             return this;
         }
 
-        public DependencyContext Build((string Path, string DestinationSubPath)[] userRuntimeAssemblies = null)
+        public DependencyContext Build((AbsolutePath Path, string DestinationSubPath)[] userRuntimeAssemblies = null)
         {
             CalculateExcludedLibraries();
 
@@ -535,9 +535,12 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+            var projectLibraryName = GetUniqueLibraryName(_mainProjectInfo.Name, "Project");
+            _usedLibraryNames.Add(projectLibraryName);
+
             return new ModifiableRuntimeLibrary(new RuntimeLibrary(
                 type: "project",
-                name: GetUniqueLibraryName(_mainProjectInfo.Name, "Project"),
+                name: projectLibraryName,
                 version: _mainProjectInfo.Version,
                 hash: string.Empty,
                 runtimeAssemblyGroups: runtimeAssemblyGroups,
@@ -623,7 +626,7 @@ namespace Microsoft.NET.Build.Tasks
             });
         }
 
-        private ModifiableRuntimeLibrary GetRuntimeLibrary(DependencyLibrary library, (string Path, string DestinationSubPath)[] userRuntimeAssemblies)
+        private ModifiableRuntimeLibrary GetRuntimeLibrary(DependencyLibrary library, (AbsolutePath Path, string DestinationSubPath)[] userRuntimeAssemblies)
         {
             GetCommonLibraryProperties(library,
                 out string hash,
@@ -646,11 +649,13 @@ namespace Microsoft.NET.Build.Tasks
             if (library.Type == "project" && !(referenceProjectInfo is UnreferencedProjectInfo))
             {
                 var fileName = Path.GetFileNameWithoutExtension(library.Path);
-                (string Path, string DestinationSubPath) assembly = userRuntimeAssemblies is not null
+                (AbsolutePath Path, string DestinationSubPath) assembly = userRuntimeAssemblies is not null
                     ? userRuntimeAssemblies.FirstOrDefault(p => Path.GetFileNameWithoutExtension(p.Path).Equals(fileName))
                     : default;
+                string mainProjectDirectory = Path.GetDirectoryName(_mainProjectInfo.ProjectPath);
+                string libraryPath = !string.IsNullOrWhiteSpace(library.Path) ? Path.Combine(mainProjectDirectory, library.Path) : null;
                 var runtimeFile = !string.IsNullOrWhiteSpace(assembly.Path) && File.Exists(assembly.Path) ? CreateRuntimeFile(referenceProjectInfo.OutputName, assembly.Path, assembly.DestinationSubPath) :
-                                  !string.IsNullOrWhiteSpace(library.Path) && File.Exists(library.Path) ? CreateRuntimeFile(referenceProjectInfo.OutputName, library.Path) :
+                                  libraryPath != null && File.Exists(libraryPath) ? CreateRuntimeFile(referenceProjectInfo.OutputName, libraryPath) :
                                   new RuntimeFile(referenceProjectInfo.OutputName, string.Empty, string.Empty);
                 runtimeAssemblyGroups.Add(new RuntimeAssetGroup(string.Empty, [runtimeFile]));
 
@@ -832,6 +837,9 @@ namespace Microsoft.NET.Build.Tasks
                 return new RuntimeFile(path, null, null, localPath);
             }
         }
+
+        private RuntimeFile CreateRuntimeFile(string path, AbsolutePath fullPath, string localPath = null)
+            => CreateRuntimeFile(path, fullPath.Value, localPath);
 
         private static IEnumerable<ResourceAssembly> CreateResourceAssemblies(IEnumerable<ResourceAssemblyInfo> resourceAssemblyInfos)
         {

@@ -51,6 +51,7 @@ internal class BuildEvaluator
             _context.BuildArguments,
             _context.ProcessRunner,
             _context.BuildLogger,
+            _context.Options,
             _context.EnvironmentOptions);
     }
 
@@ -86,6 +87,12 @@ internal class BuildEvaluator
         {
             arguments.Add("--framework");
             arguments.Add(MainProjectOptions.TargetFramework);
+        }
+
+        if (MainProjectOptions.Device != null)
+        {
+            arguments.Add("--device");
+            arguments.Add(MainProjectOptions.Device);
         }
 
         arguments.AddRange(MainProjectOptions.CommandArguments);

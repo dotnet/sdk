@@ -4,6 +4,7 @@
 using System.Collections.ObjectModel;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.SdkVulnerability;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
@@ -34,14 +35,28 @@ public class RestoringCommand : MSBuildForwardingApp
     public RestoringCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
-        string? msbuildPath = null,
-        string? userProfileDir = null,
-        bool? advertiseWorkloadUpdates = null)
-        : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath)
+        string? msbuildPath,
+        string? userProfileDir,
+        bool? advertiseWorkloadUpdates,
+        CommandServices services)
+        : this(msbuildArgs, noRestore, msbuildPath, userProfileDir, advertiseWorkloadUpdates, services, Directory.GetCurrentDirectory())
+    {
+    }
+
+    internal RestoringCommand(
+        MSBuildArgs msbuildArgs,
+        bool noRestore,
+        string? msbuildPath,
+        string? userProfileDir,
+        bool? advertiseWorkloadUpdates,
+        CommandServices services,
+        string workingDirectory)
+        : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath, services)
     {
         userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
-        Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
-        SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
+        Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir, workingDirectory));
+        SdkVulnerabilityNotifier.BackgroundUpdateCacheIfNeeded();
+        SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath, Services);
         AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.OtherMSBuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
         if (!noRestore)
@@ -99,7 +114,8 @@ public class RestoringCommand : MSBuildForwardingApp
     private static MSBuildForwardingApp? GetSeparateRestoreCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
-        string? msbuildPath)
+        string? msbuildPath,
+        CommandServices services)
     {
         // if the user asked for no restores, or there are no properties that would trigger a separate restore,
         // then we don't need to create a separate restore command. This is mututally exclusive with the similar
@@ -128,7 +144,7 @@ public class RestoringCommand : MSBuildForwardingApp
         {
             restoreMSBuildArgs = restoreMSBuildArgs.CloneWithVerbosity(verbosity);
         }
-        return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath);
+        return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath, services);
     }
 
     private static bool HasPropertyToExcludeFromRestore(MSBuildArgs msbuildArgs)
@@ -225,19 +241,27 @@ public class RestoringCommand : MSBuildForwardingApp
     private static bool TriggersSilentSeparateRestore(string argument)
         => FlagsThatTriggerSilentSeparateRestore.Any(p => argument.StartsWith(p, StringComparison.OrdinalIgnoreCase));
 
-    public override int Execute()
+    public override int Execute() => Execute(workingDirectory: null);
+
+    internal override int ExecuteOutOfProc(string workingDirectory) => Execute(workingDirectory);
+
+    private int Execute(string? workingDirectory)
     {
         int exitCode;
         if (SeparateRestoreCommand != null)
         {
-            exitCode = SeparateRestoreCommand.Execute();
+            exitCode = workingDirectory is null
+                ? SeparateRestoreCommand.Execute()
+                : SeparateRestoreCommand.ExecuteOutOfProc(workingDirectory);
             if (exitCode != 0)
             {
                 return exitCode;
             }
         }
 
-        exitCode = base.Execute();
+        exitCode = workingDirectory is null
+            ? base.Execute()
+            : base.ExecuteOutOfProc(workingDirectory);
         if (AdvertiseWorkloadUpdates)
         {
             WorkloadManifestUpdater.AdvertiseWorkloadUpdates();

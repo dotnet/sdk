@@ -4,7 +4,6 @@
 using System.Collections.Immutable;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -83,10 +82,9 @@ namespace Microsoft.NetCore.Analyzers.Tasks
                                 }
                             }
                         }
-                        else if (ICollectionExpressionOperationWrapper.IsInstance(argument))
+                        else if (argument is ICollectionExpressionOperation collectionExpression)
                         {
                             // Check each element in the collection expression
-                            var collectionExpression = ICollectionExpressionOperationWrapper.FromOperation(argument);
                             foreach (var element in collectionExpression.Elements)
                             {
                                 taskCount++;

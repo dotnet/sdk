@@ -1,0 +1,46 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Build.Construction;
+using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Commands.Package;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.FileBasedPrograms;
+using NuGet.CommandLine.XPlat;
+
+namespace Microsoft.DotNet.Cli.Commands.NuGet;
+
+internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
+{
+    public static NuGetVirtualProjectBuilder Instance => field ??= new();
+
+    private NuGetVirtualProjectBuilder() { }
+
+    public bool IsValidEntryPointPath(string entryPointFilePath) => VirtualProjectBuilder.IsValidEntryPointPath(entryPointFilePath);
+
+    public string GetVirtualProjectPath(string entryPointFilePath) => VirtualProjectBuilder.GetVirtualProjectPath(entryPointFilePath);
+
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Can't change the annotation on the NuGet-owned interface definition.")]
+    public ProjectRootElement CreateProjectRootElement(string entryPointFilePath, ProjectCollection projectCollection)
+    {
+        if (!Path.IsPathFullyQualified(entryPointFilePath))
+        {
+            throw new ArgumentException($"'{entryPointFilePath}' is not a fully qualified path.", paramName: nameof(entryPointFilePath));
+        }
+
+        var builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFilePath, VirtualProjectBuildingCommand.TargetFramework);
+
+        var result = builder.CreateProjectInstanceAsync(
+            projectCollection.Wrap(),
+            ErrorReporters.IgnoringReporter).AsTask().GetAwaiter().GetResult();
+
+        return result.ProjectRootElement.Unwrap();
+    }
+
+    [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Can't change the annotation on the NuGet-owned interface definition.")]
+    public void SaveProject(string entryPointFilePath, ProjectRootElement projectRootElement)
+    {
+        VirtualProjectPackageReflector.ReflectChangesToDirectives(projectRootElement, entryPointFilePath);
+    }
+}

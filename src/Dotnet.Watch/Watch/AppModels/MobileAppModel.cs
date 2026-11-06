@@ -16,15 +16,20 @@ internal sealed class MobileAppModel(DotNetWatchContext context, ProjectGraphNod
     // passed via `dotnet run -e` as @(RuntimeEnvironmentVariable) items.
     public override async ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
     {
-        ImmutableArray<(HotReloadClient client, string name)> clients;
+        ImmutableArray<HotReloadClient> clients;
         if (IsManagedAgentSupported(project, clientLogger))
         {
+            var keyDirectory = Path.Combine(
+                project.ProjectInstance.GetIntermediateOutputDirectory()
+                    ?? throw new InvalidOperationException("The mobile project must have an intermediate output directory."),
+                SharedSecretBuildOutputs.DirectoryName);
             var transport = await WebSocketClientTransport.CreateAsync(
                 context.EnvironmentOptions.AgentWebSocketConfig,
+                new SharedSecretBuildOutputs(keyDirectory, SharedSecretBuildOutputs.WebSocketPublicKeyFileName, SharedSecretBuildOutputs.WebSocketPrivateKeyFileName),
                 clientLogger,
                 cancellationToken);
 
-            clients = [(new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), handlesStaticAssetUpdates: true, transport), "")];
+            clients = [new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(project), transport, handlesStaticAssetUpdates: true, hasRemoteAgent: true)];
         }
         else
         {

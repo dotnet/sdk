@@ -43,7 +43,7 @@ internal sealed class AspireHostLauncher(
             launchProfileName: noLaunchProfile ? Optional<string?>.NoValue : launchProfile);
     }
 
-    internal ProjectOptions GetProjectOptions()
+    protected override ProjectOptions GetProjectOptions()
     {
         var commandArguments = new List<string>()
         {
@@ -74,6 +74,8 @@ internal sealed class AspireHostLauncher(
             LaunchEnvironmentVariables = [],
         };
     }
+
+    internal ProjectOptions GetHostProjectOptions() => GetProjectOptions();
 
     public override async Task<int> LaunchAsync(CancellationToken cancellationToken)
     {

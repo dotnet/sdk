@@ -38,6 +38,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Used to hash file inputs for RazorGenerate -->
     <_RazorGenerateInputsHash></_RazorGenerateInputsHash>
     <_RazorGenerateInputsHashFile>$(IntermediateOutputPath)$(MSBuildProjectName).RazorCoreGenerate.cache</_RazorGenerateInputsHashFile>
+
+    <!-- Opt-in: route the Razor tool's discover and generate steps through the hosted source
+         generator. Toggle with /p:_RazorToolUseSourceGenerator=true or a project property; the
+         tasks forward it to the tool's use-source-generator switch. -->
+    <_RazorToolUseSourceGenerator Condition="'$(_RazorToolUseSourceGenerator)' == ''">false</_RazorToolUseSourceGenerator>
   </PropertyGroup>
 
   <!--
@@ -108,6 +113,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Extensions="@(ResolvedRazorExtension)"
       Assemblies="@(RazorReferencePath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
+      UseSourceGenerator="$(_RazorToolUseSourceGenerator)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)">
       <Output
         TaskParameter="TagHelperManifest"
@@ -164,6 +170,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       Sources="@(RazorGenerateWithTargetPath)"
       ProjectRoot="$(MSBuildProjectDirectory)"
       TagHelperManifest="$(_RazorTagHelperOutputCache)"
+      Assemblies="@(RazorReferencePath)"
+      UseSourceGenerator="$(_RazorToolUseSourceGenerator)"
       SupportLocalizedComponentNames="$(SupportLocalizedComponentNames)" />
 
     <ItemGroup>

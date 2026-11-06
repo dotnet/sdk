@@ -8,11 +8,15 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class IPCTests
 {
-    [Fact]
+    public TestContext TestContext { get; set; } = null!;
+
+    [TestMethod]
     public async Task SingleConnectionNamedPipeServer_MultipleConnection_Fails()
     {
+        var cancellationToken = TestContext.CancellationToken;
         string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
         List<NamedPipeServer> openedPipes = [];
@@ -30,10 +34,10 @@ public class IPCTests
                             pipeName,
                             (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
                             maxNumberOfServerInstances: 1,
-                            CancellationToken.None,
+                            cancellationToken,
                             skipUnknownMessages: false);
 
-                        await singleConnectionNamedPipeServer.WaitConnectionAsync(CancellationToken.None);
+                        await singleConnectionNamedPipeServer.WaitConnectionAsync(cancellationToken);
                         openedPipes.Add(singleConnectionNamedPipeServer);
                     }
                 }
@@ -42,15 +46,15 @@ public class IPCTests
                     exceptions.Add(ex);
                     waitException.Set();
                 }
-            });
+            }, cancellationToken);
 
         var namedPipeClient1 = new NamedPipeClient(pipeName);
-        await namedPipeClient1.ConnectAsync(CancellationToken.None);
-        waitException.Wait();
+        await namedPipeClient1.ConnectAsync(cancellationToken);
+        waitException.Wait(cancellationToken);
 
-        var openedPipe = Assert.Single(openedPipes);
-        var exception = Assert.Single(exceptions);
-        Assert.Equal(typeof(IOException), exception.GetType());
+        var openedPipe = Assert.ContainsSingle(openedPipes);
+        var exception = Assert.ContainsSingle(exceptions);
+        Assert.AreEqual(typeof(IOException), exception.GetType());
         Assert.Contains("All pipe instances are busy.", exception.Message);
 
         await waitTask;
@@ -64,9 +68,11 @@ public class IPCTests
 
     // CAREFUL: This test produces random test cases.
     // So, flakiness in this test might be an indicator to a serious product bug.
-    [Fact]
+    [TestMethod]
     public async Task SingleConnectionNamedPipeServer_RequestReplySerialization_Succeeded()
     {
+        var cancellationToken = TestContext.CancellationToken;
+        const long longValue = (long)int.MaxValue + 1;
         Queue<BaseMessage> receivedMessages = new();
         string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
         NamedPipeClient namedPipeClient = new(pipeName);
@@ -83,7 +89,7 @@ public class IPCTests
                 {
                     try
                     {
-                        await namedPipeClient.ConnectAsync(CancellationToken.None);
+                        await namedPipeClient.ConnectAsync(cancellationToken);
                         manualResetEventSlim.Set();
                         break;
                     }
@@ -95,7 +101,7 @@ public class IPCTests
                     {
                     }
                 }
-            }, CancellationToken.None);
+            }, cancellationToken);
         NamedPipeServer singleConnectionNamedPipeServer = new(
             pipeName,
             (_, request) =>
@@ -104,22 +110,22 @@ public class IPCTests
                 return Task.FromResult<IResponse>(VoidResponse.CachedInstance);
             },
             NamedPipeServerStream.MaxAllowedServerInstances,
-            CancellationToken.None,
+            cancellationToken,
             skipUnknownMessages: false);
         singleConnectionNamedPipeServer.RegisterSerializer(new VoidResponseSerializer(), typeof(VoidResponse));
         singleConnectionNamedPipeServer.RegisterSerializer(new TextMessageSerializer(), typeof(TextMessage));
         singleConnectionNamedPipeServer.RegisterSerializer(new IntMessageSerializer(), typeof(IntMessage));
         singleConnectionNamedPipeServer.RegisterSerializer(new LongMessageSerializer(), typeof(LongMessage));
-        await singleConnectionNamedPipeServer.WaitConnectionAsync(CancellationToken.None);
-        manualResetEventSlim.Wait();
+        await singleConnectionNamedPipeServer.WaitConnectionAsync(cancellationToken);
+        manualResetEventSlim.Wait(cancellationToken);
 
         await clientConnected;
 
-        await namedPipeClient.RequestReplyAsync<IntMessage, VoidResponse>(new IntMessage(10), CancellationToken.None);
-        Assert.Equal(new IntMessage(10), receivedMessages.Dequeue());
+        await namedPipeClient.RequestReplyAsync<IntMessage, VoidResponse>(new IntMessage(10), cancellationToken);
+        Assert.AreEqual(new IntMessage(10), receivedMessages.Dequeue());
 
-        await namedPipeClient.RequestReplyAsync<LongMessage, VoidResponse>(new LongMessage(11), CancellationToken.None);
-        Assert.Equal(new LongMessage(11), receivedMessages.Dequeue());
+        await namedPipeClient.RequestReplyAsync<LongMessage, VoidResponse>(new LongMessage(longValue), cancellationToken);
+        Assert.AreEqual(new LongMessage(longValue), receivedMessages.Dequeue());
 
         for (int i = 0; i < 100; i++)
         {
@@ -145,15 +151,189 @@ public class IPCTests
         async Task AssertWithLengthAsync(int length)
         {
             string currentString = RandomString(length);
-            await namedPipeClient.RequestReplyAsync<TextMessage, VoidResponse>(new TextMessage(currentString), CancellationToken.None);
-            Assert.Single(receivedMessages);
-            Assert.Equal(new TextMessage(currentString), receivedMessages.Dequeue());
+            await namedPipeClient.RequestReplyAsync<TextMessage, VoidResponse>(new TextMessage(currentString), cancellationToken);
+            Assert.ContainsSingle(receivedMessages);
+            Assert.AreEqual(new TextMessage(currentString), receivedMessages.Dequeue());
         }
     }
 
-    [Fact]
+    [TestMethod]
+    public async Task NamedPipeServer_ReadRequestAsync_ReadsOnlyOneFrame()
+    {
+        NamedPipeServer server = CreateServer();
+        try
+        {
+            server.RegisterSerializer(new IntMessageSerializer(), typeof(IntMessage));
+
+            byte[] firstFrame = CreateFrame(new IntMessageSerializer().Id, BitConverter.GetBytes(1));
+            byte[] secondFrame = CreateFrame(new IntMessageSerializer().Id, BitConverter.GetBytes(2));
+            using var stream = new MemoryStream([.. firstFrame, .. secondFrame]);
+
+            Assert.AreEqual(new IntMessage(1), await server.ReadRequestAsync(stream, TestContext.CancellationToken));
+            Assert.AreEqual(firstFrame.Length, stream.Position);
+            Assert.AreEqual(new IntMessage(2), await server.ReadRequestAsync(stream, TestContext.CancellationToken));
+            Assert.AreEqual(stream.Length, stream.Position);
+        }
+        finally
+        {
+            server.Dispose();
+        }
+    }
+
+    [TestMethod]
+    [DataRow(-1)]
+    [DataRow(sizeof(int) - 1)]
+    public async Task NamedPipeServer_ReadRequestAsync_RejectsMalformedPayloadLength(int payloadLength)
+    {
+        NamedPipeServer server = CreateServer();
+        try
+        {
+            using var stream = new MemoryStream(BitConverter.GetBytes(payloadLength));
+
+            InvalidDataException exception = await Assert.ThrowsExactlyAsync<InvalidDataException>(
+                async () => await server.ReadRequestAsync(stream, TestContext.CancellationToken));
+
+            Assert.Contains("payload length", exception.Message);
+        }
+        finally
+        {
+            server.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task NamedPipeServer_ReadRequestAsync_RejectsOversizedFrame()
+    {
+        NamedPipeServer server = CreateServer();
+        try
+        {
+            using var stream = new MemoryStream(BitConverter.GetBytes(NamedPipeServer.MaximumFrameSize));
+
+            InvalidDataException exception = await Assert.ThrowsExactlyAsync<InvalidDataException>(
+                async () => await server.ReadRequestAsync(stream, TestContext.CancellationToken));
+
+            Assert.Contains(NamedPipeServer.MaximumFrameSize.ToString(), exception.Message);
+        }
+        finally
+        {
+            server.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public async Task NamedPipeServer_ReadRequestAsync_TruncatedFrameReturnsNull()
+    {
+        NamedPipeServer server = CreateServer();
+        try
+        {
+            server.RegisterSerializer(new IntMessageSerializer(), typeof(IntMessage));
+            byte[] frame = CreateFrame(serializerId: 3, BitConverter.GetBytes(1));
+            using var stream = new MemoryStream(frame, 0, frame.Length - 1);
+
+            IRequest? request = await server.ReadRequestAsync(stream, TestContext.CancellationToken);
+
+            Assert.IsNull(request);
+
+            using var completeStream = new MemoryStream(CreateFrame(serializerId: 3, BitConverter.GetBytes(2)));
+            Assert.AreEqual(new IntMessage(2), await server.ReadRequestAsync(completeStream, TestContext.CancellationToken));
+        }
+        finally
+        {
+            server.Dispose();
+        }
+    }
+
+    [TestMethod]
+    public void ResolvePipeDirectory_UsesExplicitOverride()
+    {
+        Assert.AreEqual(("override", true), NamedPipeServer.ResolvePipeDirectory("override", "temp"));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void ResolvePipeDirectory_UsesTempPathWhenOverrideIsMissing(string? overrideDirectory)
+    {
+        Assert.AreEqual(("temp", false), NamedPipeServer.ResolvePipeDirectory(overrideDirectory, "temp"));
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("")]
+    [DataRow(" ")]
+    public void ResolvePipeDirectory_FallsBackToTmpWhenTempPathIsMissing(string? tempPath)
+    {
+        Assert.AreEqual(("/tmp", false), NamedPipeServer.ResolvePipeDirectory(null, tempPath));
+    }
+
+    [TestMethod]
+    public void GetUnixPipePath_NormalizesToAbsolutePath()
+    {
+        string root = Path.GetPathRoot(Environment.CurrentDirectory)!;
+        string directory = Path.Combine(root, "mtp", "..", "pipes");
+
+        string pipePath = NamedPipeServer.GetUnixPipePath("pipe", directory);
+
+        Assert.AreEqual(Path.Combine(Path.GetFullPath(directory), "pipe"), pipePath);
+        Assert.IsTrue(Path.IsPathFullyQualified(pipePath));
+    }
+
+    [TestMethod]
+    public void EnsurePathLengthWithinLimit_UsesUtf8ByteLength()
+    {
+        NamedPipeServer.EnsurePathLengthWithinLimit(new string('a', NamedPipeServer.MaxUnixDomainSocketPathLengthInBytes));
+
+        InvalidOperationException exception = Assert.ThrowsExactly<InvalidOperationException>(
+            () => NamedPipeServer.EnsurePathLengthWithinLimit(new string('\u00E9', 52)));
+
+        Assert.Contains(NamedPipeServer.PipeDirectoryEnvironmentVariable, exception.Message);
+        Assert.Contains(NamedPipeServer.MaxUnixDomainSocketPathLengthInBytes.ToString(), exception.Message);
+    }
+
+    [TestMethod]
+    public void EnsureDirectoryIsWritable_CreatesMissingDirectory()
+    {
+        string directory = Path.Combine(TestContext.TestRunDirectory!, $"mtp-pipes-{Guid.NewGuid():N}");
+        try
+        {
+            NamedPipeServer.EnsureDirectoryIsWritable(directory);
+
+            Assert.IsTrue(Directory.Exists(directory));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, recursive: true);
+            }
+        }
+    }
+
+    [TestMethod]
+    public void EnsureDirectoryIsWritable_RejectsFilePath()
+    {
+        string filePath = Path.Combine(TestContext.TestRunDirectory!, $"mtp-{Guid.NewGuid():N}.tmp");
+        File.WriteAllText(filePath, "");
+        try
+        {
+            string invalidDirectory = Path.Combine(filePath, "subdirectory");
+            InvalidOperationException exception = Assert.ThrowsExactly<InvalidOperationException>(
+                () => NamedPipeServer.EnsureDirectoryIsWritable(invalidDirectory));
+
+            Assert.Contains(invalidDirectory, exception.Message);
+            Assert.Contains(NamedPipeServer.PipeDirectoryEnvironmentVariable, exception.Message);
+        }
+        finally
+        {
+            File.Delete(filePath);
+        }
+    }
+
+    [TestMethod]
     public async Task ConnectionNamedPipeServer_MultipleConnection_Succeeds()
     {
+        var cancellationToken = TestContext.CancellationToken;
         string pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
         List<NamedPipeServer> pipes = [];
@@ -163,16 +343,16 @@ public class IPCTests
                 pipeName,
                 (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
                 maxNumberOfServerInstances: 3,
-                CancellationToken.None,
+                cancellationToken,
                 skipUnknownMessages: false));
         }
 
-        IOException exception = Assert.Throws<IOException>(() =>
+        IOException exception = Assert.ThrowsExactly<IOException>(() =>
              new NamedPipeServer(
                 pipeName,
                 (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
                 maxNumberOfServerInstances: 3,
-                CancellationToken.None,
+                cancellationToken,
                 skipUnknownMessages: false));
         Assert.Contains("All pipe instances are busy.", exception.Message);
 
@@ -183,9 +363,9 @@ public class IPCTests
             waitConnectionTask.Add(Task.Run(
                 async () =>
                 {
-                    await namedPipeServer.WaitConnectionAsync(CancellationToken.None);
+                    await namedPipeServer.WaitConnectionAsync(cancellationToken);
                     Interlocked.Increment(ref connectionCompleted);
-                }, CancellationToken.None));
+                }, cancellationToken));
         }
 
         List<NamedPipeClient> connectedClients = [];
@@ -193,12 +373,12 @@ public class IPCTests
         {
             var namedPipeClient = new NamedPipeClient(pipeName);
             connectedClients.Add(namedPipeClient);
-            await namedPipeClient.ConnectAsync(CancellationToken.None);
+            await namedPipeClient.ConnectAsync(cancellationToken);
         }
 
         await Task.WhenAll([.. waitConnectionTask]);
 
-        Assert.Equal(3, connectionCompleted);
+        Assert.AreEqual(3, connectionCompleted);
 
         foreach (NamedPipeClient namedPipeClient in connectedClients)
         {
@@ -209,6 +389,24 @@ public class IPCTests
         {
             namedPipeServer.Dispose();
         }
+    }
+
+    private NamedPipeServer CreateServer()
+        => new(
+            NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N")),
+            (_, _) => Task.FromResult<IResponse>(VoidResponse.CachedInstance),
+            NamedPipeServerStream.MaxAllowedServerInstances,
+            TestContext.CancellationToken,
+            skipUnknownMessages: false);
+
+    private static byte[] CreateFrame(int serializerId, byte[] body)
+    {
+        int payloadLength = sizeof(int) + body.Length;
+        byte[] frame = new byte[sizeof(int) + payloadLength];
+        BitConverter.TryWriteBytes(frame.AsSpan(0, sizeof(int)), payloadLength);
+        BitConverter.TryWriteBytes(frame.AsSpan(sizeof(int), sizeof(int)), serializerId);
+        body.CopyTo(frame.AsSpan(sizeof(int) * 2));
+        return frame;
     }
 
     private static string RandomString(int length)
@@ -247,7 +445,7 @@ public class IPCTests
     {
         public int Id => 4;
 
-        public object Deserialize(Stream stream) => new LongMessage(ReadInt(stream));
+        public object Deserialize(Stream stream) => new LongMessage(ReadLong(stream));
 
         public void Serialize(object objectToSerialize, Stream stream) => WriteLong(stream, ((LongMessage)objectToSerialize).Long);
     }

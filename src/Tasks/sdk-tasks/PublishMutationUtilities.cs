@@ -3,56 +3,81 @@
 
 #nullable disable
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
     public class PublishMutationUtilities
     {
-        public static void ChangeEntryPointLibraryName(string depsFile, string newName)
+        private static readonly JsonSerializerOptions s_writeOptions = new() { WriteIndented = true };
+
+        public static void ChangeEntryPointLibraryName(string depsFile, string newName, string destinationFile = null, bool removeResources = false)
         {
-            JToken deps;
-            using (var file = File.OpenText(depsFile))
-            using (JsonTextReader reader = new(file))
+            string text = File.ReadAllText(depsFile);
+            var deps = JsonNode.Parse(text);
+            var targets = deps["targets"].AsObject();
+            var targetLibraries = targets.SelectMany(target => target.Value.AsObject()).ToArray();
+
+            // Renaming moves the entry to the end of each object. On a repeated invocation,
+            // find that entry by its new name rather than renaming the next dependency.
+            var entryPoint = newName is null
+                ? targetLibraries.FirstOrDefault()
+                : targetLibraries.FirstOrDefault(library => library.Key.StartsWith(newName + '/', StringComparison.Ordinal));
+            if (entryPoint.Key is null)
             {
-                deps = JToken.ReadFrom(reader);
+                entryPoint = targetLibraries.FirstOrDefault();
             }
 
-            string version = null;
-            foreach (JProperty target in deps["targets"])
+            bool changed = false;
+            if (entryPoint.Key is not null)
             {
-                var targetLibrary = target.Value.Children<JProperty>().FirstOrDefault();
-                if (targetLibrary == null)
+                string version = entryPoint.Key.Substring(entryPoint.Key.IndexOf('/') + 1);
+                string renamedKey = newName is null ? null : newName + '/' + version;
+                if (entryPoint.Key != renamedKey)
                 {
-                    continue;
-                }
-                version = targetLibrary.Name.Substring(targetLibrary.Name.IndexOf('/') + 1);
-                if (newName == null)
-                {
-                    targetLibrary.Remove();
-                }
-                else
-                {
-                    targetLibrary.Replace(new JProperty(newName + '/' + version, targetLibrary.Value));
+                    foreach (var target in targets)
+                    {
+                        var targetObj = target.Value.AsObject();
+                        if (targetObj.TryGetPropertyValue(entryPoint.Key, out JsonNode value))
+                        {
+                            targetObj.Remove(entryPoint.Key);
+                            if (renamedKey is not null)
+                            {
+                                targetObj.Add(renamedKey, value);
+                            }
+                        }
+                    }
+
+                    var libraries = deps["libraries"].AsObject();
+                    JsonNode library = libraries[entryPoint.Key];
+                    libraries.Remove(entryPoint.Key);
+                    if (renamedKey is not null)
+                    {
+                        libraries.Add(renamedKey, library);
+                    }
+                    changed = true;
                 }
             }
-            if (version != null)
+
+            if (removeResources)
             {
-                var library = deps["libraries"].Children<JProperty>().First();
-                if (newName == null)
-                {
-                    library.Remove();
-                }
-                else
-                {
-                    library.Replace(new JProperty(newName + '/' + version, library.Value));
-                }
-                using (var file = File.CreateText(depsFile))
-                using (var writer = new JsonTextWriter(file) { Formatting = Formatting.Indented })
-                {
-                    deps.WriteTo(writer);
-                }
+                changed |= RemoveAssetFromDepsPackages.RemoveAssets(deps, "resources", "*");
+            }
+
+            if (changed || destinationFile is not null)
+            {
+                WriteFileIfDifferent(destinationFile ?? depsFile, changed ? deps.ToJsonString(s_writeOptions) : text);
+            }
+        }
+
+        internal static void WriteFileIfDifferent(string path, string contents)
+        {
+            if (!File.Exists(path) ||
+                !File.ReadAllBytes(path).AsSpan().SequenceEqual(Encoding.UTF8.GetBytes(contents)))
+            {
+                IncrementalLayoutState.WriteFile(path, contents);
             }
         }
     }

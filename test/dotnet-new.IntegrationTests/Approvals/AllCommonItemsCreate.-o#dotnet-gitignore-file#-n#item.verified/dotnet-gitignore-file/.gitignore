@@ -394,6 +394,9 @@ FodyWeavers.xsd
 !.vscode/extensions.json
 *.code-workspace
 
+# Official VS Code C# Dev Kit Extension exclusion
+*.lscache
+
 # Local History for Visual Studio Code
 .history/
 

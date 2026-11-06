@@ -1573,7 +1573,7 @@ _testhost_test() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--settings --list-tests --environment --filter --test-adapter-path --logger --output --artifacts-path --diag --no-build --results-directory --collect --blame --blame-crash --blame-crash-dump-type --blame-crash-collect-always --blame-hang --blame-hang-dump-type --blame-hang-timeout --no-logo --configuration --framework --no-restore --interactive --verbosity --runtime --arch --os --disable-build-servers --help" 
+    opts="--settings --list-tests --environment --filter --test-adapter-path --logger --output --artifacts-path --diag --no-build --no-dependencies --results-directory --collect --blame --blame-crash --blame-crash-dump-type --blame-crash-collect-always --blame-hang --blame-hang-dump-type --blame-hang-timeout --no-logo --configuration --framework --no-restore --interactive --verbosity --runtime --arch --os --disable-build-servers --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )

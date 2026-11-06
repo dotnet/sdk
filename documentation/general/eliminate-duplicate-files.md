@@ -30,6 +30,7 @@ The following data is the result of this analysis using the [SdkLayoutAnalyzer](
 The goal is for the vast majority if not all of the components within the SDK to depend on and use the same version of their dependencies.
 
 **Notes:**
+
 1. The baseline measurements in the following tables compare the complete .NET installation (including runtimes, packs, shared frameworks, host, etc.) versus just the SDK directory contents.
 1. Standard archive formats (zip and tar) do not automatically deduplicate identical files, each file is compressed independently, even when multiple files have identical content.
 This means that duplicate files consume space both on disk after extraction and within the compressed archive itself.
@@ -145,6 +146,7 @@ While the RPM protocol itself supports hard links, there are known issues in bot
 Additionally, our current build infrastructure (Arcade) does not support creating RPM packages with hard links ([dotnet/arcade#16453](https://github.com/dotnet/arcade/issues/16453)).
 
 Before we can confidently support hard links on Linux, we need to:
+
 1. Fix the Arcade infrastructure to support creating RPM packages with hard links
 2. Test comprehensively on the Linux distributions we target, particularly Azure Linux
 3. Work with distribution maintainers to ensure compatibility
@@ -153,6 +155,7 @@ Until this work is completed and validated, we will use symbolic links on non-Wi
 
 If we find that hard links cannot be used in RPM packages long term, one alternative to consider would be using hard links everywhere except RPM packages, which would continue using symbolic links.
 However, this approach has trade-offs that would need to be carefully evaluated:
+
 - **Con:** Different link types across acquisition channels adds complexity
 - **Con:** Distribution maintainers who create RPM packages from our source tarballs would need to translate hard links to symbolic links
 
@@ -162,8 +165,8 @@ A decision on this alternative approach will be made once the RPM packaging inve
 
 Hard links are generally preferred because they [offer performance advantages since no extra steps are needed to resolve the file path](https://www.linuxbash.sh/post/symbolic-links-ln-s-vs-hard-links), providing slightly better access time compared to symbolic links which require path resolution.
 
-
 **Key Benefits of File Links:**
+
 - **No runtime changes required** — Components continue to reference files using their existing paths. Both hard links and symbolic links are transparent to applications.
 - **Immediate disk savings** — Links reduce disk usage by the size of duplicate files.
 - **Tarball compatibility** — Tar format natively supports both hard links and symbolic links, preserving space savings in compressed archives.
@@ -201,6 +204,7 @@ The existing zip archives will continue to be published with duplicates during t
 **Phase 2: Migrate Acquisition Channels**
 
 In subsequent preview releases, we will migrate the acquisition channels under our control to use Windows tarballs:
+
 - **dotnet-install scripts** ([dotnet/install-scripts](https://github.com/dotnet/install-scripts)) — Update to prefer tarballs on Windows
 - **Azure DevOps .NET install task** ([microsoft/azure-pipelines-tasks](https://github.com/microsoft/azure-pipelines-tasks)) — Add tarball support for Windows agents
 - **GitHub Actions setup-dotnet** ([actions/setup-dotnet](https://github.com/actions/setup-dotnet)) — Add tarball extraction support for Windows
@@ -265,6 +269,7 @@ Tests will be created to ensure:
 A proof of concept for link-based deduplication was implemented, demonstrating the viability and effectiveness of the approach:
 
 **Implementation Details:**
+
 - A new MSBuild task `DeduplicateFilesWithHardLinks` was created to identify and replace duplicate files with links during SDK layout generation
 - Files are hashed to identify duplicates
 - The POC initially used hard links; the production implementation will use platform-specific link types (hard links on Windows, symbolic links on Linux/macOS)
@@ -272,6 +277,7 @@ A proof of concept for link-based deduplication was implemented, demonstrating t
 **Space Savings:**
 
 In a Linux x64 development build of .NET 11.0 SDK, the link-based approach achieved:
+
 - 131 MB reduction in disk size
 - 61 MB reduction in archive size
 
@@ -312,6 +318,7 @@ The analysis categorizes these groups as follows:
 **Linux x64 (10.0.100):**
 
 Group Categorization:
+
 - Groups differing by Core vs FX: 228
 - Groups with different FX versions: 3
 - Groups with different Core versions: 1
@@ -320,6 +327,7 @@ Group Categorization:
 - Groups with NetStandard + Core: 30
 
 Potential Savings (if duplicates were eliminated):
+
 - Different FX versions (keep lowest): 1.9 MB
 - Different Core versions (keep lowest): 0.1 MB
 - NetStandard + NetFx (keep NetStandard): 0.9 MB
@@ -354,6 +362,7 @@ This represents content that should be trimmed out entirely as it serves no purp
 
 In other cases, we ship content to support cross-platform development scenarios—for example, Windows-specific assemblies included in Linux SDKs to enable cross-compilation or multi-targeting scenarios.
 While this content does serve a purpose, it should be analyzed case-by-case to determine whether it should:
+
 - Ship in-box as part of the core SDK experience
 - Be available as optional packages that can be dynamically acquired when needed
 
@@ -364,6 +373,12 @@ While this content does serve a purpose, it should be analyzed case-by-case to d
 Both of these content placement issues are outside the scope of the duplicate elimination work.
 However, they will likely be surfaced and made more visible as part of this effort.
 When identified, independent issues will be logged to address these concerns separately.
+
+### Windows Containers
+
+Windows containers do not support hard links, which blocks adoption of this feature for Windows container images.
+The impact of this limitation is modest: Windows containers have significantly fewer supported versions/SKUs than Linux, and Windows base image updates occur only once per month (Patch Tuesday), resulting in far fewer image rebuilds.
+As a result, the potential savings for Windows container images would be an order of magnitude less than Linux.
 
 ## Related
 
@@ -471,3 +486,43 @@ While the shared assembly location approach offers theoretical benefits in terms
 5. **Implementation Cost:** High development and maintenance burden compared to filesystem-level deduplication.
 
 The hard link approach was selected because it achieves the same disk and archive size benefits without requiring changes to component loading logic or risking behavioral changes in sensitive toolchain components.
+
+## Appendix: Docker Image Savings Analysis
+
+This section quantifies the downstream impact of deduplication on .NET Docker images.
+The estimates use .NET 10 as a representative single release to project per-release savings.
+The "In-Support" columns show the projected combined impact once three in-support versions all include this feature.
+The "All" columns show cumulative totals across all SDK images and pulls (in-support and EOL), illustrating savings that accrue over time.
+
+### Linux SDK Archive Size Reduction
+
+As of .NET 11.0 Preview 4, the Linux SDK archive is **56 MB smaller** as a result of this work.
+
+### Linux SDK Image Pull Bandwidth Savings
+
+| .NET 10 Pulls/Wk | In-Support Pulls/Wk | All Pulls/Wk | .NET 10 Saved (TB wk / yr) | In-Support Saved (TB wk / yr) | All Saved (TB wk / yr) |
+|------------------|---------------------|--------------|----------------------------|-------------------------------|------------------------|
+| 147,000          | 485,400             | 630,000      | 7.9 / 408.2                | 25.9 / 1348.0                 | 33.9 / 1749.6          |
+
+### Linux SDK Image Storage Savings
+
+| New .NET 10 Images/Mo | New In-Support Images/Mo | All Images | .NET 10 Saved (GB mo / yr) | In-Support Saved (GB mo / yr) | All Saved (GB) |
+|-----------------------|--------------------------|------------|----------------------------|-------------------------------|----------------|
+| 42.6                  | 130.5                    | 26,866     | 2.3 / 27.6                 | 7.1 / 85.6                    | 1,469.2        |
+
+---
+
+<sup>1</sup> "All" columns represent all SDK images ever published to MCR and all SDK image pulls per week, regardless of whether the .NET version is currently in support or end-of-life.
+
+<sup>2</sup> New images per month are driven by multiple sources: .NET servicing releases (Patch Tuesday) and base image updates. .NET images are rebuilt whenever an underlying base image (e.g., Ubuntu, Alpine) is updated.
+
+<sup>3</sup> Assuming saved storage is billed at the [ACR](https://azure.microsoft.com/en-us/pricing/details/container-registry/) additional storage rate of $0.00334/GB/day, the in-support storage savings of 7.1 GB/month translate to approximately **$0.71/month**. If every Linux SDK image ever shipped had included this feature, the total cumulative savings of ~1.5 TB would translate to roughly **$147/month**.
+
+### Key Takeaways
+
+- Over the .NET 10 LTS three-year support period, this saves approximately **1,224.6 TB** in bandwidth (408.2 TB/yr x 3) and **82.8 GB** in storage (27.6 GB/yr x 3).
+Those savings don't count previews, usage increase when the previous LTS (8.0) reaches end-of-life or pulls after EOL.
+- **Bandwidth savings are significant in absolute terms**, over 1,350 TB/year for in-support versions at 630,000 pulls per week.
+This is modest relative to the scale at which Azure operates, as indicated by its pricing.
+- **Storage savings are negligible.** Even if every Linux SDK image ever shipped had included this feature, the cumulative savings would be ~1.5 TB.
+- The primary value is **customer-facing**: every Linux SDK image pull is 56 MB smaller, resulting in faster downloads and reduced storage/higher density for users.

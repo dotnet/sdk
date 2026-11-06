@@ -3,7 +3,8 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class RuntimeProcessLauncherTests : DotNetWatchTestBase
 {
     public enum TriggerEvent
     {
@@ -11,7 +12,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         WaitingForChanges,
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -51,12 +52,12 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             }
 
             // service should have been created after MessageDescriptor.RuntimeProcessLauncherCreatedNotification has been received:
-            Assert.NotNull(w.Service);
+            Assert.IsNotNull(w.Service);
 
-            w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token).Wait();
+            w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token).Wait(w.ShutdownSource.Token);
             launchCompletionA.TrySetResult();
 
-            w.Service.Launch(serviceProjectB, workingDirectory, w.ShutdownSource.Token).Wait();
+            w.Service.Launch(serviceProjectB, workingDirectory, w.ShutdownSource.Token).Wait(w.ShutdownSource.Token);
             launchCompletionB.TrySetResult();
         });
 
@@ -143,8 +144,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             Log("Waiting for updated output from project B ...");
             await hasUpdateSourceB.Task;
 
-            Assert.True(hasUpdateSourceA.Task.IsCompletedSuccessfully);
-            Assert.True(hasUpdateSourceB.Task.IsCompletedSuccessfully);
+            Assert.IsTrue(hasUpdateSourceA.Task.IsCompletedSuccessfully);
+            Assert.IsTrue(hasUpdateSourceB.Task.IsCompletedSuccessfully);
         }
 
         // make a rude edit and check that the process is restarted
@@ -167,11 +168,11 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             Log("Waiting for updated output from project A ...");
             await hasUpdateSource.Task;
 
-            Assert.True(hasUpdateSource.Task.IsCompletedSuccessfully);
+            Assert.IsTrue(hasUpdateSource.Task.IsCompletedSuccessfully);
         }
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
@@ -227,7 +228,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
         // service should have been created before Hot Reload session started:
-        Assert.NotNull(w.Service);
+        Assert.IsNotNull(w.Service);
 
         await w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token);
 
@@ -271,7 +272,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
@@ -360,7 +361,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RudeEditInProjectWithoutRunningProcess()
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc");
@@ -387,7 +388,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
         // service should have been created before Hot Reload session started:
-        Assert.NotNull(w.Service);
+        Assert.IsNotNull(w.Service);
 
         var runningProject = await w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token);
         Log("Waiting for session started ...");
@@ -409,7 +410,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await applyUpdateVerbose.WaitAsync(w.ShutdownSource.Token);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RelaunchOnCrash()
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc");
@@ -449,7 +450,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
 
         // service should have been created before Hot Reload session started:
-        Assert.NotNull(w.Service);
+        Assert.IsNotNull(w.Service);
 
         await w.Service.Launch(serviceProjectA, workingDirectory, w.ShutdownSource.Token);
 

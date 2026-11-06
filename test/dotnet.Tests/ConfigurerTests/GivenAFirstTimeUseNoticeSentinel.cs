@@ -9,6 +9,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Configurer.UnitTests
 {
+    [TestClass]
     public class GivenAFirstTimeUseNoticeSentinel
     {
         private const string DOTNET_USER_PROFILE_FOLDER_PATH = "some path";
@@ -20,13 +21,13 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             _fileSystemMockBuilder = FileSystemMockBuilder.Create();
         }
 
-        [Fact]
+        [TestMethod]
         public void TheSentinelHasTheCurrentVersionInItsName()
         {
             FirstTimeUseNoticeSentinel.SENTINEL.Should().Contain($"{Product.Version}");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsTrueIfTheSentinelExists()
         {
             _fileSystemMockBuilder.AddFiles(DOTNET_USER_PROFILE_FOLDER_PATH, FirstTimeUseNoticeSentinel.SENTINEL);
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             firstTimeUseNoticeSentinel.Exists().Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsFalseIfTheSentinelDoesNotExist()
         {
             var fileSystemMock = _fileSystemMockBuilder.Build();
@@ -54,7 +55,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             firstTimeUseNoticeSentinel.Exists().Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCreatesTheSentinelInTheDotnetUserProfileFolderPathIfItDoesNotExistAlready()
         {
             var fileSystemMock = _fileSystemMockBuilder.Build();
@@ -70,7 +71,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             firstTimeUseNoticeSentinel.Exists().Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotCreateTheSentinelAgainIfItAlreadyExistsInTheDotnetUserProfileFolderPath()
         {
             const string contentToValidateSentinelWasNotReplaced = "some string";
@@ -91,7 +92,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             fileSystemMock.File.ReadAllText(sentinel).Should().Be(contentToValidateSentinelWasNotReplaced);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItCreatesTheDotnetUserProfileFolderIfItDoesNotExistAlreadyWhenCreatingTheSentinel()
         {
             var fileSystemMock = _fileSystemMockBuilder.Build();
@@ -109,7 +110,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             directoryMock.CreateDirectoryInvoked.Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotAttemptToCreateTheDotnetUserProfileFolderIfItAlreadyExistsWhenCreatingTheSentinel()
         {
             var fileSystemMock = _fileSystemMockBuilder.Build();

@@ -71,13 +71,12 @@ Examples:
   dotnet-watch 在启动的所有子进程上将此变量设置为 "1"。
 
   DOTNET_WATCH_ITERATION
-  dotnet-watch 将此变量设置为 "1"，每次递增一
-  一个文件已更改，并且命令已重新启动。
+  dotnet-watch 将此变量设置为 "1"，每次文件更改
+  并且命令重新启动时递增一。
 
   DOTNET_WATCH_SUPPRESS_EMOJIS
-  当设置为 "1" 或 "true" 时，dotnet-watch 不会在 
- 中显示表情符号
-  控制台输出。
+  当设置为 "1" 或 "true" 时，dotnet-watch 不会在控制台输出中
+  显示表情符号。
 
 备注:
   特殊选项 "--" 用于分隔选项的末尾和
@@ -94,6 +93,11 @@ Examples:
   dotnet watch test
 
     </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_Device">
+        <source>The device identifier to run on (e.g. emulator, simulator, or physical device).</source>
+        <target state="translated">要在其上运行的设备标识符(例如仿真器、模拟器或物理设备)。</target>
         <note />
       </trans-unit>
       <trans-unit id="Help_List">
@@ -134,6 +138,15 @@ Examples:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="Help_Trace">
+        <source>
+      Show trace output
+    </source>
+        <target state="translated">
+      显示跟踪输出
+    </target>
+        <note />
+      </trans-unit>
       <trans-unit id="Help_Verbose">
         <source>
       Show verbose output
@@ -143,19 +156,29 @@ Examples:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="MoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="translated">上下移动以显示更多设备</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">上移或下移以显示更多框架</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">键入以搜索</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="translated">选择运行设备:</target>
         <note />
       </trans-unit>
       <trans-unit id="SelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">选择要运行的目标框架:</target>
         <note />
       </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">

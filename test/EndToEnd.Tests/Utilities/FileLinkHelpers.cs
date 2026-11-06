@@ -88,7 +88,7 @@ internal static class FileLinkHelpers
 
         log.WriteLine($"Found {symlinkPaths.Count} symbolic links in {contextName}");
 
-        Assert.True(symlinkPaths.Count > MinExpectedDeduplicatedLinks,
+        Assert.IsGreaterThan(MinExpectedDeduplicatedLinks, symlinkPaths.Count,
             $"Expected more than {MinExpectedDeduplicatedLinks} symbolic links in {contextName}, but found only {symlinkPaths.Count}. " +
             "This suggests deduplication did not run correctly.");
 
@@ -109,7 +109,7 @@ internal static class FileLinkHelpers
             }
         }
 
-        Assert.Empty(absoluteSymlinks);
+        Assert.IsEmpty(absoluteSymlinks);
         log.WriteLine($"Verified all {symlinkPaths.Count} symbolic links use relative paths");
     }
 
@@ -140,7 +140,7 @@ internal static class FileLinkHelpers
 
         log.WriteLine($"Found {hardlinkedFiles.Count} hardlinked files in {contextName}");
 
-        Assert.True(hardlinkedFiles.Count > MinExpectedDeduplicatedLinks,
+        Assert.IsGreaterThan(MinExpectedDeduplicatedLinks, hardlinkedFiles.Count,
             $"Expected more than {MinExpectedDeduplicatedLinks} hardlinked files in {contextName}, but found only {hardlinkedFiles.Count}. " +
             "This suggests deduplication did not run correctly.");
 

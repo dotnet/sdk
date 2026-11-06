@@ -3,13 +3,10 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class PublishNetFrameworkApp : SdkTest
     {
-        public PublishNetFrameworkApp(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void NetStandardFacadesArePublished()
         {
             var netStandardProject = new TestProject()

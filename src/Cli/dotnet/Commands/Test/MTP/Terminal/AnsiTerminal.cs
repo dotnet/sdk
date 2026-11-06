@@ -161,7 +161,7 @@ internal sealed class AnsiTerminal(IConsole console, string? baseDirectory) : IT
 
     public void StopUpdate()
     {
-        _console.Write(_stringBuilder.ToString());
+        _console.Write(_stringBuilder);
         _isBatching = false;
     }
 

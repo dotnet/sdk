@@ -7,9 +7,10 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class GivenARootedCommandResolver
     {
-        [Fact]
+        [TestMethod]
         public void It_returns_null_when_CommandName_is_null()
         {
             var rootedCommandResolver = new RootedCommandResolver();
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_returns_null_when_CommandName_is_not_rooted()
         {
             var rootedCommandResolver = new RootedCommandResolver();
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Tests
             result.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_returns_a_CommandSpec_with_CommandName_as_Path_when_CommandName_is_rooted()
         {
             var rootedCommandResolver = new RootedCommandResolver();
@@ -58,7 +59,7 @@ namespace Microsoft.DotNet.Tests
             result.Path.Should().Be(commandResolverArguments.CommandName);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_escapes_CommandArguments_when_returning_a_CommandSpec()
         {
             var rootedCommandResolver = new RootedCommandResolver();
@@ -77,7 +78,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().Be("\"arg with space\"");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_returns_a_CommandSpec_with_Args_as_stringEmpty_when_returning_a_CommandSpec_and_CommandArguments_are_null()
         {
             var rootedCommandResolver = new RootedCommandResolver();

@@ -1,18 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
+    [TestClass]
     public class ResponseFileTests : SdkTest
     {
-        public ResponseFileTests(ITestOutputHelper output) : base(output)
+        public ResponseFileTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void Can_safely_expand_response_file_lines()
         {
             var tempFileDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -28,7 +30,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var tokens = parseResult.Tokens.Select(t => t.Value);
             var tokenString = string.Join(", ", tokens);
-            var bc = (RestoringCommand)Cli.Commands.Build.BuildCommand.FromParseResult(parseResult);
+            var bc = (RestoringCommand)Cli.Commands.Build.BuildCommand.FromParseResult(
+                parseResult,
+                msbuildPath: null,
+                CommandServices.CreateDefault());
             var tokenized = new[] {
                 "build",
                 "a b",
@@ -42,7 +47,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             tokens.Skip(1).Should().BeEquivalentTo(tokenized);
         }
 
-        [Fact]
+        [TestMethod]
         public void Can_skip_empty_and_commented_lines()
         {
             var tempFileDir = TestAssetsManager.CreateTestDirectory().Path;

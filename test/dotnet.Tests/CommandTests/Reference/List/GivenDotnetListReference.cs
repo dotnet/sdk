@@ -2,36 +2,37 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Xml;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Commands;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.List.Reference.Tests
 {
+    [TestClass]
     public class GivenDotnetListReference : SdkTest
     {
         private Func<string, string> ListProjectReferenceCommandHelpText = (defaultVal) => $@"Description:
   List all project-to-project references of the project.
 
 Usage:
-  dotnet list [<PROJECT>] reference [options]
+  dotnet list [<PROJECT | SOLUTION | FILE>] reference [options]
 
 Arguments:
-  <PROJECT>    The project file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | SOLUTION | FILE>  The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
-  -?, -h, --help    Show command line help.";
+  -?, -h, --help  Show command line help.";
 
         private Func<string, string> ListCommandHelpText = (defaultVal) => $@"Description:
   List references or packages of a .NET project.
 
 Usage:
-  dotnet list [<PROJECT | SOLUTION>] [command] [options]
+  dotnet list [<PROJECT | SOLUTION | FILE>] [command] [options]
 
 Arguments:
-  <PROJECT | SOLUTION>    The project or solution file to operate on. If a file is not specified, the command will search the current directory for one. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | SOLUTION | FILE>  The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
 
 Options:
-  -?, -h, --help    Show command line help.
+  -?, -h, --help  Show command line help.
 
 Commands:
   package      List all package references of the project or solution.
@@ -40,13 +41,13 @@ Commands:
         const string FrameworkNet451Arg = "-f net451";
         const string ConditionFrameworkNet451 = "== 'net451'";
 
-        public GivenDotnetListReference(ITestOutputHelper log) : base(log)
+        public GivenDotnetListReference()
         {
         }
 
-        [Theory]
-        [InlineData("--help")]
-        [InlineData("-h")]
+        [TestMethod]
+        [DataRow("--help")]
+        [DataRow("-h")]
         public void WhenHelpOptionIsPassedItPrintsUsage(string helpArg)
         {
             var cmd = new ListReferenceCommand(Log).Execute(helpArg);
@@ -54,9 +55,9 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(ListProjectReferenceCommandHelpText(Directory.GetCurrentDirectory()));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("unknownCommandName")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("unknownCommandName")]
         public void WhenNoCommandIsPassedItPrintsError(string commandName)
         {
             var cmd = new DotnetCommand(Log)
@@ -65,7 +66,7 @@ Commands:
             cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenTooManyArgumentsArePassedItPrintsError()
         {
             var cmd = new DotnetCommand(Log, "list one two three reference".Split())
@@ -75,9 +76,9 @@ Commands:
 {string.Format(CliStrings.UnrecognizedCommandOrArgument, "three")}");
         }
 
-        [Theory]
-        [InlineData("idontexist.csproj")]
-        [InlineData("ihave?inv@lid/char\\acters")]
+        [TestMethod]
+        [DataRow("idontexist.csproj")]
+        [DataRow("ihave?inv@lid/char\\acters")]
         public void WhenNonExistingProjectIsPassedItPrintsError(string projName)
         {
             var setup = Setup(identifier: projName);
@@ -91,7 +92,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenBrokenProjectIsPassedItPrintsError()
         {
             string projName = "Broken/Broken.csproj";
@@ -120,7 +121,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenMoreThanOneProjectExistsInTheDirectoryItPrintsError()
         {
             var setup = Setup();
@@ -134,7 +135,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenNoProjectsExistsInTheDirectoryItPrintsError()
         {
             var setup = Setup();
@@ -147,7 +148,7 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenNoProjectReferencesArePresentInTheProjectItPrintsError()
         {
             var lib = NewLib(TestAssetsManager.CreateTestDirectory().Path);
@@ -159,7 +160,54 @@ Commands:
             cmd.StdOut.Should().Be(string.Format(CliStrings.NoReferencesFound, CliStrings.P2P, lib.CsProjPath));
         }
 
-        [Fact]
+        [TestMethod]
+        public void WhenNoProjectReferencesArePresentInTheProjectItPrintsError_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                Console.WriteLine();
+                """);
+
+            var cmd = new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.NoReferencesFound, CliStrings.P2P, appFile));
+        }
+
+        [TestMethod]
+        public void ItRejectsProjectPathPassedToFileOption_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+
+            new DotnetCommand(Log, "reference", "list", "--file", projectFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, projectFile));
+        }
+
+        [TestMethod]
+        public void ItRejectsProjectAndFileOptions_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                Console.WriteLine();
+                """);
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+
+            new DotnetCommand(Log, "reference", "list", "--project", projectFile, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--file", "--project"));
+        }
+
+        [TestMethod]
         public void ItPrintsSingleReference()
         {
             string OutputText = CliStrings.ProjectReferenceOneOrMore;
@@ -180,7 +228,112 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
-        [Fact]
+        [TestMethod]
+        public void ItPrintsSingleReference_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                #:project Lib/Lib.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+Lib/Lib.csproj";
+
+            new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
+        }
+
+        [TestMethod]
+        public void ItPrintsFileBasedAppReferences_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                #:project Lib/Lib.csproj
+                #:ref Util.cs
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+Lib/Lib.csproj
+Util.cs";
+
+            new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
+        }
+
+        [TestMethod]
+        public void ItPrintsFileBasedAppReferenceWithMSBuildPropertyInPath_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            var utilFile = Path.Join(testInstance.Path, "Util.cs");
+            File.WriteAllText(appFile, """
+                #:ref $(MSBuildThisFileDirectory)Util.cs
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(utilFile, """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+$(MSBuildThisFileDirectory)Util.cs";
+
+            new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
+        }
+
+        [TestMethod]
+        public void ItPrintsFileBasedAppReferenceWhenReferencedFileDoesNotExist_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                #:ref Missing
+
+                Console.WriteLine();
+                """);
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+Missing";
+
+            new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
+        }
+
+        [TestMethod]
         public void ItPrintsMultipleReferences()
         {
             string OutputText = CliStrings.ProjectReferenceOneOrMore;
@@ -208,7 +361,34 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
-        [Fact]
+        [TestMethod]
+        public void ItPrintsMultipleReferences_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(appFile, """
+                #:project Lib/Lib.csproj
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+Lib/Lib.csproj
+Other/Other.csproj";
+
+            new DotnetCommand(Log, "reference", "list", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(outputText);
+        }
+
+        [TestMethod]
         public void ItPrintsReferenceWithMSBuildPropertyInPath()
         {
             var testDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -228,12 +408,52 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
+        [TestMethod]
+        public void ItPrintsReferenceWithMSBuildPropertyInPath_FileBasedApp()
+        {
+            var testDir = TestAssetsManager.CreateTestDirectory().Path;
+            var appFile = Path.Join(testDir, "Program.cs");
+            File.WriteAllText(appFile, """
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testDir, "Lib");
+
+            var outputText = CliStrings.ProjectReferenceOneOrMore;
+            outputText += $@"
+{new string('-', outputText.Length)}
+$(MSBuildThisFileDirectory)Lib/Lib.csproj";
+
+            var cmd = new DotnetCommand(Log, "reference", "list", "--file", appFile)
+                .WithWorkingDirectory(testDir)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
+        }
+
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {
             return new TestSetup(
                 TestAssetsManager.CopyTestAsset(TestSetup.ProjectName, callingMethod: callingMethod, identifier: identifier, testAssetSubdirectory: TestSetup.TestGroup)
                     .WithSource()
                     .Path);
+        }
+
+        private static string CreateMinimalProject(string directory, string projectName)
+        {
+            var projectDirectory = Path.Join(directory, projectName);
+            Directory.CreateDirectory(projectDirectory);
+            var projectFile = Path.Join(projectDirectory, projectName + ".csproj");
+            File.WriteAllText(projectFile, $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    </PropertyGroup>
+                </Project>
+                """);
+            return projectFile;
         }
 
         private ProjDir NewLib(string basePath, string testProjectName = "temp")

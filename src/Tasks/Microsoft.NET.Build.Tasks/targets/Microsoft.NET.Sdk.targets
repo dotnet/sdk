@@ -26,6 +26,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="GenerateDepsFile" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateRuntimeConfigurationFiles" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="EnsureHotReloadWebSocketKey" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GetAssemblyVersion" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="GenerateSatelliteAssemblies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
@@ -74,11 +75,18 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectConfigurationDescription Include="TargetFramework=$(TargetFramework)" />
   </ItemGroup>
 
+  <!-- Compatibility: if GenerateRuntimeConfigDevFile was set to true prior to adding GenerateProbingPathsToRuntimeConfigDevFile switch, the additional probing paths were generated -->
+  <PropertyGroup Condition="'$(GenerateRuntimeConfigDevFile)' == 'true'">
+    <GenerateProbingPathsToRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == ''">true</GenerateProbingPathsToRuntimeConfigDevFile>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(GenerateRuntimeConfigDevFile)' == ''">
-    <GenerateRuntimeConfigDevFile>true</GenerateRuntimeConfigDevFile>
     <!-- Post-net6.0, stop generating *.runtimeconfig.dev.json files to reduce probing paths. -->
     <!-- https://github.com/dotnet/sdk/issues/16818 -->
-    <GenerateRuntimeConfigDevFile Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))">false</GenerateRuntimeConfigDevFile>
+    <GenerateProbingPathsToRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or $([MSBuild]::VersionLessThan($(TargetFrameworkVersion), '6.0')))">true</GenerateProbingPathsToRuntimeConfigDevFile>
+    <EnableHotReloadInRuntimeConfigDevFile Condition="'$(EnableHotReloadInRuntimeConfigDevFile)' == '' and '$(Configuration)' == 'Debug'">true</EnableHotReloadInRuntimeConfigDevFile>
+
+    <GenerateRuntimeConfigDevFile Condition="'$(GenerateProbingPathsToRuntimeConfigDevFile)' == 'true' or '$(EnableHotReloadInRuntimeConfigDevFile)' == 'true'">true</GenerateRuntimeConfigDevFile>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -86,7 +94,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectDepsFilePath Condition="'$(ProjectDepsFilePath)' == ''">$(TargetDir)$(ProjectDepsFileName)</ProjectDepsFilePath>
     <ProjectRuntimeConfigFileName Condition="'$(ProjectRuntimeConfigFileName)' == ''">$(AssemblyName).runtimeconfig.json</ProjectRuntimeConfigFileName>
     <ProjectRuntimeConfigFilePath Condition="'$(ProjectRuntimeConfigFilePath)' == ''">$(TargetDir)$(ProjectRuntimeConfigFileName)</ProjectRuntimeConfigFilePath>
-    <ProjectRuntimeConfigDevFilePath Condition="'$(ProjectRuntimeConfigDevFilePath)' == '' and $(GenerateRuntimeConfigDevFile) == 'true'">$(TargetDir)$(AssemblyName).runtimeconfig.dev.json</ProjectRuntimeConfigDevFilePath>
+    <ProjectRuntimeConfigDevFilePath Condition="'$(ProjectRuntimeConfigDevFilePath)' == '' and '$(GenerateRuntimeConfigDevFile)' == 'true'">$(TargetDir)$(AssemblyName).runtimeconfig.dev.json</ProjectRuntimeConfigDevFilePath>
     <IncludeMainProjectInDepsFile Condition=" '$(IncludeMainProjectInDepsFile)' == '' ">true</IncludeMainProjectInDepsFile>
     <TrimDepsJsonLibrariesWithoutAssets Condition=" '$(TrimDepsJsonLibrariesWithoutAssets)' == '' ">true</TrimDepsJsonLibrariesWithoutAssets>
   </PropertyGroup>
@@ -340,6 +348,30 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <Target Name="_GenerateHotReloadWebSocketKey"
+          BeforeTargets="AssignTargetPaths;DeployToDevice;ComputeRunArguments"
+          Condition="'$(DesignTimeBuild)' != 'true'
+            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
+            and '@(ProjectCapability->WithMetadataValue('Identity', 'HotReloadWebSockets'))' != ''">
+    <PropertyGroup>
+      <!-- Keep these paths in sync with SharedSecretBuildOutputs. -->
+      <_HotReloadWebSocketKeyDirectory>$(IntermediateOutputPath)HotReload\</_HotReloadWebSocketKeyDirectory>
+    </PropertyGroup>
+    <EnsureHotReloadWebSocketKey
+      PublicKeyPath="$(_HotReloadWebSocketKeyDirectory)websocket-key.public.json"
+      PrivateKeyPath="$(_HotReloadWebSocketKeyDirectory)websocket-key.private.json">
+      <Output TaskParameter="PublicKey" PropertyName="_HotReloadWebSocketPublicKey" />
+    </EnsureHotReloadWebSocketKey>
+    <ItemGroup>
+      <!-- The workload pins the build-owned public key in the app's runtime environment.
+           Never set this in the environment inherited by dotnet run or its build processes. -->
+      <RuntimeEnvironmentVariable Remove="DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY" />
+      <RuntimeEnvironmentVariable Include="DOTNET_WATCH_HOTRELOAD_WEBSOCKET_KEY" Value="$(_HotReloadWebSocketPublicKey)" />
+      <FileWrites Include="$(_HotReloadWebSocketKeyDirectory)websocket-key.public.json;
+                           $(_HotReloadWebSocketKeyDirectory)websocket-key.private.json" />
+    </ItemGroup>
+  </Target>
+
   <!-- To achieve incremental build with property change. When any property changes, WriteOnlyWhenDifferent will be triggered to write cache file.
   And the cache file's timestamp will be later, and it then triggers the incremental build.-->
   <Target Name="_GenerateRuntimeConfigurationFilesInputCache" DependsOnTargets="_DefaultMicrosoftNETPlatformLibrary">
@@ -354,6 +386,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(SelfContained)"/>
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(TargetFramework)"/>
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(UserRuntimeConfig)"/>
+      <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(GenerateProbingPathsToRuntimeConfigDevFile)"/>
+      <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(EnableHotReloadInRuntimeConfigDevFile)"/>
       <_GenerateRuntimeConfigurationPropertyInputsCacheToHash Include="$(_WriteIncludedFrameworks)"/>
     </ItemGroup>
 
@@ -415,7 +449,8 @@ Copyright (c) .NET Foundation. All rights reserved.
                                        AdditionalProbingPaths="@(AdditionalProbingPath)"
                                        IsSelfContained="$(SelfContained)"
                                        WriteIncludedFrameworks="$(_WriteIncludedFrameworks)"
-                                       GenerateRuntimeConfigDevFile="$(GenerateRuntimeConfigDevFile)"
+                                       GenerateProbingPathsToRuntimeConfigDevFile="$(GenerateProbingPathsToRuntimeConfigDevFile)"
+                                       GenerateHotReloadRuntimeOptionsToRuntimeConfigDevFile="$(EnableHotReloadInRuntimeConfigDevFile)"
                                        AlwaysIncludeCoreFramework="$(AlwaysIncludeCoreFrameworkInRuntimeConfig)">
 
     </GenerateRuntimeConfigurationFiles>
@@ -1457,6 +1492,17 @@ Copyright (c) .NET Foundation. All rights reserved.
        This allows tools to run validation or logic required to compute any required data,
        which cannot be done during evaluation.  -->
   <Target Name="ComputeRunArguments" />
+
+  <!-- Errors out for unsupported run scenarios (e.g. .NET Framework on non-Windows). -->
+  <Target Name="_CheckRunCommandSupported"
+          AfterTargets="ComputeRunArguments">
+    <NETSdkError Condition="'$(_IsExecutable)' == 'true'
+                            and '$(TargetFrameworkIdentifier)' == '.NETFramework'
+                            and '$(RunCommand)' == ''
+                            and !$([MSBuild]::IsOSPlatform('Windows'))"
+                 ResourceName="RunCommandRequiresWindowsForNetFramework"
+                 FormatArguments="$(MSBuildProjectName);$(NETCoreAppMaximumVersion)" />
+  </Target>
 
 
   <!-- Override MSBuild Run Target -->

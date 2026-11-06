@@ -9,36 +9,37 @@ using ProductionDotNetHelper = Microsoft.CodeAnalysis.Tools.Utilities.DotNetHelp
 
 namespace Microsoft.CodeAnalysis.Tools.Tests
 {
+    [TestClass]
     public class ProgramTests
     {
-        [Fact]
+        [TestMethod]
         public void ExitCodeIsOneWithCheckAndAnyFilesFormatted()
         {
             var formatResult = new WorkspaceFormatResult(filesFormatted: 1, fileCount: 0, exitCode: 0);
             var exitCode = FormatCommandCommon.GetExitCode(formatResult, check: true);
 
-            Assert.Equal(FormatCommandCommon.CheckFailedExitCode, exitCode);
+            Assert.AreEqual(FormatCommandCommon.CheckFailedExitCode, exitCode);
         }
 
-        [Fact]
+        [TestMethod]
         public void ExitCodeIsZeroWithCheckAndNoFilesFormatted()
         {
             var formatResult = new WorkspaceFormatResult(filesFormatted: 0, fileCount: 0, exitCode: 42);
             var exitCode = FormatCommandCommon.GetExitCode(formatResult, check: true);
 
-            Assert.Equal(0, exitCode);
+            Assert.AreEqual(0, exitCode);
         }
 
-        [Fact]
+        [TestMethod]
         public void ExitCodeIsSameWithoutCheck()
         {
             var formatResult = new WorkspaceFormatResult(filesFormatted: 0, fileCount: 0, exitCode: 42);
             var exitCode = FormatCommandCommon.GetExitCode(formatResult, check: false);
 
-            Assert.Equal(formatResult.ExitCode, exitCode);
+            Assert.AreEqual(formatResult.ExitCode, exitCode);
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_OptionsAreParsedCorrectly()
         {
             // Arrange
@@ -56,24 +57,25 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 "--include-generated"});
 
             // Assert
-            Assert.Empty(result.Errors);
-            Assert.Empty(result.UnmatchedTokens);
-            Assert.Empty(result.UnmatchedTokens);
+            Assert.IsEmpty(result.Errors);
+            Assert.IsEmpty(result.UnmatchedTokens);
             result.GetValue(FormatCommandCommon.NoRestoreOption);
-            Assert.Collection(result.GetValue(FormatCommandCommon.IncludeOption),
-                i0 => Assert.Equal("include1", i0),
-                i1 => Assert.Equal("include2", i1));
-            Assert.Collection(result.GetValue(FormatCommandCommon.ExcludeOption),
-                i0 => Assert.Equal("exclude1", i0),
-                i1 => Assert.Equal("exclude2", i1));
-            Assert.True(result.GetValue(FormatCommandCommon.VerifyNoChanges));
-            Assert.Equal("binary-log-path", result.GetValue(FormatCommandCommon.BinarylogOption));
-            Assert.Equal("report", result.GetValue(FormatCommandCommon.ReportOption));
-            Assert.Equal("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
-            Assert.True(result.GetValue(FormatCommandCommon.IncludeGeneratedOption));
+            var includeValues = result.GetValue(FormatCommandCommon.IncludeOption).ToArray();
+            Assert.HasCount(2, includeValues);
+            Assert.AreEqual("include1", includeValues[0]);
+            Assert.AreEqual("include2", includeValues[1]);
+            var excludeValues = result.GetValue(FormatCommandCommon.ExcludeOption).ToArray();
+            Assert.HasCount(2, excludeValues);
+            Assert.AreEqual("exclude1", excludeValues[0]);
+            Assert.AreEqual("exclude2", excludeValues[1]);
+            Assert.IsTrue(result.GetValue(FormatCommandCommon.VerifyNoChanges));
+            Assert.AreEqual("binary-log-path", result.GetValue(FormatCommandCommon.BinarylogOption));
+            Assert.AreEqual("report", result.GetValue(FormatCommandCommon.ReportOption));
+            Assert.AreEqual("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
+            Assert.IsTrue(result.GetValue(FormatCommandCommon.IncludeGeneratedOption));
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_ProjectArgument_Simple()
         {
             // Arrange
@@ -83,11 +85,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "workspaceValue" });
 
             // Assert
-            Assert.Empty(result.Errors);
-            Assert.Equal("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
+            Assert.IsEmpty(result.Errors);
+            Assert.AreEqual("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_ProjectArgument_WithOption_AfterArgument()
         {
             // Arrange
@@ -97,12 +99,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "workspaceValue", "--verbosity", "detailed" });
 
             // Assert
-            Assert.Empty(result.Errors);
-            Assert.Equal("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
-            Assert.Equal("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
+            Assert.IsEmpty(result.Errors);
+            Assert.AreEqual("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
+            Assert.AreEqual("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_ProjectArgument_WithOption_BeforeArgument()
         {
             // Arrange
@@ -112,12 +114,12 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--verbosity", "detailed", "workspaceValue" });
 
             // Assert
-            Assert.Empty(result.Errors);
-            Assert.Equal("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
-            Assert.Equal("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
+            Assert.IsEmpty(result.Errors);
+            Assert.AreEqual("workspaceValue", result.GetValue(FormatCommandCommon.SlnOrProjectArgument));
+            Assert.AreEqual("detailed", result.GetValue(FormatCommandCommon.VerbosityOption));
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_ProjectArgument_FailsIfSpecifiedTwice()
         {
             // Arrange
@@ -127,10 +129,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "workspaceValue1", "workspaceValue2" });
 
             // Assert
-            Assert.Single(result.Errors);
+            Assert.ContainsSingle(result.Errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_FolderValidation_FailsIfFixAnalyzersSpecified()
         {
             // Arrange
@@ -140,10 +142,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--folder", "--fix-analyzers" });
 
             // Assert
-            Assert.Single(result.Errors);
+            Assert.ContainsSingle(result.Errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_FolderValidation_FailsIfFixStyleSpecified()
         {
             // Arrange
@@ -153,10 +155,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--folder", "--fix-style" });
 
             // Assert
-            Assert.Single(result.Errors);
+            Assert.ContainsSingle(result.Errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_FolderValidation_FailsIfNoRestoreSpecified()
         {
             // Arrange
@@ -166,10 +168,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "whitespace", "--folder", "--no-restore" });
 
             // Assert
-            Assert.Single(result.Errors);
+            Assert.ContainsSingle(result.Errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_BinaryLog_DoesNotFailIfPathNotSpecified()
         {
             // Arrange
@@ -179,11 +181,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--binarylog" });
 
             // Assert
-            Assert.Empty(result.Errors);
-            Assert.NotNull(result.GetResult(FormatCommandCommon.BinarylogOption));
+            Assert.IsEmpty(result.Errors);
+            Assert.IsNotNull(result.GetResult(FormatCommandCommon.BinarylogOption));
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_BinaryLog_DoesNotFailIfPathIsSpecified()
         {
             // Arrange
@@ -193,11 +195,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--binarylog", "log" });
 
             // Assert
-            Assert.Empty(result.Errors);
-            Assert.NotNull(result.GetResult(FormatCommandCommon.BinarylogOption));
+            Assert.IsEmpty(result.Errors);
+            Assert.IsNotNull(result.GetResult(FormatCommandCommon.BinarylogOption));
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_BinaryLog_FailsIfFolderIsSpecified()
         {
             // Arrange
@@ -207,10 +209,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "whitespace", "--folder", "--binarylog" });
 
             // Assert
-            Assert.Single(result.Errors);
+            Assert.ContainsSingle(result.Errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_Diagnostics_FailsIfDiagnosticNoSpecified()
         {
             // Arrange
@@ -220,10 +222,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--diagnostics" });
 
             // Assert
-            Assert.Single(result.Errors);
+            Assert.ContainsSingle(result.Errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_Diagnostics_DoesNotFailIfDiagnosticIsSpecified()
         {
             // Arrange
@@ -233,10 +235,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--diagnostics", "RS0016" });
 
             // Assert
-            Assert.Empty(result.Errors);
+            Assert.IsEmpty(result.Errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_Diagnostics_DoesNotFailIfMultipleDiagnosticAreSpecified()
         {
             // Arrange
@@ -246,10 +248,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--diagnostics", "RS0016", "RS0017", "RS0018" });
 
             // Assert
-            Assert.Empty(result.Errors);
+            Assert.IsEmpty(result.Errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_FrameworkOption_IsParsedCorrectly()
         {
             // Arrange
@@ -259,11 +261,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "--framework", "net8.0" });
 
             // Assert
-            Assert.Empty(result.Errors);
-            Assert.Equal("net8.0", result.GetValue(FormatCommandCommon.FrameworkOption));
+            Assert.IsEmpty(result.Errors);
+            Assert.AreEqual("net8.0", result.GetValue(FormatCommandCommon.FrameworkOption));
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_FrameworkOption_ShortAlias_IsParsedCorrectly()
         {
             // Arrange
@@ -273,11 +275,11 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "-f", "net8.0" });
 
             // Assert
-            Assert.Empty(result.Errors);
-            Assert.Equal("net8.0", result.GetValue(FormatCommandCommon.FrameworkOption));
+            Assert.IsEmpty(result.Errors);
+            Assert.AreEqual("net8.0", result.GetValue(FormatCommandCommon.FrameworkOption));
         }
 
-        [Fact]
+        [TestMethod]
         public void CommandLine_FolderValidation_FailsIfFrameworkSpecified()
         {
             // Arrange
@@ -287,10 +289,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var result = sut.Parse(new[] { "whitespace", "--folder", "--framework", "net8.0" });
 
             // Assert
-            Assert.Single(result.Errors);
+            Assert.ContainsSingle(result.Errors);
         }
 
-        [Fact]
+        [TestMethod]
         public void ParseCommonOptions_FrameworkOption_SetsTargetFramework()
         {
             // Arrange
@@ -302,10 +304,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var formatOptions = result.ParseCommonOptions(FormatOptions.Instance, logger);
 
             // Assert
-            Assert.Equal("net8.0", formatOptions.TargetFramework);
+            Assert.AreEqual("net8.0", formatOptions.TargetFramework);
         }
 
-        [Fact]
+        [TestMethod]
         public void ParseCommonOptions_NoFrameworkOption_LeavesTargetFrameworkNull()
         {
             // Arrange
@@ -317,7 +319,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
             var formatOptions = result.ParseCommonOptions(FormatOptions.Instance, logger);
 
             // Assert
-            Assert.Null(formatOptions.TargetFramework);
+            Assert.IsNull(formatOptions.TargetFramework);
         }
     }
 }

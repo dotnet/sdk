@@ -12,6 +12,7 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
     // dotnet-watch specific options:
     public readonly Option<bool> QuietOption = new("--quiet", "-q") { Description = Resources.Help_Quiet, Arity = ArgumentArity.Zero };
     public readonly Option<bool> VerboseOption = new("--verbose") { Description = Resources.Help_Verbose, Arity = ArgumentArity.Zero };
+    public readonly Option<bool> TraceOption = new("--trace") { Description = Resources.Help_Trace, Arity = ArgumentArity.Zero };
     public readonly Option<bool> ListOption = new("--list") { Description = Resources.Help_List, Arity = ArgumentArity.Zero };
     public readonly Option<bool> NoHotReloadOption = new("--no-hot-reload") { Description = Resources.Help_NoHotReload, Arity = ArgumentArity.Zero };
     public readonly Option<bool> NonInteractiveOption = new("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
@@ -23,6 +24,15 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
     {
         Description = CommandDefinitionStrings.BuildFrameworkOptionDescription,
         HelpName = CommandDefinitionStrings.FrameworkArgumentName,
+    };
+
+    /// <summary>
+    /// Specifies the device to run on. The watcher passes the value explicitly instead of forwarding the subcommand's --device option.
+    /// </summary>
+    public readonly Option<string?> DeviceOption = new("--device")
+    {
+        Description = Resources.Help_Device,
+        HelpName = "DEVICE_ID",
     };
 
     // Options we need to know about. They are passed through to the subcommand if the subcommand supports them.
@@ -76,10 +86,12 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
 
         Options.Add(QuietOption);
         Options.Add(VerboseOption);
+        Options.Add(TraceOption);
         Options.Add(ListOption);
         Options.Add(NoHotReloadOption);
         Options.Add(NonInteractiveOption);
         Options.Add(FrameworkOption);
+        Options.Add(DeviceOption);
 
         Options.Add(LongProjectOption);
         Options.Add(ShortProjectOption);
@@ -92,6 +104,16 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
             if (v.HasOption(QuietOption) && v.HasOption(VerboseOption))
             {
                 v.AddError(string.Format(Resources.Cannot_specify_both_0_and_1_options, QuietOption.Name, VerboseOption.Name));
+            }
+
+            if (v.HasOption(QuietOption) && v.HasOption(TraceOption))
+            {
+                v.AddError(string.Format(Resources.Cannot_specify_both_0_and_1_options, QuietOption.Name, TraceOption.Name));
+            }
+
+            if (v.HasOption(VerboseOption) && v.HasOption(TraceOption))
+            {
+                v.AddError(string.Format(Resources.Cannot_specify_both_0_and_1_options, VerboseOption.Name, TraceOption.Name));
             }
 
             var hasLongProjectOption = v.HasOption(LongProjectOption);
@@ -115,8 +137,10 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
     public bool IsWatchOption(Option option)
         => option == QuietOption ||
            option == VerboseOption ||
+           option == TraceOption ||
            option == ListOption ||
            option == NoHotReloadOption ||
            option == NonInteractiveOption ||
-           option == FrameworkOption;
+           option == FrameworkOption ||
+           option == DeviceOption;
 }

@@ -12,7 +12,7 @@ internal static class LoggingUtilities
     public static ILogger CreateLogger(this ILoggerFactory factory, string componentName, string displayName)
         => factory.CreateLogger($"{componentName}|{displayName}");
 
-    public static (string comonentName, string? displayName) ParseCategoryName(string categoryName)
+    public static (string componentName, string? displayName) ParseCategoryName(string categoryName)
         => categoryName.IndexOf('|') is int index && index > 0
             ? (categoryName[..index], categoryName[(index + 1)..])
             : (categoryName, null);

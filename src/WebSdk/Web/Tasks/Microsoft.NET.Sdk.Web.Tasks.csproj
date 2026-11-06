@@ -42,7 +42,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Analyzers" VersionOverride="$(MicrosoftAspNetCoreAnalyzersPackageVersion)" PrivateAssets="All" BundleAsAnalyzer="true" />
     <PackageReference Include="Microsoft.AspNetCore.Components.SdkAnalyzers" VersionOverride="$(MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion)" PrivateAssets="All" BundleAsAnalyzer="true" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Analyzers" VersionOverride="$(MicrosoftAspNetCoreMvcAnalyzersPackageVersion)" PrivateAssets="All" BundleAsAnalyzer="true" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" VersionOverride="$(MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion)" PrivateAssets="All" BundleAsAnalyzer="true" />
   </ItemGroup>
 
   <Target Name="_PackBundledAnalyzers" Inputs="@(PackageReference-&gt;HasMetadata('BundleAsAnalyzer'))" Outputs="%(PackageReference.Identity)" BeforeTargets="Build">

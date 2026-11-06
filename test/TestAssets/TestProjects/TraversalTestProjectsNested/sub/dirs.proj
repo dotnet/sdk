@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.Build.Traversal/4.1.82">
+  <ItemGroup>
+    <ProjectReference Include="..\SharedTestProject\SharedTestProject.csproj" />
+    <ProjectReference Include="..\LeafTestProject\LeafTestProject.csproj" />
+  </ItemGroup>
+</Project>

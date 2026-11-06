@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
     <PackageId>Microsoft.NET.Sdk</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
   </PropertyGroup>
@@ -12,6 +13,7 @@
     <Description>The MSBuild targets and properties for building .NET Core projects.</Description>
     <OutputType>Library</OutputType>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+    <IsAotCompatible Condition="$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))">true</IsAotCompatible>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -60,7 +62,7 @@
     <PackageReference Include="NuGet.Build.Tasks.Pack" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <!-- Use an alias for APICompat so that we bring in the binaries, but don't accidentally reference any types -->
-    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiCompat\Microsoft.DotNet.ApiCompat.Task\Microsoft.DotNet.ApiCompat.Task.csproj" Aliases="unused" PrivateAssets="All" Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" />
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
@@ -92,6 +94,12 @@
     <PackageReference Update="NuGet.ProjectModel" ExcludeAssets="Runtime" />
   </ItemGroup>
 
+  <!-- MSBuildUtilities.cs is shared with the Microsoft.DotNet.FileBasedPrograms source package; this symbol
+       selects the Microsoft.DotNet.Cli namespace for the build-tasks copy. See https://github.com/dotnet/sdk/issues/51487. -->
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);MSBUILD_BUILD_TASKS</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <Compile Include="..\Common\**\*.cs" LinkBase="Common" />
@@ -99,12 +107,15 @@
     <Compile Include="..\..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="WorkloadManifestReader" />
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\PathComponentUtilities.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\MSBuildUtilities.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\NuGetUtils.NuGet.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\HotReloadKeyPair.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Installer\Windows\TrustedMachinePath.cs" LinkBase="Cli" />
   </ItemGroup>
 
   <ItemGroup>

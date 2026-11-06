@@ -1,16 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <PackageId>testSdkBlazorWasm</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -20,7 +16,8 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>AspNetTestTfm</_Parameter1>
-      <_Parameter2>$(SdkTargetFramework)</_Parameter2>
+      <!-- NetTFMUpdate: Keep test apps on the TFM supported by the flowed ASP.NET Core packs. -->
+      <_Parameter2>net11.0</_Parameter2>
     </AssemblyAttribute>
     <!-- We use these to templatize the output from our build/publish tests to ensure the right set of
          files gets published in all circumstances.
@@ -52,7 +49,7 @@
     <ProjectReference Include="..\..\src\BlazorWasmSdk\Tasks\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\src\RazorSdk\Tasks\Microsoft.NET.Sdk.Razor.Tasks.csproj" />
     <ProjectReference Include="..\..\src\StaticWebAssetsSdk\Tasks\Microsoft.NET.Sdk.StaticWebAssets.Tasks.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,6 +8,14 @@ Static Web Assets (SWA) creates a **virtual file system** that remaps these file
 
 The build pipeline is implemented as a set of MSBuild targets and tasks. Targets orchestrate the pipeline phases, tasks contain the logic.
 
+The [service worker targets](Targets/Microsoft.NET.Sdk.StaticWebAssets.ServiceWorker.targets)
+register existing `ServiceWorker` source items as `UpToDateCheckInput` in the `StaticWebAssets` set
+when removing them from `Content`. This keeps existing PWA projects' development service
+workers tracked by Visual Studio's fast up-to-date check without requiring project-file
+changes. Missing development sources are not registered, matching build asset creation.
+`PublishedContent` is a publish-only source and is not added to `UpToDateCheckInput`
+by this registration.
+
 ## 2. Static Web Assets
 
 `StaticWebAsset` (`Tasks/Data/StaticWebAsset.cs`) is the core abstraction. It represents a single file tracked through the build and publish pipeline. Every property falls into one of six categories.
@@ -21,6 +29,11 @@ The build pipeline is implemented as a set of MSBuild targets and tasks. Targets
 - **Referential integrity**: Every non-primary asset (`Related` or `Alternative`) must point to a valid asset definition via `RelatedAsset`. If an asset is removed, all assets that reference it must also be removed.
 - **Endpoint validity**: Every `StaticWebAssetEndpoint` must point to an existing `StaticWebAsset` via `AssetFile`. There must be no endpoints referencing non-existent assets.
 - **Endpoint uniqueness**: Endpoints are unique by the `(Route, AssetFile)` pair. No two endpoints share the same route and asset file combination.
+
+MSBuild can log captured task inputs asynchronously, so endpoint projection must not
+modify its input item arrays. Collect retained endpoints separately and return compact
+outputs without null entries, as in
+[`ComputeEndpointsForReferenceStaticWebAssets`](Tasks/ComputeEndpointsForReferenceStaticWebAssets.cs).
 
 **Required properties (every asset must have)**
 

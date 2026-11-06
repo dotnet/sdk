@@ -7,9 +7,11 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class AspireHotReloadTests : DotNetWatchTestBase
 {
-    [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
     public async Task Aspire_BuildError_ManualRestart()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAspire")
@@ -18,6 +20,7 @@ public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         var serviceProjectDisplay = $"WatchAspire.ApiService ({ToolsetInfo.CurrentTargetFramework})";
         var webProjectDisplay = $"WatchAspire.Web ({ToolsetInfo.CurrentTargetFramework})";
         var hostProjectDisplay = $"WatchAspire.AppHost ({ToolsetInfo.CurrentTargetFramework})";
+        var migrationProjectDisplay = $"WatchAspire.MigrationService ({ToolsetInfo.CurrentTargetFramework})";
 
         var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
         var serviceProjectPath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "WatchAspire.ApiService.csproj");
@@ -28,10 +31,17 @@ public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
 
         App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
 
+        // DEBUG_* environment variables should be set for app host process:
+        await App.WaitUntilOutputContains($"dotnet watch 🕵️ [{hostProjectDisplay}] Setting environment variables (3)");
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // check that Aspire server output is logged via dotnet-watch reporter:
         await App.WaitUntilOutputContains("dotnet watch ⭐ Now listening on:");
+        
+        // environment variables should be set for all resource processes:
+        await App.WaitUntilOutputContains($"dotnet watch 🕵️ [{migrationProjectDisplay}] Setting environment variables");
+        await App.WaitUntilOutputContains($"dotnet watch 🕵️ [{serviceProjectDisplay}] Setting environment variables");
+        await App.WaitUntilOutputContains($"dotnet watch 🕵️ [{webProjectDisplay}] Setting environment variables");
 
         // wait until after all DCP sessions have started:
         await App.WaitUntilOutputContains("dotnet watch ⭐ [#1] Session started");
@@ -54,7 +64,7 @@ public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.WaitUntilOutputContains("Using Aspire process launcher.");
 
         // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
-        Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
+        Assert.HasCount(1, App.Process.Output.Where(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
         App.Process.ClearOutput();
 
         // rude edit with build error:
@@ -122,7 +132,8 @@ public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         // It might get cancelled and not delivered on shutdown.
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
     public async Task Aspire_NoEffect_AutoRestart()
     {
         var tfm = ToolsetInfo.CurrentTargetFramework;

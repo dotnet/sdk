@@ -20,52 +20,46 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
                 Nullable.Equals(node.Parent?.IsKind(SyntaxKind.SimpleMemberAccessExpression), True)
         End Function
 
-        Protected Overrides Async Function SpecifyCurrentCultureAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, node As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
-            If ShouldFix(node) Then
-                Dim memberAccess = DirectCast(node.Parent, MemberAccessExpressionSyntax)
-
-                If memberAccess.Parent Is Nothing OrElse Not memberAccess.Parent.IsKind(SyntaxKind.InvocationExpression) Then
-                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, memberAccess, cancellationToken).ConfigureAwait(False)
-                End If
-
-                Dim invocation = DirectCast(memberAccess.Parent, InvocationExpressionSyntax)
-                If invocation.ArgumentList Is Nothing Then
-                    Return Await SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document, generator, root, memberAccess, invocation, cancellationToken).ConfigureAwait(False)
-                End If
-
-                Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
-                Dim symbolInfo = model.GetSymbolInfo(node, cancellationToken).Symbol
-                Dim methodSymbol = TryCast(symbolInfo, IMethodSymbol)
-
-                If methodSymbol IsNot Nothing And methodSymbol.Parameters.Length = 0 Then
-                    Dim newArg = generator.Argument(CreateCurrentCultureMemberAccess(generator, model)).WithAdditionalAnnotations(Formatter.Annotation)
-                    Dim newInvocation = invocation.AddArgumentListArguments(DirectCast(newArg, ArgumentSyntax)).WithAdditionalAnnotations(Formatter.Annotation)
-                    Dim newRoot = root.ReplaceNode(invocation, newInvocation)
-                    Return document.WithSyntaxRoot(newRoot)
-                End If
+        Protected Overrides Function GetNodeToSpecifyCurrentCultureOn(node As SyntaxNode, model As SemanticModel, cancellationToken As CancellationToken) As SyntaxNode
+            If Not ShouldFix(node) Then
+                Return Nothing
             End If
 
-            Return document
-        End Function
+            Dim memberAccess = DirectCast(node.Parent, MemberAccessExpressionSyntax)
 
-        Private Shared Async Function SpecifyCurrentCultureWhenTheresNoArgumentListAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, memberAccess As MemberAccessExpressionSyntax, nodeToReplace As SyntaxNode, cancellationToken As CancellationToken) As Task(Of Document)
-            Dim model = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
-            Dim newArg = generator.Argument(CreateCurrentCultureMemberAccess(generator, model)).WithAdditionalAnnotations(Formatter.Annotation)
-            Dim invocation = generator.InvocationExpression(memberAccess.WithoutTrailingTrivia(), newArg).WithAdditionalAnnotations(Formatter.Annotation)
-            Dim newRoot = root.ReplaceNode(nodeToReplace, invocation)
-            Return document.WithSyntaxRoot(newRoot)
-        End Function
-
-        Protected Overrides Function UseInvariantVersionAsync(document As Document, generator As SyntaxGenerator, root As SyntaxNode, node As SyntaxNode) As Task(Of Document)
-            If ShouldFix(node) Then
-                Dim memberAccess = DirectCast(node.Parent, MemberAccessExpressionSyntax)
-                Dim replacementMethodName = GetReplacementMethodName(memberAccess.Name.Identifier.Text)
-                Dim newMemberAccess = memberAccess.WithName(DirectCast(generator.IdentifierName(replacementMethodName), SimpleNameSyntax)).WithAdditionalAnnotations(Formatter.Annotation)
-                Dim newRoot = root.ReplaceNode(memberAccess, newMemberAccess)
-                Return Task.FromResult(document.WithSyntaxRoot(newRoot))
+            If memberAccess.Parent Is Nothing OrElse Not memberAccess.Parent.IsKind(SyntaxKind.InvocationExpression) Then
+                Return memberAccess
             End If
 
-            Return Task.FromResult(document)
+            Dim invocation = DirectCast(memberAccess.Parent, InvocationExpressionSyntax)
+            If invocation.ArgumentList Is Nothing Then
+                Return invocation
+            End If
+
+            Dim methodSymbol = TryCast(model.GetSymbolInfo(node, cancellationToken).Symbol, IMethodSymbol)
+            Return If(methodSymbol IsNot Nothing AndAlso methodSymbol.Parameters.Length = 0, invocation, Nothing)
+        End Function
+
+        Protected Overrides Function SpecifyCurrentCulture(currentNode As SyntaxNode, currentCultureArgument As SyntaxNode, generator As SyntaxGenerator) As SyntaxNode
+            Dim argument = currentCultureArgument.WithAdditionalAnnotations(Formatter.Annotation)
+            Dim invocation = TryCast(currentNode, InvocationExpressionSyntax)
+
+            If invocation IsNot Nothing AndAlso invocation.ArgumentList IsNot Nothing Then
+                Return invocation.AddArgumentListArguments(DirectCast(argument, ArgumentSyntax)).WithAdditionalAnnotations(Formatter.Annotation)
+            End If
+
+            Dim target = If(invocation IsNot Nothing, invocation.Expression, currentNode)
+            Return generator.InvocationExpression(target.WithoutTrailingTrivia(), argument).WithAdditionalAnnotations(Formatter.Annotation)
+        End Function
+
+        Protected Overrides Function GetMemberAccessToMakeInvariant(node As SyntaxNode) As SyntaxNode
+            Return If(ShouldFix(node), node.Parent, Nothing)
+        End Function
+
+        Protected Overrides Function UseInvariantVersion(currentMemberAccess As SyntaxNode, generator As SyntaxGenerator) As SyntaxNode
+            Dim memberAccess = DirectCast(currentMemberAccess, MemberAccessExpressionSyntax)
+            Dim replacementMethodName = GetReplacementMethodName(memberAccess.Name.Identifier.Text)
+            Return memberAccess.WithName(DirectCast(generator.IdentifierName(replacementMethodName), SimpleNameSyntax)).WithAdditionalAnnotations(Formatter.Annotation)
         End Function
     End Class
 End Namespace

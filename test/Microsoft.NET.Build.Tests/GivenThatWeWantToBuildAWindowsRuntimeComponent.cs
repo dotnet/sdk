@@ -1,17 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAWindowsRuntimeComponent : SdkTest
     {
-        public GivenThatWeWantToBuildAWindowsRuntimeComponent(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_to_produce_winmds_for_net5_0_or_newer()
         {
             var testAsset = TestAssetsManager
@@ -26,7 +24,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1131: ");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_when_referencing_windows_sdk_contracts_nuget_package_for_net5_0_or_newer()
         {
             var testProject = new TestProject("WinMDClasslibrary")
@@ -48,7 +46,7 @@ namespace Microsoft.NET.Build.Tests
                 .And.NotHaveStdOutContaining("NETSDK1149");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_when_referencing_a_library_using_built_in_winrt_support()
         {
             var testProject = new TestProject("WinMDClasslibrary")
@@ -69,9 +67,9 @@ namespace Microsoft.NET.Build.Tests
                 .And.NotHaveStdOutContaining("NETSDK1130");
         }
 
-        [Theory]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net48")]
+        [TestMethod]
+        [DataRow("netcoreapp3.1")]
+        [DataRow("net48")]
         public void It_successfully_builds_when_referencing_winmds(string targetFramework)
         {
             var testProject = new TestProject("WinMDClasslibrary")
@@ -89,7 +87,9 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [WindowsOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/52032")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/52032")]
+        [OSCondition(OperatingSystems.Windows)]
         public void ManagedWinRTComponentCanBeReferenced()
         {
             var managedWinRTComponent = new TestProject()
@@ -194,7 +194,9 @@ class Program
                 .HaveStdOut("(0, 0)");
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/51361")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/51361")]
+        [FullMSBuildOnly]
         public void WinMDInteropProjectCanBeReferenced()
         {
 

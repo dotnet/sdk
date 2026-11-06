@@ -12,6 +12,9 @@ internal sealed class RemoveReferenceCommandDefinition() : ReferenceRemoveComman
 
     public RemoveCommandDefinition Parent => (RemoveCommandDefinition)Parents.Single();
 
-    public override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.GetValue(Parent.ProjectOrFileArgument);
+    public override Option<string?>? GetFileOption() => null;
+
+    public override Option<string?>? GetProjectOption() => null;
+
+    public override Argument<string>? GetProjectOrFileArgument() => Parent.ProjectOrFileArgument;
 }

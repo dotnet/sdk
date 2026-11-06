@@ -1,0 +1,42 @@
+{
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TestAssets.TemplateWithCircleDependencyInMacros",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithCircleDependencyInMacros",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithCircleDependencyInMacros",
+  "shortName": "TestAssets.TemplateWithCircleDependencyInMacros",
+  "defaultName": "theDefaultName",
+  "symbols": {
+    "switchCheck": {
+      "type": "generated",
+      "generator": "switch",
+      "datatype": "string",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(switchCheck2 == 'regions')",
+            "value": "regions"
+          }
+        ]
+      }
+    },
+    "switchCheck2": {
+      "type": "generated",
+      "generator": "switch",
+      "datatype": "string",
+      "parameters": {
+        "evaluator": "C++",
+        "cases": [
+          {
+            "condition": "(switchCheck == 'regions')",
+            "value": "regions"
+          }
+        ]
+      }
+    }
+  }
+}

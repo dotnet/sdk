@@ -1,21 +1,20 @@
-﻿<Project>
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- These tests were authored for xUnit, which only parallelizes across classes (methods within a class run
+         sequentially). Many tests within a class share fixed paths (e.g. a fixed binlog name) or test asset
+         directories, so running methods of the same class in parallel causes file-in-use/missing-file races.
+         Override the repo-wide MethodLevel default with ClassLevel to preserve the original xUnit semantics. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
-
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- Strip the '-parallel none' flag here -->
-    <XUnitRunnerAdditionalArguments></XUnitRunnerAdditionalArguments>
     <PackageId>testSdkBuild</PackageId>
   </PropertyGroup>
 
@@ -29,7 +28,6 @@
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="NuGet.Common" />
-    <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,7 +35,7 @@
     <ProjectReference Include="..\..\src\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" PrivateAssets="all" ReferenceOutputAssembly="false" />
 
     <ProjectReference Include="..\..\src\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
     <ProjectReference Include="..\TelemetryStdOutLogger\TelemetryStdOutLogger.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
   </ItemGroup>
@@ -54,7 +52,4 @@
     <!-- Use string resources from tasks in order to validate test output. -->
     <EmbeddedResource Include="..\..\src\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
   </ItemGroup>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-
 </Project>

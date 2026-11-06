@@ -33,6 +33,7 @@ namespace GenerateDocumentationAndConfigFiles
         {
             const int expectedArguments = 23;
             const string validateOnlyPrefix = "-validateOnly:";
+            const string analyzerVersionTemplate = "${AnalyzerVersion}";
 
             if (args.Length != expectedArguments)
             {
@@ -451,7 +452,9 @@ namespace GenerateDocumentationAndConfigFiles
 
                     if (!string.IsNullOrWhiteSpace(analyzerVersion))
                     {
-                        writer.Write("version", analyzerVersion);
+                        // Keep the checked-in SARIF stable across SDK version updates.
+                        // The build resolves this placeholder into the intermediate output that gets packed.
+                        writer.Write("version", analyzerVersionTemplate);
                     }
 
                     writer.Write("language", culture.Name);
@@ -528,7 +531,20 @@ namespace GenerateDocumentationAndConfigFiles
                     // Note: Although a using statement exists for the textWriter, its scope is the whole method.
                     // So Dispose isn't called before the whole method returns.
                     textWriter.Close();
-                    Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                    try
+                    {
+                        Validate(Path.Combine(directory.FullName, analyzerSarifFileName), File.ReadAllText(fileWithPath), fileNamesWithValidationFailures);
+                    }
+                    finally
+                    {
+                        // Best-effort cleanup of the temp sarif file (fileWithPath points to the temp-* file, not the checked-in one).
+                        try
+                        {
+                            File.Delete(fileWithPath);
+                        }
+                        catch (IOException) { }
+                        catch (UnauthorizedAccessException) { }
+                    }
                 }
 
                 return;
@@ -724,7 +740,7 @@ namespace GenerateDocumentationAndConfigFiles
                             var sourceText = SourceText.From(fileStream);
                             var releaseTrackingData = ReleaseTrackingHelper.ReadReleaseTrackingData(shippedFile, sourceText,
                                 onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {shippedFile} at {line.LineNumber}: '{line}'"),
-                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {shippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, kind, _3, _4) => throw new InvalidOperationException(InvalidEntryMessage(shippedFile, line, kind)),
                                 isShippedFile: true);
                             releaseTrackingFilesDataBuilder.Add(releaseTrackingData);
                             versionsBuilder.AddRange(releaseTrackingData.Versions);
@@ -734,7 +750,7 @@ namespace GenerateDocumentationAndConfigFiles
                             var sourceTextUnshipped = SourceText.From(fileStreamUnshipped);
                             var releaseTrackingDataUnshipped = ReleaseTrackingHelper.ReadReleaseTrackingData(unshippedFile, sourceTextUnshipped,
                                 onDuplicateEntryInRelease: (_1, _2, _3, _4, line) => throw new InvalidOperationException($"Duplicate entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
-                                onInvalidEntry: (line, _2, _3, _4) => throw new InvalidOperationException($"Invalid entry in {unshippedFile} at {line.LineNumber}: '{line}'"),
+                                onInvalidEntry: (line, kind, _3, _4) => throw new InvalidOperationException(InvalidEntryMessage(unshippedFile, line, kind)),
                                 isShippedFile: false);
                             releaseTrackingFilesDataBuilder.Add(releaseTrackingDataUnshipped);
                         }
@@ -873,6 +889,11 @@ namespace GenerateDocumentationAndConfigFiles
                 }
             }
         }
+
+        private static string InvalidEntryMessage(string file, TextLine line, InvalidEntryKind kind)
+            => kind == InvalidEntryKind.HelpLink
+                ? $"Documentation link does not match the rule ID in {file} at {line.LineNumber}: '{line}'. Expected '{ReleaseTrackingHelper.HelpLinkPrefix}' followed by the lowercased rule ID."
+                : $"Invalid entry in {file} at {line.LineNumber}: '{line}'";
 
         private static void CreateRuleset(
             string analyzerRulesetsDir,

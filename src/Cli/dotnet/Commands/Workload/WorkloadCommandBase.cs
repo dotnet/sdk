@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
@@ -17,6 +18,20 @@ namespace Microsoft.DotNet.Cli.Commands.Workload;
 internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefinition>
     where TDefinition : WorkloadCommandDefinitionBase
 {
+    protected static WorkloadId ParseWorkloadId(string workloadId)
+    {
+        try
+        {
+            return new WorkloadId(workloadId);
+        }
+        catch (ArgumentException)
+        {
+            throw new GracefulException(
+                string.Format(CliCommandStrings.WorkloadNotRecognized, workloadId),
+                isUserError: false);
+        }
+    }
+
     /// <summary>
     /// The package downloader to use for acquiring NuGet packages.
     /// </summary>
@@ -68,6 +83,13 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
     /// <summary>
     /// Gets whether signatures for workload packages and installers should be verified.
     /// </summary>
+    /// <remarks>
+    /// Controls both NuGet package signature verification (passed to
+    /// <see cref="NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads"/>) and
+    /// MSI Authenticode verification (passed to
+    /// <see cref="Install.WorkloadInstallerFactory.GetWorkloadInstaller"/>).
+    /// Set by <see cref="WorkloadUtilities.ShouldVerifySignatures(bool)"/>.
+    /// </remarks>
     protected bool VerifySignatures
     {
         get;
@@ -118,15 +140,12 @@ internal abstract class WorkloadCommandBase<TDefinition> : CommandBase<TDefiniti
         else
         {
             IsPackageDownloaderProvided = false;
-            PackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+            PackageDownloader = NuGetPackageDownloader.NuGetPackageDownloader.CreateForWorkloads(
                 TempPackagesDirectory,
-                filePermissionSetter: null,
-                new FirstPartyNuGetPackageSigningVerifier(),
+                VerifySignatures,
                 nugetLogger,
                 Reporter,
-                restoreActionConfig: RestoreActionConfiguration,
-                verifySignatures: VerifySignatures,
-                shouldUsePackageSourceMapping: true);
+                RestoreActionConfiguration);
         }
     }
 }

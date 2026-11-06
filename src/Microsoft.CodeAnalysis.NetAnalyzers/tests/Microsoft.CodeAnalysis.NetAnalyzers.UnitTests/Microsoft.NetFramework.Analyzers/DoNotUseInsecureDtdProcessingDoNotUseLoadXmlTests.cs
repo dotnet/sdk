@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -25,699 +24,755 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseDtdProcessingOverloads).WithLocation(line, column).WithArguments("LoadXml");
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadXmlShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class DoNotUseLoadXml
-    {
-        public void TestMethod(string xml)
-        {
-            XmlDocument doc = new XmlDocument(){ XmlResolver = null };
-            doc.LoadXml(xml);
-        }
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class DoNotUseLoadXml
+                        {
+                            public void TestMethod(string xml)
+                            {
+                                XmlDocument doc = new XmlDocument(){ XmlResolver = null };
+                                doc.LoadXml(xml);
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(11, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml
+                """
 
-Module TestClass
-    Sub TestMethod(xml as String)
-        Dim doc As XmlDocument = New XmlDocument() With { _
-            .XmlResolver = Nothing _
-        }
-        Call doc.LoadXml(xml)
-    End Sub
-End Module",
+                    Imports System
+                    Imports System.Xml
+
+                    Module TestClass
+                        Sub TestMethod(xml as String)
+                            Dim doc As XmlDocument = New XmlDocument() With { _
+                                .XmlResolver = Nothing _
+                            }
+                            Call doc.LoadXml(xml)
+                        End Sub
+                    End Module
+                    """,
                 GetCA3075LoadXmlBasicResultAt(10, 14)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadXmlInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-class TestClass
-{
-    public XmlDocument Test
-    {
-        get {
-            var xml = """";
-            XmlDocument doc = new XmlDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-            return doc;
-        }
-    }
-}",
+                    using System.Xml;
+
+                    class TestClass
+                    {
+                        public XmlDocument Test
+                        {
+                            get {
+                                var xml = "";
+                                XmlDocument doc = new XmlDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                                return doc;
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(11, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Class TestClass
-    Public ReadOnly Property Test() As XmlDocument
-        Get
-            Dim xml = """"
-            Dim doc As New XmlDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            Call doc.LoadXml(xml)
-            Return doc
-        End Get
-    End Property
-End Class",
+                    Imports System.Xml
+
+                    Class TestClass
+                        Public ReadOnly Property Test() As XmlDocument
+                            Get
+                                Dim xml = ""
+                                Dim doc As New XmlDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                Call doc.LoadXml(xml)
+                                Return doc
+                            End Get
+                        End Property
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(11, 18)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadXmlInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-class TestClass
-{
-    XmlDocument privateDoc;
-    public XmlDocument GetDoc
-    {
-        set
-        {
-            if (value == null)
-            {
-                var xml = """";
-                XmlDocument doc = new XmlDocument() { XmlResolver = null };
-                doc.LoadXml(xml);
-                privateDoc = doc;
-            }
-            else
-                privateDoc = value;
-        }
-    }
-}",
+                    using System.Xml;
+
+                    class TestClass
+                    {
+                        XmlDocument privateDoc;
+                        public XmlDocument GetDoc
+                        {
+                            set
+                            {
+                                if (value == null)
+                                {
+                                    var xml = "";
+                                    XmlDocument doc = new XmlDocument() { XmlResolver = null };
+                                    doc.LoadXml(xml);
+                                    privateDoc = doc;
+                                }
+                                else
+                                    privateDoc = value;
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(15, 17)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Class TestClass
-    Private privateDoc As XmlDocument
-    Public WriteOnly Property GetDoc() As XmlDocument
-        Set
-            If value Is Nothing Then
-                Dim xml = """"
-                Dim doc As New XmlDocument() With { _
-                    .XmlResolver = Nothing _
-                }
-                doc.LoadXml(xml)
-                privateDoc = doc
-            Else
-                privateDoc = value
-            End If
-        End Set
-    End Property
-End Class",
+                    Imports System.Xml
+
+                    Class TestClass
+                        Private privateDoc As XmlDocument
+                        Public WriteOnly Property GetDoc() As XmlDocument
+                            Set
+                                If value Is Nothing Then
+                                    Dim xml = ""
+                                    Dim doc As New XmlDocument() With { _
+                                        .XmlResolver = Nothing _
+                                    }
+                                    doc.LoadXml(xml)
+                                    privateDoc = doc
+                                Else
+                                    privateDoc = value
+                                End If
+                            End Set
+                        End Property
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(13, 17)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadXmlInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
-using System.Xml;
+                """
 
-class TestClass
-{
-    private void TestMethod()
-    {
-        try
-        {
-            var xml = """";
-            XmlDocument doc = new XmlDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-        }
-        catch (Exception) { throw; }
-        finally { }
-    }
-}",
+                    using System;
+                    using System.Xml;
+
+                    class TestClass
+                    {
+                        private void TestMethod()
+                        {
+                            try
+                            {
+                                var xml = "";
+                                XmlDocument doc = new XmlDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                            }
+                            catch (Exception) { throw; }
+                            finally { }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(13, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml
+                """
 
-Class TestClass
-    Private Sub TestMethod()
-        Try
-            Dim xml = """"
-            Dim doc As New XmlDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            doc.LoadXml(xml)
-        Catch generatedExceptionName As Exception
-            Throw
-        Finally
-        End Try
-    End Sub
-End Class",
+                    Imports System
+                    Imports System.Xml
+
+                    Class TestClass
+                        Private Sub TestMethod()
+                            Try
+                                Dim xml = ""
+                                Dim doc As New XmlDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                doc.LoadXml(xml)
+                            Catch generatedExceptionName As Exception
+                                Throw
+                            Finally
+                            End Try
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(12, 13)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadXmlInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
-using System.Xml;
+                """
 
-class TestClass
-{
-    private void TestMethod()
-    {
-        try { }
-        catch (Exception)
-        {
-            var xml = """";
-            XmlDocument doc = new XmlDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-        }
-        finally { }
-    }
-}",
+                    using System;
+                    using System.Xml;
+
+                    class TestClass
+                    {
+                        private void TestMethod()
+                        {
+                            try { }
+                            catch (Exception)
+                            {
+                                var xml = "";
+                                XmlDocument doc = new XmlDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                            }
+                            finally { }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(14, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml
+                """
 
-Class TestClass
-    Private Sub TestMethod()
-        Try
-        Catch generatedExceptionName As Exception
-            Dim xml = """"
-            Dim doc As New XmlDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            doc.LoadXml(xml)
-        Finally
-        End Try
-    End Sub
-End Class",
+                    Imports System
+                    Imports System.Xml
+
+                    Class TestClass
+                        Private Sub TestMethod()
+                            Try
+                            Catch generatedExceptionName As Exception
+                                Dim xml = ""
+                                Dim doc As New XmlDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                doc.LoadXml(xml)
+                            Finally
+                            End Try
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(13, 13)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadXmlInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
-using System.Xml;
+                """
 
-class TestClass
-{
-    private void TestMethod()
-    {
-        try { }
-        catch (Exception) { throw; }
-        finally
-        {
-            var xml = """";
-            XmlDocument doc = new XmlDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-        }
-    }
-}",
+                    using System;
+                    using System.Xml;
+
+                    class TestClass
+                    {
+                        private void TestMethod()
+                        {
+                            try { }
+                            catch (Exception) { throw; }
+                            finally
+                            {
+                                var xml = "";
+                                XmlDocument doc = new XmlDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(15, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml
+                """
 
-Class TestClass
-    Private Sub TestMethod()
-        Try
-        Catch generatedExceptionName As Exception
-            Throw
-        Finally
-            Dim xml = """"
-            Dim doc As New XmlDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            doc.LoadXml(xml)
-        End Try
-    End Sub
-End Class",
+                    Imports System
+                    Imports System.Xml
+
+                    Class TestClass
+                        Private Sub TestMethod()
+                            Try
+                            Catch generatedExceptionName As Exception
+                                Throw
+                            Finally
+                                Dim xml = ""
+                                Dim doc As New XmlDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                doc.LoadXml(xml)
+                            End Try
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(15, 13)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadXmlInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Threading.Tasks;
-using System.Xml;
+                """
 
-class TestClass
-{
-    private async Task TestMethod()
-    {
-        await Task.Run(() => {
-            var xml = """";
-            XmlDocument doc = new XmlDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-        });
-    }
+                    using System.Threading.Tasks;
+                    using System.Xml;
 
-    private async void TestMethod2()
-    {
-        await TestMethod();
-    }
-}",
+                    class TestClass
+                    {
+                        private async Task TestMethod()
+                        {
+                            await Task.Run(() => {
+                                var xml = "";
+                                XmlDocument doc = new XmlDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                            });
+                        }
+
+                        private async void TestMethod2()
+                        {
+                            await TestMethod();
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(12, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Threading.Tasks
-Imports System.Xml
+                """
 
-Class TestClass
-    Private Async Function TestMethod() As Task
-        Await Task.Run(Function() 
-        Dim xml = """"
-        Dim doc As New XmlDocument() With { _
-            .XmlResolver = Nothing _
-        }
-        doc.LoadXml(xml)
+                    Imports System.Threading.Tasks
+                    Imports System.Xml
 
-End Function)
-    End Function
+                    Class TestClass
+                        Private Async Function TestMethod() As Task
+                            Await Task.Run(Function()
+                            Dim xml = ""
+                            Dim doc As New XmlDocument() With { _
+                                .XmlResolver = Nothing _
+                            }
+                            doc.LoadXml(xml)
 
-    Private Async Sub TestMethod2()
-        Await TestMethod()
-    End Sub
-End Class",
+                    End Function)
+                        End Function
+
+                        Private Async Sub TestMethod2()
+                            Await TestMethod()
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(12, 9)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadXmlShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-namespace TestNamespace
-{
-    public class DoNotUseLoadXml
-    {
-        public void TestMethod1(string xml)
-        {
-            XmlDataDocument doc = new XmlDataDocument(){ XmlResolver = null };
-            doc.LoadXml(xml);
-        }
-    }
-}",
+                    using System.Xml;
+
+                    namespace TestNamespace
+                    {
+                        public class DoNotUseLoadXml
+                        {
+                            public void TestMethod1(string xml)
+                            {
+                                XmlDataDocument doc = new XmlDataDocument(){ XmlResolver = null };
+                                doc.LoadXml(xml);
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(11, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Namespace TestNamespace
-    Public Class DoNotUseLoadXml
-        Public Sub TestMethod1(xml As String)
-            Dim doc As New XmlDataDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            doc.LoadXml(xml)
-        End Sub
-    End Class
-End Namespace",
+                    Imports System.Xml
+
+                    Namespace TestNamespace
+                        Public Class DoNotUseLoadXml
+                            Public Sub TestMethod1(xml As String)
+                                Dim doc As New XmlDataDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                doc.LoadXml(xml)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """,
                 GetCA3075LoadXmlBasicResultAt(10, 13)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadXmlInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Xml;
+                """
 
-class TestClass
-{
-    XmlDataDocument privateDoc;
-    public XmlDataDocument SetDoc
-    {
-        set
-        {
-            if (value == null)
-            {
-                var xml = """";
-                XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
-                doc.LoadXml(xml);
-                privateDoc = doc;
-            }
-            else
-                privateDoc = value;
-        }
-    }
-}",
+                    using System.Xml;
+
+                    class TestClass
+                    {
+                        XmlDataDocument privateDoc;
+                        public XmlDataDocument SetDoc
+                        {
+                            set
+                            {
+                                if (value == null)
+                                {
+                                    var xml = "";
+                                    XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
+                                    doc.LoadXml(xml);
+                                    privateDoc = doc;
+                                }
+                                else
+                                    privateDoc = value;
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(15, 17)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Xml
+                """
 
-Class TestClass
-    Private privateDoc As XmlDataDocument
-    Public WriteOnly Property SetDoc() As XmlDataDocument
-        Set
-            If value Is Nothing Then
-                Dim xml = """"
-                Dim doc As New XmlDataDocument() With { _
-                    .XmlResolver = Nothing _
-                }
-                doc.LoadXml(xml)
-                privateDoc = doc
-            Else
-                privateDoc = value
-            End If
-        End Set
-    End Property
-End Class",
+                    Imports System.Xml
+
+                    Class TestClass
+                        Private privateDoc As XmlDataDocument
+                        Public WriteOnly Property SetDoc() As XmlDataDocument
+                            Set
+                                If value Is Nothing Then
+                                    Dim xml = ""
+                                    Dim doc As New XmlDataDocument() With { _
+                                        .XmlResolver = Nothing _
+                                    }
+                                    doc.LoadXml(xml)
+                                    privateDoc = doc
+                                Else
+                                    privateDoc = value
+                                End If
+                            End Set
+                        End Property
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(13, 17)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadXmlInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
-using System.Xml;
+                """
 
-class TestClass
-{
-    private void TestMethod()
-    {
-        try
-        {
-            var xml = """";
-            XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-        }
-        catch (Exception) { throw; }
-        finally { }
-    }
-}",
+                    using System;
+                    using System.Xml;
+
+                    class TestClass
+                    {
+                        private void TestMethod()
+                        {
+                            try
+                            {
+                                var xml = "";
+                                XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                            }
+                            catch (Exception) { throw; }
+                            finally { }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(13, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml
+                """
 
-Class TestClass
-    Private Sub TestMethod()
-        Try
-            Dim xml = """"
-            Dim doc As New XmlDataDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            doc.LoadXml(xml)
-        Catch generatedExceptionName As Exception
-            Throw
-        Finally
-        End Try
-    End Sub
-End Class",
+                    Imports System
+                    Imports System.Xml
+
+                    Class TestClass
+                        Private Sub TestMethod()
+                            Try
+                                Dim xml = ""
+                                Dim doc As New XmlDataDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                doc.LoadXml(xml)
+                            Catch generatedExceptionName As Exception
+                                Throw
+                            Finally
+                            End Try
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(12, 13)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadXmlInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
-using System.Xml;
+                """
 
-class TestClass
-{
-    private void TestMethod()
-    {
-        try { }
-        catch (Exception)
-        {
-            var xml = """";
-            XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-        }
-        finally { }
-    }
-}",
+                    using System;
+                    using System.Xml;
+
+                    class TestClass
+                    {
+                        private void TestMethod()
+                        {
+                            try { }
+                            catch (Exception)
+                            {
+                                var xml = "";
+                                XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                            }
+                            finally { }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(14, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml
+                """
 
-Class TestClass
-    Private Sub TestMethod()
-        Try
-        Catch generatedExceptionName As Exception
-            Dim xml = """"
-            Dim doc As New XmlDataDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            doc.LoadXml(xml)
-        Finally
-        End Try
-    End Sub
-End Class",
+                    Imports System
+                    Imports System.Xml
+
+                    Class TestClass
+                        Private Sub TestMethod()
+                            Try
+                            Catch generatedExceptionName As Exception
+                                Dim xml = ""
+                                Dim doc As New XmlDataDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                doc.LoadXml(xml)
+                            Finally
+                            End Try
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(13, 13)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadXmlInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System;
-using System.Xml;
+                """
 
-class TestClass
-{
-    private void TestMethod()
-    {
-        try { }
-        catch (Exception) { throw; }
-        finally
-        {
-            var xml = """";
-            XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-        }
-    }
-}",
+                    using System;
+                    using System.Xml;
+
+                    class TestClass
+                    {
+                        private void TestMethod()
+                        {
+                            try { }
+                            catch (Exception) { throw; }
+                            finally
+                            {
+                                var xml = "";
+                                XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                            }
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(15, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System
-Imports System.Xml
+                """
 
-Class TestClass
-    Private Sub TestMethod()
-        Try
-        Catch generatedExceptionName As Exception
-            Throw
-        Finally
-            Dim xml = """"
-            Dim doc As New XmlDataDocument() With { _
-                .XmlResolver = Nothing _
-            }
-            doc.LoadXml(xml)
-        End Try
-    End Sub
-End Class",
+                    Imports System
+                    Imports System.Xml
+
+                    Class TestClass
+                        Private Sub TestMethod()
+                            Try
+                            Catch generatedExceptionName As Exception
+                                Throw
+                            Finally
+                                Dim xml = ""
+                                Dim doc As New XmlDataDocument() With { _
+                                    .XmlResolver = Nothing _
+                                }
+                                doc.LoadXml(xml)
+                            End Try
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(15, 13)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadXmlInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Threading.Tasks;
-using System.Xml;
+                """
 
-class TestClass
-{
-    private async Task TestMethod()
-    {
-        await Task.Run(() => {
-            var xml = """";
-            XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-        });
-    }
+                    using System.Threading.Tasks;
+                    using System.Xml;
 
-    private async void TestMethod2()
-    {
-        await TestMethod();
-    }
-}",
+                    class TestClass
+                    {
+                        private async Task TestMethod()
+                        {
+                            await Task.Run(() => {
+                                var xml = "";
+                                XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                            });
+                        }
+
+                        private async void TestMethod2()
+                        {
+                            await TestMethod();
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(12, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Threading.Tasks
-Imports System.Xml
+                """
 
-Class TestClass
-    Private Async Function TestMethod() As Task
-        Await Task.Run(Function() 
-        Dim xml = """"
-        Dim doc As New XmlDataDocument() With { _
-            .XmlResolver = Nothing _
-        }
-        doc.LoadXml(xml)
+                    Imports System.Threading.Tasks
+                    Imports System.Xml
 
-End Function)
-    End Function
+                    Class TestClass
+                        Private Async Function TestMethod() As Task
+                            Await Task.Run(Function()
+                            Dim xml = ""
+                            Dim doc As New XmlDataDocument() With { _
+                                .XmlResolver = Nothing _
+                            }
+                            doc.LoadXml(xml)
 
-    Private Async Sub TestMethod2()
-        Await TestMethod()
-    End Sub
-End Class",
+                    End Function)
+                        End Function
+
+                        Private Async Sub TestMethod2()
+                            Await TestMethod()
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(12, 9)
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadXmlInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-using System.Threading.Tasks;
-using System.Xml;
+                """
 
-class TestClass
-{
-    private async Task TestMethod()
-    {
-        await Task.Run(() => {
-            var xml = """";
-            XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
-            doc.LoadXml(xml);
-        });
-    }
+                    using System.Threading.Tasks;
+                    using System.Xml;
 
-    private async void TestMethod2()
-    {
-        await TestMethod();
-    }
-}",
+                    class TestClass
+                    {
+                        private async Task TestMethod()
+                        {
+                            await Task.Run(() => {
+                                var xml = "";
+                                XmlDataDocument doc = new XmlDataDocument() { XmlResolver = null };
+                                doc.LoadXml(xml);
+                            });
+                        }
+
+                        private async void TestMethod2()
+                        {
+                            await TestMethod();
+                        }
+                    }
+                    """,
                 GetCA3075LoadXmlCSharpResultAt(12, 13)
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net472.Default,
-                @"
-Imports System.Threading.Tasks
-Imports System.Xml
+                """
 
-Class TestClass
-    Private Async Function TestMethod() As Task
-        Await Task.Run(Function() 
-        Dim xml = """"
-        Dim doc As New XmlDataDocument() With { _
-            .XmlResolver = Nothing _
-        }
-        doc.LoadXml(xml)
+                    Imports System.Threading.Tasks
+                    Imports System.Xml
 
-End Function)
-    End Function
+                    Class TestClass
+                        Private Async Function TestMethod() As Task
+                            Await Task.Run(Function()
+                            Dim xml = ""
+                            Dim doc As New XmlDataDocument() With { _
+                                .XmlResolver = Nothing _
+                            }
+                            doc.LoadXml(xml)
 
-    Private Async Sub TestMethod2()
-        Await TestMethod()
-    End Sub
-End Class",
+                    End Function)
+                        End Function
+
+                        Private Async Sub TestMethod2()
+                            Await TestMethod()
+                        End Sub
+                    End Class
+                    """,
                 GetCA3075LoadXmlBasicResultAt(12, 9)
             );
         }

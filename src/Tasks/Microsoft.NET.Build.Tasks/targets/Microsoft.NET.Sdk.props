@@ -35,6 +35,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- User-facing configuration-agnostic defaults -->
   <PropertyGroup>
+    <BuildProjectReferences Condition="'$(BuildProjectReferences)' == '' and '$(NoBuild)' == 'true'">false</BuildProjectReferences>
     <OutputType Condition=" '$(OutputType)' == '' ">Library</OutputType>
     <FileAlignment Condition=" '$(FileAlignment)' == '' ">512</FileAlignment>
     <ErrorReport Condition=" '$(ErrorReport)' == '' ">prompt</ErrorReport>

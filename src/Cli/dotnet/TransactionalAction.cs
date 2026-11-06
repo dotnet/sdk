@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System.Reflection;
 using System.Transactions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -93,18 +92,9 @@ public sealed class TransactionalAction
         }
     }
 
-    private static void SetTransactionManagerField(string fieldName, object value)
-    {
-        typeof(TransactionManager).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Static)
-            .SetValue(null, value);
-    }
-
-    // https://github.com/dotnet/sdk/issues/21101
-    // we should use the proper API once it is available
     public static void DisableTransactionTimeoutUpperLimit()
     {
-        SetTransactionManagerField("s_cachedMaxTimeout", true);
-        SetTransactionManagerField("s_maximumTimeout", TimeSpan.Zero);
+        TransactionManager.MaximumTimeout = TimeSpan.Zero;
     }
 
     public static void Run(

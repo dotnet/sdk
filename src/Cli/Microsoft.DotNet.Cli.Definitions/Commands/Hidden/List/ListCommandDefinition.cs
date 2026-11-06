@@ -20,7 +20,7 @@ internal sealed class ListCommandDefinition : Command
             Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 
-    public readonly Argument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CommandDefinitionStrings.SolutionOrProjectArgumentName, CommandDefinitionStrings.SolutionOrProjectArgumentDescription);
+    public readonly Argument<string> SlnOrProjectOrFileArgument = CreateSlnOrProjectArgument(CommandDefinitionStrings.SolutionOrProjectOrFileArgumentName, CommandDefinitionStrings.SolutionOrProjectOrFileArgumentDescription);
 
     public readonly ListPackageCommandDefinition PackageCommand = new();
     public readonly ListReferenceCommandDefinition ReferenceCommand = new();
@@ -31,7 +31,7 @@ internal sealed class ListCommandDefinition : Command
         Hidden = true;
         this.DocsLink = Link;
 
-        Arguments.Add(SlnOrProjectArgument);
+        Arguments.Add(SlnOrProjectOrFileArgument);
         Subcommands.Add(PackageCommand);
         Subcommands.Add(ReferenceCommand);
     }

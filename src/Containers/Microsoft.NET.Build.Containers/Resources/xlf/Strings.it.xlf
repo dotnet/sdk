@@ -179,11 +179,6 @@
         <target state="translated">È stato eseguito il push dell'indice immagine "{0}" nel registro "{1}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">La creazione dell'indice delle immagini per Podman non è supportata.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: non è stato possibile caricare l'immagine dal registro locale. stdout: {0}</target>
@@ -194,6 +189,11 @@
         <target state="translated">CONTAINER1020: non è stato possibile caricare l'immagine perché l'archivio immagini in contenitori non è abilitato per Docker. Suggerimento: è possibile abilitarlo selezionando 'Usa contenitore per il pull e l'archiviazione delle immagini' nelle impostazioni di Docker Desktop.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="translated">CONTAINER1021: Le immagini multi-architettura non possono essere caricate in WSLC. Pubblicare un'immagine a piattaforma singola oppure pubblica l'immagine multi-architettura in un registry.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: il pull di immagini dal registro locale non è supportato.</target>
@@ -203,6 +203,36 @@
         <source>Cannot create image index because no images were provided.</source>
         <target state="translated">Non è possibile creare l'indice dell'immagine perché non sono state specificate immagini.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InvalidAuthRealmAllowedAddress">
+        <source>CONTAINER2033: The {0} environment variable contains '{1}', which is not a valid IP address or CIDR range. Separate entries with semicolons.</source>
+        <target state="new">CONTAINER2033: The {0} environment variable contains '{1}', which is not a valid IP address or CIDR range. Separate entries with semicolons.</target>
+        <note>{StrBegins="CONTAINER2033: "} {0} is an environment variable name; {1} is the invalid entry.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthRealmPolicy">
+        <source>CONTAINER2034: The {0} environment variable has the value '{1}', which is not a valid policy. Valid values are 'Public', 'AllowlistOnly', and 'None'.</source>
+        <target state="new">CONTAINER2034: The {0} environment variable has the value '{1}', which is not a valid policy. Valid values are 'Public', 'AllowlistOnly', and 'None'.</target>
+        <note>{StrBegins="CONTAINER2034: "} {0} is an environment variable name; {1} is its value. Do not translate 'Public', 'AllowlistOnly', or 'None'.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_DisallowedScheme">
+        <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
+        <target state="translated">il realm bearer '{0}' usa lo schema '{1}', che non è consentito; è accettato solo 'https' (o 'http' quando il registry è configurato come non sicuro)</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_RealmBlockedBySsrfPolicy">
+        <source>the token request to bearer realm '{0}' was blocked by server-side request forgery (SSRF) protection: {1} If the realm is trusted, add its IP addresses to the {2} environment variable, or change the policy with the {3} environment variable</source>
+        <target state="new">the token request to bearer realm '{0}' was blocked by server-side request forgery (SSRF) protection: {1} If the realm is trusted, add its IP addresses to the {2} environment variable, or change the policy with the {3} environment variable</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is a non-localized detail message from the SSRF protection library; {2} and {3} are environment variable names and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
+        <source>bearer realm '{0}' is not a valid absolute URI</source>
+        <target state="translated">il realm bearer '{0}' non è un URI assoluto valido</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_UnexpectedAuthOrigin">
+        <source>authentication challenge origin '{0}' does not match registry origin '{1}'</source>
+        <target state="new">authentication challenge origin '{0}' does not match registry origin '{1}'</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the origin that returned the authentication challenge; {1} is the expected registry origin.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
@@ -254,6 +284,11 @@
         <target state="translated">CONTAINER2017: un elemento ContainerPort è stato fornito con un tipo di porta '{0}' non valido. Gli elementi ContainerPort devono avere un valore Include che è un numero intero e un valore Type impostato su 'tcp' o 'udp'.</target>
         <note>{StrBegins="CONTAINER2017: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidRegistryAuthResponse">
+        <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
+        <target state="translated">CONTAINER1019: il '{0}' del Registro di sistema ha restituito una risposta di autenticazione non valida: {1}</target>
+        <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
+      </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
         <source>CONTAINER2018: Invalid SDK prerelease version '{0}' - only 'rc' and 'preview' are supported.</source>
         <target state="translated">CONTAINER2018: valore '{0}' non valido per la versione non definitiva dell'SDK - Sono supportate solo le versioni 'rc' e 'preview'.</target>
@@ -263,6 +298,11 @@
         <source>CONTAINER2019: Invalid SDK semantic version '{0}'.</source>
         <target state="translated">CONTAINER2019: versione semantica dell'SDK non valida '{0}'.</target>
         <note>{StrBegins="CONTAINER2019: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidSourceDateEpoch">
+        <source>CONTAINER2032: SOURCE_DATE_EPOCH value '{0}' is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset.</source>
+        <target state="new">CONTAINER2032: SOURCE_DATE_EPOCH value '{0}' is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset.</target>
+        <note>{StrBegins="CONTAINER2032: "}</note>
       </trans-unit>
       <trans-unit id="InvalidTag">
         <source>CONTAINER2007: Invalid {0} provided: {1}. Image tags must be alphanumeric, underscore, hyphen, or period.</source>
@@ -378,6 +418,11 @@
         <source>Finished uploading layer '{0}' to '{1}'.</source>
         <target state="translated">Caricamento del livello '{0}' in '{1}' completato.</target>
         <note>{0} is the layer digest, {1} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="Registry_ManifestExists">
+        <source>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</source>
+        <target state="translated">Il manifesto '{0}' esiste già nel repository '{1}'. I caricamenti di livello e configurazione verranno ignorati.</target>
+        <note>{0} is the manifest digest, {1} is the repository name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">
         <source>Uploading manifest to registry '{0}' as blob '{1}'.</source>

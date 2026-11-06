@@ -9,11 +9,12 @@ using Moq;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
+    [TestClass]
     public class ZshDetectorTests
     {
-        [Theory]
-        [InlineData("/bin/zsh")]
-        [InlineData("/other-place/zsh")]
+        [TestMethod]
+        [DataRow("/bin/zsh")]
+        [DataRow("/other-place/zsh")]
         public void GivenFollowingEnvironmentVariableValueItCanDetectZsh(string environmentVariableValue)
         {
             Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);
@@ -25,10 +26,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
             ZshDetector.IsZshTheUsersShell(provider.Object).Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData("/bin/bash")]
-        [InlineData("/other/value")]
-        [InlineData(null)]
+        [TestMethod]
+        [DataRow("/bin/bash")]
+        [DataRow("/other/value")]
+        [DataRow(null)]
         public void GivenFollowingEnvironmentVariableValueItCanDetectItIsNotZsh(string environmentVariableValue)
         {
             Mock<IEnvironmentProvider> provider = new(MockBehavior.Strict);

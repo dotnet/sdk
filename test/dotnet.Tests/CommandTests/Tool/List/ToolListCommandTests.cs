@@ -8,9 +8,10 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolListCommandTests
     {
-        [Fact]
+        [TestMethod]
         public void WhenRunWithBothGlobalAndToolPathShowErrorMessage()
         {
             var result = Parser.Parse($"dotnet tool list -g --tool-path /test/path");
@@ -26,7 +27,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     "--global --tool-path"));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithBothGlobalAndLocalShowErrorMessage()
         {
             var result = Parser.Parse($"dotnet tool list --local --tool-path /test/path");

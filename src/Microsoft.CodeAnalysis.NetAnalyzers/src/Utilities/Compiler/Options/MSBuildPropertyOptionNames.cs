@@ -3,10 +3,6 @@
 
 using System.Diagnostics;
 
-#if CODEANALYSIS_V3_OR_BETTER
-using System.Linq;
-#endif
-
 namespace Analyzer.Utilities
 {
     /// <summary>
@@ -24,6 +20,7 @@ namespace Analyzer.Utilities
         public const string InvariantGlobalization = nameof(InvariantGlobalization);
         public const string PlatformNeutralAssembly = nameof(PlatformNeutralAssembly);
         public const string EnforceExtendedAnalyzerRules = nameof(EnforceExtendedAnalyzerRules);
+        public const string EntryPointFilePath = nameof(EntryPointFilePath);
     }
 
     internal static class MSBuildPropertyOptionNamesHelpers
@@ -31,9 +28,7 @@ namespace Analyzer.Utilities
         [Conditional("DEBUG")]
         public static void VerifySupportedPropertyOptionName(string propertyOptionName)
         {
-#if CODEANALYSIS_V3_OR_BETTER
             Debug.Assert(typeof(MSBuildPropertyOptionNames).GetFields().Single(f => f.Name == propertyOptionName) != null);
-#endif
         }
     }
 }

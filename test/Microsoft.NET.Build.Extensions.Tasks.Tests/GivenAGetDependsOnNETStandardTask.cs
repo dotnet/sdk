@@ -4,12 +4,14 @@
 #nullable disable
 
 using System.Reflection;
+using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    public class GivenAGetDependsOnNETStandardTask
+    [TestClass]
+    public class GivenAGetDependsOnNETStandardTask : SdkTest
     {
-        [Fact]
+        [TestMethod]
         public void CanCheckThisAssembly()
         {
             var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardTask).GetTypeInfo().Assembly.Location;
@@ -25,7 +27,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.DependsOnNETStandard.Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void CanCheckThisAssemblyByHintPath()
         {
             var thisAssemblyPath = typeof(GivenAGetDependsOnNETStandardTask).GetTypeInfo().Assembly.Location;
@@ -49,7 +51,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.DependsOnNETStandard.Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsFalseForNonPE()
         {
             string testFile = $"testFile.{nameof(GivenAGetDependsOnNETStandardTask)}.{nameof(ReturnsFalseForNonPE)}.txt";
@@ -74,7 +76,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsFalseForNativeLibrary()
         {
             var corelibLocation = typeof(object).GetTypeInfo().Assembly.Location;
@@ -101,7 +103,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void SucceedsOnMissingFileReturnsFalse()
         {
             var missingFile = $"{nameof(SucceedsOnMissingFileReturnsFalse)}.shouldNotExist.dll";
@@ -118,31 +120,41 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             ((MockBuildEngine)task.BuildEngine).Warnings.Count.Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void SucceedsWithWarningOnLockedFile()
         {
-            var lockedFile = $"{nameof(SucceedsWithWarningOnLockedFile)}.dll";
+            var testDir = TestAssetsManager.CreateTestDirectory();
+            var lockedFileName = $"{nameof(SucceedsWithWarningOnLockedFile)}.dll";
+            var lockedFilePath = Path.Combine(testDir.Path, lockedFileName);
 
-            try
+            // Create file with exclusive lock (no sharing)
+            using (var fileHandle = new FileStream(lockedFilePath, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
             {
+                // Verify the lock is actually held before running the task.
+                // On some CI machines, antimalware or file system filters can
+                // interfere with file locking, causing the test to be unreliable.
+                try
+                {
+                    using var probe = new FileStream(lockedFilePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+                    Assert.Fail(
+                        "File lock is not being enforced — the probe open should have thrown IOException. " +
+                        "This may indicate antimalware or file system filter interference on this machine.");
+                }
+                catch (IOException)
+                {
+                    // Expected — the lock is working correctly
+                }
+
                 var task = new GetDependsOnNETStandard()
                 {
                     BuildEngine = new MockBuildEngine(),
-                    TaskEnvironment = TaskEnvironmentHelper.CreateForTest(),
-                    References = new[] { new MockTaskItem() { ItemSpec = lockedFile } }
+                    TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(testDir.Path),
+                    References = new[] { new MockTaskItem() { ItemSpec = lockedFileName } }
                 };
 
-                // create file with no sharing
-                using (var fileHandle = new FileStream(lockedFile, FileMode.Create, FileAccess.ReadWrite, FileShare.None))
-                {
-                    task.Execute().Should().BeTrue();
-                    task.DependsOnNETStandard.Should().BeFalse();
-                    ((MockBuildEngine)task.BuildEngine).Warnings.Count.Should().BeGreaterThan(0);
-                }
-            }
-            finally
-            {
-                File.Delete(lockedFile);
+                task.Execute().Should().BeTrue();
+                task.DependsOnNETStandard.Should().BeFalse();
+                ((MockBuildEngine)task.BuildEngine).Warnings.Count.Should().BeGreaterThan(0);
             }
         }
     }

@@ -5,9 +5,10 @@ using Aspire.Tools.Service;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class AspireServiceFactoryTests
 {
-    [Fact]
+    [TestMethod]
     public void GetRunCommandArguments_Empty()
     {
         var request = new ProjectLaunchRequest()
@@ -24,7 +25,7 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj"], args);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetRunCommandArguments_DisableLaunchProfile()
     {
         var request = new ProjectLaunchRequest()
@@ -41,9 +42,9 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--no-launch-profile" ], args);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(null)]
     public void GetRunCommandArguments_NoLaunchProfile_HostProfile(string? launchProfile)
     {
         var request = new ProjectLaunchRequest()
@@ -60,9 +61,9 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "H"], args);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(null)]
     public void GetRunCommandArguments_DisableLaunchProfile_HostProfile(string? launchProfile)
     {
         var request = new ProjectLaunchRequest()
@@ -79,9 +80,9 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--no-launch-profile"], args);
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData(null)]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow(null)]
     public void GetRunCommandArguments_NoLaunchProfile_NoHostProfile(string? launchProfile)
     {
         var request = new ProjectLaunchRequest()
@@ -97,7 +98,7 @@ public class AspireServiceFactoryTests
 
         AssertEx.SequenceEqual(["--project", "a.csproj"], args);
     }
-    [Fact]
+    [TestMethod]
     public void GetRunCommandArguments_LaunchProfile_NoArgs()
     {
         var request = new ProjectLaunchRequest()
@@ -114,7 +115,7 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "P"], args);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetRunCommandArguments_LaunchProfile_EmptyArgs()
     {
         var request = new ProjectLaunchRequest()
@@ -131,7 +132,7 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "P", "--no-launch-profile-arguments"], args);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetRunCommandArguments_LaunchProfile_NonEmptyArgs()
     {
         var request = new ProjectLaunchRequest()

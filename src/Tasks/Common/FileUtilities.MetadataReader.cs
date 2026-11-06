@@ -12,6 +12,7 @@
 //  versions of cross-gened assemblies.  See https://github.com/dotnet/sdk/issues/1502
 #if NETCOREAPP || !EXTENSIONS
 
+using System.Collections.Concurrent;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 
@@ -19,7 +20,7 @@ namespace Microsoft.NET.Build.Tasks
 {
     static partial class FileUtilities
     {
-        private static Dictionary<string, (DateTime LastKnownWriteTimeUtc, Version? Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
+        private static readonly ConcurrentDictionary<string, (DateTime LastKnownWriteTimeUtc, Version? Version)> s_versionCache = new(StringComparer.OrdinalIgnoreCase /* Not strictly correct on *nix. Fix? */);
 
         private static Version? GetAssemblyVersion(string sourcePath)
         {

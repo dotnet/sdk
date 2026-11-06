@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.UseStringEqualsOverStringCompare,
@@ -17,6 +16,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseStringEqualsOverStringCompareTests
     {
         #region Test Data
@@ -102,217 +102,281 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #endregion
 
-        [Theory]
-        [MemberData(nameof(CS_ComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(CS_ComparisonRightOfLiteralTestData))]
-        [MemberData(nameof(CS_InvertedComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(CS_InvertedComparisonRightOfLiteralTestData))]
+        [TestMethod]
+        [DynamicData(nameof(CS_ComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(CS_ComparisonRightOfLiteralTestData))]
+        [DynamicData(nameof(CS_InvertedComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(CS_InvertedComparisonRightOfLiteralTestData))]
         public Task StringCompareResult_CompareToZero_Diagnostic_CSAsync(string testExpression, string fixedExpression)
         {
-            string testCode = $@"
-using System;
+            string testCode = $$"""
+                using System;
 
-public class Testopolis
-{{
-    public bool Huh(string x, string y)
-    {{
-        return {{|#0:{testExpression}|}};
-    }}
-}}";
-            string fixedCode = $@"
-using System;
+                public class Testopolis
+                {
+                    public bool Huh(string x, string y)
+                    {
+                        return {|#0:{{testExpression}}|};
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
 
-public class Testopolis
-{{
-    public bool Huh(string x, string y)
-    {{
-        return {fixedExpression};
-    }}
-}}";
+                public class Testopolis
+                {
+                    public bool Huh(string x, string y)
+                    {
+                        return {{fixedExpression}};
+                    }
+                }
+                """;
 
             return VerifyCS.VerifyCodeFixAsync(testCode, VerifyCS.Diagnostic(Rule).WithLocation(0), fixedCode);
         }
 
-        [Theory, WorkItem(6609, "https://github.com/dotnet/roslyn-analyzers/issues/6609")]
-        [MemberData(nameof(CS_InvertedEqualsComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(CS_EqualsComparisonLeftOfLiteralTestData))]
+        [TestMethod, WorkItem(6609, "https://github.com/dotnet/roslyn-analyzers/issues/6609")]
+        [DynamicData(nameof(CS_InvertedEqualsComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(CS_EqualsComparisonLeftOfLiteralTestData))]
         public Task ComparisonWithEquals(string testExpression, string fixedExpression)
         {
-            string testCode = $@"
-using System;
+            string testCode = $$"""
+                using System;
 
-public class Testopolis
-{{
-    public bool Huh(string x, string y)
-    {{
-        return {testExpression};
-    }}
-}}";
-            string fixedCode = $@"
-using System;
+                public class Testopolis
+                {
+                    public bool Huh(string x, string y)
+                    {
+                        return {{testExpression}};
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
 
-public class Testopolis
-{{
-    public bool Huh(string x, string y)
-    {{
-        return {fixedExpression};
-    }}
-}}";
+                public class Testopolis
+                {
+                    public bool Huh(string x, string y)
+                    {
+                        return {{fixedExpression}};
+                    }
+                }
+                """;
 
             return VerifyCS.VerifyCodeFixAsync(testCode, fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(VB_ComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(VB_ComparisonRightOfLiteralTestData))]
-        [MemberData(nameof(VB_InvertedComparisonLeftOfLiteralTestData))]
-        [MemberData(nameof(VB_InvertedComparisonRightOfLiteralTestData))]
+        [TestMethod]
+        [DynamicData(nameof(VB_ComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(VB_ComparisonRightOfLiteralTestData))]
+        [DynamicData(nameof(VB_InvertedComparisonLeftOfLiteralTestData))]
+        [DynamicData(nameof(VB_InvertedComparisonRightOfLiteralTestData))]
         public Task StringCompareResult_CompareToZero_Diagnostic_VBAsync(string testExpression, string fixedExpression)
         {
-            string testCode = $@"
-Imports System
+            string testCode = $$"""
+                Imports System
 
-Public Class Testopolis
+                Public Class Testopolis
 
-    Public Function Huh(x As String, y As String) As Boolean
-        Return {{|#0:{testExpression}|}}
-    End Function
-End Class";
-            string fixedCode = $@"
-Imports System
+                    Public Function Huh(x As String, y As String) As Boolean
+                        Return {|#0:{{testExpression}}|}
+                    End Function
+                End Class
+                """;
+            string fixedCode = $"""
+                Imports System
 
-Public Class Testopolis
+                Public Class Testopolis
 
-    Public Function Huh(x As String, y As String) As Boolean
-        Return {fixedExpression}
-    End Function
-End Class";
+                    Public Function Huh(x As String, y As String) As Boolean
+                        Return {fixedExpression}
+                    End Function
+                End Class
+                """;
 
             return VerifyVB.VerifyCodeFixAsync(testCode, VerifyVB.Diagnostic(Rule).WithLocation(0), fixedCode);
         }
 
-        [Theory]
-        [MemberData(nameof(CS_StringCompareExpressionsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(CS_StringCompareExpressionsTestData))]
         public Task StringCompareResult_CompareToNonLiteralZero_NoDiagnostic_CSAsync(string expression)
         {
-            string code = $@"
-using System;
+            string code = $$"""
+                using System;
 
-public class Testopolis
-{{
-    private const int Zero = 0;
+                public class Testopolis
+                {
+                    private const int Zero = 0;
 
-    public void Method(string x, string y)
-    {{
-        bool a = {expression} == Zero;
-        bool b = {expression} != Zero;
-        bool c = Zero == {expression};
-        bool d = Zero != {expression};
-    }}
-}}";
+                    public void Method(string x, string y)
+                    {
+                        bool a = {{expression}} == Zero;
+                        bool b = {{expression}} != Zero;
+                        bool c = Zero == {{expression}};
+                        bool d = Zero != {{expression}};
+                    }
+                }
+                """;
 
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(VB_StringCompareExpressionsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(VB_StringCompareExpressionsTestData))]
         public Task StringCompareResult_CompareToNonLiteralZero_NoDiagnostic_VBAsync(string expression)
         {
-            var code = $@"
-Imports System
+            var code = $"""
+                Imports System
 
-Public Class Testopolis
-    Private Const Zero As Integer = 0
+                Public Class Testopolis
+                    Private Const Zero As Integer = 0
 
-    Public Sub Method(x As String, y As String)
-        Dim a = {expression} = Zero
-        Dim b = {expression} <> Zero
-        Dim c = Zero = {expression}
-        Dim d = Zero <> {expression}
-    End Sub
-End Class";
+                    Public Sub Method(x As String, y As String)
+                        Dim a = {expression} = Zero
+                        Dim b = {expression} <> Zero
+                        Dim c = Zero = {expression}
+                        Dim d = Zero <> {expression}
+                    End Sub
+                End Class
+                """;
 
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(CS_StringCompareExpressionsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(CS_StringCompareExpressionsTestData))]
         public Task StringCompareResult_CompareToLiteralNonZero_NoDiagnostic_CSAsync(string expression)
         {
-            string code = $@"
-using System;
+            string code = $$"""
+                using System;
 
-public class Testopolis
-{{
-    public void Method(string x, string y)
-    {{
-        bool a = {expression} == 1;
-        bool b = {expression} != 1;
-        bool c = 1 == {expression};
-        bool d = 1 != {expression};
-    }}
-}}";
+                public class Testopolis
+                {
+                    public void Method(string x, string y)
+                    {
+                        bool a = {{expression}} == 1;
+                        bool b = {{expression}} != 1;
+                        bool c = 1 == {{expression}};
+                        bool d = 1 != {{expression}};
+                    }
+                }
+                """;
 
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(VB_StringCompareExpressionsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(VB_StringCompareExpressionsTestData))]
         public Task StringCompareResult_CompareToLiteralNonZero_NoDiagnostic_VBAsync(string expression)
         {
-            string code = $@"
-Imports System
+            string code = $"""
+                Imports System
 
-Public Class Testopolis
-    Public Sub Method(x As String, y As String)
-        Dim a = {expression} = 1
-        Dim b = {expression} <> 1
-        Dim c = 1 = {expression}
-        Dim d = 1 <> {expression}
-    End Sub
-End Class";
+                Public Class Testopolis
+                    Public Sub Method(x As String, y As String)
+                        Dim a = {expression} = 1
+                        Dim b = {expression} <> 1
+                        Dim c = 1 = {expression}
+                        Dim d = 1 <> {expression}
+                    End Sub
+                End Class
+                """;
 
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(CS_IneligibleStringCompareOverloadTestData))]
+        [TestMethod]
+        [DynamicData(nameof(CS_IneligibleStringCompareOverloadTestData))]
         public Task IneligibleStringCompareOverload_NoDiagnostic_CSAsync(string expression)
         {
-            string code = $@"
-using System;
+            string code = $$"""
+                using System;
 
-public class Testopolis
-{{
-    public void Method(string x, string y)
-    {{
-        bool a = {expression} == 0;
-        bool b = {expression} != 0;
-        bool c = 0 == {expression};
-        bool d = 0 != {expression};
-    }}
-}}";
+                public class Testopolis
+                {
+                    public void Method(string x, string y)
+                    {
+                        bool a = {{expression}} == 0;
+                        bool b = {{expression}} != 0;
+                        bool c = 0 == {{expression}};
+                        bool d = 0 != {{expression}};
+                    }
+                }
+                """;
 
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Theory]
-        [MemberData(nameof(VB_IneligibleStringCompareOverloadTestData))]
+        [TestMethod]
+        [DynamicData(nameof(VB_IneligibleStringCompareOverloadTestData))]
         public Task IneligibleStringCompareOverload_NoDiagnostic_VBAsync(string expression)
         {
-            string code = $@"
-Imports System
+            string code = $"""
+                Imports System
 
-Public Class Testopolis
-    Public Sub Method(x As String, y As String)
-        Dim a = {expression} = 0
-        Dim b = {expression} <> 0
-        Dim c = 0 = {expression}
-        Dim d = 0 <> {expression}
-    End Sub
-End Class";
+                Public Class Testopolis
+                    Public Sub Method(x As String, y As String)
+                        Dim a = {expression} = 0
+                        Dim b = {expression} <> 0
+                        Dim c = 0 = {expression}
+                        Dim d = 0 <> {expression}
+                    End Sub
+                End Class
+                """;
 
             return VerifyVB.VerifyAnalyzerAsync(code);
+        }
+
+        [TestMethod]
+        public async Task NestedComparison_FixAllRewritesBoth_CSharpAsync()
+        {
+            string source = """
+                using System;
+
+                public class C
+                {
+                    public bool M(string x, string y)
+                    {
+                        return [|string.Compare(([|string.Compare(x, y) == 0|]).ToString(), y) == 0|];
+                    }
+                }
+                """;
+            string fixedSource = """
+                using System;
+
+                public class C
+                {
+                    public bool M(string x, string y)
+                    {
+                        return string.Equals((string.Equals(x, y)).ToString(), y);
+                    }
+                }
+                """;
+            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+        }
+
+        [TestMethod]
+        public async Task NestedComparison_FixAllRewritesBoth_BasicAsync()
+        {
+            string source = """
+                Imports System
+
+                Public Class C
+                    Public Function M(x As String, y As String) As Boolean
+                        Return [|String.Compare(([|String.Compare(x, y) = 0|]).ToString(), y) = 0|]
+                    End Function
+                End Class
+                """;
+            string fixedSource = """
+                Imports System
+
+                Public Class C
+                    Public Function M(x As String, y As String) As Boolean
+                        Return String.Equals((String.Equals(x, y)).ToString(), y)
+                    End Function
+                End Class
+                """;
+            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
     }
 }

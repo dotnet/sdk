@@ -1,0 +1,37 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Console" ], 
+  "name": "Contoso Sample 08",
+  "identity": "MyProject.08.Sample.CSharp",         
+  "groupIdentity":"MyProject.Sample",
+  "shortName": "sample08",
+  "tags": {
+    "language": "C#",
+    "type":"project"
+  },
+  "sourceName": "MyProject.Con",
+  "preferNameDirectory": true,
+  "symbols":{
+    "skipRestore": {
+          "type": "parameter",
+          "datatype": "bool",
+          "description": "If specified, skips the automatic restore of the project on create.",
+          "defaultValue": "false"
+    }
+  },
+  "primaryOutputs": [
+    {
+      "path": "MyProject.Con.csproj"        
+    }
+  ],
+  "postActions": [{
+    "condition": "(!skipRestore)",
+    "description": "Restore NuGet packages required by this project.",
+    "manualInstructions": [{
+      "text": "Run 'dotnet restore'"
+    }],
+    "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+    "continueOnError": true
+  }]
+}

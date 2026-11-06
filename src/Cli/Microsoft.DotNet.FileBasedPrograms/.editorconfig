@@ -7,6 +7,8 @@
 # when referenced from a project via package reference.
 dotnet_diagnostic.IDE0240.severity = none
 
+dotnet_diagnostic.CA2007.severity = warning # Consider calling ConfigureAwait on the awaited task
+
 dotnet_diagnostic.RS0051.severity = warning # Add internal types and members to the declared API
 dotnet_diagnostic.RS0052.severity = warning # Remove deleted types and members from the declared internal API
 dotnet_diagnostic.RS0053.severity = warning # The contents of the internal API files are invalid

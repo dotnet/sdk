@@ -1,10 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 
@@ -70,7 +73,8 @@ internal sealed class Program(
     private static Program? TryCreate(IReadOnlyList<string> args, IConsole console, EnvironmentOptions environmentOptions, out int errorCode)
     {
         var reporter = new ConsoleReporter(console, environmentOptions.LogMessagePrefix, environmentOptions.SuppressEmojis);
-        var parsingLoggerFactory = new LoggerFactory(reporter, environmentOptions.CliLogLevel ?? LogLevel.Information);
+        var parserLogLevel = environmentOptions.CliContextVerbose ? LogLevel.Debug : LogLevel.Information;
+        var parsingLoggerFactory = new LoggerFactory(reporter, parserLogLevel);
         var options = CommandLineOptions.Parse(args, parsingLoggerFactory.CreateLogger(DotNetWatchContext.DefaultLogComponentName), console.Out, out errorCode);
         if (options == null)
         {
@@ -78,7 +82,7 @@ internal sealed class Program(
             return null;
         }
 
-        var loggerFactory = new LoggerFactory(reporter, environmentOptions.CliLogLevel ?? options.GlobalOptions.LogLevel);
+        var loggerFactory = new LoggerFactory(reporter, options.GlobalOptions.GetEffectiveLogLevel(environmentOptions));
         return TryCreate(options, console, environmentOptions, loggerFactory, reporter, out errorCode);
     }
 
@@ -148,7 +152,14 @@ internal sealed class Program(
 
     private static bool TryFindFileEntryPoint(string workingDirectory, CommandLineOptions options, ILogger logger, [NotNullWhen(true)] out string? entryPointPath)
     {
-        if (options.CommandArguments is not [var firstArg, ..])
+        if (options.Command is not RunCommandDefinition runCommandDefinition)
+        {
+            entryPointPath = null;
+            return false;
+        }
+
+        var runParseResult = runCommandDefinition.Parse(options.CommandArgumentsForFileDiscovery, CommandLineOptions.ParserConfiguration);
+        if (runParseResult.GetValue(runCommandDefinition.ApplicationArguments) is not [var firstArg, ..])
         {
             entryPointPath = null;
             return false;
@@ -261,13 +272,12 @@ internal sealed class Program(
                 logger.LogInformation("Polling file watcher is enabled");
             }
 
-            using var context = CreateContext(processRunner);
+            await using var context = CreateContext(processRunner);
 
             if (IsHotReloadEnabled())
             {
-                using var tfmPrompt = context.Options.NonInteractive ? null
-                    : new SpectreTargetFrameworkSelectionPrompt(console);
-                var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null, tfmPrompt);
+                using var selectionPrompt = context.Options.NonInteractive ? null : new SpectreBuildParametersSelectionPrompt(console);
+                var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null, selectionPrompt);
                 await watcher.WatchAsync(shutdownHandler.CancellationToken);
             }
             else if (mainProjectOptions.Representation.EntryPointFilePath != null)
@@ -347,6 +357,7 @@ internal sealed class Program(
             options.BuildArguments,
             processRunner,
             buildLogger,
+            options.GlobalOptions,
             environmentOptions);
 
         if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)

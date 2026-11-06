@@ -6,9 +6,10 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenASelectRuntimeIdentifierSpecificItems
     {
-        [Fact]
+        [TestMethod]
         public void ItSelectsCompatibleItems()
         {
             // Arrange
@@ -41,7 +42,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.SelectedItems.Should().NotContain(i => i.ItemSpec == "Item2"); // win-x64
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSelectsItemsWithExactMatch()
         {
             // Arrange
@@ -69,7 +70,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.SelectedItems[0].ItemSpec.Should().Be("Item1");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSkipsItemsWithoutRuntimeIdentifierMetadata()
         {
             // Arrange
@@ -98,7 +99,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.SelectedItems[0].ItemSpec.Should().Be("Item1");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItUsesCustomRuntimeIdentifierMetadata()
         {
             // Arrange
@@ -124,7 +125,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.SelectedItems[0].ItemSpec.Should().Be("Item1");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsEmptyArrayWhenNoItemsProvided()
         {
             // Arrange

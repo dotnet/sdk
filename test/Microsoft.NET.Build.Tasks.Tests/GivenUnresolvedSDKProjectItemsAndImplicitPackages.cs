@@ -5,9 +5,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenUnresolvedSDKProjectItemsAndImplicitPackages
     {
-        [Fact]
+        [TestMethod]
         public void ItShouldCombineSdkReferencesWithImplicitPackageReferences()
         {
             // Arrange 

@@ -1,0 +1,182 @@
+import assert from "node:assert/strict";
+import test from "node:test";
+
+import {HelixEvidenceClient} from "../helix/client.mjs";
+
+const reference = {
+  jobId: "00000000-0000-0000-0000-000000000000",
+  workItem: "tests.dll",
+  queue: "Windows x64",
+  exitCode: 1
+};
+
+function trxResult({name = "Example", outcome = "Failed", message = "Expected true but found false."} = {})
+{
+  return `<TestRun xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+    <Results><UnitTestResult testId="1" testName="${name}" outcome="${outcome}">
+      <Output><ErrorInfo><Message>${message}</Message></ErrorInfo></Output>
+    </UnitTestResult></Results>
+  </TestRun>`;
+}
+
+async function collect({files, bodies, consoleText = "work item failed", exitCode = 1})
+{
+  const fetchImplementation = async url =>
+  {
+    if (url.endsWith("/console")) return new Response(consoleText, {status: 200});
+    if (url.includes("/workitems/"))
+    {
+      return new Response(JSON.stringify({ExitCode: exitCode, Files: files}), {status: 200});
+    }
+    return new Response(bodies[url], {status: 200});
+  };
+  return new HelixEvidenceClient(fetchImplementation).collectWorkItemObservations(reference);
+}
+
+test("prefers TRX over unrelated XML artifacts", async () =>
+{
+  const observations = await collect({
+    files: [
+      {FileName: "coverage.xml", Uri: "https://files/coverage.xml"},
+      {FileName: "results.trx", Uri: "https://files/results.trx"}
+    ],
+    bodies: {
+      "https://files/coverage.xml": "<coverage />",
+      "https://files/results.trx": trxResult()
+    }
+  });
+
+  assert.equal(observations[0].kind, "test");
+  assert.equal(observations[0].component, "Example");
+});
+
+test("uses explicit TRX timeout and aborted outcomes", async () =>
+{
+  for (const [outcome, failureType] of [["Timeout", "timeout"], ["Aborted", "process-termination"]])
+  {
+    const observations = await collect({
+      files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+      bodies: {"https://files/results.trx": trxResult({outcome, message: ""})}
+    });
+    assert.equal(observations[0].failureType, failureType);
+  }
+});
+
+test("uses timeout exceptions from failed TRX results", async () =>
+{
+  for (const message of [
+    "System.TimeoutException: The telemetry condition was not met.",
+    "Polly.Timeout.TimeoutRejectedException: The resilience strategy rejected the execution."
+  ])
+  {
+    const observations = await collect({
+      files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+      bodies: {
+        "https://files/results.trx": trxResult({
+          outcome: "Failed",
+          message
+        })
+      }
+    });
+
+    assert.equal(observations[0].failureType, "timeout");
+  }
+});
+
+test("does not treat timeout configuration labels as timeout failures", async () =>
+{
+  for (const message of [
+    "Hang timeout: 00:10:00",
+    "Workload timeout = 01:00:00",
+    "Run timeout 10m",
+    "Timeout the test run when test takes more than the default timeout of 1 hour",
+    "Expected a timeout of 30 seconds to be configured on the client"
+  ])
+  {
+    const observations = await collect({
+      files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+      bodies: {"https://files/results.trx": trxResult({message})}
+    });
+
+    assert.equal(observations[0].failureType, "test-assertion");
+  }
+});
+
+test("does not treat bare assertion numbers as HTTP status codes", async () =>
+{
+  const observations = await collect({
+    files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+    bodies: {"https://files/results.trx": trxResult({message: "Expected 500 but found 499."})}
+  });
+
+  assert.equal(observations[0].failureType, "test-assertion");
+});
+
+test("preserves a teardown hang alongside a failed assertion", async () =>
+{
+  const observations = await collect({
+    files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+    bodies: {"https://files/results.trx": trxResult()},
+    consoleText: "Hang timeout expired. Test host crashed. exit code is 137",
+    exitCode: 137
+  });
+
+  assert.deepEqual(observations.map(observation => observation.failureType), ["test-assertion", "timeout"]);
+});
+
+test("preserves a corroborated hang timeout as the work-item mechanism", async () =>
+{
+  const trailingOutput = Array.from({length: 10}, (_, index) => `trailing output ${index}`).join("\n");
+  const observations = await collect({
+    files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+    bodies: {"https://files/results.trx": trxResult()},
+    consoleText: [
+      "Hang timeout: 00:10:00",
+      "Capturing dump of process tree for testhost",
+      "Hang dump written to tests_hang.dmp",
+      trailingOutput
+    ].join("\n"),
+    exitCode: 2
+  });
+
+  assert.deepEqual(observations.map(observation => observation.failureType), ["test-assertion", "timeout"]);
+  assert.match(observations[1].mechanism, /Hang timeout: 00:10:00/);
+  assert.doesNotMatch(observations[1].mechanism, /trailing output/);
+});
+
+test("MSTest timeout parameter names do not create an independent timeout observation", async () =>
+{
+  const message = "NuGet.Protocol.Core.Types.FatalProtocolException: An error occurred while retrieving package metadata.";
+  const stackFrame = "at Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter.Execution.TestMethodInfo.ExecuteInternalAsync(Object[] arguments, CancellationTokenSource timeoutTokenSource)";
+  const mechanismFingerprints = [];
+  for (const errorMessage of [message, `${message}\n${stackFrame}`])
+  {
+    const observations = await collect({
+      files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+      bodies: {"https://files/results.trx": trxResult({message: errorMessage})},
+      consoleText: `${message}\n${stackFrame}`,
+      exitCode: 2
+    });
+
+    assert.equal(observations.length, 1);
+    assert.equal(observations[0].kind, "test");
+    assert.equal(observations[0].failureType, "test-assertion");
+    assert.match(observations[0].mechanism, /FatalProtocolException/);
+    assert.doesNotMatch(observations[0].mechanismFingerprint, /timeouttokensource/);
+    mechanismFingerprints.push(observations[0].mechanismFingerprint);
+  }
+
+  assert.equal(new Set(mechanismFingerprints).size, 1);
+
+  const unrelated = await collect({
+    files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+    bodies: {
+      "https://files/results.trx": trxResult({
+        message: `System.InvalidOperationException: An unrelated failure.\n${stackFrame}`
+      })
+    },
+    consoleText: `System.InvalidOperationException: An unrelated failure.\n${stackFrame}`,
+    exitCode: 2
+  });
+  assert.notEqual(unrelated[0].mechanismFingerprint, mechanismFingerprints[0]);
+});

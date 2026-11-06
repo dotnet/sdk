@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,13 +7,11 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class NonCopyLocalProjectReferenceTests : SdkTest
     {
-        public NonCopyLocalProjectReferenceTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void NonCopyLocalProjectReferenceDoesNotGoToDeps()
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;

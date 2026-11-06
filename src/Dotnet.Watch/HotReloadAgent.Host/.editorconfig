@@ -4,3 +4,7 @@
 # The directive needs to be included since all sources in a source package are considered generated code
 # when referenced from a project via package reference.
 dotnet_diagnostic.IDE0240.severity = none
+
+# CA2007: This assembly runs inside the user's app process where a SynchronizationContext may be present.
+# Missing ConfigureAwait(false) can cause deadlocks (e.g. iOS UIKitSynchronizationContext).
+dotnet_diagnostic.CA2007.severity = error

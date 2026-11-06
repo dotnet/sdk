@@ -1,8 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
 using FakeItEasy;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Help;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -12,33 +13,69 @@ using Microsoft.TemplateEngine.Mocks;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
-    public partial class HelpTests
+    [TestClass]
+    public partial class HelpTests : VerifyBase
     {
-        [Theory]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("create")]
+        public void GenericHelpDoesNotCreateHost(string commandLine)
+        {
+            int hostCreationCount = 0;
+            using ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost();
+            NewCommand command = (NewCommand)NewCommandFactory.Create(
+                _ =>
+                {
+                    hostCreationCount++;
+                    return host;
+                },
+                new NewCommandDefinition());
+            ParseResult parseResult = command.Parse(commandLine);
+            ICustomHelp helpCommand = (ICustomHelp)parseResult.CommandResult.Command;
+            InstantiateCommandArgs instantiateCommandArgs = helpCommand switch
+            {
+                NewCommand newCommand => InstantiateCommandArgs.FromNewCommandArgs(new NewCommandArgs(newCommand, parseResult)),
+                InstantiateCommand instantiateCommand => new InstantiateCommandArgs(instantiateCommand, parseResult),
+                _ => throw new InvalidOperationException()
+            };
+            Assert.IsNull(instantiateCommandArgs.ShortName);
+            StringWriter output = new();
+            HelpContext helpContext = new(new HelpBuilder(), parseResult.CommandResult.Command, output, parseResult);
+
+            foreach (Action<HelpContext> helpBlock in helpCommand.CustomHelpLayout())
+            {
+                helpBlock(helpContext);
+            }
+
+            Assert.AreNotEqual(string.Empty, output.ToString());
+            Assert.AreEqual(0, hostCreationCount);
+        }
+
+        [TestMethod]
 #pragma warning disable SA1117 // Parameters should be on same line or separate lines
-        [InlineData("Template Name", "Language", "Me", "Template Description",
+        [DataRow("Template Name", "Language", "Me", "Template Description",
 @"Template Name (Language)
 Author: Me
 Description: Template Description
 
 ")]
-        [InlineData("Template Name", null, "Me", "Template Description",
+        [DataRow("Template Name", null, "Me", "Template Description",
 @"Template Name
 Author: Me
 Description: Template Description
 
 ")]
-        [InlineData("Template Name", "Language", null, "Template Description",
+        [DataRow("Template Name", "Language", null, "Template Description",
 @"Template Name (Language)
 Description: Template Description
 
 ")]
-        [InlineData("Template Name", "Language", "Me", null,
+        [DataRow("Template Name", "Language", "Me", null,
 @"Template Name (Language)
 Author: Me
 
 ")]
-        [InlineData("Template Name", null, null, null,
+        [DataRow("Template Name", null, null, null,
 @"Template Name
 
 ")]
@@ -60,10 +97,10 @@ Author: Me
             CliTemplateInfo cliTemplateInfo = new(templateInfo, HostSpecificTemplateData.Default);
             StringWriter sw = new();
             InstantiateCommand.ShowTemplateDetailHeaders(cliTemplateInfo, sw);
-            Assert.Equal(expected, sw.ToString());
+            Assert.AreEqual(expected, sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowUsage()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost();
@@ -73,10 +110,10 @@ Author: Me
             HelpContext helpContext = new(new HelpBuilder(), myCommand, sw);
 
             InstantiateCommand.ShowUsage(myCommand, new[] { "short-name" }, helpContext);
-            Assert.Equal($"Usage:{Environment.NewLine}  new short-name [options] [template options]{Environment.NewLine}{Environment.NewLine}", sw.ToString());
+            Assert.AreEqual($"Usage:{Environment.NewLine}  new short-name [options] [template options]{Environment.NewLine}{Environment.NewLine}", sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowUsage_ForMultipleShortNames()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost();
@@ -86,10 +123,10 @@ Author: Me
             HelpContext helpContext = new(new HelpBuilder(), myCommand, sw);
 
             InstantiateCommand.ShowUsage(myCommand, new[] { "short-name1", "short-name2" }, helpContext);
-            Assert.Equal($"Usage:{Environment.NewLine}  new short-name1 [options] [template options]{Environment.NewLine}  new short-name2 [options] [template options]{Environment.NewLine}{Environment.NewLine}", sw.ToString());
+            Assert.AreEqual($"Usage:{Environment.NewLine}  new short-name1 [options] [template options]{Environment.NewLine}  new short-name2 [options] [template options]{Environment.NewLine}{Environment.NewLine}", sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowCommandOptions_Basic()
         {
             var template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group");
@@ -112,7 +149,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowCommandOptions_Language()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group").WithTag("language", "MyLang");
@@ -135,7 +172,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowCommandOptions_Type()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group").WithTag("type", "MyType");
@@ -158,7 +195,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowCommandOptions_NoOptions()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group").WithTag("type", "MyType");
@@ -178,10 +215,10 @@ Author: Me
             HelpContext helpContext = new(new HelpBuilder(), myCommand, sw);
 
             InstantiateCommand.ShowTemplateSpecificOptions(new[] { templateCommand }, helpContext);
-            Assert.Equal($"Template options:{Environment.NewLine}   (No options){Environment.NewLine}", sw.ToString());
+            Assert.AreEqual($"Template options:{Environment.NewLine}   (No options){Environment.NewLine}", sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowTemplateOptions_SingleTemplate_Choice()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -205,7 +242,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowTemplateOptions_MultipleTemplate_CombinedChoice()
         {
             MockTemplateInfo template1 = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group", precedence: 0)
@@ -232,7 +269,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowTemplateOptions_SingleTemplate_NonChoice()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -256,7 +293,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowTemplateOptions_MultipleTemplate_MultipleParams()
         {
             MockTemplateInfo template1 = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group", precedence: 0)
@@ -285,7 +322,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowTemplateOptions_SingleTemplate_Choice_Required()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -309,7 +346,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public void CanShowTemplateOptions_RequiredIsNotShownWhenDefaultValueIsGiven()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -333,7 +370,7 @@ Author: Me
             Assert.DoesNotContain("(REQUIRED)", sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowHintsForOtherTemplates()
         {
             MockTemplateInfo template1 = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group").WithTag("language", "Lang1").WithTag("type", "project");
@@ -355,7 +392,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowTemplateOptions_SingleTemplate_Choice_ShortenedUsage_FirstTwoValuesFit()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -379,7 +416,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowTemplateOptions_SingleTemplate_Choice_ShortenedUsage()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -403,7 +440,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task DoesNotCombineParametersWhenAliasesAreDifferent()
         {
             MockTemplateInfo template1 = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")
@@ -446,7 +483,7 @@ Author: Me
             return Verify(sw.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public Task CanShowTemplateOptions_RequiredParam()
         {
             MockTemplateInfo template = new MockTemplateInfo("foo", identity: "foo.1", groupIdentity: "foo.group")

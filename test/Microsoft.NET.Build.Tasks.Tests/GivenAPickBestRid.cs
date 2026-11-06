@@ -3,6 +3,7 @@
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAPickBestRid
     {
         private const string RuntimeGraphContent = @"{
@@ -37,7 +38,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }";
 
-        [Fact]
+        [TestMethod]
         public void ItPicksBestMatchingRid()
         {
             var runtimeGraphPath = Path.GetTempFileName();
@@ -62,7 +63,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPicksBestMatchingRidFallback()
         {
             var runtimeGraphPath = Path.GetTempFileName();
@@ -87,7 +88,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPicksBestMatchingRidAnyFallback()
         {
             var runtimeGraphPath = Path.GetTempFileName();
@@ -112,7 +113,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHandlesNonExistentRuntimeGraphFile()
         {
             var task = new PickBestRid
@@ -132,7 +133,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             buildEngine.Errors[0].Message.Should().Contain("does not exist");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHandlesUnknownTargetRid()
         {
             var runtimeGraphPath = Path.GetTempFileName();
@@ -162,7 +163,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHandlesNoSupportedRidsMatch()
         {
             var runtimeGraphPath = Path.GetTempFileName();

@@ -1,5 +1,11 @@
 {
   "extraKnownMarketplaces": {
+    "dotnet-skills": {
+      "source": {
+        "source": "github",
+        "repo": "dotnet/skills"
+      }
+    },
     "dotnet-arcade-skills": {
       "source": {
         "source": "github",
@@ -7,7 +13,7 @@
       }
     }
   },
-  "enabledPlugins": {
-    "dotnet-dnceng@dotnet-arcade-skills": true
-  }
+  "companyAnnouncements": [
+    "Run `/plugin install dotnet-dnceng@dotnet-arcade-skills` to install useful plugins for investigating Helix and Azure Pipelines runs."
+  ]
 }

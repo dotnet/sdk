@@ -1,8 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -11,9 +16,10 @@ using NuGet.Packaging.Core;
 
 namespace Microsoft.NET.Sdk.Razor.Test
 {
+    [TestClass]
     public class GenerateStaticWebAssetsPropsFileTest
     {
-        [Fact]
+        [TestMethod]
         public void Fails_WhenStaticWebAsset_DoesNotContainSourceType()
         {
             // Arrange
@@ -46,7 +52,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void Fails_WhenStaticWebAsset_DoesNotContainSourceId()
         {
             // Arrange
@@ -79,7 +85,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void Fails_WhenStaticWebAsset_DoesNotContainContentRoot()
         {
             // Arrange
@@ -112,7 +118,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void Fails_WhenStaticWebAsset_DoesNotContainBasePath()
         {
             // Arrange
@@ -145,7 +151,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void Fails_WhenStaticWebAsset_DoesNotContainRelativePath()
         {
             // Arrange
@@ -186,7 +192,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void Fails_WhenStaticWebAsset_HasInvalidSourceType()
         {
             // Arrange
@@ -246,7 +252,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void Fails_WhenStaticWebAsset_HaveDifferentSourceId()
         {
             // Arrange
@@ -307,7 +313,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             errorMessages.Should().ContainSingle(message => message == expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void WritesPropsFile_WhenThereIsAtLeastOneStaticAsset()
         {
             // Arrange
@@ -388,7 +394,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WritesIndividualItems_WithTheirRespectiveBaseAndRelativePaths()
         {
             // Arrange
@@ -497,9 +503,9 @@ namespace Microsoft.NET.Sdk.Razor.Test
                 var result = task.Execute();
 
                 // Assert
-                Assert.True(result);
+                Assert.IsTrue(result);
                 var document = File.ReadAllText(file);
-                Assert.Equal(expectedDocument, document, ignoreLineEndingDifferences: true);
+                Assert.AreEqual(expectedDocument.ReplaceLineEndings(), document.ReplaceLineEndings());
             }
             finally
             {
@@ -510,7 +516,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WritesFrameworkSourceType_WhenAssetMatchesFrameworkPattern()
         {
             // Arrange
@@ -620,9 +626,9 @@ namespace Microsoft.NET.Sdk.Razor.Test
                 var result = task.Execute();
 
                 // Assert
-                Assert.True(result);
+                Assert.IsTrue(result);
                 var document = File.ReadAllText(file);
-                Assert.Equal(expectedDocument, document, ignoreLineEndingDifferences: true);
+                Assert.AreEqual(expectedDocument.ReplaceLineEndings(), document.ReplaceLineEndings());
             }
             finally
             {
@@ -633,7 +639,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WritesAllAsPackage_WhenFrameworkPatternIsNull()
         {
             // Arrange
@@ -692,7 +698,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WritesFrameworkSourceType_WithMultiplePatterns()
         {
             // Arrange
@@ -799,7 +805,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WritesAllAsPackage_WhenFrameworkPatternMatchesNothing()
         {
             // Arrange

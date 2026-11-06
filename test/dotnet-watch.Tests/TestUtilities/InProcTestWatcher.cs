@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal record class InProcTestWatcher(
-    DebugTestOutputLogger TestOutput,
+    DualOutputHelper TestOutput,
     HotReloadDotNetWatcher Watcher,
     DotNetWatchContext Context,
     TestEventObserver Observer,
@@ -20,7 +20,7 @@ internal record class InProcTestWatcher(
 
     public void Start([CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
     {
-        Assert.Null(_lazyTask);
+        Assert.IsNull(_lazyTask);
         Observer.Freeze();
 
         _lazyTask = Task.Run(async () =>
@@ -39,14 +39,14 @@ internal record class InProcTestWatcher(
             }
             finally
             {
-                Context.Dispose();
+                await Context.DisposeAsync();
             }
         }, ShutdownSource.Token);
     }
 
     public async ValueTask DisposeAsync()
     {
-        Assert.NotNull(_lazyTask);
+        Assert.IsNotNull(_lazyTask);
 
         if (!ShutdownSource.IsCancellationRequested)
         {

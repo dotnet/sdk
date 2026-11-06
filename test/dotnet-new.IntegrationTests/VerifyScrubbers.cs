@@ -52,6 +52,15 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         /// <summary>
+        /// Removes MSBuild debug log path messages that appear intermittently depending on
+        /// telemetry/profiling settings, which vary across CI machines causing snapshot mismatches.
+        /// </summary>
+        internal static void ScrubMSBuildDebugLogMessage(this StringBuilder output)
+        {
+            output.ScrubByRegex(@"^\s*MSBuild logs and debug information will be at .*[\r\n]*", "", RegexOptions.Multiline);
+        }
+
+        /// <summary>
         /// Replaces content matching <paramref name="textToReplace"/> with <paramref name="replacement"/>.
         /// </summary>
         internal static void ScrubAndReplace(this StringBuilder output, string textToReplace, string replacement)

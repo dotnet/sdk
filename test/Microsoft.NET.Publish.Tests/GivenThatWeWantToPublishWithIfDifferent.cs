@@ -5,13 +5,10 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishWithIfDifferent : SdkTest
     {
-        public GivenThatWeWantToPublishWithIfDifferent(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_publishes_content_files_with_IfDifferent_metadata()
         {
             var testProject = new TestProject()
@@ -62,7 +59,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "data3.txt")).Should().Be("Data file 3 content");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_skips_unchanged_files_with_IfDifferent_on_republish()
         {
             var testProject = new TestProject()
@@ -132,7 +129,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "changedData.txt")).Should().Be("Modified content");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_None_items_with_IfDifferent_metadata()
         {
             var testProject = new TestProject()
@@ -168,7 +165,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "config.json")).Should().Be("{ \"setting\": \"value\" }");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_Compile_items_with_IfDifferent_metadata()
         {
             var testProject = new TestProject()
@@ -205,7 +202,7 @@ namespace PublishCompileWithIfDifferent
             publishDirectory.Should().HaveFile("SourceFile.cs");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_copies_IfDifferent_files_correctly_with_referenced_projects()
         {
             var referencedProject = new TestProject()
@@ -265,7 +262,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "shared.txt")).Should().Be("Shared content from library");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_mixed_CopyToPublishDirectory_metadata_values()
         {
             var testProject = new TestProject()
@@ -307,7 +304,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             publishDirectory.Should().NotHaveFile("doNotCopy.txt");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_publishes_IfDifferent_files_with_TargetPath()
         {
             var testProject = new TestProject()
@@ -344,7 +341,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(targetFile).Should().Be("Data in subfolder");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_IfDifferent_with_self_contained_publish()
         {
             var testProject = new TestProject()
@@ -382,7 +379,7 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             File.ReadAllText(Path.Combine(publishDirectory.FullName, "appdata.txt")).Should().Be("Application data");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_publishes_content_from_imported_targets_with_correct_path()
         {
             // This test verifies that Content items introduced from imported .targets files
@@ -454,6 +451,50 @@ class Program { static void Main() => Console.WriteLine(""Hello""); }";
             var potentialEscapedFiles = Directory.GetFiles(parentDir.FullName, "project-content.txt", SearchOption.AllDirectories)
                 .Where(f => !f.StartsWith(publishDirectory.FullName));
             potentialEscapedFiles.Should().BeEmpty("Content file should not escape to directories outside publish folder");
+        }
+
+        [TestMethod]
+        public void It_publishes_content_with_comma_in_filename()
+        {
+            // This test verifies that Content items with commas in their filenames can be published
+            // without triggering MSB4186 due to the comma being interpreted as an argument separator
+            // in the [MSBuild]::MakeRelative property function call.
+
+            var testProject = new TestProject()
+            {
+                Name = "PublishCommaContent",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true
+            };
+
+            testProject.SourceFiles["Program.cs"] = "class Program { static void Main() { } }";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
+
+            // Create a content file with a comma in the filename (e.g., a variable font file)
+            var contentFileName = "Doto-VariableFont_ROND,wght.ttf";
+            var contentFile = Path.Combine(projectDirectory, contentFileName);
+            File.WriteAllText(contentFile, "fake font content");
+
+            // Update the project file to include the content file with CopyToPublishDirectory
+            var projectFile = Path.Combine(projectDirectory, $"{testProject.Name}.csproj");
+            var projectContent = File.ReadAllText(projectFile);
+            projectContent = projectContent.Replace("</Project>", @"
+  <ItemGroup>
+    <Content Include=""Doto-VariableFont_ROND,wght.ttf"" CopyToPublishDirectory=""IfDifferent"" />
+  </ItemGroup>
+</Project>");
+            File.WriteAllText(projectFile, projectContent);
+
+            var publishCommand = new PublishCommand(testAsset);
+            var publishResult = publishCommand.Execute();
+
+            publishResult.Should().Pass();
+
+            var publishDirectory = publishCommand.GetOutputDirectory(testProject.TargetFrameworks);
+            publishDirectory.Should().HaveFile(contentFileName);
         }
     }
 }

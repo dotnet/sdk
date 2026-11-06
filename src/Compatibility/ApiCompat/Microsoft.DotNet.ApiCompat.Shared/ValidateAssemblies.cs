@@ -129,11 +129,7 @@ namespace Microsoft.DotNet.ApiCompat
 
             // If the path isn't a directory, see if it's a glob expression.
             string filename = Path.GetFileName(path);
-#if NET
             if (filename.Contains('*'))
-#else
-            if (filename.Contains("*"))
-#endif
             {
                 string? directoryName = Path.GetDirectoryName(path);
                 if (directoryName != null)

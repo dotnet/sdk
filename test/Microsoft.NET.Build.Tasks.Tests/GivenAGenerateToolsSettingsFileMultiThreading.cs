@@ -3,13 +3,13 @@
 
 using FluentAssertions;
 using Microsoft.Build.Framework;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAGenerateToolsSettingsFileMultiThreading
     {
-        [Fact]
+        [TestMethod]
         public void ItSavesFileRelativeToTaskEnvironmentProjectDir()
         {
             var projectDir = Path.Combine(Path.GetTempPath(), "gtsf-test-" + Guid.NewGuid().ToString("N"));

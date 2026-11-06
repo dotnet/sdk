@@ -29,6 +29,10 @@
       "shortName": "",
       "longName": "extensions-profile"
     },
+    "ExplicitProgramFile": {
+      "shortName": "",
+      "longName": "explicit-program-file"
+    },
     "Fixture" : {
       "shortName": "",
       "longName": "fixture"

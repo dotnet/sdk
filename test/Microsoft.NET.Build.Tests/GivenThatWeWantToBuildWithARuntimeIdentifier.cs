@@ -5,14 +5,15 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildWithARuntimeIdentifier : SdkTest
     {
-        public GivenThatWeWantToBuildWithARuntimeIdentifier(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [CoreMSBuildOnlyFact]
-        public void It_fails_with_solution_level_RID()
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [DataRow("Build")]
+        [DataRow("Rebuild")]
+        public void It_fails_with_solution_level_RID(string target)
         {
             var testAsset = TestAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndCsprojFiles")
@@ -20,14 +21,14 @@ namespace Microsoft.NET.Build.Tests
 
             var buildCommand = new BuildCommand(Log, testAsset.TestRoot, "App.sln");
             buildCommand
-                .Execute($"/p:RuntimeIdentifier={ToolsetInfo.LatestWinRuntimeIdentifier}-x64")
+                .Execute($"/t:{target}", $"/p:RuntimeIdentifier={ToolsetInfo.LatestWinRuntimeIdentifier}-x64")
                 .Should()
                 .Fail()
                 .And
                 .HaveStdOutContaining("NETSDK1134");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_succeeds_with_project_level_RID()
         {
             var testAsset = TestAssetsManager
@@ -48,7 +49,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_fails_with_unsupported_RID()
         {
             var testProject = new TestProject()

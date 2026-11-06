@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -21,23 +22,28 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(MarkAttributesWithAttributeUsageAnalyzer.RuleId);
 
-        public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+        // Each nested action applies a different AttributeTargets value, so the fix-all pass has to be
+        // told which one the user picked - DocumentBasedFixAllProvider hands over every diagnostic it
+        // collected without filtering by the equivalence key.
+        public override FixAllProvider GetFixAllProvider()
+            => SyntaxEditorFixAllProvider.Create<string?>(
+                static fixAllContext => GetAttributeTargetValue(fixAllContext.CodeActionEquivalenceKey),
+                static (document, diagnostic, editor, attributeTargetValue, cancellationToken) =>
+                    attributeTargetValue is null
+                        ? Task.CompletedTask
+                        : AddAttributeUsageAttributeAsync(document, diagnostic, editor, attributeTargetValue, cancellationToken));
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            var nodeToFix = root.FindNode(context.Span);
-            if (nodeToFix == null)
+            var semanticModel = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+            if (!semanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeUsageAttribute, out _) ||
+                !semanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeTargets, out _))
             {
                 return;
             }
 
-            var semanticModel = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            if (!semanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeUsageAttribute, out var attributeUsageAttributeType) ||
-                !semanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeTargets, out var attributeTargetsType))
-            {
-                return;
-            }
+            var document = context.Document;
+            var diagnostics = context.Diagnostics;
 
             var applyAttributeTargetValues = Enum.GetValues(typeof(AttributeTargets))
                 .Cast<AttributeTargets>()
@@ -48,7 +54,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                     return CodeAction.Create(
                         title,
-                        async ct => await AddAttributeUsageAttributeAsync(context.Document, nodeToFix, attributeUsageAttributeType, attributeTargetsType, attributeTargetValue, ct).ConfigureAwait(false),
+                        cancellationToken => SyntaxEditorFixAllProvider.ApplyFixesAsync(
+                            document,
+                            diagnostics,
+                            (doc, diagnostic, editor, token) => AddAttributeUsageAttributeAsync(doc, diagnostic, editor, attributeTargetValue, token),
+                            cancellationToken),
                         equivalenceKey: title);
                 })
                 .OrderBy(a => a.Title)
@@ -57,20 +67,41 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 #pragma warning disable RS1010 // Provide an explicit value for EquivalenceKey - false positive
             context.RegisterCodeFix(
                 CodeAction.Create(MicrosoftCodeQualityAnalyzersResources.MarkAttributesWithAttributeUsageCodeFix, applyAttributeTargetValues, isInlinable: false),
-                context.Diagnostics);
+                diagnostics);
 #pragma warning restore RS1010
         }
 
-        private static async Task<Document> AddAttributeUsageAttributeAsync(Document document, SyntaxNode nodeToFix, INamedTypeSymbol attributeUsageAttributeType,
-            INamedTypeSymbol attributeTargetsType, string attributeTargetValue, CancellationToken cancellationToken)
+        /// <summary>
+        /// Recovers the <see cref="AttributeTargets"/> value a nested action was registered for from its
+        /// equivalence key, or <see langword="null"/> if the key names no such value.
+        /// </summary>
+        private static string? GetAttributeTargetValue(string? equivalenceKey)
         {
-            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            const string Prefix = nameof(AttributeTargets) + ".";
 
+            if (equivalenceKey is null || !equivalenceKey.StartsWith(Prefix, StringComparison.Ordinal))
+            {
+                return null;
+            }
+
+            string value = equivalenceKey[Prefix.Length..];
+            return Enum.TryParse(value, out AttributeTargets _) ? value : null;
+        }
+
+        private static async Task AddAttributeUsageAttributeAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor,
+            string attributeTargetValue, CancellationToken cancellationToken)
+        {
+            var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            if (!semanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeUsageAttribute, out var attributeUsageAttributeType) ||
+                !semanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeTargets, out var attributeTargetsType))
+            {
+                return;
+            }
+
+            var nodeToFix = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
             var attribute = editor.Generator.Attribute(editor.Generator.TypeExpression(attributeUsageAttributeType),
                 new[] { editor.Generator.MemberAccessExpression(editor.Generator.TypeExpression(attributeTargetsType), attributeTargetValue) });
             editor.AddAttribute(nodeToFix, attribute);
-
-            return editor.GetChangedDocument();
         }
     }
 }

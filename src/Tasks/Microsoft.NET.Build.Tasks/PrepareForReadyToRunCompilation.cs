@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// This task is replicated in dotnet/runtime at src/tasks/Crossgen2Tasks/PrepareForReadyToRunCompilation.cs.
+// Keep both copies synchronized.
+
 #nullable disable
 
 using System.Reflection;
@@ -28,6 +31,8 @@ namespace Microsoft.NET.Build.Tasks
         public bool IncludeSymbolsInSingleFile { get; set; }
 
         public string[] PublishReadyToRunCompositeExclusions { get; set; }
+
+        public string[] PublishReadyToRunPartialAssemblies { get; set; }
 
         // When specified, only these assemblies will be fully compiled into the composite image.
         // All other input (non-reference) assemblies will only have code compiled for methods
@@ -142,10 +147,11 @@ namespace Microsoft.NET.Build.Tasks
             var exclusionSet = ExcludeList == null ? null : new HashSet<string>(ExcludeList, StringComparer.OrdinalIgnoreCase);
             var compositeExclusionSet = PublishReadyToRunCompositeExclusions == null || !Crossgen2Composite ? null : new HashSet<string>(PublishReadyToRunCompositeExclusions, StringComparer.OrdinalIgnoreCase);
             var compositeRootSet = PublishReadyToRunCompositeRoots == null || !Crossgen2Composite ? null : new HashSet<string>(PublishReadyToRunCompositeRoots, StringComparer.OrdinalIgnoreCase);
+            var partialSet = PublishReadyToRunPartialAssemblies == null ? null : new HashSet<string>(PublishReadyToRunPartialAssemblies, StringComparer.OrdinalIgnoreCase);
 
             foreach (var file in inputFiles)
             {
-                var eligibility = GetInputFileEligibility(file, Crossgen2Composite, exclusionSet, compositeExclusionSet, compositeRootSet);
+                var eligibility = GetInputFileEligibility(file, Crossgen2Composite, exclusionSet, compositeExclusionSet, compositeRootSet, partialSet);
 
                 if (eligibility.NoEligibility)
                 {
@@ -165,6 +171,22 @@ namespace Microsoft.NET.Build.Tasks
 
                 var outputR2RImageRelativePath = file.GetMetadata(MetadataKeys.RelativePath);
                 var outputR2RImage = Path.Combine(OutputPath, outputR2RImageRelativePath);
+
+                TaskItem r2rFileToPublish = new(file)
+                {
+                    ItemSpec = outputR2RImage
+                };
+
+                // WebAssembly composite compilation emits a .wasm component stub for each input.
+                // Mach-O composite components remain PE files that point to the composite image.
+                if (eligibility.CompileSeparately || Crossgen2ContainerFormat == "wasm")
+                {
+                    r2rFileToPublish = CreateReadyToRunFileToPublish(
+                        file,
+                        outputR2RImageRelativePath,
+                        compilerOutputRelativePath: out outputR2RImageRelativePath,
+                        compilerOutputPath: out outputR2RImage);
+                }
 
                 string outputPDBImage = null;
                 string outputPDBImageRelativePath = null;
@@ -216,24 +238,35 @@ namespace Microsoft.NET.Build.Tasks
                         r2rCompilationEntry.SetMetadata(MetadataKeys.EmitSymbols, "true");
                         r2rCompilationEntry.SetMetadata(MetadataKeys.OutputPDBImage, outputPDBImage);
                     }
+
+                    if (eligibility.PartialCompile)
+                    {
+                        r2rCompilationEntry.SetMetadata(MetadataKeys.PartialCompile, "true");
+                    }
+
                     r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
                     imageCompilationList.Add(r2rCompilationEntry);
+
                 }
                 else if (eligibility.CompileUnrootedIntoCompositeImage)
                 {
                     r2rCompositeUnrootedInput.Add(file);
+
+                    // crossgen2 emits component assemblies flat into the composite output directory using only their
+                    // file names, so the publish source path must use just the file name. The RelativePath metadata
+                    // (already set on r2rFileToPublish) continues to drive the final publish destination.
+                    r2rFileToPublish.ItemSpec = Path.Combine(OutputPath, Path.GetFileName(outputR2RImageRelativePath));
                 }
                 else if (eligibility.CompileIntoCompositeImage)
                 {
                     r2rCompositeInputList.Add(file);
+
+                    // crossgen2 emits component assemblies flat into the composite output directory using only their
+                    // file names, so the publish source path must use just the file name. The RelativePath metadata
+                    // (already set on r2rFileToPublish) continues to drive the final publish destination.
+                    r2rFileToPublish.ItemSpec = Path.Combine(OutputPath, Path.GetFileName(outputR2RImageRelativePath));
                 }
 
-                // This TaskItem corresponds to the output R2R image. It is equivalent to the input TaskItem, only the ItemSpec for it points to the new path
-                // for the newly created R2R image
-                TaskItem r2rFileToPublish = new(file)
-                {
-                    ItemSpec = outputR2RImage
-                };
                 r2rFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
                 r2rFilesPublishList.Add(r2rFileToPublish);
 
@@ -277,26 +310,18 @@ namespace Microsoft.NET.Build.Tasks
             {
                 MainAssembly.SetMetadata(MetadataKeys.RelativePath, Path.GetFileName(MainAssembly.ItemSpec));
 
-                var compositeR2RImageRelativePath = MainAssembly.GetMetadata(MetadataKeys.RelativePath);
-                compositeR2RImageRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, "r2r" + Path.GetExtension(compositeR2RImageRelativePath));
-
-                // For non-PE formats, we may need to do a post-processing step to get the final R2R image
-                // after running crossgen2. In this case, compositeR2RImageRelativePath is the intermediate file
-                // produced by crossgen2, and compositeR2RFinalImageRelativePath is the final file to be published
-                // by any post-crossgen2 linking steps and used at runtime.
-                var compositeR2RFinalImageRelativePath = compositeR2RImageRelativePath;
-
-                if (Crossgen2ContainerFormat == "macho")
-                {
-                    compositeR2RImageRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".o");
-                    compositeR2RFinalImageRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".dylib");
-                }
-
-                var compositeR2RImage = Path.Combine(OutputPath, compositeR2RImageRelativePath);
-                var compositeR2RImageFinal = Path.Combine(OutputPath, compositeR2RFinalImageRelativePath);
+                string mainAssemblyRelativePath = MainAssembly.GetMetadata(MetadataKeys.RelativePath);
+                string compositeR2RImageBaseRelativePath = Path.ChangeExtension(
+                    mainAssemblyRelativePath,
+                    "r2r" + Path.GetExtension(mainAssemblyRelativePath));
+                TaskItem compositeR2RFileToPublish = CreateReadyToRunFileToPublish(
+                    MainAssembly,
+                    compositeR2RImageBaseRelativePath,
+                    compilerOutputRelativePath: out string compositeR2RImageRelativePath,
+                    compilerOutputPath: out string compositeR2RImageOutputPath);
 
                 TaskItem r2rCompilationEntry = new(MainAssembly);
-                r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, compositeR2RImage);
+                r2rCompilationEntry.SetMetadata(MetadataKeys.OutputR2RImage, compositeR2RImageOutputPath);
                 r2rCompilationEntry.SetMetadata(MetadataKeys.CreateCompositeImage, "true");
                 r2rCompilationEntry.RemoveMetadata(MetadataKeys.OriginalItemSpec);
 
@@ -308,14 +333,14 @@ namespace Microsoft.NET.Build.Tasks
                     {
                         if (hasValidDiaSymReaderLib)
                         {
-                            compositePDBImage = Path.ChangeExtension(compositeR2RImage, ".ni.pdb");
+                            compositePDBImage = Path.ChangeExtension(compositeR2RImageOutputPath, ".ni.pdb");
                             compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, ".ni.pdb");
                         }
                     }
                     else
                     {
                         string perfmapExtension = (_perfmapFormatVersion >= 1 ? ".ni.r2rmap" : ".ni.{composite}.map");
-                        compositePDBImage = Path.ChangeExtension(compositeR2RImage, perfmapExtension);
+                        compositePDBImage = Path.ChangeExtension(compositeR2RImageOutputPath, perfmapExtension);
                         compositePDBRelativePath = Path.ChangeExtension(compositeR2RImageRelativePath, perfmapExtension);
                     }
 
@@ -342,22 +367,48 @@ namespace Microsoft.NET.Build.Tasks
 
                 imageCompilationList.Add(r2rCompilationEntry);
 
-                // Publish it
-                TaskItem compositeR2RFileToPublish = new(MainAssembly)
-                {
-                    ItemSpec = compositeR2RImageFinal
-                };
-                compositeR2RFileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
-                compositeR2RFileToPublish.SetMetadata(MetadataKeys.RelativePath, compositeR2RFinalImageRelativePath);
-
-                if (compositeR2RImageFinal != compositeR2RImage)
-                {
-                    compositeR2RFileToPublish.SetMetadata(MetadataKeys.RequiresNativeLink, "true");
-                    compositeR2RFileToPublish.SetMetadata(MetadataKeys.NativeLinkerInputPath, compositeR2RImage);
-                }
-
                 r2rFilesPublishList.Add(compositeR2RFileToPublish);
             }
+        }
+
+        private TaskItem CreateReadyToRunFileToPublish(
+            ITaskItem inputFile,
+            string relativePath,
+            out string compilerOutputRelativePath,
+            out string compilerOutputPath)
+        {
+            // Crossgen2 emits WebAssembly directly, while Mach-O output is an object file
+            // that must be linked into the dylib published by the SDK.
+            (string compilerExtension, string publishExtension) = Crossgen2ContainerFormat switch
+            {
+                "macho" => (".o", ".dylib"),
+                "wasm" => (".wasm", ".wasm"),
+                _ => (null, null),
+            };
+
+            compilerOutputRelativePath = compilerExtension is null
+                ? relativePath
+                : Path.ChangeExtension(relativePath, compilerExtension);
+            string publishOutputRelativePath = publishExtension is null
+                ? relativePath
+                : Path.ChangeExtension(relativePath, publishExtension);
+
+            compilerOutputPath = Path.Combine(OutputPath, compilerOutputRelativePath);
+            string publishOutputPath = Path.Combine(OutputPath, publishOutputRelativePath);
+            TaskItem fileToPublish = new(inputFile)
+            {
+                ItemSpec = publishOutputPath
+            };
+            fileToPublish.RemoveMetadata(MetadataKeys.OriginalItemSpec);
+            fileToPublish.SetMetadata(MetadataKeys.RelativePath, publishOutputRelativePath);
+
+            if (publishOutputPath != compilerOutputPath)
+            {
+                fileToPublish.SetMetadata(MetadataKeys.RequiresNativeLink, "true");
+                fileToPublish.SetMetadata(MetadataKeys.NativeLinkerInputPath, compilerOutputPath);
+            }
+
+            return fileToPublish;
         }
 
         private struct Eligibility
@@ -371,6 +422,7 @@ namespace Microsoft.NET.Build.Tasks
                 CompileSeparately = 4,
                 CompileIntoCompositeImage = 8,
                 CompileUnrootedIntoCompositeImage = 16,
+                PartialCompile = 32,
             }
 
             private readonly EligibilityEnum _flags;
@@ -384,6 +436,7 @@ namespace Microsoft.NET.Build.Tasks
             public bool CompileUnrootedIntoCompositeImage => (_flags & EligibilityEnum.CompileUnrootedIntoCompositeImage) == EligibilityEnum.CompileUnrootedIntoCompositeImage;
             public bool CompileSeparately => (_flags & EligibilityEnum.CompileSeparately) == EligibilityEnum.CompileSeparately;
             public bool Compile => CompileIntoCompositeImage || CompileUnrootedIntoCompositeImage || CompileSeparately;
+            public bool PartialCompile => (_flags & EligibilityEnum.PartialCompile) == EligibilityEnum.PartialCompile;
 
             private Eligibility(EligibilityEnum flags)
             {
@@ -398,10 +451,16 @@ namespace Microsoft.NET.Build.Tasks
                     return new Eligibility(EligibilityEnum.Reference);
             }
 
-            public static Eligibility CreateCompileEligibility(bool doNotBuildIntoComposite, bool rootedInComposite)
+            public static Eligibility CreateCompileEligibility(bool doNotBuildIntoComposite, bool rootedInComposite, bool partialCompile)
             {
+                // Partial compilation implies exclusion from the composite image;
+                // partial assemblies are always compiled separately.
+                if (partialCompile)
+                    doNotBuildIntoComposite = true;
+
+                EligibilityEnum partialCompileFlag = partialCompile ? EligibilityEnum.PartialCompile : EligibilityEnum.None;
                 if (doNotBuildIntoComposite)
-                    return new Eligibility(EligibilityEnum.Reference | EligibilityEnum.HideReferenceFromComposite | EligibilityEnum.CompileSeparately);
+                    return new Eligibility(EligibilityEnum.Reference | EligibilityEnum.HideReferenceFromComposite | EligibilityEnum.CompileSeparately | partialCompileFlag);
                 else if (rootedInComposite)
                     return new Eligibility(EligibilityEnum.Reference | EligibilityEnum.CompileIntoCompositeImage);
                 else
@@ -428,7 +487,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private static Eligibility GetInputFileEligibility(ITaskItem file, bool compositeCompile, HashSet<string> exclusionSet, HashSet<string> r2rCompositeExclusionSet, HashSet<string> r2rCompositeRootSet)
+        private static Eligibility GetInputFileEligibility(ITaskItem file, bool compositeCompile, HashSet<string> exclusionSet, HashSet<string> r2rCompositeExclusionSet, HashSet<string> r2rCompositeRootSet, HashSet<string> partialSet)
         {
             // Check to see if this is a valid ILOnly image that we can compile
             if (!file.ItemSpec.EndsWith(".dll", StringComparison.OrdinalIgnoreCase) && !file.ItemSpec.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
@@ -462,6 +521,7 @@ namespace Microsoft.NET.Build.Tasks
 
                         bool excludeFromR2R = (exclusionSet != null && exclusionSet.Contains(Path.GetFileName(file.ItemSpec)));
                         bool excludeFromComposite = (r2rCompositeExclusionSet != null && r2rCompositeExclusionSet.Contains(Path.GetFileName(file.ItemSpec))) || excludeFromR2R;
+                        bool partialImage = (partialSet != null && partialSet.Contains(Path.GetFileName(file.ItemSpec)));
 
                         // Default to rooting all assemblies.
                         // If a root set is specified, only root if in the set.
@@ -478,7 +538,7 @@ namespace Microsoft.NET.Build.Tasks
                             }
                             else
                             {
-                                // If previously compiled as R2R, treat as reference if this would be compiled seperately
+                                // If previously compiled as R2R, treat as reference if this would be compiled separately
                                 if (!compositeCompile || excludeFromComposite)
                                 {
                                     return Eligibility.CreateReferenceEligibility(excludeFromComposite);
@@ -504,7 +564,7 @@ namespace Microsoft.NET.Build.Tasks
                                 return Eligibility.CreateReferenceEligibility(excludeFromComposite);
                         }
 
-                        return Eligibility.CreateCompileEligibility(!compositeCompile || excludeFromComposite, rootedInComposite);
+                        return Eligibility.CreateCompileEligibility(!compositeCompile || excludeFromComposite,  rootedInComposite, partialImage);
                     }
                 }
                 catch (BadImageFormatException)

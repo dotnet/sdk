@@ -95,6 +95,11 @@ Przykłady:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="Help_Device">
+        <source>The device identifier to run on (e.g. emulator, simulator, or physical device).</source>
+        <target state="translated">Identyfikator urządzenia do uruchomienia (np. emulator, symulator lub urządzenie fizyczne).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Help_List">
         <source>
       Lists all discovered files without starting the watcher.
@@ -133,6 +138,15 @@ Przykłady:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="Help_Trace">
+        <source>
+      Show trace output
+    </source>
+        <target state="translated">
+      Pokaż dane wyjściowe śledzenia
+    </target>
+        <note />
+      </trans-unit>
       <trans-unit id="Help_Verbose">
         <source>
       Show verbose output
@@ -142,19 +156,29 @@ Przykłady:
     </target>
         <note />
       </trans-unit>
+      <trans-unit id="MoreDevicesText">
+        <source>Move up and down to reveal more devices</source>
+        <target state="translated">Przesuń w górę i w dół, aby odkryć więcej urządzeń</target>
+        <note />
+      </trans-unit>
       <trans-unit id="MoreFrameworksText">
         <source>Move up and down to reveal more frameworks</source>
-        <target state="new">Move up and down to reveal more frameworks</target>
+        <target state="translated">Przesuń w górę lub w dół, aby zobaczyć więcej struktur</target>
         <note />
       </trans-unit>
       <trans-unit id="SearchPlaceholderText">
         <source>Type to search</source>
-        <target state="new">Type to search</target>
+        <target state="translated">Wpisz, aby wyszukać</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SelectDevicePrompt">
+        <source>Select a device to run on:</source>
+        <target state="translated">Wybierz urządzenie do uruchomienia:</target>
         <note />
       </trans-unit>
       <trans-unit id="SelectTargetFrameworkPrompt">
         <source>Select the target framework to run:</source>
-        <target state="new">Select the target framework to run:</target>
+        <target state="translated">Wybierz docelową strukturę do uruchomienia:</target>
         <note />
       </trans-unit>
       <trans-unit id="The_specified_path_0_is_invalid_1">

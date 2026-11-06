@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -12,17 +12,15 @@ using System.Threading.Tasks;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class RuntimeIdentifierGraphTests : SdkTest
     {
-        public RuntimeIdentifierGraphTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("net7.0", null, true)]
-        [InlineData("net8.0", null, false)]
-        [InlineData("net7.0", "false", false)]
-        [InlineData("net8.0", "true", true)]
+        [TestMethod]
+        [DataRow("net7.0", null, true)]
+        [DataRow("net8.0", null, false)]
+        [DataRow("net7.0", "false", false)]
+        [DataRow("net8.0", "true", true)]
         public void ItUsesCorrectRuntimeIdentifierGraph(string targetFramework, string useRidGraphValue, bool shouldUseFullRidGraph)
         {
             var testProject = new TestProject()

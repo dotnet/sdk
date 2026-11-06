@@ -179,11 +179,6 @@
         <target state="translated">'{0}' görüntü dizini '{1}' kayıt defterine gönderildi.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">Podman için görüntü dizini oluşturma desteklenmiyor.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: Görüntü yerel kayıt defterinden yüklenemedi. stdout: {0}</target>
@@ -194,6 +189,11 @@
         <target state="translated">CONTAINER1020: Kapsayıcılı görüntü deposu Docker için etkinleştirilmediğinden görüntü yüklenemedi. İpucu: Docker Desktop ayarlarında 'Görüntüleri çekmek ve depolamak için kapsayıcılı kullan' ayarını kontrol edip etkinleştirebilirsiniz.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="translated">CONTAINER1021: Çok mimarili görüntüler WSLC'ye yüklenemiyor. Tek platformlu bir görüntü yayımlayın veya çok mimarili görüntüyü bir kayıt defterinde yayımlayın.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: Yerel kayıt defterinden görüntü çekme desteklenmiyor.</target>
@@ -203,6 +203,36 @@
         <source>Cannot create image index because no images were provided.</source>
         <target state="translated">Görüntü dizini oluşturulamıyor çünkü görüntü sağlanmadı.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="InvalidAuthRealmAllowedAddress">
+        <source>CONTAINER2033: The {0} environment variable contains '{1}', which is not a valid IP address or CIDR range. Separate entries with semicolons.</source>
+        <target state="new">CONTAINER2033: The {0} environment variable contains '{1}', which is not a valid IP address or CIDR range. Separate entries with semicolons.</target>
+        <note>{StrBegins="CONTAINER2033: "} {0} is an environment variable name; {1} is the invalid entry.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthRealmPolicy">
+        <source>CONTAINER2034: The {0} environment variable has the value '{1}', which is not a valid policy. Valid values are 'Public', 'AllowlistOnly', and 'None'.</source>
+        <target state="new">CONTAINER2034: The {0} environment variable has the value '{1}', which is not a valid policy. Valid values are 'Public', 'AllowlistOnly', and 'None'.</target>
+        <note>{StrBegins="CONTAINER2034: "} {0} is an environment variable name; {1} is its value. Do not translate 'Public', 'AllowlistOnly', or 'None'.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_DisallowedScheme">
+        <source>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</source>
+        <target state="translated">taşıyıcı bölge '{0}', izin verilmeyen '{1}' şemasını kullanıyor; yalnızca 'https' kabul edilir (ve kayıt defteri güvensiz olarak yapılandırıldığında 'http' kabul edilir)</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_RealmBlockedBySsrfPolicy">
+        <source>the token request to bearer realm '{0}' was blocked by server-side request forgery (SSRF) protection: {1} If the realm is trusted, add its IP addresses to the {2} environment variable, or change the policy with the {3} environment variable</source>
+        <target state="new">the token request to bearer realm '{0}' was blocked by server-side request forgery (SSRF) protection: {1} If the realm is trusted, add its IP addresses to the {2} environment variable, or change the policy with the {3} environment variable</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is a non-localized detail message from the SSRF protection library; {2} and {3} are environment variable names and must not be translated.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_RelativeOrUnparseableRealm">
+        <source>bearer realm '{0}' is not a valid absolute URI</source>
+        <target state="translated">Taşıyıcı alanı '{0}' geçerli bir mutlak URI değil</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</note>
+      </trans-unit>
+      <trans-unit id="InvalidAuthResponse_UnexpectedAuthOrigin">
+        <source>authentication challenge origin '{0}' does not match registry origin '{1}'</source>
+        <target state="new">authentication challenge origin '{0}' does not match registry origin '{1}'</target>
+        <note>Reason fragment included in InvalidRegistryAuthResponse. {0} is the origin that returned the authentication challenge; {1} is the expected registry origin.</note>
       </trans-unit>
       <trans-unit id="InvalidContainerImageFormat">
         <source>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</source>
@@ -254,6 +284,11 @@
         <target state="translated">CONTAINER2017: Geçersiz bağlantı noktası türüne ('{0}') sahip bir ContainerPort öğesi sağlandı. ContainerPort öğeleri, tamsayı olan bir Include değerine ve 'tcp' veya 'udp' olan bir Type değerine sahip olmalıdır.</target>
         <note>{StrBegins="CONTAINER2017: "}</note>
       </trans-unit>
+      <trans-unit id="InvalidRegistryAuthResponse">
+        <source>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</source>
+        <target state="translated">CONTAINER1019: Kayıt defteri '{0}' geçersiz bir kimlik doğrulama yanıtı döndürdü: {1}</target>
+        <note>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</note>
+      </trans-unit>
       <trans-unit id="InvalidSdkPrereleaseVersion">
         <source>CONTAINER2018: Invalid SDK prerelease version '{0}' - only 'rc' and 'preview' are supported.</source>
         <target state="translated">CONTAINER2018: Geçersiz SDK ön sürümü ('{0}') : yalnızca 'rc' ve 'preview' destekleniyor.</target>
@@ -263,6 +298,11 @@
         <source>CONTAINER2019: Invalid SDK semantic version '{0}'.</source>
         <target state="translated">CONTAINER2019: Geçersiz SDK anlamsal sürümü '{0}'.</target>
         <note>{StrBegins="CONTAINER2019: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidSourceDateEpoch">
+        <source>CONTAINER2032: SOURCE_DATE_EPOCH value '{0}' is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset.</source>
+        <target state="new">CONTAINER2032: SOURCE_DATE_EPOCH value '{0}' is invalid. Set it to a non-negative Unix timestamp representable as a UTC date, or leave it unset.</target>
+        <note>{StrBegins="CONTAINER2032: "}</note>
       </trans-unit>
       <trans-unit id="InvalidTag">
         <source>CONTAINER2007: Invalid {0} provided: {1}. Image tags must be alphanumeric, underscore, hyphen, or period.</source>
@@ -378,6 +418,11 @@
         <source>Finished uploading layer '{0}' to '{1}'.</source>
         <target state="translated">'{0}' katmanının, '{1}' kayıt defterine karşıya yüklenmesi tamamlandı.</target>
         <note>{0} is the layer digest, {1} is the registry name</note>
+      </trans-unit>
+      <trans-unit id="Registry_ManifestExists">
+        <source>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</source>
+        <target state="translated">Bildirim '{0}' '{1}' deposunda zaten var. Katman ve yapılandırma karşıya yüklemeleri atlanıyor.</target>
+        <note>{0} is the manifest digest, {1} is the repository name</note>
       </trans-unit>
       <trans-unit id="Registry_ManifestUploadStarted">
         <source>Uploading manifest to registry '{0}' as blob '{1}'.</source>

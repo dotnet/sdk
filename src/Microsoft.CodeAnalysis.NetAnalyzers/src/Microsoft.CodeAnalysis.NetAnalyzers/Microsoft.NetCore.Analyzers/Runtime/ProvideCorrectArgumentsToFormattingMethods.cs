@@ -495,7 +495,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         foreach (AttributeData attribute in parameters[i].GetAttributes())
                         {
-                            if (StringSyntaxAttributes.Contains(attribute.AttributeClass, SymbolEqualityComparer.Default))
+                            if (attribute.AttributeClass is INamedTypeSymbol attributeClass &&
+                                StringSyntaxAttributes.Contains(attributeClass, SymbolEqualityComparer.Default))
                             {
                                 ImmutableArray<TypedConstant> arguments = attribute.ConstructorArguments;
                                 if (arguments.Length == 1 && CompositeFormat.Equals(arguments[0].Value))

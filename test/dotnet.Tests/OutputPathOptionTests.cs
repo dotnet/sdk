@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,29 +7,30 @@ using System.Runtime.CompilerServices;
 
 namespace dotnet.Tests
 {
+    [TestClass]
     public class OutputPathOptionTests : SdkTest
     {
-        public OutputPathOptionTests(ITestOutputHelper log) : base(log)
+        public OutputPathOptionTests()
         {
         }
 
-        [Theory]
-        [InlineData("build", true)]
-        [InlineData("clean", true)]
-        [InlineData("pack", false)]
-        [InlineData("publish", true)]
-        [InlineData("test", true)]
+        [TestMethod]
+        [DataRow("build", true)]
+        [DataRow("clean", true)]
+        [DataRow("pack", false)]
+        [DataRow("publish", true)]
+        [DataRow("test", true)]
         public void OutputOptionGeneratesWarningsWithSolutionFiles(string command, bool shouldWarn)
         {
             TestOutputWithSolution(command, useOption: true, shouldWarn: shouldWarn);
         }
 
-        [Theory]
-        [InlineData("build")]
-        [InlineData("clean")]
-        [InlineData("pack")]
-        [InlineData("publish")]
-        [InlineData("test")]
+        [TestMethod]
+        [DataRow("build")]
+        [DataRow("clean")]
+        [DataRow("pack")]
+        [DataRow("publish")]
+        [DataRow("test")]
         public void OutputPathPropertyDoesNotGenerateWarningsWithSolutionFiles(string command)
         {
             TestOutputWithSolution(command, useOption: false, shouldWarn: false);

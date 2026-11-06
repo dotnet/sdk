@@ -3,18 +3,23 @@
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    public partial class DotnetNewHelpTests : IClassFixture<SharedHomeDirectory>
+    public partial class DotnetNewHelpTests
     {
-        private readonly ITestOutputHelper _log;
-        private readonly SharedHomeDirectory _fixture;
+        private ITestOutputHelper _log => Log;
+        private static SharedHomeDirectory s_fixture = null!;
 
-        public DotnetNewHelpTests(SharedHomeDirectory fixture, ITestOutputHelper log) : base(log)
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext ctx)
         {
-            _log = log;
-            _fixture = fixture;
+            s_fixture = new SharedHomeDirectory(new TestContextOutputHelper(ctx));
         }
 
-        [Fact]
+        [ClassCleanup]
+        public static void ClassCleanup() => s_fixture?.Dispose();
+
+        private SharedHomeDirectory _fixture => s_fixture;
+
+        [TestMethod]
         public void WontShowLanguageHintInCaseOfOneLang()
         {
             string workingDirectory = CreateTemporaryFolder();

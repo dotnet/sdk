@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseXmlReaderForDeserialize,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,273 +12,294 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class UseXmlReaderForDeserializeTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithStreamParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(Stream stream)
-    {
-        new XmlSerializer(typeof(TestClass)).Deserialize(stream);
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Xml.Serialization;
+
+                class TestClass
+                {
+                    public void TestMethod(Stream stream)
+                    {
+                        new XmlSerializer(typeof(TestClass)).Deserialize(stream);
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 9, "XmlSerializer", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithTextReaderParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(TextReader textReader)
-    {
-        new XmlSerializer(typeof(TestClass)).Deserialize(textReader);
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Xml.Serialization;
+
+                class TestClass
+                {
+                    public void TestMethod(TextReader textReader)
+                    {
+                        new XmlSerializer(typeof(TestClass)).Deserialize(textReader);
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 9, "XmlSerializer", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBaseClassInvokesDeserializeWithXmlSerializationReaderParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass : XmlSerializer
-{
-    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
-    {
-        return base.Deserialize(xmlSerializationReader);
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Xml.Serialization;
+
+                class TestClass : XmlSerializer
+                {
+                    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
+                    {
+                        return base.Deserialize(xmlSerializationReader);
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 16, "XmlSerializer", "Deserialize"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.IO
-Imports System.Xml.Serialization
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class TestClass
-    Inherits XmlSerializer
-    Protected Overrides Function Deserialize(xmlSerializationReader As XmlSerializationReader) As Object
-        Deserialize = MyBase.Deserialize(xmlSerializationReader)
-    End Function
-End Class",
+                Imports System
+                Imports System.IO
+                Imports System.Xml.Serialization
+
+                Class TestClass
+                    Inherits XmlSerializer
+                    Protected Overrides Function Deserialize(xmlSerializationReader As XmlSerializationReader) As Object
+                        Deserialize = MyBase.Deserialize(xmlSerializationReader)
+                    End Function
+                End Class
+                """,
             GetBasicResultAt(9, 23, "XmlSerializer", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TesDerivedClassInvokesDeserializeWithXmlSerializationReaderParameterDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass : XmlSerializer
-{
-    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
-    {
-        return new TestClass();
-    }
+                using System;
+                using System.IO;
+                using System.Xml.Serialization;
 
-    public void TestMethod(XmlSerializationReader xmlSerializationReader)
-    {
-        Deserialize(xmlSerializationReader);
-    }
-}",
+                class TestClass : XmlSerializer
+                {
+                    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
+                    {
+                        return new TestClass();
+                    }
+
+                    public void TestMethod(XmlSerializationReader xmlSerializationReader)
+                    {
+                        Deserialize(xmlSerializationReader);
+                    }
+                }
+                """,
             GetCSharpResultAt(15, 9, "TestClass", "Deserialize"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.IO
-Imports System.Xml.Serialization
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Class TestClass
-    Inherits XmlSerializer
-    Protected Overrides Function Deserialize(xmlSerializationReader As XmlSerializationReader) As Object
-        Deserialize = new TestClass()
-    End Function
+                Imports System
+                Imports System.IO
+                Imports System.Xml.Serialization
 
-    Public Sub TestMethod(xmlSerializationReader As XmlSerializationReader)
-        Deserialize(xmlSerializationReader)
-    End Sub
-End Class",
+                Class TestClass
+                    Inherits XmlSerializer
+                    Protected Overrides Function Deserialize(xmlSerializationReader As XmlSerializationReader) As Object
+                        Deserialize = new TestClass()
+                    End Function
+
+                    Public Sub TestMethod(xmlSerializationReader As XmlSerializationReader)
+                        Deserialize(xmlSerializationReader)
+                    End Sub
+                End Class
+                """,
             GetBasicResultAt(13, 9, "TestClass", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithTwoLevelsOfInheritanceAndOverridesDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass : XmlSerializer
-{
-    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
-    {
-        return new TestClass();
-    }
-}
+                using System;
+                using System.IO;
+                using System.Xml.Serialization;
 
-class SubTestClass : TestClass
-{
-    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
-    {
-        return new TestClass();
-    }
+                class TestClass : XmlSerializer
+                {
+                    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
+                    {
+                        return new TestClass();
+                    }
+                }
 
-    public void TestMethod(XmlSerializationReader xmlSerializationReader)
-    {
-        Deserialize(xmlSerializationReader);
-    }
-}",
+                class SubTestClass : TestClass
+                {
+                    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
+                    {
+                        return new TestClass();
+                    }
+
+                    public void TestMethod(XmlSerializationReader xmlSerializationReader)
+                    {
+                        Deserialize(xmlSerializationReader);
+                    }
+                }
+                """,
             GetCSharpResultAt(23, 9, "SubTestClass", "Deserialize"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithXmlReaderParameterNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Xml;
+                using System.Xml.Serialization;
 
-class TestClass
-{
-    public void TestMethod(XmlReader xmlReader)
-    {
-        new XmlSerializer(typeof(TestClass)).Deserialize(xmlReader);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(XmlReader xmlReader)
+                    {
+                        new XmlSerializer(typeof(TestClass)).Deserialize(xmlReader);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithXmlReaderAndStringParametersNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Xml;
+                using System.Xml.Serialization;
 
-class TestClass
-{
-    public void TestMethod(XmlReader xmlReader, string str)
-    {
-        var xmlSerializer = new XmlSerializer(typeof(TestClass));
-        new XmlSerializer(typeof(TestClass)).Deserialize(xmlReader, str);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(XmlReader xmlReader, string str)
+                    {
+                        var xmlSerializer = new XmlSerializer(typeof(TestClass));
+                        new XmlSerializer(typeof(TestClass)).Deserialize(xmlReader, str);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithXmlReaderAndXmlDeserializationEventsParametersNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Xml;
+                using System.Xml.Serialization;
 
-class TestClass
-{
-    public void TestMethod(XmlReader xmlReader, XmlDeserializationEvents xmlDeserializationEvents)
-    {
-        new XmlSerializer(typeof(TestClass)).Deserialize(xmlReader, xmlDeserializationEvents);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(XmlReader xmlReader, XmlDeserializationEvents xmlDeserializationEvents)
+                    {
+                        new XmlSerializer(typeof(TestClass)).Deserialize(xmlReader, xmlDeserializationEvents);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeserializeWithXmlReaderAndStringAndXmlDeserializationEventsParametersNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Xml;
+                using System.Xml.Serialization;
 
-class TestClass
-{
-    public void TestMethod(XmlReader xmlReader, string str, XmlDeserializationEvents xmlDeserializationEvents)
-    {
-        new XmlSerializer(typeof(TestClass)).Deserialize(xmlReader, str, xmlDeserializationEvents);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(XmlReader xmlReader, string str, XmlDeserializationEvents xmlDeserializationEvents)
+                    {
+                        new XmlSerializer(typeof(TestClass)).Deserialize(xmlReader, str, xmlDeserializationEvents);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDerivedFromANormalClassNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Xml;
+                using System.Xml.Serialization;
 
-class TestClass
-{
-    protected virtual object Deserialize (XmlSerializationReader xmlSerializationReader)
-    {
-        return new TestClass();
-    }
-}
+                class TestClass
+                {
+                    protected virtual object Deserialize (XmlSerializationReader xmlSerializationReader)
+                    {
+                        return new TestClass();
+                    }
+                }
 
-class SubTestClass : TestClass
-{
-    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
-    {
-        return new SubTestClass();
-    }
+                class SubTestClass : TestClass
+                {
+                    protected override object Deserialize(XmlSerializationReader xmlSerializationReader)
+                    {
+                        return new SubTestClass();
+                    }
 
-    public void TestMethod(XmlSerializationReader xmlSerializationReader)
-    {
-        Deserialize(xmlSerializationReader);
-    }
-}");
+                    public void TestMethod(XmlSerializationReader xmlSerializationReader)
+                    {
+                        Deserialize(xmlSerializationReader);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalClassReadXmlWithXmlReaderParameterNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Data;
-using System.IO;
-using System.Xml;
-using System.Xml.Serialization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Data;
+                using System.IO;
+                using System.Xml;
+                using System.Xml.Serialization;
 
-class TestClass
-{
-    public object Deserialize (XmlSerializationReader xmlSerializationReader)
-    {
-        return new TestClass();
-    }
+                class TestClass
+                {
+                    public object Deserialize (XmlSerializationReader xmlSerializationReader)
+                    {
+                        return new TestClass();
+                    }
 
-    public void TestMethod(XmlSerializationReader xmlSerializationReader)
-    {
-        new TestClass().Deserialize(xmlSerializationReader);
-    }
-}");
+                    public void TestMethod(XmlSerializationReader xmlSerializationReader)
+                    {
+                        new TestClass().Deserialize(xmlSerializationReader);
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

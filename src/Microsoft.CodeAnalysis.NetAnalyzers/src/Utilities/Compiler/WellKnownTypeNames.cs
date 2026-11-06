@@ -229,6 +229,7 @@ namespace Analyzer.Utilities
         public const string SystemDiagnosticsProcess = "System.Diagnostics.Process";
         public const string SystemDiagnosticsProcessModule = "System.Diagnostics.ProcessModule";
         public const string SystemDiagnosticsProcessStartInfo = "System.Diagnostics.ProcessStartInfo";
+        public const string SystemDiagnosticsStopwatch = "System.Diagnostics.Stopwatch";
         public const string SystemDiagnosticsTraceListener = "System.Diagnostics.TraceListener";
         public const string SystemDiagnosticsTracingEventSource = "System.Diagnostics.Tracing.EventSource";
         public const string SystemDiagnosticsUnreachableException = "System.Diagnostics.UnreachableException";
@@ -328,13 +329,16 @@ namespace Analyzer.Utilities
         public const string SystemRuntimeCompilerServicesICriticalNotifyCompletion = "System.Runtime.CompilerServices.ICriticalNotifyCompletion";
         public const string SystemRuntimeCompilerServicesInlineArrayAttribute = "System.Runtime.CompilerServices.InlineArrayAttribute";
         public const string SystemRuntimeCompilerServicesINotifyCompletion = "System.Runtime.CompilerServices.INotifyCompletion";
+        public const string SystemRuntimeCompilerServicesIUnion = "System.Runtime.CompilerServices.IUnion";
         public const string SystemRuntimeCompilerServicesInternalsVisibleToAttribute = "System.Runtime.CompilerServices.InternalsVisibleToAttribute";
         public const string SystemRuntimeCompilerServicesMethodImplOptions = "System.Runtime.CompilerServices.MethodImplOptions";
         public const string SystemRuntimeCompilerServicesModuleInitializerAttribute = "System.Runtime.CompilerServices.ModuleInitializerAttribute";
         public const string SystemRuntimeCompilerServicesRestrictedInternalsVisibleToAttribute = "System.Runtime.CompilerServices.RestrictedInternalsVisibleToAttribute";
         public const string SystemRuntimeCompilerServicesRuntimeFeature = "System.Runtime.CompilerServices.RuntimeFeature";
+        public const string SystemRuntimeCompilerServicesRuntimeHelpers = "System.Runtime.CompilerServices.RuntimeHelpers";
         public const string SystemRuntimeCompilerServicesTaskAwaiter = "System.Runtime.CompilerServices.TaskAwaiter";
         public const string SystemRuntimeCompilerServicesTypeForwardedToAttribute = "System.Runtime.CompilerServices.TypeForwardedToAttribute";
+        public const string SystemRuntimeCompilerServicesUnionAttribute = "System.Runtime.CompilerServices.UnionAttribute";
         public const string SystemRuntimeCompilerServicesValueTaskAwaiter = "System.Runtime.CompilerServices.ValueTaskAwaiter";
         public const string SystemRuntimeExceptionServicesHandleProcessCorruptedStateExceptionsAttribute = "System.Runtime.ExceptionServices.HandleProcessCorruptedStateExceptionsAttribute";
         public const string SystemRuntimeInteropServicesCharSet = "System.Runtime.InteropServices.CharSet";
@@ -445,6 +449,7 @@ namespace Analyzer.Utilities
         public const string SystemTextJsonJsonSerializerOptions = "System.Text.Json.JsonSerializerOptions";
         public const string SystemTextJsonJsonSerializer = "System.Text.Json.JsonSerializer";
         public const string SystemTextRegularExpressionsGroup = "System.Text.RegularExpressions.Group";
+        public const string SystemTextRegularExpressionsMatch = "System.Text.RegularExpressions.Match";
         public const string SystemTextRegularExpressionsMatchCollection = "System.Text.RegularExpressions.MatchCollection";
         public const string SystemTextRegularExpressionsRegex = "System.Text.RegularExpressions.Regex";
         public const string SystemTextStringBuilder = "System.Text.StringBuilder";

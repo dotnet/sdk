@@ -4,14 +4,14 @@
 using FluentAssertions;
 using Microsoft.Build.Framework;
 using NuGet.ProjectModel;
-using Xunit;
 using static Microsoft.NET.Build.Tasks.UnitTests.LockFileSnippets;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAResolvePackageDependenciesMultiThreading
     {
-        [Fact]
+        [TestMethod]
         public void ItResolvesProjectReferencePathsViaTaskEnvironment()
         {
             // Create a temp directory to act as a fake project dir (different from CWD).

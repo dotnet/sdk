@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-internal class TestReporter(ITestOutputHelper output) : IReporter, IProcessOutputReporter
+internal class TestReporter(DualOutputHelper output) : IReporter, IProcessOutputReporter
 {
     public readonly List<string> ProcessOutput = [];
     public readonly List<(LogLevel level, string text)> Messages = [];

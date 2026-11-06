@@ -5,9 +5,11 @@
 - [.NET SDK Telemetry Documentation](#net-sdk-telemetry-documentation)
   - [Table of Contents](#table-of-contents)
   - [How to Control Telemetry](#how-to-control-telemetry)
+  - [CLI Activity Duration Metrics](#cli-activity-duration-metrics)
   - [Common Properties Collected](#common-properties-collected)
   - [Telemetry Events](#telemetry-events)
     - [Core CLI Events](#core-cli-events)
+    - [Test Events](#test-events)
     - [Template Engine Events](#template-engine-events)
     - [SDK-Collected Build Events](#sdk-collected-build-events)
     - [MSBuild Engine Telemetry](#msbuild-engine-telemetry)
@@ -33,6 +35,22 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - Values: `false`, `0`, or `no` to allow messages
   - Default: `false` (messages are displayed)
   - Note: This flag does not affect telemetry collection itself
+- **`DOTNET_CLI_TELEMETRY_SESSIONID`**: Seeds the initial telemetry session ID
+  - When set, the CLI uses this value instead of generating a new GUID for the first `TelemetryClient` created in the process
+  - This is useful for correlating multiple `dotnet` invocations that belong to the same CI workflow, job, or higher-level user session
+  - If not set, the CLI generates a new GUID per process as before
+
+
+- **`DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT`**: Set to `1`, `true`, or `yes` to disable exporting trace
+  telemetry to Azure Monitor (both persistence and upload). Metrics/OTLP export and the local disk log are
+  unaffected. This does not disable telemetry collection itself — use `DOTNET_CLI_TELEMETRY_OPTOUT` for that.
+
+- **`DOTNET_CLI_TELEMETRY_STORAGE_PATH`**: Overrides the base directory used by Azure Monitor to persist trace
+  telemetry (see [Telemetry Delivery](#telemetry-delivery)). Defaults to `TelemetryStorageService` under the .NET
+  user profile folder (e.g. `~/.dotnet/TelemetryStorageService`). Azure creates its own partitioned subdirectories.
+
+- **`DOTNET_CLI_TELEMETRY_LOG_PATH`**: When set, trace telemetry activities are also written to this path as a
+  local JSON log (used for diagnostics and testing). This does not affect Azure Monitor delivery.
 
 ### Telemetry Configuration
 
@@ -42,9 +60,116 @@ The .NET SDK telemetry can be disabled using the following environment variable:
 
 - **Connection String**: Telemetry data is sent to Application Insights with instrumentation key: `74cc1c9e-3e6e-4d05-b3fc-dde9101d0254`
 
+### OpenTelemetry OTLP Exporter
+
+In addition to the default Application Insights exporter, the SDK can also export telemetry via the [OpenTelemetry Protocol (OTLP)](https://opentelemetry.io/docs/specs/otel/protocol/exporter/). The OTLP exporter is enabled when either of the following conditions is met:
+
+- The SDK-specific `DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER` environment variable is set to `1`, `true`, or `yes`, **or**
+- Any of the standard OpenTelemetry OTLP exporter environment variables are set:
+  - `OTEL_EXPORTER_OTLP_ENDPOINT`, `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `OTEL_EXPORTER_OTLP_METRICS_ENDPOINT`
+  - `OTEL_EXPORTER_OTLP_PROTOCOL`, `OTEL_EXPORTER_OTLP_TRACES_PROTOCOL`, `OTEL_EXPORTER_OTLP_METRICS_PROTOCOL`
+  - `OTEL_EXPORTER_OTLP_HEADERS`, `OTEL_EXPORTER_OTLP_TRACES_HEADERS`, `OTEL_EXPORTER_OTLP_METRICS_HEADERS`
+  - `OTEL_EXPORTER_OTLP_TIMEOUT`, `OTEL_EXPORTER_OTLP_TRACES_TIMEOUT`, `OTEL_EXPORTER_OTLP_METRICS_TIMEOUT`
+
+  and of course the overall OTel SDK disablement flag OTEL_SDK_DISABLED must not be `true`
+
+When the OTLP exporter is enabled, all standard OpenTelemetry OTLP environment variables (endpoint, protocol, headers, timeout, etc.) are honored by the OpenTelemetry SDK's `OtlpExporterOptions` to configure the export destination.
+
+### Telemetry Delivery
+
+The CLI uses Azure Monitor OpenTelemetry Exporter 1.9.0 or later for trace serialization, persistent storage,
+and delivery. [TelemetryClient](../../src/Cli/dotnet/Telemetry/TelemetryClient.cs) registers the exporter through
+`AddAzureMonitorTraceExporter`, which installs Azure's shutdown-aware batch processor.
+
+1. **Local invocations.** On orderly shutdown, Azure persists queued trace batches before starting a background
+  drain. The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.ShutdownDrainBudgetMilliseconds` to zero, so it does
+  not wait for that drain on successful exits. When a command returns a nonzero exit code, the SDK temporarily
+  sets the drain budget to 300 ms and calls trace-provider `Shutdown(300)`, giving persistence and background
+  delivery a bounded opportunity to finish. This is a maximum requested wait, not a sleep or delivery guarantee.
+  The previous drain setting is restored afterward; metrics retain their separate 10-ms shutdown allowance.
+  Both managed and Native AOT entry points pass the actual command exit code. A managed fallback can therefore
+  use a separate 300-ms trace allowance in each runtime; there is no cross-runtime deadline coordination.
+  Normal exports before shutdown remain network-first; this is not synchronous
+  persistence of every ended span, and abrupt termination can lose queued spans. An upload already in flight
+  can still delay shutdown. Successful local shutdown waits for the batch processor to finish rather than
+  applying the old 10-ms timeout to persistence. Failed-command persistence is subject to the 300-ms timeout.
+2. **Subsequent invocations.** Azure schedules an eager background drain after a 50-ms startup delay; actual
+  start time also depends on thread scheduling and storage work. The two-minute periodic retry timer remains.
+  Accepted payloads are deleted; retryable failures remain for later attempts. Storage partitioning, retention,
+  leases, and response handling belong to Azure. Blobs written directly into the storage root by the previous
+  SDK-owned exporter are not migrated or automatically consumed by Azure's partitioned store. They are left
+  untouched; this migration does not delete old telemetry files.
+
+  Azure names each storage sub directory from the instrumentation key, user name, process name, and
+  `AppContext.BaseDirectory`. The base directory differs between `dotnet.dll` and `dotnet-aot`, so without an
+  override each entry point would drain only its own backlog. The SDK sets the
+  `Azure.Monitor.OpenTelemetry.Exporter.StorageSubDirectory` AppContext value to `dotnet-cli` (see
+  [Azure/azure-sdk-for-net#62997](https://github.com/Azure/azure-sdk-for-net/issues/62997)). Every entry point
+  for a given user then shares one sub directory and drains telemetry that the others persisted.
+3. **CI invocations.** The SDK sets `Azure.Monitor.OpenTelemetry.Exporter.DisablePersistOnShutdown` to true and
+  calls `Shutdown` with a finite timeout because another invocation may never run. The default CI
+  wait budget is five seconds, shared across trace and metric providers. A positive
+  `DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS` can shorten or extend it. That value also configures Azure's
+  network timeout. This selects network-first shutdown, not guaranteed ingestion: retryable failures can still
+  be persisted, and a timeout can leave telemetry undelivered.
+4. **Persistent MSBuild hosts.** A logger finishes a build request with nonterminal `ForceFlush`, allowing the
+  same provider to handle later builds. Locally the SDK enables
+  `Azure.Monitor.OpenTelemetry.Exporter.PersistOnForceFlush`; process exit uses `Shutdown`. CI uses a bounded
+  network-first flush. A force-flush result is not an ingestion acknowledgment.
+
+These Azure settings are process-wide. OTLP-enabled invocations retain bounded provider shutdown, and the trace
+and metric providers share the configured wait budget. This bounds provider waits, not all process-exit work. Azure's
+zero drain-wait setting does not control OTLP delivery. Storage failures and abnormal process termination can
+still cause data loss; telemetry delivery remains best-effort.
+
+The lifecycle behavior is covered by
+[AzureExporterLifecycleTests](../../test/Microsoft.DotNet.Cli.Telemetry.Tests/AzureExporterLifecycleTests.cs)
+using the real exporter, isolated storage, and a controlled HTTP transport. The test-only reflection hooks
+disable background drains when asserting persisted payloads and are restored after each test. The retained
+[CLI subprocess test](../../test/dotnet.Tests/TelemetryTests/PersistentStorageTelemetryE2ETests.cs) checks the
+production managed assembly and normal muxer entry point. Live endpoint acceptance tests are skipped unless
+explicitly enabled. Set `DOTNET_CLI_TELEMETRY_E2E_ENABLED=true` (or `1`) to send synthetic telemetry to the SDK's
+fixed destination, or set `DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING` to opt in with another destination.
+`DOTNET_CLI_TELEMETRY_E2E_RUN_ID` supplies a correlation ID for
+checking downstream ingestion. HTTP acceptance alone does not verify arrival in a destination table.
+
+1.9.0 or later must be leveraged, as older versions did not work well and we requested fixes. Our requested upstream shutdown fixes are documented in
+[azure-sdk-for-net#61818](https://github.com/Azure/azure-sdk-for-net/pull/61818) and
+[azure-sdk-for-net#62340](https://github.com/Azure/azure-sdk-for-net/pull/62340). They provide lifecycle-scoped
+persistence rather than the public persist-only/manual-drain API proposed in
+[azure-sdk-for-net#60838](https://github.com/Azure/azure-sdk-for-net/issues/60838).
+
+This pipeline only applies to **trace** telemetry sent to Azure Monitor. Metrics, OTLP export, and the local disk
+log are unaffected. Set `DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT` to disable it.
+
 - **First Time Use**: Telemetry is only collected after the first-time-use notice has been shown and accepted (tracked via sentinel file)
 
 - **Event Namespace**: All telemetry events are automatically prefixed with `dotnet/cli/`
+
+## CLI Activity Duration Metrics
+
+Performance collectors such as PerfStar can opt into CLI phase timings by enabling
+the `dotnet-cli-perf` meter. Built-in SDK telemetry and its OTLP exporter do not
+enable this collection.
+
+| Meter | Instrument | Unit | Tag |
+| --- | --- | --- | --- |
+| `dotnet-cli-perf` | `dotnet.cli.activity.duration` | `s` (seconds) | `activity.name` |
+
+Each completed activity from either source (`dotnet-cli` or `dotnet-cli-perf`)
+records its duration, tagged by operation name. To collect activity spans, subscribe to the relevant activity source. Skipped phases emit no activity; failed invocations still record their duration.
+
+The `dotnet-cli-perf` source contains these activities:
+
+| Activity | Measured work |
+| --- | --- |
+| `msbuild-submission` | Synchronous MSBuild invocation, including child/server wait time. For file-based projects, covers `BeginBuild` through `EndBuild`. |
+| `release-property-discovery` | Project/solution discovery and `PackRelease` / `PublishRelease` evaluation to choose the default configuration. |
+| `project-selection` | Run/test project loading, evaluation when needed, and project-instance creation, including cached snapshots. |
+| `device-discovery` | Optional restore, `ComputeAvailableDevices` execution, and reading its results. |
+| `test-project-discovery` | Microsoft.Testing.Platform (MTP) outer- and inner-framework project evaluation for automatic device selection. |
+| `test-target-framework-discovery` | MTP framework evaluation when `--device` is given without a target framework. |
+| `test-environment-discovery` | MTP environment-variable support checks and properties-file preparation before a project build. |
 
 ## Common Properties Collected
 
@@ -71,7 +196,50 @@ Every telemetry event automatically includes these common properties:
 | **Product Type** | Type of .NET product | Product identifier |
 | **Libc Release** | Libc release information | Libc release version |
 | **Libc Version** | Libc version information | Libc version number |
-| **SessionId** | Unique session identifier | GUID |
+| **SessionId** | Unique session identifier | GUID or CI-specific correlation identifier |
+
+### Microsoft-internal user classification
+
+When telemetry is enabled, the CLI asynchronously determines whether the current user is
+internal to Microsoft and enriches trace activities with these tags:
+
+| Tag | Description |
+| --- | --- |
+| `dotnet.cli.is_microsoft_internal` | `true` when a probe finds Microsoft-internal evidence. It is `false` when detection completes without that evidence. |
+| `dotnet.cli.microsoft_internal_source` | The probe that found the evidence. Emitted only for a positive result. |
+| `dotnet.cli.microsoft_internal_alias` | A normalized local account alias when local identity evidence supplies one. Emitted only for a positive result outside CI. |
+| `dotnet.cli.microsoft_internal_domain` | A normalized corporate domain when local identity evidence supplies one. Emitted only for a positive result outside CI. |
+
+The detector first uses local OS and account evidence. Outside CI, it can also use
+existing GitHub CLI, Copilot CLI, or GitHub-token environment credentials to ask GitHub
+whether the authenticated account is a member of the `microsoft` organization. Tokens
+are sent only to GitHub's API for that check; they are not cached or added to telemetry.
+GitHub logins are not used as telemetry aliases. GitHub identity probes are skipped in
+CI, and alias and domain tags are suppressed in CI.
+
+The implementation of this classification is isolated in the AOT-compatible
+[`Microsoft.DotNet.Cli.InternalMicrosoft`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft)
+library. It does not reference OpenTelemetry or emit telemetry. Each detection mechanism
+implements
+[`IInternalMicrosoftDetectionProvider`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/Internal/InternalMicrosoftDetectionProvider.cs).
+The detector filters providers by platform and CI support, groups them into ordered
+stages, and owns orchestration, deadlines, result selection, and caching.
+
+The CLI telemetry adapter maps the classification result to tags on normal CLI
+activities. It does not emit separate detector-health activities.
+
+Results are cached for six hours under
+`~/.dotnet/internal-microsoft/detector.json` (relative to the configured .NET user
+profile). The cache contains the classification, source, CI mode, and timestamp. Outside
+CI, it can also contain an optional local alias and domain. The cache never contains
+credentials. Failed or timed-out detection is not cached. Probe execution, diagnostics,
+and shutdown waiting are bounded. Detection begins after telemetry-provider construction,
+is not synchronously awaited during startup, and cannot indefinitely delay command
+completion. See
+[`InternalMicrosoftDetector`](../../src/Cli/Microsoft.DotNet.Cli.InternalMicrosoft/InternalMicrosoftDetector.cs)
+and
+[`InternalMicrosoftTelemetry`](../../src/Cli/dotnet/Telemetry/InternalMicrosoft/InternalMicrosoftTelemetry.cs)
+for the separate detection and telemetry integration layers.
 
 ## Telemetry Events
 
@@ -161,6 +329,24 @@ Every telemetry event automatically includes these common properties:
 
 **Description**: Tracks unhandled exceptions for diagnostics
 
+### Test Events
+
+#### `test/artifact-post-processing`
+
+**When fired**: Once per `dotnet test` Microsoft.Testing.Platform run that planned at least one artifact post-processing job. Runs that plan nothing (no mergeable artifacts) emit nothing.
+
+**Properties**:
+
+- `jobs_planned`: Number of elected test-application relaunches planned
+- `jobs_executed`: Number of jobs actually attempted (differs from `jobs_planned` only when the run was cancelled mid-way)
+- `jobs_failed`: Number of jobs that reported a failure
+- `artifact_count`: Total number of input artifacts across all planned groups
+- `kinds`: Semicolon-separated, sorted, distinct artifact kinds that were merged; any kind outside a fixed well-known list is reported as `other`
+- `extensions`: Semicolon-separated, sorted, distinct file extensions from file-extension fallback groups; any extension outside a fixed well-known list is reported as `other`
+- `duration_ms`: Total wall-clock time spent post-processing, in milliseconds
+
+**Description**: Tracks how often artifact post-processing runs and on which shipped formats. No file paths, artifact contents, project names, or user-defined identifiers are collected — that is why unknown kinds and extensions are bucketed as `other`.
+
 ### Template Engine Events
 
 #### `template/new-install`
@@ -195,6 +381,41 @@ Every telemetry event automatically includes these common properties:
 **Description**: Tracks template usage and creation success
 
 ### SDK-Collected Build Events
+
+[`MSBuildLogger`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) collects the
+existing events below. MSBuild loads the logger from the SDK. The logger can run in the
+CLI process, a child MSBuild process, or a persistent MSBuild server.
+
+The logger creates an internal activity for each build. When trace context is available,
+the activity is a child of the invoking CLI trace. Server reuse changes telemetry delivery
+and correlation only. It does not change the listed data points or properties.
+
+The activity remains open through logger shutdown because MSBuild emits the final `build`
+telemetry event after `BuildFinished` (see
+[dotnet/sdk#55749](https://github.com/dotnet/sdk/issues/55749)).
+`TelemetryHostMatrixTests` validates the real OTLP export path for cold and hot MSBuild
+servers, in-process builds, server fallback, and telemetry opt-out. The test installs the
+pinned Aspire CLI version from the repository's configured feeds, runs its dashboard on
+loopback endpoints, and verifies exported events through the dashboard telemetry API.
+
+#### `msbuild/roslyn/compilercache`
+
+**When fired**: When the Roslyn [compiler output cache](https://github.com/dotnet/roslyn/blob/main/docs/compilers/Design/compiler-output-cache-experiment.md)
+is enabled and a compilation runs on the compiler server through the MSBuild `Csc` or `Vbc` task
+
+**Properties**:
+
+- `cachestatus`: Cache lookup result: `hit` or `miss`
+- `storeresult`: Cache store result: `none`, `stored`, `skippedrace`, `skippedexists`, or `failed`
+- `language`: Compiler language: `C#` or `Visual Basic`
+- `keycomputems`: Milliseconds spent computing the deterministic cache key
+- `restorems`: Milliseconds spent attempting to restore a cached result
+- `storems`: Milliseconds spent storing the result; omitted when no store was attempted
+- `compilems`: Milliseconds spent compiling and emitting on a cache miss; omitted on a cache hit or when compilation failed
+
+**Description**: Tracks the effectiveness and performance of the experimental Roslyn compiler output cache
+
+---
 
 #### `msbuild/targetframeworkeval`
 

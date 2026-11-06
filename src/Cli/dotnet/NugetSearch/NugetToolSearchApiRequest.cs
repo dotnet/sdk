@@ -1,89 +1,119 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
-using System.Collections.Specialized;
-using System.Web;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
+using Microsoft.DotNet.Cli.ToolPackage;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.NugetSearch;
 
-internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
+internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
 {
-    public async Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter)
-    {
-        var queryUrl = await ConstructUrl(
-            nugetSearchApiParameter.SearchTerm,
-            nugetSearchApiParameter.Skip,
-            nugetSearchApiParameter.Take,
-            nugetSearchApiParameter.Prerelease);
+    private readonly Func<PackageSource, CancellationToken, Task<PackageSearchResource?>> _getPackageSearchResource;
 
-        var httpClient = new HttpClient();
-        using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        HttpResponseMessage response = await httpClient.GetAsync(queryUrl, cancellation.Token);
-        if (!response.IsSuccessStatusCode)
+    public NugetToolSearchApiRequest()
+        : this(GetPackageSearchResource)
+    {
+    }
+
+    internal NugetToolSearchApiRequest(
+        Func<PackageSource, CancellationToken, Task<PackageSearchResource?>> getPackageSearchResource)
+    {
+        _getPackageSearchResource = getPackageSearchResource;
+    }
+
+    public async Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
+        NugetSearchApiParameter nugetSearchApiParameter,
+        PackageSource source,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(nugetSearchApiParameter);
+        ArgumentNullException.ThrowIfNull(source);
+
+        using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeoutCancellation.CancelAfter(TimeSpan.FromSeconds(10));
+
+        try
         {
-            if ((int)response.StatusCode >= 500 && (int)response.StatusCode < 600)
+            PackageSearchResource? searchResource = await _getPackageSearchResource(source, timeoutCancellation.Token).ConfigureAwait(false);
+            if (searchResource is null)
             {
                 throw new NugetSearchApiRequestException(
-                    string.Format(
-                        CliStrings.RetriableNugetSearchFailure,
-                        queryUrl.AbsoluteUri, response.ReasonPhrase, response.StatusCode));
+                    $"The source '{source.Source}' does not provide {nameof(PackageSearchResource)}.");
             }
 
-            throw new NugetSearchApiRequestException(
-                string.Format(
-                    CliStrings.NonRetriableNugetSearchFailure,
-                    queryUrl.AbsoluteUri, response.ReasonPhrase, response.StatusCode));
-        }
+            if (!searchResource.SupportsPackageTypeFiltering)
+            {
+                throw new NugetSearchApiRequestException(
+                    string.Format(CliCommandStrings.ToolSearchSourceDoesNotSupportPackageTypeFiltering, source.Source));
+            }
 
-        return await response.Content.ReadAsStringAsync(cancellation.Token);
+            var searchFilter = new SearchFilter(nugetSearchApiParameter.Prerelease)
+            {
+                PackageType = PackageType.DotnetTool.Name,
+            };
+
+            IEnumerable<IPackageSearchMetadata> metadata = await searchResource.SearchAsync(
+                Uri.EscapeDataString(nugetSearchApiParameter.SearchTerm ?? string.Empty),
+                searchFilter,
+                nugetSearchApiParameter.Skip ?? 0,
+                nugetSearchApiParameter.Take ?? 20,
+                NullLogger.Instance,
+                timeoutCancellation.Token).ConfigureAwait(false);
+
+            var results = new List<SearchResultPackage>();
+            foreach (IPackageSearchMetadata packageMetadata in metadata)
+            {
+                IEnumerable<VersionInfo> versions = nugetSearchApiParameter.IncludeVersions
+                    ? await packageMetadata.GetVersionsAsync().ConfigureAwait(false)
+                    : [];
+                results.Add(new SearchResultPackage(
+                    new PackageId(packageMetadata.Identity.Id),
+                    packageMetadata.Identity.Version.ToNormalizedString(),
+                    packageMetadata.Description,
+                    packageMetadata.Summary,
+                    SplitMetadataField(packageMetadata.Tags, splitOnSpaces: true),
+                    SplitMetadataField(packageMetadata.Authors, splitOnSpaces: false),
+                    packageMetadata.DownloadCount ?? 0,
+                    packageMetadata.PrefixReserved,
+                    versions.Select(version => new SearchResultPackageVersion(
+                        version.Version.ToNormalizedString(),
+                        version.DownloadCount ?? 0)).ToArray()));
+            }
+
+            return results;
+        }
+        catch (Exception ex) when (ex is HttpRequestException
+            or NuGetProtocolException
+            or IOException
+            or InvalidOperationException
+            or NotSupportedException)
+        {
+            throw new NugetSearchApiRequestException(ex.Message);
+        }
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
+        {
+            throw new NugetSearchApiRequestException(ex.Message);
+        }
     }
 
-    internal static async Task<Uri> ConstructUrl(string searchTerm = null, int? skip = null, int? take = null,
-        bool prerelease = false, Uri domainAndPathOverride = null)
-    {
-        var uriBuilder = new UriBuilder(domainAndPathOverride ?? await DomainAndPath());
-        NameValueCollection query = HttpUtility.ParseQueryString(uriBuilder.Query);
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            query["q"] = searchTerm;
-        }
+    private static async Task<PackageSearchResource?> GetPackageSearchResource(
+        PackageSource source,
+        CancellationToken cancellationToken)
+        => await Repository.Factory.GetCoreV3(source)
+            .GetResourceAsync<PackageSearchResource>(cancellationToken)
+            .ConfigureAwait(false);
 
-        query["packageType"] = "dotnettool";
-
-        // This is a field for internal nuget back
-        // compatibility should be "2.0.0" for all new API usage
-        query["semVerLevel"] = "2.0.0";
-
-        if (skip.HasValue)
-        {
-            query["skip"] = skip.Value.ToString();
-        }
-
-        if (take.HasValue)
-        {
-            query["take"] = take.Value.ToString();
-        }
-
-        if (prerelease)
-        {
-            query["prerelease"] = "true";
-        }
-
-        uriBuilder.Query = query.ToString();
-
-        return uriBuilder.Uri;
-    }
-
-    // More detail on this API https://github.com/dotnet/sdk/issues/12038
-    private static async Task<Uri> DomainAndPath()
-    {
-        var repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-        var resource = await repository.GetResourceAsync<ServiceIndexResourceV3>();
-        var uris = resource.GetServiceEntryUris("SearchQueryService/3.5.0");
-        return uris[0];
-    }
+    private static string[] SplitMetadataField(string? value, bool splitOnSpaces)
+        => string.IsNullOrWhiteSpace(value)
+            ? []
+            : value.Split(
+                splitOnSpaces ? [',', ' '] : [','],
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 }

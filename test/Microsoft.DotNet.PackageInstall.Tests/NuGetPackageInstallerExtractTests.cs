@@ -10,13 +10,12 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
+    [TestClass]
     public class NuGetPackageInstallerExtractTests : SdkTest
     {
-        public NuGetPackageInstallerExtractTests(ITestOutputHelper log) : base(log)
-        {
-        }
+        public NuGetPackageInstallerExtractTests() { }
 
-        [Fact]
+        [TestMethod]
         public async Task ItCanExtractNugetPackage()
         {
             string packageId = "Newtonsoft.Json";
@@ -37,7 +36,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             extractedFiles.Should().BeEquivalentTo(result);
         }
 
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void ItCanGetAllFilesNeedToSetExecutablePermission()
         {
             NuGetTestLogger logger = new(Log);
@@ -61,7 +61,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 "file without extension under tools folder");
         }
 
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void GivenPackageNotInAllowListItCannotGetAllFilesNeedToSetExecutablePermission()
         {
             NuGetTestLogger logger = new(Log);

@@ -23,4 +23,9 @@ IF NOT EXIST "%DOTNET_ROOT%\dotnet.exe" (
     exit /b 1
 )
 
-"%vscode%" "."
+:: Open a specific .code-workspace file if provided, otherwise default to tasks.code-workspace
+IF ["%~1"] == [""] (
+    "%vscode%" "%~dp0tasks.code-workspace"
+) ELSE (
+    "%vscode%" "%~dp0%~1"
+)

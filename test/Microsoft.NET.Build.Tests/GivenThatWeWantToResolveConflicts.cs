@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -12,15 +12,13 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToResolveConflicts : SdkTest
     {
-        public GivenThatWeWantToResolveConflicts(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("netcoreapp2.0")]
-        [InlineData("netstandard2.0")]
+        [TestMethod]
+        [DataRow("netcoreapp2.0")]
+        [DataRow("netstandard2.0")]
         public void The_same_references_are_used_with_or_without_DisableDefaultPackageConflictOverrides(string targetFramework)
         {
             var defaultProject = new TestProject()
@@ -50,8 +48,8 @@ namespace Microsoft.NET.Build.Tests
                 referenceCopyLocalPaths: out List<string> disableReferenceCopyLocalPaths,
                 targetFramework);
 
-            Assert.Equal(defaultReferences, disableReferences);
-            Assert.Equal(defaultReferenceCopyLocalPaths, disableReferenceCopyLocalPaths);
+            Assert.AreSequenceEqual(defaultReferences, disableReferences);
+            Assert.AreSequenceEqual(defaultReferenceCopyLocalPaths, disableReferenceCopyLocalPaths);
         }
 
         private void AddConflictReferences(TestProject testProject)
@@ -104,7 +102,7 @@ namespace Microsoft.NET.Build.Tests
             referenceCopyLocalPaths = getReferenceCopyLocalPathsCommand.GetValues();
         }
 
-        [Fact]
+        [TestMethod]
         public void CompileConflictsAreNotRemovedFromRuntimeDepsAssets()
         {
             TestProject testProject = new()
@@ -143,7 +141,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void AProjectCanReferenceADllInAPackageDirectly()
         {
             TestProject testProject = new()
@@ -174,7 +172,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void DuplicateFrameworkAssembly()
         {
             TestProject testProject = new()
@@ -197,7 +195,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void FilesFromAspNetCoreSharedFrameworkAreNotIncluded()
         {
             var testProject = new TestProject()
@@ -231,7 +229,8 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().NotHaveFile("Microsoft.Extensions.DependencyInjection.Abstractions.dll");
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void AnalyzersAreConflictResolved()
         {
             var testProject = new TestProject()
@@ -271,9 +270,10 @@ namespace Microsoft.NET.Build.Tests
         }
 
         //  Should also run on full framework, but needs the right version of NuGet, which isn't on CI yet
-        [CoreMSBuildOnlyTheory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [DataRow(true)]
+        [DataRow(false)]
         public void PlatformPackagesCanBePruned(bool prunePackages)
         {
             var referencedProject = new TestProject("ReferencedProject")
@@ -312,30 +312,31 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [CoreMSBuildOnlyTheory]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        [InlineData("net9.0")]
-        [InlineData("net8.0")]
-        [InlineData("net7.0")]
-        [InlineData("net6.0")]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("netcoreapp3.0")]
-        [InlineData("netcoreapp2.1")]
-        [InlineData("netcoreapp2.0")]
-        [InlineData("netcoreapp1.1", false)]
-        [InlineData("netcoreapp1.0", false)]
-        [InlineData("netstandard2.1")]
-        [InlineData("netstandard2.0")]
-        [InlineData("netstandard1.1", false)]
-        [InlineData("netstandard1.0", false)]
-        [InlineData("net451", false)]
-        [InlineData("net462", false)]
-        [InlineData("net481", false)]
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
+        [DataRow("net9.0")]
+        [DataRow("net8.0")]
+        [DataRow("net7.0")]
+        [DataRow("net6.0")]
+        [DataRow("netcoreapp3.1")]
+        [DataRow("netcoreapp3.0")]
+        [DataRow("netcoreapp2.1")]
+        [DataRow("netcoreapp2.0")]
+        [DataRow("netcoreapp1.1", false)]
+        [DataRow("netcoreapp1.0", false)]
+        [DataRow("netstandard2.1")]
+        [DataRow("netstandard2.0")]
+        [DataRow("netstandard1.1", false)]
+        [DataRow("netstandard1.0", false)]
+        [DataRow("net451", false)]
+        [DataRow("net462", false)]
+        [DataRow("net481", false)]
         //  These target frameworks shouldn't prune packages unless explicitly enabled
-        [InlineData("net9.0", false, "")]
-        [InlineData("netstandard2.1", false, "")]
+        [DataRow("net9.0", false, "")]
+        [DataRow("netstandard2.1", false, "")]
         //  .NET 10 and up should prune packages by default
-        [InlineData("net10.0", true, "")]
+        [DataRow("net10.0", true, "")]
         public void PrunePackageDataSucceeds(string targetFramework, bool shouldPrune = true, string enablePackagePruning = "True")
         {
             var nugetFramework = NuGetFramework.Parse(targetFramework);
@@ -410,7 +411,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void TransitiveFrameworkReferencesDoNotAffectPruning()
         {
             var referencedProject = new TestProject("ReferencedProject")
@@ -449,10 +450,11 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [CoreMSBuildOnlyTheory]
-        [InlineData("net10.0;net9.0", true)]
-        [InlineData("net10.0;net8.0", true)]
-        [InlineData("net6.0;net7.0", false)]
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [DataRow("net10.0;net9.0", true)]
+        [DataRow("net10.0;net8.0", true)]
+        [DataRow("net6.0;net7.0", false)]
         public void WithMultitargetedProjects_PruningsDefaultsAreApplies(string frameworks, bool prunePackages)
         {
             var referencedProject = new TestProject("ReferencedProject")
@@ -492,7 +494,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WithMultitargetedProject_NETFrameworkIsNotPruned()
         {
             var project = new TestProject("MultitargetedPruning")

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -8,13 +8,14 @@ using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class GivenThatDotNetRunsCommands : SdkTest
     {
-        public GivenThatDotNetRunsCommands(ITestOutputHelper log) : base(log)
+        public GivenThatDotNetRunsCommands()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void UnresolvedPlatformReferencesFailAsExpected()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithUnresolvedPlatformDependency", testAssetSubdirectory: "NonRestoredTestProjects")
@@ -33,9 +34,9 @@ namespace Microsoft.DotNet.Tests
                     .And.HaveStdOutContaining(string.Format(LocalizableStrings.NoExecutableFoundMatchingCommand, "dotnet-crash"));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData(null)]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow(null)]
         public void GivenAMissingHomeVariableItExecutesHelpCommandSuccessfully(string value)
         {
             new DotnetCommand(Log)
@@ -48,7 +49,7 @@ namespace Microsoft.DotNet.Tests
                 .HaveStdOutContaining(LocalizableStrings.DotNetSdkInfo);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenASpecifiedDotnetCliHomeVariableItPrintsUsageMessage()
         {
             var home = TestAssetsManager.CreateTestDirectory(identifier: "DOTNET_HOME").Path;

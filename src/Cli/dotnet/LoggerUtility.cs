@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 
@@ -61,21 +63,31 @@ internal static class LoggerUtility
         return new FacadeLogger(dispatcher);
     }
 
-    internal static void SeparateBinLogArguments(IEnumerable<string>? args, out List<string> binLogArgs, out List<string> nonBinLogArgs)
+    /// <summary>
+    /// Splits tokens the SDK parser didn't model into those that configure MSBuild itself and those that
+    /// belong to whatever the verb ultimately launches (a test application for <c>dotnet test</c>, the
+    /// built app for <c>dotnet run</c>). Besides logger switches this also covers build-engine switches
+    /// such as <c>-mt</c>, which are meaningless to a launched process.
+    /// </summary>
+    internal static void SeparateMSBuildArguments(IEnumerable<string>? args, out ImmutableArray<string> msbuildArgs, out ImmutableArray<string> otherArgs)
     {
-        binLogArgs = new List<string>();
-        nonBinLogArgs = new List<string>();
+        var msbuildArgsBuilder = ImmutableArray.CreateBuilder<string>();
+        var otherArgsBuilder = ImmutableArray.CreateBuilder<string>();
+
         foreach (var arg in args ?? [])
         {
-            if (IsBinLogArgument(arg))
+            if (TryGetMSBuildArgument(arg, out string? msbuildArg))
             {
-                binLogArgs.Add(arg);
+                msbuildArgsBuilder.Add(msbuildArg);
             }
             else
             {
-                nonBinLogArgs.Add(arg);
+                otherArgsBuilder.Add(arg);
             }
         }
+
+        msbuildArgs = msbuildArgsBuilder.ToImmutable();
+        otherArgs = otherArgsBuilder.ToImmutable();
     }
 
     internal static bool IsBinLogArgument(string arg)
@@ -84,6 +96,100 @@ internal static class LoggerUtility
         return arg.StartsWith("/bl:", comp) || arg.Equals("/bl", comp)
             || arg.StartsWith("--binaryLogger:", comp) || arg.Equals("--binaryLogger", comp)
             || arg.StartsWith("-bl:", comp) || arg.Equals("-bl", comp);
+    }
+
+    internal static bool HasNoConsoleLoggerArgument(IEnumerable<string>? args) =>
+        args?.Any(IsNoConsoleLoggerArgument) == true;
+
+    private static bool IsNoConsoleLoggerArgument(string arg)
+    {
+        return TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue) &&
+            prefix is "-" or "/" &&
+            !hasValue &&
+            switchName.Equals("noConsoleLogger", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool TryGetMSBuildArgument(string arg, [NotNullWhen(true)] out string? msbuildArg)
+    {
+        msbuildArg = arg;
+        if (IsBinLogArgument(arg) || IsNoConsoleLoggerArgument(arg) ||
+            MSBuildArgumentParser.IsMultiThreadedSwitch(arg))
+        {
+            return true;
+        }
+
+        if (!TryParseSwitch(arg, out string? prefix, out string? switchName, out string? switchValue, out bool hasValue))
+        {
+            msbuildArg = null;
+            return false;
+        }
+
+        const StringComparison comp = StringComparison.OrdinalIgnoreCase;
+        if (switchName.Equals("tl", comp) || switchName.Equals("terminalLogger", comp) ||
+            switchName.Equals("ll", comp) || switchName.Equals("livelogger", comp))
+        {
+            if (!hasValue)
+            {
+                msbuildArg = $"{prefix}{switchName}:auto";
+                return true;
+            }
+
+            if (string.IsNullOrEmpty(switchValue) ||
+                !(switchValue.Equals("on", comp) ||
+                  switchValue.Equals("off", comp) ||
+                  switchValue.Equals("true", comp) ||
+                  switchValue.Equals("false", comp) ||
+                  switchValue.Equals("auto", comp)))
+            {
+                msbuildArg = null;
+                return false;
+            }
+
+            return true;
+        }
+
+        if (switchName.Equals("tlp", comp) || switchName.Equals("terminalLoggerParameters", comp) ||
+            switchName.Equals("clp", comp) || switchName.Equals("consoleLoggerParameters", comp))
+        {
+            if (hasValue && switchValue is not "")
+            {
+                return true;
+            }
+        }
+
+        msbuildArg = null;
+        return false;
+    }
+
+    private static bool TryParseSwitch(string arg, [NotNullWhen(true)] out string? prefix, [NotNullWhen(true)] out string? switchName, out string? switchValue, out bool hasValue)
+    {
+        prefix = null;
+        switchName = null;
+        switchValue = null;
+        hasValue = false;
+
+        string value;
+        if (arg.StartsWith("--", StringComparison.Ordinal))
+        {
+            prefix = "--";
+            value = arg[2..];
+        }
+        else if (arg.StartsWith('-') || arg.StartsWith('/'))
+        {
+            prefix = arg[..1];
+            value = arg[1..];
+        }
+        else
+        {
+            return false;
+        }
+
+        var separatorIndex = value.IndexOf(':');
+        hasValue = separatorIndex >= 0;
+        switchName = hasValue ? value[..separatorIndex] : value;
+        switchValue = hasValue ? value[(separatorIndex + 1)..] : null;
+
+        return switchName.Length > 0;
     }
 }
 

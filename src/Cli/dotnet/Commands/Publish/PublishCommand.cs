@@ -1,7 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -10,32 +11,30 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Publish;
 
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class PublishCommand : RestoringCommand
 {
     private PublishCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
-        string? msbuildPath = null)
-        : base(msbuildArgs, noRestore, msbuildPath)
+        string? msbuildPath,
+        CommandServices services)
+        : base(msbuildArgs, noRestore, msbuildPath, userProfileDir: null, advertiseWorkloadUpdates: null, services: services)
     {
     }
 
-    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath, CommandServices services)
     {
         var parseResult = Parser.Parse(["dotnet", "publish", .. args]);
-        return FromParseResult(parseResult);
+        return FromParseResult(parseResult, msbuildPath, services);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath, CommandServices services)
     {
         var definition = (PublishCommandDefinition)parseResult.CommandResult.Command;
 
         parseResult.HandleDebugSwitch();
         parseResult.ShowHelpOrErrorIfAppropriate();
-
-        string[] args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [];
-
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
         CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(definition.SelfContainedOption),
             parseResult.HasOption(definition.NoSelfContainedOption));
@@ -44,12 +43,13 @@ public class PublishCommand : RestoringCommand
 
         bool noRestore = noBuild || parseResult.HasOption(definition.NoRestoreOption);
 
-        return CommandFactory.CreateVirtualOrPhysicalCommand(
+        return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
             (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(appFilePath),
-                msbuildArgs: msbuildArgs)
+                msbuildArgs: msbuildArgs,
+                services: services)
             {
                 NoBuild = noBuild,
                 NoRestore = noRestore,
@@ -58,7 +58,8 @@ public class PublishCommand : RestoringCommand
             (msbuildArgs, msbuildPath) => new PublishCommand(
                 msbuildArgs: msbuildArgs,
                 noRestore: noRestore,
-                msbuildPath: msbuildPath
+                msbuildPath: msbuildPath,
+                services: services
             ),
             optionsToUseWhenParsingMSBuildFlags:
             [
@@ -70,10 +71,10 @@ public class PublishCommand : RestoringCommand
             ],
             parseResult,
             msbuildPath,
-            transformer: (msbuildArgs) =>
+            transformer: (msbuildArgs, otherArgs) =>
             {
                 var options = new ReleasePropertyProjectLocator.DependentCommandOptions(
-                        nonBinLogArgs,
+                        otherArgs,
                         parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null,
                         parseResult.HasOption(definition.FrameworkOption) ? parseResult.GetValue(definition.FrameworkOption) : null
                     );
@@ -88,6 +89,6 @@ public class PublishCommand : RestoringCommand
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        return FromParseResult(parseResult, msbuildPath: null, services: CommandServices.CreateDefault()).Execute();
     }
 }

@@ -38,15 +38,31 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     private sealed record AuthInfo(string Realm, string? Service, string? Scope);
 
     private readonly string _registryName;
+    private readonly Uri _registryUri;
+    private readonly bool _isInsecureRegistry;
+    private readonly int _insecureRegistryHttpPort;
     private readonly ILogger _logger;
     private readonly RegistryMode _registryMode;
+    private readonly Func<Uri, HttpMessageHandler> _createRealmHandler;
     private static ConcurrentDictionary<string, AuthenticationHeaderValue?> _authenticationHeaders = new();
 
-    public AuthHandshakeMessageHandler(string registryName, HttpMessageHandler innerHandler, ILogger logger, RegistryMode mode) : base(innerHandler)
+    public AuthHandshakeMessageHandler(
+        string registryName,
+        Uri registryUri,
+        bool isInsecureRegistry,
+        HttpMessageHandler innerHandler,
+        ILogger logger,
+        RegistryMode mode,
+        Func<Uri, HttpMessageHandler>? realmHandlerFactory = null) : base(innerHandler)
     {
         _registryName = registryName;
+        _registryUri = registryUri;
+        _isInsecureRegistry = isInsecureRegistry;
+        _insecureRegistryHttpPort = RegistryNameContainsPort(registryName) ? registryUri.Port : 80;
         _logger = logger;
         _registryMode = mode;
+        _createRealmHandler = realmHandlerFactory
+            ?? new AuthRealmHandlerFactory(registryName, registryUri, isInsecureRegistry, logger).Create;
     }
 
     /// <summary>
@@ -154,6 +170,23 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// </summary>
     private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> GetAuthenticationAsync(string registry, string scheme, AuthInfo? bearerAuthInfo, CancellationToken cancellationToken)
     {
+        // For bearer auth, validate the realm before any credential lookup so that a malicious or
+        // compromised registry response cannot trigger credential retrieval toward a hostile token
+        // endpoint, and so that validation errors aren't masked by credential errors. The addresses
+        // the realm resolves to are checked by the realm handler when it connects.
+        Uri? validatedBearerRealm = null;
+        HttpMessageHandler? realmHandler = null;
+        if (scheme.Equals(BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
+        {
+            Debug.Assert(bearerAuthInfo is not null);
+            validatedBearerRealm = ValidateRealmUri(bearerAuthInfo.Realm, registry, _isInsecureRegistry);
+            realmHandler = _createRealmHandler(validatedBearerRealm);
+        }
+
+        // The realm is untrusted, so token requests use a separate SSRF-protected transport rather
+        // than the registry transport.
+        using HttpMessageInvoker? realmClient = realmHandler is null ? null : new(realmHandler, disposeHandler: true);
+
         DockerCredentials? privateRepoCreds;
         // Allow overrides for auth via environment variables
         if (GetDockerCredentialsFromEnvironment(_registryMode) is (string credU, string credP))
@@ -173,6 +206,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         else if (scheme.Equals(BearerAuthScheme, StringComparison.OrdinalIgnoreCase))
         {
             Debug.Assert(bearerAuthInfo is not null);
+            Debug.Assert(validatedBearerRealm is not null);
+            Debug.Assert(realmClient is not null);
 
             // Obtain a Bearer token, when the credentials are:
             // - an identity token: use it for OAuth
@@ -180,20 +215,117 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
 
             if (string.IsNullOrWhiteSpace(privateRepoCreds.IdentityToken))
             {
-                var authenticationValueAndDuration = await TryTokenGetAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
+                var authenticationValueAndDuration = await TryTokenGetAsync(realmClient, privateRepoCreds, bearerAuthInfo, validatedBearerRealm, cancellationToken).ConfigureAwait(false);
                 if (authenticationValueAndDuration is not null)
                 {
                     return authenticationValueAndDuration;
                 }
             }
 
-            return await TryOAuthPostAsync(privateRepoCreds, bearerAuthInfo, cancellationToken).ConfigureAwait(false);
+            return await TryOAuthPostAsync(realmClient, privateRepoCreds, bearerAuthInfo, validatedBearerRealm, cancellationToken).ConfigureAwait(false);
         }
         else
         {
             return null;
         }
     }
+
+    /// <summary>
+    /// Validates the syntax and scheme of the bearer realm URL returned in a WWW-Authenticate
+    /// challenge. The addresses the realm resolves to are checked by <see cref="AuthRealmHandlerFactory"/>.
+    /// </summary>
+    internal static Uri ValidateRealmUri(string realm, string registryName, bool isInsecureRegistry)
+    {
+        if (!Uri.TryCreate(realm, UriKind.Absolute, out Uri? realmUri))
+        {
+            throw new InvalidAuthResponseException(
+                registryName,
+                Resource.FormatString(nameof(Strings.InvalidAuthResponse_RelativeOrUnparseableRealm), realm));
+        }
+
+        // Scheme allowlist. Always permit https; permit http only when the registry is insecure.
+        // (Uri.Scheme is normalized to lowercase by Uri itself, so a plain comparison is fine.)
+        bool schemeAllowed = realmUri.Scheme switch
+        {
+            "https" => true,
+            "http" => isInsecureRegistry,
+            _ => false,
+        };
+        if (!schemeAllowed)
+        {
+            throw new InvalidAuthResponseException(
+                registryName,
+                Resource.FormatString(nameof(Strings.InvalidAuthResponse_DisallowedScheme), realm, realmUri.Scheme));
+        }
+
+        return realmUri;
+    }
+
+    private static bool RegistryNameContainsPort(string registryName)
+    {
+        // Use a scheme that does not have a default port.
+        return new Uri($"container://{registryName}").Port != -1;
+    }
+
+    /// <summary>
+    /// Returns whether <paramref name="uri"/> targets the configured registry.
+    /// For a registry configured as insecure, the HTTP fallback produced by
+    /// <see cref="FallbackToHttpMessageHandler"/> is also accepted so that fallback can authenticate.
+    /// This exception is limited to the same host and fallback port; it does not permit general
+    /// HTTP or cross-host redirects.
+    /// </summary>
+    private bool IsRegistryOrigin(Uri uri)
+    {
+        if (!uri.IsAbsoluteUri
+            || !uri.IdnHost.Equals(_registryUri.IdnHost, StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (uri.Scheme == _registryUri.Scheme && uri.Port == _registryUri.Port)
+        {
+            return true;
+        }
+
+        return _isInsecureRegistry
+            && _registryUri.Scheme == Uri.UriSchemeHttps
+            && uri.Scheme == Uri.UriSchemeHttp
+            && uri.Port == _insecureRegistryHttpPort;
+    }
+
+    /// <summary>
+    /// Rejects Basic or Bearer authentication challenges from an origin other than the configured registry.
+    /// Disposes <paramref name="response"/> before throwing <see cref="InvalidAuthResponseException"/>
+    /// on rejection; callers retain ownership of the response when this method returns normally.
+    /// </summary>
+    private void ValidateAuthenticationOrigin(HttpResponseMessage response, Uri requestUri)
+    {
+        if (response.StatusCode != HttpStatusCode.Unauthorized)
+        {
+            return;
+        }
+
+        Uri challengeUri = response.RequestMessage?.RequestUri ?? requestUri;
+        if (IsRegistryOrigin(challengeUri))
+        {
+            return;
+        }
+
+        // Reject another origin based on the scheme alone; its parameters may be malformed.
+        if (response.Headers.WwwAuthenticate.Any(challenge =>
+            string.Equals(challenge.Scheme, BasicAuthScheme, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(challenge.Scheme, BearerAuthScheme, StringComparison.OrdinalIgnoreCase)))
+        {
+            response.Dispose();
+            throw new InvalidAuthResponseException(
+                _registryName,
+                Resource.FormatString(
+                    nameof(Strings.InvalidAuthResponse_UnexpectedAuthOrigin),
+                    challengeUri.GetLeftPart(UriPartial.Authority),
+                    _registryUri.GetLeftPart(UriPartial.Authority)));
+        }
+    }
+
 
     internal static (string credU, string credP)? TryGetCredentialsFromEnvVars(string unameVar, string passwordVar)
     {
@@ -255,12 +387,11 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// <summary>
     /// Implements the Docker OAuth2 Authentication flow as documented at <see href="https://docs.docker.com/registry/spec/auth/oauth/"/>.
     /// </summary
-    private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryOAuthPostAsync(DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, CancellationToken cancellationToken)
+    private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryOAuthPostAsync(HttpMessageInvoker realmClient, DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, Uri realmUri, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        Uri uri = new(bearerAuthInfo.Realm);
 
-        _logger.LogTrace("Attempting to authenticate on {uri} using POST.", uri);
+        _logger.LogTrace("Attempting to authenticate on {uri} using POST.", realmUri);
         Dictionary<string, string?> parameters = new()
         {
             ["client_id"] = ClientID,
@@ -284,12 +415,12 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         {
             parameters["scope"] = bearerAuthInfo.Scope;
         };
-        HttpRequestMessage postMessage = new(HttpMethod.Post, uri)
+        HttpRequestMessage postMessage = new(HttpMethod.Post, realmUri)
         {
             Content = new FormUrlEncodedContent(parameters)
         };
 
-        using HttpResponseMessage postResponse = await base.SendAsync(postMessage, cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage postResponse = await realmClient.SendAsync(postMessage, cancellationToken).ConfigureAwait(false);
         if (!postResponse.IsSuccessStatusCode)
         {
             await postResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
@@ -312,14 +443,14 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
     /// <summary>
     /// Implements the Docker Token Authentication flow as documented at <see href="https://docs.docker.com/registry/spec/auth/token/"/>
     /// </summary>
-    private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryTokenGetAsync(DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, CancellationToken cancellationToken)
+    private async Task<(AuthenticationHeaderValue, DateTimeOffset)?> TryTokenGetAsync(HttpMessageInvoker realmClient, DockerCredentials privateRepoCreds, AuthInfo bearerAuthInfo, Uri realmUri, CancellationToken cancellationToken)
     {
         // this doesn't seem to be called out in the spec, but actual username/password auth information should be converted into Basic auth here,
         // even though the overall Scheme we're authenticating for is Bearer
         var header = new AuthenticationHeaderValue(BasicAuthScheme, Convert.ToBase64String(Encoding.ASCII.GetBytes($"{privateRepoCreds.Username}:{privateRepoCreds.Password}")));
-        var builder = new UriBuilder(new Uri(bearerAuthInfo.Realm));
+        var builder = new UriBuilder(realmUri);
 
-        _logger.LogTrace("Attempting to authenticate on {uri} using GET.", bearerAuthInfo.Realm);
+        _logger.LogTrace("Attempting to authenticate on {uri} using GET.", realmUri);
         var queryDict = System.Web.HttpUtility.ParseQueryString("");
         if (bearerAuthInfo.Service is string svc)
         {
@@ -333,7 +464,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
         var message = new HttpRequestMessage(HttpMethod.Get, builder.ToString());
         message.Headers.Authorization = header;
 
-        using var tokenResponse = await base.SendAsync(message, cancellationToken).ConfigureAwait(false);
+        using var tokenResponse = await realmClient.SendAsync(message, cancellationToken).ConfigureAwait(false);
         if (!tokenResponse.IsSuccessStatusCode)
         {
             await tokenResponse.LogHttpResponseAsync(_logger, cancellationToken).ConfigureAwait(false);
@@ -380,7 +511,8 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             throw new ArgumentException(Resource.GetString(nameof(Strings.NoRequestUriSpecified)), nameof(request));
         }
 
-        if (_authenticationHeaders.TryGetValue(_registryName, out AuthenticationHeaderValue? header))
+        if (IsRegistryOrigin(request.RequestUri)
+            && _authenticationHeaders.TryGetValue(_registryName, out AuthenticationHeaderValue? header))
         {
             request.Headers.Authorization = header;
         }
@@ -393,6 +525,7 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
             try
             {
                 var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                ValidateAuthenticationOrigin(response, request.RequestUri);
                 if (response is { StatusCode: HttpStatusCode.OK })
                 {
                     return response;
@@ -403,11 +536,13 @@ internal sealed partial class AuthHandshakeMessageHandler : DelegatingHandler
                     // Ideally we'd call LoadIntoBufferAsync, but it has no overload that accepts a CancellationToken so we call ReadAsByteArrayAsync instead.
                     _ = await response.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
 
-                    if (await GetAuthenticationAsync(_registryName, scheme, authInfo, cancellationToken).ConfigureAwait(false) is (AuthenticationHeaderValue authHeader, DateTimeOffset expirationTime))
+                    if (await GetAuthenticationAsync(_registryName, scheme!, authInfo, cancellationToken).ConfigureAwait(false) is (AuthenticationHeaderValue authHeader, DateTimeOffset expirationTime))
                     {
                         _authenticationHeaders[_registryName] = authHeader;
                         request.Headers.Authorization = authHeader;
-                        return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        HttpResponseMessage authenticatedResponse = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+                        ValidateAuthenticationOrigin(authenticatedResponse, request.RequestUri);
+                        return authenticatedResponse;
                     }
 
                     throw new UnableToAccessRepositoryException(_registryName);

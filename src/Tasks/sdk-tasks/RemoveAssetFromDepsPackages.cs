@@ -3,14 +3,16 @@
 
 #nullable disable
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
     public class RemoveAssetFromDepsPackages : Task
     {
+        private static readonly JsonSerializerOptions s_writeOptions = new() { WriteIndented = true };
+
         [Required]
         public string DepsFile { get; set; }
 
@@ -20,56 +22,52 @@ namespace Microsoft.DotNet.Build.Tasks
         [Required]
         public string AssetPath { get; set; }
 
+        public string DestinationFile { get; set; }
+
         public override bool Execute()
         {
-            DoRemoveAssetFromDepsPackages(DepsFile, SectionName, AssetPath);
+            DoRemoveAssetFromDepsPackages(DepsFile, SectionName, AssetPath, DestinationFile);
 
             return true;
         }
 
-        public static void DoRemoveAssetFromDepsPackages(string depsFile, string sectionName, string assetPath)
+        public static void DoRemoveAssetFromDepsPackages(string depsFile, string sectionName, string assetPath, string destinationFile = null)
         {
-            JToken deps;
-            using (var file = File.OpenText(depsFile))
-            using (JsonTextReader reader = new(file))
+            string text = File.ReadAllText(depsFile);
+            var deps = JsonNode.Parse(text);
+            bool found = RemoveAssets(deps, sectionName, assetPath);
+            if (found || destinationFile is not null)
             {
-                deps = JToken.ReadFrom(reader);
+                PublishMutationUtilities.WriteFileIfDifferent(destinationFile ?? depsFile, found ? deps.ToJsonString(s_writeOptions) : text);
             }
+        }
 
+        internal static bool RemoveAssets(JsonNode deps, string sectionName, string assetPath)
+        {
             bool found = false;
-            foreach (JProperty target in deps["targets"])
+            foreach (var target in deps["targets"]!.AsObject())
             {
-                foreach (JProperty pv in target.Value.Children<JProperty>())
+                foreach (var pv in target.Value!.AsObject())
                 {
-                    var section = pv.Value[sectionName];
+                    var section = pv.Value![sectionName];
                     if (section != null)
                     {
-                        foreach (JProperty relPath in section)
-                        {
-                            if (assetPath.Equals(relPath.Name))
-                            {
-                                relPath.Remove();
-                                found = true;
-                                break;
-                            }
-                        }
+                        var sectionObj = section.AsObject();
                         if (assetPath.Equals("*"))
                         {
-                            section.Parent.Remove();
+                            pv.Value.AsObject().Remove(sectionName);
+                            found = true;
+                        }
+                        else if (sectionObj.ContainsKey(assetPath))
+                        {
+                            sectionObj.Remove(assetPath);
                             found = true;
                         }
                     }
                 }
             }
 
-            if (found)
-            {
-                using (var file = File.CreateText(depsFile))
-                using (var writer = new JsonTextWriter(file) { Formatting = Formatting.Indented })
-                {
-                    deps.WriteTo(writer);
-                }
-            }
+            return found;
         }
     }
 }

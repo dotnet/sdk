@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,16 +7,15 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildWithGeneratePackageOnBuildAndPackAsTool : SdkTest
     {
-        public GivenThatWeWantToBuildWithGeneratePackageOnBuildAndPackAsTool(ITestOutputHelper log) : base(log)
-        { }
 
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
         public void It_builds_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
             TestAsset testAsset = TestAssetsManager

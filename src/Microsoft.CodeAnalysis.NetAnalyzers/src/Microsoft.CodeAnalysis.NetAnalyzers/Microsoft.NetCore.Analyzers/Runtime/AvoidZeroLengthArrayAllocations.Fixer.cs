@@ -7,9 +7,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -17,55 +17,45 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// CA1825: Avoid zero-length array allocations.
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class AvoidZeroLengthArrayAllocationsFixer : CodeFixProvider
+    public sealed class AvoidZeroLengthArrayAllocationsFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(AvoidZeroLengthArrayAllocationsAnalyzer.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider()
+        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            return WellKnownFixAllProviders.BatchFixer;
+            RegisterCodeFix(
+                context,
+                MicrosoftNetCoreAnalyzersResources.UseArrayEmpty,
+                MicrosoftNetCoreAnalyzersResources.UseArrayEmpty);
+
+            return Task.CompletedTask;
         }
 
-        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             // In case the ArrayCreationExpressionSyntax is wrapped in an ArgumentSyntax or some other node with the same span,
             // get the innermost node for ties.
-            SyntaxNode nodeToFix = root.FindNode(context.Span, getInnermostNodeForTie: true);
-            if (nodeToFix == null)
-            {
-                return;
-            }
-
-            string title = MicrosoftNetCoreAnalyzersResources.UseArrayEmpty;
-            context.RegisterCodeFix(CodeAction.Create(title,
-                                                     async ct => await ConvertToArrayEmptyAsync(context.Document, nodeToFix, ct).ConfigureAwait(false),
-                                                     equivalenceKey: title),
-                                    context.Diagnostics);
-        }
-
-        private static async Task<Document> ConvertToArrayEmptyAsync(Document document, SyntaxNode nodeToFix, CancellationToken cancellationToken)
-        {
-            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            SyntaxNode nodeToFix = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
 
             SemanticModel semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
 
             INamedTypeSymbol? arrayTypeSymbol = semanticModel.Compilation.GetSpecialType(SpecialType.System_Array);
-            if (arrayTypeSymbol == null)
+            if (arrayTypeSymbol is null)
             {
-                return document;
+                return;
             }
 
             ITypeSymbol? elementType = GetArrayElementType(nodeToFix, semanticModel, cancellationToken);
-            if (elementType == null)
+            if (elementType is null)
             {
-                return document;
+                return;
             }
 
+            // A zero-length array creation has no operands, so the replacement carries nothing over from the
+            // node it replaces and these diagnostics cannot nest.
             SyntaxNode arrayEmptyInvocation = GenerateArrayEmptyInvocation(generator, arrayTypeSymbol, elementType).WithTriviaFrom(nodeToFix);
             editor.ReplaceNode(nodeToFix, arrayEmptyInvocation);
-            return editor.GetChangedDocument();
         }
 
         private static ITypeSymbol? GetArrayElementType(SyntaxNode arrayCreationExpression, SemanticModel semanticModel, CancellationToken cancellationToken)

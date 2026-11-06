@@ -20,9 +20,9 @@ namespace Microsoft.CodeAnalysis.Tools
         private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
         private static string[] SeverityLevels => new[] { "info", "warn", "error", "hidden" };
 
-        public static readonly Argument<string> SlnOrProjectArgument = new Argument<string>(Resources.SolutionOrProjectArgumentName)
+        public static readonly Argument<string> SlnOrProjectArgument = new Argument<string>(Resources.SolutionOrProjectOrFileArgumentName)
         {
-            Description = Resources.SolutionOrProjectArgumentDescription,
+            Description = Resources.SolutionOrProjectOrFileArgumentDescription,
             Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 
@@ -111,7 +111,7 @@ namespace Microsoft.CodeAnalysis.Tools
             var formatResult = await CodeFormatter.FormatWorkspaceAsync(
                 formatOptions,
                 logger,
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
             return formatResult.GetExitCode(formatOptions.ChangesAreErrors);
         }
 

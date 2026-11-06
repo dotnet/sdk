@@ -164,7 +164,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     IConditionalOperation? condition = throwOperation.Parent as IConditionalOperation;
                     if (condition is null)
                     {
-                        if (throwOperation.Parent is IBlockOperation parentBlock && parentBlock.Children.Count() == 1)
+                        if (throwOperation.Parent is IBlockOperation parentBlock && parentBlock.ChildOperations.Count == 1)
                         {
                             condition = parentBlock.Parent as IConditionalOperation;
                         }

@@ -1,19 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if NETFRAMEWORK
-using System;
-using System.Linq;
-#endif
-#if NET
 using System.Diagnostics.CodeAnalysis;
-#endif
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
+
+internal enum KnownImageFormats
+{
+    OCI,
+    Docker
+}
+
 public static class ContainerHelpers
 {
     internal const string HostObjectUser = "DOTNET_CONTAINER_REGISTRY_UNAME";
@@ -160,6 +161,36 @@ public static class ContainerHelpers
     internal static bool IsValidEnvironmentVariable(string envVar)
     {
         return envVarRegex.IsMatch(envVar);
+    }
+
+    internal static int? TryParseUserId(string? containerUser)
+    {
+        if (containerUser is null)
+        {
+            return null;
+        }
+        if (int.TryParse(containerUser, out int userId))
+        {
+            return userId;
+        }
+        if (containerUser.Equals("root", StringComparison.OrdinalIgnoreCase))
+        {
+            return 0;
+        }
+        return null;
+    }
+
+    internal static string GetManifestMediaType(
+        string defaultManifestMediaType,
+        KnownImageFormats? imageFormat,
+        DestinationImageReference destinationImageReference)
+    {
+        if (destinationImageReference.LocalRegistry is ContainerRuntime runtime)
+        {
+            return runtime.GetManifestMediaType(defaultManifestMediaType, imageFormat);
+        }
+
+        return ContainerRuntimeBase.GetDefaultManifestMediaType(defaultManifestMediaType, imageFormat);
     }
 
     /// <summary>

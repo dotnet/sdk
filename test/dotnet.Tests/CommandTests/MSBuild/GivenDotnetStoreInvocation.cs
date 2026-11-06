@@ -5,35 +5,38 @@ using Microsoft.DotNet.Cli.Commands.Tool.Store;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [Collection(TestConstants.UsesStaticTelemetryState)]
-    public class GivenDotnetStoreInvocation : IClassFixture<NullCurrentSessionIdFixture>
+    [TestClass]
+    public class GivenDotnetStoreInvocation : SdkTest
     {
+        [ClassInitialize]
+        public static void ClassInit(TestContext context) => TelemetryClient.DisabledForTests = true;
+
         string[] ExpectedPrefix = ["-maxcpucount", "--verbosity:m", "-tlp:default=auto", "--nologo", "--target:ComposeStore", "<project>"];
         static readonly string[] ArgsPrefix = ["--manifest", "<project>"];
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetStoreInvocation));
 
-        [Theory]
-        [InlineData("-m")]
-        [InlineData("--manifest")]
+        [TestMethod]
+        [DataRow("-m")]
+        [DataRow("--manifest")]
         public void ItAddsProjectToMsbuildInvocation(string optionName)
         {
             var msbuildPath = "<msbuildpath>";
             string[] args = new string[] { optionName, "<project>" };
-            StoreCommand.FromArgs(args, msbuildPath)
+            StoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM())
                 .GetArgumentTokensToMSBuild().Should().Contain(ExpectedPrefix);
         }
 
-        [Theory]
-        [InlineData(new string[] { "-f", "<tfm>" }, @"--property:TargetFramework=<tfm>")]
-        [InlineData(new string[] { "--framework", "<tfm>" }, @"--property:TargetFramework=<tfm>")]
-        [InlineData(new string[] { "-r", "<rid>" }, @"--property:RuntimeIdentifier=<rid> --property:_CommandLineDefinedRuntimeIdentifier=true")]
-        [InlineData(new string[] { "-r", "linux-amd64" }, @"--property:RuntimeIdentifier=linux-x64 --property:_CommandLineDefinedRuntimeIdentifier=true")]
-        [InlineData(new string[] { "--runtime", "<rid>" }, @"--property:RuntimeIdentifier=<rid> --property:_CommandLineDefinedRuntimeIdentifier=true")]
-        [InlineData(new string[] { "--use-current-runtime" }, "--property:UseCurrentRuntimeIdentifier=True")]
-        [InlineData(new string[] { "--ucr" }, "--property:UseCurrentRuntimeIdentifier=True")]
-        [InlineData(new string[] { "--manifest", "one.xml", "--manifest", "two.xml", "--manifest", "three.xml" }, @"--property:AdditionalProjects=<cwd>one.xml%3B<cwd>two.xml%3B<cwd>three.xml")]
-        [InlineData(new string[] { "--disable-build-servers" }, "--property:UseRazorBuildServer=false --property:UseSharedCompilation=false /nodeReuse:false")]
+        [TestMethod]
+        [DataRow(new string[] { "-f", "<tfm>" }, @"--property:TargetFramework=<tfm>")]
+        [DataRow(new string[] { "--framework", "<tfm>" }, @"--property:TargetFramework=<tfm>")]
+        [DataRow(new string[] { "-r", "<rid>" }, @"--property:RuntimeIdentifier=<rid> --property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [DataRow(new string[] { "-r", "linux-amd64" }, @"--property:RuntimeIdentifier=linux-x64 --property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [DataRow(new string[] { "--runtime", "<rid>" }, @"--property:RuntimeIdentifier=<rid> --property:_CommandLineDefinedRuntimeIdentifier=true")]
+        [DataRow(new string[] { "--use-current-runtime" }, "--property:UseCurrentRuntimeIdentifier=True")]
+        [DataRow(new string[] { "--ucr" }, "--property:UseCurrentRuntimeIdentifier=True")]
+        [DataRow(new string[] { "--manifest", "one.xml", "--manifest", "two.xml", "--manifest", "three.xml" }, @"--property:AdditionalProjects=<cwd>one.xml%3B<cwd>two.xml%3B<cwd>three.xml")]
+        [DataRow(new string[] { "--disable-build-servers" }, "--property:UseRazorBuildServer=false --property:UseSharedCompilation=false /nodeReuse:false")]
         public void MsbuildInvocationIsCorrect(string[] args, string expectedAdditionalArgs)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -47,21 +50,21 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var msbuildPath = "<msbuildpath>";
                 List<string> expected = [.. ExpectedPrefix, .. expectedarr];
                 expected.Should().BeSubsetOf(
-                    StoreCommand.FromArgs(args, msbuildPath).GetArgumentTokensToMSBuild()
+                    StoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM()).GetArgumentTokensToMSBuild()
                 );
             });
         }
 
-        [Theory]
-        [InlineData("-o")]
-        [InlineData("--output")]
+        [TestMethod]
+        [DataRow("-o")]
+        [DataRow("--output")]
         public void ItAddsOutputPathToMsBuildInvocation(string optionName)
         {
             string path = Path.Combine("some", "path");
             var args = ArgsPrefix.Concat(new string[] { optionName, path }).ToArray();
 
             var msbuildPath = "<msbuildpath>";
-            StoreCommand.FromArgs(args, msbuildPath)
+            StoreCommand.FromArgs(args, msbuildPath, TestCommandServices.CreateNonLLM())
                 .GetArgumentTokensToMSBuild().Should().BeEquivalentTo([..ExpectedPrefix, $"--property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar}", "--property:_CommandLineDefinedOutputPath=true"]);
         }
     }

@@ -1,0 +1,17 @@
+<Project>
+  <Target Name="VerifyMSBuildDependency" BeforeTargets="ResolveAssemblyReferences" Condition="'$([MSBuild]::GetTargetFrameworkIdentifier($(TargetFramework)))' == '.NETCoreApp'">
+    <!-- Match the pinned command-line assembly already used by Cli.Utils, including source-build layouts. -->
+    <PropertyGroup>
+      <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net11.0\MSBuild.dll</MSBuildPathInPackage>
+      <MSBuildPathInPackage Condition="'$(DotNetBuildSourceOnly)' == 'true' and !Exists($(MSBuildPathInPackage))">$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(NetCurrent)\MSBuild.dll</MSBuildPathInPackage>
+    </PropertyGroup>
+    <Error Condition="!Exists('$(MSBuildPathInPackage)')" Text="Something moved around in Microsoft.Build.Runtime, adjust code here accordingly." />
+    <ItemGroup>
+      <Reference Include="$(MSBuildPathInPackage)" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Runtime" ExcludeAssets="all" Condition="'$([MSBuild]::GetTargetFrameworkIdentifier($(TargetFramework)))' == '.NETCoreApp'" GeneratePathProperty="true" />
+  </ItemGroup>
+</Project>

@@ -7,29 +7,28 @@ using Microsoft.Build.Framework;
 using Microsoft.DotNet.DotNetSdkResolver;
 using Microsoft.DotNet.MSBuildSdkResolver;
 
-[assembly: CollectionBehavior(DisableTestParallelization = true)]
-
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
         private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
-        public GivenAnMSBuildSdkResolver(ITestOutputHelper logger) : base(logger)
+        public GivenAnMSBuildSdkResolver() : base()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHasCorrectNameAndPriority()
         {
             var resolver = new DotNetMSBuildSdkResolver();
 
-            Assert.Equal(5000, resolver.Priority);
-            Assert.Equal("Microsoft.DotNet.MSBuildSdkResolver", resolver.Name);
+            Assert.AreEqual(5000, resolver.Priority);
+            Assert.AreEqual("Microsoft.DotNet.MSBuildSdkResolver", resolver.Name);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotFindMSBuildSdkThatIsMissingFromLocatedNETCoreSdk()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -40,7 +39,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.SdkThatDoesNotExist", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -50,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().NotBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItFindsTheVersionSpecifiedInGlobalJson()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -64,7 +63,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -74,9 +73,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("")]
         public void ItUsesProjectDirectoryIfSolutionFilePathIsNullOrWhitespace(string? solutionFilePath)
         {
             const string version = "99.0.0";
@@ -89,7 +88,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, version),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory, SolutionFilePath = solutionFilePath },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().StartWith(environment.TestDirectory.FullName);
@@ -99,11 +98,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(null, null)]
-        [InlineData("", null)]
-        [InlineData("", "")]
-        [InlineData(null, "")]
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow("", null)]
+        [DataRow("", "")]
+        [DataRow(null, "")]
         public void ItUsesCurrentDirectoryIfSolutionFilePathAndProjectFilePathIsNullOrWhitespace(string? solutionFilePath, string? projectFilePath)
         {
             const string version = "99.0.0";
@@ -116,7 +115,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, version),
                 new MockContext { ProjectFilePath = projectFilePath, SolutionFilePath = solutionFilePath },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().StartWith(environment.TestDirectory.FullName);
@@ -126,7 +125,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullIfTheVersionFoundDoesNotSatisfyTheMinVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -137,7 +136,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "999.99.99"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -147,7 +146,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().Contain(string.Format(Strings.NETCoreSDKSmallerThanMinimumRequestedVersion, "99.99.99", "999.99.99"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenTheSDKRequiresAHigherVersionOfMSBuildThanAnyOneAvailable()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -163,7 +162,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     MSBuildVersion = new Version(1, 0),
                     ProjectFileDirectory = environment.TestDirectory
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -173,9 +172,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().Contain(string.Format(Strings.MSBuildSmallerThanMinimumVersion, "99.99.99", "2.0", "1.0"));
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuild(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString())
@@ -197,7 +196,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     MSBuildVersion = new Version(20, 0, 0, 0),
                     ProjectFileDirectory = environment.TestDirectory,
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
@@ -219,25 +218,15 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuildWhenGlobalJsonRollForwardPicksIncompatibleSdk(bool disallowPreviews)
+        [TestMethod]
+        public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuildWhenGlobalJsonRollForwardPicksIncompatibleSdk()
         {
-            var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString())
-            {
-                DisallowPrereleaseByDefault = disallowPreviews
-            };
+            var environment = new TestEnvironment(TestAssetsManager);
 
-            var compatibleRtm = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "98.98.98", new Version(19, 0, 0, 0));
-            var compatiblePreview = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99-preview", new Version(20, 0, 0, 0));
-            var incompatible = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "100.100.100", new Version(21, 0, 0, 0));
+            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "99.99.99", new Version(20, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "100.100.100", new Version(21, 0, 0, 0));
 
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
-
-            // global.json with latestMajor rollforward: the native resolver will pick 100.100.100 as the
-            // highest available SDK, but 100.100.100 requires MSBuild 21.0 which is higher than 20.0.
-            // The resolver should fall back to the highest SDK compatible with the current MSBuild version.
             environment.CreateGlobalJson(environment.TestDirectory, "98.98.98", rollForward: "latestMajor");
 
             var resolver = environment.CreateResolver();
@@ -248,37 +237,22 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     MSBuildVersion = new Version(20, 0, 0, 0),
                     ProjectFileDirectory = environment.TestDirectory,
                 },
-                new MockFactory());
+                new MockFactory())!;
 
-            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
-            result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
-            result.AdditionalPaths.Should().BeNull();
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
-                result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
-            }
-            else
-            {
-                result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(1);
-            }
-            result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
-            result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
-            result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
+            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
+            result.Path.Should().Be(expected.FullName);
+            result.Version.Should().Be("99.99.99");
             result.Warnings.Should().BeNullOrEmpty();
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHonorsDefaultPatchRollForwardWhenSelectingAnMSBuildCompatibleSdk()
         {
             var environment = new TestEnvironment(TestAssetsManager);
 
             var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.104", new Version(20, 0, 0, 0));
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.105", new Version(21, 0, 0, 0));
-            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.200", new Version(20, 0, 0, 0));
-            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "11.0.100", new Version(20, 0, 0, 0));
 
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
             environment.CreateGlobalJson(environment.TestDirectory, "10.0.100");
@@ -291,7 +265,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     MSBuildVersion = new Version(20, 0, 0, 0),
                     ProjectFileDirectory = environment.TestDirectory,
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
             result.Path.Should().Be(expected.FullName);
@@ -300,16 +274,16 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
-        public void ItHonorsGlobalJsonSettingsThatHostfxrUsesWithoutFallingBack()
+        [TestMethod]
+        public void ItDoesNotSelectAnSdkOlderThanTheVersionRequestedByGlobalJson()
         {
             var environment = new TestEnvironment(TestAssetsManager);
 
-            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.0", new Version(21, 0, 0, 0));
-            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.1", new Version(20, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.103", new Version(20, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.105", new Version(21, 0, 0, 0));
 
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
-            environment.CreateGlobalJson(environment.TestDirectory, "10.0.0");
+            environment.CreateGlobalJson(environment.TestDirectory, "10.0.104");
 
             var resolver = environment.CreateResolver();
             var result = (MockResult)resolver.Resolve(
@@ -319,128 +293,17 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     MSBuildVersion = new Version(20, 0, 0, 0),
                     ProjectFileDirectory = environment.TestDirectory,
                 },
-                new MockFactory());
+                new MockFactory())!;
 
-            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
-            result.Path.Should().Be(expected.FullName);
-            result.Version.Should().Be("10.0.1");
+            result.Success.Should().BeFalse();
+            result.Path.Should().BeNull();
+            result.Version.Should().BeNull();
             result.Warnings.Should().BeNullOrEmpty();
-            result.Errors.Should().BeNullOrEmpty();
+            result.Errors.Should().ContainSingle().Which.Should().Contain("Version 10.0.105 of the .NET SDK requires at least version 21.0.0.0 of MSBuild");
         }
 
-        [Fact]
-        public void ItHonorsGlobalJsonPathsWhenSelectingAnMSBuildCompatibleSdk()
-        {
-            var environment = new TestEnvironment(TestAssetsManager);
-            var localSdkRoot = Path.Combine("local", "sdk");
-            var localDotnetRoot = Path.Combine(environment.TestDirectory.FullName, localSdkRoot, "dotnet");
-
-            var expected = environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "10.0.100", new Version(20, 0, 0, 0));
-            environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "11.0.100", new Version(21, 0, 0, 0));
-            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "12.0.100", new Version(20, 0, 0, 0));
-
-            environment.CreateMuxer(localSdkRoot);
-            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
-            environment.CreateGlobalJson(
-                environment.TestDirectory,
-                "10.0.100",
-                rollForward: "latestMajor",
-                paths:
-                [
-                    localDotnetRoot,
-                    123,
-                    Path.Combine(environment.GetProgramFilesDirectory(ProgramFiles.X64).FullName, "dotnet")
-                ]);
-
-            var resolver = environment.CreateResolver();
-            var result = (MockResult)resolver.Resolve(
-                new SdkReference("Some.Test.Sdk", null, null),
-                new MockContext
-                {
-                    MSBuildVersion = new Version(20, 0, 0, 0),
-                    ProjectFileDirectory = environment.TestDirectory,
-                },
-                new MockFactory());
-
-            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
-            result.Path.Should().Be(expected.FullName);
-            result.Version.Should().Be("10.0.100");
-            result.Warnings.Should().BeNullOrEmpty();
-            result.Errors.Should().BeNullOrEmpty();
-        }
-
-        [Fact]
-        public void ItChecksLaterGlobalJsonPathsWhenAnEarlierPathHasNoMSBuildCompatibleSdk()
-        {
-            var environment = new TestEnvironment(TestAssetsManager);
-            var localSdkRoot = Path.Combine("local", "sdk");
-            var localDotnetRoot = Path.Combine(environment.TestDirectory.FullName, localSdkRoot, "dotnet");
-
-            environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "11.0.100", new Version(21, 0, 0, 0));
-            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "12.0.100", new Version(20, 0, 0, 0));
-
-            environment.CreateMuxer(localSdkRoot);
-            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
-            environment.CreateGlobalJson(
-                environment.TestDirectory,
-                "10.0.100",
-                rollForward: "latestMajor",
-                paths: [localDotnetRoot, Path.Combine(environment.GetProgramFilesDirectory(ProgramFiles.X64).FullName, "dotnet")]);
-
-            var resolver = environment.CreateResolver();
-            var result = (MockResult)resolver.Resolve(
-                new SdkReference("Some.Test.Sdk", null, null),
-                new MockContext
-                {
-                    MSBuildVersion = new Version(20, 0, 0, 0),
-                    ProjectFileDirectory = environment.TestDirectory,
-                },
-                new MockFactory());
-
-            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
-            result.Path.Should().Be(expected.FullName);
-            result.Version.Should().Be("12.0.100");
-            result.Warnings.Should().BeNullOrEmpty();
-            result.Errors.Should().BeNullOrEmpty();
-        }
-
-        [Fact]
-        public void ItHonorsExplicitPrereleasePolicyWhenSelectingAnMSBuildCompatibleSdk()
-        {
-            var environment = new TestEnvironment(TestAssetsManager)
-            {
-                DisallowPrereleaseByDefault = true
-            };
-
-            var expected = environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.100-preview.2", new Version(20, 0, 0, 0));
-            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.100-preview.3", new Version(21, 0, 0, 0));
-
-            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
-            environment.CreateGlobalJson(
-                environment.TestDirectory,
-                "10.0.100-preview.1",
-                rollForward: "latestPatch",
-                allowPrerelease: true);
-
-            var resolver = environment.CreateResolver();
-            var result = (MockResult)resolver.Resolve(
-                new SdkReference("Some.Test.Sdk", null, null),
-                new MockContext
-                {
-                    MSBuildVersion = new Version(20, 0, 0, 0),
-                    ProjectFileDirectory = environment.TestDirectory,
-                },
-                new MockFactory());
-
-            result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? [])}.");
-            result.Path.Should().Be(expected.FullName);
-            result.Version.Should().Be("10.0.100-preview.2");
-            result.Warnings.Should().BeNullOrEmpty();
-            result.Errors.Should().BeNullOrEmpty();
-        }
-
-        [Fact]
-        public void ItDoesNotRollForwardWhenGlobalJsonDisablesRollForward()
+        [TestMethod]
+        public void ItDoesNotFallBackWhenGlobalJsonResolvesTheExactRequestedVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);
 
@@ -448,7 +311,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.104", new Version(20, 0, 0, 0));
 
             environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
-            environment.CreateGlobalJson(environment.TestDirectory, "10.0.100", rollForward: "disable");
+            environment.CreateGlobalJson(environment.TestDirectory, "10.0.100");
 
             var resolver = environment.CreateResolver();
             var result = (MockResult)resolver.Resolve(
@@ -458,7 +321,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     MSBuildVersion = new Version(20, 0, 0, 0),
                     ProjectFileDirectory = environment.TestDirectory,
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -467,7 +330,66 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().ContainSingle().Which.Should().Contain("Version 10.0.100 of the .NET SDK requires at least version 21.0.0.0 of MSBuild");
         }
 
-        [Fact]
+        [TestMethod]
+        public void ItDoesNotIntroduceAPreviewSdkWhenGlobalJsonResolvesAStableSdk()
+        {
+            var environment = new TestEnvironment(TestAssetsManager);
+
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.104-preview.1", new Version(20, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.105", new Version(21, 0, 0, 0));
+
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateGlobalJson(environment.TestDirectory, "10.0.100");
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(20, 0, 0, 0),
+                    ProjectFileDirectory = environment.TestDirectory,
+                },
+                new MockFactory())!;
+
+            result.Success.Should().BeFalse();
+            result.Path.Should().BeNull();
+            result.Version.Should().BeNull();
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().ContainSingle().Which.Should().Contain("Version 10.0.105 of the .NET SDK requires at least version 21.0.0.0 of MSBuild");
+        }
+
+        [TestMethod]
+        public void ItDoesNotFallBackToTheAmbientSdkWhenGlobalJsonResolvesFromACustomPath()
+        {
+            var environment = new TestEnvironment(TestAssetsManager);
+            var localSdkRoot = Path.Combine("local", "sdk");
+            var localDotnetRoot = Path.Combine(environment.TestDirectory.FullName, localSdkRoot, "dotnet");
+
+            environment.CreateSdkDirectory(localSdkRoot, "Some.Test.Sdk", "10.0.105", new Version(21, 0, 0, 0));
+            environment.CreateSdkDirectory(ProgramFiles.X64, "Some.Test.Sdk", "10.0.104", new Version(20, 0, 0, 0));
+
+            environment.CreateMuxer(localSdkRoot);
+            environment.CreateMuxerAndAddToPath(ProgramFiles.X64);
+            environment.CreateGlobalJson(environment.TestDirectory, "10.0.100", paths: [localDotnetRoot]);
+
+            var resolver = environment.CreateResolver();
+            var result = (MockResult)resolver.Resolve(
+                new SdkReference("Some.Test.Sdk", null, null),
+                new MockContext
+                {
+                    MSBuildVersion = new Version(20, 0, 0, 0),
+                    ProjectFileDirectory = environment.TestDirectory,
+                },
+                new MockFactory())!;
+
+            result.Success.Should().BeFalse();
+            result.Path.Should().BeNull();
+            result.Version.Should().BeNull();
+            result.Warnings.Should().BeNullOrEmpty();
+            result.Errors.Should().ContainSingle().Which.Should().Contain("Version 10.0.105 of the .NET SDK requires at least version 21.0.0.0 of MSBuild");
+        }
+
+        [TestMethod]
         public void WhenALocalSdkIsResolvedItReturnsHostFromThatSDKInsteadOfAmbientGlobalSdk()
         {
             // create a test that sets up a TestEnvironment with
@@ -495,16 +417,16 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 context,
-                new MockFactory());
+                new MockFactory())!;
             result.Success.Should().BeTrue();
             result.PropertiesToAdd.Should().NotBeNull().And.HaveCount(2);
             result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
             result.PropertiesToAdd[DotnetHostExperimentalKey].Should().Be(localDotnetBinary);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItDoesNotReturnHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundOutsideOfVisualStudio(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItDoesNotReturnHighest___", identifier: disallowPreviews.ToString())
@@ -528,7 +450,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     ProjectFileDirectory = environment.TestDirectory,
                     IsRunningInVisualStudio = false
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -539,9 +461,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().NotBeEmpty();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItReturnsHighestSdkAvailableThatIsCompatibleWithMSBuildWhenVersionInGlobalJsonCannotBeFoundAndRunningInVisualStudio(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, callingMethod: "ItReturnsHighest___", identifier: disallowPreviews.ToString())
@@ -565,7 +487,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     ProjectFileDirectory = environment.TestDirectory,
                     IsRunningInVisualStudio = true
                 },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be((disallowPreviews ? compatibleRtm : compatiblePreview).FullName);
@@ -590,7 +512,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenTheDefaultVSRequiredSDKVersionIsHigherThanTheSDKVersionAvailable()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -602,7 +524,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "1.0.0"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -612,7 +534,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().Contain(string.Format(Strings.NETCoreSDKSmallerThanMinimumVersionRequiredByVisualStudio, "1.0.1", "1.0.4"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenTheTheVSRequiredSDKVersionIsHigherThanTheSDKVersionAvailable()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -625,7 +547,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "1.0.0"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeFalse();
             result.Path.Should().BeNull();
@@ -635,7 +557,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().Contain(string.Format(Strings.NETCoreSDKSmallerThanMinimumVersionRequiredByVisualStudio, "1.0.1", "2.0.0"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsTheVersionIfItIsEqualToTheMinVersionAndTheVSDefinedMinVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -647,7 +569,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "99.99.99"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -657,7 +579,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsTheVersionIfItIsHigherThanTheMinVersionAndTheVSDefinedMinVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -669,7 +591,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, "99.99.99"),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -679,9 +601,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItDisallowsPreviewsBasedOnDefault(bool disallowPreviewsByDefault)
         {
             var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviewsByDefault.ToString());
@@ -696,7 +618,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -706,9 +628,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void ItDisallowsPreviewsBasedOnFile(bool disallowPreviews)
         {
             var environment = new TestEnvironment(TestAssetsManager, identifier: disallowPreviews.ToString());
@@ -724,7 +646,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -734,7 +656,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItObservesChangesToVSSettingsFile()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -754,7 +676,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     var result = (MockResult)resolver.Resolve(
                         new SdkReference("Some.Test.Sdk", null, null),
                         new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                        new MockFactory());
+                        new MockFactory())!;
 
                     string m = $"{message} ({i})";
                     var expected = disallowPreviews ? rtm : preview;
@@ -783,7 +705,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             Check(disallowPreviews: false, message: "file deleted to return to default");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItAllowsPreviewWhenGlobalJsonHasPreviewIrrespectiveOfSetting()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -798,7 +720,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(preview.FullName);
@@ -808,7 +730,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRespectsAmbientVSSettings()
         {
             // When run in test explorer in VS, this will actually locate the settings for the current VS instance
@@ -827,7 +749,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             var result = (MockResult)resolver.Resolve(
                 new SdkReference("Some.Test.Sdk", null, null),
                 new MockContext { ProjectFileDirectory = environment.TestDirectory },
-                new MockFactory());
+                new MockFactory())!;
 
             result.Success.Should().BeTrue($"No error expected. Error encountered: {string.Join(Environment.NewLine, result.Errors ?? new string[] { })}. Mocked Process Path: {environment.ProcessPath}. Mocked Path: {environment.PathEnvironmentVariable}");
             result.Path.Should().Be(expected.FullName);
@@ -837,7 +759,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Errors.Should().BeNullOrEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenTemplateLocatorItCanResolveSdkVersion()
         {
             var environment = new TestEnvironment(TestAssetsManager);
@@ -1053,8 +975,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 DirectoryInfo directory,
                 string version,
                 string? rollForward = null,
-                bool? allowPrerelease = null,
-                object[]? paths = null)
+                string[]? paths = null)
             {
                 var builder = new StringBuilder();
                 builder.AppendLine("{");
@@ -1065,32 +986,19 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                     builder.AppendLine(",");
                     builder.Append($"\t\"rollForward\": \"{rollForward}\"");
                 }
-                if (allowPrerelease is not null)
-                {
-                    builder.AppendLine(",");
-                    builder.Append($"\t\"allowPrerelease\": {allowPrerelease.Value.ToString().ToLowerInvariant()}");
-                }
                 if (paths is not null)
                 {
                     builder.Append(',');
                     builder.AppendLine("\t\"paths\" : [");
                     var first = true;
-                    foreach (object? path in paths)
+                    foreach (var path in paths)
                     {
                         if (!first)
                         {
                             builder.Append(',');
                             builder.AppendLine();
                         }
-                        builder.Append("\t\t");
-                        if (path is string pathString)
-                        {
-                            builder.Append($"\"{pathString.Replace("\\", "\\\\").Replace("\"", "\\\"")}\"");
-                        }
-                        else
-                        {
-                            builder.Append(path?.ToString() ?? "null");
-                        }
+                        builder.Append($"\t\t\"{path.Replace("\\", "\\\\")}\"");
                         if (first)
                         {
                             first = false;

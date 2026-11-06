@@ -11,7 +11,13 @@ namespace Microsoft.NET.Build.Containers;
 /// </remarks>
 internal interface IManifestOperations
 {
-    public Task<HttpResponseMessage> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken);
+    public Task<bool> ExistsAsync(string repositoryName, string reference, CancellationToken cancellationToken);
+
+    /// <summary>
+    /// Fetches the manifest for <paramref name="tagOrDigest"/>, validating its content against the
+    /// requested digest and the Docker-Content-Digest response header when either is present.
+    /// </summary>
+    public Task<ManifestResponse> GetAsync(string repositoryPath, string tagOrDigest, CancellationToken cancellationToken);
 
     public Task PutAsync(string repositoryName, string reference, string manifestListJson, string mediaType, CancellationToken cancellationToken);
 }

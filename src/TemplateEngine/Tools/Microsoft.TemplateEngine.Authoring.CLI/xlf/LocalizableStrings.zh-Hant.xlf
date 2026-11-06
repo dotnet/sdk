@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="command_export_help_description">
+        <source>Given a template.config file, creates a "localize" directory next to it and exports the localization files into the created directory. If the localization files already exist, the existing translations will be preserved.</source>
+        <target state="translated">給定的 template.config 檔案會在檔案旁邊建立 [當地語系化] 目錄，並將當地語系化檔案匯出到建立的目錄中。如果當地語系化檔案已存在，將會保留現有的翻譯。</target>
+        <note>The phrase "localization files" here mean the files that will be given to the translators to be localized.</note>
+      </trans-unit>
+      <trans-unit id="command_export_help_dryrun_description">
+        <source>If this option is specified, modified files will not be saved to file system and the changes will only be printed to console output.</source>
+        <target state="translated">如果指定此選項，修改後的檔案將不會儲存至檔案系統，而且只會將變更列印到主控台輸出。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_help_language_description">
+        <source>The list of languages to be supported by this template. The following language list will be used as default if this option is omitted: cs, de, en, es, fr, it, ja, ko, pl, pt-BR, ru, tr, zh-Hans, zh-Hant</source>
+        <target state="translated">此範本將支援的語言清單。若省略此選項，將會使用下列語言清單作為預設值: cs、de、en、fr、zh、ja、ko、pl、pt-BR、ru、-Hans、zh-Hant</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_help_recursive_description">
+        <source>When specified, subdirectories are also searched for template.json files.</source>
+        <target state="translated">指定時，也會在子目錄中搜尋 template.json 檔案。</target>
+        <note>Do not localize: "template.json"</note>
+      </trans-unit>
+      <trans-unit id="command_export_help_templatePath_description">
+        <source>Specifies the path to the template.json file. If a directory is given, template.json file will be searched within the directory. If --recursive options is specified, all the template.json files under the given directory and its subdirectories will be taken as input.</source>
+        <target state="translated">指定 template.json 檔案的路徑。如果指定目錄，將會在目錄內搜尋 template.json 檔案。如果指定--recursive 選項，則會將指定目錄及其子目錄下的所有 template.json 檔案視為輸入。</target>
+        <note>Do not localize: "template.json", "--recursive"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_cancelled">
+        <source>"export" command for the following file was cancelled: "{0}".</source>
+        <target state="translated">已取消下列檔案的 "export" 命令: "{0}"。</target>
+        <note>Do not localize: "export"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_executionEnded">
+        <source>Execution of "export" command has completed. {0} files were processed.</source>
+        <target state="translated">已完成 "export" 命令的執行。已處理 {0} 個檔案。</target>
+        <note>{0} is the number of files. Do not localize "export"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_templateExportFailedWithError">
+        <source>Generating localization files for a template.json has failed.
+Reason: {0}.
+File Path: {1}.</source>
+        <target state="translated">為 template.json 產生當地語系化檔案失敗。
+原因: {0}。
+檔案路徑: {1}。</target>
+        <note>{0} is a sentence such as "Json property should contain a field 'ID'"
+{1} is a file path such as: C:\temp\template.json
+Do not localize: "template.json"</note>
+      </trans-unit>
+      <trans-unit id="command_export_log_templateExportFailedWithException">
+        <source>Generating localization files for the following template.json file has failed: "{0}".</source>
+        <target state="translated">在下列 template.json 檔案中產生當地語系化檔案失敗: "{0}"。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_log_templateExportSucceeded">
+        <source>Localization files were successfully generated for the template.json file at path "{0}".</source>
+        <target state="translated">已成功為位於路徑 "{0}" 上的 template.json 檔案產生當地語系化檔案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_export_log_templateJsonNotFound">
+        <source>Failed to find "template.json" file under the path "{0}".</source>
+        <target state="translated">在路徑 "{0}" 下找不到 "template.json" 檔案。</target>
+        <note>Do not localize: "template.json"</note>
+      </trans-unit>
+      <trans-unit id="command_validate_help_description">
+        <source>Validates the templates at given location.</source>
+        <target state="translated">驗證指定位置的範本。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_validate_help_locationArg_description">
+        <source>The location of template(s) to validate.</source>
+        <target state="translated">要驗證的範本之位置。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_validate_info_no entries">
+        <source>&lt;no entries&gt;</source>
+        <target state="translated">&lt;no entries&gt;</target>
+        <note>used when there is no entries in the list</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_scanning_completed">
+        <source>Location '{0}': found {1} templates.</source>
+        <target state="translated">位置 '{0}': 找到了 {1} 個範本。</target>
+        <note>{0} - file path to templates to scan; {1} - count of templates found.</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_scanning_in_progress">
+        <source>Scanning location '{0}' for the templates..</source>
+        <target state="translated">正在為範本掃描位置 '{0}'..</target>
+        <note>{0} - file path to templates to scan</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_summary_invalid">
+        <source>Template {0}: the template is not valid.</source>
+        <target state="translated">範本 {0}: 範本是無效的。</target>
+        <note>{0} - template name and identity in format name (identity)</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_summary_loc_invalid">
+        <source>'{0}' localization for the template {1}: the localization file is not valid. The localization will be skipped.</source>
+        <target state="translated">範本 {1} 的 '{0}' 當地語系化: 當地語系化檔案無效。將跳過當地語系化。</target>
+        <note>{1} - template name and identity in format name (identity), {0} - locale in format en-US</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_summary_loc_valid">
+        <source>'{0}' localization for the template {1}: the localization file is valid.</source>
+        <target state="translated">範本 {1} 的 '{0}' 當地語系化: 當地語系化檔案是有效的。</target>
+        <note>{1} - template name and identity in format name (identity), {0} - locale in format en-US</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_summary_valid">
+        <source>Template {0}: the template is valid.</source>
+        <target state="translated">範本 {0}: 範本是有效的。</target>
+        <note>{0} - template name and identity in format name (identity)</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_template_header">
+        <source>Found template {0}:</source>
+        <target state="translated">找到了範本 {0}:</target>
+        <note>The header is followed by list of issues found in the template. {0} - template name and identity in format name (identity)</note>
+      </trans-unit>
+      <trans-unit id="command_validate_info_template_loc_header">
+        <source>Found localization '{0}' for template {1}:</source>
+        <target state="translated">找到範本 {1} 的當地語系化 '{0}':</target>
+        <note>The header is followed by list of issues found in the template localization. {1} - template name and identity in format name (identity), {0} - locale in format en-US</note>
+      </trans-unit>
+      <trans-unit id="command_verify_error_failed">
+        <source>Verification Failed.</source>
+        <target state="translated">驗證失敗。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_error_unrecognizedArguments">
+        <source>Argument(s) {0} are not recognized. Must be one of: {1}.</source>
+        <target state="translated">無法辨識引數 {0}。必須為下列之一: {1}。</target>
+        <note>{0} and {1} is both a list of arguments</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_customExcludes_description">
+        <source>Specifies pattern(s) defining files to be excluded from verification.</source>
+        <target state="translated">指定要從驗證排除的模式定義檔案。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_customIncludes_description">
+        <source>Specifies pattern(s) defining files to be included to verification (all files are included if not specified).</source>
+        <target state="translated">指定要包含在驗證中的模式定義檔案 (若未指定則包含所有檔案)。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_description">
+        <source>Runs the template with specified arguments and compares the result with expectations files.</source>
+        <target state="translated">使用指定的引數執行範本，並將結果與期望檔案比較。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_disableDefaultExcludes_description">
+        <source>If set to true - all template output files will be verified, unless --exclude-pattern option is used.</source>
+        <target state="translated">如果設為 true - 除非使用 --exclude-pattern 選項，否則會驗證所有範本輸出檔案。</target>
+        <note>Do not translate 'true'. Do not translate '--exclude-pattern'</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_disableDiffTool_description">
+        <source>If set to true - the diff tool won't be automatically started by the Verifier on verification failures.</source>
+        <target state="translated">如果設為 true - 驗證失敗時，驗證器不會自動啟動 Diff 工具。</target>
+        <note>Do not translate 'true'.</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_expectFailure_description">
+        <source>If set to true - 'dotnet new' command is expected to return non-zero return code.</source>
+        <target state="translated">如果設為 true - 'dotnet new' 命令預期傳回非零的傳回碼。</target>
+        <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_outputPath_description">
+        <source>Specifies the path to target directory to output the generated template to.</source>
+        <target state="translated">指定要輸出所產生範本的目標目錄路徑。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_scenarioName_description">
+        <source>Specifies optional scenario name to be used in the snapshot folder name.</source>
+        <target state="translated">指定要在快照集資料夾名稱中使用的選用案例名稱。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_snapshotsDirPath_description">
+        <source>Specifies path to the directory with snapshot files.</source>
+        <target state="translated">指定快照集檔案的目錄路徑。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_templateName_description">
+        <source>Name of the template to be verified. Can be already installed template or a template within local path specified with -p/--template-path option.</source>
+        <target state="translated">要驗證的範本名稱。可以是已安裝的範本，或以 -p/--template-path 選項指定之本機路徑內的範本。</target>
+        <note>Do not translate the '-p/--template-path'</note>
+      </trans-unit>
+      <trans-unit id="command_verify_help_templatePath_description">
+        <source>Specifies the path to the directory with template to be verified.</source>
+        <target state="translated">指定具有要驗證範本的目錄路徑。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_uniqueFor_description">
+        <source>Sets the Verifier expectations directory naming convention, by indicating which scenarios should be differentiated.</source>
+        <target state="translated">指出應區分哪些案例，以設定驗證器預期目錄命名慣例。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="command_verify_help_verifyOutputs_description">
+        <source>If set to true - 'dotnet new' command standard output and error contents will be verified along with the produced template files.</source>
+        <target state="translated">如果設為 true - 'dotnet new' 命令標準輸出和錯誤內容會與產生的範本檔案一起進行驗證。</target>
+        <note>Do not translate 'true'. Do not translate 'dotnet new'</note>
+      </trans-unit>
+      <trans-unit id="generic_log_commandExecutionFailed">
+        <source>"{0}" command has encountered an error. See the logs for more details.</source>
+        <target state="translated">"{0}" 命令發生錯誤。如需詳細資料，請參閱記錄檔。</target>
+        <note>{0} will be replaced by the command name. Such as: "export" command has encountered an error.</note>
+      </trans-unit>
+      <trans-unit id="generic_log_commandExecutionFailedWithErrorMessage">
+        <source>There was an error while running the "--{0}" command. Error message: "{1}". See the logs for more details.</source>
+        <target state="translated">執行 "--{0}" 命令時發生錯誤。錯誤訊息: "{1}"。如需詳細資料，請參閱記錄檔。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

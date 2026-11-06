@@ -1,23 +1,30 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+extern alias MSTestFramework;
 
 using System.Collections.Immutable;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class BuildProjects(ITestOutputHelper output)
+[TestClass]
+public class BuildProjects
 {
-    private class TestContext : IDisposable
+    public Microsoft.VisualStudio.TestTools.UnitTesting.TestContext TestContext { get; set; } = null!;
+    private DualOutputHelper? _output;
+    private DualOutputHelper Output => _output ??= new(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
+    private class WatcherContext : IDisposable
     {
         public readonly HotReloadDotNetWatcher Watcher;
         public readonly FileWatcher FileWatcher;
         public readonly TestConsole Console;
+        public readonly TestLogger BuildLogger;
 
         public readonly List<string> BuildInvocations = [];
         public string? SolutionFile;
 
-        public TestContext(ITestOutputHelper output, ImmutableArray<ProjectRepresentation> rootProjects)
+        public WatcherContext(DualOutputHelper output, ImmutableArray<ProjectRepresentation> rootProjects)
         {
             var environmentOptions = TestOptions.GetEnvironmentOptions();
             var processOutputReporter = new TestProcessOutputReporter();
@@ -31,12 +38,14 @@ public class BuildProjects(ITestOutputHelper output)
                 }
             };
 
+            BuildLogger = new TestLogger(output);
+
             var context = new DotNetWatchContext()
             {
                 ProcessOutputReporter = processOutputReporter,
                 LoggerFactory = NullLoggerFactory.Instance,
                 Logger = NullLogger.Instance,
-                BuildLogger = NullLogger.Instance,
+                BuildLogger = BuildLogger,
                 ProcessRunner = processRunner,
                 Options = new(),
                 MainProjectOptions = null,
@@ -50,31 +59,32 @@ public class BuildProjects(ITestOutputHelper output)
             FileWatcher = new FileWatcher(NullLogger.Instance, environmentOptions);
 
             Console = new TestConsole(output);
-            Watcher = new HotReloadDotNetWatcher(context, Console, runtimeProcessLauncherFactory: null, targetFrameworkSelectionPrompt: null);
+            Watcher = new HotReloadDotNetWatcher(context, Console, runtimeProcessLauncherFactory: null, selectionPrompt: null);
         }
 
         public void LogBuildInvocation(ProcessSpec processSpec)
         {
             SolutionFile = processSpec.Arguments.FirstOrDefault(a => a.EndsWith(".slnx"));
 
-            // Replace path to solution, which is a temp path, with placeholder to make assertions easier.
-            BuildInvocations.Add(string.Join(" ", processSpec.Arguments.Select(a => a == SolutionFile ? "<solution>" : a)));
+            // Replace path to solution, which is a temp path, with a placeholder to make assertions easier.
+            BuildInvocations.Add(string.Join(" ", processSpec.Arguments.Select(a =>
+                a == SolutionFile ? "<solution>" : a)));
         }
 
         public void Dispose()
         {
-            Assert.False(File.Exists(SolutionFile));
+            Assert.IsFalse(File.Exists(SolutionFile));
         }
     }
 
-    private TestContext CreateContext(string[]? rootProjects = null)
-        => new(output, rootProjects?.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath).ToImmutableArray() ?? []);
+    private WatcherContext CreateContext(string[]? rootProjects = null)
+        => new(Output, rootProjects?.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath).ToImmutableArray() ?? []);
 
-    [Fact]
+    [TestMethod]
     public async Task SingleProject_NotMain()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
 
         using var context = CreateContext();
 
@@ -87,18 +97,19 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual([$"build {project1} -p A=1"], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SingleProject_Main()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
 
         File.WriteAllText(project1, $"""
         <Project Sdk="Microsoft.NET.Sdk">
@@ -120,9 +131,10 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(
         [
@@ -131,12 +143,51 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
+    public async Task SingleProject_DeviceIdIsEscaped()
+    {
+        const string DeviceId = "\"device (" + TestConstants.GB18030 + ")\";InjectedProperty=true,OtherProperty=value%3B";
+        const string EscapedDeviceId = "%22device %28" + TestConstants.GB18030 + "%29%22%3bInjectedProperty=true%2COtherProperty=value%253B";
+
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project = Path.Combine(dir.Path, "Project.csproj");
+        File.WriteAllText(project, $"""
+        <Project>
+          <PropertyGroup>
+            <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+          </PropertyGroup>
+          <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
+            <ItemGroup>
+              <Devices Include="{EscapedDeviceId}" />
+            </ItemGroup>
+          </Target>
+        </Project>
+        """);
+
+        using var context = CreateContext([project]);
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(project, entryPointFilePath: null)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.ProjectOptions with { TargetFramework = ToolsetInfo.CurrentTargetFramework },
+            frameworkSelector: null,
+            deviceSelector: (_, _) => throw new AssertFailedException("A single device should be selected automatically"),
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Success);
+        Assert.AreEqual(DeviceId, result.SelectedDevice);
+        AssertEx.SequenceEqual(
+        [
+            $"restore {project} -p A=1 -consoleLoggerParameters:NoSummary",
+            $"build {project} -p A=1 --framework {ToolsetInfo.CurrentTargetFramework} -p:Device={EscapedDeviceId} --no-restore"
+        ], context.BuildInvocations);
+    }
+
+    [TestMethod]
     public async Task MultipleProjects()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
-        var project2 = Path.Combine(dir, "Project2.csproj");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
+        var project2 = Path.Combine(dir.Path, "Project2.csproj");
 
         using var context = CreateContext();
 
@@ -149,19 +200,23 @@ public class BuildProjects(ITestOutputHelper output)
             context.FileWatcher,
             mainProjectOptions: null,
             frameworkSelector: null,
+            deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(["build <solution> -p A=1"], context.BuildInvocations);
     }
 
-    [Theory]
+    [TestMethod]
     [CombinatorialData]
-    public async Task SingleFile(bool isMain)
+    public async Task FileBasedApp_NoFrameworkProperties(bool isMain)
     {
-        var dir = Path.GetTempPath();
-        var file1 = Path.Combine(dir, "File1.cs");
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [isMain]);
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        File.WriteAllText(file1, """
+            Console.WriteLine(1);
+            """);
 
         using var context = CreateContext([file1]);
 
@@ -174,19 +229,120 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual([$"build {file1} -p A=1"], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
+    [CombinatorialData]
+    public async Task FileBasedApp_TargetFrameworkProperty(bool nonInteractive)
+    {
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [nonInteractive]);
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        File.WriteAllText(file1, """
+            #:property TargetFramework=   net9.0    
+            Console.WriteLine(1);
+            """);
+
+        using var context = CreateContext([file1]);
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(projectPath: null, entryPointFilePath: file1)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.GetProjectOptions(["--file", file1]),
+            frameworkSelector: nonInteractive ? null : (_, _) =>
+            {
+                Assert.Fail("Selector should not be invoked");
+                return ValueTask.FromResult("n/a");
+            },
+            deviceSelector: null,
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Success);
+
+        AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
+    }
+
+    [TestMethod]
+    [CombinatorialData]
+    public async Task FileBasedApp_TargetFrameworksProperty(bool nonInteractive)
+    {
+        var dir = TestAssetsManager.CreateTestDirectory(identifiers: [nonInteractive]);
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        File.WriteAllText(file1, """
+            #:property TargetFrameworks=net9.0;net10.0
+            Console.WriteLine(1);
+            """);
+
+        using var context = CreateContext([file1]);
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(projectPath: null, entryPointFilePath: file1)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.GetProjectOptions(["--file", file1]),
+            frameworkSelector: nonInteractive ? null : (_, _) =>
+            {
+                return ValueTask.FromResult("net9.0");
+            },
+            deviceSelector: null,
+            CancellationToken.None);
+
+        if (nonInteractive)
+        {
+            AssertEx.SequenceEqual(
+            [
+                "[Error] " + MessageDescriptor.FileSpecifiesMultipleTargetFrameworks.GetMessage((file1, "net9.0', 'net10.0"))
+            ], context.BuildLogger.GetAndClearMessages());
+
+            Assert.IsFalse(result.Success);
+            Assert.IsEmpty(context.BuildInvocations);
+        }
+        else
+        {
+            Assert.IsTrue(result.Success);
+            AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net9.0"], context.BuildInvocations);
+        }
+    }
+
+    [TestMethod]
+    public async Task FileBasedApp_TargetFrameworkOption()
+    {
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        File.WriteAllText(file1, """
+            #:property TargetFrameworks=net9.0;net10.0
+            Console.WriteLine(1);
+            """);
+
+        using var context = CreateContext([file1]);
+
+        var result = await context.Watcher.BuildProjectsAsync(
+            [new ProjectRepresentation(projectPath: null, entryPointFilePath: file1)],
+            context.FileWatcher,
+            mainProjectOptions: TestOptions.GetProjectOptions(["--file", file1, "-f", "net8.0"]),
+            frameworkSelector: (_, _) =>
+            {
+                Assert.Fail("Selector should not be invoked");
+                return ValueTask.FromResult("n/a");
+            },
+            deviceSelector: null,
+            CancellationToken.None);
+
+        Assert.IsTrue(result.Success);
+
+        AssertEx.SequenceEqual([$"build {file1} -p A=1 --framework net8.0"], context.BuildInvocations);
+    }
+
+    [TestMethod]
     public async Task MultipleFiles()
     {
-        var dir = Path.GetTempPath();
-        var file1 = Path.Combine(dir, "File1.cs");
-        var file2 = Path.Combine(dir, "File2.cs");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        var file2 = Path.Combine(dir.Path, "File2.cs");
 
         using var context = CreateContext();
 
@@ -199,9 +355,10 @@ public class BuildProjects(ITestOutputHelper output)
             context.FileWatcher,
             mainProjectOptions: null,
             frameworkSelector: null,
+            deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(
         [
@@ -210,13 +367,13 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task SingleProject_MultipleFiles()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
-        var file1 = Path.Combine(dir, "File1.cs");
-        var file2 = Path.Combine(dir, "File2.cs");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        var file2 = Path.Combine(dir.Path, "File2.cs");
 
         using var context = CreateContext();
 
@@ -230,9 +387,10 @@ public class BuildProjects(ITestOutputHelper output)
             context.FileWatcher,
             mainProjectOptions: null,
             frameworkSelector: null,
+            deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(
         [
@@ -242,14 +400,14 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultipleProjects_MultipleFiles()
     {
-        var dir = Path.GetTempPath();
-        var project1 = Path.Combine(dir, "Project1.csproj");
-        var project2 = Path.Combine(dir, "Project2.csproj");
-        var file1 = Path.Combine(dir, "File1.cs");
-        var file2 = Path.Combine(dir, "File2.cs");
+        var dir = TestAssetsManager.CreateTestDirectory();
+        var project1 = Path.Combine(dir.Path, "Project1.csproj");
+        var project2 = Path.Combine(dir.Path, "Project2.csproj");
+        var file1 = Path.Combine(dir.Path, "File1.cs");
+        var file2 = Path.Combine(dir.Path, "File2.cs");
 
         using var context = CreateContext();
 
@@ -264,9 +422,10 @@ public class BuildProjects(ITestOutputHelper output)
             context.FileWatcher,
             mainProjectOptions: null,
             frameworkSelector: null,
+            deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
+        Assert.IsTrue(result.Success);
 
         AssertEx.SequenceEqual(
         [
@@ -276,9 +435,9 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Theory]
-    [InlineData(ToolsetInfo.CurrentTargetFramework)]
-    [InlineData("net9.0")]
+    [TestMethod]
+    [DataRow(ToolsetInfo.CurrentTargetFramework)]
+    [DataRow("net9.0")]
     public async Task MultiTfm_FrameworkSelection(string expectedTfm)
     {
         var dir = TestAssetsManager.CreateTestDirectory(identifiers: [expectedTfm]);
@@ -306,11 +465,12 @@ public class BuildProjects(ITestOutputHelper output)
                 AssertEx.SequenceEqual([currentTfm, "net9.0"], frameworks);
                 return ValueTask.FromResult(expectedTfm);
             },
+            deviceSelector: null,
             CancellationToken.None);
         
-        Assert.True(result.Success);
-        Assert.NotNull(result.ProjectGraph);
-        Assert.Equal(expectedTfm, result.MainProjectTargetFramework);
+        Assert.IsTrue(result.Success);
+        Assert.IsNotNull(result.ProjectGraph);
+        Assert.AreEqual(expectedTfm, result.MainProjectTargetFramework);
 
         AssertEx.SequenceEqual(
         [
@@ -319,7 +479,7 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultiTfm_CommandLineOption()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -347,11 +507,12 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
-        Assert.Null(result.ProjectGraph);
-        Assert.Equal("net9.0", result.MainProjectTargetFramework);
+        Assert.IsTrue(result.Success);
+        Assert.IsNull(result.ProjectGraph);
+        Assert.AreEqual("net9.0", result.MainProjectTargetFramework);
 
         AssertEx.SequenceEqual(
         [
@@ -359,7 +520,7 @@ public class BuildProjects(ITestOutputHelper output)
         ], context.BuildInvocations);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task MultiTfm_NoMainProject()
     {
         var dir = TestAssetsManager.CreateTestDirectory();
@@ -387,11 +548,12 @@ public class BuildProjects(ITestOutputHelper output)
                 Assert.Fail("Selector should not be invoked");
                 return ValueTask.FromResult("n/a");
             },
+            deviceSelector: null,
             CancellationToken.None);
 
-        Assert.True(result.Success);
-        Assert.Null(result.ProjectGraph);
-        Assert.Null(result.MainProjectTargetFramework);
+        Assert.IsTrue(result.Success);
+        Assert.IsNull(result.ProjectGraph);
+        Assert.IsNull(result.MainProjectTargetFramework);
 
         AssertEx.SequenceEqual(
         [

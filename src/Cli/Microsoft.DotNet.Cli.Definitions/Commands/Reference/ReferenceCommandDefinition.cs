@@ -14,13 +14,19 @@ internal sealed class ReferenceCommandDefinition : Command
     public new const string Name = "reference";
     private const string Link = "https://aka.ms/dotnet-reference";
 
-    public static Option<string> CreateProjectOption() => new("--project")
+    public static Option<string?> CreateProjectOption() => new("--project")
     {
         Description = CommandDefinitionStrings.ProjectArgumentDescription,
         Recursive = true
     };
 
-    public readonly Option<string> ProjectOption = CreateProjectOption();
+    public static Option<string?> CreateFileOption() => new("--file")
+    {
+        Description = CommandDefinitionStrings.FileArgumentDescription,
+        Recursive = true
+    };
+
+    public readonly Option<string?> ProjectOption = CreateProjectOption();
 
     public readonly ReferenceAddCommandDefinition AddCommand = new();
     public readonly ReferenceListCommandDefinition ListCommand = new();

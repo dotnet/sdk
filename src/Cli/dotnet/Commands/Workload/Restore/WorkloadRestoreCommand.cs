@@ -67,6 +67,7 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         return 0;
     }
 
+    [System.Diagnostics.CodeAnalysis.UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     private List<WorkloadId> RunTargetToGetWorkloadIds(IEnumerable<string> allProjects)
     {
         const string GetRequiredWorkloadsTargetName = "_GetRequiredWorkloads";
@@ -117,13 +118,16 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         var projectFiles = new List<string>();
         if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
         {
-            slnFiles = [.. SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false)];
+            slnFiles = [.. SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, includeSolutionFilterFiles: true)];
             projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
         }
         else
         {
             slnFiles = [.. slnOrProjectArgument
-                .Where(s => Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase))
+                .Where(s =>
+                    Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(s).Equals(".slnf", StringComparison.OrdinalIgnoreCase))
                 .Select(Path.GetFullPath)];
             projectFiles = [.. slnOrProjectArgument
                 .Where(s => Path.GetExtension(s).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
@@ -133,8 +137,16 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         foreach (string solutionFilePath in slnFiles)
         {
             var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath);
+            var projectPathBaseDirectory = Path.GetDirectoryName(solutionFilePath)!;
+
+            if (Path.GetExtension(solutionFilePath).Equals(".slnf", StringComparison.OrdinalIgnoreCase) &&
+                !string.IsNullOrEmpty(solutionFile.Description))
+            {
+                projectPathBaseDirectory = Path.GetDirectoryName(solutionFile.Description)!;
+            }
+
             projectFiles.AddRange(solutionFile.SolutionProjects.Select(
-                p => Path.GetFullPath(p.FilePath, Path.GetDirectoryName(solutionFilePath))));
+                p => Path.GetFullPath(p.FilePath, projectPathBaseDirectory)));
         }
 
         if (projectFiles.Count == 0)

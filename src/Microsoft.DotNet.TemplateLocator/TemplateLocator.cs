@@ -36,8 +36,8 @@ namespace Microsoft.DotNet.TemplateLocator
         }
 
         public IReadOnlyCollection<IOptionalSdkTemplatePackageInfo> GetDotnetSdkTemplatePackages(
-            string sdkVersion,
-            string dotnetRootPath,
+            string? sdkVersion,
+            string? dotnetRootPath,
             string? userProfileDir)
         {
             if (string.IsNullOrWhiteSpace(sdkVersion))
@@ -47,8 +47,7 @@ namespace Microsoft.DotNet.TemplateLocator
 
             if (string.IsNullOrWhiteSpace(dotnetRootPath))
             {
-                throw new ArgumentException($"'{nameof(dotnetRootPath)}' cannot be null or whitespace",
-                    nameof(dotnetRootPath));
+                throw new ArgumentException($"'{nameof(dotnetRootPath)}' cannot be null or whitespace", nameof(dotnetRootPath));
             }
 
             //  Will the current directory correspond to the folder we are creating a project in?  If we need

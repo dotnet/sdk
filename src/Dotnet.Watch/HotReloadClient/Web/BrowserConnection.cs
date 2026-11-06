@@ -5,6 +5,7 @@
 
 using System;
 using System.Buffers;
+using System.Collections.Immutable;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,41 +13,47 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal readonly struct BrowserConnection : IDisposable
+/// <summary>
+/// Represents a connection to a browser that facilitates Hot Reload operations.
+/// </summary>
+internal readonly struct BrowserConnection(
+    WebSocket clientSocket,
+    string? sharedSecret,
+    int id,
+    ILogger serverLogger,
+    ILogger agentLogger,
+    ImmutableArray<BrowserToolsUpdateBatch> pendingReplayUpdates) : IDisposable
 {
-    public const string ServerLogComponentName = $"{nameof(BrowserConnection)}:Server";
-    public const string AgentLogComponentName = $"{nameof(BrowserConnection)}:Agent";
-
-    private static int s_lastId;
-
-    public WebSocket ClientSocket { get; }
-    public string? SharedSecret { get; }
-    public int Id { get; }
-    public ILogger ServerLogger { get; }
-    public ILogger AgentLogger { get; }
-
     public readonly TaskCompletionSource<None> Disconnected = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-    public BrowserConnection(WebSocket clientSocket, string? sharedSecret, ILoggerFactory loggerFactory)
-    {
-        ClientSocket = clientSocket;
-        SharedSecret = sharedSecret;
-        Id = Interlocked.Increment(ref s_lastId);
-
-        var displayName = $"Browser #{Id}";
-        ServerLogger = loggerFactory.CreateLogger(ServerLogComponentName, displayName);
-        AgentLogger = loggerFactory.CreateLogger(AgentLogComponentName, displayName);
-
-        ServerLogger.Log(LogEvents.ConnectedToRefreshServer);
-    }
+    /// <summary>
+    /// Completes with true once the browser acknowledged the session initialization message, which
+    /// carries the updates produced before this connection was established. Live messages must not
+    /// be sent to the connection before that, otherwise they could be applied out of order or twice.
+    /// Completes with false if the connection is torn down before it is initialized.
+    /// </summary>
+    public readonly TaskCompletionSource<bool> Initialized = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public void Dispose()
     {
         ClientSocket.Dispose();
 
+        Initialized.TrySetResult(false);
         Disconnected.TrySetResult(default);
         ServerLogger.LogDebug("Disconnected.");
     }
+
+    public WebSocket ClientSocket => clientSocket;
+    public string? SharedSecret => sharedSecret;
+    public int Id => id;
+    public ILogger ServerLogger => serverLogger;
+    public ILogger AgentLogger => agentLogger;
+
+    /// <summary>
+    /// Updates that were produced before this connection was established, captured atomically with
+    /// the publication of the connection.
+    /// </summary>
+    public ImmutableArray<BrowserToolsUpdateBatch> PendingReplayUpdates => pendingReplayUpdates;
 
     internal async ValueTask<bool> TrySendMessageAsync(ReadOnlyMemory<byte> messageBytes, CancellationToken cancellationToken)
     {
@@ -59,9 +66,19 @@ internal readonly struct BrowserConnection : IDisposable
         {
             await ClientSocket.SendAsync(data, WebSocketMessageType.Text, endOfMessage: true, cancellationToken);
         }
+        catch (WebSocketException e)
+        {
+            // Do not log error if the socket has been closed:
+            if (ClientSocket.State == WebSocketState.Open)
+            {
+                ServerLogger.LogDebug("Failed to send message: {Message}", e.InnerException?.Message ?? e.Message);
+            }
+
+            return false;
+        }
         catch (Exception e) when (e is not OperationCanceledException)
         {
-            ServerLogger.LogDebug("Failed to send message: {Message}", e.Message);
+            ServerLogger.LogDebug("Failed to send message: {Message}", e.ToString());
             return false;
         }
 
@@ -86,9 +103,19 @@ internal readonly struct BrowserConnection : IDisposable
             {
                 result = await ClientSocket.ReceiveAsync(data, cancellationToken);
             }
+            catch (WebSocketException e)
+            {
+                // Do not log error if the socket has been closed:
+                if (ClientSocket.State == WebSocketState.Open)
+                {
+                    ServerLogger.LogDebug("Failed to receive response: {Message}", e.InnerException?.Message ?? e.Message);
+                }
+
+                return null;
+            }
             catch (Exception e) when (e is not OperationCanceledException)
             {
-                ServerLogger.LogDebug("Failed to receive response: {Message}", e.Message);
+                ServerLogger.LogDebug("Failed to receive response: {Message}", e.ToString());
                 return null;
             }
 

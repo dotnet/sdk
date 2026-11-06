@@ -103,7 +103,11 @@ public class Reporter : IReporter
 
     private static void ResetVerbose()
     {
-        Verbose = CommandLoggingContext.IsVerbose ? s_verboseReporter : NullReporter;
+        Verbose = CommandLoggingContext.IsVerbose
+            ? (CommandLoggingContext.IsVerboseToStdErr && ReferenceEquals(s_verboseReporter, s_consoleOutReporter)
+                ? s_consoleErrReporter
+                : s_verboseReporter)
+            : NullReporter;
     }
 
     public void WriteLine(string message)

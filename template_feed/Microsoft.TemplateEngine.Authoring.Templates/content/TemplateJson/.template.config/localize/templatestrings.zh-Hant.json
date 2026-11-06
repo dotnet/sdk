@@ -1,0 +1,15 @@
+﻿{
+  "author": "Microsoft",
+  "name": "template.json 設定檔",
+  "description": ".NET 範本的 template.json 設定檔案範本。如需完整的設定描述，請參閱 https://github.com/dotnet/templating/wiki/Reference-for-template.json。",
+  "symbols/CreateTemplateConfigFolder/description": "當應該在 .template.config 資料夾中建立 template.json 時為 true。",
+  "symbols/CreateTemplateConfigFolder/displayName": "建立 .template.config 資料夾",
+  "symbols/TemplateName/description": "範本名稱。",
+  "symbols/TemplateName/displayName": "範本名稱",
+  "symbols/TemplateShortName/description": "範本簡短名稱。",
+  "symbols/TemplateShortName/displayName": "範本簡短名稱",
+  "symbols/TemplateIdentity/description": "範本身分識別 (必須是唯一的)。",
+  "symbols/TemplateIdentity/displayName": "範本身分識別",
+  "postActions/instructions/description": "需要手動動作",
+  "postActions/instructions/manualInstructions/default/text": "在編輯器中開啟 template.json 並完成設定。"
+}

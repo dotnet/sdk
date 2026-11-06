@@ -9,6 +9,12 @@ set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
 set PATH=%DOTNET_ROOT%;%PATH%
 set TestFullMSBuild=%1
 
+REM Enable crash dump collection for .NET processes.
+set DOTNET_DbgEnableMiniDump=1
+set DOTNET_DbgMiniDumpType=4
+set DOTNET_DbgMiniDumpName=%HELIX_WORKITEM_UPLOAD_ROOT%\coredump.%p
+set DOTNET_EnableCrashReport=1
+
 REM Ensure Visual Studio instances allow preview SDKs
 PowerShell -ExecutionPolicy ByPass -NoProfile -File "%HELIX_CORRELATION_PAYLOAD%\t\eng\enable-preview-sdks.ps1"
 
@@ -24,26 +30,13 @@ set DOTNET_CLI_HOME=%TestExecutionDirectory%\.dotnet
 mkdir %TestExecutionDirectory%
 REM https://stackoverflow.com/a/7487697/294804
 robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles %TestExecutionDirectory% /s /nfl /ndl /njh /njs /np
+if not exist %TestExecutionDirectory%\Testpackages mkdir %TestExecutionDirectory%\Testpackages
 
 set DOTNET_SDK_TEST_EXECUTION_DIRECTORY=%TestExecutionDirectory%
 set DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=%HELIX_CORRELATION_PAYLOAD%\r
 set DOTNET_SDK_TEST_ASSETS_DIRECTORY=%TestExecutionDirectory%\TestAssets
 set DOTNET_SDK_TEST_REPO_TEMPLATE_PACKAGES=%TestExecutionDirectory%\template_feed
+set DOTNET_SDK_TEST_TEMPLATE_SAMPLES_DIR=%TestExecutionDirectory%\TemplateSamples
 
-REM call dotnet new so the first run message doesn't interfere with the first test
+REM Call dotnet new so the first run message doesn't interfere with the first test.
 dotnet new --debug:ephemeral-hive
-
-dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
-if exist %TestExecutionDirectory%\Testpackages dotnet nuget add source %TestExecutionDirectory%\Testpackages --name testpackages --configfile %TestExecutionDirectory%\nuget.config
-
-dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet6-internal-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet7-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet7-internal-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source richnav --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source vs-impl --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-libraries-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-tools-transport --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-libraries --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget remove source dotnet-eng --configfile %TestExecutionDirectory%\nuget.config
-dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config

@@ -3,65 +3,68 @@
 
 namespace Microsoft.DotNet.Cli
 {
+    [TestClass]
     public class GivenForwardingApp
     {
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void DotnetExeIsExecuted()
         {
             new ForwardingApp("<apppath>", new string[0])
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet.exe");
         }
 
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void DotnetIsExecuted()
         {
             new ForwardingApp("<apppath>", new string[0])
                 .GetProcessStartInfo().FileName.Should().EndWith("dotnet");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItForwardsArgs()
         {
             new ForwardingApp("<apppath>", new string[] { "one", "two", "three" })
                 .GetProcessStartInfo().Arguments.Should().Be("exec <apppath> one two three");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItAddsDepsFileArg()
         {
             new ForwardingApp("<apppath>", new string[] { "<arg>" }, depsFile: "<deps-file>")
                 .GetProcessStartInfo().Arguments.Should().Be("exec --depsfile <deps-file> <apppath> <arg>");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItAddsRuntimeConfigArg()
         {
             new ForwardingApp("<apppath>", new string[] { "<arg>" }, runtimeConfig: "<runtime-config>")
                 .GetProcessStartInfo().Arguments.Should().Be("exec --runtimeconfig <runtime-config> <apppath> <arg>");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItAddsAdditionalProbingPathArg()
         {
             new ForwardingApp("<apppath>", new string[] { "<arg>" }, additionalProbingPath: "<additionalprobingpath>")
                 .GetProcessStartInfo().Arguments.Should().Be("exec --additionalprobingpath <additionalprobingpath> <apppath> <arg>");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItQuotesArgsWithSpaces()
         {
             new ForwardingApp("<apppath>", new string[] { "a b c" })
                 .GetProcessStartInfo().Arguments.Should().Be("exec <apppath> \"a b c\"");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItEscapesArgs()
         {
             new ForwardingApp("<apppath>", new string[] { "a\"b\"c" })
                 .GetProcessStartInfo().Arguments.Should().Be("exec <apppath> a\\\"b\\\"c");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsEnvironmentalVariables()
         {
             var startInfo = new ForwardingApp("<apppath>", new string[0], environmentVariables: new Dictionary<string, string>
