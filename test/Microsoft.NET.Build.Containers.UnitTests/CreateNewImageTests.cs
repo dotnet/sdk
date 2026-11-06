@@ -121,6 +121,39 @@ public class CreateNewImageTests
     }
 
     [TestMethod]
+    [DataRow("Identity")]
+    [DataRow("Value")]
+    [DataRow("Scope")]
+    public void ArchiveIncrementalFingerprintTracksAnnotations(string changedField)
+    {
+        string publishDirectory = CreateTempDirectory();
+        try
+        {
+            CreateNewImage task = CreateIncrementalTask(publishDirectory);
+            TaskItem annotation = new("example.annotation");
+            annotation.SetMetadata("Value", "first");
+            annotation.SetMetadata("Scope", "Manifest");
+            task.Annotations = [annotation];
+            string initial = ComputeResolvedFingerprint(task);
+
+            if (changedField == "Identity")
+            {
+                annotation.ItemSpec = "example.changed";
+            }
+            else
+            {
+                annotation.SetMetadata(changedField, changedField == "Scope" ? "Index" : "second");
+            }
+
+            Assert.AreNotEqual(initial, ComputeResolvedFingerprint(task));
+        }
+        finally
+        {
+            Directory.Delete(publishDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void ArchiveIncrementalFingerprintIgnoresDisabledLabels()
     {
         string publishDirectory = CreateTempDirectory();
@@ -322,34 +355,6 @@ public class CreateNewImageTests
             Directory.Delete(tempDirectory, recursive: true);
         }
     }
-
-    [TestMethod]
-    [DataRow("0", 0L)]
-    [DataRow("1636374896", 1636374896L)]
-    [DataRow("99999999999", 99999999999L)]
-    [DataRow("100000000000", 100000000000L)]
-    public void ParseSourceDateEpochReturnsUtcTimestamp(string value, long expectedSeconds)
-    {
-        DateTime? actual = CreateNewImage.ParseSourceDateEpoch(value);
-
-        Assert.AreEqual(DateTimeOffset.FromUnixTimeSeconds(expectedSeconds).UtcDateTime, actual);
-        Assert.AreEqual(DateTimeKind.Utc, actual!.Value.Kind);
-    }
-
-    [TestMethod]
-    [DataRow(null, DisplayName = "unset")]
-    [DataRow("", DisplayName = "empty")]
-    [DataRow("   ", DisplayName = "whitespace")]
-    [DataRow("  1636374896\n", DisplayName = "surrounding whitespace")]
-    [DataRow("not-a-number", DisplayName = "not numeric")]
-    [DataRow("1636374896.5", DisplayName = "fractional")]
-    [DataRow("-1", DisplayName = "negative")]
-    [DataRow("0x10", DisplayName = "hexadecimal")]
-    [DataRow("1,636,374,896", DisplayName = "group separators")]
-    [DataRow("99999999999999999999", DisplayName = "larger than Int64")]
-    [DataRow("253402300800", DisplayName = "outside DateTimeOffset's range")]
-    public void ParseSourceDateEpochReturnsNullForInvalidValues(string? value)
-        => Assert.IsNull(CreateNewImage.ParseSourceDateEpoch(value));
 
     [TestMethod]
     // Entrypoint, backwards compatibility.

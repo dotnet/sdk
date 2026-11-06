@@ -45,6 +45,8 @@ internal static class ContainerArchiveCache
             Append(hash, task.GenerateDigestLabel.ToString());
             AppendLabels(hash, task.Labels);
         }
+        Append(hash, "Annotations", task.Annotations, "Value");
+        Append(hash, "AnnotationScopes", task.Annotations, "Scope");
         Append(hash, task.SkipPublishing.ToString());
         Append(hash, "ImageTags", task.ImageTags);
         Append(hash, "Entrypoint", task.Entrypoint);
