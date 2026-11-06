@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Completions;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Help;
 
@@ -140,7 +141,7 @@ public class HelpRenderingTests
         Assert.Contains("-v, --value <value>", help);
         Assert.Contains("/count <count>", help);
         Assert.AreEqual("--flag", HelpBuilder.Default.GetOptionUsageLabel(flag));
-        Assert.Contains("--nullable <nullable>", help);
+        Assert.AreEqual("--nullable", HelpBuilder.Default.GetOptionUsageLabel(nullableFlag));
         Assert.Contains("--explicit <VALUE>", help);
         Assert.Contains("--choice <one|two>", help);
         Assert.AreEqual(help, Render(builder, command));
