@@ -314,6 +314,11 @@ Argument (name) matching: exact short name
 *Example:* `dotnet new console -h`  
 *Example:* `dotnet new console --help`
 
+When instantiating a template, `--no-update-check` skips both NuGet update checks
+and notices about newer or equal-version packages available from built-in providers,
+including optional workloads. Installation-time guidance about a manually installed
+package overriding a built-in package is unaffected.
+
 ### Template info filters
 
 -   Language
@@ -375,4 +380,3 @@ Template options:
 To see help for other template languages (F#, VB), use --language option:
    dotnet new classlib -h --language F#
 ```
-
