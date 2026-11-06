@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         // This code is from System.CommandLine, HelpBuilder class.
         // Ideally those methods are exposed, we may switch to use them.
-        internal static string FormatArgumentUsage(IReadOnlyList<Argument> arguments)
+        internal static string FormatArgumentUsage(IReadOnlyList<Argument> arguments, bool includeHidden = false)
         {
             var sb = new StringBuilder();
             var end = default(Stack<char>);
@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             for (var i = 0; i < arguments.Count; i++)
             {
                 var argument = arguments[i];
-                if (argument.Hidden)
+                if (argument.Hidden && !includeHidden)
                 {
                     continue;
                 }

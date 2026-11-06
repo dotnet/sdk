@@ -47,13 +47,16 @@ public partial class HelpBuilder
         /// <summary>
         /// Gets the usage title for an argument (for example: <c>&lt;value&gt;</c>, typically used in the first column text in the arguments usage section, or within the synopsis.
         /// </summary>
-        public static string GetArgumentUsageLabel(Symbol parameter)
+        public static string GetArgumentUsageLabel(Symbol parameter) => GetArgumentUsageLabel(parameter, null);
+
+        private static string GetArgumentUsageLabel(Symbol parameter, string? helpName)
         {
-            // By default Option.Name == Argument.Name, don't repeat it
             return parameter switch
             {
-                Argument argument => GetUsageLabel(argument.HelpName, argument.ValueType, argument.CompletionSources, argument, argument.Arity) ?? $"<{argument.Name}>",
-                Option option => GetUsageLabel(option.HelpName, option.ValueType, option.CompletionSources, option, option.Arity) ?? "",
+                Argument argument => GetUsageLabel(helpName ?? argument.HelpName, argument.ValueType, argument.CompletionSources, argument, argument.Arity) ?? $"<{argument.Name}>",
+                Option option => GetUsageLabel(
+                    helpName ?? option.HelpName ?? (option is not Option<bool> && option.CompletionSources.Count == 0 ? SplitPrefix(option.Name).Alias : null),
+                    option.ValueType, option.CompletionSources, option, option.Arity) ?? "",
                 _ => throw new InvalidOperationException()
             };
 
@@ -94,8 +97,13 @@ public partial class HelpBuilder
             => GetIdentifierSymbolUsageLabel(symbol, symbol.Aliases);
 
         /// <inheritdoc cref="GetCommandUsageLabel(Command)"/>
-        public static string GetOptionUsageLabel(Option symbol)
-            => GetIdentifierSymbolUsageLabel(symbol, symbol.Aliases);
+        public static string GetOptionUsageLabel(Option symbol) => GetOptionUsageLabel(symbol, null);
+
+        /// <summary>
+        /// Gets the option usage label with a display-only argument name.
+        /// </summary>
+        public static string GetOptionUsageLabel(Option symbol, string? helpName)
+            => GetIdentifierSymbolUsageLabel(symbol, symbol.Aliases, helpName);
 
         /// <summary>
         /// Gets the default sections to be written for command line help.
@@ -126,17 +134,23 @@ public partial class HelpBuilder
         public static Func<HelpContext, bool> CommandUsageSection() =>
             ctx =>
             {
-                ctx.HelpBuilder.WriteHeading(LocalizationResources.HelpUsageTitle(), ctx.HelpBuilder.GetUsage(ctx.Command), ctx.Output);
+                ctx.HelpBuilder.WriteHeading(LocalizationResources.HelpUsageTitle(), ctx.HelpBuilder.GetUsage(ctx), ctx.Output);
                 return true;
             };
 
         /// <summary>
         /// Writes a help section describing a command's arguments.
         ///  </summary>
-        public static Func<HelpContext, bool> CommandArgumentsSection() =>
+        public static Func<HelpContext, bool> CommandArgumentsSection() => CommandArgumentsSection(includeHidden: false);
+
+        /// <summary>
+        /// Writes a help section describing a command's arguments.
+        /// </summary>
+        /// <param name="includeHidden">Whether to include the current command's hidden arguments.</param>
+        public static Func<HelpContext, bool> CommandArgumentsSection(bool includeHidden) =>
             ctx =>
             {
-                TwoColumnHelpRow[] commandArguments = ctx.HelpBuilder.GetCommandArgumentRows(ctx.Command, ctx).ToArray();
+                TwoColumnHelpRow[] commandArguments = ctx.HelpBuilder.GetCommandArgumentRows(ctx.Command, ctx, includeHidden).ToArray();
 
                 if (commandArguments.Length > 0)
                 {
@@ -219,7 +233,7 @@ public partial class HelpBuilder
         public static Func<HelpContext, bool> AdditionalArgumentsSection() =>
             ctx => ctx.HelpBuilder.WriteAdditionalArguments(ctx);
 
-        private static string GetIdentifierSymbolUsageLabel(Symbol symbol, ICollection<string>? aliasSet)
+        private static string GetIdentifierSymbolUsageLabel(Symbol symbol, ICollection<string>? aliasSet, string? helpName = null)
         {
             var aliases = aliasSet is null
                 ? new[] { symbol.Name }
@@ -237,7 +251,7 @@ public partial class HelpBuilder
             {
                 if (!argument.Hidden)
                 {
-                    var argumentFirstColumnText = GetArgumentUsageLabel(argument);
+                    var argumentFirstColumnText = GetArgumentUsageLabel(argument, helpName);
 
                     if (!string.IsNullOrWhiteSpace(argumentFirstColumnText))
                     {

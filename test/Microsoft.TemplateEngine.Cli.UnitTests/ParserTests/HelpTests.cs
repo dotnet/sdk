@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.Completions;
 using FakeItEasy;
 using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Help;
@@ -39,6 +40,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
                 _ => throw new InvalidOperationException()
             };
             Assert.IsNull(instantiateCommandArgs.ShortName);
+            Argument[] arguments = parseResult.CommandResult.Command.Arguments.ToArray();
+            bool[] hidden = arguments.Select(a => a.Hidden).ToArray();
             StringWriter output = new();
             HelpContext helpContext = new(new HelpBuilder(), parseResult.CommandResult.Command, output, parseResult);
 
@@ -49,6 +52,26 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             Assert.AreNotEqual(string.Empty, output.ToString());
             Assert.AreEqual(0, hostCreationCount);
+            Assert.AreSequenceEqual(arguments, parseResult.CommandResult.Command.Arguments.ToArray());
+            Assert.AreSequenceEqual(hidden, arguments.Select(a => a.Hidden).ToArray());
+            using StringWriter repeatedOutput = new();
+            HelpContext repeatedContext = new(helpContext.HelpBuilder, parseResult.CommandResult.Command, repeatedOutput, parseResult);
+            foreach (Action<HelpContext> helpBlock in helpCommand.CustomHelpLayout())
+            {
+                helpBlock(repeatedContext);
+            }
+            Assert.AreEqual(output.ToString(), repeatedOutput.ToString());
+
+            if (string.IsNullOrEmpty(commandLine))
+            {
+                Command subcommand = command.Subcommands.Single(c => c.Name == "list");
+                using StringWriter subcommandOutput = new();
+                helpContext.HelpBuilder.Write(new HelpContext(helpContext.HelpBuilder, subcommand, subcommandOutput));
+                foreach (Argument argument in arguments.Where(a => a.Hidden))
+                {
+                    Assert.DoesNotContain($"<{argument.Name}>", subcommandOutput.ToString());
+                }
+            }
         }
 
         [TestMethod]
@@ -168,7 +191,9 @@ Author: Me
             StringWriter sw = new();
             HelpContext helpContext = new(new HelpBuilder(), myCommand, sw);
 
+            string? helpName = templateCommand.LanguageOption!.HelpName;
             InstantiateCommand.ShowCommandOptions(new[] { templateCommand }, helpContext);
+            Assert.AreEqual(helpName, templateCommand.LanguageOption.HelpName);
             return Verify(sw.ToString());
         }
 
@@ -265,7 +290,23 @@ Author: Me
             StringWriter sw = new();
             HelpContext helpContext = new(new HelpBuilder(), myCommand, sw);
 
+            TemplateOption option = templateCommand2.TemplateOptions["choice"];
+            Option originalOption = option.Option;
+            CliTemplateParameter originalParameter = option.TemplateParameter;
+            string[] completions = originalOption.GetCompletions(CompletionContext.Empty).Select(c => c.Label).ToArray();
+            Assert.IsNotEmpty(templateCommand2.Parse("--choice val2").Errors);
             InstantiateCommand.ShowTemplateSpecificOptions(new[] { templateCommand2, templateCommand1 }, helpContext);
+            Assert.AreSame(originalOption, option.Option);
+            Assert.AreSame(originalParameter, option.TemplateParameter);
+            Assert.AreSequenceEqual(completions, originalOption.GetCompletions(CompletionContext.Empty).Select(c => c.Label).ToArray());
+            Assert.IsNotEmpty(templateCommand2.Parse("--choice val2").Errors);
+            Assert.IsEmpty(templateCommand2.Parse("--choice val3").Errors);
+            using StringWriter singleTemplateOutput = new();
+            InstantiateCommand.ShowTemplateSpecificOptions(
+                new[] { templateCommand2 },
+                new HelpContext(new HelpBuilder(), myCommand, singleTemplateOutput));
+            Assert.AreEqual(HelpBuilder.Default.GetOptionUsageLabel(originalOption), HelpBuilder.Default.GetOptionUsageLabel(option.Option));
+            Assert.DoesNotContain("val2", singleTemplateOutput.ToString());
             return Verify(sw.ToString());
         }
 
@@ -412,7 +453,16 @@ Author: Me
             StringWriter sw = new();
             HelpContext helpContext = new(new HelpBuilder(maxWidth: 100), myCommand, sw);
 
+            TemplateOption option = templateCommand.TemplateOptions["choice"];
+            string? helpName = option.Option.HelpName;
+            Func<HelpContext, string?> firstColumn = option.TemplateParameter.GetCustomFirstColumnText(option)!;
+            HelpContext wideContext = new(new HelpBuilder(), myCommand, new StringWriter());
+            string? wideLabel = firstColumn(wideContext);
+            Assert.Contains("...", firstColumn(helpContext));
+            Assert.AreEqual(helpName, option.Option.HelpName);
+            Assert.AreEqual(wideLabel, firstColumn(wideContext));
             InstantiateCommand.ShowTemplateSpecificOptions(new[] { templateCommand }, helpContext);
+            Assert.AreEqual(helpName, option.Option.HelpName);
             return Verify(sw.ToString());
         }
 
@@ -436,7 +486,16 @@ Author: Me
             StringWriter sw = new();
             HelpContext helpContext = new(new HelpBuilder(maxWidth: 50), myCommand, sw);
 
+            TemplateOption option = templateCommand.TemplateOptions["choice"];
+            string? helpName = option.Option.HelpName;
+            Func<HelpContext, string?> firstColumn = option.TemplateParameter.GetCustomFirstColumnText(option)!;
+            HelpContext wideContext = new(new HelpBuilder(), myCommand, new StringWriter());
+            string? wideLabel = firstColumn(wideContext);
+            Assert.Contains(HelpStrings.Text_ChoiceArgumentHelpName, firstColumn(helpContext));
+            Assert.AreEqual(helpName, option.Option.HelpName);
+            Assert.AreEqual(wideLabel, firstColumn(wideContext));
             InstantiateCommand.ShowTemplateSpecificOptions(new[] { templateCommand }, helpContext);
+            Assert.AreEqual(helpName, option.Option.HelpName);
             return Verify(sw.ToString());
         }
 
