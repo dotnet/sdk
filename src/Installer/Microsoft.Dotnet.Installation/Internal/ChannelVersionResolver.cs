@@ -254,13 +254,6 @@ internal class ChannelVersionResolver
             return null;
         }
 
-        if (channel.MinimumVersion is null && channel.AllowPrerelease is null
-            && (int.TryParse(channel.Name, out _)
-                || KnownChannelKeywords.Any(name => string.Equals(name, channel.Name, StringComparison.OrdinalIgnoreCase))))
-        {
-            return GetLatestIndexChannelVersion(channel.Name, component);
-        }
-
         var parts = channel.Name.Split('.');
         if (parts.Length >= 2 && int.TryParse(parts[0], out var major) && int.TryParse(parts[1], out var minor))
         {
@@ -268,30 +261,6 @@ internal class ChannelVersionResolver
         }
 
         return GetLatestMatchingVersion(channel, component, _releaseManifest.GetReleasesIndex(), _releaseManifest.GetReleases);
-    }
-
-    private ReleaseVersion? GetLatestIndexChannelVersion(string name, InstallComponent component)
-    {
-        IEnumerable<Product> products = _releaseManifest.GetReleasesIndex();
-        if (int.TryParse(name, out var major))
-        {
-            var product = products.FirstOrDefault(product =>
-                product.ProductVersion.StartsWith($"{major}.", StringComparison.Ordinal));
-            return component == InstallComponent.SDK ? product?.LatestSdkVersion : product?.LatestRuntimeVersion;
-        }
-
-        if (name.Equals(LtsChannel, StringComparison.OrdinalIgnoreCase))
-        {
-            products = products.Where(product => product.ReleaseType == ReleaseType.LTS);
-        }
-
-        Product? selected = null;
-        if (name.Equals(PreviewChannel, StringComparison.OrdinalIgnoreCase))
-        {
-            selected = products.FirstOrDefault(product => product.SupportPhase is SupportPhase.Preview or SupportPhase.GoLive);
-        }
-        selected ??= products.FirstOrDefault(product => product.SupportPhase == SupportPhase.Active);
-        return component == InstallComponent.SDK ? selected?.LatestSdkVersion : selected?.LatestRuntimeVersion;
     }
 
     /// <summary>
