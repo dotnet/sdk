@@ -251,9 +251,8 @@ internal static class CommonOptions
     /// <param name="acceptArgument">Whether the option accepts an boolean argument. If false, the option will be a flag.</param>
     /// <remarks>
     /// If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
-    /// If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
     /// </remarks>
-    public static Option<bool> CreateInteractiveOption(bool acceptArgument = false, bool hidden = false) =>
+    public static Option<bool> CreateInteractiveOption(bool acceptArgument = true, bool hidden = false) =>
         new(InteractiveOptionName)
         {
             Description = CommandDefinitionStrings.CommandInteractiveOptionDescription,
@@ -266,6 +265,13 @@ internal static class CommonOptions
     public static Option<bool> CreateInteractiveMsBuildForwardOption()
         => CreateInteractiveOption(acceptArgument: true)
            .ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
+
+    public static Option<FileInfo> CreateConfigFileOption(string description, string helpName)
+        => new Option<FileInfo>("--configfile")
+        {
+            Description = description,
+            HelpName = helpName
+        }.AcceptExistingOnly();
 
     public static Option<bool> CreateDisableBuildServersOption() =>
         new Option<bool>("--disable-build-servers")

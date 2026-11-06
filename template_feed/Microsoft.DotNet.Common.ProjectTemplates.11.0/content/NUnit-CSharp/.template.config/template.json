@@ -32,6 +32,10 @@
       "datatype": "choice",
       "choices": [
         {
+          "choice": "net12.0",
+          "description": "Target net12.0"
+        },
+        {
           "choice": "net11.0",
           "description": "Target net11.0"
         }

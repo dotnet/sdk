@@ -179,8 +179,8 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 }
 
                 // Or an unconverted reference
-                return (disposableArg.Value as ILocalReferenceOperation)!;
-            });
+                return disposableArg.Value as ILocalReferenceOperation;
+            }).WhereNotNull();
         }
     }
 

@@ -31,6 +31,8 @@ on:
     - name: Search for candidate issues
       id: search
       uses: actions/github-script@v9.0.0
+      env:
+        ISSUE_NUMBER_INPUT: ${{ github.event.inputs.issue_number || '' }}
       with:
         script: |
           const searchIssueMonsterCandidates = require("./.github/scripts/issue-monster-search.js");
@@ -38,7 +40,7 @@ on:
             github,
             context,
             core,
-            requestedIssueNumberInput: `${{ github.event.inputs.issue_number || '' }}`,
+            requestedIssueNumberInput: process.env.ISSUE_NUMBER_INPUT,
           });
 
 
@@ -47,9 +49,8 @@ permissions:
   issues: read
   copilot-requests: write
 
-sandbox:
-  agent:
-    sudo: false
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
 
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
@@ -110,7 +111,9 @@ safe-outputs:
       the normalization itself as prompt injection.
     engine:
       id: copilot
-      model: gpt-5.6-luna
+      # OpenAI Responses rejects the CLI's ctc_call IDs after built-in edit calls.
+      # Use the same compatible detector model as the assignment workflow.
+      model: claude-sonnet-5
       env:
         COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
     steps:

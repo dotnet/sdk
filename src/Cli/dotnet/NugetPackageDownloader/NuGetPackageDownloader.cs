@@ -70,7 +70,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         RestoreActionConfig restoreActionConfig = null,
         Func<IEnumerable<Task>> timer = null,
         bool verifySignatures = false,
-        bool shouldUsePackageSourceMapping = false,
+        bool shouldUsePackageSourceMapping = true,
         VerbosityOptions verbosityOptions = VerbosityOptions.normal,
         string currentWorkingDirectory = null)
     {
@@ -135,13 +135,15 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     /// <param name="reporter">Reporter for user-facing output; defaults to <see cref="NullReporter"/> if not provided.</param>
     /// <param name="restoreActionConfig">NuGet restore configuration; defaults to a new instance if not provided.</param>
     /// <param name="shouldUsePackageSourceMapping">Whether package source mapping is in use; defaults to <see langword="true"/>.</param>
+    /// <param name="currentWorkingDirectory">Captured directory for resolving NuGet configuration.</param>
     public static NuGetPackageDownloader CreateForWorkloads(
         DirectoryPath packageInstallDir,
         bool verifyNuGetSignatures,
         ILogger verboseLogger = null,
         IReporter reporter = null,
         RestoreActionConfig restoreActionConfig = null,
-        bool shouldUsePackageSourceMapping = true)
+        bool shouldUsePackageSourceMapping = true,
+        string currentWorkingDirectory = null)
     {
         return new NuGetPackageDownloader(
             packageInstallDir,
@@ -151,7 +153,8 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             reporter,
             restoreActionConfig: restoreActionConfig,
             verifySignatures: verifyNuGetSignatures,
-            shouldUsePackageSourceMapping: shouldUsePackageSourceMapping);
+            shouldUsePackageSourceMapping: shouldUsePackageSourceMapping,
+            currentWorkingDirectory: currentWorkingDirectory);
     }
 
     public async Task<string> DownloadPackageAsync(PackageId packageId,
@@ -531,7 +534,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             {
                 throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
             }
-            defaultSources = [.. defaultSources.Where(source => sources.Contains(source.Name))];
+            defaultSources = [.. defaultSources.Where(source => sources.Contains(source.Name, StringComparer.OrdinalIgnoreCase))];
             if (defaultSources.Count == 0)
             {
                 throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));
@@ -808,9 +811,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
         VersionRange versionRange,
-         PackageSourceLocation packageSourceLocation = null)
+        PackageSourceLocation packageSourceLocation = null,
+        CancellationToken cancellationToken = default)
     {
-        CancellationToken cancellationToken = CancellationToken.None;
         IPackageSearchMetadata packageMetadata;
 
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);

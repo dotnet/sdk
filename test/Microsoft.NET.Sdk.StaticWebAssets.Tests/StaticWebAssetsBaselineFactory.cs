@@ -161,8 +161,12 @@ public partial class StaticWebAssetsBaselineFactory
                 switch (property.Name)
                 {
                     case "fingerprint":
+                        var fingerprint = property.Value;
                         property.Value = "__fingerprint__";
-                        endpoint.Route = endpoint.Route.Replace(property.Value, $"__{property.Name}__");
+                        if (!string.IsNullOrEmpty(fingerprint))
+                        {
+                            endpoint.Route = endpoint.Route.Replace($".{fingerprint}.", $".__{property.Name}__.");
+                        }
                         break;
                     case "integrity":
                         property.Value = "__integrity__";
@@ -315,6 +319,7 @@ public partial class StaticWebAssetsBaselineFactory
             _ =>
                 ReplaceSegments(file, (i, segments) => i switch
                 {
+                    _ when runtimeIdentifier is not null && string.Equals(segments[i], runtimeIdentifier, StringComparison.OrdinalIgnoreCase) => "${Rid}",
                     2 when segments[0] is "obj" or "bin" => "${Tfm}",
                     var last when i == segments.Length - 1 => RemovePossibleHash(segments[last]),
                     _ => segments[i]

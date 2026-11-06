@@ -119,7 +119,7 @@ internal abstract partial class TestCommandDefinition
         public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(
             defaultValue: false,
             forwardAs: null,
-            description: CommandDefinitionStrings.TestCmdNoLogo);
+            description: CommandDefinitionStrings.TestCmdMTPNoLogo);
 
         public readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
 
@@ -214,6 +214,7 @@ internal abstract partial class TestCommandDefinition
         {
             MinimumExpectedTestsOption.Validators.Add(ValidatePositiveInteger);
             MaximumFailedTestsOption.Validators.Add(ValidatePositiveInteger);
+            MaxParallelTestModulesOption.Validators.Add(ValidatePositiveInteger);
 
             AffectedTestsEnabled = EnvironmentVariableParser.ParseBool(
                 Environment.GetEnvironmentVariable(EnableAffectedTestsEnvironmentVariable),
@@ -292,6 +293,11 @@ internal abstract partial class TestCommandDefinition
                 else if (collectTestMap && commandResult.HasOption(MinimumExpectedTestsOption))
                 {
                     commandResult.AddError(CommandDefinitionStrings.CmdCollectTestMapCannotRequireMinimumTests);
+                }
+                else if (commandResult.HasOption(TestModulesRootDirectoryOption) &&
+                    !commandResult.HasOption(TestModulesFilterOption))
+                {
+                    commandResult.AddError(CommandDefinitionStrings.CmdTestModulesRootDirectoryRequiresTestModules);
                 }
             });
         }

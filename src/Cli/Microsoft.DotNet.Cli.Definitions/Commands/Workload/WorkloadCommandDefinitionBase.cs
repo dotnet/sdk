@@ -28,11 +28,9 @@ internal abstract class WorkloadCommandDefinitionBase(string name, string descri
         Description = CommandDefinitionStrings.WorkloadIdArgumentDescription
     };
 
-    public static Option<string> CreateConfigOption() => new("--configfile")
-    {
-        Description = CommandDefinitionStrings.WorkloadInstallConfigFileOptionDescription,
-        HelpName = CommandDefinitionStrings.WorkloadInstallConfigFileOptionName
-    };
+    public static Option<FileInfo> CreateConfigOption() => CommonOptions.CreateConfigFileOption(
+        CommandDefinitionStrings.WorkloadInstallConfigFileOptionDescription,
+        CommandDefinitionStrings.WorkloadInstallConfigFileOptionName);
 
     public static Option<string[]> CreateSourceOption() => new Option<string[]>("--source", "-s")
     {

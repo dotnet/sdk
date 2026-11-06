@@ -3,9 +3,9 @@
 The CI Quality Investigator is a GitHub Agentic Workflow that reviews public
 Azure DevOps builds and creates issues for actionable, previously untracked SDK
 build, test, and CI-integration failures. It does not require an Azure DevOps
-service hook or credential. The workflow uses the GitHub Actions token for Copilot
-inference through the scoped `copilot-requests: write` permission and keeps all
-repository writes in GitHub AW safe-output jobs. See [`DESIGN.md`](DESIGN.md)
+service hook or credential. The workflow uses the protected Copilot PAT pool for
+inference and keeps repository issue writes in GitHub AW safe-output jobs.
+See [`DESIGN.md`](DESIGN.md)
 for policy, state semantics, and safety invariants.
 
 ## Architecture
@@ -29,7 +29,29 @@ job runs before the agent:
   branch-scoped durable artifact checkpoint.
 6. Skip the agent when there are no selected failed builds or actionable
   pipeline-health observations.
-7. Give the agent a structured dossier when investigation is required.
+7. Upload the dossier as the current run's `ci-quality-evidence` artifact and
+   download it into the agent workspace when investigation is required. Job
+   outputs carry only the admission flag and failure count; evidence can exceed
+   GitHub's 1 MB job-output limit.
+
+The workflow's `on.needs` dependency makes protected pre-activation wait for the
+environment-free `investigation_required` job. That job runs only when collection
+emits `should_run=true`; otherwise it and the dependent PAT-backed jobs are
+skipped without requesting the `copilot-pat-pool` environment. A top-level `if`
+alone does not provide this admission gate. Keep this dependency in the
+[source workflow](../workflows/ci-quality-monitor.md): a no-op run waiting on
+environment admission would otherwise waste a protected deployment.
+
+Only the `collect` job shares a concurrency queue (`ci-quality-monitor-collect`,
+`queue: max`); every other job uses a per-run group. An actionable run whose
+environment admission stalls, for example when GitHub Actions
+[loses execution state](https://stspg.io/f0yg8jk2gm80), therefore blocks only
+itself; a job timeout does not bound that wait, so such runs still require
+operational cancellation. Investigations and issue creation may run in parallel,
+so cross-run deduplication relies on the exact `Failure fingerprint` and
+`Mechanism fingerprint` lines in each issue body plus `deduplicate-by-title`.
+Rare duplicates remain possible when two agents investigate the same failure
+before either issue exists.
 
 The collector code follows these boundaries:
 
@@ -60,6 +82,19 @@ The workflow runs one daily routine and can be dispatched manually with a public
 Azure DevOps build ID. The daily routine reconciles stable-branch events and
 heartbeat state. Manual dispatch ignores the processed-build ledger for the
 selected build, which makes repeatable validation possible.
+
+Merged-PR delivery uses `pull_request_target` so protected environments evaluate
+the trusted default branch instead of `refs/pull/<number>/merge`, including for
+PRs targeting release branches. See
+[GitHub's default-branch execution semantics](https://github.blog/changelog/2025-11-07-actions-pull_request_target-and-environment-branch-protections-changes/).
+The collector,
+agent source checkout, and dispatch helper explicitly check out
+`main` from the workflow repository: monitor fixes are not serviced onto release
+branches. Pull request head code is never checked out or executed.
+Automatic agent checkout is disabled in favor of an explicit `main` checkout:
+gh-aw's `pull_request_target` validation rejects literal top-level checkout refs.
+Checkout pins do not change the triggering workflow ref or environment
+protection rules; they do not enable runs on otherwise disallowed branches.
 
 ## Public Data Boundary
 
@@ -179,9 +214,9 @@ This prevents a lost cache and artifact checkpoint from spending AI credits or
 creating a burst of historical issues.
 
 The checkpoint contains no credentials or untrusted executable content. It is
-JSON build metadata only. Workflow concurrency queues scheduled runs under one
-group, preventing two collectors from claiming the same newly completed build
-at once.
+JSON build metadata only. The `collect` job's concurrency group queues
+collectors, preventing two of them from claiming the same newly completed build
+at once. The checkpoint is restored, updated, and saved entirely within that job.
 
 ## Issue Policy
 
@@ -223,7 +258,10 @@ GitHub AW applies the title prefix, fixed `agentic-workflows` and `cookie`
 labels, and limit of three issue writes per run. Every filed issue therefore
 enters the Issue Monster queue automatically. After issue creation succeeds,
 the conclusion job dispatches Issue Monster once for each created issue number
-so assignment does not wait for the scheduled queue scan. The agent may request
+so assignment does not wait for the scheduled queue scan. GitHub AW exports only
+the first created issue number, so the dispatch helper also lists open
+`live-build-incident` issues and selects those whose GitHub AW provenance marker
+names the current run ID. The agent may request
 only the additional diagnostic labels allowlisted by the workflow.
 
 ## Adding Pipelines or Branches

@@ -12,7 +12,7 @@
 <!--#if (CoverageTool == "coverlet")-->
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="coverlet.collector" Version="10.0.1" />
   </ItemGroup>
 <!--#endif-->
 <!--#else-->
@@ -43,7 +43,7 @@
 
   <ItemGroup>
 <!--#if (CoverageTool == "coverlet")-->
-    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+    <PackageReference Include="coverlet.collector" Version="10.0.1" />
 <!--#endif-->
     <PackageReference Include="MSTest" Version="4.4.0" />
   </ItemGroup>

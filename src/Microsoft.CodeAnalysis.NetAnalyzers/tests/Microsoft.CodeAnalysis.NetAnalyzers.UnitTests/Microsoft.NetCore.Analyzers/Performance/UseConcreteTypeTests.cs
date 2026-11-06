@@ -3,9 +3,13 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.Performance.UseConcreteTypeAnalyzer,
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
+using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseConcreteTypeAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
@@ -13,6 +17,225 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
     public partial class UseConcreteTypeTests
     {
+        [TestMethod]
+        [DataRow("class", "condition ? default(D) : new D()", "D?")]
+        [DataRow("class", "condition ? new D() : default(D)", "D?")]
+        [DataRow("class", "condition ? default : new D()", "D?")]
+        [DataRow("class", "default(D) ?? new D()", "D")]
+        [DataRow("class", "(condition ? default(D) : new D()) ?? new D()", "D")]
+        [DataRow("class", "condition ? default(object) : new D()", "D?")]
+        [DataRow("struct", "condition ? default(D) : new D()", "D")]
+        [DataRow("struct", "condition ? new D() : default(D)", "D")]
+        [DataRow("struct", "default(D)", "D")]
+        public async Task ShouldTrigger_DefaultValue_CSharp(string typeKind, string expression, string concreteType)
+        {
+            await TestCSAsync($$"""
+                {{typeKind}} D { }
+
+                class C
+                {
+                    private object {|#0:_field|};
+                    private object {|#1:Property|} { get; set; }
+
+                    public C(bool condition)
+                    {
+                        _field = {{expression}};
+                        Property = {{expression}};
+                    }
+
+                    public void Use(bool condition)
+                    {
+                        _field.ToString();
+                        Property.ToString();
+                        object {|#2:local|} = {{expression}};
+                        local.ToString();
+                        Consume({{expression}});
+                    }
+
+                    private void Consume(object {|#3:value|}) => value.ToString();
+
+                    private object {|#4:Build|}(bool condition) => {{expression}};
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0).WithArguments("_field", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1).WithArguments("Property", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                    .WithLocation(2).WithArguments("local", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
+                    .WithLocation(3).WithArguments("value", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(4).WithArguments("Build", "object", concreteType));
+        }
+
+        [TestMethod]
+        public async Task ShouldTrigger_DefaultValuePreservesNullability_CSharp()
+        {
+            await TestCSAsync("""
+                #nullable enable
+
+                class C
+                {
+                    private object? {|#0:BuildNullable|}(bool condition)
+                        => condition ? default(C) : new C();
+
+                    private object {|#1:BuildNonNullable|}()
+                        => default(C) ?? new C();
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(0).WithArguments("BuildNullable", "object?", "C?"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(1).WithArguments("BuildNonNullable", "object", "C"));
+        }
+
+        [TestMethod]
+        [DataRow("Condition ? default(D) : new D()", "D?")]
+        [DataRow("Condition ? new D() : default(D)", "D?")]
+        [DataRow("default(D) ?? new D()", "D")]
+        public async Task ShouldTrigger_DefaultValueInInitializers_CSharp(string expression, string concreteType)
+        {
+            await TestCSAsync($$"""
+                class D { }
+
+                class C
+                {
+                    private static bool Condition => true;
+                    private object {|#0:_field|} = {{expression}};
+                    private object {|#1:Property|} { get; } = {{expression}};
+
+                    public void Use()
+                    {
+                        _field.ToString();
+                        Property.ToString();
+                    }
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0).WithArguments("_field", "object", concreteType),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1).WithArguments("Property", "object", concreteType));
+        }
+
+        [TestMethod]
+        [DataRow("Class", "End Class")]
+        [DataRow("Structure", "End Structure")]
+        public async Task ShouldTrigger_DefaultValue_VisualBasic(string declaration, string endDeclaration)
+        {
+            await VerifyVB.VerifyAnalyzerAsync($$"""
+                {{declaration}} D
+                {{endDeclaration}}
+
+                Class C
+                    Public Sub Use(condition As Boolean)
+                        Dim {|#0:local|} As Object
+                        local = If(condition, CType(Nothing, D), New D())
+                        local.ToString()
+                    End Sub
+                End Class
+                """,
+                VerifyVB.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                    .WithLocation(0).WithArguments("local", "Object", "D"));
+        }
+
+        [TestMethod]
+        [DataRow("condition ? new C() : throw new System.Exception()")]
+        [DataRow("condition ? throw new System.Exception() : new C()")]
+        [DataRow("new C() ?? throw new System.Exception()")]
+        [DataRow("condition ? new C() : (condition ? throw new System.Exception() : new C())")]
+        [DataRow("condition ? throw new System.Exception() : (new C() ?? throw new System.Exception())")]
+        public async Task ShouldTrigger_ThrowExpression_CSharp(string expression)
+        {
+            await TestCSAsync($$"""
+                class C
+                {
+                    private object {|#0:_field|};
+                    private object {|#1:Property|} { get; set; }
+
+                    public C() { }
+
+                    public C(bool condition)
+                    {
+                        _field = {{expression}};
+                        Property = {{expression}};
+                    }
+
+                    public void Use(bool condition)
+                    {
+                        _field.ToString();
+                        Property.ToString();
+                        object {|#2:local|} = {{expression}};
+                        local.ToString();
+                        Consume({{expression}});
+                    }
+
+                    private void Consume(object {|#3:value|}) => value.ToString();
+
+                    private object {|#4:Build|}(bool condition) => {{expression}};
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0).WithArguments("_field", "object", "C"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1).WithArguments("Property", "object", "C"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                    .WithLocation(2).WithArguments("local", "object", "C"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
+                    .WithLocation(3).WithArguments("value", "object", "C"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(4).WithArguments("Build", "object", "C"));
+        }
+
+        [TestMethod]
+        public async Task ShouldTrigger_ThrowExpressionPreservesNullability_CSharp()
+        {
+            await TestCSAsync("""
+                #nullable enable
+
+                class C
+                {
+                    private object? {|#0:BuildNullable|}(bool condition)
+                        => condition ? null : (condition ? new C() : throw new System.Exception());
+
+                    private object {|#1:BuildNonNullable|}(C? value)
+                        => value ?? throw new System.Exception();
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(0).WithArguments("BuildNullable", "object?", "C?"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(1).WithArguments("BuildNonNullable", "object", "C"));
+        }
+
+        [TestMethod]
+        [DataRow("Condition ? new D() : throw new System.Exception()")]
+        [DataRow("Condition ? throw new System.Exception() : new D()")]
+        [DataRow("new D() ?? throw new System.Exception()")]
+        public async Task ShouldTrigger_ThrowExpressionInInitializers_CSharp(string expression)
+        {
+            await TestCSAsync($$"""
+                class D { }
+
+                class C
+                {
+                    private static bool Condition => true;
+                    private object {|#0:_field|} = {{expression}};
+                    private object {|#1:Property|} { get; } = {{expression}};
+
+                    public void Use()
+                    {
+                        _field.ToString();
+                        Property.ToString();
+                    }
+                }
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0).WithArguments("_field", "object", "D"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1).WithArguments("Property", "object", "D"));
+        }
+
         [TestMethod]
         [WorkItem(6904, "https://github.com/dotnet/roslyn-analyzers/issues/6904")]
         public async Task AwaitBug()
@@ -302,6 +525,217 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                                 }
 
                 """, $"dotnet_code_quality.CA1859.api_surface = private,internal");
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldNotTrigger_FileLocalReturnType()
+        {
+            await TestCSAsync("""
+                                using System;
+                                using System.Collections.Generic;
+
+                                class C
+                                {
+                                    IDisposable Foo() => new Bar();
+                                    IEnumerable<IDisposable> GetItems() => new List<Bar>();
+                                    IEnumerable<IDisposable> GetArray() => new[] { new Bar() };
+                                }
+
+                                file class Bar : IDisposable
+                                {
+                                    public void Dispose() { }
+                                }
+
+                """);
+        }
+
+        [TestMethod]
+        public async Task ShouldTrigger_FileLocalContainingType()
+        {
+            await TestCSAsync("""
+                                using System;
+
+                                file class C
+                                {
+                                    IDisposable {|#0:Foo|}() => new Bar();
+                                }
+
+                                file class Bar : IDisposable
+                                {
+                                    public void Dispose() { }
+                                }
+
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(0)
+                    .WithArguments("Foo", "System.IDisposable", "Bar"));
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldTrigger_NestedTypeInFileLocalContainingType()
+        {
+            await TestCSAsync("""
+                                using System;
+
+                                file class Outer
+                                {
+                                    class Inner
+                                    {
+                                        IDisposable {|#0:Foo|}() => new Bar();
+                                    }
+                                }
+
+                                file class Bar : IDisposable
+                                {
+                                    public void Dispose() { }
+                                }
+
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                    .WithLocation(0)
+                    .WithArguments("Foo", "System.IDisposable", "Bar"));
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldNotTrigger_FileLocalTypeInMemberSignatures()
+        {
+            await TestCSAsync("""
+                                class C
+                                {
+                                    private I _field = new Bar();
+                                    private I Property { get; set; } = new Bar();
+
+                                    private static void Consume(I value)
+                                    {
+                                        value.M();
+                                    }
+
+                                    void M()
+                                    {
+                                        _field.M();
+                                        Property.M();
+                                        Consume(new Bar());
+                                    }
+                                }
+
+                                interface I
+                                {
+                                    void M();
+                                }
+
+                                file class Bar : I
+                                {
+                                    public void M() { }
+                                }
+
+                """);
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldTrigger_FileLocalTypeInFileLocalMemberSignatures()
+        {
+            await TestCSAsync("""
+                                file class C
+                                {
+                                    private I {|#0:_field|} = new Bar();
+                                    private I {|#1:Property|} { get; set; } = new Bar();
+
+                                    private static void Consume(I {|#2:value|})
+                                    {
+                                        value.M();
+                                    }
+
+                                    void M()
+                                    {
+                                        _field.M();
+                                        Property.M();
+                                        Consume(new Bar());
+                                    }
+                                }
+
+                                interface I
+                                {
+                                    void M();
+                                }
+
+                                file class Bar : I
+                                {
+                                    public void M() { }
+                                }
+
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
+                    .WithLocation(0)
+                    .WithArguments("_field", "I", "Bar"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
+                    .WithLocation(1)
+                    .WithArguments("Property", "I", "Bar"),
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
+                    .WithLocation(2)
+                    .WithArguments("value", "I", "Bar"));
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldTrigger_LocalFileLocalType()
+        {
+            await TestCSAsync("""
+                                using System;
+
+                                class C
+                                {
+                                    void M()
+                                    {
+                                        IDisposable {|#0:value|} = new Bar();
+                                        value.Dispose();
+                                    }
+                                }
+
+                                file class Bar : IDisposable
+                                {
+                                    public void Dispose() { }
+                                }
+
+                """,
+                VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
+                    .WithLocation(0)
+                    .WithArguments("value", "System.IDisposable", "Bar"));
+        }
+
+        [TestMethod]
+        [WorkItem(54361, "https://github.com/dotnet/sdk/issues/54361")]
+        public async Task ShouldNotTrigger_FileLocalPointerArrayReturnType()
+        {
+            const string source = """
+                                using System;
+
+                                unsafe class C
+                                {
+                                    Array GetArray() => new Bar*[1];
+                                }
+
+                                file struct Bar
+                                {
+                                    public int Value;
+                                }
+
+                """;
+
+            await new VerifyCS.Test
+            {
+                TestCode = source,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
+                SolutionTransforms =
+                {
+                    (solution, projectId) => solution.WithProjectCompilationOptions(projectId,
+                        ((CSharpCompilationOptions)solution.GetProject(projectId)!.CompilationOptions!).WithAllowUnsafe(true))
+                }
+            }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]

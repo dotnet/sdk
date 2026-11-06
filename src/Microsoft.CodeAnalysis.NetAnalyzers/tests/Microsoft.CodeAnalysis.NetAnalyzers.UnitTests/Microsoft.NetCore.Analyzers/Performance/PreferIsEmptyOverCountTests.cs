@@ -545,7 +545,6 @@ $$"""
     """);
     }
 
-    [TestClass]
     public abstract class PreferIsEmptyOverCountTestsBase
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {
@@ -596,7 +595,6 @@ $$"""
                 extensionsSource: null);
     }
 
-    [TestClass]
     public abstract class PreferIsEmptyOverCountLinqTestsBase
         : DoNotUseCountWhenAnyCanBeUsedTestsBase
     {

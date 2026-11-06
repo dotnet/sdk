@@ -110,7 +110,13 @@ namespace Microsoft.NetCore.Analyzers.Security
                             }
 
                             return PropertySetAbstractValue.GetInstance(kind);
-                        });
+                        },
+                        constructorMethod => constructorMethod.Parameters.Length < 3
+                            ? PropertySetAbstractValue.GetInstance(
+                                DefaultIterationCount >= sufficientIterationCount
+                                    ? PropertySetAbstractValueKind.Unflagged
+                                    : PropertySetAbstractValueKind.Flagged)
+                            : null);
                     var propertyMappers = new PropertyMapperCollection(
                         new PropertyMapper(
                             "IterationCount",

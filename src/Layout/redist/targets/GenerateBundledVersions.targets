@@ -6,12 +6,14 @@
       File="$(ArtifactsShippingPackagesDir)productVersion.txt"
       Lines="$(PackageVersion)"
       Overwrite="true"
+      WriteOnlyWhenDifferent="true"
       Encoding="ASCII" />
 
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt"
       Lines="$(PackageVersion)"
       Overwrite="true"
+      WriteOnlyWhenDifferent="true"
       Encoding="ASCII" />
 
     <!-- The Version.Details file doesn't contain live information when building
@@ -53,6 +55,7 @@
       File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).txt"
       Lines="@(Line->'%(Identity)_commit=&quot;%(Commit)&quot; %(Identity)_version=&quot;%(Version)&quot;', '%0A')"
       Overwrite="true"
+      WriteOnlyWhenDifferent="true"
       Encoding="ASCII" />
 
     <!-- Format for productCommits-%rid%.json:
@@ -71,6 +74,7 @@
       File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).json"
       Lines="$(JsonContents)"
       Overwrite="true"
+      WriteOnlyWhenDifferent="true"
       Encoding="ASCII" />
   </Target>
 
@@ -97,12 +101,12 @@
       <_NETCorePlatformsPackageVersion>$(MicrosoftNETCorePlatformsPackageVersion)</_NETCorePlatformsPackageVersion>
 
       <!-- TODO: Once .NET 11.0.X has released, update these version numbers to 11.0.$(VersionFeature110) -->
-      <_NET110RuntimePackVersion>11.0.0-preview.7.26381.103</_NET110RuntimePackVersion>
-      <_NET110TargetingPackVersion>11.0.0-preview.7.26381.103</_NET110TargetingPackVersion>
-      <_WindowsDesktop110RuntimePackVersion>11.0.0-preview.7.26381.103</_WindowsDesktop110RuntimePackVersion>
-      <_WindowsDesktop110TargetingPackVersion>11.0.0-preview.7.26381.103</_WindowsDesktop110TargetingPackVersion>
-      <_AspNet110RuntimePackVersion>11.0.0-preview.7.26381.103</_AspNet110RuntimePackVersion>
-      <_AspNet110TargetingPackVersion>11.0.0-preview.7.26381.103</_AspNet110TargetingPackVersion>
+      <_NET110RuntimePackVersion>$(Net110PackageVersion)</_NET110RuntimePackVersion>
+      <_NET110TargetingPackVersion>$(Net110PackageVersion)</_NET110TargetingPackVersion>
+      <_WindowsDesktop110RuntimePackVersion>$(Net110PackageVersion)</_WindowsDesktop110RuntimePackVersion>
+      <_WindowsDesktop110TargetingPackVersion>$(Net110PackageVersion)</_WindowsDesktop110TargetingPackVersion>
+      <_AspNet110RuntimePackVersion>$(Net110PackageVersion)</_AspNet110RuntimePackVersion>
+      <_AspNet110TargetingPackVersion>$(Net110PackageVersion)</_AspNet110TargetingPackVersion>
 
       <!-- Keep the current TFM aligned with the packs bundled in the SDK until .NET 12 packs flow. -->
       <_NET110RuntimePackVersion Condition="'$(_NETCoreAppTargetFrameworkVersion)' == '11.0'">$(MicrosoftNETCoreAppRuntimePackageVersion)</_NET110RuntimePackVersion>
@@ -1784,7 +1788,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <WriteLinesToFile File="$(OutputPath)$(BundledVersionsPropsFileName)"
                       Lines="$(BundledVersionsPropsContent)"
-                      Overwrite="true" />
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
   </Target>
 
   <Target Name="GenerateBundledCliToolsProps">
@@ -1819,7 +1824,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <WriteLinesToFile File="$(OutputPath)$(BundledBundledCliToolsPropsFileName)"
                       Lines="$(BundledBundledCliToolsPropsContent)"
-                      Overwrite="true" />
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
   </Target>
 
   <Target Name="GenerateBundledMSBuildProps">
@@ -1867,7 +1873,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <WriteLinesToFile File="$(OutputPath)$(BundledMSBuildPropsFileName)"
     Lines="$(BundledMSBuildPropsFileContent)"
-    Overwrite="true" />
+    Overwrite="true"
+    WriteOnlyWhenDifferent="true" />
   </Target>
 
 </Project>
