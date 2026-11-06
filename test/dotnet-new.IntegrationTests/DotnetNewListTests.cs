@@ -76,6 +76,31 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
+        [DataRow("list --format json")]
+        [DataRow("list TemplateWithConflictShortName --format json")]
+        public void JsonFormatDoesNotIncludeShortNameConflictHint(string command)
+        {
+            string customHivePath = CreateTemporaryFolder(folderName: "Home");
+            InstallTestTemplate("TemplateWithConflictShortName", _log, customHivePath);
+
+            CommandResult result = new DotnetNewCommand(_log, command.Split(" "))
+                .WithCustomHive(customHivePath)
+                .WithoutBuiltInTemplates()
+                .Execute();
+
+            result
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr()
+                .And.NotHaveStdOutContaining("To instantiate the template with short name 'list'");
+
+            using JsonDocument document = JsonDocument.Parse(result.StdOut!);
+            JsonElement template = document.RootElement.GetProperty("data").EnumerateArray().Single();
+            Assert.AreEqual("TemplateWithConflictShortName", template.GetProperty("name").GetString());
+            Assert.Contains("list", template.GetProperty("shortNames").EnumerateArray().Select(e => e.GetString()));
+        }
+
+        [TestMethod]
         [DataRow("--list --columns-all")]
         [DataRow("--columns-all --list")]
         [DataRow("list --columns-all")]
