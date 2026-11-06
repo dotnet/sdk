@@ -1,0 +1,43 @@
+parameters:
+  buildParameters: {}
+  commonBuildArguments: ''
+  variant:
+    name: ''
+    properties: ''
+
+steps:
+- ${{ if eq(parameters.buildParameters.pool.os, 'windows') }}:
+  - powershell: eng/common/build.ps1
+      -restore -build -pack -ci -nativeToolsOnMachine
+      -configuration $(buildConfiguration)
+      ${{ parameters.commonBuildArguments }}
+      ${{ parameters.variant.properties }}
+    ${{ if eq(parameters.variant.name, '') }}:
+      displayName: 🟣 Build
+    ${{ else }}:
+      displayName: 'Build ${{ parameters.variant.name }}'
+    env:
+      BuildConfig: $(buildConfiguration)
+      TestFullMSBuild: ${{ parameters.buildParameters.testFullMSBuild }}
+      MSBUILDALWAYSRETRY: true
+- ${{ else }}:
+  - script: |
+      source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
+      source $(Build.SourcesDirectory)/eng/common/native/init-distro-rid.sh
+      initDistroRidGlobal "$os" "$arch" ""
+
+      . $(Build.SourcesDirectory)/eng/common/build.sh \
+      -restore -build -pack -ci \
+      -configuration $(buildConfiguration) \
+      /p:TargetRid=${{ parameters.buildParameters.runtimeIdentifier }} \
+      ${{ parameters.commonBuildArguments }} \
+      ${{ parameters.variant.properties }}
+    ${{ if eq(parameters.variant.name, '') }}:
+      displayName: 🟣 Build
+    ${{ else }}:
+      displayName: 'Build ${{ parameters.variant.name }}'
+    env:
+      BuildConfig: $(buildConfiguration)
+      OPENSSL_ENABLE_SHA1_SIGNATURES: 1
+      MSBUILDALWAYSRETRY: true
+      TARGET_ARCHITECTURE: ${{ parameters.buildParameters.targetArchitecture }}

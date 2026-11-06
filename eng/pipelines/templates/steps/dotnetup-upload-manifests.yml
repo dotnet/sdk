@@ -1,0 +1,15 @@
+steps:
+- task: 1ES.PublishPipelineArtifact@1
+  name: PublishCandidateAssetManifests
+  displayName: '🗂️ Publish complete merged manifest'
+  inputs:
+    targetPath: '$(Build.StagingDirectory)/MergedManifest.xml'
+    artifactName: AssetManifests
+    isProduction: false
+- task: 1ES.PublishPipelineArtifact@1
+  name: PublishCandidateReleaseConfig
+  displayName: '🧾 Publish release configuration'
+  inputs:
+    targetPath: '$(Build.StagingDirectory)/ReleaseConfigs'
+    artifactName: ReleaseConfigs
+    isProduction: false
