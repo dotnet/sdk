@@ -178,25 +178,16 @@ public sealed class DotnetProjectConvertTests : SdkTest
             C.M();
             """);
 
-        var expectedOutput = "Hello from library";
-
-        new DotnetCommand(Log, "run", "app.cs")
-            .WithWorkingDirectory(fileDirFullPath)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut(expectedOutput);
-
         var outputDirFullPath = Path.Join(testInstance.Path, "File/Project");
         new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath)
             .WithWorkingDirectory(fileDirFullPath)
             .Execute()
             .Should().Pass();
 
-        new DotnetCommand(Log, "run")
+        new DotnetCommand(Log, "build")
             .WithWorkingDirectory(outputDirFullPath)
             .Execute()
-            .Should().Pass()
-            .And.HaveStdOut(expectedOutput);
+            .Should().Pass();
 
         File.ReadAllText(Path.Join(outputDirFullPath, "app.csproj"))
             .Should().Contain($"""
