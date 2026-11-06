@@ -27,6 +27,10 @@ parameters:
   default: false
 
 variables:
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
+- name: DOTNET_ADD_GLOBAL_TOOLS_TO_PATH
+  value: 0
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
@@ -147,6 +151,42 @@ extends:
                 if ($LASTEXITCODE -ne 0) { $failed = $true }
                 if ($failed) { Write-Error 'One or more projects have warnings. Fix all warnings to pass this check.'; exit 1 }
               displayName: 🔨 Build with -warnaserror
+
+      - stage: build_release_tools
+        displayName: Build dotnetup release tooling
+        dependsOn: []
+        jobs:
+        - template: /eng/common/templates-official/job/job.yml@self
+          parameters:
+            name: DotnetupReleaseTools
+            displayName: Publish self-contained release tool
+            pool:
+              name: $(DncEngInternalBuildPool)
+              image: 1es-windows-2022
+              os: windows
+            timeoutInMinutes: 30
+            enableMicrobuild: false
+            enablePublishBuildAssets: false
+            enableTelemetry: true
+            templateContext:
+              outputs:
+              - output: pipelineArtifact
+                targetPath: $(Build.SourcesDirectory)/artifacts/dotnetup-release-tools
+                artifactName: DotnetupReleaseTools
+            steps:
+            - template: /eng/common/templates-official/steps/enable-internal-sources.yml
+              parameters:
+                legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+            - template: /eng/common/templates-official/steps/enable-internal-runtimes.yml
+            - powershell: eng/common/dotnet.ps1 --version
+              displayName: Bootstrap repository SDK
+            - powershell: |
+                & .\.dotnet\dotnet.exe publish eng\dotnetup-release\dotnetup-release.csproj `
+                  --configuration Release --runtime win-x64 --self-contained true `
+                  /p:OfficialBuildId=$(Build.BuildNumber) `
+                  --output artifacts\dotnetup-release-tools
+                exit $LASTEXITCODE
+              displayName: Publish release app and its runtime
 
       - stage: tests
         displayName: 🧪 dotnetup tests
