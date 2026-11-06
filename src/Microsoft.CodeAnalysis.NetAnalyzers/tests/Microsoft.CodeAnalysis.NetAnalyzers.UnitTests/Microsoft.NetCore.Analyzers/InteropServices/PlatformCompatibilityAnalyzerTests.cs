@@ -42,6 +42,125 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
             await VerifyAnalyzerCSAsync(csSource);
         }
 
+        [TestMethod, WorkItem(51144, "https://github.com/dotnet/sdk/issues/51144")]
+        public async Task MemberSupportedAndUnsupportedUnderSupportedTypeMustStillWarn()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                public class C
+                {
+                    [SupportedOSPlatform("macos12.0")]
+                    public void M()
+                    {
+                        Console.WriteLine({|#0:E1.A|});
+                        Console.WriteLine({|#1:E1.B|});
+                        Console.WriteLine({|#2:E1.C|});
+
+                        Console.WriteLine({|#3:E2.A|});
+                        Console.WriteLine({|#4:E2.B|});
+                        Console.WriteLine({|#5:E2.C|});
+                    }
+                }
+
+                [SupportedOSPlatform("macos")]
+                public enum E1 : ulong
+                {
+                    [SupportedOSPlatform("macos")]
+                    [UnsupportedOSPlatform("macos11.0")]
+                    A,
+
+                    [SupportedOSPlatform("macos10.0")]
+                    [UnsupportedOSPlatform("macos11.0")]
+                    B,
+
+                    [UnsupportedOSPlatform("macos11.0")]
+                    C,
+
+                    Z,
+                }
+
+                public enum E2 : ulong
+                {
+                    [SupportedOSPlatform("macos")]
+                    [UnsupportedOSPlatform("macos11.0")]
+                    A,
+
+                    [SupportedOSPlatform("macos10.0")]
+                    [UnsupportedOSPlatform("macos11.0")]
+                    B,
+
+                    [UnsupportedOSPlatform("macos11.0")]
+                    C,
+
+                    Z,
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                Unsupported(0, "E1.A"), Unsupported(1, "E1.B"), Unsupported(2, "E1.C"),
+                Unsupported(3, "E2.A"), Unsupported(4, "E2.B"), Unsupported(5, "E2.C"));
+
+            static DiagnosticResult Unsupported(int location, string member)
+                => VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(location)
+                    .WithArguments(member, "'macOS/OSX' 11.0 and later", "'macOS/OSX' 12.0 and later");
+        }
+
+        [TestMethod, WorkItem(51144, "https://github.com/dotnet/sdk/issues/51144")]
+        [DataRow("", "")]
+        [DataRow("15.0", "15.0")]
+        [DataRow("15.0", "20.0")]
+        public async Task PropertySupportedAndUnsupportedUnderSupportedTypePreservesUpperBound(string typeVersion, string propertyVersion)
+        {
+            var source = $$"""
+                using System;
+                using System.Runtime.Versioning;
+
+                public class Calls
+                {
+                    [SupportedOSPlatform("ios26.0")]
+                    public static object AfterRemoval(MapItem item) => {|#0:item.Placemark|};
+
+                    [SupportedOSPlatform("ios20.0")]
+                    public static object SpansRemoval(MapItem item) => {|#1:item.Placemark|};
+
+                    [SupportedOSPlatform("ios20.0")]
+                    [UnsupportedOSPlatform("ios26.0")]
+                    public static object BeforeRemoval(MapItem item) => item.Placemark;
+
+                    [SupportedOSPlatform("ios20.0")]
+                    public static object Guarded(MapItem item)
+                    {
+                        if (!OperatingSystem.IsIOSVersionAtLeast(26))
+                        {
+                            return item.Placemark;
+                        }
+
+                        return null;
+                    }
+                }
+
+                [SupportedOSPlatform("ios{{typeVersion}}")]
+                public class MapItem
+                {
+                    [SupportedOSPlatform("ios{{propertyVersion}}")]
+                    [UnsupportedOSPlatform("ios26.0")]
+                    public virtual object Placemark => null;
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms,
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(0)
+                    .WithArguments("MapItem.Placemark",
+                        "'ios' 26.0 and later, 'maccatalyst' 26.0 and later",
+                        "'ios' 26.0 and later, 'maccatalyst' 26.0 and later"),
+                VerifyCS.Diagnostic(PlatformCompatibilityAnalyzer.UnsupportedCsReachable).WithLocation(1)
+                    .WithArguments("MapItem.Placemark",
+                        "'ios' 26.0 and later, 'maccatalyst' 26.0 and later",
+                        "'ios' 20.0 and later, 'maccatalyst' 20.0 and later"));
+        }
+
         public static IEnumerable<object[]> Create_DifferentTfms()
         {
             // Pre-.NET 5 TFMS
