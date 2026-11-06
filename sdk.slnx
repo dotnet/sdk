@@ -4,6 +4,9 @@
     <File Path="eng/dogfood.sh" />
     <File Path="eng/Versions.props" />
   </Folder>
+  <Folder Name="/eng/">
+    <Project Path="eng/dotnetup-release/dotnetup-release.csproj" />
+  </Folder>
   <Folder Name="/Solution Items/">
     <File Path=".editorconfig" />
     <File Path=".gitattributes" />

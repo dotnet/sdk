@@ -74,7 +74,7 @@ publishes an existing signed build directly to:
 https://dotnetcli.blob.core.windows.net/dotnet/dotnetup/<version>/<filename>
 ```
 
-It does not use ESRP, publish to `dotnetorigin`, or change aka.ms links. Direct uploads
+It does not publish to `dotnetorigin` or change aka.ms links. Direct uploads
 to `dotnetcli` do not establish availability at `builds.dotnet.microsoft.com`; the
 [dotnet-release production configuration](https://dev.azure.com/dnceng/internal/_git/dotnet-release?path=/src/release-pipeline/ReleasePipeline.Configs/Configuration.Prod.yaml&version=GBmain)
 distinguishes the direct-access account from the CDN-origin account.
@@ -98,7 +98,6 @@ Contributor access alone is insufficient. The pipeline does not create container
 change public-access settings, or delete blobs. Confirm that the published URLs support
 anonymous reads; authenticated upload success alone does not complete a release.
 
-No ESRP owners, approvers, or `dnup-release-variables` variable group are required.
 MicroBuild publishing authorization is disabled. `AzureCLI@2` authenticates through the
 selected service connection and acquires an Azure Storage bearer token. The token is
 masked, passed only to the publishing executable through `BLOB_ACCESS_TOKEN`, and removed
@@ -115,10 +114,13 @@ build does not start a CDN release.
 The source build must contain `DotnetupReleaseTools` as well as all eight candidate
 artifacts introduced by [#56864](https://github.com/dotnet/sdk/pull/56864).
 The `build_release_tools` stage in [`.vsts-dnup-ci.yml`](../../../.vsts-dnup-ci.yml)
-publishes the [file-based C# app](../../../eng/dotnetup-release/dotnetup-release.cs)
+publishes the [dotnet-release project](../../../eng/dotnetup-release/dotnetup-release.csproj)
 and its Windows x64 runtime as an unsigned, self-contained bundle. Native AOT is
 explicitly disabled. The tool is separate from signed product candidates and BAR assets.
 Older builds, including layout example 3126346, do not contain this tooling artifact.
+The project is included in [sdk.slnx](../../../sdk.slnx); its
+[entry point](../../../eng/dotnetup-release/Program.cs) dispatches the `prepare`, `publish`,
+and `verify` phases. The executable remains named `dotnetup-release`.
 
 The `dryRun` parameter defaults to `true`. Both modes validate build eligibility,
 candidate manifests and checksums, stage files, and take read-only snapshots of public
@@ -198,7 +200,7 @@ pipeline-artifact outputs. Inspect:
 - `blob-publication.json`: source identity, URLs, hashes, and incremental per-file
   publication progress; `storage-verified` means every stored blob matched the source.
 - `cdn-release.json`: the retained metadata filename for verified public download URLs
-  and hashes. These are direct blob URLs, not ESRP or CDN-origin URLs. It is written only
+  and hashes. These are direct blob URLs, not CDN-origin URLs. It is written only
   after every anonymous download passes verification.
 - `aka-ms-plan.json`: source build/commit/variant/version, each shortlink, file path/hash,
   observed previous redirect when available, proposed verified blob target, and disabled
