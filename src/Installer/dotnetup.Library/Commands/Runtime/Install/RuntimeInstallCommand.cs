@@ -125,6 +125,13 @@ internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result
         return (InstallComponent.Runtime, spec);
     }
 
+    /// <summary>Formats a runtime component and version/channel as a spec that <see cref="ParseComponentSpec"/> accepts.</summary>
+    internal static string FormatComponentSpec(InstallComponent component, string versionOrChannel)
+    {
+        string componentName = s_primaryRuntimeTypes.First(name => s_runtimeTypeMap[name] == component);
+        return $"{componentName}@{versionOrChannel}";
+    }
+
     /// <summary>
     /// Gets the list of valid runtime types for the current platform.
     /// </summary>

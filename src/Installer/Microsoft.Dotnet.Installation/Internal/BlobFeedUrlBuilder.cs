@@ -28,7 +28,7 @@ internal static class BlobFeedUrlBuilder
     /// <summary>
     /// A candidate blob feed location (archive URL + matching .sha512 URL).
     /// </summary>
-    public readonly record struct BlobFeedLocation(string ArchiveUrl, string ChecksumUrl);
+    public readonly record struct BlobFeedLocation(string ArchiveUrl, string ChecksumUrl, ReleaseVersion ProductVersion);
 
     /// <summary>
     /// Returns the blob feed location for the given component/version/RID/extension.
@@ -37,15 +37,33 @@ internal static class BlobFeedUrlBuilder
         InstallComponent component,
         ReleaseVersion version,
         string rid,
-        string extension)
+        string extension,
+        ReleaseVersion? fileVersion = null)
     {
         string componentDir = GetComponentDirectory(component);
-        string fileName = GetArchiveFileName(component, version, rid, extension);
+        string fileName = GetArchiveFileName(component, fileVersion ?? version, rid, extension);
         string versionString = version.ToString();
 
         return new BlobFeedLocation(
             ArchiveUrl: $"{ArchiveBaseUrl}/{componentDir}/{versionString}/{fileName}",
-            ChecksumUrl: $"{ChecksumBaseUrl}/{componentDir}/{versionString}/{fileName}.sha512");
+            ChecksumUrl: $"{ChecksumBaseUrl}/{componentDir}/{versionString}/{fileName}.sha512",
+            ProductVersion: fileVersion ?? version);
+    }
+
+    public static IEnumerable<BlobFeedLocation> GetFeedLocations(
+        InstallComponent component,
+        ReleaseVersion version,
+        string rid,
+        string extension)
+    {
+        yield return GetFeedLocation(component, version, rid, extension);
+        if (!string.IsNullOrEmpty(version.Prerelease))
+        {
+            // RTM and servicing builds retain their build version in the directory but
+            // publish archives with a release-version filename (dotnet/sdk#56670).
+            var fileVersion = new ReleaseVersion(FormattableString.Invariant($"{version.Major}.{version.Minor}.{version.Patch}"));
+            yield return GetFeedLocation(component, version, rid, extension, fileVersion);
+        }
     }
 
     public static BlobFeedLocation GetDotnetupFeedLocation(ReleaseVersion version, string rid)
@@ -53,7 +71,8 @@ internal static class BlobFeedUrlBuilder
         string fileName = GetDotnetupFileName(rid);
         return new BlobFeedLocation(
             ArchiveUrl: $"{ArchiveBaseUrl}/dotnetup/{version}/{fileName}",
-            ChecksumUrl: $"{ChecksumBaseUrl}/dotnetup/{version}/{fileName}.sha512");
+            ChecksumUrl: $"{ChecksumBaseUrl}/dotnetup/{version}/{fileName}.sha512",
+            ProductVersion: version);
     }
 
     public static string GetDotnetupFileName(string rid)

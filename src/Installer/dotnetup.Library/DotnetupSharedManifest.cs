@@ -299,6 +299,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 {
                     errors.Add($"Invalid version '{installation.Version}' for {installation.Component} in root '{root.Path}'.");
                 }
+
+                if (installation.ProductVersion is not null && !ReleaseVersion.TryParse(installation.ProductVersion, out _))
+                {
+                    errors.Add($"Invalid product version '{installation.ProductVersion}' for {installation.Component} in root '{root.Path}'.");
+                }
             }
 
             foreach (var spec in root.InstallSpecs)
@@ -431,14 +436,49 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     /// Returns true if the manifest already records an installation matching the given install.
     /// Must be called while holding the install-state mutex.
     /// </summary>
-    internal bool InstallAlreadyExists(DotnetInstall install)
+    internal bool InstallAlreadyExists(DotnetInstall install) => FindExistingInstall(install) is not null;
+
+    /// <summary>
+    /// Returns the recorded installation matching the given install, including its on-disk version.
+    /// With <paramref name="matchLayoutVersion"/>, an installation whose folder is the install's version also matches,
+    /// as the host resolves global.json against folders. Must be called while holding the install-state mutex.
+    /// </summary>
+    internal DotnetInstall? FindExistingInstall(DotnetInstall install, bool matchLayoutVersion = false)
     {
+        string version = install.Version.ToString();
         var manifestData = ReadManifest();
         var root = manifestData.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
-        return root?.Installations.Any(existing =>
-            existing.Version == install.Version.ToString() &&
-            existing.Component == install.Component) ?? false;
+        return root?.Installations.FirstOrDefault(existing =>
+            existing.Component == install.Component &&
+            (existing.Version == version || (matchLayoutVersion && existing.LayoutVersion == version)))?
+            .ToDotnetInstall(install.InstallRoot);
+    }
+
+    /// <summary>
+    /// Returns the tracked installations of other builds that occupy the same on-disk folder as the install,
+    /// with the install specs that keep any of them, as garbage collection selects them. Must be called while holding the install-state mutex.
+    /// </summary>
+    internal (IReadOnlyList<Installation> Installations, IReadOnlyList<InstallSpec> OwningSpecs)? FindLayoutConflict(DotnetInstall install)
+    {
+        string version = install.Version.ToString();
+        string layoutVersion = install.LayoutVersion.ToString();
+
+        var root = ReadManifest().DotnetRoots.FirstOrDefault(r =>
+            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+        var conflicts = root?.Installations.Where(existing =>
+            existing.Component == install.Component &&
+            existing.Version != version &&
+            existing.LayoutVersion == layoutVersion).ToList();
+        if (conflicts is null or [])
+        {
+            return null;
+        }
+
+        var owningSpecs = root!.InstallSpecs
+            .Where(spec => GarbageCollector.ResolveLatestMatchingInstallation(spec, root.Installations) is { } kept && conflicts.Contains(kept))
+            .ToList();
+        return (conflicts, owningSpecs);
     }
 
     /// <summary>
@@ -552,27 +592,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     /// Returns true if the primary on-disk directory for the given installation
     /// still exists under <paramref name="rootPath"/>.
     /// </summary>
-    private static bool InstallationExistsOnDisk(string rootPath, Installation installation)
-    {
-        string? componentDir = GetComponentDirectory(rootPath, installation);
-        return componentDir is not null && Directory.Exists(componentDir);
-    }
-
-    internal static string? GetComponentDirectory(string rootPath, Installation installation)
-    {
-        if (string.IsNullOrEmpty(installation.Version))
-        {
-            return null;
-        }
-
-        return installation.Component switch
-        {
-            InstallComponent.SDK => Path.Combine(rootPath, "sdk", installation.Version),
-            InstallComponent.Runtime => Path.Combine(rootPath, "shared", InstallComponentExtensions.RuntimeFrameworkName, installation.Version),
-            InstallComponent.ASPNETCore => Path.Combine(rootPath, "shared", InstallComponentExtensions.AspNetCoreFrameworkName, installation.Version),
-            InstallComponent.WindowsDesktop => Path.Combine(rootPath, "shared", InstallComponentExtensions.WindowsDesktopFrameworkName, installation.Version),
-            _ => null,
-        };
-    }
+    private static bool InstallationExistsOnDisk(string rootPath, Installation installation) =>
+        !string.IsNullOrEmpty(installation.Version)
+            && Directory.Exists(Path.Combine(rootPath, installation.LayoutPath.Replace('/', Path.DirectorySeparatorChar)));
 
 }

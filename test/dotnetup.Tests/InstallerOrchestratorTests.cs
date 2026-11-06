@@ -22,7 +22,7 @@ public class InstallerOrchestratorTests
     #region InstallAlreadyExists
 
     [TestMethod]
-    public void PrepareInstall_UntrackedAlreadyInstalled_ReturnsAlreadyInstalledResult()
+    public void PrepareInstall_UntrackedBundleAlreadyInstalled_ReturnsAlreadyInstalledResult()
     {
         using var testEnv = new TestEnvironment();
         var root = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
@@ -34,6 +34,7 @@ public class InstallerOrchestratorTests
             new InstallRequestOptions
             {
                 Untracked = true,
+                InstallMechanism = InstallMechanism.WindowsInstallerBundle,
                 ManifestPath = testEnv.ManifestPath
             });
         var resolvedRequest = new ResolvedInstallRequest(request, resolvedVersion);
@@ -340,7 +341,7 @@ public class InstallerOrchestratorTests
         }
 
         var artifact = new FakeArtifact { OnCommit = InstallSdk };
-        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, artifact);
         var validator = new InstallationValidator();
 
         var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared, validator);
@@ -357,7 +358,7 @@ public class InstallerOrchestratorTests
         using var testEnv = new TestEnvironment();
         var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var artifact = new FakeArtifact();
-        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, artifact);
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
 
@@ -378,13 +379,13 @@ public class InstallerOrchestratorTests
             OnRepair = () =>
             {
                 File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
-                string sdkDirectory = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, InstallComponent.SDK, install.Version.ToString())!;
+                string sdkDirectory = install.ComponentDirectory;
                 Directory.CreateDirectory(sdkDirectory);
                 File.WriteAllText(Path.Combine(sdkDirectory, "dotnet.dll"), string.Empty);
                 return true;
             },
         };
-        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, artifact);
 
         var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
 
@@ -400,7 +401,7 @@ public class InstallerOrchestratorTests
         using var testEnv = new TestEnvironment();
         var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var artifact = new FakeArtifact { OnRepair = () => true };
-        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, artifact);
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
 
@@ -415,7 +416,7 @@ public class InstallerOrchestratorTests
         using var testEnv = new TestEnvironment();
         var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var artifact = new FakeArtifact { OnRepair = () => throw new DotnetInstallException(DotnetInstallErrorCode.InstallerFailed, "repair failed") };
-        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, artifact);
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
 
@@ -446,7 +447,7 @@ public class InstallerOrchestratorTests
         using var testEnv = new TestEnvironment();
         var (resolvedRequest, install) = MakeUntrackedBundleSdkInstall(testEnv);
         var artifact = new FakeArtifact { RequiresPostInstallValidation = false };
-        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, artifact);
 
         var result = InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared);
 
@@ -459,8 +460,7 @@ public class InstallerOrchestratorTests
     {
         using var testEnv = new TestEnvironment();
         var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.Archive, untracked: true);
-        var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
-        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, new FakeArtifact());
+        using var prepared = new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, new FakeArtifact());
 
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => InstallerOrchestratorSingleton.Instance.CommitPreparedInstall(prepared));
 
@@ -506,8 +506,7 @@ public class InstallerOrchestratorTests
         var prepared = artifacts.Select(artifact =>
         {
             var resolvedRequest = MakeResolvedRequest(testEnv, InstallMechanism.Archive, untracked: true);
-            var install = new DotnetInstall(resolvedRequest.Request.InstallRoot, resolvedRequest.ResolvedVersion, InstallComponent.SDK);
-            return new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, install, artifact);
+            return new InstallerOrchestratorSingleton.PreparedInstall(resolvedRequest, artifact);
         });
         using var readyQueue = new System.Collections.Concurrent.BlockingCollection<InstallerOrchestratorSingleton.PreparedInstall>(
             new System.Collections.Concurrent.ConcurrentQueue<InstallerOrchestratorSingleton.PreparedInstall>(prepared));

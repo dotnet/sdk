@@ -2,9 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
+using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -228,6 +231,26 @@ public class GlobalJsonUpdateTests : IDisposable
 
         File.ReadAllText(path).Should().Be(original);
         File.GetLastWriteTimeUtc(path).Should().Be(lastWrite);
+    }
+
+    [TestMethod]
+    [DataRow("11.0.100", "\"11.0.100\"")]
+    [DataRow(null, "\"11.0.100-rtm.26552.115\"")]
+    public void ApplyGlobalJsonModifications_WritesInstalledLayoutVersion(string? payloadVersion, string expected)
+    {
+        var installRoot = new DotnetInstallRoot(Path.Combine(_testDir, "dotnet"), InstallerUtilities.GetDefaultInstallArchitecture());
+        var buildVersion = new ReleaseVersion("11.0.100-rtm.26552.115");
+        var path = Path.Combine(_testDir, "global.json");
+        File.WriteAllText(path, """{ "sdk": { "version": "10.0.100", "rollForward": "disable" } }""");
+        var request = new DotnetInstallRequest(installRoot, new UpdateChannel("11-daily"), InstallComponent.SDK,
+            new InstallRequestOptions { GlobalJsonPath = path });
+        var install = new DotnetInstall(installRoot, buildVersion, InstallComponent.SDK)
+            .WithProductVersion(payloadVersion is null ? null : new ReleaseVersion(payloadVersion));
+
+        new DotnetEnvironmentManager().ApplyGlobalJsonModifications(
+            [new ResolvedInstallRequest(request, buildVersion)], [new InstallResult(install, WasAlreadyInstalled: false)]);
+
+        File.ReadAllText(path).Should().Contain(expected);
     }
 
     // ──────────────────────────────────────────────────────────────

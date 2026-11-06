@@ -49,9 +49,11 @@ internal static class UninstallPreview
         var requestedPathPrefix = requestedComponent == InstallComponent.SDK
             ? "sdk/"
             : $"shared/{requestedComponent.GetFrameworkName()}/";
-        var removesRequestedFiles = plan.PathsToDelete.Any(path =>
-            path.StartsWith(requestedPathPrefix, StringComparison.OrdinalIgnoreCase) &&
-            ReleaseVersion.TryParse(path[requestedPathPrefix.Length..], out var version) && channel.Matches(version));
+        // Targets can be daily builds whose folder name (sdk/11.0.100) doesn't match a daily channel.
+        var removesRequestedFiles = targets.Any(t => plan.GetPrimaryPath(t) is { } path && deletedPaths.Contains(path))
+            || plan.PathsToDelete.Any(path =>
+                path.StartsWith(requestedPathPrefix, StringComparison.OrdinalIgnoreCase) &&
+                ReleaseVersion.TryParse(path[requestedPathPrefix.Length..], out var version) && channel.Matches(version));
         var removalMessage = removesRequestedFiles
             ? Strings.UninstallUnexpectedAdditionalRemoval
             : Strings.UninstallUnexpectedRemoval;

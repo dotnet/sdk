@@ -58,7 +58,7 @@ internal class InstallExecutor
     }
 
     /// <summary>
-    /// Executes a batch of resolved install requests, records install-result telemetry on
+    /// Executes a batch of resolved install requests, records install-result telemetry and the completed installs on
     /// <paramref name="command"/>, and throws if any request failed. This is the standard
     /// entry point for production code paths that need failures to surface as exceptions
     /// rather than be silently swallowed.
@@ -66,9 +66,10 @@ internal class InstallExecutor
     public static void ExecuteInstallsAndThrowOnFailure(
         List<ResolvedInstallRequest> requests,
         bool noProgress,
-        CommandBase command)
+        InstallCommand command)
     {
         var batchResult = ExecuteInstalls(requests, noProgress);
+        command.CompletedInstalls.AddRange(batchResult.Successes);
 
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
         int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);

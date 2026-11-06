@@ -19,6 +19,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
     private readonly HashSet<string> _extractedSubcomponents = [];
+    private bool _existingLayoutVerified;
+    private Dictionary<string, string>? _archiveVersionFiles;
 
     /// <summary>
     /// Gets the list of subcomponent identifiers that were extracted during the last Commit() call.
@@ -26,6 +28,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
     public IReadOnlyList<string> ExtractedSubcomponents => [.. _extractedSubcomponents];
 
     public bool RequiresPostInstallValidation => true;
+
+    public ReleaseVersion? ProductVersion { get; private set; }
 
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
@@ -107,7 +111,9 @@ internal class DotnetArchiveExtractor : IInstallArtifact
 
         try
         {
-            _archivePath = _archiveDownloader.DownloadVerifiedArtifact(_request, _resolvedVersion, archiveBasePath, reporter).Path;
+            var download = _archiveDownloader.DownloadVerifiedArtifact(_request, _resolvedVersion, archiveBasePath, reporter);
+            _archivePath = download.Path;
+            ProductVersion = download.ProductVersion;
         }
         catch (DotnetInstallException)
         {
@@ -133,6 +139,19 @@ internal class DotnetArchiveExtractor : IInstallArtifact
         }
 
         ProgressTracker.CompleteDownload(downloadTask, _archivePath);
+
+        // Read outside the install-state lock; Commit reads them only if the root gained folders since.
+        if (_request.InstallRoot.Path is { } installRoot && LayoutVersionFiles.MayOverlap(installRoot))
+        {
+            try
+            {
+                _archiveVersionFiles = ReadArchiveVersionFiles(_archivePath);
+            }
+            catch (DotnetInstallException)
+            {
+                // Commit reads the archive again and reports the failure.
+            }
+        }
     }
 
     public void Commit()
@@ -149,10 +168,92 @@ internal class DotnetArchiveExtractor : IInstallArtifact
             throw new InvalidOperationException("Prepare() must be called before Commit().");
         }
 
+        ThrowIfExistingLayoutDiffers();
+
         ExtractWithExceptionHandling(_archivePath, _request.InstallRoot.Path!, installTask);
 
         ProgressTracker.CompleteExtraction(installTask);
     }
+
+    /// <summary>
+    /// Compares the <c>.version</c> file of each SDK and shared framework folder in the archive with the folder already on disk.
+    /// Folders with the same name can hold different builds, such as an RTM daily build and the release.
+    /// </summary>
+    public void ThrowIfExistingLayoutDiffers()
+    {
+        if (_existingLayoutVerified)
+        {
+            return;
+        }
+
+        if (_archivePath is null)
+        {
+            throw new InvalidOperationException("Prepare() must be called before ThrowIfExistingLayoutDiffers().");
+        }
+
+        string targetDir = _request.InstallRoot.Path!;
+        if (LayoutVersionFiles.MayOverlap(targetDir))
+        {
+            _archiveVersionFiles ??= ReadArchiveVersionFiles(_archivePath);
+            foreach (var (subcomponent, archiveVersion) in _archiveVersionFiles)
+            {
+                ThrowIfSubcomponentDiffers(targetDir, subcomponent, archiveVersion);
+            }
+        }
+
+        _existingLayoutVerified = true;
+    }
+
+    private void ThrowIfSubcomponentDiffers(string targetDir, string subcomponent, string archiveVersion)
+    {
+        string directory = Path.Combine(targetDir, subcomponent.Replace('/', Path.DirectorySeparatorChar));
+        if (!Directory.Exists(directory))
+        {
+            return;
+        }
+
+        string? existingVersion = RunClassified("read", () => LayoutVersionFiles.ReadFromDirectory(directory));
+        if (string.Equals(existingVersion, archiveVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        string reason = existingVersion is null
+            ? "has no .version file to verify it holds the same build as"
+            : "holds a different build than";
+        throw new DotnetInstallException(
+            DotnetInstallErrorCode.InstallLayoutConflict,
+            $"'{directory}' {reason} {_request.Component.GetDisplayName()} {_resolvedVersion} includes, and installing would keep the existing files. Remove '{directory}' or uninstall the component that installed it first to proceed.",
+            version: _resolvedVersion.ToString(),
+            component: _request.Component.ToString());
+    }
+
+    private Dictionary<string, string> ReadArchiveVersionFiles(string archivePath) =>
+        RunClassified("read", () => LayoutVersionFiles.ReadFromArchive(archivePath));
+
+    /// <summary>Runs an archive or install-root operation and reports failures with the same error codes as extraction.</summary>
+    private T RunClassified<T>(string operation, Func<T> action)
+    {
+        try
+        {
+            return action();
+        }
+        catch (InvalidDataException ex)
+        {
+            throw CreateException(DotnetInstallErrorCode.ArchiveCorrupted, $"Archive is corrupted or truncated for version {_resolvedVersion}: {ex.Message}", ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw CreateException(DotnetInstallErrorCode.PermissionDenied, $"Permission denied while trying to {operation} .NET files for version {_resolvedVersion}: {ex.Message}", ex);
+        }
+        catch (IOException ex)
+        {
+            throw CreateException(DotnetInstallErrorCode.ExtractionFailed, $"Failed to {operation} .NET files for version {_resolvedVersion}: {ex.Message}", ex);
+        }
+    }
+
+    private DotnetInstallException CreateException(DotnetInstallErrorCode code, string message, Exception inner) =>
+        new(code, message, inner, version: _resolvedVersion.ToString(), component: _request.Component.ToString());
 
     private void ExtractWithExceptionHandling(string archivePath, string targetPath, IProgressTask installTask)
     {

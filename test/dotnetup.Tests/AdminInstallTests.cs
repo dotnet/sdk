@@ -108,11 +108,12 @@ public class InstallationValidatorTests
     {
         using var testEnv = new TestEnvironment();
         WriteMuxer(testEnv.InstallPath);
-        string componentPath = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, component, Version)!;
+        var install = MakeInstall(testEnv.InstallPath) with { Component = component };
+        string componentPath = install.ComponentDirectory;
         Directory.CreateDirectory(componentPath);
         File.WriteAllText(Path.Combine(componentPath, "payload"), string.Empty);
 
-        new InstallationValidator().Validate(MakeInstall(testEnv.InstallPath) with { Component = component }, out string? failure).Should().BeFalse();
+        new InstallationValidator().Validate(install, out string? failure).Should().BeFalse();
         failure.Should().Contain("Component layout validation failed");
     }
 
@@ -152,7 +153,8 @@ public class InstallationValidatorTests
 
     private static void WriteMarker(string root, InstallComponent component, string version)
     {
-        string componentPath = InstallationValidator.GetComponentDirectory(root, component, version)!;
+        string componentPath =
+            new DotnetInstall(new DotnetInstallRoot(root, InstallArchitecture.x64), new ReleaseVersion(version), component).ComponentDirectory;
         Directory.CreateDirectory(componentPath);
         string marker = component switch
         {
