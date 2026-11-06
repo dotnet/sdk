@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 namespace Microsoft.DotNet.ProjectTools;
@@ -50,34 +49,4 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
             || LaunchProfileParser.RequiresMSBuildExpansion(profile.WorkingDirectory)
             || (includeCommandLineArgs && LaunchProfileParser.RequiresMSBuildExpansion(profile.CommandLineArgs))
             || profile.EnvironmentVariables.Values.Any(LaunchProfileParser.RequiresMSBuildExpansion);
-
-    private static bool TryParseWorkingDirectory(
-        string launchSettingsPath,
-        string? value,
-        Func<string, string>? evaluateExpression,
-        out string? workingDirectory,
-        [NotNullWhen(false)] out string? error)
-    {
-        if (value == null)
-        {
-            workingDirectory = null;
-            error = null;
-            return true;
-        }
-
-        var expandedValue = ExpandVariables(value, evaluateExpression);
-
-        try
-        {
-            workingDirectory = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(launchSettingsPath)!, expandedValue));
-            error = null;
-            return true;
-        }
-        catch
-        {
-            workingDirectory = null;
-            error = string.Format(Resources.Path0SpecifiedIn1IsInvalid, expandedValue, ExecutableLaunchProfile.WorkingDirectoryPropertyName);
-            return false;
-        }
-    }
 }
