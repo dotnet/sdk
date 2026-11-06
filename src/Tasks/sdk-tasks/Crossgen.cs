@@ -3,12 +3,14 @@
 
 #nullable disable
 
+using System.Text;
+
 namespace Microsoft.DotNet.Build.Tasks
 {
     public sealed class Crossgen : ToolTask
     {
         [Required]
-        public string SourceAssembly { get;set; }
+        public string SourceAssembly { get; set; }
 
         [Required]
         public string DestinationPath { get; set; }
@@ -23,18 +25,24 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public bool CreateSymbols { get; set; }
 
+        public ITaskItem[] CrossModuleInliningAssemblies { get; set; }
+
+        public string NonLocalGenericsModule { get; set; }
+
         public ITaskItem[] PlatformAssemblyPaths { get; set; }
 
         private string TempOutputPath { get; set; }
 
         protected override bool ValidateParameters()
         {
-            base.ValidateParameters();
+            if (!base.ValidateParameters())
+            {
+                return false;
+            }
 
             if (!File.Exists(SourceAssembly))
             {
-                Log.LogError($"SourceAssembly '{SourceAssembly}' does not exist.");
-
+                Log.LogError($"Source assembly '{SourceAssembly}' does not exist.");
                 return false;
             }
 
@@ -47,28 +55,35 @@ namespace Microsoft.DotNet.Build.Tasks
             Directory.CreateDirectory(tempDirPath);
             TempOutputPath = Path.Combine(tempDirPath, Path.GetFileName(DestinationPath));
 
-            var toolResult = base.Execute();
-
-            if (toolResult)
+            try
             {
-                var files = Directory.GetFiles(Path.GetDirectoryName(TempOutputPath));
-                var destination = Path.GetDirectoryName(DestinationPath);
-                // Copy both dll and pdb files to the destination folder
-                foreach(var file in files)
+                bool toolResult = base.Execute();
+                if (!toolResult)
                 {
-                    File.Copy(file, Path.Combine(destination, Path.GetFileName(file)), overwrite: true);
-                    // Delete file in temp
-                    File.Delete(file);
+                    return false;
+                }
+
+                if (!File.Exists(TempOutputPath))
+                {
+                    Log.LogError($"Crossgen2 did not produce output assembly '{TempOutputPath}'.");
+                    return false;
+                }
+
+                string destinationDirectory = Path.GetDirectoryName(DestinationPath);
+                foreach (string file in Directory.GetFiles(tempDirPath))
+                {
+                    File.Copy(file, Path.Combine(destinationDirectory, Path.GetFileName(file)), overwrite: true);
+                }
+
+                return true;
+            }
+            finally
+            {
+                if (Directory.Exists(tempDirPath))
+                {
+                    Directory.Delete(tempDirPath, recursive: true);
                 }
             }
-
-            if (File.Exists(TempOutputPath))
-            {
-                File.Delete(TempOutputPath);
-            }
-            Directory.Delete(tempDirPath);
-
-            return toolResult;
         }
 
         protected override string ToolName => "crossgen2";
@@ -105,30 +120,53 @@ namespace Microsoft.DotNet.Build.Tasks
 
         protected override string GenerateFullPathToTool() => CrossgenPath ?? "crossgen2";
 
-        protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetTargetOS()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
+        protected override string GenerateCommandLineCommands() => GenerateCommandLineCommands(TempOutputPath);
+
+        private string GenerateCommandLineCommands(string outputPath)
+            => $"{GetInPath()} -o \"{outputPath}\" {GetTargetOS()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()} {GetCrossModuleOptions()}".Trim();
 
         private string GetArchitecture() => $"--targetarch {TargetArchitecture}";
 
         private string GetTargetOS() => $"--targetos {TargetOS}";
 
-        private string GetCreateSymbols() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
+        private string GetCreateSymbols()
+            => CreateSymbols
+                ? RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap"
+                : string.Empty;
 
         private string GetInPath() => $"\"{SourceAssembly}\"";
 
-        private string GetOutPath() => $"-o \"{TempOutputPath}\"";
-
         private string GetPlatformAssemblyPaths()
         {
-            var platformAssemblyPaths = string.Empty;
+            var platformAssemblyPaths = new StringBuilder();
             if (PlatformAssemblyPaths != null)
             {
-                foreach (var excludeTaskItem in PlatformAssemblyPaths)
+                foreach (var platformAssemblyPath in PlatformAssemblyPaths)
                 {
-                    platformAssemblyPaths += $"-r {excludeTaskItem.ItemSpec}{Path.DirectorySeparatorChar}*.dll ";
+                    platformAssemblyPaths.Append($"-r \"{platformAssemblyPath.ItemSpec}{Path.DirectorySeparatorChar}*.dll\" ");
                 }
             }
-            
-            return platformAssemblyPaths;
+
+            return platformAssemblyPaths.ToString();
+        }
+
+        private string GetCrossModuleOptions()
+        {
+            var options = new StringBuilder();
+            if (CrossModuleInliningAssemblies != null)
+            {
+                foreach (var assembly in CrossModuleInliningAssemblies)
+                {
+                    options.Append($"--opt-cross-module:\"{assembly.ItemSpec}\" ");
+                }
+            }
+
+            if (!string.IsNullOrEmpty(NonLocalGenericsModule))
+            {
+                options.Append($"--non-local-generics-module:\"{NonLocalGenericsModule}\"");
+            }
+
+            return options.ToString();
         }
 
         protected override void LogToolCommand(string message) => base.LogToolCommand($"{GetWorkingDirectory()}> {message}");
