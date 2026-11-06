@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
@@ -63,6 +64,52 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                 engineEnvironmentSettings.GetDefaultLanguage(),
                 engineEnvironmentSettings.Environment);
             DisplayTemplateList(groupsForDisplay, helpFormatterSettings, reporter);
+        }
+
+        /// <summary>
+        /// Displays the list of templates in JSON format, one entry per template group.
+        /// </summary>
+        internal static void DisplayTemplateListJson(
+            IEngineEnvironmentSettings engineEnvironmentSettings,
+            IEnumerable<TemplateGroup> templateGroups,
+            IReporter reporter,
+            string? selectedLanguage = null)
+        {
+            TemplateListJsonContract contract = GetTemplateGroupsForJsonDisplay(
+                templateGroups,
+                selectedLanguage,
+                engineEnvironmentSettings.GetDefaultLanguage());
+            string jsonText = JsonSerializer.Serialize(contract, TemplateListJsonSerializerContext.DefaultContext.TemplateListJsonContract);
+            reporter.WriteLine(jsonText);
+        }
+
+        /// <summary>
+        /// Generates the versioned JSON contract for the given template groups.
+        /// </summary>
+        internal static TemplateListJsonContract GetTemplateGroupsForJsonDisplay(
+            IEnumerable<TemplateGroup> templateGroupList,
+            string? language,
+            string? defaultLanguage)
+        {
+            List<TemplateGroupJsonContract> groups = new();
+            foreach (TemplateGroup templateGroup in templateGroupList)
+            {
+                ITemplateInfo highestPrecedenceTemplate = templateGroup.Templates.OrderByDescending(x => x.Precedence).First();
+                groups.Add(new TemplateGroupJsonContract
+                {
+                    Name = highestPrecedenceTemplate.Name,
+                    ShortNames = templateGroup.ShortNames.ToArray(),
+                    Languages = GetLanguagesForJson(templateGroup.Templates, language, defaultLanguage),
+                    Types = GetTypesForJson(templateGroup.Templates),
+                    Authors = GetAuthorsForJson(templateGroup.Templates),
+                    Classifications = GetClassificationsForJson(templateGroup.Templates),
+                });
+            }
+
+            return new TemplateListJsonContract
+            {
+                Data = groups.OrderBy(g => g.Name, StringComparer.OrdinalIgnoreCase).ToArray()
+            };
         }
 
         /// <summary>
@@ -266,6 +313,57 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                             .OrderBy(type => type, StringComparer.OrdinalIgnoreCase)));
             }
             return string.Join(environment.NewLine, typesGroups);
+        }
+
+        private static TemplateLanguageJsonContract[] GetLanguagesForJson(
+            IEnumerable<ITemplateInfo> templates,
+            string? language,
+            string? defaultLanguage)
+        {
+            return templates
+                .Select(template => template.GetLanguage())
+                .Where(lang => !string.IsNullOrWhiteSpace(lang))
+                .Select(lang => lang!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .Select(lang => new TemplateLanguageJsonContract
+                {
+                    Id = lang,
+                    Default = string.IsNullOrEmpty(language) && string.Equals(defaultLanguage, lang, StringComparison.OrdinalIgnoreCase)
+                })
+                .OrderByDescending(lang => lang.Default)
+                .ThenBy(lang => lang.Id, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
+        private static string[] GetTypesForJson(IEnumerable<ITemplateInfo> templates)
+        {
+            return templates
+                .Select(template => template.GetTemplateType())
+                .Where(type => !string.IsNullOrWhiteSpace(type))
+                .Select(type => type!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(type => type, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
+        private static string[] GetAuthorsForJson(IEnumerable<ITemplateInfo> templates)
+        {
+            return templates
+                .Select(template => template.Author)
+                .Where(author => !string.IsNullOrWhiteSpace(author))
+                .Select(author => author!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(author => author, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+        }
+
+        private static string[] GetClassificationsForJson(IEnumerable<ITemplateInfo> templates)
+        {
+            return templates
+                .SelectMany(template => template.Classifications)
+                .Where(classification => !string.IsNullOrWhiteSpace(classification))
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToArray();
         }
     }
 }
