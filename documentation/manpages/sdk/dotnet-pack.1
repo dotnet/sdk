@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-pack" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-pack" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet pack
 .PP
@@ -27,13 +27,14 @@ dotnet-pack - Packs the code into a NuGet package.
 .IP
 .nf
 \f[C]
-dotnet pack [<PROJECT>|<SOLUTION>]
-  [--artifacts-path <ARTIFACTS_DIR>] [-c|--configuration <CONFIGURATION>]
-  [--disable-build-servers] [--force] [--include-source] [--include-symbols]
-  [--interactive] [--no-build] [--no-dependencies] [--no-restore] [--nologo]
-  [-o|--output <OUTPUT_DIRECTORY>] [--runtime <RUNTIME_IDENTIFIER>]
-  [-s|--serviceable] [--tl:[auto|on|off]] [-v|--verbosity <LEVEL>]
-  [--version-suffix <VERSION_SUFFIX>]
+dotnet pack [<PROJECT>|<SOLUTION>|<NUSPEC>|<FILE>]
+    [--artifacts-path <ARTIFACTS_DIR>] [-c|--configuration <CONFIGURATION>]
+    [--disable-build-servers] [--force] [--include-source] [--include-symbols]
+    [--interactive] [--no-build] [--no-dependencies] [--no-restore] [--nologo]
+    [-o|--output <OUTPUT_DIRECTORY>] [-p|--property:<PROPERTYNAME>=<VALUE>]
+    [--runtime <RUNTIME_IDENTIFIER>]
+    [-s|--serviceable] [--tl:[auto|on|off]] [-v|--verbosity <LEVEL>]
+    [--version <VERSION>] [--version-suffix <VERSION_SUFFIX>]
 
 dotnet pack -h|--help
 \f[R]
@@ -42,6 +43,10 @@ dotnet pack -h|--help
 .PP
 The \f[V]dotnet pack\f[R] command builds the project and creates NuGet packages.
 The result of this command is a NuGet package (that is, a \f[I].nupkg\f[R] file).
+.PP
+Starting with .NET 10, you can also pass a \f[I].nuspec\f[R] file or a file-based app (\f[I].cs\f[R] file) directly as the argument.
+When you pass a \f[I].nuspec\f[R] file, \f[V]dotnet pack\f[R] creates the package from the \f[I].nuspec\f[R] file without requiring a project file and without running MSBuild.
+When you pass a file-based app, \f[V]dotnet pack\f[R] packs it without a project file.
 .PP
 If you want to generate a package that contains the debug symbols, you have two options available:
 .IP \[bu] 2
@@ -62,10 +67,6 @@ In some cases, the implicit build cannot be performed.
 This can occur when \f[V]GeneratePackageOnBuild\f[R] is set, to avoid a cyclic dependency between build and pack targets.
 The build can also fail if there is a locked file or other issue.
 .RE
-.PP
-You can provide MSBuild properties to the \f[V]dotnet pack\f[R] command for the packing process.
-For more information, see NuGet pack target properties and the MSBuild Command-Line Reference.
-The Examples section shows how to use the MSBuild \f[V]-p\f[R] switch for a couple of different scenarios.
 .RS
 .PP
 Web projects aren\[cq]t packable.
@@ -88,39 +89,47 @@ If the download is still running when this command finishes, the download is sto
 For more information, see Advertising manifests.
 .SH ARGUMENTS
 .PP
-\f[V]PROJECT | SOLUTION\f[R]
+\f[V]PROJECT | SOLUTION | NUSPEC | FILE\f[R]
 .PP
-The project or solution to pack.
-It\[cq]s either a path to a csproj, vbproj, or fsproj file, or to a solution file or directory.
-If not specified, the command searches the current directory for a project or solution file.
-.SH OPTIONS
+The project, solution, \f[I].nuspec\f[R] file, or file-based app to pack.
 .IP \[bu] 2
-\f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
+\f[V]PROJECT\f[R] is the path to a \f[V].csproj\f[R], \f[V].vbproj\f[R], or \f[V].fsproj\f[R] file, or to a directory containing a project file.
+.IP \[bu] 2
+\f[V]SOLUTION\f[R] is the path to a solution file (\f[V].sln\f[R] or \f[V].slnx\f[R] extension), or to a directory containing a solution file.
+.IP \[bu] 2
+\f[V]NUSPEC\f[R] is the path to a \f[V].nuspec\f[R] file.
+Available starting in .NET 10.
+.IP \[bu] 2
+\f[V]FILE\f[R] is the path to a file-based app (a C# file without a corresponding project file).
+Available starting in .NET 10.
+For more information, see Build file-based C# apps.
 .RS 2
+.PP
+If not specified, the command searches the current directory for a project or solution file.
+.RE
+.SH OPTIONS
+.PP
+\f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
 .PP
 All build output files from the executed command will go in subfolders under the specified path, separated by project.
 For more information see Artifacts Output Layout.
+This option and the value provided must be explicitly cascaded in any \f[V]dotnet\f[R] command that depends on the output of another \f[V]dotnet\f[R] command, for example, when using \f[V]dotnet build --no-restore\f[R] and \f[V]dotnet publish --no-build\f[R].
 Available since .NET 8 SDK.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-c|--configuration <CONFIGURATION>\f[B]\f[R]
-.RS 2
 .PP
 Defines the build configuration.
 If you\[cq]re developing with the .NET 8 SDK or a later version, the command uses the \f[V]Release\f[R] configuration by default for projects whose TargetFramework is set to \f[V]net8.0\f[R] or a later version.
 The default build configuration is \f[V]Debug\f[R] for earlier versions of the SDK and for earlier target frameworks.
 You can override the default in project settings or by using this option.
 For more information, see `dotnet publish' uses Release configuration and `dotnet pack' uses Release configuration.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--disable-build-servers\f[B]\f[R]
-.RS 2
 .PP
 Forces the command to ignore any persistent build servers.
 This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
 A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
 Available since .NET 7 SDK.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--force\f[B]\f[R]
 .RS 2
@@ -141,13 +150,11 @@ The sources files are included in the \f[V]src\f[R] folder within the symbols pa
 .PP
 Includes the debug symbols NuGet packages in addition to the regular NuGet packages in the output directory.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--interactive\f[B]\f[R]
-.RS 2
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--no-build\f[B]\f[R]
 .RS 2
@@ -187,6 +194,23 @@ This is a regression and was fixed in 7.0.201 and later versions of the .NET SDK
 .RE
 .RE
 .IP \[bu] 2
+\f[B]\f[VB]-p|--property:<PROPERTYNAME>=<VALUE>\f[B]\f[R]
+.RS 2
+.PP
+Sets one or more MSBuild properties.
+When packing a \f[I].nuspec\f[R] file directly, the properties are used for token replacement in the \f[I].nuspec\f[R] file rather than as MSBuild properties.
+Specify multiple properties delimited by semicolons or by repeating the option:
+.IP
+.nf
+\f[C]
+--property:<NAME1>=<VALUE1>;<NAME2>=<VALUE2>
+--property:<NAME1>=<VALUE1> --property:<NAME2>=<VALUE2>
+\f[R]
+.fi
+.PP
+For more information, see NuGet pack target properties and MSBuild command-line reference.
+.RE
+.IP \[bu] 2
 \f[B]\f[VB]--runtime <RUNTIME_IDENTIFIER>\f[B]\f[R]
 .RS 2
 .PP
@@ -200,9 +224,8 @@ For a list of Runtime Identifiers (RIDs), see the RID catalog.
 Sets the serviceable flag in the package.
 For more information, see .NET Blog: .NET Framework 4.5.1 Supports Microsoft Security Updates for .NET NuGet Libraries (https://aka.ms/nupkgservicing).
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
-.RS 2
 .PP
 Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
 The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
@@ -227,14 +250,22 @@ The primary output of that build (which is hyperlinked).
 Any diagnostics generated for that project.
 .PP
 This option is available starting in .NET 8.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
+.IP \[bu] 2
+\f[B]\f[VB]--version <VERSION>\f[B]\f[R]
+.RS 2
+.PP
+The version of the package to create.
+When packing a \f[I].nuspec\f[R] file, overrides the version number in the \f[I].nuspec\f[R] file.
+.RS
+.PP
+Available starting in .NET 10.
+.RE
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--version-suffix <VERSION_SUFFIX>\f[B]\f[R]
@@ -284,12 +315,10 @@ For example, if \f[V]VersionPrefix\f[R] is \f[V]0.1.2\f[R] and you pass \f[V]--v
 .PP
 If \f[V]Version\f[R] has a value and you pass \f[V]--version-suffix\f[R] to \f[V]dotnet pack\f[R], the value specified for \f[V]--version-suffix\f[R] is ignored.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .SH EXAMPLES
 .IP \[bu] 2
 Pack the project in the current directory:
@@ -372,7 +401,17 @@ dotnet pack --runtime win-x64
 .fi
 .RE
 .IP \[bu] 2
-Pack the project using a \f[I].nuspec\f[R] file:
+Pack the project in the current directory into a deterministic package (.NET 10.0.400 and later):
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet pack -p:Deterministic=true -p:DeterministicTimestamp=\[dq]2026-12-19T16:39:57-08:00\[dq]
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Pack the project using a \f[I].nuspec\f[R] file (MSBuild project-based approach):
 .RS 2
 .IP
 .nf
@@ -388,4 +427,27 @@ Packing using a .nuspec
 Advanced extension points to create customized package
 .IP \[bu] 2
 Global properties
+.RE
+.IP \[bu] 2
+Pack a \f[I].nuspec\f[R] file directly, without a project file (.NET 10 and later):
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet pack MyPackage.nuspec --output ./artifacts
+
+\[ga]\[ga]\[ga]dotnetcli
+dotnet pack MyPackage.nuspec --version 1.2.3 --output ./artifacts
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Pack a \f[I].nuspec\f[R] file directly and use token replacement (.NET 10 and later):
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet pack MyPackage.nuspec --property:Version=1.2.3 --property:Configuration=Release --output ./artifacts
+\f[R]
+.fi
 .RE

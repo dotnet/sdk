@@ -19,5 +19,12 @@ internal interface IBlobOperations
 
     public Task<JsonNode> GetJsonAsync(string repositoryName, string digest, CancellationToken cancellationToken);
 
-    public Task<Stream> GetStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    /// <summary>
+    /// Fetches the blob for <paramref name="digest"/> as a stream.
+    /// </summary>
+    /// <remarks>
+    /// Callers are responsible for checking stream contents against <paramref name="digest"/>.
+    /// <see cref="StreamExtensions.CopyToAndVerifyAsync"/> exists to help with this.
+    /// </remarks>
+    public Task<Stream> GetUnvalidatedStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken);
 }
