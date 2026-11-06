@@ -1776,7 +1776,7 @@ Cache and use a 'CompositeFormat' instance as the argument to this formatting op
 |CodeFix|False|
 ---
 
-## [CA1864](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864): Prefer the 'IDictionary.TryAdd(TKey, TValue)' method
+## [CA1864](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1864): Prefer the 'Dictionary.TryAdd(TKey, TValue)' method
 
 Prefer a 'TryAdd' call over an 'Add' call guarded by a 'ContainsKey' check. 'TryAdd' behaves the same as 'Add', except that when the specified key already exists, it returns 'false' instead of throwing an exception.
 
