@@ -17,6 +17,13 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetStoreInvocation));
 
         [TestMethod]
+        public void HelpDescriptionIndicatesDeprecation()
+        {
+            new StoreCommandDefinition().Description.Should().StartWith(
+                "Warning: The dotnet store command and the runtime package store feature are deprecated and no longer supported.");
+        }
+
+        [TestMethod]
         [DataRow("-m")]
         [DataRow("--manifest")]
         public void ItAddsProjectToMsbuildInvocation(string optionName)
