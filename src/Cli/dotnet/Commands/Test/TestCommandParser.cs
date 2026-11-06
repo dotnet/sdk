@@ -16,6 +16,7 @@ internal static class TestCommandParser
         switch (command)
         {
             case TestCommandDefinition.VSTest vs:
+                vs.OutputOption.ForwardAsOutputPath("OutputPath", surroundWithDoubleQuotes: true);
                 vs.SetAction(TestCommand.Run);
                 break;
 

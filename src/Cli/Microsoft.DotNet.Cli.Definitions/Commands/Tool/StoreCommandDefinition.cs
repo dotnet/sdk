@@ -46,7 +46,7 @@ internal sealed class StoreCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.StoreOutputOptionDescription,
         HelpName = CommandDefinitionStrings.StoreOutputOption
-    }.ForwardAsOutputPath("ComposeDir");
+    };
 
     public readonly Option<string> WorkingDirOption = new Option<string>("--working-dir", "-w")
     {

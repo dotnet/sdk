@@ -53,8 +53,7 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdOutputDescription,
             HelpName = CommandDefinitionStrings.TestCmdOutputDir
-        }
-        .ForwardAsOutputPath("OutputPath", true);
+        };
 
         public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
 

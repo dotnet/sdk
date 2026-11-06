@@ -12,6 +12,7 @@ internal static class PublishCommandParser
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static void ConfigureCommand(PublishCommandDefinition command)
     {
+        command.OutputOption.ForwardAsOutputPath("PublishDir");
         command.SetAction(PublishCommand.Run);
         command.FrameworkOption.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
         command.ConfigurationOption.AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);

@@ -23,7 +23,7 @@ internal sealed class BuildCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.BuildOutputOptionDescription,
         HelpName = CommandDefinitionStrings.OutputOptionName
-    }.ForwardAsOutputPath("OutputPath");
+    };
 
     public readonly Option<bool> NoIncrementalOption = new Option<bool>("--no-incremental")
     {
