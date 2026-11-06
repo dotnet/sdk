@@ -78,14 +78,10 @@ internal static class DotnetupTelemetryDrainProcess
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 WindowStyle = ProcessWindowStyle.Hidden,
-                // Give the child fresh stdio pipes instead of inheriting this process's console/redirect handles
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                RedirectStandardInput = true,
             };
             startInfo.ArgumentList.Add(Constants.Telemetry.DrainCommand);
 
-            using var _ = Process.Start(startInfo);
+            Process.StartAndForget(startInfo);
         }
         catch
         {
