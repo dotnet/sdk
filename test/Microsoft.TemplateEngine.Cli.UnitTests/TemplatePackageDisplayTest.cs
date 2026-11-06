@@ -4,6 +4,7 @@
 using System.CommandLine;
 using FakeItEasy;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Installer;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
@@ -11,6 +12,7 @@ using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
+using Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests
 {
@@ -186,6 +188,122 @@ Installed package has the following vulnerabilities:
             fakeOutputReporter.ReportedStrings.ToString().Should().BeNullOrEmpty();
             reportedErrors.Should().NotBeEmpty();
             Assert.AreEqual(expectedErrors, reportedErrors);
+        }
+
+        [TestMethod]
+        [CombinatorialData]
+        public async Task DisplayInstallResult_PackageNotFound_PreservesDiagnostic(
+            bool update,
+            [CombinatorialValues(
+                "Package source mapping is enabled, but no source was found for package testPackage.",
+                "testPackage was not found in NuGet feeds testFeed.")] string errorMessage)
+        {
+            var outputReporter = new FakeReporter();
+            var errorReporter = new FakeReporter();
+            var packageDisplayer = new TemplatePackageDisplay(outputReporter, errorReporter);
+            InstallerOperationResult result = update
+                ? UpdateResult.CreateFailure(
+                    new UpdateRequest(GetFakedManagedTemplatePackage("testMount", "testPackage"), "1.0.0"),
+                    InstallerErrorCode.PackageNotFound,
+                    errorMessage,
+                    [])
+                : InstallResult.CreateFailure(
+                    new InstallRequest("testPackage"),
+                    InstallerErrorCode.PackageNotFound,
+                    errorMessage,
+                    []);
+            ParseResult parseResult = CliTestHostFactory.CreateNewCommand(CliTestHostFactory.GetVirtualHost()).Parse("new install testPackage");
+
+            await packageDisplayer.DisplayInstallResultAsync(
+                "testPackage",
+                result,
+                parseResult,
+                force: false,
+                A.Fake<TemplatePackageManager>(),
+                A.Fake<IEngineEnvironmentSettings>(),
+                A.Fake<TemplateConstraintManager>(),
+                TestContext.CancellationToken);
+
+            Assert.AreEqual(
+                $"testPackage could not be installed.{Environment.NewLine}{errorMessage}".Bold().Red(),
+                errorReporter.ReportedStrings.ToString().Trim());
+            Assert.AreEqual(string.Empty, outputReporter.ReportedStrings.ToString());
+        }
+
+        [TestMethod]
+        [CombinatorialData]
+        public async Task DisplayInstallResult_PackageNotFound_WithoutDiagnostic(
+            bool update,
+            [CombinatorialValues(null, "", " ")] string? errorMessage)
+        {
+            var outputReporter = new FakeReporter();
+            var errorReporter = new FakeReporter();
+            var packageDisplayer = new TemplatePackageDisplay(outputReporter, errorReporter);
+            InstallerOperationResult result = update
+                ? UpdateResult.CreateFailure(
+                    new UpdateRequest(GetFakedManagedTemplatePackage("testMount", "testPackage"), "1.0.0"),
+                    InstallerErrorCode.PackageNotFound,
+                    errorMessage!,
+                    [])
+                : InstallResult.CreateFailure(
+                    new InstallRequest("testPackage"),
+                    InstallerErrorCode.PackageNotFound,
+                    errorMessage!,
+                    []);
+            ParseResult parseResult = CliTestHostFactory.CreateNewCommand(CliTestHostFactory.GetVirtualHost()).Parse("new install testPackage");
+
+            await packageDisplayer.DisplayInstallResultAsync(
+                "testPackage",
+                result,
+                parseResult,
+                force: false,
+                A.Fake<TemplatePackageManager>(),
+                A.Fake<IEngineEnvironmentSettings>(),
+                A.Fake<TemplateConstraintManager>(),
+                TestContext.CancellationToken);
+
+            Assert.AreEqual(
+                "testPackage could not be installed, the package does not exist.".Bold().Red(),
+                errorReporter.ReportedStrings.ToString().Trim());
+            Assert.AreEqual(string.Empty, outputReporter.ReportedStrings.ToString());
+        }
+
+        [TestMethod]
+        [CombinatorialData]
+        public void DisplayUpdateCheckResult_PackageNotFound_PreservesDiagnostic(
+            bool explicitCheck,
+            bool localPackage,
+            [CombinatorialValues(null, "", " ", "Package source mapping is enabled, but no source was found for package testPackage.")] string? errorMessage)
+        {
+            var outputReporter = new FakeReporter();
+            var errorReporter = new FakeReporter();
+            var packageDisplayer = new TemplatePackageDisplay(outputReporter, errorReporter);
+            var package = GetFakedManagedTemplatePackage("testMount", "testPackage");
+            A.CallTo(() => package.IsLocalPackage).Returns(localPackage);
+            var result = CheckUpdateResult.CreateFailure(package, InstallerErrorCode.PackageNotFound, errorMessage!, []);
+            ParseResult parseResult = CliTestHostFactory.CreateNewCommand(CliTestHostFactory.GetVirtualHost()).Parse("new update --check-only");
+            var args = new GlobalArgs(parseResult);
+
+            if (explicitCheck)
+            {
+                packageDisplayer.DisplayUpdateCheckResults(A.Fake<IEngineEnvironmentSettings>(), [result], args, showUpdates: false);
+            }
+            else
+            {
+                packageDisplayer.DisplayUpdateCheckResult(result, args);
+            }
+
+            string expectedError = string.Empty;
+            if (explicitCheck || !localPackage)
+            {
+                expectedError = "Failed to check update for testPackage: the package is not available in configured NuGet feeds.".Bold().Red();
+                if (!string.IsNullOrWhiteSpace(errorMessage))
+                {
+                    expectedError += Environment.NewLine + errorMessage.Bold().Red();
+                }
+            }
+            Assert.AreEqual(expectedError, errorReporter.ReportedStrings.ToString().Trim());
+            Assert.AreEqual(string.Empty, outputReporter.ReportedStrings.ToString());
         }
 
         private IManagedTemplatePackage GetFakedManagedTemplatePackage(string mountPointUri, string displayName)
