@@ -157,11 +157,7 @@ resources/localization, build assets, static initialization, process-global stat
 and binary-size contribution.
 
 Review the [size and trimming contracts](../../../src/Cli/dotnet-aot/DESIGN.md#size-and-trimming-contracts)
-in the same change. Preserve full CLI string tables, cultures, and definition/help resources;
-do not scan source to select keys or substitute away required tables. Guard platform-provider
-construction with direct OS intrinsics, retain Linux WSL parsers, and avoid rooting the
-all-platform test factory. Validate a clean native publish and execution; managed tests alone
-are insufficient.
+when changing resources or platform providers.
 
 ### 5. Preserve both preprocessor views
 
