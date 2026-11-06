@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -784,6 +785,59 @@ public partial class AotIntegrationTests
 
         writer.WriteEndObject();
         writer.WriteEndObject();
+    }
+
+    [TestMethod]
+    public void BuildHelp_ShowsPropertyOptionInNativeAot()
+    {
+        SkipIfDnUnavailable();
+
+        var (aotExitCode, aotOutput, aotError) = RunDn(["build", "--help"], enableAot: true);
+
+        Assert.AreEqual(0, aotExitCode, aotError);
+        aotOutput.Should().Contain($"-p, --property <{CommandDefinitionStrings.BuildPropertyArgumentName}>");
+        Regex.Replace(aotOutput, @"\s+", " ").Should().Contain(CommandDefinitionStrings.BuildPropertyOptionDescription);
+    }
+
+    [TestMethod]
+    [DataRow("--property")]
+    [DataRow("-property")]
+    [DataRow("/property")]
+    [DataRow("/p")]
+    [DataRow("-p")]
+    [DataRow("--p")]
+    public void BuildPropertyAliases_PreserveManagedInvocationFromNativeAot(string alias)
+    {
+        SkipIfDnUnavailable();
+
+        string directory = Path.Combine(Path.GetTempPath(), $"aot-build-properties-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(directory);
+        try
+        {
+            string projectPath = Path.Combine(directory, "Properties.proj");
+            File.WriteAllText(projectPath, "<Project />");
+            string[] args =
+            [
+                "build", projectPath, "--no-restore", "--nologo",
+                "--getProperty:First,Second",
+                alias, "First=original;Second=two", $"{alias}:First=updated"
+            ];
+
+            var (managedExitCode, managedOutput, managedError) = RunDn(args, enableAot: false, workingDirectory: directory);
+            var (aotExitCode, aotOutput, aotError) = RunDn(args, enableAot: true, workingDirectory: directory);
+
+            Assert.AreEqual(0, managedExitCode, managedError);
+            Assert.AreEqual(0, aotExitCode, aotError);
+            Assert.AreEqual(managedOutput, aotOutput);
+            using var output = JsonDocument.Parse(aotOutput);
+            var properties = output.RootElement.GetProperty("Properties");
+            Assert.AreEqual("updated", properties.GetProperty("First").GetString());
+            Assert.AreEqual("two", properties.GetProperty("Second").GetString());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 
     [TestMethod]

@@ -78,6 +78,27 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        [DataRow("--property")]
+        [DataRow("-property")]
+        [DataRow("/property")]
+        [DataRow("/p")]
+        [DataRow("-p")]
+        [DataRow("--p")]
+        public void PropertyAliasesPreserveMultiplePropertyForwarding(string alias)
+        {
+            var command = (RestoringCommand)BuildCommand.FromArgs(
+                ["--no-restore", alias, "First=original;Second=two", $"{alias}:First=updated", "project.csproj"],
+                msbuildPath: "<msbuildpath>",
+                services: TestCommandServices.CreateNonLLM());
+
+            command.GetArgumentTokensToMSBuild().Should()
+                .Contain("--property:First=updated")
+                .And.Contain("--property:Second=two")
+                .And.Contain("project.csproj")
+                .And.NotContain("--property:First=original");
+        }
+
+        [TestMethod]
         [DataRow(new string[] { "-f", "tfm" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm" })]
