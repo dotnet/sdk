@@ -389,9 +389,10 @@ internal sealed class HotReloadDotNetWatcher
                                 {
                                     fileWatcher.WatchFiles(projectGraph.BuildFiles);
 
-                                    evaluationResult = await TryEvaluateProjectGraphAsync(projectGraph, targetFramework, restore: true, iterationCancellationToken);
-                                    if (evaluationResult != null)
+                                    var newEvaluationResult = await TryEvaluateProjectGraphAsync(projectGraph, targetFramework, restore: true, iterationCancellationToken);
+                                    if (newEvaluationResult != null)
                                     {
+                                        evaluationResult = newEvaluationResult;
                                         break;
                                     }
                                 }
