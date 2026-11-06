@@ -1182,6 +1182,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PropertyGroup>
       <_AssemblyInfoFile>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.cs</_AssemblyInfoFile>
       <_OutputAssembly>$(IntermediateOutputPath)%(_SatelliteAssemblyResourceInputs.Culture)\$(TargetName).resources.dll</_OutputAssembly>
+      <_SatelliteAssemblyLanguageVersion Condition="'$(Language)' == 'C#'">$(LangVersion)</_SatelliteAssemblyLanguageVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -1209,7 +1210,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          References="@(_SatelliteAssemblyReferences)"
          KeyContainer="$(KeyContainerName)"
          KeyFile="$(KeyOriginatorFile)"
-         LangVersion="$(LangVersion)"
+         LangVersion="$(_SatelliteAssemblyLanguageVersion)"
          NoConfig="true"
          NoLogo="$(NoLogo)"
          NoStandardLib="$(NoCompilerStandardLib)"
