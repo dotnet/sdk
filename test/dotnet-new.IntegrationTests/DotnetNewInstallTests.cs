@@ -332,6 +332,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [DataRow]
         [DataRow("-d")]
         [DataRow("--verbosity", "quiet")]
+        [DataRow("--verbosity", "minimal")]
         [DataRow("--verbosity", "diagnostic")]
         public void CannotInstallPackageWithoutMatchingSourceMapping(params string[] verbosityArgs)
         {
@@ -353,15 +354,23 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                </configuration>
                """);
 
-            new DotnetNewCommand(_log, ["install", "Avalonia.Templates", .. verbosityArgs])
+            CommandResult result = new DotnetNewCommand(_log, ["install", "Avalonia.Templates", .. verbosityArgs])
                .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                .WithWorkingDirectory(workingDirectory)
-               .Execute()
-               .Should().ExitWith(103)
-               .And.HaveStdErrContaining("Avalonia.Templates could not be installed.")
-               .And.HaveStdErrContaining("Package source mapping is enabled, but no source was found for package Avalonia.Templates.")
-               .And.NotHaveStdErrContaining("the package does not exist")
-               .And.NotHaveStdOutContaining("Success:");
+               .Execute();
+
+            result.Should().ExitWith(103).And.NotHaveStdOutContaining("Success:");
+            if (verbosityArgs.Contains("quiet"))
+            {
+                result.Should().NotHaveStdErr().And.NotHaveStdOut();
+            }
+            else
+            {
+                result.Should()
+                    .HaveStdErrContaining("Avalonia.Templates could not be installed.")
+                    .And.HaveStdErrContaining("Package source mapping is enabled, but no source was found for package Avalonia.Templates.")
+                    .And.NotHaveStdErrContaining("the package does not exist");
+            }
         }
 
         [TestMethod]
