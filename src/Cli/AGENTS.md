@@ -42,6 +42,9 @@ to `dotnet` and `Microsoft.DotNet.Cli.Utils`. Internal parser APIs are accessibl
 signed `dotnet` assembly through MSBuild's `InternalsVisibleTo`; keep those calls
 managed-only rather than introducing MSBuild dependencies into `Definitions`.
 
+When changing AOT-linked commands, resources, dependencies, or first-run behavior,
+follow the [size and trimming contracts](dotnet-aot/DESIGN.md#size-and-trimming-contracts).
+
 ## Where things live
 
 `src/Cli` is a set of projects, not one app. The three above carry commands; the
