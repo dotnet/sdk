@@ -458,7 +458,9 @@ Author: Me
             Func<HelpContext, string?> firstColumn = option.TemplateParameter.GetCustomFirstColumnText(option)!;
             HelpContext wideContext = new(new HelpBuilder(), myCommand, new StringWriter());
             string? wideLabel = firstColumn(wideContext);
-            Assert.Contains("...", firstColumn(helpContext));
+            string? shortenedLabel = firstColumn(helpContext);
+            Assert.IsNotNull(shortenedLabel);
+            Assert.Contains("...", shortenedLabel);
             Assert.AreEqual(helpName, option.Option.HelpName);
             Assert.AreEqual(wideLabel, firstColumn(wideContext));
             InstantiateCommand.ShowTemplateSpecificOptions(new[] { templateCommand }, helpContext);
@@ -491,7 +493,9 @@ Author: Me
             Func<HelpContext, string?> firstColumn = option.TemplateParameter.GetCustomFirstColumnText(option)!;
             HelpContext wideContext = new(new HelpBuilder(), myCommand, new StringWriter());
             string? wideLabel = firstColumn(wideContext);
-            Assert.Contains(HelpStrings.Text_ChoiceArgumentHelpName, firstColumn(helpContext));
+            string? shortenedLabel = firstColumn(helpContext);
+            Assert.IsNotNull(shortenedLabel);
+            Assert.Contains(HelpStrings.Text_ChoiceArgumentHelpName, shortenedLabel);
             Assert.AreEqual(helpName, option.Option.HelpName);
             Assert.AreEqual(wideLabel, firstColumn(wideContext));
             InstantiateCommand.ShowTemplateSpecificOptions(new[] { templateCommand }, helpContext);
