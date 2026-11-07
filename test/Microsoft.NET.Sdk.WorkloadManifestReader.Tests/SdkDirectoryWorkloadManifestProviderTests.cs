@@ -1099,6 +1099,63 @@ namespace ManifestReaderTests
         }
 
         [TestMethod]
+        public void ManifestFolderWithoutManifestInTestHookShouldNotHideDefault()
+        {
+            Initialize();
+
+            string sdkVersion = "5.0.100";
+
+            var additionalManifestDirectory = Path.Combine(_testDirectory, "AdditionalManifests");
+            Directory.CreateDirectory(additionalManifestDirectory);
+
+            var environmentMock = new EnvironmentMock();
+            environmentMock.Add(EnvironmentVariableNames.WORKLOAD_MANIFEST_ROOTS, additionalManifestDirectory);
+
+            //  Folder left behind in test hook directory without a manifest (for example, after the manifest was uninstalled)
+            Directory.CreateDirectory(Path.Combine(additionalManifestDirectory, sdkVersion, "Android"));
+
+            //  Manifest in default directory
+            Directory.CreateDirectory(Path.Combine(_manifestVersionBandDirectory, "Android"));
+            File.WriteAllText(Path.Combine(_manifestVersionBandDirectory, "Android", "WorkloadManifest.json"), "Android: AndroidContent");
+
+            var sdkDirectoryWorkloadManifestProvider
+                = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: sdkVersion, environmentMock.GetEnvironmentVariable, userProfileDir: null);
+
+            GetManifestContents(sdkDirectoryWorkloadManifestProvider)
+                .Should()
+                .BeEquivalentTo("Android: AndroidContent");
+        }
+
+        [TestMethod]
+        public void ManifestInVersionSubfolderOfTestHookShouldOverrideDefault()
+        {
+            Initialize();
+
+            string sdkVersion = "5.0.100";
+
+            var additionalManifestDirectory = Path.Combine(_testDirectory, "AdditionalManifests");
+            Directory.CreateDirectory(additionalManifestDirectory);
+
+            var environmentMock = new EnvironmentMock();
+            environmentMock.Add(EnvironmentVariableNames.WORKLOAD_MANIFEST_ROOTS, additionalManifestDirectory);
+
+            //  Manifest in version subfolder of test hook directory
+            Directory.CreateDirectory(Path.Combine(additionalManifestDirectory, sdkVersion, "Android", "2.0.0"));
+            File.WriteAllText(Path.Combine(additionalManifestDirectory, sdkVersion, "Android", "2.0.0", "WorkloadManifest.json"), "Android: OverridingAndroidContent");
+
+            //  Manifest in default directory
+            Directory.CreateDirectory(Path.Combine(_manifestVersionBandDirectory, "Android"));
+            File.WriteAllText(Path.Combine(_manifestVersionBandDirectory, "Android", "WorkloadManifest.json"), "Android: OverriddenAndroidContent");
+
+            var sdkDirectoryWorkloadManifestProvider
+                = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: sdkVersion, environmentMock.GetEnvironmentVariable, userProfileDir: null);
+
+            GetManifestContents(sdkDirectoryWorkloadManifestProvider)
+                .Should()
+                .BeEquivalentTo("Android: OverridingAndroidContent");
+        }
+
+        [TestMethod]
         public void ItSupportsMultipleTestHookFolders()
         {
             Initialize();
