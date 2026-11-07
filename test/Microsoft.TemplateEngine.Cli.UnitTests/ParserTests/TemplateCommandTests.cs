@@ -18,7 +18,8 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
     [TestClass]
-    [ResourceLock(nameof(Reporter))]
+    // Other test classes write to Reporter without participating in a shared resource lock.
+    [DoNotParallelize]
     public class TemplateCommandTests : VerifyBase
     {
         [TestMethod]
