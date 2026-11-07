@@ -319,6 +319,8 @@
       "args": {
         "allowFileCreation": true,
         "allowPathCreation": true,
+        "allowPropertyOverwrite": false,
+        "ignorePropertyValueCase": true,
         "jsonFileName": "global.json",
         "parentPropertyPath": "test",
         "newJsonPropertyName": "runner",

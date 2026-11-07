@@ -17,6 +17,7 @@ public class PackageTests
             "Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "Nuget.Packaging",
             "Valleysoft.DockerCredsProvider",
+            "Microsoft.Security.AntiSSRF",
             "Microsoft.Extensions.Logging"
         };
         IReadOnlyList<string> knownProjectReferences = new List<string>()
@@ -56,6 +57,7 @@ public class PackageTests
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.MSBuild.dll",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.deps.json",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.dll",
+              $"tasks/{netTFM}/Microsoft.Security.AntiSSRF.dll",
               $"tasks/{netTFM}/Newtonsoft.Json.dll",
               $"tasks/{netTFM}/NuGet.Common.dll",
               $"tasks/{netTFM}/NuGet.Configuration.dll",

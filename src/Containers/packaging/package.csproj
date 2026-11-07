@@ -43,6 +43,7 @@
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('NuGet')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Newtonsoft')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Valleysoft')) or
+                                $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Microsoft.Security.AntiSSRF')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Microsoft.Extensions'))
                             ) and
                             %(_AllNetContainerTaskDependencies.NuGetIsFrameworkReference) != true" />
