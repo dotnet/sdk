@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Text.Json;
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
 
@@ -77,40 +76,6 @@ namespace Microsoft.DotNet.DotNetSdkResolver
             }
         }
 
-        private enum SdkRollForwardPolicy
-        {
-            Unsupported,
-            Disable,
-            Patch,
-            Feature,
-            Minor,
-            Major,
-            LatestPatch,
-            LatestFeature,
-            LatestMinor,
-            LatestMajor,
-        }
-
-        private sealed class GlobalJsonSdkSettings
-        {
-            public FXVersion? RequestedVersion { get; }
-            public SdkRollForwardPolicy RollForward { get; }
-            public bool AllowPrerelease { get; }
-            public IReadOnlyList<string?> SearchPaths { get; }
-
-            public GlobalJsonSdkSettings(
-                FXVersion? requestedVersion,
-                SdkRollForwardPolicy rollForward,
-                bool allowPrerelease,
-                IReadOnlyList<string?> searchPaths)
-            {
-                RequestedVersion = requestedVersion;
-                RollForward = rollForward;
-                AllowPrerelease = allowPrerelease;
-                SearchPaths = searchPaths;
-            }
-        }
-
         private string? GetMostCompatibleSdk(string? dotnetExeDirectory, Version msbuildVersion, int minimumSdkMajorVersion = 0)
         {
             CompatibleSdkValue sdks = GetMostCompatibleSdks(dotnetExeDirectory, msbuildVersion, minimumSdkMajorVersion);
@@ -164,77 +129,41 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                 });
         }
 
-        private string? GetMostCompatibleSdkForGlobalJson(
-            SdkResolutionResult result,
+        private string? GetMostCompatibleSdkInRange(
             string? dotnetExeDirectory,
-            Version msbuildVersion)
-        {
-            if (result.GlobalJsonPath is null
-                || !TryReadGlobalJsonSdkSettings(result.GlobalJsonPath, result.RequestedVersion, dotnetExeDirectory, out GlobalJsonSdkSettings? settings)
-                || settings is null)
-            {
-                return null;
-            }
-
-            foreach (string? searchPath in settings.SearchPaths)
-            {
-                string? compatibleSdk = GetMostCompatibleSdkForGlobalJsonSearchPath(searchPath, msbuildVersion, settings);
-                if (compatibleSdk is not null)
-                {
-                    return compatibleSdk;
-                }
-            }
-
-            return null;
-        }
-
-        private string? GetMostCompatibleSdkForGlobalJsonSearchPath(
-            string? dotnetRoot,
             Version msbuildVersion,
-            GlobalJsonSdkSettings settings)
+            string requestedVersionString,
+            string resolvedSdkDirectory)
         {
-            if (dotnetRoot is null)
+            string resolvedVersionString = new DirectoryInfo(resolvedSdkDirectory).Name;
+            if (!FXVersion.TryParse(requestedVersionString, out FXVersion? requestedVersion)
+                || requestedVersion is null
+                || !FXVersion.TryParse(resolvedVersionString, out FXVersion? resolvedVersion)
+                || resolvedVersion is null
+                || FXVersion.Compare(requestedVersion, resolvedVersion) >= 0
+                || !IsSdkUnderDotnetRoot(resolvedSdkDirectory, dotnetExeDirectory))
             {
                 return null;
             }
 
-            string[] availableSdks = GetAvailableSdkDirectories(dotnetRoot);
-
-            if (settings.RequestedVersion is not null
-                && settings.RollForward is SdkRollForwardPolicy.Disable or SdkRollForwardPolicy.Patch)
-            {
-                string? exactMatch = availableSdks.FirstOrDefault(
-                    sdk => string.Equals(
-                        new DirectoryInfo(sdk).Name,
-                        settings.RequestedVersion.ToString(),
-                        StringComparison.OrdinalIgnoreCase));
-
-                if (exactMatch is not null && msbuildVersion >= GetMinimumMSBuildVersion(exactMatch))
-                {
-                    return exactMatch;
-                }
-            }
-
-            if (settings.RollForward == SdkRollForwardPolicy.Disable)
-            {
-                return null;
-            }
-
+            bool allowPrerelease = !string.IsNullOrEmpty(resolvedVersion.Pre);
             string? bestMatch = null;
             FXVersion? bestVersion = null;
 
-            foreach (string sdkDirectory in availableSdks)
+            foreach (string sdkDirectory in GetSdkDirectories(dotnetExeDirectory!))
             {
                 string sdkVersionString = new DirectoryInfo(sdkDirectory).Name;
                 if (!FXVersion.TryParse(sdkVersionString, out FXVersion? sdkVersion)
                     || sdkVersion is null
-                    || !MatchesGlobalJsonPolicy(sdkVersion, settings)
+                    || FXVersion.Compare(sdkVersion, resolvedVersion) >= 0
+                    || FXVersion.Compare(sdkVersion, requestedVersion) < 0
+                    || (!allowPrerelease && !string.IsNullOrEmpty(sdkVersion.Pre))
                     || msbuildVersion < GetMinimumMSBuildVersion(sdkDirectory))
                 {
                     continue;
                 }
 
-                if (bestVersion is null || IsBetterMatch(sdkVersion, bestVersion, settings))
+                if (bestVersion is null || FXVersion.Compare(sdkVersion, bestVersion) > 0)
                 {
                     bestMatch = sdkDirectory;
                     bestVersion = sdkVersion;
@@ -244,16 +173,18 @@ namespace Microsoft.DotNet.DotNetSdkResolver
             return bestMatch;
         }
 
-        private static string[] GetAvailableSdkDirectories(string dotnetRoot)
+        private static IEnumerable<string> GetSdkDirectories(string dotnetExeDirectory)
         {
+            string sdkRoot = Path.Combine(dotnetExeDirectory, "sdk");
+            if (!Directory.Exists(sdkRoot))
+            {
+                return [];
+            }
+
             try
             {
-                string sdkRoot = Path.Combine(dotnetRoot, "sdk");
-                return Directory.Exists(sdkRoot)
-                    ? Directory.GetDirectories(sdkRoot)
-                        .Where(sdk => File.Exists(Path.Combine(sdk, "dotnet.dll")))
-                        .ToArray()
-                    : [];
+                return Directory.GetDirectories(sdkRoot)
+                    .Where(sdk => File.Exists(Path.Combine(sdk, "dotnet.dll")));
             }
             catch (IOException)
             {
@@ -263,237 +194,29 @@ namespace Microsoft.DotNet.DotNetSdkResolver
             {
                 return [];
             }
-            catch (ArgumentException)
-            {
-                return [];
-            }
-            catch (NotSupportedException)
-            {
-                return [];
-            }
         }
 
-        private static bool MatchesGlobalJsonPolicy(FXVersion current, GlobalJsonSdkSettings settings)
+        private static bool IsSdkUnderDotnetRoot(string sdkDirectory, string? dotnetExeDirectory)
         {
-            if ((!settings.AllowPrerelease && !string.IsNullOrEmpty(current.Pre))
-                || settings.RollForward is SdkRollForwardPolicy.Unsupported or SdkRollForwardPolicy.Disable)
+            if (dotnetExeDirectory is null)
             {
                 return false;
             }
 
-            FXVersion? requested = settings.RequestedVersion;
-            if (requested is null)
-            {
-                return true;
-            }
-
-            int requestedFeatureBand = GetFeatureBand(requested);
-            int currentFeatureBand = GetFeatureBand(current);
-
-            if (settings.RollForward is SdkRollForwardPolicy.Patch or SdkRollForwardPolicy.LatestPatch
-                && (current.Major != requested.Major
-                    || current.Minor != requested.Minor
-                    || currentFeatureBand != requestedFeatureBand))
+            string? sdkRoot = Path.GetDirectoryName(sdkDirectory);
+            if (sdkRoot is null)
             {
                 return false;
             }
 
-            if (settings.RollForward is SdkRollForwardPolicy.Feature or SdkRollForwardPolicy.LatestFeature
-                && (current.Major != requested.Major || current.Minor != requested.Minor))
-            {
-                return false;
-            }
+            StringComparison comparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
 
-            if (settings.RollForward is SdkRollForwardPolicy.Minor or SdkRollForwardPolicy.LatestMinor
-                && current.Major != requested.Major)
-            {
-                return false;
-            }
-
-            return FXVersion.Compare(current, requested) >= 0;
-        }
-
-        private static bool IsBetterMatch(FXVersion current, FXVersion previous, GlobalJsonSdkSettings settings)
-        {
-            bool useLatest = settings.RollForward is
-                SdkRollForwardPolicy.LatestPatch or
-                SdkRollForwardPolicy.LatestFeature or
-                SdkRollForwardPolicy.LatestMinor or
-                SdkRollForwardPolicy.LatestMajor;
-
-            if (settings.RequestedVersion is null
-                || useLatest
-                || (current.Major == previous.Major
-                    && current.Minor == previous.Minor
-                    && GetFeatureBand(current) == GetFeatureBand(previous)))
-            {
-                return FXVersion.Compare(current, previous) > 0;
-            }
-
-            return FXVersion.Compare(current, previous) < 0;
-        }
-
-        private static int GetFeatureBand(FXVersion version)
-            => version.Patch / 100 * 100;
-
-        private bool TryReadGlobalJsonSdkSettings(
-            string globalJsonPath,
-            string? requestedVersionString,
-            string? dotnetExeDirectory,
-            out GlobalJsonSdkSettings? settings)
-        {
-            settings = null;
-
-            try
-            {
-                using FileStream stream = File.OpenRead(globalJsonPath);
-                using JsonDocument document = JsonDocument.Parse(
-                    stream,
-                    new JsonDocumentOptions
-                    {
-                        AllowTrailingCommas = true,
-                        CommentHandling = JsonCommentHandling.Skip,
-                    });
-
-                if (!document.RootElement.TryGetProperty("sdk", out JsonElement sdkElement)
-                    || sdkElement.ValueKind != JsonValueKind.Object)
-                {
-                    return false;
-                }
-
-                FXVersion? requestedVersion = null;
-                if (requestedVersionString is not null
-                    && (!FXVersion.TryParse(requestedVersionString, out requestedVersion) || requestedVersion is null))
-                {
-                    return false;
-                }
-
-                SdkRollForwardPolicy rollForward = requestedVersion is null
-                    ? SdkRollForwardPolicy.LatestMajor
-                    : SdkRollForwardPolicy.Patch;
-
-                if (sdkElement.TryGetProperty("rollForward", out JsonElement rollForwardElement)
-                    && rollForwardElement.ValueKind != JsonValueKind.Null)
-                {
-                    if (rollForwardElement.ValueKind != JsonValueKind.String
-                        || !TryParseRollForwardPolicy(rollForwardElement.GetString(), out rollForward))
-                    {
-                        return false;
-                    }
-                }
-
-                bool allowPrerelease = !_vsSettings.DisallowPrerelease();
-                if (sdkElement.TryGetProperty("allowPrerelease", out JsonElement allowPrereleaseElement)
-                    && allowPrereleaseElement.ValueKind != JsonValueKind.Null)
-                {
-                    if (allowPrereleaseElement.ValueKind is not JsonValueKind.True and not JsonValueKind.False)
-                    {
-                        return false;
-                    }
-
-                    allowPrerelease = allowPrereleaseElement.GetBoolean();
-                }
-
-                if (requestedVersion is not null && !string.IsNullOrEmpty(requestedVersion.Pre))
-                {
-                    allowPrerelease = true;
-                }
-
-                settings = new GlobalJsonSdkSettings(
-                    requestedVersion,
-                    rollForward,
-                    allowPrerelease,
-                    GetGlobalJsonSearchPaths(sdkElement, globalJsonPath, dotnetExeDirectory));
-
-                return true;
-            }
-            catch (IOException)
-            {
-                return false;
-            }
-            catch (JsonException)
-            {
-                return false;
-            }
-            catch (UnauthorizedAccessException)
-            {
-                return false;
-            }
-        }
-
-        private static IReadOnlyList<string?> GetGlobalJsonSearchPaths(
-            JsonElement sdkElement,
-            string globalJsonPath,
-            string? dotnetExeDirectory)
-        {
-            if (!sdkElement.TryGetProperty("paths", out JsonElement pathsElement)
-                || pathsElement.ValueKind == JsonValueKind.Null)
-            {
-                return [dotnetExeDirectory];
-            }
-
-            if (pathsElement.ValueKind != JsonValueKind.Array)
-            {
-                return [];
-            }
-
-            string globalJsonDirectory = Path.GetDirectoryName(globalJsonPath)!;
-            var searchPaths = new List<string?>();
-
-            foreach (JsonElement pathElement in pathsElement.EnumerateArray())
-            {
-                if (pathElement.ValueKind != JsonValueKind.String)
-                {
-                    continue;
-                }
-
-                string path = pathElement.GetString()!;
-                searchPaths.Add(
-                    path == "$host$"
-                        ? dotnetExeDirectory
-                        : IsPathFullyQualified(path)
-                            ? path
-                            : Path.Combine(globalJsonDirectory, path));
-            }
-
-            return searchPaths;
-        }
-
-        private static bool IsPathFullyQualified(string path)
-        {
-            if (!Path.IsPathRooted(path))
-            {
-                return false;
-            }
-
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return path.Length > 0 && path[0] == Path.DirectorySeparatorChar;
-            }
-
-            return path.StartsWith(@"\\", StringComparison.Ordinal)
-                || (path.Length >= 3
-                    && path[1] == Path.VolumeSeparatorChar
-                    && (path[2] == Path.DirectorySeparatorChar || path[2] == Path.AltDirectorySeparatorChar));
-        }
-
-        private static bool TryParseRollForwardPolicy(string? value, out SdkRollForwardPolicy policy)
-        {
-            policy = value?.ToLowerInvariant() switch
-            {
-                "disable" => SdkRollForwardPolicy.Disable,
-                "patch" => SdkRollForwardPolicy.Patch,
-                "feature" => SdkRollForwardPolicy.Feature,
-                "minor" => SdkRollForwardPolicy.Minor,
-                "major" => SdkRollForwardPolicy.Major,
-                "latestpatch" => SdkRollForwardPolicy.LatestPatch,
-                "latestfeature" => SdkRollForwardPolicy.LatestFeature,
-                "latestminor" => SdkRollForwardPolicy.LatestMinor,
-                "latestmajor" => SdkRollForwardPolicy.LatestMajor,
-                _ => SdkRollForwardPolicy.Unsupported,
-            };
-
-            return policy != SdkRollForwardPolicy.Unsupported;
+            return string.Equals(
+                Path.GetFullPath(sdkRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                Path.GetFullPath(Path.Combine(dotnetExeDirectory, "sdk")).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                comparison);
         }
 
         public Version GetMinimumMSBuildVersion(string netcoreSdkDir)
@@ -531,19 +254,19 @@ namespace Microsoft.DotNet.DotNetSdkResolver
             else if (result.ResolvedSdkDirectory != null
                      && msbuildVersion < GetMinimumMSBuildVersion(result.ResolvedSdkDirectory))
             {
-                // hostfxr ignores invalid_json and invalid_data, but __invalid_data_no_fallback still uses the
-                // parsed SDK settings (for example, an exact version whose feature band is below 100).
-                bool globalJsonSettingsWereUsed = result.GlobalJsonPath is not null
-                    && (result.GlobalJsonState is null
-                        || string.Equals(result.GlobalJsonState, "valid", StringComparison.Ordinal)
-                        || string.Equals(result.GlobalJsonState, "__invalid_data_no_fallback", StringComparison.Ordinal));
+                string? compatibleSdk = result.GlobalJsonPath is null
+                    ? GetMostCompatibleSdk(dotnetExeDir, msbuildVersion)
+                    : result.RequestedVersion is null
+                        ? null
+                        : GetMostCompatibleSdkInRange(
+                            dotnetExeDir,
+                            msbuildVersion,
+                            result.RequestedVersion,
+                            result.ResolvedSdkDirectory);
 
-                string? compatibleSdk = globalJsonSettingsWereUsed
-                    ? GetMostCompatibleSdkForGlobalJson(result, dotnetExeDir, msbuildVersion)
-                    : GetMostCompatibleSdk(dotnetExeDir, msbuildVersion);
-
-                // If global.json does not permit an MSBuild-compatible SDK, retain the SDK selected by hostfxr
-                // so the caller reports the minimum MSBuild version error for the requested SDK range.
+                // A global.json fallback is limited to versions between the requested and resolved SDKs.
+                // If no compatible SDK exists in that range, retain the hostfxr selection so the caller
+                // reports its minimum MSBuild version requirement.
                 mostCompatible = compatibleSdk ?? mostCompatible;
             }
 
