@@ -5,5 +5,5 @@ namespace Microsoft.DotNet;
 
 static class FileBasedProgramDefaults
 {
-    public const string TargetFrameworkVersion = "11.0";
+    public const string TargetFrameworkVersion = "12.0";
 }

@@ -8,7 +8,7 @@ public class UnitTest1
 	{
 	}
 
-#if NET10_0
+#if NET11_0
 	[TestMethod]
 	public void TestMethod2()
 	{
