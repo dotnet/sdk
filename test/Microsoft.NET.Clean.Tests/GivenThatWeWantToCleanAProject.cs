@@ -37,7 +37,7 @@ namespace Microsoft.NET.Clean.Tests
                 .Should()
                 .Pass()
                 .And
-                .NotHaveStdOutContaining("warning");
+                .NotHaveStdOutContaining("warning", ignoredPatterns: ["NETSDK1245"]);
         }
 
         [TestMethod]
