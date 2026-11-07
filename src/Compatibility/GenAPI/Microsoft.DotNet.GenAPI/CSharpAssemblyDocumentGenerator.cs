@@ -57,9 +57,20 @@ public sealed class CSharpAssemblyDocumentGenerator
     /// <returns>The source code document instance of the specified assembly symbol.</returns>
     public async Task<Document> GetDocumentForAssemblyAsync(IAssemblySymbol assemblySymbol)
     {
+        CSharpParseOptions parseOptions = CSharpParseOptions.Default;
+        CSharpCompilationOptions compilationOptions = _compilationOptions;
+#pragma warning disable RSEXPERIMENTAL006
+        if (assemblySymbol.Modules.Any(module => module.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2))
+#pragma warning restore RSEXPERIMENTAL006
+        {
+            parseOptions = parseOptions.WithLanguageVersion(LanguageVersion.Preview)
+                .WithFeatures([new KeyValuePair<string, string>("updated-memory-safety-rules", "true")]);
+            compilationOptions = compilationOptions.WithAllowUnsafe(true);
+        }
+
         Project project = _adhocWorkspace.AddProject(ProjectInfo.Create(
             ProjectId.CreateNewId(), VersionStamp.Create(), assemblySymbol.Name, assemblySymbol.Name, LanguageNames.CSharp,
-            compilationOptions: _compilationOptions));
+            compilationOptions: compilationOptions, parseOptions: parseOptions));
         project = project.AddMetadataReferences(_options.MetadataReferences ?? _options.Loader.MetadataReferences);
 
         IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_options.SymbolFilter.Include);
@@ -224,7 +235,10 @@ public sealed class CSharpAssemblyDocumentGenerator
                 }
 
                 // Filter out default constructors since these will be added automatically
-                if (_options.HideImplicitDefaultConstructors && method.IsImplicitDefaultConstructor(_options.SymbolFilter))
+#pragma warning disable RSEXPERIMENTAL006
+                if (_options.HideImplicitDefaultConstructors && method.IsImplicitDefaultConstructor(_options.SymbolFilter) &&
+                    !method.RequiresUnsafeContext)
+#pragma warning restore RSEXPERIMENTAL006
                 {
                     continue;
                 }

@@ -37,10 +37,12 @@ namespace Microsoft.DotNet.GenAPI.Tests
             ISymbolFilter additionalApiInclusionFilter = null,
             [CallerMemberName] string assemblyName = "",
             // Empty string is considered a valid header, null causes to use the default CSharpFileBuilder header
-            string header = "")
+            string header = "",
+            bool updatedMemorySafetyRules = false)
         {
             string resultedString = GenerateOutput(original, includeInternalSymbols, includeEffectivelyPrivateSymbols,
-                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, additionalApiInclusionFilter, assemblyName, header);
+                includeExplicitInterfaceImplementationSymbols, allowUnsafe, excludedAttributeList, additionalApiInclusionFilter, assemblyName, header,
+                updatedMemorySafetyRules);
 
             SyntaxTree resultedSyntaxTree = GetSyntaxTree(resultedString);
             SyntaxTree expectedSyntaxTree = GetSyntaxTree(expected);
@@ -48,6 +50,15 @@ namespace Microsoft.DotNet.GenAPI.Tests
             // compare SyntaxTree and not string representation
             Assert.IsTrue(resultedSyntaxTree.IsEquivalentTo(expectedSyntaxTree),
                 $"Expected:\n{expected}\nResulted:\n{resultedString}");
+
+            if (updatedMemorySafetyRules)
+            {
+                // Syntax comparisons alone do not catch invalid combinations of safety modifiers.
+                using Stream assembly = SymbolFactory.EmitAssemblyStreamFromSyntax(resultedString,
+                    allowUnsafe: allowUnsafe,
+                    assemblyName: assemblyName + "_Generated",
+                    updatedMemorySafetyRules: true);
+            }
         }
 
         private void RunTestAndCompareOutput(string original,
@@ -75,14 +86,16 @@ namespace Microsoft.DotNet.GenAPI.Tests
             string[] excludedAttributeList,
             ISymbolFilter additionalApiInclusionFilter,
             string assemblyName,
-            string header)
+            string header,
+            bool updatedMemorySafetyRules = false)
         {
             using StringWriter stringWriter = new();
 
             Mock<ILog> log = new();
 
             (IAssemblySymbolLoader loader, Dictionary<string, IAssemblySymbol> assemblySymbols) = TestAssemblyLoaderFactory
-                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe);
+                .CreateFromTexts(log.Object, assemblyTexts: [(assemblyName, original)], respectInternals: includeInternalSymbols, allowUnsafe: allowUnsafe,
+                    updatedMemorySafetyRules: updatedMemorySafetyRules);
 
             ISymbolFilter symbolFilter = SymbolFilterFactory.GetFilterFromList([], null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, additionalApiInclusionFilter: additionalApiInclusionFilter);
             ISymbolFilter attributeDataSymbolFilter = SymbolFilterFactory.GetFilterFromList(excludedAttributeList, null, includeInternalSymbols, includeEffectivelyPrivateSymbols, includeExplicitInterfaceImplementationSymbols, additionalApiInclusionFilter: additionalApiInclusionFilter);
@@ -3687,6 +3700,163 @@ namespace A.C.D {{ public partial struct Bar {{}} }}
                     """,
                 expected: "",
                 includeInternalSymbols: false);
+        }
+
+        [TestMethod]
+        public void TestUpdatedMemorySafetyMemberGeneration()
+        {
+            RunTest(original: """
+                public class SafetyContracts
+                {
+                    public unsafe int DangerousField;
+                    public int Value;
+                    public unsafe event System.Action Changed { add { } remove { } }
+                    public static unsafe void Dangerous() { }
+                    public static safe void FunctionPointer(delegate*<void> callback) { }
+                    public static safe void Pointer(int* value) { }
+                }
+                """,
+                expected: """
+                public partial class SafetyContracts
+                {
+                    public unsafe int DangerousField;
+                    public int Value;
+                    public unsafe event System.Action Changed { add { } remove { } }
+                    public static unsafe void Dangerous() { }
+                    public static void FunctionPointer(delegate*<void> callback) { }
+                    public static void Pointer(int* value) { }
+                }
+                """,
+                includeInternalSymbols: false,
+                includeEffectivelyPrivateSymbols: false,
+                allowUnsafe: true,
+                updatedMemorySafetyRules: true);
+        }
+
+        [TestMethod]
+        public void TestUpdatedMemorySafetyPackedPropertyGeneration()
+        {
+            RunTest(original: """
+                [System.Runtime.InteropServices.StructLayout(System.Runtime.InteropServices.LayoutKind.Sequential, Pack = 1)]
+                public class Properties
+                {
+                    public int Value { unsafe get => 0; set { } }
+                }
+                """,
+                expected: """
+                public partial class Properties
+                {
+                    public int Value { unsafe get { throw null; } set { } }
+                }
+                """,
+                includeInternalSymbols: false,
+                includeEffectivelyPrivateSymbols: false,
+                allowUnsafe: true,
+                updatedMemorySafetyRules: true);
+        }
+
+        [TestMethod]
+        public void TestUpdatedMemorySafetyUnsafeDefaultConstructorIsNotRemoved()
+        {
+            RunTest(original: """
+                public class Contracts
+                {
+                    public unsafe Contracts() { }
+                }
+                """,
+                expected: """
+                public partial class Contracts
+                {
+                    public unsafe Contracts() { }
+                }
+                """,
+                includeInternalSymbols: false,
+                includeEffectivelyPrivateSymbols: false,
+                allowUnsafe: true,
+                updatedMemorySafetyRules: true);
+        }
+
+        [TestMethod]
+        public void TestUpdatedMemorySafetyPointerBaseConstructorGeneration()
+        {
+            RunTest(original: """
+                public class Base
+                {
+                    public Base(int* value) { }
+                }
+                public class Derived : Base
+                {
+                    public Derived() : base(null) { }
+                }
+                """,
+                expected: """
+                public partial class Base
+                {
+                    public Base(int* value) { }
+                }
+                public partial class Derived : Base
+                {
+                    public Derived() : base(default) { }
+                }
+                """,
+                includeInternalSymbols: false,
+                includeEffectivelyPrivateSymbols: false,
+                allowUnsafe: true,
+                updatedMemorySafetyRules: true);
+        }
+
+        [TestMethod]
+        public void TestUpdatedMemorySafetyExternGeneration()
+        {
+            RunTest(original: """
+                public class Native
+                {
+                    [System.Runtime.InteropServices.DllImport("NativeLibrary")]
+                    public static extern safe int Count();
+                    [System.Runtime.InteropServices.DllImport("NativeLibrary")]
+                    public static extern unsafe int Read();
+                }
+                """,
+                expected: """
+                public partial class Native
+                {
+                    public static safe int Count() { throw null; }
+                    public static unsafe int Read() { throw null; }
+                }
+                """,
+                includeInternalSymbols: false,
+                includeEffectivelyPrivateSymbols: false,
+                allowUnsafe: true,
+                updatedMemorySafetyRules: true);
+        }
+
+        [TestMethod]
+        public void TestUpdatedMemorySafetyExplicitInterfaceEventGeneration()
+        {
+            RunTest(original: """
+                public interface IContracts
+                {
+                    unsafe event System.Action Changed;
+                }
+                public class Implementation : IContracts
+                {
+                    unsafe event System.Action IContracts.Changed { add { } remove { } }
+                }
+                """,
+                expected: """
+                public partial interface IContracts
+                {
+                    unsafe event System.Action Changed;
+                }
+                public partial class Implementation : IContracts
+                {
+                    unsafe event System.Action IContracts.Changed { add { } remove { } }
+                }
+                """,
+                includeInternalSymbols: false,
+                includeEffectivelyPrivateSymbols: false,
+                allowUnsafe: true,
+                updatedMemorySafetyRules: true);
         }
     }
 }

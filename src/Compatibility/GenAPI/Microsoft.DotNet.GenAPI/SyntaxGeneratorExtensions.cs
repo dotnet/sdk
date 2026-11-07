@@ -17,6 +17,10 @@ namespace Microsoft.DotNet.GenAPI
         // SyntaxGenerator does not generates attributes neither for types, neither for members.
         public static SyntaxNode DeclarationExt(this SyntaxGenerator syntaxGenerator, ISymbol symbol, ISymbolFilter symbolFilter)
         {
+#pragma warning disable RSEXPERIMENTAL006
+            bool usesUpdatedMemorySafetyRules = symbol.ContainingModule?.MemorySafetyRulesVersion == MemorySafetyRulesVersion.Version2;
+#pragma warning restore RSEXPERIMENTAL006
+
             if (symbol.Kind == SymbolKind.NamedType)
             {
                 INamedTypeSymbol type = (INamedTypeSymbol)symbol;
@@ -48,6 +52,13 @@ namespace Microsoft.DotNet.GenAPI
             if (symbol.Kind == SymbolKind.Method)
             {
                 IMethodSymbol method = (IMethodSymbol)symbol;
+                if (usesUpdatedMemorySafetyRules && method.IsExtern)
+                {
+                    // GenAPI supplies a stub body, so the declaration is no longer extern.
+                    SyntaxNode declaration = syntaxGenerator.Declaration(method).AddMissingSpecialConstraints(symbol);
+                    return syntaxGenerator.WithModifiers(declaration, syntaxGenerator.GetModifiers(declaration).WithIsExtern(false));
+                }
+
                 if (method.MethodKind == MethodKind.Constructor)
                 {
                     INamedTypeSymbol? baseType = method.ContainingType.BaseType;
@@ -66,7 +77,8 @@ namespace Microsoft.DotNet.GenAPI
                                 IMethodSymbol constructor = baseTypeConstructors.First();
 
                                 ConstructorDeclarationSyntax declaration = (ConstructorDeclarationSyntax)syntaxGenerator.Declaration(method);
-                                if (!declaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
+                                // Pointer signatures require an unsafe declaration only under the legacy rules.
+                                if (!usesUpdatedMemorySafetyRules && !declaration.Modifiers.Any(m => m.RawKind == (int)SyntaxKind.UnsafeKeyword) &&
                                     // if at least one parameter of a base constructor is raw pointer type
                                     constructor.Parameters.Any(p => p.Type.TypeKind == TypeKind.Pointer))
                                 {
@@ -87,7 +99,10 @@ namespace Microsoft.DotNet.GenAPI
                 // to compile (CS0535).
                 if (!eventSymbol.ExplicitInterfaceImplementations.IsEmpty)
                 {
-                    return CreateExplicitInterfaceEventDeclaration(syntaxGenerator, eventSymbol);
+                    SyntaxNode declaration = CreateExplicitInterfaceEventDeclaration(syntaxGenerator, eventSymbol);
+                    return usesUpdatedMemorySafetyRules
+                        ? syntaxGenerator.WithModifiers(declaration, DeclarationModifiers.From(eventSymbol))
+                        : declaration;
                 }
 
                 // adds generation of add & remove accessors for the non abstract events.
@@ -104,6 +119,15 @@ namespace Microsoft.DotNet.GenAPI
                 if (!propertySymbol.IsIndexer && propertySymbol.ExplicitInterfaceImplementations.Any(i => i.IsIndexer))
                 {
                     return syntaxGenerator.IndexerDeclaration(propertySymbol);
+                }
+
+                if (usesUpdatedMemorySafetyRules && !propertySymbol.IsAbstract && !propertySymbol.IsIndexer)
+                {
+                    // V2 safety inference must see the stub's actual storage shape. Adding bodies later
+                    // can leave a packed property marked safe alongside an unsafe accessor (CS9396).
+                    return syntaxGenerator.PropertyDeclaration(propertySymbol,
+                        getAccessorStatements: [SyntaxFactory.ThrowStatement(SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression))],
+                        setAccessorStatements: []);
                 }
             }
 

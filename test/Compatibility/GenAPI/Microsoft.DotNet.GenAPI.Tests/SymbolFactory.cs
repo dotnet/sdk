@@ -36,7 +36,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             byte[] publicKey = null,
             [CallerMemberName] string assemblyName = "",
             bool allowUnsafe = false,
-            bool usePreviewLanguageVersion = false)
+            bool usePreviewLanguageVersion = false,
+            bool updatedMemorySafetyRules = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(
                 syntax,
@@ -45,7 +46,8 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
                 publicKey,
                 allowUnsafe,
                 diagnosticOptions,
-                usePreviewLanguageVersion);
+                usePreviewLanguageVersion,
+                updatedMemorySafetyRules);
 
             Assert.IsEmpty(compilation.GetDiagnostics());
 
@@ -92,10 +94,18 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             byte[] publicKey,
             bool allowUnsafe,
             IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null,
-            bool usePreviewLanguageVersion = false)
+            bool usePreviewLanguageVersion = false,
+            bool updatedMemorySafetyRules = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
-            return compilation.AddSyntaxTrees(GetSyntaxTree(syntax, usePreviewLanguageVersion));
+            CSharpParseOptions parseOptions = usePreviewLanguageVersion || updatedMemorySafetyRules
+                ? ParseOptions.WithLanguageVersion(LanguageVersion.Preview)
+                : ParseOptions;
+            if (updatedMemorySafetyRules)
+            {
+                parseOptions = parseOptions.WithFeatures([new KeyValuePair<string, string>("updated-memory-safety-rules", "true")]);
+            }
+            return compilation.AddSyntaxTrees(CSharpSyntaxTree.ParseText(syntax, parseOptions));
         }
 
         private static CSharpCompilation CreateCSharpCompilationFromSyntax(IEnumerable<string> syntax, string name, bool enableNullable, byte[] publicKey, bool allowUnsafe)
