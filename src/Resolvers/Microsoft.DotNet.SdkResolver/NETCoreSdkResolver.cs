@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using Microsoft.DotNet.MSBuildSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.DotNetSdkResolver
@@ -128,6 +129,96 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                 });
         }
 
+        private string? GetMostCompatibleSdkInRange(
+            string? dotnetExeDirectory,
+            Version msbuildVersion,
+            string requestedVersionString,
+            string resolvedSdkDirectory)
+        {
+            string resolvedVersionString = new DirectoryInfo(resolvedSdkDirectory).Name;
+            if (!FXVersion.TryParse(requestedVersionString, out FXVersion? requestedVersion)
+                || requestedVersion is null
+                || !FXVersion.TryParse(resolvedVersionString, out FXVersion? resolvedVersion)
+                || resolvedVersion is null
+                || FXVersion.Compare(requestedVersion, resolvedVersion) >= 0
+                || !IsSdkUnderDotnetRoot(resolvedSdkDirectory, dotnetExeDirectory))
+            {
+                return null;
+            }
+
+            bool allowPrerelease = !string.IsNullOrEmpty(resolvedVersion.Pre);
+            string? bestMatch = null;
+            FXVersion? bestVersion = null;
+
+            foreach (string sdkDirectory in GetSdkDirectories(dotnetExeDirectory!))
+            {
+                string sdkVersionString = new DirectoryInfo(sdkDirectory).Name;
+                if (!FXVersion.TryParse(sdkVersionString, out FXVersion? sdkVersion)
+                    || sdkVersion is null
+                    || FXVersion.Compare(sdkVersion, resolvedVersion) >= 0
+                    || FXVersion.Compare(sdkVersion, requestedVersion) < 0
+                    || (!allowPrerelease && !string.IsNullOrEmpty(sdkVersion.Pre))
+                    || msbuildVersion < GetMinimumMSBuildVersion(sdkDirectory))
+                {
+                    continue;
+                }
+
+                if (bestVersion is null || FXVersion.Compare(sdkVersion, bestVersion) > 0)
+                {
+                    bestMatch = sdkDirectory;
+                    bestVersion = sdkVersion;
+                }
+            }
+
+            return bestMatch;
+        }
+
+        private static IEnumerable<string> GetSdkDirectories(string dotnetExeDirectory)
+        {
+            string sdkRoot = Path.Combine(dotnetExeDirectory, "sdk");
+            if (!Directory.Exists(sdkRoot))
+            {
+                return [];
+            }
+
+            try
+            {
+                return Directory.GetDirectories(sdkRoot)
+                    .Where(sdk => File.Exists(Path.Combine(sdk, "dotnet.dll")));
+            }
+            catch (IOException)
+            {
+                return [];
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return [];
+            }
+        }
+
+        private static bool IsSdkUnderDotnetRoot(string sdkDirectory, string? dotnetExeDirectory)
+        {
+            if (dotnetExeDirectory is null)
+            {
+                return false;
+            }
+
+            string? sdkRoot = Path.GetDirectoryName(sdkDirectory);
+            if (sdkRoot is null)
+            {
+                return false;
+            }
+
+            StringComparison comparison = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? StringComparison.OrdinalIgnoreCase
+                : StringComparison.Ordinal;
+
+            return string.Equals(
+                Path.GetFullPath(sdkRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                Path.GetFullPath(Path.Combine(dotnetExeDirectory, "sdk")).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar),
+                comparison);
+        }
+
         public Version GetMinimumMSBuildVersion(string netcoreSdkDir)
         {
             return s_minimumMSBuildVersions.GetOrAdd(
@@ -161,10 +252,22 @@ namespace Microsoft.DotNet.DotNetSdkResolver
                 mostCompatible = GetMostCompatibleSdk(dotnetExeDir, msbuildVersion, 5);
             }
             else if (result.ResolvedSdkDirectory != null
-                     && result.GlobalJsonPath == null
                      && msbuildVersion < GetMinimumMSBuildVersion(result.ResolvedSdkDirectory))
             {
-                mostCompatible = GetMostCompatibleSdk(dotnetExeDir, msbuildVersion);
+                string? compatibleSdk = result.GlobalJsonPath is null
+                    ? GetMostCompatibleSdk(dotnetExeDir, msbuildVersion)
+                    : result.RequestedVersion is null
+                        ? null
+                        : GetMostCompatibleSdkInRange(
+                            dotnetExeDir,
+                            msbuildVersion,
+                            result.RequestedVersion,
+                            result.ResolvedSdkDirectory);
+
+                // A global.json fallback is limited to versions between the requested and resolved SDKs.
+                // If no compatible SDK exists in that range, retain the hostfxr selection so the caller
+                // reports its minimum MSBuild version requirement.
+                mostCompatible = compatibleSdk ?? mostCompatible;
             }
 
             if (mostCompatible != null)
