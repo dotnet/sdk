@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -39,6 +40,37 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             input.GetSubArguments()
                 .Should().BeEquivalentTo(expected);
+        }
+
+        [TestMethod]
+        public void GetArguments_RemovesCommandFromReducedTree()
+        {
+            RootCommand rootCommand = new();
+            Command command = new("command");
+            rootCommand.Subcommands.Add(command);
+            ParseResult parseResult = rootCommand.Parse(["command", "--help"]);
+
+            parseResult.GetArguments().Should().Equal("--help");
+        }
+
+        [TestMethod]
+        public void CanBeInvoked_RecognizesCommandFromReducedTree()
+        {
+            RootCommand rootCommand = new();
+            rootCommand.Subcommands.Add(new Command("command"));
+
+            rootCommand.Parse(["command"]).CanBeInvoked().Should().BeTrue();
+        }
+
+        [TestMethod]
+        [DataRow("watch run")]
+        [DataRow("Program.cs build")]
+        public void CanBeInvoked_BuiltInLookingArgument_DoesNotMakeExternalCommandInvocable(string input)
+        {
+            ParseResult parseResult = Parser.Parse(input);
+
+            parseResult.IsDotnetBuiltInCommand().Should().BeFalse();
+            parseResult.CanBeInvoked().Should().BeFalse();
         }
     }
 }
