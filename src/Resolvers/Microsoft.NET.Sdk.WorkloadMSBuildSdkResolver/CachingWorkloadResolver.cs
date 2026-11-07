@@ -208,7 +208,17 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
             }
             else
             {
-                var packInfo = workloadResolver?.TryGetPackInfo(new WorkloadPackId(sdkReferenceName));
+                WorkloadPackId packId;
+                try
+                {
+                    packId = new WorkloadPackId(sdkReferenceName);
+                }
+                catch (ArgumentException)
+                {
+                    return new NullResolutionResult();
+                }
+
+                var packInfo = workloadResolver?.TryGetPackInfo(packId);
                 if (packInfo != null)
                 {
                     if (Directory.Exists(packInfo.Path))
