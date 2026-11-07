@@ -168,6 +168,31 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
         [TestMethod]
         [ResourceLock(WellKnownResources.EnvironmentVariables)]
+        [DataRow(null, "1")]
+        [DataRow("", "1")]
+        [DataRow("0", "0")]
+        [DataRow("1", "1")]
+        public void ItEnablesMultiThreadedMSBuildUnlessExplicitlyConfigured(string configured, string expected)
+        {
+            const string variable = "MSBUILDENABLEMULTITHREADED";
+            string original = Environment.GetEnvironmentVariable(variable);
+
+            try
+            {
+                Environment.SetEnvironmentVariable(variable, configured);
+
+                var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>", TestCommandServices.CreateNonLLM())
+                    .GetProcessStartInfo();
+                startInfo.Environment[variable].Should().Be(expected);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(variable, original);
+            }
+        }
+
+        [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DataRow(null, "0")]
         [DataRow("", "0")]
         [DataRow("0", "0")]
