@@ -46,6 +46,23 @@ items, target names/hooks, task parameters, diagnostics, and output layout may b
 consumed by project files, NuGet packages, IDEs, or other SDKs. Search the import chain
 and tests before renaming or reordering them.
 
+## Test-Host Integration Contracts
+
+`dotnet test` supports test-only launcher selection separately from ordinary run
+properties; the target, output properties, ordering, and SDK capability are described
+in [`src/Cli/AGENTS.md`](../../src/Cli/AGENTS.md#mtp-launcher-selection) and implemented by
+[`SolutionAndProjectUtility`](../../src/Cli/dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs).
+
+Managed MTP communicates over named pipes or authenticated loopback HTTP.
+[`CliConstants`](../../src/Cli/dotnet/Commands/Test/CliConstants.cs) and
+[`ObjectFieldIds`](../../src/Cli/dotnet/Commands/Test/MTP/IPC/ObjectFieldIds.cs)
+define the versioned, capability-negotiated wire surface shared with TestFX.
+HTTP control polling and artifact export reuse that protocol, not a browser-JavaScript
+results relay. The SDK owns exported host paths and limits through
+[`FileArtifactTransferManager`](../../src/Cli/dotnet/Commands/Test/MTP/FileArtifactTransferManager.cs).
+Coordinate producer/consumer changes and follow the
+[vendored-source workflow](../../eng/vendored-files.md).
+
 ## MSBuild Tasks and Diagnostics
 
 Shipping task classes and target registrations live under

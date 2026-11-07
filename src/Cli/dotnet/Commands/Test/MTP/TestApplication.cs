@@ -56,9 +56,11 @@ internal sealed class TestApplication(
         testRunPolicy: testRunPolicy,
         testApplicationSettings: testApplicationSettings ?? TestApplicationSettings.Default);
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
+    private readonly ArtifactPostProcessingManager? _artifactPostProcessingManager = artifactPostProcessingManager;
     private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
     private HttpTestHostGateway? _httpGateway;
+    private FileArtifactTransferManager? _artifactTransfers;
     private string? _httpResponseFilePath;
 
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
@@ -71,6 +73,7 @@ internal sealed class TestApplication(
     private int _hasRun;
     private int _protocolNegotiated;
     private int _sessionCancellationRequested;
+    private int _disposed;
     private Version? _negotiatedProtocolVersion;
     private ProcessOutputCollector? _standardOutputCollector;
     private ProcessOutputCollector? _standardErrorCollector;
@@ -91,6 +94,9 @@ internal sealed class TestApplication(
             throw new InvalidOperationException(CliCommandStrings.RunAsyncCalledMoreThanOnce);
         }
 
+        using CancellationTokenRegistration cancellationRegistration = ctrlC.Token.Register(
+            static state => ((TestApplication)state!).RequestSessionCancellation(),
+            this);
         var processStartInfo = CreateProcessStartInfo();
 
         var cancellationToken = _pipeCancellationTokenSource.Token;
@@ -235,6 +241,12 @@ internal sealed class TestApplication(
             }
 
             var exitCode = process.ExitCode;
+            if (exitCode == ExitCode.Success && _artifactTransfers?.HasIncompleteOrFailedTransfers == true)
+            {
+                _handler.OnDisplayMessageReceived(new DisplayMessage(
+                    null, null, DisplayMessageLevels.Error, CliCommandStrings.ArtifactTransferIncomplete));
+                exitCode = ExitCode.GenericFailure;
+            }
             string outputToReport = stdOutBuilder.GetOutputToReport();
             string errorToReport = stdErrBuilder.GetOutputToReport();
 
@@ -422,6 +434,24 @@ internal sealed class TestApplication(
     {
         if (RequiresHttpTransport(Module))
         {
+            if (_artifactTransfers is null)
+            {
+                string resultsDirectory = _resultsDirectoryResolver.Resolve(Module) ??
+                    Path.Combine(
+                        string.IsNullOrEmpty(Module.RunProperties.WorkingDirectory)
+                            ? Directory.GetCurrentDirectory()
+                            : Module.RunProperties.WorkingDirectory,
+                        "TestResults");
+                _artifactTransfers = new FileArtifactTransferManager(
+                    resultsDirectory,
+                    FileArtifactTransferLimits.FromEnvironment(),
+                    message =>
+                    {
+                        HasFailureDuringDispose = true;
+                        _handler.OnDisplayMessageReceived(new DisplayMessage(null, null, DisplayMessageLevels.Error, message));
+                    });
+            }
+
             _httpGateway ??= new HttpTestHostGateway(
                 OnHttpRequest,
                 _pipeCancellationTokenSource.Token);
@@ -717,18 +747,42 @@ internal sealed class TestApplication(
             throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
         }
 
+        return WaitForServerControlAsync(timeout: null);
+    }
+
+    internal async Task<IResponse> WaitForServerControlAsync(TimeSpan? timeout)
+    {
+        TaskCompletionSource<IResponse> completion;
         lock (_controlRequestLock)
         {
             if (Volatile.Read(ref _sessionCancellationRequested) != 0)
             {
-                return Task.FromResult<IResponse>(new ServerControlMessage(ServerControlKinds.CancelSession));
+                return new ServerControlMessage(ServerControlKinds.CancelSession);
             }
 
-            var completion = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+            completion = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
             _pendingControlRequests.Add(completion);
-            _pipeCancellationTokenSource.Token.Register(
-                () => completion.TrySetCanceled(_pipeCancellationTokenSource.Token));
-            return completion.Task;
+        }
+
+        CancellationToken cancellationToken = _pipeCancellationTokenSource.Token;
+        using CancellationTokenRegistration registration = cancellationToken.Register(
+            () => completion.TrySetCanceled(cancellationToken));
+        try
+        {
+            return timeout is { } pollTimeout
+                ? await completion.Task.WaitAsync(pollTimeout, cancellationToken)
+                : await completion.Task;
+        }
+        catch (TimeoutException)
+        {
+            return VoidResponse.CachedInstance;
+        }
+        finally
+        {
+            lock (_controlRequestLock)
+            {
+                _pendingControlRequests.Remove(completion);
+            }
         }
     }
 
@@ -740,7 +794,7 @@ internal sealed class TestApplication(
         }
     }
 
-    private void RequestSessionCancellation()
+    internal void RequestSessionCancellation()
     {
         if (Interlocked.Exchange(ref _sessionCancellationRequested, 1) != 0)
         {
@@ -761,8 +815,7 @@ internal sealed class TestApplication(
     {
         if (request is WaitForServerControlRequest)
         {
-            Logger.LogTrace("The dotnet test HTTP transport does not support the reverse server-control channel.");
-            return Task.FromResult<IResponse>(VoidResponse.CachedInstance);
+            return WaitForServerControlAsync(TimeSpan.FromSeconds(30));
         }
 
         return OnRequest(server: null, request);
@@ -808,8 +861,27 @@ internal sealed class TestApplication(
                         break;
 
                     case FileArtifactMessages fileArtifactMessages:
+                        if (_httpGateway is not null)
+                        {
+                            fileArtifactMessages = FilterExportedArtifacts(fileArtifactMessages);
+                        }
+
                         OnFileArtifactMessages(fileArtifactMessages);
                         break;
+
+                    case FileArtifactTransferRequest transferRequest:
+                        if (_artifactTransfers is null || !_handler.CanReceiveArtifactTransfer(
+                            transferRequest.ExecutionId, transferRequest.InstanceId))
+                        {
+                            return Task.FromResult<IResponse>(new FileArtifactTransferResponse(
+                                0,
+                                null,
+                                string.Format(
+                                    CliCommandStrings.UnexpectedMessageWithoutTestHostHandshake,
+                                    nameof(FileArtifactTransferRequest))));
+                        }
+
+                        return Task.FromResult<IResponse>(_artifactTransfers.Receive(transferRequest));
 
                     case CoverageSummaryMessages coverageSummaryMessages:
                         _handler.OnCoverageSummaryReceived(coverageSummaryMessages);
@@ -864,6 +936,32 @@ internal sealed class TestApplication(
 
             return Task.FromResult((IResponse)VoidResponse.CachedInstance);
         }
+    }
+
+    private FileArtifactMessages FilterExportedArtifacts(FileArtifactMessages messages)
+    {
+        List<FileArtifactMessage> exported = [];
+        FileArtifactTransferManager? transfers = _artifactTransfers;
+        foreach (FileArtifactMessage artifact in messages.FileArtifacts)
+        {
+            if (transfers?.OwnsPublishedPath(artifact.FullPath) == true &&
+                (artifact.InputArtifactPaths is null || artifact.InputArtifactPaths.All(
+                    path => transfers.OwnsPublishedPath(path) ||
+                        _artifactPostProcessingManager?.ContainsArtifactPath(path) == true)))
+            {
+                exported.Add(artifact);
+            }
+            else
+            {
+                _handler.OnDisplayMessageReceived(new DisplayMessage(
+                    messages.ExecutionId,
+                    messages.InstanceId,
+                    DisplayMessageLevels.Warning,
+                    CliCommandStrings.ArtifactTransferUnpublishedPath));
+            }
+        }
+
+        return messages with { FileArtifacts = [.. exported] };
     }
 
     internal static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
@@ -925,9 +1023,25 @@ internal sealed class TestApplication(
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         };
 
-        if (version.Length > 0 && includeControlPipe)
+        if (version.Length > 0)
         {
-            properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+            if (_httpGateway is not null)
+            {
+                properties.Add(HandshakeMessagePropertyNames.ServerControlTransport, CliConstants.DotNetTestHttpTransportValue);
+                if (_artifactTransfers is not null)
+                {
+                    FileArtifactTransferLimits limits = _artifactTransfers.Limits;
+                    properties.Add(HandshakeMessagePropertyNames.FileArtifactTransfer, "chunked-v1");
+                    properties.Add(HandshakeMessagePropertyNames.FileArtifactTransferMaxChunkBytes, FileArtifactTransferLimits.MaximumChunkBytes.ToString(CultureInfo.InvariantCulture));
+                    properties.Add(HandshakeMessagePropertyNames.FileArtifactTransferMaxFileBytes, limits.MaximumFileBytes.ToString(CultureInfo.InvariantCulture));
+                    properties.Add(HandshakeMessagePropertyNames.FileArtifactTransferMaxModuleBytes, limits.MaximumModuleBytes.ToString(CultureInfo.InvariantCulture));
+                    properties.Add(HandshakeMessagePropertyNames.FileArtifactTransferMaxFileCount, limits.MaximumFileCount.ToString(CultureInfo.InvariantCulture));
+                }
+            }
+            else if (includeControlPipe)
+            {
+                properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+            }
         }
 
         if (includeCoverageSummary)
@@ -936,7 +1050,7 @@ internal sealed class TestApplication(
         }
 
         if (version.Length > 0
-            && artifactPostProcessingManager?.IsEnabled == true
+            && _artifactPostProcessingManager?.IsEnabled == true
             && !TestOptions.IsArtifactPostProcessing
             && !RequiresHttpTransport(Module)
             && MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
@@ -1183,6 +1297,12 @@ internal sealed class TestApplication(
 
     public void Dispose()
     {
+        if (Interlocked.Exchange(ref _disposed, 1) != 0)
+        {
+            return;
+        }
+
+        _pipeCancellationTokenSource.Cancel();
         foreach (var namedPipeServer in _testAppPipeConnections)
         {
             try
@@ -1217,6 +1337,7 @@ internal sealed class TestApplication(
         }
 
         _httpGateway?.Dispose();
+        _artifactTransfers?.Dispose();
         if (_httpResponseFilePath is not null)
         {
             try

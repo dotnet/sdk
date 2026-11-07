@@ -19,6 +19,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal static class SolutionAndProjectUtility
 {
     private static readonly string[] s_computeRunArgumentsTarget = [Constants.ComputeRunArguments];
+    private static readonly string[] s_computeTestingPlatformRunArgumentsTarget = [CliConstants.ComputeTestingPlatformRunArgumentsTarget];
     private static readonly Lock s_buildLock = new();
 
     /// <summary>
@@ -816,10 +817,39 @@ internal static class SolutionAndProjectUtility
                 throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
             }
 
+            RunProperties runProperties = RunProperties.FromProject(project);
+            SetFallbackProperty(ProjectProperties.TestingPlatformRunCommand, runProperties.Command);
+            SetFallbackProperty(ProjectProperties.TestingPlatformRunArguments, runProperties.Arguments);
+            SetFallbackProperty(ProjectProperties.TestingPlatformRunWorkingDirectory, runProperties.WorkingDirectory);
+
+            // A separate request runs after every ComputeRunArguments AfterTargets provider.
+            bool hasTestRunProviders = project.GetPropertyValue("ComputeTestingPlatformRunArgumentsDependsOn")
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Length != 0;
+            if ((project.Targets.ContainsKey(CliConstants.ComputeTestingPlatformRunArgumentsTarget) || hasTestRunProviders) &&
+                !buildSession.Build(project, s_computeTestingPlatformRunArgumentsTarget))
+            {
+                throw new GracefulException(
+                    CliCommandStrings.RunCommandEvaluationExceptionBuildFailed,
+                    CliConstants.ComputeTestingPlatformRunArgumentsTarget);
+            }
+
             runtimeEnvironmentVariables = hasRuntimeEnvironmentVariableSupport
                 ? EnvironmentVariablesToMSBuild.ReadFromItems(project)
                 : environmentVariables;
-            return RunProperties.FromProject(project);
+            return runProperties with
+            {
+                Command = project.GetPropertyValue(ProjectProperties.TestingPlatformRunCommand),
+                Arguments = project.GetPropertyValue(ProjectProperties.TestingPlatformRunArguments),
+                WorkingDirectory = project.GetPropertyValue(ProjectProperties.TestingPlatformRunWorkingDirectory),
+            };
+
+            void SetFallbackProperty(string name, string? value)
+            {
+                if (project.GetProperty(name) is null)
+                {
+                    project.SetProperty(name, value ?? string.Empty);
+                }
+            }
         }
     }
 

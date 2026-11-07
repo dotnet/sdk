@@ -311,6 +311,8 @@ The script publishes the MTP test application, product `dotnet-aot` library, and
 AOT. It loads the test-built library while using a complete installed SDK for SDK-relative assets and
 managed fallback, then runs the suite and can emit a TRX. Report executed, passed, failed, and skipped
 counts; required `dn` integration tests must not be skipped.
+Use `-Filter "<MTP filter>"` for focused native validation; `-NoBuild` can reuse an already
+published, current native binary. A focused run is not evidence that the entire suite passed.
 
 ### 5. Real `dn` integration and parity
 

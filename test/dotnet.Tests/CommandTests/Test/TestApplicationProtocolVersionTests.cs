@@ -13,6 +13,8 @@ public class TestApplicationProtocolVersionTests
     [DataRow("1.0.0;1.1.0", "1.1.0")]
     [DataRow("1.0.0", "1.0.0")]
     [DataRow("1.1.0", "1.1.0")]
+    [DataRow("1.3.0;1.4.0", "1.4.0")]
+    [DataRow("1.5.0;1.0.0;1.4.0", "1.5.0")]
     [DataRow("2.0.0", "")]
     [DataRow("", "")]
     [DataRow(null, "")]
@@ -35,6 +37,7 @@ public class TestApplicationProtocolVersionTests
     [TestMethod]
     [DataRow("1", true)]
     [DataRow("2", false)]
+    [DataRow("http", false)]
     [DataRow("", false)]
     [DataRow(null, false)]
     public void SupportsCoverageSummary_RequiresExactIndependentCapability(string? version, bool expected)
@@ -46,6 +49,6 @@ public class TestApplicationProtocolVersionTests
         }
 
         TestApplication.SupportsCoverageSummary(new HandshakeMessage(properties)).Should().Be(expected);
-        ProtocolConstants.SupportedVersions.Split(';').Should().NotContain("1.4.0");
+        ProtocolConstants.SupportedVersions.Split(';').Should().Contain("1.4.0");
     }
 }

@@ -3,8 +3,11 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using System.Globalization;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Test.IPC;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
@@ -14,6 +17,8 @@ namespace dotnet.Tests.CommandTests.Test;
 [TestClass]
 public sealed class TestApplicationLaunchTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public void CreateProcessStartInfo_TopLevelAffectedTests_AddsOptionAndRunMarker()
     {
@@ -171,6 +176,124 @@ public sealed class TestApplicationLaunchTests
     }
 
     [TestMethod]
+    [DataRow("browser-wasm", true)]
+    [DataRow("wasi-wasm", true)]
+    [DataRow("win-x64", false)]
+    public void HandshakeAdvertisesControlForTheSelectedTransport(string runtimeIdentifier, bool useHttp)
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            runtimeIdentifier: runtimeIdentifier);
+        application.CreateProcessStartInfo();
+
+        HandshakeMessage handshake = application.CreateHandshakeMessage("1.3.0");
+
+        handshake.Properties.ContainsKey(HandshakeMessagePropertyNames.ServerControlPipeName).Should().Be(!useHttp);
+        handshake.Properties.ContainsKey(HandshakeMessagePropertyNames.ServerControlTransport).Should().Be(useHttp);
+        if (useHttp)
+        {
+            handshake.Properties[HandshakeMessagePropertyNames.ServerControlTransport].Should().Be("http");
+            handshake.Properties[HandshakeMessagePropertyNames.FileArtifactTransfer].Should().Be("chunked-v1");
+            handshake.Properties[HandshakeMessagePropertyNames.FileArtifactTransferMaxChunkBytes].Should().Be("1048576");
+        }
+        else
+        {
+            handshake.Properties.ContainsKey(HandshakeMessagePropertyNames.FileArtifactTransfer).Should().BeFalse();
+        }
+    }
+
+    [TestMethod]
+    public void RejectedHandshakeDoesNotAdvertiseHttpControl()
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            runtimeIdentifier: "browser-wasm");
+        application.CreateProcessStartInfo();
+
+        HandshakeMessage handshake = application.CreateHandshakeMessage(string.Empty);
+
+        handshake.Properties.ContainsKey(HandshakeMessagePropertyNames.ServerControlTransport).Should().BeFalse();
+        handshake.Properties.ContainsKey(HandshakeMessagePropertyNames.ServerControlPipeName).Should().BeFalse();
+        handshake.Properties.ContainsKey(HandshakeMessagePropertyNames.FileArtifactTransfer).Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void HttpHandshakeKeepsCoverageIndependentOfBrowserCapabilities(bool coverage)
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            runtimeIdentifier: "browser-wasm");
+        application.CreateProcessStartInfo();
+
+        var properties = application.CreateHandshakeMessage(
+            "1.5.0", includeControlPipe: false, includeCoverageSummary: coverage).Properties;
+
+        properties.ContainsKey(20).Should().Be(coverage);
+        if (coverage)
+        {
+            properties[20].Should().Be("1");
+        }
+
+        properties[26].Should().Be("http");
+        properties[27].Should().Be("chunked-v1");
+        properties[28].Should().Be("1048576");
+        properties[29].Should().Be(FileArtifactTransferLimits.Default.MaximumFileBytes.ToString(CultureInfo.InvariantCulture));
+        properties[30].Should().Be(FileArtifactTransferLimits.Default.MaximumModuleBytes.ToString(CultureInfo.InvariantCulture));
+        properties[31].Should().Be(FileArtifactTransferLimits.Default.MaximumFileCount.ToString(CultureInfo.InvariantCulture));
+        properties.Should().NotContainKey(HandshakeMessagePropertyNames.ServerControlPipeName);
+        foreach (byte retired in new byte[] { 21, 22, 23, 24, 25 })
+        {
+            properties.Should().NotContainKey(retired);
+        }
+    }
+
+    [TestMethod]
+    public async Task ControlPollTimeoutReturnsNoCommandAndAllowsAnotherPoll()
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+
+        Assert.IsInstanceOfType<VoidResponse>(await application.WaitForServerControlAsync(TimeSpan.Zero));
+        Task<IResponse> pending = application.WaitForServerControlAsync(timeout: null);
+        application.RequestSessionCancellation();
+
+        ServerControlMessage message = Assert.IsInstanceOfType<ServerControlMessage>(
+            await pending.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
+        Assert.AreEqual(ServerControlKinds.CancelSession, message.Kind);
+    }
+
+    [TestMethod]
+    public async Task CancellationCompletesEveryControlWaitAndIsRetainedForLaterPolls()
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        var first = application.WaitForServerControlAsync(timeout: null);
+        var second = application.WaitForServerControlAsync(timeout: null);
+
+        application.RequestSessionCancellation();
+        application.RequestSessionCancellation();
+
+        foreach (var pending in new[] { first, second, application.WaitForServerControlAsync(timeout: null) })
+        {
+            ServerControlMessage message = Assert.IsInstanceOfType<ServerControlMessage>(
+                await pending.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
+            Assert.AreEqual(ServerControlKinds.CancelSession, message.Kind);
+        }
+    }
+
+    [TestMethod]
+    public async Task DisposeCancelsOutstandingControlWaits()
+    {
+        using TestApplication application = CreateApplication(new TestOptions(false, false, TestListFormat.Text));
+        var pending = application.WaitForServerControlAsync(timeout: null);
+
+        application.Dispose();
+
+        await Assert.ThrowsExactlyAsync<TaskCanceledException>(
+            () => pending.WaitAsync(TimeSpan.FromSeconds(30), TestContext.CancellationToken));
+    }
+
+    [TestMethod]
     public void CreateProcessStartInfo_LaunchProfileAffectedOption_DoesNotCreateSdkMarker()
     {
         var launchProfile = new ProjectLaunchProfile
@@ -306,12 +429,13 @@ public sealed class TestApplicationLaunchTests
             .Properties.Should().NotContainKey(HandshakeMessagePropertyNames.RequiredPostProcessingSupported);
     }
 
-    private static TestApplication CreateApplication(
+    internal static TestApplication CreateApplication(
         TestOptions testOptions,
         IEnumerable<string>? forwardedArguments = null,
         IReadOnlyDictionary<string, string>? environmentVariables = null,
         ProjectLaunchProfile? launchProfile = null,
         string runtimeIdentifier = "",
+        string? resultsDirectory = null,
         ArtifactPostProcessingManager? artifactPostProcessingManager = null)
     {
         var module = new TestModule(
@@ -324,7 +448,7 @@ public sealed class TestApplicationLaunchTests
             DotnetRootArchVariableName: null,
             EnvironmentVariables: environmentVariables ?? ImmutableDictionary<string, string>.Empty);
         var buildOptions = new BuildOptions(
-            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
+            new PathOptions(null, null, null, resultsDirectory, ResultsDirectoryLayout.Flat, null, null),
             HasNoRestore: false,
             HasNoBuild: false,
             Verbosity: null,

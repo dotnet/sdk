@@ -16,6 +16,7 @@ internal static class CliConstants
     public const string DotNetTestHttpTransportValue = "http";
     public const string ArtifactPostProcessingToolName = "internal-merge-artifacts";
     public const string ArtifactPostProcessingManifestOptionKey = "--manifest";
+    public const string ComputeTestingPlatformRunArgumentsTarget = "ComputeTestingPlatformRunArguments";
 
     public const string SemiColon = ";";
 
@@ -111,6 +112,14 @@ internal static class HandshakeMessagePropertyNames
 
     // Independently negotiated so coverage does not enable the 1.4 server-control protocol.
     internal const byte CoverageSummaryVersion = 20;
+
+    // Reserved: 21-25 were used by the earlier browser experiment.
+    internal const byte ServerControlTransport = 26;
+    internal const byte FileArtifactTransfer = 27;
+    internal const byte FileArtifactTransferMaxChunkBytes = 28;
+    internal const byte FileArtifactTransferMaxFileBytes = 29;
+    internal const byte FileArtifactTransferMaxModuleBytes = 30;
+    internal const byte FileArtifactTransferMaxFileCount = 31;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -145,9 +154,9 @@ internal static class ProtocolConstants
     // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding.
     // 1.3.0 adds DisplayMessage (serializer id 12) forwarding, including GitHub Actions workflow commands
     // sent at the Information level so the SDK writes their text verbatim without warning/error formatting.
-    // NOTE: 1.4.0 (the reverse server-control pipe / server-initiated cancellation) is intentionally NOT advertised yet:
-    // it is a separate, larger feature that is out of scope here.
-    internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0";
+    // 1.4.0 adds server control; 1.5.0 adds chunked artifact transfer. Transport capabilities
+    // are negotiated separately so older peers retain their existing behavior.
+    internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0;1.4.0;1.5.0";
 }
 
 internal static class ServerControlKinds
@@ -168,6 +177,9 @@ internal static class ProjectProperties
     internal const string RunCommand = "RunCommand";
     internal const string RunArguments = "RunArguments";
     internal const string RunWorkingDirectory = "RunWorkingDirectory";
+    internal const string TestingPlatformRunCommand = "TestingPlatformRunCommand";
+    internal const string TestingPlatformRunArguments = "TestingPlatformRunArguments";
+    internal const string TestingPlatformRunWorkingDirectory = "TestingPlatformRunWorkingDirectory";
     internal const string AppDesignerFolder = "AppDesignerFolder";
     internal const string TestTfmsInParallel = "TestTfmsInParallel";
     internal const string BuildInParallel = "BuildInParallel";

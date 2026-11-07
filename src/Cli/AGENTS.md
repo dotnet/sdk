@@ -165,8 +165,8 @@ coverage incomplete, even when their exit codes are ignored. The
 that state when an exception prevents the normal handshake/session completion path.
 
 Controller coverage can arrive after `TestSessionEnd`; accept it until process completion.
-Negotiate coverage-summary support independently of the base protocol, without enabling the
-unimplemented 1.4 server-control channel. Keep producer, wire, artifact-acceptance, and
+Negotiate coverage-summary support independently of the base protocol and control
+transport. Keep producer, wire, artifact-acceptance, and
 managed/Native AOT behavior aligned. See the
 [coverage contract and output format](../../documentation/general/dotnet-test-artifact-post-processing.md#code-coverage-summary).
 
@@ -205,3 +205,27 @@ Collection status must not override discovery formatting. Keep optional timer an
 writes exception-safe, without recounting an operation when its warning cannot be written.
 Keep SDK final-exit-code authority when reconciling upstream terminal code, and update
 [`eng/vendored-files.json`](../../eng/vendored-files.json) with exact upstream blob identities.
+
+## MTP launcher selection
+
+`dotnet test` completes `ComputeRunArguments`, including its `AfterTargets` providers,
+before invoking the optional `ComputeTestingPlatformRunArguments` target.
+`TestingPlatformRunCommand`, `TestingPlatformRunArguments`, and
+`TestingPlatformRunWorkingDirectory` are separate test-only outputs; absent properties
+inherit their canonical `Run*` values, while explicitly empty outputs remain empty.
+Configuring test-run dependencies without defining the selection target is an error,
+not a reason to silently launch the canonical host.
+Do not overwrite the canonical properties or make `dotnet run` invoke the test-only target.
+The SDK advertises this contract as `TestingPlatformRunArgumentsVersion=1`; see
+[`SolutionAndProjectUtility`](dotnet/Commands/Test/MTP/SolutionAndProjectUtility.cs) and
+[`Sdk.targets`](../Tasks/Microsoft.NET.Build.Tasks/sdk/Sdk.targets).
+
+## MTP browser wire compatibility
+
+Preserve upstream coverage serializer 15 and handshake property 20 independently of the
+browser experiment. Artifact transfer uses serializers 17/18 and capability property 27;
+HTTP control uses property 26 and transfer limits use 28-31. Serializer 16 and properties
+21-25 are retired experimental slots, not aliases. Protocol 1.5 alone never enables
+transfer or HTTP control: mixed old/new browser peers must retain capability-based
+fallback. Keep both repositories aligned and validate their actual built products; see
+the [browser contract](../../poc/browser-wasm-unit-tests/README.md#wire-compatibility).

@@ -13,9 +13,9 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 /// <c>dotnet test</c> orchestrator level:
 /// <list type="bullet">
 ///   <item>First Ctrl+C: cooperative cancellation. The <see cref="Token"/> is signaled so the
-///     queue stops scheduling new test apps; running test apps are left alone so they can
-///     gracefully report their final state via IPC (their own testfx-side Ctrl+C handler will
-///     cancel the session inside the child process).</item>
+///     queue stops scheduling new test apps and running test apps receive session cancellation
+///     over their negotiated control channel. Local test apps can also observe the console
+///     signal through their own testfx-side Ctrl+C handler.</item>
 ///   <item>Second Ctrl+C: force exit. Every registered child process is killed
 ///     (<c>entireProcessTree: true</c>) and the host process exits with
 ///     <see cref="ExitCode.TestSessionAborted"/> (=3).</item>
@@ -51,7 +51,7 @@ internal sealed class CtrlCCancellationManager : IDisposable
     /// <summary>
     /// A token that is canceled when the user first presses Ctrl+C. Consumers should use it to
     /// stop scheduling new work but should not use it to tear down in-flight IPC for already
-    /// running test apps (their cooperative cancellation is driven by their own Ctrl+C handler).
+    /// running test apps, which need that IPC channel to complete cooperative cancellation.
     /// </summary>
     public CancellationToken Token => _cancellationTokenSource.Token;
 

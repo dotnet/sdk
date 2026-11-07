@@ -226,7 +226,8 @@ finally {
 
 Write-Host ""
 if ($testExitCode -eq 0) {
-    Write-Host "All AOT tests passed." -ForegroundColor Green
+    $summary = if ($Filter) { "Selected AOT tests passed." } else { "All AOT tests passed." }
+    Write-Host $summary -ForegroundColor Green
 } else {
     Write-Host "AOT tests failed with exit code $testExitCode." -ForegroundColor Red
 }

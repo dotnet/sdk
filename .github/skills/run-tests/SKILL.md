@@ -21,9 +21,30 @@ detailed output and writes a TRX plus an MSBuild binlog under
 - For one test, class, or project, invoke `scripts/RunTests.cs` as described below.
 - For an area represented in `test/ConditionalTests.props`, expand the scope and invoke
   `scripts/RunTests.cs` once per concrete project.
+- For composed SDK/TestFX browser validation, use the cross-repository entry point
+  below in addition to focused SDK tests. Repository-local tests alone do not prove
+  launcher/protocol compatibility with the browser package.
 - When the user explicitly requests the complete repository test suite, explain that it
   is very large and then run `build.cmd -test` on Windows or `./build.sh --test` on
   macOS/Linux. Do not use the complete suite for routine validation.
+
+## Composed browser validation
+
+From the SDK root in PowerShell 7:
+
+```powershell
+.\eng\browser-testing\RunBrowserTests.ps1 -BrowserExecutable C:\path\to\chromium.exe
+```
+
+The same script runs in public CI on Windows/Linux. It builds the SDK plus the full-SHA
+pinned TestFX source in `eng/browser-testing/testfx.json`, creates a source-checked package
+snapshot, and executes the TestFX-owned required browser cases with strict prerequisites.
+Pass `-TestFxRoot <checkout>` to validate an in-progress counterpart. `-SkipSdkBuild` and
+`-SkipTestFxBuild` are local iteration options; source stamps must still match and CI
+does not use them. Missing inputs, browser, results, required cases, and any skipped or
+failed case fail the run. Logs, package hashes, source SHAs, TRX and the acceptance build
+binlog live under the printed evidence directory. Never substitute an inconclusive run
+or a single sample command for this gate.
 
 ## Select configured test scopes first
 
