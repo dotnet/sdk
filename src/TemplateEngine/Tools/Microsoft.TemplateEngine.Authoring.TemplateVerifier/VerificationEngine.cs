@@ -123,7 +123,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 {
                     throw new TemplateVerificationException(
                         string.Format(LocalizableStrings.VerificationEngine_Error_UnexpectedFail, commandResult.ExitCode),
-                        TemplateVerificationErrorCode.InstantiationFailed);
+                        GetErrorCode(commandResult.ExitCode, TemplateVerificationErrorCode.InstantiationFailed));
                 }
 
                 // We do not expect stderr in passing command.
@@ -327,6 +327,11 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
             return r.Replace(string.Join('#', args), string.Empty);
         }
 
+        private static TemplateVerificationErrorCode GetErrorCode(int exitCode, TemplateVerificationErrorCode fallback)
+            => Enum.IsDefined(typeof(TemplateVerificationErrorCode), exitCode)
+                ? (TemplateVerificationErrorCode)exitCode
+                : fallback;
+
         private static IInstantiationResult RunDotnetNewCommand(TemplateVerifierOptions options, ICommandRunner commandRunner, ILoggerFactory? loggerFactory, ILogger logger)
         {
             // Create temp folder and instantiate there
@@ -356,7 +361,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier
                 {
                     throw new TemplateVerificationException(
                         string.Format(LocalizableStrings.VerificationEngine_Error_InstallUnexpectedFail, installCommandResult.ExitCode),
-                        TemplateVerificationErrorCode.InstantiationFailed);
+                        GetErrorCode(installCommandResult.ExitCode, TemplateVerificationErrorCode.InstallFailed));
                 }
             }
 
