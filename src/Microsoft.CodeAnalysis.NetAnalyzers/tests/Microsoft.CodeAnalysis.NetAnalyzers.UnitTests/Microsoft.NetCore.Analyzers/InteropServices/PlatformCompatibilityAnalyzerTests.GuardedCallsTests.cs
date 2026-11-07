@@ -16,7 +16,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     public partial class PlatformCompatabilityAnalyzerTests
     {
         private const string ApplePlatformMsBuildPlatforms = """
-            build_property._SupportedPlatformList = macos,maccatalyst,ios,tvos,watchos,windows
+            build_property._SupportedPlatformList = macos,maccatalyst,ios,tvos,windows
             build_property.TargetFramework = net12.0
             build_property.TargetFrameworkIdentifier = .NETCoreApp
             build_property.TargetFrameworkVersion = v12.0
@@ -54,9 +54,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                             SupportedApple();
                             [|SupportedIosAndMacos()|];
                             [|SupportedWindows()|];
-                            [|SupportedWatchos()|];
                             UnsupportedWindows();
-                            UnsupportedWatchos();
                             [|UnsupportedIos()|];
                         }
                         else
@@ -65,7 +63,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                             UnsupportedApple();
                             UnsupportedIos();
                             [|UnsupportedWindows()|];
-                            [|UnsupportedWatchos()|];
                         }
                     }
 
@@ -82,14 +79,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                     [SupportedOSPlatform("windows")]
                     void SupportedWindows() { }
 
-                    [SupportedOSPlatform("watchos")]
-                    void SupportedWatchos() { }
-
                     [UnsupportedOSPlatform("windows")]
                     void UnsupportedWindows() { }
-
-                    [UnsupportedOSPlatform("watchos")]
-                    void UnsupportedWatchos() { }
 
                     [UnsupportedOSPlatform("ios")]
                     void UnsupportedIos() { }
@@ -193,7 +184,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
         [DataRow("maccatalyst")]
         [DataRow("ios")]
         [DataRow("tvos")]
-        [DataRow("watchos")]
         [DataRow("windows")]
         public async Task IsApplePlatform_UsesGuardAttributesAsync(string platform)
         {
