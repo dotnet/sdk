@@ -54,15 +54,13 @@ namespace Microsoft.TemplateEngine.Cli
                 {
                     if (Choices.Count > 2)
                     {
-                        o.Option.HelpName = $"{string.Join("|", Choices.Keys.Take(2))}|...";
-                        string updatedFirstColumn = HelpBuilder.Default.GetOptionUsageLabel(o.Option);
+                        string updatedFirstColumn = HelpBuilder.Default.GetOptionUsageLabel(o.Option, $"{string.Join("|", Choices.Keys.Take(2))}|...");
                         if (updatedFirstColumn.Length <= context.HelpBuilder.MaxWidth / 3)
                         {
                             return updatedFirstColumn;
                         }
                     }
-                    o.Option.HelpName = HelpStrings.Text_ChoiceArgumentHelpName;
-                    return HelpBuilder.Default.GetOptionUsageLabel(o.Option);
+                    return HelpBuilder.Default.GetOptionUsageLabel(o.Option, HelpStrings.Text_ChoiceArgumentHelpName);
                 }
                 return standardUsage;
             };
