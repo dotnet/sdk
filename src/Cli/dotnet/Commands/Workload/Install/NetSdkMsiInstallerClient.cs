@@ -589,7 +589,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 {
                     InstallWorkloadManifestImplementation(
                         manifestUpdate,
-                        cancellationToken,
+                        CancellationToken.None,
                         offlineCache: null,
                         action: InstallAction.Uninstall);
                 });
@@ -710,7 +710,8 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             {
                 if (shouldRollBackPack)
                 {
-                    RollBackMsiInstall(msiToInstall, cancellationToken);
+                    // Cancellation stops forward progress, not cleanup of already installed packages.
+                    RollBackMsiInstall(msiToInstall, CancellationToken.None);
                 }
             });
         }
@@ -815,7 +816,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="productCode">The product code of the MSI to detect.</param>
     /// <param name="installedVersion">If detected, contains the version of the installed MSI.</param>
     /// <returns>The detect state of the specified MSI.</returns>
-    private DetectState DetectPackage(string productCode, out Version installedVersion)
+    protected virtual DetectState DetectPackage(string productCode, out Version installedVersion)
     {
         installedVersion = default;
         uint error = WindowsInstaller.GetProductInfo(productCode, InstallProperty.VERSIONSTRING, out string versionValue);
@@ -987,7 +988,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="offlineCache">The path to the offline cache. When <see langword="null"/>, packages are downloaded using the
     /// existing package feeds.</param>
     /// <returns>The MSI payload or <see langword="null"/> if unsuccessful.</returns>
-    private MsiPayload GetCachedMsiPayload(
+    protected virtual MsiPayload GetCachedMsiPayload(
         string packageId,
         string packageVersion,
         CancellationToken cancellationToken,
@@ -1019,7 +1020,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <param name="action">The action to perform.</param>
     /// <param name="displayName">A friendly name to display to the user when reporting progress. If no value is provided, the MSI
     /// filename will be used.</param>
-    private void ExecutePackage(MsiPayload msi, InstallAction action, string displayName = null)
+    protected virtual void ExecutePackage(MsiPayload msi, InstallAction action, string displayName = null)
     {
         uint error = Error.SUCCESS;
         string logFile = GetMsiLogName(msi, action);
@@ -1099,7 +1100,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// when retrieving payloads from the cache.
     /// </remarks>
     /// <param name="msiPayload">The payload to validate.</param>
-    private void ValidateMsiDatabase(MsiPayload msiPayload)
+    protected virtual void ValidateMsiDatabase(MsiPayload msiPayload)
     {
         uint error = WindowsInstaller.VerifyPackage(msiPayload.MsiPath);
         ExitOnError(error, $"Failed to verify package: {msiPayload.MsiPath}.");
