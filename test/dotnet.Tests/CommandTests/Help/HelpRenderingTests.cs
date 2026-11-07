@@ -64,6 +64,31 @@ public class HelpRenderingTests
     }
 
     [TestMethod]
+    public void ParentHelpDoesNotInvokeCustomizedArgumentCompletions()
+    {
+        DotNetCommandDefinition root = new();
+        Parser.DotnetHelpBuilder builder = new();
+        Parser.DotnetHelpBuilder.ConfigureHelp(root, builder);
+        int completionCalls = 0;
+        root.AddCommand.PackageCommand.PackageIdArgument.CompletionSources.Add(_ =>
+        {
+            completionCalls++;
+            return [new CompletionItem("Example.Package")];
+        });
+        root.PackageCommand.AddCommand.PackageIdArgument.CompletionSources.Add(_ =>
+        {
+            completionCalls++;
+            return [new CompletionItem("Example.Package")];
+        });
+        Action assertUnchanged = CaptureState(root);
+
+        Assert.DoesNotContain("Example.Package", Render(builder, root.AddCommand));
+        Assert.DoesNotContain("Example.Package", Render(builder, root.PackageCommand));
+        Assert.AreEqual(0, completionCalls);
+        assertUnchanged();
+    }
+
+    [TestMethod]
     public void HelpParseAndCompletionAreIndependentOfRenderOrder()
     {
         DotNetCommandDefinition root = new();
@@ -123,16 +148,36 @@ public class HelpRenderingTests
     }
 
     [TestMethod]
+    public void InheritedOptionsDoNotGainHelpNamesFromParentHelp()
+    {
+        Option<string> value = new("--value") { Recursive = true };
+        Option<string> explicitName = new("--explicit") { Recursive = true, HelpName = "VALUE" };
+        Command child = new("child");
+        Command parent = new("parent") { Options = { value, explicitName }, Subcommands = { child } };
+        HelpBuilder builder = new();
+        Action assertUnchanged = CaptureState(parent);
+
+        string childHelp = Render(builder, child);
+        Assert.Contains("--explicit <VALUE>", childHelp);
+        Assert.DoesNotContain("--value <value>", childHelp);
+        Assert.Contains("--value <value>", Render(builder, parent));
+        Assert.AreEqual(childHelp, Render(builder, child));
+        assertUnchanged();
+    }
+
+    [TestMethod]
     public void OptionLabelsDoNotSetHelpNamesOrChangeAliases()
     {
         Option<string> value = new("--value", "-v");
         Option<int> count = new("/count");
         Option<bool> flag = new("--flag");
         Option<bool?> nullableFlag = new("--nullable");
+        Option<string> zeroArity = new("--project") { Arity = ArgumentArity.Zero };
+        Option<string> helpOption = new("--help", "-h", "-?") { Arity = ArgumentArity.Zero };
         Option<string> explicitName = new("--explicit") { HelpName = "VALUE" };
         Option<string> choice = new("--choice");
         choice.CompletionSources.Add(_ => [new CompletionItem("one"), new CompletionItem("two")]);
-        Command command = new("example") { Options = { value, count, flag, nullableFlag, explicitName, choice } };
+        Command command = new("example") { Options = { value, count, flag, nullableFlag, zeroArity, helpOption, explicitName, choice } };
         Action assertUnchanged = CaptureState(command);
         HelpBuilder builder = new();
 
@@ -142,8 +187,12 @@ public class HelpRenderingTests
         Assert.Contains("/count <count>", help);
         Assert.AreEqual("--flag", HelpBuilder.Default.GetOptionUsageLabel(flag));
         Assert.AreEqual("--nullable", HelpBuilder.Default.GetOptionUsageLabel(nullableFlag));
+        Assert.AreEqual("--project", HelpBuilder.Default.GetOptionUsageLabel(zeroArity));
+        Assert.AreEqual("-?, -h, --help", HelpBuilder.Default.GetOptionUsageLabel(helpOption));
         Assert.Contains("--explicit <VALUE>", help);
         Assert.Contains("--choice <one|two>", help);
+        Assert.AreEqual("--detached <detached>", builder.GetTwoColumnRow(
+            new Option<string>("--detached"), new HelpContext(builder, command, TextWriter.Null)).FirstColumnText);
         Assert.AreEqual(help, Render(builder, command));
         Assert.IsEmpty(command.Parse("-v text /count 2 --flag --choice one").Errors);
         assertUnchanged();

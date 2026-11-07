@@ -174,7 +174,9 @@ public partial class HelpBuilder
     /// <param name="context">The help context.</param>
     public TwoColumnHelpRow GetTwoColumnRow(
         Symbol symbol,
-        HelpContext context)
+        HelpContext context) => GetTwoColumnRow(symbol, context, isInheritedOption: false);
+
+    private TwoColumnHelpRow GetTwoColumnRow(Symbol symbol, HelpContext context, bool isInheritedOption)
     {
         if (symbol is null)
         {
@@ -205,8 +207,11 @@ public partial class HelpBuilder
         {
             var firstColumnText = customization?.GetFirstColumn?.Invoke(context)
                 ?? (symbol is Option option
-                        ? Default.GetOptionUsageLabel(option)
-                        : Default.GetCommandUsageLabel((Command)symbol));
+                        ? Default.GetOptionUsageLabel(option, isInheritedOption ? option.HelpName ?? "" : null)
+                        : Default.GetCommandUsageLabel((Command)symbol, argument =>
+                            _customizationsBySymbol?.TryGetValue(argument, out var argumentCustomization) == true
+                                ? argumentCustomization.GetFirstColumn?.Invoke(context) ?? Default.GetArgumentUsageLabel(argument)
+                                : Default.GetArgumentUsageLabel(argument)));
 
             var customizedSymbolDescription = customization?.GetSecondColumn?.Invoke(context);
 

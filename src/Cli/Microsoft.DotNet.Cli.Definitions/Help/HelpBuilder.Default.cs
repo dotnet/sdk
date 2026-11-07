@@ -55,7 +55,8 @@ public partial class HelpBuilder
             {
                 Argument argument => GetUsageLabel(helpName ?? argument.HelpName, argument.ValueType, argument.CompletionSources, argument, argument.Arity) ?? $"<{argument.Name}>",
                 Option option => GetUsageLabel(
-                    helpName ?? option.HelpName ?? (option is not Option<bool> && option.CompletionSources.Count == 0 ? SplitPrefix(option.Name).Alias : null),
+                    helpName ?? option.HelpName ?? (option.ValueType != typeof(bool) && option.ValueType != typeof(bool?)
+                        && option.Arity.MaximumNumberOfValues > 0 && option.CompletionSources.Count == 0 ? SplitPrefix(option.Name).Alias : null),
                     option.ValueType, option.CompletionSources, option, option.Arity) ?? "",
                 _ => throw new InvalidOperationException()
             };
@@ -95,6 +96,9 @@ public partial class HelpBuilder
         /// <returns>Text to display.</returns>
         public static string GetCommandUsageLabel(Command symbol)
             => GetIdentifierSymbolUsageLabel(symbol, symbol.Aliases);
+
+        internal static string GetCommandUsageLabel(Command symbol, Func<Argument, string> getArgumentUsageLabel)
+            => GetIdentifierSymbolUsageLabel(symbol, symbol.Aliases, getArgumentUsageLabel: getArgumentUsageLabel);
 
         /// <inheritdoc cref="GetCommandUsageLabel(Command)"/>
         public static string GetOptionUsageLabel(Option symbol) => GetOptionUsageLabel(symbol, null);
@@ -205,7 +209,7 @@ public partial class HelpBuilder
                                     {
                                         if (option is not HelpOption || !addedHelpOption)
                                         {
-                                            optionRows.Add(ctx.HelpBuilder.GetTwoColumnRow(option, ctx));
+                                            optionRows.Add(ctx.HelpBuilder.GetTwoColumnRow(option, ctx, isInheritedOption: true));
                                         }
                                     }
                                 }
@@ -233,7 +237,11 @@ public partial class HelpBuilder
         public static Func<HelpContext, bool> AdditionalArgumentsSection() =>
             ctx => ctx.HelpBuilder.WriteAdditionalArguments(ctx);
 
-        private static string GetIdentifierSymbolUsageLabel(Symbol symbol, ICollection<string>? aliasSet, string? helpName = null)
+        private static string GetIdentifierSymbolUsageLabel(
+            Symbol symbol,
+            ICollection<string>? aliasSet,
+            string? helpName = null,
+            Func<Argument, string>? getArgumentUsageLabel = null)
         {
             var aliases = aliasSet is null
                 ? new[] { symbol.Name }
@@ -251,7 +259,9 @@ public partial class HelpBuilder
             {
                 if (!argument.Hidden)
                 {
-                    var argumentFirstColumnText = GetArgumentUsageLabel(argument, helpName);
+                    var argumentFirstColumnText = argument is Argument commandArgument && getArgumentUsageLabel is not null
+                        ? getArgumentUsageLabel(commandArgument)
+                        : GetArgumentUsageLabel(argument, helpName);
 
                     if (!string.IsNullOrWhiteSpace(argumentFirstColumnText))
                     {
