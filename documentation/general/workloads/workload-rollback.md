@@ -33,3 +33,9 @@ The `ROLLBACK_FILE` value can either be a path to a file on disk or a URL where 
 After updating the workload manifests to the specified versions, the command will upgrade or downgrade any installed workloads to the versions specified in the updated workload manifests.
 
 It is possible to construct a rollback file manually, or to specify a subset of workload manifests in a rollback file that is used to update the workload versions.  However, since workloads can and do use packs that are defined in multiple manifest files, this could result in using versions of workload packs that otherwise would not have been used together and may not be compatible.  For this reason, it's recommended to always specify the full set of workload manifests in the rollback file, and to use versions that were shipped together or are known to be compatible with each other.
+
+## Return to a workload set
+
+Installing or updating with `--from-rollback-file` pins the selected manifest versions in the SDK feature band's install state. To select a workload set instead, run `dotnet workload install <WORKLOAD_ID> --version <WORKLOAD_SET_VERSION>` or `dotnet workload update --version <WORKLOAD_SET_VERSION>`.
+
+Explicitly selecting a workload set removes existing manifest pins for manifests included in that set, even when selecting the already-pinned workload set version. Pins for manifests outside the selected set are preserved. If installation fails, the previous manifest pins and workload set selection are restored.
