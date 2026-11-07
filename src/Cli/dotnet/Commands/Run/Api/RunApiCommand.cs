@@ -24,7 +24,11 @@ internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parse
     {
         try
         {
-            for (string? line; (line = Console.In.ReadLineAsync(cancellationToken).AsTask().GetAwaiter().GetResult()) != null;)
+            // Console.In synchronizes even ReadLineAsync, so invoke the blocking read on a worker.
+            // On cancellation at most one read remains on that background worker until process exit.
+            // Do not dispose Console.In: disposal would wait for the same synchronized read.
+            for (string? line; (line = Task.Run(Console.In.ReadLine, cancellationToken)
+                .WaitAsync(cancellationToken).GetAwaiter().GetResult()) != null;)
             {
                 if (string.IsNullOrWhiteSpace(line))
                 {
