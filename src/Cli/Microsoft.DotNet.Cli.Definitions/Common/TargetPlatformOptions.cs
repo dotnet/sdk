@@ -48,10 +48,7 @@ internal readonly struct TargetPlatformOptions
 
     public static IEnumerable<string> RuntimeArgFunc(string rid)
     {
-        if (GetArchFromRid(rid) == "amd64")
-        {
-            rid = GetOsFromRid(rid) + "-x64";
-        }
+        rid = RuntimeIdentifierUtilities.Normalize(rid);
         return [$"--property:RuntimeIdentifier={rid}", "--property:_CommandLineDefinedRuntimeIdentifier=true"];
     }
 
@@ -153,4 +150,3 @@ internal readonly struct TargetPlatformOptions
     private static string GetArchFromRid(string rid)
         => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
 }
-
