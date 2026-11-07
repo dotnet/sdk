@@ -144,7 +144,7 @@ internal class InstallRootManager
         {
             // Not elevated, shell out to elevated process
             writeOutput($"Launching elevated process to add {Highlight(userDotnetPath)} to {target}.");
-            WindowsPathHelper.StartElevatedProcess("insertdotnet", userDotnetPath);
+            WindowsElevation.StartElevatedProcess("insertdotnet", userDotnetPath);
         }
     }
 
@@ -162,7 +162,7 @@ internal class InstallRootManager
         {
             // Not elevated, shell out to elevated process
             writeOutput($"Launching elevated process to remove {Highlight(userDotnetPath)} from system PATH.");
-            WindowsPathHelper.StartElevatedProcess("removedotnet", userDotnetPath);
+            WindowsElevation.StartElevatedProcess("removedotnet", userDotnetPath);
         }
     }
 
