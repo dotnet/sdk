@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -14,6 +15,280 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
     public partial class PlatformCompatabilityAnalyzerTests
     {
+        private const string ApplePlatformMsBuildPlatforms = """
+            build_property._SupportedPlatformList = macos,maccatalyst,ios,tvos,windows
+            build_property.TargetFramework = net12.0
+            build_property.TargetFrameworkIdentifier = .NETCoreApp
+            build_property.TargetFrameworkVersion = v12.0
+            """;
+
+        private static readonly ReferenceAssemblies s_currentReferenceAssemblies = CreateCurrentReferenceAssemblies();
+
+        private static ReferenceAssemblies CreateCurrentReferenceAssemblies()
+        {
+            var targetFramework = (string)AppContext.GetData("ReferenceAssemblies.TargetFramework")
+                ?? throw new InvalidOperationException("The test runtime configuration is missing ReferenceAssemblies.TargetFramework.");
+            var targetingPackVersion = (string)AppContext.GetData("ReferenceAssemblies.TargetingPackVersion")
+                ?? throw new InvalidOperationException("The test runtime configuration is missing ReferenceAssemblies.TargetingPackVersion.");
+
+            return new ReferenceAssemblies(
+                targetFramework,
+                new PackageIdentity("Microsoft.NETCore.App.Ref", targetingPackVersion),
+                Path.Combine("ref", targetFramework))
+                .WithNuGetConfigFilePath(Path.Combine(AppContext.BaseDirectory, "NuGet.config"));
+        }
+
+        [TestMethod]
+        public async Task IsApplePlatform_GuardsOnlyFourApplePlatformsAsync()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                class Test
+                {
+                    void M()
+                    {
+                        if (OperatingSystem.IsApplePlatform())
+                        {
+                            SupportedApple();
+                            [|SupportedIosAndMacos()|];
+                            [|SupportedWindows()|];
+                            UnsupportedWindows();
+                            [|UnsupportedIos()|];
+                        }
+                        else
+                        {
+                            [|SupportedApple()|];
+                            UnsupportedApple();
+                            UnsupportedIos();
+                            [|UnsupportedWindows()|];
+                        }
+                    }
+
+                    [SupportedOSPlatform("macos")]
+                    [SupportedOSPlatform("maccatalyst")]
+                    [SupportedOSPlatform("ios")]
+                    [SupportedOSPlatform("tvos")]
+                    void SupportedApple() { }
+
+                    [SupportedOSPlatform("ios")]
+                    [SupportedOSPlatform("macos")]
+                    void SupportedIosAndMacos() { }
+
+                    [SupportedOSPlatform("windows")]
+                    void SupportedWindows() { }
+
+                    [UnsupportedOSPlatform("windows")]
+                    void UnsupportedWindows() { }
+
+                    [UnsupportedOSPlatform("ios")]
+                    void UnsupportedIos() { }
+
+                    [UnsupportedOSPlatform("macos")]
+                    [UnsupportedOSPlatform("maccatalyst")]
+                    [UnsupportedOSPlatform("ios")]
+                    [UnsupportedOSPlatform("tvos")]
+                    void UnsupportedApple() { }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms, s_currentReferenceAssemblies);
+        }
+
+        [TestMethod]
+        [DataRow("macos")]
+        [DataRow("maccatalyst")]
+        [DataRow("ios")]
+        [DataRow("tvos")]
+        public async Task IsApplePlatform_NegatedGuardExcludesOnlyApplePlatformsAsync(string platform)
+        {
+            var source = $$"""
+                using System;
+                using System.Runtime.Versioning;
+
+                class Test
+                {
+                    void M()
+                    {
+                        if (!OperatingSystem.IsApplePlatform())
+                        {
+                            UnsupportedApplePlatform();
+                            [|UnsupportedWindows()|];
+                        }
+                        else
+                        {
+                            [|UnsupportedApplePlatform()|];
+                            UnsupportedWindows();
+                        }
+                    }
+
+                    [UnsupportedOSPlatform("{{platform}}")]
+                    void UnsupportedApplePlatform() { }
+
+                    [UnsupportedOSPlatform("windows")]
+                    void UnsupportedWindows() { }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms, s_currentReferenceAssemblies);
+        }
+
+        [TestMethod]
+        public async Task IsApplePlatform_GuardsApplePlatforms_VisualBasicAsync()
+        {
+            var source = """
+                Imports System
+                Imports System.Runtime.Versioning
+
+                Class Test
+                    Sub M()
+                        If OperatingSystem.IsApplePlatform() Then
+                            SupportedApple()
+                            [|SupportedIos()|]
+                            UnsupportedWindows()
+                            [|UnsupportedIos()|]
+                        End If
+
+                        If Not OperatingSystem.IsApplePlatform() Then
+                            UnsupportedIos()
+                            [|UnsupportedWindows()|]
+                            [|SupportedApple()|]
+                        End If
+                    End Sub
+
+                    <SupportedOSPlatform("macos"), SupportedOSPlatform("maccatalyst"),
+                     SupportedOSPlatform("ios"), SupportedOSPlatform("tvos")>
+                    Sub SupportedApple()
+                    End Sub
+
+                    <SupportedOSPlatform("ios")>
+                    Sub SupportedIos()
+                    End Sub
+
+                    <UnsupportedOSPlatform("windows")>
+                    Sub UnsupportedWindows()
+                    End Sub
+
+                    <UnsupportedOSPlatform("ios")>
+                    Sub UnsupportedIos()
+                    End Sub
+                End Class
+                """;
+
+            await VerifyAnalyzerVBAsync(source, ApplePlatformMsBuildPlatforms, s_currentReferenceAssemblies);
+        }
+
+        [TestMethod]
+        [DataRow("macos")]
+        [DataRow("maccatalyst")]
+        [DataRow("ios")]
+        [DataRow("tvos")]
+        [DataRow("windows")]
+        public async Task IsApplePlatform_UsesGuardAttributesAsync(string platform)
+        {
+            var source = $$"""
+                using System;
+                using System.Runtime.Versioning;
+
+                namespace System
+                {
+                    public static class OperatingSystem
+                    {
+                        [SupportedOSPlatformGuard("{{platform}}")]
+                        public static bool IsApplePlatform() => throw new NotImplementedException();
+                    }
+                }
+
+                class Test
+                {
+                    void M()
+                    {
+                        if (OperatingSystem.IsApplePlatform())
+                        {
+                            Supported();
+                            [|Unsupported()|];
+                        }
+                        else
+                        {
+                            [|Supported()|];
+                            Unsupported();
+                        }
+
+                        if (!OperatingSystem.IsApplePlatform())
+                        {
+                            [|Supported()|];
+                            Unsupported();
+                        }
+                        else
+                        {
+                            Supported();
+                            [|Unsupported()|];
+                        }
+                    }
+
+                    [SupportedOSPlatform("{{platform}}")]
+                    void Supported() { }
+
+                    [UnsupportedOSPlatform("{{platform}}")]
+                    void Unsupported() { }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms);
+        }
+
+        [TestMethod]
+        public async Task IsApplePlatform_PreservesIosMacCatalystRelationshipAsync()
+        {
+            var source = """
+                using System;
+                using System.Runtime.Versioning;
+
+                class Test
+                {
+                    void M()
+                    {
+                        if (OperatingSystem.IsIOS())
+                        {
+                            SupportedIos();
+                            [|UnsupportedMacCatalyst()|];
+                        }
+
+                        if (OperatingSystem.IsMacCatalyst())
+                        {
+                            SupportedIos();
+                            [|UnsupportedIos()|];
+                        }
+
+                        if (OperatingSystem.IsIOS() && !OperatingSystem.IsMacCatalyst())
+                        {
+                            SupportedIos();
+                            UnsupportedMacCatalyst();
+                        }
+
+                        if (OperatingSystem.IsApplePlatform())
+                        {
+                            [|SupportedIos()|];
+                            [|UnsupportedIos()|];
+                            [|UnsupportedMacCatalyst()|];
+                        }
+                    }
+
+                    [SupportedOSPlatform("ios")]
+                    void SupportedIos() { }
+
+                    [UnsupportedOSPlatform("ios")]
+                    void UnsupportedIos() { }
+
+                    [UnsupportedOSPlatform("maccatalyst")]
+                    void UnsupportedMacCatalyst() { }
+                }
+                """;
+
+            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms, s_currentReferenceAssemblies);
+        }
+
         public static IEnumerable<object[]> NamedArgumentsData()
         {
             yield return new object[] { "minor : 2, major : 12" };
