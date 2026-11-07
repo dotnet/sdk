@@ -77,6 +77,22 @@ public class FishShellProviderTests : VerifyMSTest.VerifyBase
     }
 
     [TestMethod]
+    public void CompletionCandidatesUseLiteralArgumentQuoting()
+    {
+        var command = new Command("mycommand")
+        {
+            new Command("a'b\\c")
+            {
+                Description = "d'e\\f"
+            }
+        };
+
+        var completions = provider.GenerateCompletions(command);
+
+        Assert.Contains("printf '%s\\t%s\\n' 'a\\'b\\\\c' 'd\\'e\\\\f'", completions);
+    }
+
+    [TestMethod]
     public async Task BoundedMultiValueOption()
     {
         var multiOption = new Option<string[]>("--sources")

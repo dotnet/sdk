@@ -124,37 +124,78 @@
         <target state="translated">{0}: {1} は存在しません</target>
         <note />
       </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxInteractiveShellInstructions">
+        <source>Use '{1}' for interactive {0} sessions that read this file. Login and non-login sessions may read different startup files.</source>
+        <target state="new">Use '{1}' for interactive {0} sessions that read this file. Login and non-login sessions may read different startup files.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxLoginShellInstructions">
+        <source>{0} reads '{1}' for login shells. Interactive non-login shells may use a different startup file.</source>
+        <target state="new">{0} reads '{1}' for login shells. Interactive non-login shells may use a different startup file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="EnvironmentPathLinuxManualInstructions">
         <source>Tools directory '{0}' is not currently on the PATH environment variable.
-If you are using bash, you can add it to your profile by running the following command:
+{1}
+If this is the startup file used by your shell, append the tools directory by running:
 
-cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
-# Add .NET Core SDK tools
-export PATH="$PATH:{0}"
-EOF
+printf '\n%s\n' {3} &gt;&gt; {2}
 
 You can add it to the current session by running the following command:
 
-export PATH="$PATH:{0}"
+{4}
 </source>
-        <target state="translated">ツール ディレクトリ '{0}' は現在、PATH 環境変数にありません。
-Bash を使用している場合、次のコマンドを実行してプロファイルに追加できます:
+        <target state="new">Tools directory '{0}' is not currently on the PATH environment variable.
+{1}
+If this is the startup file used by your shell, append the tools directory by running:
 
-cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
-# .NET Core SDK tools
-export PATH="$PATH:{0}"
-EOF
+printf '\n%s\n' {3} &gt;&gt; {2}
 
-次のコマンドを実行して現在のセッションに追加できます:
+You can add it to the current session by running the following command:
 
-export PATH="$PATH:{0}"
+{4}
 </target>
-        <note />
+        <note>{0} is the tools directory, {1} explains shell startup-file loading, {2} is the shell-quoted startup file, {3} is a shell-quoted export command, {4} is the export command. {Locked="printf '\n%s\n'"} {Locked="&gt;&gt;"}</note>
       </trans-unit>
       <trans-unit id="EnvironmentPathLinuxNeedLogout">
         <source>Since you just installed the .NET SDK, you will need to logout or restart your session before running the tool you installed.</source>
         <target state="translated">.NET SDK をインストールしたばかりなので、インストールしたツールを実行する前に、ログアウトするか、セッションを再起動する必要があります。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxShellManualInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+{1}
+Append the tools directory to your shell's startup configuration by running:
+
+{2}
+
+You can add it to the current session by running the following command:
+
+{3}
+</source>
+        <target state="new">Tools directory '{0}' is not currently on the PATH environment variable.
+{1}
+Append the tools directory to your shell's startup configuration by running:
+
+{2}
+
+You can add it to the current session by running the following command:
+
+{3}
+</target>
+        <note>{0} is the tools directory, {1} explains shell startup-file loading, {2} is the shell-native command that appends to the startup file without overwriting it, {3} is the command for the current session.</note>
+      </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxUnknownShellInstructions">
+        <source>Tools directory '{0}' is not currently on the PATH environment variable.
+Add this directory to PATH using your shell's configuration. Consult your shell's documentation for the appropriate startup file and syntax.</source>
+        <target state="new">Tools directory '{0}' is not currently on the PATH environment variable.
+Add this directory to PATH using your shell's configuration. Consult your shell's documentation for the appropriate startup file and syntax.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="EnvironmentPathLinuxZshEnvironmentInstructions">
+        <source>{0} normally reads '{1}' for all shells. Later startup files can override PATH or change ZDOTDIR.</source>
+        <target state="new">{0} normally reads '{1}' for all shells. Later startup files can override PATH or change ZDOTDIR.</target>
+        <note>{Locked="PATH"} {Locked="ZDOTDIR"}</note>
       </trans-unit>
       <trans-unit id="EnvironmentPathOSXBashManualInstructions">
         <source>Tools directory '{0}' is not currently on the PATH environment variable.
