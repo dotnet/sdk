@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
@@ -16,24 +17,26 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     {
         private const string ApplePlatformMsBuildPlatforms = """
             build_property._SupportedPlatformList = macos,maccatalyst,ios,tvos,watchos,windows
-            build_property.TargetFramework = net5.0
+            build_property.TargetFramework = net12.0
             build_property.TargetFrameworkIdentifier = .NETCoreApp
-            build_property.TargetFrameworkVersion = v5.0
+            build_property.TargetFrameworkVersion = v12.0
             """;
 
-        private const string ApplePlatformOperatingSystemCs = """
-            namespace System
-            {
-                public static class OperatingSystem
-                {
-                    [System.Runtime.Versioning.SupportedOSPlatformGuard("macos")]
-                    [System.Runtime.Versioning.SupportedOSPlatformGuard("ios")]
-                    [System.Runtime.Versioning.SupportedOSPlatformGuard("tvos")]
-                    [System.Runtime.Versioning.SupportedOSPlatformGuard("maccatalyst")]
-                    public static bool IsApplePlatform() => throw new NotImplementedException();
-                }
-            }
-            """;
+        private static readonly ReferenceAssemblies s_currentReferenceAssemblies = CreateCurrentReferenceAssemblies();
+
+        private static ReferenceAssemblies CreateCurrentReferenceAssemblies()
+        {
+            var targetFramework = (string)AppContext.GetData("ReferenceAssemblies.TargetFramework")
+                ?? throw new InvalidOperationException("The test runtime configuration is missing ReferenceAssemblies.TargetFramework.");
+            var targetingPackVersion = (string)AppContext.GetData("ReferenceAssemblies.TargetingPackVersion")
+                ?? throw new InvalidOperationException("The test runtime configuration is missing ReferenceAssemblies.TargetingPackVersion.");
+
+            return new ReferenceAssemblies(
+                targetFramework,
+                new PackageIdentity("Microsoft.NETCore.App.Ref", targetingPackVersion),
+                Path.Combine("ref", targetFramework))
+                .WithNuGetConfigFilePath(Path.Combine(AppContext.BaseDirectory, "NuGet.config"));
+        }
 
         [TestMethod]
         public async Task IsApplePlatform_GuardsOnlyFourApplePlatformsAsync()
@@ -97,10 +100,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                     [UnsupportedOSPlatform("tvos")]
                     void UnsupportedApple() { }
                 }
+                """;
 
-                """ + ApplePlatformOperatingSystemCs;
-
-            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms, s_currentReferenceAssemblies);
         }
 
         [TestMethod]
@@ -136,10 +138,9 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                     [UnsupportedOSPlatform("windows")]
                     void UnsupportedWindows() { }
                 }
+                """;
 
-                """ + ApplePlatformOperatingSystemCs;
-
-            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms, s_currentReferenceAssemblies);
         }
 
         [TestMethod]
@@ -148,16 +149,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
             var source = """
                 Imports System
                 Imports System.Runtime.Versioning
-
-                Namespace System
-                    Public Class OperatingSystem
-                        <SupportedOSPlatformGuard("macos"), SupportedOSPlatformGuard("ios"),
-                         SupportedOSPlatformGuard("tvos"), SupportedOSPlatformGuard("maccatalyst")>
-                        Public Shared Function IsApplePlatform() As Boolean
-                            Throw New NotImplementedException()
-                        End Function
-                    End Class
-                End Namespace
 
                 Class Test
                     Sub M()
@@ -194,7 +185,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                 End Class
                 """;
 
-            await VerifyAnalyzerVBAsync(source, ApplePlatformMsBuildPlatforms);
+            await VerifyAnalyzerVBAsync(source, ApplePlatformMsBuildPlatforms, s_currentReferenceAssemblies);
         }
 
         [TestMethod]
@@ -264,23 +255,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                 using System;
                 using System.Runtime.Versioning;
 
-                namespace System
-                {
-                    public static class OperatingSystem
-                    {
-                        [SupportedOSPlatformGuard("maccatalyst")]
-                        public static bool IsIOS() => throw new NotImplementedException();
-
-                        public static bool IsMacCatalyst() => throw new NotImplementedException();
-
-                        [SupportedOSPlatformGuard("macos")]
-                        [SupportedOSPlatformGuard("ios")]
-                        [SupportedOSPlatformGuard("tvos")]
-                        [SupportedOSPlatformGuard("maccatalyst")]
-                        public static bool IsApplePlatform() => throw new NotImplementedException();
-                    }
-                }
-
                 class Test
                 {
                     void M()
@@ -322,7 +296,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
                 }
                 """;
 
-            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms);
+            await VerifyAnalyzerCSAsync(source, ApplePlatformMsBuildPlatforms, s_currentReferenceAssemblies);
         }
 
         public static IEnumerable<object[]> NamedArgumentsData()

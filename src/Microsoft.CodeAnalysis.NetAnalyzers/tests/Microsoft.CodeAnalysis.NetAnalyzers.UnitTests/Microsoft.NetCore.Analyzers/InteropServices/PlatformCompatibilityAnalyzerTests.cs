@@ -4454,21 +4454,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
             => await VerifyAnalyzerCSAsync(sourceCode, "build_property.TargetFramework = net5\nbuild_property.TargetFrameworkIdentifier = .NETCoreApp\nbuild_property.TargetFrameworkVersion = v5.0", expectedDiagnostics);
 
         private static async Task VerifyAnalyzerCSAsync(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
+            => await VerifyAnalyzerCSAsync(sourceCode, editorconfigText, ReferenceAssemblies.Net.Net60, expectedDiagnostics);
+
+        private static async Task VerifyAnalyzerCSAsync(string sourceCode, string editorconfigText, ReferenceAssemblies referenceAssemblies, params DiagnosticResult[] expectedDiagnostics)
         {
             var test = PopulateTestCs(sourceCode, expectedDiagnostics);
-            test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $"""
-                root = true
-
-                [*]
-                {editorconfigText}
-
-                """));
-            await test.RunAsync(CancellationToken.None);
-        }
-
-        private static async Task VerifyAnalyzerCSAsync(string sourceCode, string editorconfigText)
-        {
-            var test = PopulateTestCs(sourceCode);
+            test.ReferenceAssemblies = referenceAssemblies;
             test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $"""
                 root = true
 
@@ -4483,8 +4474,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
             => await VerifyAnalyzerVBAsync(sourceCode, "build_property.TargetFramework = net5\nbuild_property.TargetFrameworkIdentifier = .NETCoreApp\nbuild_property.TargetFrameworkVersion = v5.0", expectedDiagnostics);
 
         private static async Task VerifyAnalyzerVBAsync(string sourceCode, string editorconfigText, params DiagnosticResult[] expectedDiagnostics)
+            => await VerifyAnalyzerVBAsync(sourceCode, editorconfigText, ReferenceAssemblies.Net.Net60, expectedDiagnostics);
+
+        private static async Task VerifyAnalyzerVBAsync(string sourceCode, string editorconfigText, ReferenceAssemblies referenceAssemblies, params DiagnosticResult[] expectedDiagnostics)
         {
             var test = PopulateTestVb(sourceCode, expectedDiagnostics);
+            test.ReferenceAssemblies = referenceAssemblies;
             test.TestState.AnalyzerConfigFiles.Add(("/.editorconfig", $"""
                 root = true
 
