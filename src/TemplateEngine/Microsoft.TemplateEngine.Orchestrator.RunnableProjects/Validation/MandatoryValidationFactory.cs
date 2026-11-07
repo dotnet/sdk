@@ -98,6 +98,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation
 
                 new TemplateSourcesCheck("MV012", IValidationEntry.SeverityLevel.Error),
 
+                new MultiValidationCheck<BaseSymbol>(
+                    "MV013",
+                    IValidationEntry.SeverityLevel.Warning,
+                    (vi, symbol) => string.Format(LocalizableStrings.Authoring_SymbolNameContainsSlash, symbol.Name),
+                    vi => vi.ConfigModel.Symbols.Where(symbol => !symbol.IsImplicit && symbol.Name.IndexOf('/') >= 0)),
+
+                new MultiValidationCheck<ParameterSymbol>(
+                    "MV014",
+                    IValidationEntry.SeverityLevel.Warning,
+                    (vi, parameter) => string.Format(
+                        LocalizableStrings.Authoring_ChoiceNameContainsSlash,
+                        parameter.Name,
+                        string.Join(", ", parameter.Choices.Keys.Where(choice => choice.IndexOf('/') >= 0).Select(choice => $"'{choice}'"))),
+                    vi => vi.ConfigModel.Symbols.OfType<ParameterSymbol>()
+                        .Where(parameter => parameter.Choices?.Keys.Any(choice => choice.IndexOf('/') >= 0) == true)),
+
             };
 
             internal MandatoryValidation(ITemplateValidatorFactory factory)

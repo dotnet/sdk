@@ -161,6 +161,8 @@ Output content after template instantiation:
 
 ### Symbols 
 The symbols section defines variables and their values, the values may be the defined in terms of other symbols. When a defined symbol name is encountered anywhere in the template definition, it is replaced by the value defined in this configuration. The symbols configuration is a collection of key-value pairs. The keys are the symbol names, and the value contains key-value-pair configuration information on how to assign the symbol a value.
+Symbol names and choice values should not contain `/`, which is reserved as a separator in [localization keys](authoring-tools/Localization.md). Template validation reports a warning if these names contain `/`.
+
 The supported symbol types are:
 - Parameter
 - Derived
