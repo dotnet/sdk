@@ -18,6 +18,20 @@ only a test project can leave production assemblies or targets in that layout st
 product-layout freshness decision and invokes area-specific deployment workflows where
 applicable.
 
+## Newer MSBuild Package Assets Can Mask Native AOT Feature Switches
+
+**Affected area:** [`src/Cli/dotnet-aot`](../../src/Cli/dotnet-aot/)
+
+**Description:** `Microsoft.Build.Framework` places its trim-safe feature-switch target
+in the minimum-TFM `buildTransitive` asset group. A newer-TFM `_._` compatibility asset
+can be selected instead for `NetCurrent`, preventing NuGet from importing that target.
+
+**Workaround:** Preserve the explicit minimum-TFM import in
+[`AotDependencies.props`](../../src/Cli/dotnet-aot/AotDependencies.props). Before removing
+it, publish and run
+[`NativeAotUsesProductionMSBuildFeatureSwitches`](../../test/dotnet-aot.Tests/MSBuildEvaluationTests.cs)
+as a Native AOT test; a managed run skips its assertions.
+
 ## A Reused App Tree Can Serve Stale WebAssembly Runtime Assets
 
 **Affected area:** Manual validation of `dotnet watch` / Blazor WebAssembly against a
