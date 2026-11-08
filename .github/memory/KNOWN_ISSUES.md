@@ -18,6 +18,18 @@ only a test project can leave production assemblies or targets in that layout st
 product-layout freshness decision and invokes area-specific deployment workflows where
 applicable.
 
+## Legacy VSTest Output Requires Non-Reusable MSBuild Nodes
+
+**Affected area:** [`dotnet test` VSTest forwarding](../../src/Cli/dotnet/Commands/Test/VSTest/TestCommand.cs)
+
+**Description:** The legacy VSTest task writes directly to stdout instead of logging
+through MSBuild. Reusable MSBuild nodes can outlive the invoking `dotnet test` process,
+so they cannot safely retain that process's stdout.
+
+**Workaround:** When legacy output is selected, preserve the paired
+`MSBUILDENSURESTDOUTFORTASKPROCESSES=1` and `-nodereuse:false` safeguards in
+`SetLegacyVSTestWorkarounds`.
+
 ## A Reused App Tree Can Serve Stale WebAssembly Runtime Assets
 
 **Affected area:** Manual validation of `dotnet watch` / Blazor WebAssembly against a

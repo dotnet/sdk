@@ -86,7 +86,6 @@ public class TestCommand(
     {
         var definition = (TestCommandDefinition.VSTest)parseResult.CommandResult.Command;
 
-        // Workaround for https://github.com/Microsoft/vstest/issues/1503
         const string NodeWindowEnvironmentName = "MSBUILDENSURESTDOUTFORTASKPROCESSES";
         string? previousNodeWindowSetting = Environment.GetEnvironmentVariable(NodeWindowEnvironmentName);
         try
@@ -146,8 +145,8 @@ public class TestCommand(
         static string[] SetLegacyVSTestWorkarounds(string NodeWindowEnvironmentName)
         {
             string[] additionalBuildProperties;
-            // User explicitly disabled the new logger. Use workarounds needed for old logger.
-            // Workaround for https://github.com/Microsoft/vstest/issues/1503
+            // Legacy VSTestTask writes directly to stdout, so its MSBuild nodes must share stdout
+            // and must not be reused after this process exits.
             Environment.SetEnvironmentVariable(NodeWindowEnvironmentName, "1");
             additionalBuildProperties = ["-nodereuse:false"];
             return additionalBuildProperties;
