@@ -52,9 +52,9 @@ internal class InstallerOrchestratorSingleton
 
     // Throws DotnetInstallException on failure, returns InstallResult on success
 #pragma warning disable CA1822 // Intentionally an instance method on a singleton
-    public InstallResult Install(ResolvedInstallRequest resolvedRequest, bool noProgress = false)
+    public InstallResult Install(ResolvedInstallRequest resolvedRequest, ProgressMode progress = ProgressMode.Bars)
     {
-        IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+        IProgressTarget progressTarget = ProgressTargets.Create(progress);
         using var reporter = new LazyProgressReporter(progressTarget);
         using var prepared = PrepareInstall(resolvedRequest, new InstallBatchContext(reporter, resolvedRequest.ResolvedVersion.ToString().Length), out var alreadyInstalledResult);
 

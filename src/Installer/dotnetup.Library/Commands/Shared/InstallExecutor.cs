@@ -21,11 +21,11 @@ internal class InstallExecutor
     /// then displays a unified result summary including any per-request failures.
     /// </summary>
     /// <param name="requests">The resolved install requests to execute.</param>
-    /// <param name="noProgress">Whether to suppress progress display.</param>
+    /// <param name="progress">How to display progress.</param>
     /// <returns>The batch result containing successes and failures.</returns>
     public static InstallBatchResult ExecuteInstalls(
         List<ResolvedInstallRequest> requests,
-        bool noProgress)
+        ProgressMode progress)
     {
         if (requests.Count == 0)
         {
@@ -48,7 +48,7 @@ internal class InstallExecutor
 
         InstallBatchResult batchResult;
         {
-            IProgressTarget progressTarget = noProgress ? new NonUpdatingProgressTarget() : new SpectreProgressTarget();
+            IProgressTarget progressTarget = ProgressTargets.Create(progress);
             using var sharedReporter = new LazyProgressReporter(progressTarget);
             batchResult = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         }
@@ -65,10 +65,10 @@ internal class InstallExecutor
     /// </summary>
     public static void ExecuteInstallsAndThrowOnFailure(
         List<ResolvedInstallRequest> requests,
-        bool noProgress,
+        ProgressMode progress,
         CommandBase command)
     {
-        var batchResult = ExecuteInstalls(requests, noProgress);
+        var batchResult = ExecuteInstalls(requests, progress);
 
         int newlyInstalled = batchResult.Successes.Count(r => !r.WasAlreadyInstalled);
         int alreadyInstalled = batchResult.Successes.Count(r => r.WasAlreadyInstalled);

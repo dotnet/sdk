@@ -30,6 +30,7 @@ internal static class SelfCommandParser
         update.Options.Add(ForceOption);
         update.Options.Add(UpdateNotificationsOption);
         update.Options.Add(CommonOptions.NoProgressOption);
+        update.Options.Add(CommonOptions.ProgressOption);
         update.Validators.Add(static result =>
         {
             // --update-notifications only changes a setting, so options that shape an update would be ignored.

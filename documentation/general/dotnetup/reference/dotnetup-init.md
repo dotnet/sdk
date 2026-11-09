@@ -39,7 +39,8 @@ Run this command again to reconfigure dotnetup.
 | --- | --- |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
-| `--no-progress [<true\|false>]` | Disable progress display. |
+| `--no-progress [<true\|false>]` | Disable progress display. Same as `--progress none`. |
+| `--progress <auto\|bars\|lines\|none>` | Choose the progress display. The default, `auto`, uses live bars on a terminal and plain lines when output is redirected or in CI. |
 | `-s`, `--shell [<bash\|zsh\|fish\|pwsh>]` | Select the profile shell. If omitted, detect the current shell. |
 | `-v`, `--verbosity <normal\|detailed>` | Set output verbosity. The default is `normal`. |
 | `--require-muxer-update [<true\|false>]` | Fail if the command cannot update the `dotnet` executable. By default, installation continues with a warning. |

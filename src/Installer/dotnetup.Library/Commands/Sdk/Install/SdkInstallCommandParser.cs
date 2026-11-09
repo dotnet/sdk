@@ -51,6 +51,7 @@ internal static class SdkInstallCommandParser
         // If a user wants to override shell detection for the profile-setup experience,
         // they can run `dotnetup init --shell <name>` before installing.
         command.Options.Add(CommonOptions.NoProgressOption);
+        command.Options.Add(CommonOptions.ProgressOption);
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.RequireMuxerUpdateOption);
         command.Options.Add(CommonOptions.UntrackedOption);

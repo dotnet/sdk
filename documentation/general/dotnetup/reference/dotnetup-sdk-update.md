@@ -31,7 +31,8 @@ versions. Use `--all` to process SDK and runtime specifications.
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Update only the matching installation root. |
 | `--interactive [<true\|false>]` | Accepted for compatibility. Update does not use this option. |
-| `--no-progress [<true\|false>]` | Disable progress display. |
+| `--no-progress [<true\|false>]` | Disable progress display. Same as `--progress none`. |
+| `--progress <auto\|bars\|lines\|none>` | Choose the progress display. The default, `auto`, uses live bars on a terminal and plain lines when output is redirected or in CI. |
 | `-v`, `--verbosity <normal\|detailed>` | Set output verbosity. The default is `normal`. |
 | `-?`, `-h`, `--help` | Show command help. |
 

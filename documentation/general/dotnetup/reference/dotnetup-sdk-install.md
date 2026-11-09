@@ -39,7 +39,8 @@ the file has no usable SDK requirement, or if no file exists, it selects
 | `--update-global-json [<true\|false>]` | Replace `sdk.version` in the applicable `global.json` with the installed version. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--interactive [<true\|false>]` | Allow first-use onboarding to wait for input. |
-| `--no-progress [<true\|false>]` | Disable progress display. |
+| `--no-progress [<true\|false>]` | Disable progress display. Same as `--progress none`. |
+| `--progress <auto\|bars\|lines\|none>` | Choose the progress display. The default, `auto`, uses live bars on a terminal and plain lines when output is redirected or in CI. |
 | `-v`, `--verbosity <normal\|detailed>` | Set output verbosity. The default is `normal`. |
 | `--require-muxer-update [<true\|false>]` | Fail if the command cannot update the `dotnet` executable. By default, installation continues with a warning. |
 | `--untracked [<true\|false>]` | Install without tracking the requirement. Use a separate root that no tracked installation uses. |

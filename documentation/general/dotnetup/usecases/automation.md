@@ -88,7 +88,9 @@ present and valid.
 
 ## Keep output useful
 
-- Use `--no-progress` when logs do not support terminal progress.
+- Progress prints as plain lines with periodic percentages when output is
+  redirected or in CI. Use `--no-progress` (or `--progress none`) to print
+  only when each step starts and finishes.
 - Use `--verbosity normal` for normal automation.
 - Use `--verbosity detailed` to diagnose resolution or installation.
 - Check the command exit code. Update commands can continue after an

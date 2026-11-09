@@ -79,6 +79,79 @@ public class NonUpdatingProgressTargetTests
         lines.Should().Equal("Installing .NET SDK...");
     }
 
+    [TestMethod]
+    public void LinesMode_ReportsEachStepOnceWithCurrentDetail()
+    {
+        string[] lines = CaptureLines(() =>
+        {
+            using var reporter = ProgressTargets.Create(ProgressMode.Lines).CreateProgressReporter();
+            var task = reporter.AddTask("Downloading  .NET SDK  " + Version, 100);
+            task.RequiresKnownMaximum.Should().BeTrue();
+            var progress = new DownloadProgressReporter(task, "Downloading  .NET SDK  " + Version);
+            long total = 4 * 1024 * 1024;
+            foreach (long bytes in new long[] { 512 * 1024, 1024 * 1024, 1536 * 1024, 2 * 1024 * 1024, 3 * 1024 * 1024, total })
+            {
+                progress.Report(new DownloadProgress(bytes, total));
+            }
+
+            task.Description = $"Downloaded .NET SDK {Version} (4.0 MB / 4.0 MB)";
+        });
+
+        lines.Should().Equal(
+            $"Downloading .NET SDK {Version}...",
+            $"Downloading .NET SDK {Version}: 25% (1.0 MB / 4.0 MB)",
+            $"Downloading .NET SDK {Version}: 50% (2.0 MB / 4.0 MB)",
+            $"Downloading .NET SDK {Version}: 75% (3.0 MB / 4.0 MB)",
+            $"Downloaded .NET SDK {Version} (4.0 MB / 4.0 MB)");
+    }
+
+    [TestMethod]
+    public void NoneMode_DoesNotRequestKnownMaximum()
+    {
+        using var reporter = ProgressTargets.Create(ProgressMode.None).CreateProgressReporter();
+        CaptureLines(() => reporter.AddTask("Installing .NET SDK", 100).RequiresKnownMaximum.Should().BeFalse());
+    }
+
+    [TestMethod]
+    [DataRow("sdk install 10.0 --no-progress", ProgressMode.None)]
+    [DataRow("sdk install 10.0 --no-progress --progress bars", ProgressMode.None)]
+    [DataRow("sdk install 10.0 --no-progress false --progress lines", ProgressMode.Lines)]
+    [DataRow("sdk install 10.0 --progress bars", ProgressMode.Bars)]
+    [DataRow("sdk install 10.0 --progress lines", ProgressMode.Lines)]
+    [DataRow("sdk install 10.0 --progress none", ProgressMode.None)]
+    [DataRow("self update --progress lines", ProgressMode.Lines)]
+    [DataRow("update --progress none", ProgressMode.None)]
+    public void ResolveProgressMode_HonorsExplicitOptions(string commandLine, ProgressMode expected)
+    {
+        var result = Parser.Parse(commandLine.Split(' '));
+
+        result.Errors.Should().BeEmpty();
+        CommonOptions.ResolveProgressMode(result).Should().Be(expected);
+    }
+
+    [TestMethod]
+    [DataRow("sdk install 10.0")]
+    [DataRow("sdk install 10.0 --progress auto")]
+    public void ResolveProgressMode_AutoPicksBarsOrLinesFromTheConsole(string commandLine)
+    {
+        ProgressMode resolved = CommonOptions.ResolveProgressMode(Parser.Parse(commandLine.Split(' ')));
+
+        if (Console.IsOutputRedirected)
+        {
+            resolved.Should().Be(ProgressMode.Lines);
+        }
+        else
+        {
+            resolved.Should().BeOneOf(ProgressMode.Bars, ProgressMode.Lines);
+        }
+    }
+
+    [TestMethod]
+    public void ProgressOption_RejectsUnknownMode()
+    {
+        Parser.Parse(["sdk", "install", "10.0", "--progress", "fancy"]).Errors.Should().NotBeEmpty();
+    }
+
     private static string[] CaptureLines(Action action)
     {
         IAnsiConsole previousConsole = AnsiConsole.Console;

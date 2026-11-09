@@ -26,10 +26,10 @@ internal class UpdateWorkflow
     /// <param name="manifestPath">Custom manifest path, or null for default.</param>
     /// <param name="installPath">Specific install path to update, or null for all roots.</param>
     /// <param name="componentFilter">Which component(s) to update. Null means update all.</param>
-    /// <param name="noProgress">Whether to suppress progress display.</param>
+    /// <param name="progress">How to display progress.</param>
     /// <param name="updateGlobalJson">Whether to update global.json files after updating global.json-sourced SDK specs.</param>
     /// <param name="verbosity">The verbosity level for diagnostic messages during installation.</param>
-    public void Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, bool noProgress, bool updateGlobalJson = false, Verbosity verbosity = Verbosity.Normal)
+    public void Execute(string? manifestPath, string? installPath, InstallComponent? componentFilter, ProgressMode progress, bool updateGlobalJson = false, Verbosity verbosity = Verbosity.Normal)
     {
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
 
@@ -52,7 +52,7 @@ internal class UpdateWorkflow
 
         foreach (var root in rootsList)
         {
-            UpdateRoot(root, manifestPath, componentFilter, noProgress, updateGlobalJson, verbosity, ref anyUpdated, ref firstFailure);
+            UpdateRoot(root, manifestPath, componentFilter, progress, updateGlobalJson, verbosity, ref anyUpdated, ref firstFailure);
         }
 
         if (!anyUpdated && firstFailure is null)
@@ -75,7 +75,7 @@ internal class UpdateWorkflow
         DotnetRootEntry root,
         string? manifestPath,
         InstallComponent? componentFilter,
-        bool noProgress,
+        ProgressMode progress,
         bool updateGlobalJson,
         Verbosity verbosity,
         ref bool anyUpdated,
@@ -93,7 +93,7 @@ internal class UpdateWorkflow
 
             try
             {
-                bool updated = UpdateSpec(spec, root, installRoot, manifestPath, noProgress, updateGlobalJson, verbosity);
+                bool updated = UpdateSpec(spec, root, installRoot, manifestPath, progress, updateGlobalJson, verbosity);
                 if (updated) { anyUpdated = true; rootUpdated = true; }
             }
             catch (DotnetInstallException ex)
@@ -150,7 +150,7 @@ internal class UpdateWorkflow
         DotnetRootEntry root,
         DotnetInstallRoot installRoot,
         string? manifestPath,
-        bool noProgress,
+        ProgressMode progress,
         bool updateGlobalJson,
         Verbosity verbosity)
     {
@@ -193,7 +193,7 @@ internal class UpdateWorkflow
             }
         }
 
-        bool updated = InstallVersion(channel, spec, installRoot, latestVersion, alreadyInstalled, noProgress, manifestPath, verbosity);
+        bool updated = InstallVersion(channel, spec, installRoot, latestVersion, alreadyInstalled, progress, manifestPath, verbosity);
 
         // Update global.json if requested and this spec came from a global.json,
         // but only if the latest version is newer than what's already specified.
@@ -230,7 +230,7 @@ internal class UpdateWorkflow
         DotnetInstallRoot installRoot,
         ReleaseVersion latestVersion,
         bool alreadyInstalled,
-        bool noProgress,
+        ProgressMode progress,
         string? manifestPath,
         Verbosity verbosity)
     {
@@ -257,7 +257,7 @@ internal class UpdateWorkflow
             AnsiConsole.MarkupLine(DotnetupTheme.Warning(Microsoft.Dotnet.Installation.Strings.UnsignedBlobFeedWarning.EscapeMarkup()));
         }
 
-        InstallerOrchestratorSingleton.Instance.Install(resolvedRequest, noProgress);
+        InstallerOrchestratorSingleton.Instance.Install(resolvedRequest, progress);
         AnsiConsole.MarkupLine(DotnetupTheme.Success($"Updated {displayName} {spec.VersionOrChannel} to {latestVersion}."));
         return true;
     }
