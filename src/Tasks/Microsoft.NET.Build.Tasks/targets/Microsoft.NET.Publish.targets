@@ -650,6 +650,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Copy satellite assemblies. -->
       <ResolvedFileToPublish Include="@(IntermediateSatelliteAssembliesWithTargetPath)">
         <RelativePath>%(IntermediateSatelliteAssembliesWithTargetPath.Culture)\%(Filename)%(Extension)</RelativePath>
+        <AssetType>resources</AssetType>
         <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
       </ResolvedFileToPublish>
 
@@ -824,6 +825,16 @@ Copyright (c) .NET Foundation. All rights reserved.
         <DestinationSubPath>%(ReferenceCopyLocalPaths.DestinationSubDirectory)%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)</DestinationSubPath>
       </_ResolvedCopyLocalPublishAssets>
 
+    </ItemGroup>
+
+    <!-- Native AOT identifies satellites by AssetType, including those resolved from project and assembly references. -->
+    <JoinItems Left="@(ReferenceSatellitePaths)" Right="@(_ResolvedCopyLocalPublishAssets)" RightMetadata="*">
+      <Output TaskParameter="JoinResult" ItemName="_ReferenceSatellitePublishAssets" />
+    </JoinItems>
+
+    <ItemGroup>
+      <_ResolvedCopyLocalPublishAssets Remove="@(_ReferenceSatellitePublishAssets)" />
+      <_ResolvedCopyLocalPublishAssets Include="@(_ReferenceSatellitePublishAssets)" AssetType="resources" />
     </ItemGroup>
   </Target>
 

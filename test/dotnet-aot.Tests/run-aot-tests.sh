@@ -2,8 +2,8 @@
 # Licensed to the .NET Foundation under one or more agreements.
 # The .NET Foundation licenses this file to you under the MIT license.
 
-# Publishes the NativeAOT test binary, dotnet-aot library, and dn host, then runs
-# the full test suite including end-to-end dn integration.
+# Publishes the NativeAOT test binary, dotnet-aot library, and dn host, builds the
+# matching managed CLI, then runs the full suite including end-to-end dn integration.
 # See run-aot-tests.ps1 for detailed documentation.
 #
 # Usage:
@@ -17,6 +17,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 DOTNET="$REPO_ROOT/.dotnet/dotnet"
 TEST_PROJECT="$SCRIPT_DIR/dotnet-aot.Tests.csproj"
 PRODUCT_PROJECT="$REPO_ROOT/src/Cli/dotnet-aot/dotnet-aot.csproj"
+MANAGED_CLI_PROJECT="$REPO_ROOT/src/Cli/dotnet/dotnet.csproj"
 DN_PROJECT="$REPO_ROOT/src/Cli/dn/dn.csproj"
 
 CONFIGURATION="Debug"
@@ -95,6 +96,8 @@ if [[ "$NO_BUILD" == false ]]; then
         -r "$RID" \
         -p:PublishDir="$DN_PUBLISH_DIR"
 
+    "$DOTNET" build "$MANAGED_CLI_PROJECT" -c "$CONFIGURATION"
+
     echo ""
     echo "Published: $EXE_PATH"
     if [[ -f "$EXE_PATH" ]]; then
@@ -148,6 +151,15 @@ if [[ ! -f "$MANAGED_TEST_MODULE" ]]; then
     exit 1
 fi
 export DOTNET_AOT_TEST_MANAGED_TEST_MODULE="$MANAGED_TEST_MODULE"
+MANAGED_CLI_DIRECTORY=$("$DOTNET" msbuild "$MANAGED_CLI_PROJECT" \
+    -p:Configuration="$CONFIGURATION" -getProperty:TargetDir -nologo)
+for file in dotnet.dll dotnet.deps.json dotnet.runtimeconfig.json; do
+    if [[ ! -f "$MANAGED_CLI_DIRECTORY/$file" ]]; then
+        echo "ERROR: Managed CLI baseline is missing $file. Run without --no-build to build it."
+        exit 1
+    fi
+done
+export DOTNET_AOT_TEST_MANAGED_CLI_DIRECTORY="$MANAGED_CLI_DIRECTORY"
 export DOTNET_AOT_TEST_NUGET_CONFIG="$REPO_ROOT/NuGet.config"
 export DOTNET_AOT_SDK_DIR="$SDK_DIRECTORY"
 export DOTNET_AOT_LIBRARY_DIR="$AOT_PUBLISH_DIR"
