@@ -6,14 +6,14 @@
     {
       "id": "dotnet-test-wire-contract-fieldids",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/IPC/ObjectFieldIds.cs",
-      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props). RetryAttemptNumber and IsSuperseded are reserved in the SDK contract so newer peers can send them without conflicting ids; the SDK does not consume that metadata until its serializers and retry model support framework-level retry attempts. ProviderUid, MinimumArity, and MaximumArity are also reserved; the SDK's command-line option serializer skips that optional metadata.",
+      "notes": "Named-pipe wire contract (serializer/field ids) for the 'dotnet test' <-> Microsoft.Testing.Platform protocol. MUST stay byte-aligned with testfx: ids are the on-wire identity and cannot change without a coordinated protocol break. testfx is the source of truth (its copy is packed by DotnetTestProtocolContract.props). CoverageSummary (file-artifact field 9) and CoverageSummaryMessages (serializer 15) are already implemented in the SDK. RetryAttemptNumber and IsSuperseded are reserved in the SDK contract so newer peers can send them without conflicting ids; the SDK does not consume that metadata until its serializers and retry model support framework-level retry attempts. ProviderUid, MinimumArity, and MaximumArity are also reserved; the SDK's command-line option serializer skips that optional metadata.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
-          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
-          "baseline_blob_sha": "7592b74c90a4c2e5b989b7f3314ebc1c0ec11804",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "289a192a8acb6e2472c1fb4d4e3dbb7558152b5c",
           "scope": "entire file; ids must match exactly"
         }
       ]
@@ -21,14 +21,14 @@
     {
       "id": "dotnet-test-wire-contract-constants",
       "local_path": "src/Cli/dotnet/Commands/Test/CliConstants.cs",
-      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, HandshakeMessageHostTypes, ProtocolConstants). Watch the upstream file for added/changed wire constants. Reconciled through 3c6614c5: the SDK mirrors the ArtifactPostProcessor and TestHostOrchestrator host types, the OrchestratorFeature property, and the 'tool' execution mode. GitHub Actions workflow commands use informational DisplayMessage (1.3.0+) so the SDK writes their text verbatim without warning/error formatting; this upstream revision only clarifies comments and changes no wire constants. The SDK consumes the retry orchestrator feature to enable retry UX before the first TestHost handshake. Intentional divergences: the SDK does not mirror TestStates.InProgress, and ProtocolConstants.SupportedVersions deliberately stops at 1.3.0 because the SDK does not implement the 1.4.0 reverse server-control channel.",
+      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, HandshakeMessageHostTypes, ProtocolConstants). Watch the upstream file for added/changed wire constants. The SDK mirrors the ArtifactPostProcessor and TestHostOrchestrator host types, the OrchestratorFeature property, and the 'tool' execution mode. GitHub Actions workflow commands use informational DisplayMessage (1.3.0+) so the SDK writes their text verbatim without warning/error formatting. CoverageSummaryVersion (handshake field 20, version '1') is already implemented and negotiated independently of the base protocol. The SDK consumes the retry orchestrator feature to enable retry UX before the first TestHost handshake. Intentional divergences: the SDK does not mirror TestStates.InProgress, and ProtocolConstants.SupportedVersions deliberately stops at 1.3.0 because the SDK does not implement the 1.4.0 reverse server-control channel.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs",
-          "baseline_ref_sha": "3c6614c5ae19ee4ddca55cbf9b3375bbaad3496b",
-          "baseline_blob_sha": "21905367757a0fb8933ee50b9fa3ae8f377b6f1c",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "65e4cbe0ee2c2ce45aa2acfa2aa278de89f2285b",
           "scope": "wire constants (TestStates, SessionEventTypes, HandshakeMessage*, ProtocolConstants)"
         }
       ]
@@ -66,8 +66,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Formatting.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "e635002a2b75195d01327aad9508a023df0492fd",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "4f74feeb8a89ff3dee999d2788aebd8a88aa5d71",
           "scope": "reporter partial"
         },
         {
@@ -90,8 +90,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Messaging.cs",
-          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
-          "baseline_blob_sha": "04266b4e32ef754245b45f29838f5482d5817e45",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "2e8191cdc9d9699feef0a0ead2f15eeb75d1d0dc",
           "scope": "reporter partial"
         },
         {
@@ -138,8 +138,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.TestDiscovery.cs",
-          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
-          "baseline_blob_sha": "55fb099b665181200701f0153282093b511ce499",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "d6a658725850328f628fbf8104a60827bb3b4d5a",
           "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
         }
       ]
@@ -183,8 +183,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminal.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "6716c8b983c5ea37ed324f2f3ccc69e5695424fa",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "745089af14f85d0234e164c88f94629c278c1dc8",
           "scope": "entire file"
         }
       ]
@@ -206,8 +206,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.Append.cs",
-          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
-          "baseline_blob_sha": "4cbbe919121d1790f3bc3e713e297d3fb0acc960",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "810d4de6999083d24c13dec85ce7dfc57e00c70f",
           "scope": "frame partial; split out of AnsiTerminalTestProgressFrame.cs"
         },
         {
@@ -291,14 +291,14 @@
     {
       "id": "dotnet-test-terminal-nativemethods",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/NativeMethods.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. The upstream SA1121 suppression is not ported: SDK interop signatures already use nint rather than IntPtr and do not share this file with older target frameworks.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/NativeMethods.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "121d1cca743710bf2ffe5a1a8a9433526e691005",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "f591c3fa14d084155b46e4b474fa3df2813c2f43",
           "scope": "entire file"
         }
       ]
@@ -327,8 +327,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleAnsiTerminal.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "90f530c1b949b5c7f8cc5e629b37e5a8bdcc176e",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "3fdf052d2c75beb7566358f994d31dac19ed2ce3",
           "scope": "entire file"
         }
       ]
@@ -342,8 +342,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleTerminalBase.cs",
-          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
-          "baseline_blob_sha": "786ff445c6a535e5a7bb69b05f91d0722cc5efa6",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "84565fedfeaa1045272f36001ecd18da9218e429",
           "scope": "entire file"
         }
       ]
@@ -366,14 +366,14 @@
     {
       "id": "dotnet-test-terminal-terminaltestreporteroptions",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporterOptions.cs",
-      "notes": "Terminal reporter options hard-forked from testfx. Reconciled through f4d8d35b: heartbeat and slow-test thresholds default to 60 seconds; the SDK retains its synchronous boolean ShowProgress and adds collection-mode classification. Existing visibility, retry/flaky, slowest-test, and zero-test options are retained. The SDK uses the final aggregate exit code instead of the upstream in-process HasTestSessionFailure and ZeroTestsPolicy callbacks.",
+      "notes": "Terminal reporter options hard-forked from testfx. Heartbeat and slow-test thresholds default to 60 seconds; the SDK retains its synchronous boolean ShowProgress and adds collection-mode classification. Captured stdout and stderr default to Failed in every environment, with independent per-module all/failed/none overrides. Raw process output, capture, and test-result visibility remain independent. Existing retry/flaky, slowest-test, and zero-test options are retained. The SDK uses the final aggregate exit code instead of the upstream in-process HasTestSessionFailure and ZeroTestsPolicy callbacks.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporterOptions.cs",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
-          "baseline_blob_sha": "8180ec21656507ef1f56d9535141142d841e0c14",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "411ea479694b687311916502cd7edc55da6877b0",
           "scope": "entire file"
         }
       ]
@@ -426,15 +426,31 @@
     {
       "id": "dotnet-test-terminal-testprogressstate",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestProgressState.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx. The SDK implements instance-based retry/flaky accounting; framework-level retry attribution still needs IPC metadata. HasIncompleteTestResults is SDK-owned session-lifecycle state, not a recovered-artifact count.",
+      "notes": "Terminal reporter support type hard-forked from testfx. The upstream Results/Summary partial split changes file organization, so the SDK keeps its single-file fork and tracks both new partials below. The SDK implements instance-based retry/flaky accounting; framework-level retry attribution still needs IPC metadata. HasIncompleteTestResults is SDK-owned session-lifecycle state, not a recovered-artifact count.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.cs",
-          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
-          "baseline_blob_sha": "7b0ff5bdf2b06978b619e7ce9a6647606c31c39a",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "5a4bfa97640c39637b571e863ea3797bc9020d1d",
           "scope": "entire file"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.Results.cs",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "0c1d69f81f7d90299ca6fe47ecd3b709f2ca5798",
+          "scope": "progress-state partial; split out of TestProgressState.cs"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.Summary.cs",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "8a320b77551dfbab6400d9dce94d100e47263fad",
+          "scope": "progress-state partial; split out of TestProgressState.cs"
         }
       ]
     },
@@ -507,8 +523,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/TargetFrameworkParser.cs",
-          "baseline_ref_sha": "005e8f826fcb174cb9ebaa1382a152466fada67d",
-          "baseline_blob_sha": "a88fd6d82133f6ad1516427105ca3146e9860dae",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "7dc0e55149a1e9ac520031d1635169148647ba0c",
           "scope": "entire file"
         }
       ]
@@ -582,8 +598,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/IProgressRenderer.cs",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
-          "baseline_blob_sha": "576ee23bcc50084a036ba79bce81b3377ad02763",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "7361e7601a3f41f1a78832313551cba0919ea7e6",
           "scope": "renderer contract without in-process progress messages"
         }
       ]
@@ -612,8 +628,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SilenceDrivenHeartbeatRenderer.cs",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
-          "baseline_blob_sha": "9c96bd930d92b8e9f21cc9e63f5892e8fa8eedb0",
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "4d935360673b90b20c49da359e77b9f0b49287ad",
           "scope": "heartbeat and slow-test behavior"
         }
       ]
@@ -651,15 +667,15 @@
     {
       "id": "dotnet-test-terminal-progress-resources",
       "local_path": "src/Cli/dotnet/Commands/CliCommandStrings.resx",
-      "notes": "TerminalProgressHeartbeat*, TerminalProgressSlowTest and ErroredAssembliesHeader are adapted into the managed CLI resource owner. SDK-only collection and reporting-completeness messages have no upstream equivalent.",
+      "notes": "TerminalProgressHeartbeat*, TerminalProgressSlowTest and ErroredAssembliesHeader are adapted into the managed CLI resource owner. Captured-output help descriptions are adapted into CommandDefinitionStrings.resx so the SDK advertises its Failed default even when an older test application supplies help metadata. SDK-only collection and reporting-completeness messages have no upstream equivalent.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalResources.resx",
-          "baseline_ref_sha": "f4d8d35bf45ce0ece75a66e1b197c96684767e48",
-          "baseline_blob_sha": "77721cf92e280e1cf34cce88093e253151854541",
-          "scope": "progress and errored-assembly strings"
+          "baseline_ref_sha": "b3f3c980c480c5d97976d658ac367b1e246502be",
+          "baseline_blob_sha": "fc13b308ce14aa6dc1e8b9e444111c201b6ab966",
+          "scope": "progress and errored-assembly strings; captured-output help in Definitions"
         }
       ]
     }

@@ -244,6 +244,10 @@ internal sealed class TestProgressState(
 
     public TestResultVisibility TestResultVisibility { get; } = testResultVisibility;
 
+    public OutputShowMode ShowStdout { get; init; } = OutputShowMode.Failed;
+
+    public OutputShowMode ShowStderr { get; init; } = OutputShowMode.Failed;
+
     public int SlowestTestsCount { get; } = slowestTestsCount;
 
     public bool ShowFlakyTests { get; } = showFlakyTests;

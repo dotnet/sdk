@@ -3,11 +3,12 @@ import { execFile } from "node:child_process";
 import { cp, mkdtemp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import { createServer } from "node:http";
 import test, { after, before } from "node:test";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { expandContext, finish, prepare, printBatch, record, rulesHash } from "../workflow.mjs";
-import { completeSubmission, getSourceTools, requestSourceTools, startSourceServer, submissionReceipt } from "../source-tools.mjs";
+import { exportSubmission, getSourceTools, requestSourceTools, sendRecordingRequest, startSourceServer, submissionReceipt } from "../source-tools.mjs";
 import { createGitRepo } from "./fixture.mjs";
 
 const repository = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../..");
@@ -32,7 +33,7 @@ after(() =>
     }
 });
 
-function fixture(t, padding = 0)
+function fixture(t, padding = 0, fileCount = 1)
 {
     const files = {
         "src/Sample.cs": [
@@ -54,6 +55,10 @@ function fixture(t, padding = 0)
         ".github/stale-reference-check/source-tools.mjs": "// bounded source reader rules",
         ".github/workflows/stale-reference-interpret.md": "# Interpretation rules",
     };
+    for (let index = 1; index < fileCount; index++)
+    {
+        files[`src/Sample${index}.cs`] = files["src/Sample.cs"].replace("class SampleTests", `class SampleTests${index}`);
+    }
     const contents = Object.fromEntries(Object.entries(files).map(([file, content]) => [file, `${content}\n`]));
     return createGitRepo(t, contents, { directory: os.tmpdir(), prefix: "stale-reference-workflow-" });
 }
@@ -67,7 +72,7 @@ async function stageSubmission(root, payload)
     const accepted = await tools.prepareInterpretations({ payload: JSON.stringify(payload) });
     await writeFile(path.join(directory, "submission.json"), JSON.stringify(tools.submission()));
     await writeFile(path.join(directory, "context-evidence.json"), JSON.stringify(tools.evidence()));
-    return { type: "record_interpretations", ...accepted, payload: tools.submission().payload };
+    return { type: "record_interpretations", ...accepted, payload: JSON.stringify(tools.submission().payload) };
 }
 
 test("submission validation rejects malformed JSON synchronously and accepts a corrected immutable payload", async t =>
@@ -86,6 +91,7 @@ test("submission validation rejects malformed JSON synchronously and accepts a c
     await assert.rejects(requestSourceTools(directory, "prepare-interpretations",
         { payload: payload.slice(0, -2) }), /Invalid JSON.*2 attempts remaining/);
     await assert.rejects(requestSourceTools(directory, "submission"), /No validated submission/);
+    await assert.rejects(exportSubmission(directory), /No validated submission/);
     const accepted = await requestSourceTools(directory, "prepare-interpretations", { payload });
     assert.match(accepted.receipt, /^[a-f0-9]{64}$/);
     assert.deepEqual(await requestSourceTools(directory, "prepare-interpretations", { payload }), accepted);
@@ -93,12 +99,12 @@ test("submission validation rejects malformed JSON synchronously and accepts a c
         { payload: payload.replace("Fixture.", "Changed.") }), /already accepted/);
     const submission = await requestSourceTools(directory, "submission");
     assert.deepEqual(submission, { schemaVersion: 1, receipt: accepted.receipt, payload: JSON.parse(payload) });
-    await writeFile(path.join(directory, "submission.json"), JSON.stringify(submission));
+    await exportSubmission(directory);
     const output = path.join(root, "output.json");
-    await writeFile(output, JSON.stringify({ items: [{ type: "record_interpretations", ...accepted }] }));
+    await writeFile(output, JSON.stringify({ items: [{ type: "record_interpretations", receipt: accepted.receipt }] }));
     await assert.rejects(record(root, output), /payload inspected by threat detection/);
-    await completeSubmission(directory, output);
-    assert.deepEqual(JSON.parse(await readFile(output)).items[0].payload, JSON.parse(payload),
+    await writeFile(output, JSON.stringify({ items: [{ type: "record_interpretations", ...accepted, payload }] }));
+    assert.deepEqual(JSON.parse(JSON.parse(await readFile(output)).items[0].payload), JSON.parse(payload),
         "Threat detection must inspect the actual payload, not merely its receipt.");
     await record(root, output);
     assert.deepEqual(JSON.parse(await readFile(path.join(root,
@@ -125,7 +131,7 @@ test("native object submission serializes in the actual MCP script and retains h
         else process.env.STALE_REFERENCE_PRIVATE = previous;
     });
     const workflow = await readFile(path.join(workflowDirectory, "stale-reference-interpret.md"), "utf8");
-    const tool = workflow.slice(workflow.indexOf("  prepare_interpretations:"), workflow.indexOf("\nsafe-outputs:"));
+    const tool = workflow.slice(workflow.indexOf("  prepare_interpretations:"), workflow.indexOf("\n  queue_interpretations:"));
     const script = tool.slice(tool.indexOf("    script: |") + "    script: |".length);
     const invoke = new (Object.getPrototypeOf(async function () {}).constructor)("payload", script);
     const payload = { schemaVersion: 1, results: batch.candidates.map(candidate => ({
@@ -135,6 +141,7 @@ test("native object submission serializes in the actual MCP script and retains h
     await assert.rejects(invoke({ schemaVersion: 1, results: [] }), /expected candidate IDs.*1 attempts remaining/);
     const accepted = await invoke(payload);
     assert.equal(accepted.receipt, submissionReceipt(payload));
+    assert.deepEqual(accepted, { receipt: submissionReceipt(payload) });
     assert.deepEqual((await requestSourceTools(directory, "submission")).payload, payload);
     payload.results[0].reason = "Changed after acceptance.";
     await assert.rejects(invoke(payload), /already accepted/);
@@ -189,14 +196,25 @@ test("receipts cannot authorize missing, altered, or unvalidated source results"
     })) };
     const output = path.join(root, "output.json");
     await writeFile(output, JSON.stringify({ items: [{ type: "record_interpretations", receipt: "0".repeat(64) }] }));
-    await assert.rejects(completeSubmission(directory, output), /No validated submission/);
+    await assert.rejects(exportSubmission(directory), /No validated submission/);
     const accepted = await tools.prepareInterpretations({ payload: JSON.stringify(payload) });
-    await assert.rejects(completeSubmission(directory, output), /receipt does not match/);
-    await writeFile(output, JSON.stringify({ items: [{ type: "record_interpretations", ...accepted }] }));
-    await completeSubmission(directory, output);
+    await exportSubmission(directory);
+    await assert.rejects(record(root, output), /receipt does not match/);
+    await writeFile(output, JSON.stringify({ items: [{ type: "record_interpretations", ...accepted, payload: JSON.stringify(payload) }] }));
     const validOutput = await readFile(output, "utf8");
+    for (const replacement of [payload, "{", " ".repeat(512 * 1024 + 1)])
+    {
+        const invalid = JSON.parse(validOutput);
+        invalid.items[0].payload = replacement;
+        await writeFile(output, JSON.stringify(invalid));
+        await assert.rejects(record(root, output));
+    }
+    const duplicate = JSON.parse(validOutput);
+    duplicate.items.push(duplicate.items[0]);
+    await writeFile(output, JSON.stringify(duplicate));
+    await assert.rejects(record(root, output), /exactly one record_interpretations/);
     const altered = JSON.parse(validOutput);
-    altered.items[0].payload.results[0].reason = "Altered after acceptance.";
+    altered.items[0].payload = altered.items[0].payload.replace("Fixture.", "Altered after acceptance.");
     await writeFile(output, JSON.stringify(altered));
     await assert.rejects(record(root, output), /payload inspected by threat detection/);
     await writeFile(output, validOutput);
@@ -210,7 +228,7 @@ test("receipts cannot authorize missing, altered, or unvalidated source results"
     badSubmission.receipt = submissionReceipt(badSubmission.payload);
     await writeFile(submissionFile, JSON.stringify(badSubmission));
     await writeFile(output, JSON.stringify({ items: [{
-        type: "record_interpretations", receipt: badSubmission.receipt, payload: badSubmission.payload,
+        type: "record_interpretations", receipt: badSubmission.receipt, payload: JSON.stringify(badSubmission.payload),
     }] }));
     await assert.rejects(record(root, output), /Unknown, unexpected/);
     await writeFile(submissionFile, validSubmission);
@@ -241,6 +259,7 @@ test("submission transport preserves large UTF-8 payloads and enforces size and 
     const accepted = await requestSourceTools(directory, "prepare-interpretations", { payload });
     assert.equal(tools.submission().payload.results[0].reason, "\u00e9".repeat(4000));
     assert.equal(accepted.receipt, submissionReceipt(JSON.parse(payload)));
+    assert.deepEqual(accepted, { receipt: submissionReceipt(JSON.parse(payload)) });
 });
 
 test("packaged submission tools work in a separate process without a source checkout", async t =>
@@ -264,6 +283,89 @@ test("packaged submission tools work in a separate process without a source chec
     const { stdout } = await promisify(execFile)(process.execPath,
         ["--input-type=module", "-e", client, pathToFileURL(script).href, directory, payload], { cwd: directory });
     assert.equal(JSON.parse(stdout).receipt, submissionReceipt(JSON.parse(payload)));
+});
+
+test("a full bounded batch queues its frozen payload without returning it to the agent", async t =>
+{
+    const root = await fixture(t, 0, 25);
+    const { batch } = await prepare({ repoRoot: root, logger });
+    assert.equal(batch.candidates.length, 25);
+    const directory = path.join(root, ".stale-reference-check/input");
+    const server = await startSourceServer(directory);
+    t.after(() => new Promise(resolve => server.close(resolve)));
+    const payload = JSON.stringify({ schemaVersion: 1, results: batch.candidates.map(candidate => ({
+        candidateId: candidate.id, status: "irrelevant", reason: "&".repeat(4096), actions: [],
+    })) });
+    const accepted = await requestSourceTools(directory, "prepare-interpretations", { payload });
+    assert.deepEqual(accepted, { receipt: submissionReceipt(JSON.parse(payload)) });
+    assert.equal(accepted.receipt, submissionReceipt(JSON.parse(payload)));
+    const sent = [];
+    const tools = await getSourceTools(directory);
+    const send = async request => { sent.push(request); return { queued: true }; };
+    await assert.rejects(tools.queueInterpretations({ receipt: "0".repeat(64) }, send), /receipt does not match/);
+    assert.equal(sent.length, 0);
+    assert.deepEqual(await tools.queueInterpretations(accepted, send), { queued: true });
+    assert.deepEqual(await tools.queueInterpretations(accepted, send), { queued: true });
+    assert.deepEqual(sent, [{ receipt: accepted.receipt, payload }]);
+});
+
+test("unconfirmed queue failures are never retried", async t =>
+{
+    const root = await fixture(t);
+    const { batch } = await prepare({ repoRoot: root, logger });
+    const tools = await getSourceTools(path.join(root, ".stale-reference-check/input"));
+    const accepted = await tools.prepareInterpretations({ payload: JSON.stringify({
+        schemaVersion: 1, results: batch.candidates.map(candidate => ({
+            candidateId: candidate.id, status: "irrelevant", reason: "Fixture.", actions: [],
+        })),
+    }) });
+    let calls = 0;
+    const send = async () => { calls++; throw new Error("Recording acknowledgement was lost."); };
+    await assert.rejects(tools.queueInterpretations(accepted, send), /acknowledgement was lost/);
+    await assert.rejects(tools.queueInterpretations(accepted, send), /do not retry/);
+    assert.equal(calls, 1);
+});
+
+test("native recording requires a complete authenticated handshake and acknowledgement", async t =>
+{
+    const root = await fixture(t);
+    const calls = [];
+    let sessionAvailable = false;
+    let rejectRecording = false;
+    const gateway = createServer(async (request, response) =>
+    {
+        assert.equal(request.headers.authorization, "fixture-gateway-token");
+        let body = "";
+        for await (const chunk of request) body += chunk;
+        const message = JSON.parse(body);
+        calls.push(message);
+        if (message.method === "notifications/initialized")
+        {
+            response.writeHead(202).end();
+            return;
+        }
+        const result = message.method === "initialize"
+            ? { protocolVersion: "2025-11-25" }
+            : { isError: rejectRecording, content: [{ type: "text", text: JSON.stringify({ result: "success" }) }] };
+        response.setHeader("Content-Type", "application/json");
+        if (sessionAvailable) response.setHeader("Mcp-Session-Id", "fixture-session");
+        response.end(JSON.stringify({ jsonrpc: "2.0", id: message.id, result }));
+    });
+    await new Promise(resolve => gateway.listen(0, "127.0.0.1", resolve));
+    t.after(() => { gateway.closeAllConnections(); return new Promise(resolve => gateway.close(resolve)); });
+    const config = path.join(root, "mcp-config.json");
+    await writeFile(config, JSON.stringify({ mcpServers: { safeoutputs: {
+        type: "http", url: `http://127.0.0.1:${gateway.address().port}/mcp/safeoutputs`,
+        headers: { Authorization: "fixture-gateway-token" },
+    } } }));
+    const recording = { receipt: "a".repeat(64), payload: JSON.stringify({ schemaVersion: 1, results: [] }) };
+    await assert.rejects(sendRecordingRequest(config, recording), /required MCP session/);
+    assert.ok(calls.every(call => call.method === "initialize"));
+    sessionAvailable = true;
+    assert.deepEqual(await sendRecordingRequest(config, recording), { queued: true });
+    assert.deepEqual(calls.at(-1).params, { name: "record_interpretations", arguments: recording });
+    rejectRecording = true;
+    await assert.rejects(sendRecordingRequest(config, recording), /did not acknowledge/);
 });
 
 test("prepare creates a current-commit manifest and bounded batch without a cache", async (t) =>
@@ -565,10 +667,10 @@ test("agent transport uses native bounded text tools rather than shell serializa
     assert.doesNotMatch(generated, /GH_AW_MCP_CLI_SERVERS|mcp_cli_tools_with_safeoutputs_prompt/);
     assert.doesNotMatch(header, /^strict: false$/m);
     assert.doesNotMatch(header, /container_pins/);
-    const gateway = generated.match(/ghcr\.io\/github\/gh-aw-mcpg:v0\.4\.25@sha256:[a-f0-9]{64}/)?.[0];
+    const gateway = generated.match(/ghcr\.io\/github\/gh-aw-mcpg:v[\d.]+@sha256:[a-f0-9]{64}/)?.[0];
     assert.ok(gateway, "The compiler default gateway image must be immutable.");
     const startGateway = generated.match(/      - name: Start MCP Gateway\r?\n([\s\S]*?)(?=^      - )/m)?.[1] ?? "";
-    assert.match(startGateway, /ghcr\.io\/github\/gh-aw-mcpg:v0\.4\.25'/,
+    assert.ok(startGateway.includes(gateway.split("@")[0]),
         "The executed gateway must use the compiler default image.");
 });
 
@@ -576,14 +678,19 @@ test("validated payloads reach threat detection before the trusted recorder auth
 {
     const workflow = await readFile(path.join(workflowDirectory, "stale-reference-interpret.md"), "utf8");
     assert.match(workflow, /at most three attempts total/);
-    assert.match(workflow, /complete "\$STALE_REFERENCE_PRIVATE" \/tmp\/gh-aw\/agent_output\.json/);
+    assert.match(workflow, /submission "\$STALE_REFERENCE_PRIVATE"/);
+    assert.doesNotMatch(workflow, /complete "\$STALE_REFERENCE_PRIVATE"|\/tmp\/gh-aw\/agent_output\.json/);
     assert.match(workflow, /stale-reference-private\/submission\.json/);
     const generated = await readFile(path.join(workflowDirectory, "stale-reference-interpret.lock.yml"), "utf8");
-    const collect = generated.indexOf("id: collect_output");
-    const expand = generated.indexOf('complete "$STALE_REFERENCE_PRIVATE" /tmp/gh-aw/agent_output.json');
+    const exportTrusted = generated.indexOf('submission "$STALE_REFERENCE_PRIVATE"');
     const artifactUpload = generated.indexOf("name: Upload agent artifacts");
-    assert.ok(collect > 0 && expand > collect && artifactUpload > expand,
-        "Trusted submission expansion must follow output collection and precede the agent artifact upload.");
+    assert.ok(exportTrusted > 0 && artifactUpload > exportTrusted,
+        "Trusted submission export must precede the agent artifact upload without rewriting safe outputs.");
+    const tool = generated.match(/\{\s*"description": "Internal recording request[\s\S]*?"name": "record_interpretations"\s*\}/)?.[0];
+    assert.ok(tool, "The native safe-output tool must accept the trusted helper's recording arguments.");
+    const schema = JSON.parse(tool).inputSchema;
+    assert.equal(schema.properties.payload.type, "string");
+    assert.ok(schema.required.includes("payload") && schema.required.includes("receipt"));
     const recordJob = generated.match(/^  record_interpretations:\r?\n([\s\S]*?)(?=^  \w+:\r?\n)/m)?.[1] ?? "";
     assert.match(recordJob, /needs\.detection\.result == 'success' && needs\.detection\.outputs\.detection_success == 'true'/);
     assert.match(recordJob, /\$\{\{ needs\.agent\.outputs\.artifact_prefix \}\}agent/);
@@ -640,8 +747,13 @@ test("interpreter bounds execution and retains detection before trusted recordin
     const agent = generated.match(/^  agent:\r?\n([\s\S]*?)(?=^  \w+:\r?\n)/m)?.[1] ?? "";
     assert.match(agent, /COPILOT_MODEL: \$\{\{ vars\.GH_AW_MODEL_AGENT_COPILOT \|\| vars\.GH_AW_DEFAULT_MODEL_COPILOT \|\| 'auto' \}\}/);
     assert.match(agent, /GH_AW_MAX_TURNS: 64/);
-    assert.match(agent, /"maxRuns":64/);
-    assert.match(agent, /"maxAiCredits":150/);
+    const credits = Number(agent.match(/GH_AW_MAX_AI_CREDITS="(\d+)"/)?.[1]);
+    assert.equal(credits, 150);
+    const configString = agent.match(/printf '%s\\n' "(?<config>.+)" > "\$\{RUNNER_TEMP\}\/gh-aw\/awf-config\.json"/)?.groups.config;
+    assert.ok(configString, "The agent must pass its limits to the firewall configuration.");
+    const config = JSON.parse(JSON.parse(`"${configString.replaceAll("\\$", "$").replaceAll("${GH_AW_MAX_AI_CREDITS}", String(credits))}"`));
+    assert.equal(config.apiProxy.maxRuns, 64);
+    assert.equal(config.apiProxy.maxAiCredits, 150);
     assert.match(agent, /^    timeout-minutes: 60$/m);
     const execution = agent.match(/      - name: Execute GitHub Copilot CLI\r?\n([\s\S]*?)(?=^      - )/m)?.[1] ?? "";
     assert.match(execution, /timeout-minutes: 20/);
@@ -676,7 +788,7 @@ test("caller grants the compiler-required permissions and interpreter jobs remai
     assert.doesNotMatch(caller, /secrets: inherit/);
     assert.match(caller, /input_artifact_id: \$\{\{ steps\.upload\.outputs\.artifact-id \}\}/);
     assert.match(caller, /name: stale-reference-interpretations-\$\{\{ needs\.collect\.outputs\.input_artifact_id \}\}/);
-    const ceiling = { actions: 2, contents: 1, "copilot-requests": 2, issues: 2 };
+    const ceiling = { actions: 2, contents: 1, "copilot-requests": 2, issues: 2, "pull-requests": 1 };
     const rank = { none: 0, read: 1, write: 2 };
     const jobs = [...generated.matchAll(/^  ([a-z_]+):\r?\n([\s\S]*?)(?=^  [a-z_]+:\r?\n|$(?![\s\S]))/gm)];
     assert.ok(jobs.some(job => job[1] === "agent"));
@@ -699,6 +811,8 @@ test("caller grants the compiler-required permissions and interpreter jobs remai
     const safeOutputs = jobs.find(job => job[1] === "safe_outputs")?.[2];
     assert.doesNotMatch(safeOutputs, /issues: write/);
     assert.match(caller, /issues: write/);
+    const interpret = caller.match(/^  interpret:\r?\n([\s\S]*?)(?=^  \S)/m)?.[1] ?? "";
+    assert.match(interpret, /pull-requests: read/);
     const agent = jobs.find(job => job[1] === "agent")?.[2];
     assert.doesNotMatch(agent, /name: Checkout repository|--allow-tool write|shell\(node\)|--allow-tool github/);
     assert.match(agent, /path: \$\{\{ runner\.temp \}\}\/stale-reference-private/);

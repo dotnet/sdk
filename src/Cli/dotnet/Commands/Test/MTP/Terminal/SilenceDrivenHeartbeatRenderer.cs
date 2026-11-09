@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // Copyright (c) Microsoft Corporation. All rights reserved.
-// Adapted from https://github.com/microsoft/testfx/blob/f4d8d35bf45ce0ece75a66e1b197c96684767e48/src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SilenceDrivenHeartbeatRenderer.cs
+// Adapted from https://github.com/microsoft/testfx/blob/b3f3c980c480c5d97976d658ac367b1e246502be/src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SilenceDrivenHeartbeatRenderer.cs
 
 using System.Globalization;
 
@@ -17,6 +17,7 @@ internal sealed class SilenceDrivenHeartbeatRenderer(
     private readonly Dictionary<long, SlowTestThresholdState> _slowTestThresholdStates = [];
     private StringBuilder? _slowTestDescriptionBuilder;
     private IStopwatch? _clock;
+    // Initialized before the rendering thread starts; subsequent accesses hold the terminal lock.
     private long _lastVisibleOutputTicks;
     private long _lastCompletionTicks = -1;
 

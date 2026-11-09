@@ -283,7 +283,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 settings?.TestResultVisibility ?? _options.ShowTestResults,
                 settings?.SlowestTestsCount ?? _options.SlowestTestsCount,
                 settings?.ShowFlakyTests ?? _options.ShowFlakyTests,
-                settings?.LegacyRetryEnabled ?? _isRetry);
+                settings?.LegacyRetryEnabled ?? _isRetry)
+            {
+                ShowStdout = settings?.ShowStdout ?? _options.ShowStdout,
+                ShowStderr = settings?.ShowStderr ?? _options.ShowStderr,
+            };
             int slotIndex = _terminalWithProgress.AddWorker(result);
             result.SlotIndex = slotIndex;
             _assemblies[executionId] = result;
@@ -510,7 +514,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         // Note: In case of handshake failure, we shouldn't add any entries to _assemblies dictionary.
         // So, this line cannot be double-counting handshake failures twice.
         int error = failedAssembliesWithoutFailedTests + _handshakeFailures.Count;
-        TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
+        TimeSpan runDuration = _testExecutionStartTime is not null && _testExecutionEndTime is not null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
         bool colorizeFailed = failed > 0;
         bool colorizeError = error > 0;
@@ -910,6 +914,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (!_options.CollectTestMap && IsTestResultVisible(outcome, asm.TestResultVisibility))
         {
+            bool isFailed = outcome is TestOutcome.Fail or TestOutcome.Error or TestOutcome.Timeout or TestOutcome.Canceled;
             _terminalWithProgress.WriteToTerminal(terminal => RenderTestCompleted(
                 terminal,
                 assembly,
@@ -924,10 +929,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 exceptions,
                 expected,
                 actual,
-                standardOutput,
-                errorOutput));
+                GetOutputToShow(asm.ShowStdout, standardOutput, isFailed),
+                GetOutputToShow(asm.ShowStderr, errorOutput, isFailed)));
         }
     }
+
+    private static string? GetOutputToShow(OutputShowMode mode, string? output, bool isFailed) => mode switch
+    {
+        OutputShowMode.All => output,
+        OutputShowMode.Failed => isFailed ? output : null,
+        OutputShowMode.None => null,
+        _ => throw new UnreachableException(),
+    };
 
     private static bool IsTestResultVisible(TestOutcome outcome, TestResultVisibility visibility) => outcome switch
     {
@@ -1106,33 +1119,39 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         terminal.SetColor(TerminalColor.DarkGray);
-        terminal.Append(SingleIndentation);
-        terminal.AppendLine(CliCommandStrings.StandardOutput);
-        string? standardOutputWithoutSpecialChars = NormalizeSpecialCharacters(standardOutput);
-        AppendIndentedLine(terminal, standardOutputWithoutSpecialChars, DoubleIndentation);
-        terminal.Append(SingleIndentation);
-        terminal.AppendLine(CliCommandStrings.StandardError);
-        string? standardErrorWithoutSpecialChars = NormalizeSpecialCharacters(standardError);
-        AppendIndentedLine(terminal, standardErrorWithoutSpecialChars, DoubleIndentation);
+        if (!string.IsNullOrWhiteSpace(standardOutput))
+        {
+            terminal.Append(SingleIndentation);
+            terminal.AppendLine(CliCommandStrings.StandardOutput);
+            string? standardOutputWithoutSpecialChars = NormalizeSpecialCharacters(standardOutput);
+            AppendIndentedLine(terminal, standardOutputWithoutSpecialChars, DoubleIndentation);
+        }
+        if (!string.IsNullOrWhiteSpace(standardError))
+        {
+            terminal.Append(SingleIndentation);
+            terminal.AppendLine(CliCommandStrings.StandardError);
+            string? standardErrorWithoutSpecialChars = NormalizeSpecialCharacters(standardError);
+            AppendIndentedLine(terminal, standardErrorWithoutSpecialChars, DoubleIndentation);
+        }
         terminal.ResetColor();
     }
 
     private static void AppendAssemblyLinkTargetFrameworkAndArchitecture(ITerminal terminal, string assembly, string? targetFramework, string? architecture)
     {
         terminal.AppendLink(assembly, lineNumber: null);
-        if (targetFramework != null || architecture != null)
+        if (targetFramework is not null || architecture is not null)
         {
             terminal.Append(" (");
-            if (targetFramework != null)
+            if (targetFramework is not null)
             {
                 terminal.Append(targetFramework);
-                if (architecture != null)
+                if (architecture is not null)
                 {
                     terminal.Append('|');
                 }
             }
 
-            if (architecture != null)
+            if (architecture is not null)
             {
                 terminal.Append(architecture);
             }
