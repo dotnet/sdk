@@ -27,6 +27,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
 
     public bool RequiresPostInstallValidation => true;
 
+    public long? DownloadedBytes { get; private set; }
+
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
         ReleaseVersion resolvedVersion,
@@ -132,6 +134,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
                 component: _request.Component.ToString());
         }
 
+        DownloadedBytes = new FileInfo(_archivePath).Length;
         ProgressTracker.CompleteDownload(downloadTask, _archivePath);
     }
 

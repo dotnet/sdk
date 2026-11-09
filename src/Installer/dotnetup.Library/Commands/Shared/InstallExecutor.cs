@@ -34,12 +34,20 @@ internal class InstallExecutor
 
         DotnetInstallRoot installRoot = requests[0].Request.InstallRoot;
         string escapedPath = installRoot.Path.EscapeMarkup();
+        bool summaryOnly = progress == ProgressMode.None;
 
-        // Print "Installing X, Y, Z to <path>..."
-        var descriptions = requests.Select(r =>
-            $"{r.Request.Component.GetDisplayName()} {DotnetupTheme.Accent($"{r.ResolvedVersion}")}").ToList();
-        SpectreAnsiConsole.MarkupLine(
-            $"Installing {string.Join(", ", descriptions)} to {DotnetupTheme.Accent(escapedPath)}...");
+        if (summaryOnly)
+        {
+            SpectreAnsiConsole.WriteLine($"Installing {FormatGroupedRequests(requests)} to {installRoot.Path}...");
+        }
+        else
+        {
+            // Print "Installing X, Y, Z to <path>..."
+            var descriptions = requests.Select(r =>
+                $"{r.Request.Component.GetDisplayName()} {DotnetupTheme.Accent($"{r.ResolvedVersion}")}").ToList();
+            SpectreAnsiConsole.MarkupLine(
+                $"Installing {string.Join(", ", descriptions)} to {DotnetupTheme.Accent(escapedPath)}...");
+        }
 
         if (requests.Any(r => UnsignedSourcePolicy.MayDownloadUnsigned(r.Request)))
         {
@@ -53,8 +61,75 @@ internal class InstallExecutor
             batchResult = InstallerOrchestratorSingleton.Instance.InstallMany(requests, sharedReporter);
         }
 
-        DisplayBatchResults(batchResult);
+        if (summaryOnly)
+        {
+            DisplaySummaryInRequestOrder(requests, batchResult, installRoot.Path);
+        }
+        else
+        {
+            DisplayBatchResults(batchResult);
+        }
+
         return batchResult;
+    }
+
+    /// <summary>Formats requests as "dotnet (runtime) 8.0.27, 9.0.16, .NET SDK 10.0.100", grouping versions by component.</summary>
+    internal static string FormatGroupedRequests(IReadOnlyList<ResolvedInstallRequest> requests) =>
+        string.Join(", ", requests
+            .GroupBy(r => r.Request.Component)
+            .Select(group => $"{group.Key.GetDisplayName()} {string.Join(", ", group.Select(r => r.ResolvedVersion.ToString()))}"));
+
+    /// <summary>
+    /// Writes one plain, aligned line per request in request order, so concurrent downloads cannot change the
+    /// output; used for <c>--no-progress</c>.
+    /// </summary>
+    internal static void DisplaySummaryInRequestOrder(IReadOnlyList<ResolvedInstallRequest> requests, InstallBatchResult batchResult, string installRootPath)
+    {
+        var labels = requests.Select(r => $"{r.Request.Component.GetDisplayName()} {r.ResolvedVersion}").ToList();
+        int labelWidth = labels.Max(label => label.Length);
+
+        for (int i = 0; i < requests.Count; i++)
+        {
+            SpectreAnsiConsole.WriteLine($"  {labels[i].PadRight(labelWidth)}  {DescribeOutcome(requests[i], batchResult)}");
+        }
+
+        if (batchResult.Successes.Count > 0)
+        {
+            SpectreAnsiConsole.WriteLine($"Installed at {installRootPath}.");
+        }
+    }
+
+    private static string DescribeOutcome(ResolvedInstallRequest request, InstallBatchResult batchResult)
+    {
+        if (batchResult.Failures.FirstOrDefault(f => ReferenceEquals(f.Request, request)) is { } failure)
+        {
+            return $"failed: {failure.Exception.Message}";
+        }
+
+        InstallResult? result = batchResult.Successes.FirstOrDefault(r =>
+            r.Install.Component == request.Request.Component && r.Install.Version.Equals(request.ResolvedVersion));
+        if (result is null)
+        {
+            return "not installed";
+        }
+
+        if (result.WasAlreadyInstalled)
+        {
+            return "already present, skipped";
+        }
+
+        var details = new List<string>();
+        if (result.DownloadedBytes is long bytes)
+        {
+            details.Add(ProgressFormatting.FormatMB(bytes).Trim());
+        }
+
+        if (result.Repaired)
+        {
+            details.Add("repaired");
+        }
+
+        return details.Count > 0 ? $"installed ({string.Join(", ", details)})" : "installed";
     }
 
     /// <summary>

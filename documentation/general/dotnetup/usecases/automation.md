@@ -89,8 +89,16 @@ present and valid.
 ## Keep output useful
 
 - Progress prints as plain lines with periodic percentages when output is
-  redirected or in CI. Use `--no-progress` (or `--progress none`) to print
-  only when each step starts and finishes.
+  redirected or in CI (`--progress lines`). Use `--no-progress` (or
+  `--progress none`) for minimal, deterministic log output: nothing while
+  the install runs, then one line per component in the order you requested:
+
+  ```text
+  Installing dotnet (runtime) 8.0.27, 9.0.16 to D:\sdk\.dotnet...
+    dotnet (runtime) 8.0.27  already present, skipped
+    dotnet (runtime) 9.0.16  installed (30.4 MB)
+  Installed at D:\sdk\.dotnet.
+  ```
 - Use `--progress json` when a program, such as an editor extension, shows
   its own progress UI. See [Progress events](#progress-events).
 - Use `--verbosity normal` for normal automation.

@@ -73,6 +73,8 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
 
     public IReadOnlyList<string> ExtractedSubcomponents => [];
 
+    public long? DownloadedBytes { get; private set; }
+
     public void Prepare()
     {
         var (reporter, downloadTask) = _progress.BeginDownload();
@@ -93,6 +95,7 @@ internal sealed class WindowsBundleArtifact : IInstallArtifact
 
         _lockedBundle = lockedBundle;
         _download = download;
+        DownloadedBytes = lockedBundle.Length;
         _progress.CompleteDownload(downloadTask, download.Path);
     }
 

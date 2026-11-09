@@ -15,7 +15,7 @@ public enum ProgressMode
     /// <summary>Plain text lines, including periodic percentage updates, for logs and pipes.</summary>
     Lines,
 
-    /// <summary>One line when each task starts and one when it finishes.</summary>
+    /// <summary>No progress while working; installs end with one deterministic line per component.</summary>
     None,
 
     /// <summary>
@@ -32,7 +32,7 @@ internal static class ProgressTargets
 
     public static IProgressTarget Create(ProgressMode mode) => mode switch
     {
-        ProgressMode.None => new NonUpdatingProgressTarget(),
+        ProgressMode.None => new NullProgressTarget(),
         ProgressMode.Lines => new NonUpdatingProgressTarget(LinesProgressStepPercent),
         ProgressMode.Json => new JsonProgressTarget(JsonProgressOutput.Events),
         _ => new SpectreProgressTarget(),

@@ -396,7 +396,7 @@ internal class InstallerOrchestratorSingleton
             });
         }
 
-        return new InstallResult(prepared.Install, WasAlreadyInstalled: false, Repaired: repaired);
+        return new InstallResult(prepared.Install, WasAlreadyInstalled: false, Repaired: repaired, DownloadedBytes: prepared.Artifact.DownloadedBytes);
     }
 #pragma warning restore CA1822
 

@@ -207,8 +207,7 @@ public class SelfCommandParserTests
             called.Should().BeTrue();
             if (noProgress)
             {
-                output.ToString().Should().Contain(BootstrapperStrings.SelfUpdateDownloading)
-                    .And.Contain("Completed:").And.NotContain("\u001b");
+                output.ToString().Should().BeEmpty();
             }
         }
         finally

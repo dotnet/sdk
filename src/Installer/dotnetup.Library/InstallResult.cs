@@ -12,7 +12,8 @@ namespace Microsoft.Dotnet.Installation;
 /// <param name="Install">The DotnetInstall for the completed installation.</param>
 /// <param name="WasAlreadyInstalled">True if the SDK was already installed and no work was done.</param>
 /// <param name="Repaired">True if the install only succeeded after an automatic repair.</param>
-internal record InstallResult(DotnetInstall Install, bool WasAlreadyInstalled, bool Repaired = false);
+/// <param name="DownloadedBytes">Size of the downloaded archive or installer, when one was downloaded.</param>
+internal record InstallResult(DotnetInstall Install, bool WasAlreadyInstalled, bool Repaired = false, long? DownloadedBytes = null);
 
 /// <summary>
 /// Records a failed installation within a batch so that other installs can continue.
