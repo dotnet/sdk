@@ -70,6 +70,8 @@ public class AdminModeInitTests : IDisposable
         var defaults = new InitFormDefaults(
             new DotnetInstallRoot(_environment.TempRoot, architecture),
             DotnetAccessMode.Shell,
+            DotnetAccessMode.Everywhere,
+            DotnetAccessMode.Shell,
             MigrateSystemInstalls: true,
             Migrations: [new MigrationWorkflow.MigrationSelection(
                 InstallComponent.SDK, new UpdateChannel("9.0.1xx"), new ReleaseVersion(PinnedVersion), architecture)],
@@ -250,7 +252,7 @@ public class AdminModeInitTests : IDisposable
     private static InitFormModel CreateModel(DotnetAccessMode mode) =>
         InitFormModel.Create(new InitFormDefaults(
             new DotnetInstallRoot(Path.GetTempPath(), InstallerUtilities.GetDefaultInstallArchitecture()),
-            mode, false, [], new DefaultChannelDisplay("latest", null),
+            mode, mode, mode, false, [], new DefaultChannelDisplay("latest", null),
             [new MinimalInstallSpec(InstallComponent.SDK, "latest")], null, null), shellProvider: null);
 
     private string Run(Action action)

@@ -29,6 +29,52 @@ public class InitFormRendererTests
     }
 
     [TestMethod]
+    public void ExpandedAccessMode_LabelsDistinctCurrentAndRecommendedModes()
+    {
+        InitFormModel model = CreateAccessModeModel(
+            selected: DotnetAccessMode.None,
+            recommended: DotnetAccessMode.Shell,
+            configured: DotnetAccessMode.None);
+
+        string output = RenderExpandedAccessMode(model);
+        string[] lines = Lines(output);
+
+        lines.Single(line => line.Contains("None", StringComparison.Ordinal))
+            .Should().Contain("(current)").And.NotContain("(recommended)");
+        lines.Single(line => line.Contains("Shell", StringComparison.Ordinal))
+            .Should().Contain("(recommended)").And.NotContain("(current)");
+        output.Should().NotContain("(default)");
+    }
+
+    [TestMethod]
+    public void ExpandedAccessMode_CombinesCurrentAndRecommendedLabel()
+    {
+        InitFormModel model = CreateAccessModeModel(
+            selected: DotnetAccessMode.Shell,
+            recommended: DotnetAccessMode.Shell,
+            configured: DotnetAccessMode.Shell);
+
+        string output = RenderExpandedAccessMode(model);
+
+        Lines(output).Single(line => line.Contains("Shell", StringComparison.Ordinal))
+            .Should().Contain("(current, recommended)");
+    }
+
+    [TestMethod]
+    public void ExpandedAccessMode_FirstRunLabelsOnlyRecommendedMode()
+    {
+        InitFormModel model = CreateAccessModeModel(
+            selected: DotnetAccessMode.Shell,
+            recommended: DotnetAccessMode.Shell,
+            configured: null);
+
+        string output = RenderExpandedAccessMode(model);
+
+        Lines(output).Single(line => line.Contains("Shell", StringComparison.Ordinal))
+            .Should().Contain("(recommended)").And.NotContain("(current");
+    }
+
+    [TestMethod]
     public void ExpandedChannel_ShowsAllChoicesInShortTerminal()
     {
         string output = RenderForm(width: 50, height: 24, expandChannel: true);
@@ -570,6 +616,8 @@ public class InitFormRendererTests
         var defaults = new InitFormDefaults(
             installRoot,
             accessMode,
+            accessMode,
+            ConfiguredAccessMode: null,
             MigrateSystemInstalls: migrateByDefault,
             Migrations: [migration],
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
@@ -605,6 +653,8 @@ public class InitFormRendererTests
         var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.Shell,
+            DotnetAccessMode.Shell,
+            ConfiguredAccessMode: null,
             MigrateSystemInstalls: true,
             Migrations: [],
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
@@ -649,6 +699,8 @@ public class InitFormRendererTests
         var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.None,
+            DotnetAccessMode.None,
+            ConfiguredAccessMode: null,
             MigrateSystemInstalls: false,
             Migrations: [],
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
@@ -656,6 +708,36 @@ public class InitFormRendererTests
             ShellProvider: null,
             InstallRootGlobalJsonPath: null);
         return InitFormModel.Create(defaults, shellProvider: null);
+    }
+
+    private static InitFormModel CreateAccessModeModel(
+        DotnetAccessMode selected,
+        DotnetAccessMode recommended,
+        DotnetAccessMode? configured)
+    {
+        var installRoot = new DotnetInstallRoot(
+            Path.GetTempPath(),
+            InstallerUtilities.GetDefaultInstallArchitecture());
+        var defaults = new InitFormDefaults(
+            installRoot,
+            selected,
+            recommended,
+            configured,
+            MigrateSystemInstalls: false,
+            Migrations: [],
+            new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
+            [new MinimalInstallSpec(InstallComponent.SDK, ChannelVersionResolver.LatestChannel)],
+            ShellProvider: null,
+            InstallRootGlobalJsonPath: null);
+        return InitFormModel.Create(defaults, shellProvider: null);
+    }
+
+    private static string RenderExpandedAccessMode(InitFormModel model)
+    {
+        var state = new InitFormState(model.Fields);
+        state.MoveUp();
+        state.Enter();
+        return RenderForm(model, state, width: 240, height: 100, out _);
     }
 
     private static string RenderForm(

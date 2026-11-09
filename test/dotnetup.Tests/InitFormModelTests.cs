@@ -95,12 +95,31 @@ public class InitFormModelTests
     {
         var model = CreateModel(
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
-            accessMode: DotnetAccessMode.Shell);
+            accessMode: DotnetAccessMode.Shell,
+            configuredAccessMode: DotnetAccessMode.Shell);
         FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
 
         accessModeField.DisplayValue.Should().Be(DotnetAccessMode.Shell.ToString());
         accessModeField.IsChangedFromDefault.Should().BeFalse();
         model.SelectedAccessMode().Should().Be(DotnetAccessMode.Shell);
+    }
+
+    [TestMethod]
+    public void AccessModeChange_IsComparedWithCurrentMode()
+    {
+        var model = CreateModel(
+            new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
+            accessMode: DotnetAccessMode.None,
+            recommendedAccessMode: DotnetAccessMode.Shell,
+            configuredAccessMode: DotnetAccessMode.None);
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
+
+        accessModeField.IsChangedFromDefault.Should().BeFalse();
+        accessModeField.SelectChoice(accessModeField.Choices
+            .Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == DotnetAccessMode.Shell.ToString()).index);
+
+        accessModeField.IsChangedFromDefault.Should().BeTrue();
     }
 
     [TestMethod]
@@ -367,13 +386,24 @@ public class InitFormModelTests
     private static InitFormModel CreateModel(
         DefaultChannelDisplay channelDisplay,
         List<MigrationWorkflow.MigrationSelection>? migrations = null,
-        DotnetAccessMode accessMode = DotnetAccessMode.None)
-        => InitFormModel.Create(CreateDefaults(channelDisplay, migrations, accessMode), shellProvider: null);
+        DotnetAccessMode accessMode = DotnetAccessMode.None,
+        DotnetAccessMode? recommendedAccessMode = null,
+        DotnetAccessMode? configuredAccessMode = null)
+        => InitFormModel.Create(
+            CreateDefaults(
+                channelDisplay,
+                migrations,
+                accessMode,
+                recommendedAccessMode,
+                configuredAccessMode),
+            shellProvider: null);
 
     private static InitFormDefaults CreateDefaults(
         DefaultChannelDisplay channelDisplay,
         List<MigrationWorkflow.MigrationSelection>? migrations = null,
-        DotnetAccessMode accessMode = DotnetAccessMode.None)
+        DotnetAccessMode accessMode = DotnetAccessMode.None,
+        DotnetAccessMode? recommendedAccessMode = null,
+        DotnetAccessMode? configuredAccessMode = null)
     {
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
@@ -384,6 +414,8 @@ public class InitFormModelTests
         return new InitFormDefaults(
             installRoot,
             accessMode,
+            recommendedAccessMode ?? accessMode,
+            configuredAccessMode,
             DotnetAccessModePolicy.ShouldMigrateSystemInstallsByDefault(accessMode)
                 && MigrationWorkflow.FilterMigrationSelections(
                     migrationCandidates,

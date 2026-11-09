@@ -12,4 +12,9 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 /// When true, choosing this entry lets the user type a free-text value (e.g. a custom channel name)
 /// instead of selecting a fixed value; the typed text becomes the field's displayed value.
 /// </param>
-internal sealed record FieldChoice(string Title, string HelperText, bool IsCustomInput = false);
+/// <param name="Suffix">An optional marker appended to this choice in the expanded picker.</param>
+internal sealed record FieldChoice(
+    string Title,
+    string HelperText,
+    bool IsCustomInput = false,
+    string? Suffix = null);

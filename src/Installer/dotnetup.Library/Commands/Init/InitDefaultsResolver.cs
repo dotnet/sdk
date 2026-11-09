@@ -29,7 +29,13 @@ internal static class InitDefaultsResolver
         bool ignoreGlobalJson = false)
     {
         IEnvShellProvider? shellProvider = command.ShellProvider ?? ShellDetection.GetCurrentShellProvider();
-        DotnetAccessMode accessMode = GetDefaultAccessMode(shellProvider, configuredAccessMode);
+        DotnetAccessMode recommendedAccessMode = GetDefaultAccessMode(shellProvider);
+        DotnetAccessMode? supportedConfiguredAccessMode =
+            configuredAccessMode is DotnetAccessMode configured
+            && DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(configured)
+                ? configured
+                : null;
+        DotnetAccessMode accessMode = supportedConfiguredAccessMode ?? recommendedAccessMode;
         // Dry-run previews the form as it would look in an ordinary directory, so global.json (which
         // could pin a local install path or channel) is ignored.
         var globalJson = ignoreGlobalJson
@@ -50,6 +56,8 @@ internal static class InitDefaultsResolver
             return new InitFormDefaults(
                 resolvedRoot,
                 accessMode,
+                recommendedAccessMode,
+                supportedConfiguredAccessMode,
                 ShouldMigrateSystemInstallsByDefault(
                     accessMode,
                     resolvedMigrations,
@@ -74,6 +82,8 @@ internal static class InitDefaultsResolver
         return new InitFormDefaults(
             installRoot,
             accessMode,
+            recommendedAccessMode,
+            supportedConfiguredAccessMode,
             ShouldMigrateSystemInstallsByDefault(accessMode, migrations, defaultInstallSpecs),
             migrations,
             channelDisplay,
