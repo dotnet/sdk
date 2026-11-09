@@ -238,9 +238,15 @@ internal sealed class TestProgressState(
 
     public int? ExitCode { get; internal set; }
 
+    public bool HasIncompleteTestResults { get; internal set; }
+
     public bool IsDiscovery { get; } = isDiscovery;
 
     public TestResultVisibility TestResultVisibility { get; } = testResultVisibility;
+
+    public OutputShowMode ShowStdout { get; init; } = OutputShowMode.Failed;
+
+    public OutputShowMode ShowStderr { get; init; } = OutputShowMode.Failed;
 
     public int SlowestTestsCount { get; } = slowestTestsCount;
 
@@ -265,6 +271,14 @@ internal sealed class TestProgressState(
             {
                 return _tryCount;
             }
+        }
+    }
+
+    internal IReadOnlySet<string> GetInstanceIds()
+    {
+        lock (_lock)
+        {
+            return new HashSet<string>(_instanceIdToAttemptNumber.Keys, StringComparer.Ordinal);
         }
     }
 

@@ -16,6 +16,74 @@ namespace dotnet.Tests.CommandTests.Test;
 public class TerminalTestReporterTests
 {
     [TestMethod]
+    [DataRow(0)]
+    [DataRow(2)]
+    [DataRow(8)]
+    [DataRow(9)]
+    [DataRow(15)]
+    public void CreateRunSummary_UsesFinalPolicyAndLogicalLiveResults(int exitCode)
+    {
+        using var reporter = new TerminalTestReporter(new CapturingConsole(), new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+        });
+        DateTimeOffset startTime = DateTimeOffset.UtcNow;
+        reporter.TestExecutionStarted(startTime, 2, false, false, true);
+        reporter.AssemblyRunStarted("Retry.dll", "net9.0", "x64", "retry", "first");
+        ReportTest(reporter, "Retry.dll", "retry", "first", "flaky", TestOutcome.Fail, TimeSpan.FromSeconds(20));
+        reporter.AssemblyRunStarted("Retry.dll", "net9.0", "x64", "retry", "second");
+        ReportTest(reporter, "Retry.dll", "retry", "second", "flaky", TestOutcome.Passed, TimeSpan.FromSeconds(20));
+        reporter.AssemblyRunCompleted("retry", 0, null, null);
+        reporter.AssemblyRunStarted("Mixed.dll", "net9.0", "x64", "mixed", "instance");
+        ReportTest(reporter, "Mixed.dll", "mixed", "instance", "failed", TestOutcome.Fail);
+        ReportTest(reporter, "Mixed.dll", "mixed", "instance", "skipped", TestOutcome.Skipped);
+        reporter.AssemblyRunCompleted("mixed", 2, null, null);
+
+        ArtifactPostProcessingRunSummary summary = reporter.CreateRunSummary(
+            startTime.AddSeconds(3), exitCode, testModuleCount: 3);
+
+        summary.Should().Be(new ArtifactPostProcessingRunSummary(3, 1, 1, 1, TimeSpan.FromSeconds(3), exitCode, 3),
+            "retries are logical results, duration is wall time, and absent fragments do not remove selected modules");
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void CompactSummary_PutsFailuresBeforeArtifactsWithoutRepeatingCompletedSuccesses(bool showCompletion)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.NoAnsi,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = showCompletion,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 2, false, false, false);
+        reporter.AssemblyRunStarted("Successful.dll", "net9.0", "x64", "success", "instance");
+        ReportTest(reporter, "Successful.dll", "success", "instance", "passed", TestOutcome.Passed);
+        reporter.AssemblyRunCompleted("success", 0, null, null);
+        reporter.AssemblyRunStarted("Crashed.dll", "net9.0", "x64", "crash", "instance");
+        reporter.AssemblyRunCompleted("crash", 7, "host crash context", null);
+        reporter.ArtifactAdded(false, "Successful.dll", "net9.0", "x64", "success", null, "original.trx");
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, 7);
+
+        string output = console.GetOutput();
+        string summary = output[output.IndexOf("Test run summary:", StringComparison.Ordinal)..];
+        summary.IndexOf("failed: 0", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
+        summary.IndexOf("Errored assemblies:", StringComparison.Ordinal).Should().BeLessThan(summary.IndexOf("original.trx", StringComparison.Ordinal));
+        summary.Should().Contain("Crashed.dll").And.Contain("host crash context");
+        if (showCompletion)
+        {
+            summary.Should().NotContain("Successful.dll");
+        }
+        else
+        {
+            summary.Should().Contain("Successful.dll");
+        }
+    }
+
+    [TestMethod]
     public void AnsiTerminal_StopUpdate_WritesStringBuilder()
     {
         var console = new Mock<IConsole>(MockBehavior.Strict);
@@ -27,6 +95,64 @@ public class TerminalTestReporterTests
         terminal.StopUpdate();
 
         console.Verify(c => c.Write(It.Is<StringBuilder>(builder => builder.ToString() == "batched output")), Times.Once);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void AssemblyRunNotSelected_WritesNeutralStatusWithoutCountingTests(bool showAssembly)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowAssembly = showAssembly,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+
+        const string assembly = "Affected.Tests.dll";
+        reporter.AssemblyRunNotSelected(assembly, targetFramework: "net9.0", architecture: "x64");
+
+        string output = console.GetOutput();
+        output.Should().Contain($"{AnsiCodes.CSI}{(int)TerminalColor.Default}{AnsiCodes.SetColor}");
+        StripAnsi(output).Should().Contain(CliCommandStrings.NoAffectedTestsSelected);
+        if (showAssembly)
+        {
+            StripAnsi(output).Should().Contain($"{assembly} (net9.0|x64)");
+        }
+        else
+        {
+            StripAnsi(output).Should().NotContain(assembly);
+        }
+
+        StripAnsi(output).Should().NotContain("passed").And.NotContain("skipped").And.NotContain("[+");
+        reporter.TotalTests.Should().Be(0);
+        reporter.SkippedTests.Should().Be(0);
+        reporter.HasHandshakeFailure.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [DataRow(true, false, false)]
+    [DataRow(false, true, false)]
+    [DataRow(false, false, true)]
+    public void AssemblyRunNotSelected_WhenHelpDiscoveryOrCancellation_WritesNothing(
+        bool isHelp, bool isDiscovery, bool isCancelled)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowAssembly = true,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery, isHelp, isRetry: false);
+        if (isCancelled)
+        {
+            reporter.MarkCancelled();
+        }
+
+        reporter.AssemblyRunNotSelected("Affected.Tests.dll", targetFramework: "net9.0", architecture: "x64");
+
+        console.GetOutput().Should().BeEmpty();
     }
 
     /// <summary>
@@ -201,7 +327,7 @@ public class TerminalTestReporterTests
     }
 
     [TestMethod]
-    public void TestExecutionCompleted_WithAllowedZeroTests_PrintsPassingAssemblyAndRunSummary()
+    public void TestExecutionCompleted_WithAllowedZeroTests_PrintsPassingAssemblyAndNeutralRunSummary()
     {
         var capturingConsole = new CapturingConsole();
         var options = new TerminalTestReporterOptions
@@ -226,10 +352,32 @@ public class TerminalTestReporterTests
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.Success);
 
         string output = StripAnsi(capturingConsole.GetOutput());
-        output.Should().Contain("Test run summary: Passed!");
+        output.Should().Contain("Test run summary: Zero tests ran");
         GetAssemblySummaryLine(output, assembly).Should().Contain("passed");
-        output.Should().NotContain("Zero tests ran");
+        output.Should().NotContain("Test run summary: Passed!");
         output.Should().NotContain("Test run returned non-zero exit code");
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void TestExecutionCompleted_WithSuccessfulZeroTests_PrintsNeutralSummary(bool allowZeroTests)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AllowZeroTests = allowZeroTests,
+            AnsiMode = AnsiMode.SimpleAnsi,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: TestExitCode.Success);
+
+        string summary = $"{CliCommandStrings.TestRunSummary} {CliCommandStrings.ZeroTestsRan}";
+        string output = console.GetOutput();
+        output.Should().Contain($"{AnsiCodes.CSI}{(int)TerminalColor.Default}{AnsiCodes.SetColor}{summary}");
+        output.Should().NotContain($"{AnsiCodes.CSI}{(int)TerminalColor.DarkGreen}{AnsiCodes.SetColor}{summary}");
+        StripAnsi(output).Should().NotContain("Test run summary: Passed!");
     }
 
     [TestMethod]
@@ -265,7 +413,9 @@ public class TerminalTestReporterTests
     }
 
     [TestMethod]
-    public void TestExecutionCompleted_WithAllowedZeroTestsAndUnexpectedNonZeroExit_PrintsFailedSummary()
+    [DataRow(TestExitCode.GenericFailure)]
+    [DataRow(TestExitCode.TestAdapterTestSessionFailure)]
+    public void TestExecutionCompleted_WithAllowedZeroTestsAndUnexpectedNonZeroExit_PrintsFailedSummary(int exitCode)
     {
         var capturingConsole = new CapturingConsole();
         var options = new TerminalTestReporterOptions
@@ -279,9 +429,32 @@ public class TerminalTestReporterTests
         reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
         reporter.TestExecutionCompleted(
             DateTimeOffset.UtcNow,
-            exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.GenericFailure);
+            exitCode);
 
         StripAnsi(capturingConsole.GetOutput()).Should().Contain("Test run summary: Failed!");
+    }
+
+    [TestMethod]
+    public void TestExecutionCompleted_WithTestSessionFailureAndPassingTests_PrintsFailedSummary()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AllowZeroTests = true,
+            AnsiMode = AnsiMode.SimpleAnsi,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+        const string assembly = "SessionFailure.Tests.dll";
+        reporter.AssemblyRunStarted(assembly, "net9.0", "x64", executionId: "exec-1", instanceId: "inst-1");
+        ReportTest(reporter, assembly, executionId: "exec-1", instanceId: "inst-1", testUid: "passed-1", TestOutcome.Passed);
+        reporter.AssemblyRunCompleted("exec-1", TestExitCode.TestAdapterTestSessionFailure, outputData: null, errorData: null);
+
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: TestExitCode.TestAdapterTestSessionFailure);
+
+        string output = console.GetOutput();
+        string summary = $"{CliCommandStrings.TestRunSummary} {CliCommandStrings.Failed}!";
+        output.Should().Contain($"{AnsiCodes.CSI}{(int)TerminalColor.DarkRed}{AnsiCodes.SetColor}{summary}");
+        StripAnsi(output).Should().Contain("failed: 0").And.NotContain("Test run summary: Passed!");
     }
 
     [TestMethod]
@@ -369,6 +542,114 @@ public class TerminalTestReporterTests
         output.Should().NotContain("passed-test");
         output.Should().Contain("failed-test");
         output.Should().Contain("skipped-test");
+    }
+
+    [TestMethod]
+    [DataRow((int)TestOutcome.Passed, false)]
+    [DataRow((int)TestOutcome.Skipped, false)]
+    [DataRow((int)TestOutcome.Fail, true)]
+    [DataRow((int)TestOutcome.Error, true)]
+    [DataRow((int)TestOutcome.Timeout, true)]
+    [DataRow((int)TestOutcome.Canceled, true)]
+    public void TestCompleted_DefaultCapturedOutputOnlyShowsFailedTests(int outcome, bool showOutput)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.AssemblyRunStarted("Tests.dll", "net9.0", "x64", "execution", "instance");
+
+        ReportTest(reporter, "Tests.dll", "execution", "instance", "test-result",
+            (TestOutcome)outcome, TimeSpan.FromMilliseconds(1), "captured stdout", "captured stderr");
+
+        string output = StripAnsi(console.GetOutput());
+        output.Should().Contain("test-result");
+        AssertOutputStream(output, "captured stdout", CliCommandStrings.StandardOutput, showOutput);
+        AssertOutputStream(output, "captured stderr", CliCommandStrings.StandardError, showOutput);
+        reporter.TotalTests.Should().Be(1);
+    }
+
+    [TestMethod]
+    [DataRow((int)TestOutcome.Passed, (int)OutputShowMode.All, (int)OutputShowMode.None, true, false)]
+    [DataRow((int)TestOutcome.Fail, (int)OutputShowMode.All, (int)OutputShowMode.None, true, false)]
+    [DataRow((int)TestOutcome.Passed, (int)OutputShowMode.None, (int)OutputShowMode.All, false, true)]
+    [DataRow((int)TestOutcome.Fail, (int)OutputShowMode.None, (int)OutputShowMode.All, false, true)]
+    [DataRow((int)TestOutcome.Fail, (int)OutputShowMode.None, (int)OutputShowMode.None, false, false)]
+    public void TestCompleted_CapturedOutputOverridesAreIndependent(
+        int outcome, int stdoutMode, int stderrMode, bool showStdout, bool showStderr)
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowStdout = (OutputShowMode)stdoutMode,
+            ShowStderr = (OutputShowMode)stderrMode,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.AssemblyRunStarted("Tests.dll", "net9.0", "x64", "execution", "instance");
+
+        ReportTest(reporter, "Tests.dll", "execution", "instance", "test-result",
+            (TestOutcome)outcome, TimeSpan.FromMilliseconds(1), "captured stdout", "captured stderr");
+
+        string output = StripAnsi(console.GetOutput());
+        output.Should().Contain("test-result");
+        AssertOutputStream(output, "captured stdout", CliCommandStrings.StandardOutput, showStdout);
+        AssertOutputStream(output, "captured stderr", CliCommandStrings.StandardError, showStderr);
+        reporter.TotalTests.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void TestCompleted_CapturedOutputDoesNotOverrideResultVisibility()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowTestResults = TestResultVisibility.None,
+            ShowStdout = OutputShowMode.All,
+            ShowStderr = OutputShowMode.All,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 1, false, false, false);
+        reporter.AssemblyRunStarted("Tests.dll", "net9.0", "x64", "execution", "instance");
+
+        ReportTest(reporter, "Tests.dll", "execution", "instance", "hidden-result",
+            TestOutcome.Fail, TimeSpan.FromMilliseconds(1), "captured stdout", "captured stderr");
+
+        console.GetOutput().Should().BeEmpty();
+        reporter.TotalTests.Should().Be(1);
+    }
+
+    [TestMethod]
+    public void TestCompleted_CapturedOutputOverridesAreScopedToEachModule()
+    {
+        var console = new CapturingConsole();
+        using var reporter = new TerminalTestReporter(console, new TerminalTestReporterOptions
+        {
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowStdout = OutputShowMode.None,
+            ShowStderr = OutputShowMode.None,
+        });
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, 2, false, false, false);
+        reporter.AssemblyRunStarted("First.dll", "net9.0", "x64", "first", "instance",
+            attemptNumber: null,
+            settings: CreateSettings(TestResultVisibility.Passed,
+                showStdout: OutputShowMode.All, showStderr: OutputShowMode.None));
+        reporter.AssemblyRunStarted("Second.dll", "net9.0", "x64", "second", "instance",
+            attemptNumber: null,
+            settings: CreateSettings(TestResultVisibility.Passed,
+                showStdout: OutputShowMode.None, showStderr: OutputShowMode.All));
+
+        ReportTest(reporter, "First.dll", "first", "instance", "first-result",
+            TestOutcome.Passed, TimeSpan.FromMilliseconds(1), "first stdout", "first stderr");
+        ReportTest(reporter, "Second.dll", "second", "instance", "second-result",
+            TestOutcome.Passed, TimeSpan.FromMilliseconds(1), "second stdout", "second stderr");
+
+        string output = StripAnsi(console.GetOutput());
+        output.Should().Contain("first-result").And.Contain("first stdout").And.NotContain("first stderr");
+        output.Should().Contain("second-result").And.Contain("second stderr").And.NotContain("second stdout");
+        reporter.TotalTests.Should().Be(2);
     }
 
     [TestMethod]
@@ -646,7 +927,9 @@ public class TerminalTestReporterTests
     /// See https://github.com/dotnet/sdk/issues/49754.
     /// </summary>
     [TestMethod]
-    public void TestExecutionCompleted_WhenDiscoveryJsonFormat_EmitsMachineReadableJson()
+    [DataRow(false)]
+    [DataRow(true)]
+    public void TestExecutionCompleted_WhenDiscoveryJsonFormat_EmitsMachineReadableJson(bool collectTestMap)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -657,11 +940,13 @@ public class TerminalTestReporterTests
             ShowAssembly = false,
             ShowAssemblyStartAndComplete = false,
             ListTestsFormat = TestListFormat.Json,
+            CollectTestMap = collectTestMap,
         };
 
         using var reporter = new TerminalTestReporter(capturingConsole, options);
 
         reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: true, isHelp: false, isRetry: false);
+        reporter.TestMapCollectionStarted(moduleCount: 1);
 
         const string assembly = "/repo/bin/Debug/net9.0/MyTests.dll";
         const string executionId = "exec-1";
@@ -724,15 +1009,22 @@ public class TerminalTestReporterTests
         TestResultVisibility testResultVisibility,
         int slowestTestsCount = 0,
         bool showFlakyTests = true,
-        bool legacyRetryEnabled = false)
+        bool legacyRetryEnabled = false,
+        OutputShowMode showStdout = OutputShowMode.Failed,
+        OutputShowMode showStderr = OutputShowMode.Failed)
         => new(
             default,
             testResultVisibility,
             slowestTestsCount,
             showFlakyTests,
-            LegacyRetryEnabled: legacyRetryEnabled);
+            LegacyRetryEnabled: legacyRetryEnabled,
+            ShowStdout: showStdout,
+            ShowStderr: showStderr);
 
-    private static void ReportTest(TerminalTestReporter reporter, string assembly, string executionId, string instanceId, string testUid, TestOutcome outcome, TimeSpan? duration)
+    private static void ReportTest(
+        TerminalTestReporter reporter, string assembly, string executionId, string instanceId,
+        string testUid, TestOutcome outcome, TimeSpan? duration,
+        string? standardOutput = null, string? errorOutput = null)
     {
         reporter.TestCompleted(
             assembly: assembly,
@@ -748,8 +1040,20 @@ public class TerminalTestReporterTests
             exceptions: null,
             expected: null,
             actual: null,
-            standardOutput: null,
-            errorOutput: null);
+            standardOutput: standardOutput,
+            errorOutput: errorOutput);
+    }
+
+    private static void AssertOutputStream(string output, string payload, string heading, bool isVisible)
+    {
+        if (isVisible)
+        {
+            output.Should().Contain(payload).And.Contain(heading);
+        }
+        else
+        {
+            output.Should().NotContain(payload).And.NotContain(heading);
+        }
     }
 
     /// <summary>
