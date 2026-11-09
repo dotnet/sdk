@@ -65,9 +65,11 @@ internal static class MigrationWorkflow
         var deduped = new List<MigrationSelection>();
         var seenChannels = new HashSet<(InstallComponent Component, string Channel)>();
 
-        foreach (var install in systemInstalls.OrderBy(i => i.Component).ThenByDescending(i => i.Version))
+        // Channels and example versions come from the on-disk version: an SDK's build identity, such as
+        // 10.0.403-servicing.26523.112, is not in the signed release channels that migration installs from.
+        foreach (var install in systemInstalls.OrderBy(i => i.Component).ThenByDescending(i => i.LayoutVersion))
         {
-            string channelName = DotnetupUtilities.VersionToPatchBasedChannel(install.Version, install.Component);
+            string channelName = DotnetupUtilities.VersionToPatchBasedChannel(install.LayoutVersion, install.Component);
             var key = (install.Component, GetTrackedMigrationChannelName(install.Component, channelName));
             if (trackedChannels.Contains(key))
             {
@@ -82,7 +84,7 @@ internal static class MigrationWorkflow
             deduped.Add(new MigrationSelection(
                 install.Component,
                 new UpdateChannel(channelName),
-                install.Version,
+                install.LayoutVersion,
                 install.InstallRoot.Architecture));
         }
 

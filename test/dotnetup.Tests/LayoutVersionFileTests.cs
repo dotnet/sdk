@@ -27,6 +27,19 @@ public class LayoutVersionFileTests
     }
 
     [TestMethod]
+    [DataRow("10.0.403", "commit\n10.0.403\nrid\n10.0.403-servicing.26523.112\n10.0.400", "10.0.403-servicing.26523.112")]
+    [DataRow("12.0.100-alpha.1", "commit\n12.0.100-alpha.1\nrid\n12.0.100-alpha.1\n12.0.100", "12.0.100-alpha.1")]
+    [DataRow("10.0.403", "commit\n10.0.402\nrid\n10.0.402-servicing.26423.113\n10.0.400", null)]
+    [DataRow("10.0.403", "commit\n10.0.403\nrid\n10.0.404-servicing.26423.113\n10.0.400", null)]
+    [DataRow("10.0.12", "commit\n10.0.12", null)]
+    public void GetBuildVersionFor_RequiresTheFileToDescribeTheFolder(string folder, string content, string? expected)
+    {
+        var file = LayoutVersionFile.Read(new StringReader(content))!;
+
+        (file.GetBuildVersionFor(new Microsoft.Deployment.DotNet.Releases.ReleaseVersion(folder))?.ToString()).Should().Be(expected);
+    }
+
+    [TestMethod]
     public void Read_NormalizesContent()
     {
         var file = LayoutVersionFile.Read(new StringReader("  commit \r\n\r\n10.0.12\r\n"))!;

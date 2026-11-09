@@ -74,17 +74,21 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         var sdkInstalls = GetExistingSystemInstalls()
             .Where(i => i.Component == InstallComponent.SDK)
             .ToList();
-        return sdkInstalls.Count > 0 ? sdkInstalls[0].Version.ToString() : null;
+        return sdkInstalls.Count > 0 ? sdkInstalls[0].LayoutVersion.ToString() : null;
     }
 
     public List<string> GetInstalledSystemSdkVersions()
     {
         return [.. GetExistingSystemInstalls()
             .Where(i => i.Component == InstallComponent.SDK)
-            .Select(i => i.Version.ToString())];
+            .Select(i => i.LayoutVersion.ToString())];
     }
 
-    // Enumeration only sees folders, so Version is the on-disk version, not an RTM or servicing daily build's identity.
+    /// <summary>
+    /// Lists the installs in the native-architecture system roots. An SDK's <see cref="DotnetInstall.Version"/>
+    /// is its build identity from <c>.version</c>; use <see cref="DotnetInstall.LayoutVersion"/> for the version
+    /// that <c>dotnet --list-sdks</c> reports and that released channels contain.
+    /// </summary>
     public List<DotnetInstall> GetExistingSystemInstalls()
         => GetExistingSystemInstalls(GetSystemDotnetRoots());
 
@@ -123,7 +127,8 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     }
 
     /// <summary>
-    /// Filters a list of installs to only the native architecture and sorts descending by version.
+    /// Filters a list of installs to only the native architecture, keeps one install per on-disk folder, and sorts
+    /// descending by on-disk version, then by build identity.
     /// Shared between production code and test mocks to ensure consistent behavior.
     /// </summary>
     public static List<DotnetInstall> FilterToNativeArchAndSort(List<DotnetInstall> installs)
@@ -131,11 +136,15 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var filtered = installs
             .Where(i => i.InstallRoot.Architecture == nativeArch)
-            .DistinctBy(i => (i.Component, Version: i.Version.ToString(), i.InstallRoot.Architecture))
+            .DistinctBy(i => (i.Component, LayoutVersion: i.LayoutVersion.ToString(), i.InstallRoot.Architecture))
             .ToList();
 
         // Sort descending so newest versions appear first.
-        filtered.Sort((a, b) => b.Version.CompareTo(a.Version));
+        filtered.Sort((a, b) =>
+        {
+            int byLayout = b.LayoutVersion.CompareTo(a.LayoutVersion);
+            return byLayout != 0 ? byLayout : b.Version.CompareTo(a.Version);
+        });
         return filtered;
     }
 

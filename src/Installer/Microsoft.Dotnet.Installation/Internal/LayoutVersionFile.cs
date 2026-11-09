@@ -42,6 +42,20 @@ internal sealed class LayoutVersionFile
     public bool IsSameBuild(LayoutVersionFile? other) =>
         other is not null && string.Equals(Content, other.Content, StringComparison.OrdinalIgnoreCase);
 
+    /// <summary>
+    /// Returns the build identity of the payload in the folder named <paramref name="layoutVersion"/>, or null when
+    /// this file does not describe that folder (for example, a renamed folder) or holds no build identity (shared
+    /// frameworks). The identity must share the folder's major, minor, and patch versions.
+    /// </summary>
+    public ReleaseVersion? GetBuildVersionFor(ReleaseVersion layoutVersion) =>
+        BuildVersion is { } build
+            && layoutVersion.Equals(ProductVersion)
+            && build.Major == layoutVersion.Major
+            && build.Minor == layoutVersion.Minor
+            && build.Patch == layoutVersion.Patch
+            ? build
+            : null;
+
     /// <summary>Returns the <c>.version</c> file of each SDK and shared framework folder in the archive, keyed by subcomponent.</summary>
     public static Dictionary<string, LayoutVersionFile> ReadFromArchive(string archivePath)
     {

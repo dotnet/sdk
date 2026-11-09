@@ -81,23 +81,61 @@ public class InstallRootEnumeratorTests
     }
 
     [TestMethod]
-    public void GetExistingSystemInstalls_PreservesFolderVersionsRootPriorityAndSorting()
+    public void GetExistingSystemInstalls_DeduplicatesByFolderAndKeepsRootPriority()
     {
         using var testEnv = new TestEnvironment();
         string otherRoot = Path.Combine(testEnv.TempRoot, "other");
         WriteMarker(testEnv.InstallPath, "sdk", "11.0.100", "dotnet.dll");
-        WriteMarker(testEnv.InstallPath, "sdk", "11.0.100", ".version");
-        File.WriteAllText(Path.Combine(testEnv.InstallPath, "sdk", "11.0.100", ".version"),
-            "commit\n11.0.100\nrid\n11.0.100-servicing.26523.112\n");
+        WriteVersionFile(testEnv.InstallPath, "sdk", "11.0.100", "commit\n11.0.100\nrid\n11.0.100-servicing.26523.112\n11.0.100");
         WriteMarker(otherRoot, "sdk", "11.0.100", "dotnet.dll");
         WriteMarker(otherRoot, "sdk", "12.0.100-preview.1", "dotnet.dll");
         WriteMarker(otherRoot, Path.Combine("shared", "Microsoft.NETCore.App"), "11.0.0", "Microsoft.NETCore.App.deps.json");
 
         var installs = DotnetEnvironmentManager.GetExistingSystemInstalls([NativeRoot(testEnv.InstallPath), NativeRoot(otherRoot)]);
 
-        installs.Select(i => i.Version.ToString()).Should().Equal("12.0.100-preview.1", "11.0.100", "11.0.0");
+        installs.Select(i => i.LayoutVersion.ToString()).Should().Equal("12.0.100-preview.1", "11.0.100", "11.0.0");
         installs[1].InstallRoot.Path.Should().Be(testEnv.InstallPath);
+        installs[1].Version.ToString().Should().Be("11.0.100-servicing.26523.112");
         installs.Should().OnlyContain(i => i.InstallRoot.Architecture == InstallerUtilities.GetDefaultInstallArchitecture());
+    }
+
+    [TestMethod]
+    [DataRow("10.0.403", "commit\n10.0.403\nwin-x64\n10.0.403-servicing.26523.112\n10.0.400", "10.0.403-servicing.26523.112", "10.0.403")]
+    [DataRow("11.0.100", "commit\n11.0.100\nosx-arm64\n11.0.100-rtm.26552.115\n11.0.100", "11.0.100-rtm.26552.115", "11.0.100")]
+    [DataRow("12.0.100-alpha.1.26480.102", "commit\n12.0.100-alpha.1.26480.102\nwin-x64\n12.0.100-alpha.1.26480.102\n12.0.100", "12.0.100-alpha.1.26480.102", null)]
+    [DataRow("10.0.403", "commit\n10.0.402\nwin-x64\n10.0.402-servicing.26423.113\n10.0.400", "10.0.403", null)]
+    [DataRow("10.0.403", "commit\n10.0.403\nwin-x64\n10.0.404-servicing.26423.113\n10.0.400", "10.0.403", null)]
+    [DataRow("10.0.403", "commit\n10.0.403", "10.0.403", null)]
+    [DataRow("10.0.403", null, "10.0.403", null)]
+    public void GetInstalls_UsesTheSdkBuildIdentityFromItsVersionFile(string folder, string? versionFile, string version, string? productVersion)
+    {
+        using var testEnv = new TestEnvironment();
+        WriteMarker(testEnv.InstallPath, "sdk", folder, "dotnet.dll");
+        if (versionFile is not null)
+        {
+            WriteVersionFile(testEnv.InstallPath, "sdk", folder, versionFile);
+        }
+
+        var install = InstallRootEnumerator.GetInstalls(NativeRoot(testEnv.InstallPath)).Should().ContainSingle().Subject;
+
+        install.Version.ToString().Should().Be(version);
+        (install.ProductVersion?.ToString()).Should().Be(productVersion);
+        install.LayoutVersion.ToString().Should().Be(folder);
+        InstallationValidator.PassesValidationSmokeCheck(install).Should().BeTrue();
+    }
+
+    [TestMethod]
+    public void GetInstalls_UsesTheFolderVersionForRuntimes()
+    {
+        using var testEnv = new TestEnvironment();
+        string framework = Path.Combine("shared", "Microsoft.NETCore.App");
+        WriteMarker(testEnv.InstallPath, framework, "10.0.12", "Microsoft.NETCore.App.deps.json");
+        WriteVersionFile(testEnv.InstallPath, framework, "10.0.12", "95017c71\n10.0.12");
+
+        var install = InstallRootEnumerator.GetInstalls(NativeRoot(testEnv.InstallPath)).Should().ContainSingle().Subject;
+
+        install.Version.ToString().Should().Be("10.0.12");
+        install.ProductVersion.Should().BeNull();
     }
 
     [TestMethod]
@@ -137,4 +175,7 @@ public class InstallRootEnumeratorTests
         Directory.CreateDirectory(versionDirectory);
         File.WriteAllText(Path.Combine(versionDirectory, marker), string.Empty);
     }
+
+    private static void WriteVersionFile(string root, string componentDirectory, string version, string content) =>
+        File.WriteAllText(Path.Combine(root, componentDirectory, version, ".version"), content);
 }
