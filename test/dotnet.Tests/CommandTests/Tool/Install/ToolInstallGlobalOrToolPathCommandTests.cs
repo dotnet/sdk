@@ -300,6 +300,42 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [TestMethod]
+        public async Task GivenShimCreationFailureAnotherInstallWaitsForRollbackBeforeReinstalling()
+        {
+            using var blockingShellShimRepository = new BlockingFailingShellShimRepository();
+            var firstCommand = new ToolInstallGlobalOrToolPathCommand(
+                Parser.Parse($"dotnet tool install -g {PackageId}"),
+                _createToolPackageStoreDownloaderUninstaller,
+                (_, _) => blockingShellShimRepository,
+                new EnvironmentPathInstructionMock(new BufferedReporter(), _pathToPlaceShim, true),
+                new BufferedReporter());
+            var secondCommand = new ToolInstallGlobalOrToolPathCommand(
+                Parser.Parse($"dotnet tool install -g {PackageId}"),
+                _createToolPackageStoreDownloaderUninstaller,
+                _createShellShimRepository,
+                new EnvironmentPathInstructionMock(new BufferedReporter(), _pathToPlaceShim, true),
+                new BufferedReporter());
+
+            Task<int> firstInstall = Task.Run(firstCommand.Execute, TestContext.CancellationToken);
+            await blockingShellShimRepository.CreateStarted;
+            Task<int> secondInstall = Task.Run(secondCommand.Execute, TestContext.CancellationToken);
+
+            Task firstCompleted = await Task.WhenAny(
+                secondInstall,
+                Task.Delay(TimeSpan.FromMilliseconds(250), TestContext.CancellationToken));
+            blockingShellShimRepository.Continue();
+
+            Func<Task> awaitFirstInstall = async () => await firstInstall;
+            await awaitFirstInstall.Should().ThrowAsync<GracefulException>();
+            (await secondInstall).Should().Be(0);
+            firstCompleted.Should().NotBe(
+                secondInstall,
+                "the second install must not accept a package whose transaction can still roll back");
+            _toolPackageStoreQuery.EnumeratePackageVersions(_packageId).Should().ContainSingle();
+            _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
+        }
+
+        [TestMethod]
         public void GivenInCorrectToolConfigurationWhenRunWithPackageIdItShouldFail()
         {
 
@@ -1009,6 +1045,30 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             }
         }
 
+        private sealed class BlockingFailingShellShimRepository : IShellShimRepository, IDisposable
+        {
+            private readonly TaskCompletionSource _createStarted =
+                new(TaskCreationOptions.RunContinuationsAsynchronously);
+            private readonly ManualResetEventSlim _continue = new(initialState: false);
+
+            public Task CreateStarted => _createStarted.Task;
+
+            public void CreateShim(ToolCommand toolCommand, IReadOnlyList<FilePath> packagedShims = null)
+            {
+                _createStarted.TrySetResult();
+                _continue.Wait();
+                throw new ShellShimException("Simulated shim creation failure.");
+            }
+
+            public void RemoveShim(ToolCommand toolCommand)
+            {
+            }
+
+            public void Continue() => _continue.Set();
+
+            public void Dispose() => _continue.Dispose();
+        }
+
         private string _nugetConfigWithInvalidSources = @"{
 <?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
@@ -1020,5 +1080,3 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 }";
     }
 }
-
-
