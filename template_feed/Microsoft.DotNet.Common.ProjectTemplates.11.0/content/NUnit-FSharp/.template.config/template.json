@@ -32,6 +32,10 @@
       "datatype": "choice",
       "choices": [
         {
+          "choice": "net12.0",
+          "description": "Target net12.0"
+        },
+        {
           "choice": "net11.0",
           "description": "Target net11.0"
         }
@@ -119,6 +123,8 @@
       "args": {
         "allowFileCreation": true,
         "allowPathCreation": true,
+        "allowPropertyOverwrite": false,
+        "ignorePropertyValueCase": true,
         "jsonFileName": "global.json",
         "parentPropertyPath": "test",
         "newJsonPropertyName": "runner",

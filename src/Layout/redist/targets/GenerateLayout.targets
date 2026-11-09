@@ -1,5 +1,10 @@
 <Project>
 
+  <!-- Track this targets file so implementation changes invalidate RID-chain generation. -->
+  <PropertyGroup>
+    <_GenerateLayoutTargetsFile>$(MSBuildThisFileFullPath)</_GenerateLayoutTargetsFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageDownload Include="Microsoft.NETCore.Platforms" Version="[$(MicrosoftNETCorePlatformsPackageVersion)]" />
   </ItemGroup>
@@ -19,14 +24,56 @@
           SkipUnchangedFiles="true" />
   </Target>
 
+  <!-- Run preparation on every build. It publishes the graphs and invalidates stale
+       completion before MSBuild checks the generation target's inputs and outputs. -->
+  <Target Name="_PrepareGenerateSdkRuntimeIdentifierChain"
+          DependsOnTargets="PublishRuntimeIdentifierGraphFiles">
+    <!-- Store incremental state under obj, outside the SDK output.
+         CompleteIncrementalLayout requires absolute paths. Track the RID and package
+         mapping because a graph from another package can retain an old timestamp.
+         Track the output and implementation paths because changing either requires generation. -->
+    <PropertyGroup>
+      <_SdkRuntimeIdentifierChainStatePrefix>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'incremental-layout', 'sdk-runtime-identifier-chain'))</_SdkRuntimeIdentifierChainStatePrefix>
+      <_SdkRuntimeIdentifierChainOutput>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(NETCoreSdkRuntimeIdentifierChainTargetFile)'))</_SdkRuntimeIdentifierChainOutput>
+      <_SdkRuntimeIdentifierChainInputs>RuntimeIdentifier=$(PortableProductMonikerRid);Graph=$(PortableRuntimeIdentifierGraphTargetFile);PackageRoot=$(NuGetPackageRoot);PackageVersion=$(MicrosoftNETCorePlatformsPackageVersion);Output=$(_SdkRuntimeIdentifierChainOutput);TaskAssembly=$(SdkTasksAssembly);Targets=$(_GenerateLayoutTargetsFile)</_SdkRuntimeIdentifierChainInputs>
+    </PropertyGroup>
+
+    <!-- Rewrite the input fingerprint only when it changes. Its timestamp invalidates
+         generation after property or mapping changes without invalidating warm builds. -->
+    <WriteLinesToFile File="$(_SdkRuntimeIdentifierChainStatePrefix).inputs"
+                      Lines="$(_SdkRuntimeIdentifierChainInputs)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
+    <ReadLinesFromFile File="$(_SdkRuntimeIdentifierChainStatePrefix).complete"
+                       Condition="Exists('$(_SdkRuntimeIdentifierChainStatePrefix).complete')">
+      <Output TaskParameter="Lines" PropertyName="_SdkRuntimeIdentifierChainCompletionValue" />
+    </ReadLinesFromFile>
+    <!-- Delete completion when the output does not exist or the marker contains an
+         invalid value. A partial clean can remove the chain without removing state
+         under obj. -->
+    <Delete Files="$(_SdkRuntimeIdentifierChainStatePrefix).complete"
+            Condition="!Exists('$(_SdkRuntimeIdentifierChainOutput)') or
+                       (Exists('$(_SdkRuntimeIdentifierChainStatePrefix).complete') and '$(_SdkRuntimeIdentifierChainCompletionValue)' != 'complete')" />
+  </Target>
+
+  <!-- Use the completion stamp as the target output. An update to the graph can produce
+       the same chain bytes, so the chain timestamp could make every build regenerate it.
+       The task assembly and targets file timestamps also track implementation changes. -->
   <Target Name="GenerateSdkRuntimeIdentifierChain"
-          DependsOnTargets="PublishRuntimeIdentifierGraphFiles"
-          Inputs="$(PortableRuntimeIdentifierGraphTargetFile)"
-          Outputs="$(NETCoreSdkRuntimeIdentifierChainTargetFile)">
+          DependsOnTargets="_PrepareGenerateSdkRuntimeIdentifierChain"
+          Inputs="$(PortableRuntimeIdentifierGraphTargetFile);$(SdkTasksAssembly);$(_GenerateLayoutTargetsFile);$(_SdkRuntimeIdentifierChainStatePrefix).inputs"
+          Outputs="$(_SdkRuntimeIdentifierChainStatePrefix).complete">
+    <!-- Delete the old stamp before generation. A parse or write failure must not leave
+         a successful completion marker. -->
+    <Delete Files="$(_SdkRuntimeIdentifierChainStatePrefix).complete" />
     <GenerateSdkRuntimeIdentifierChain
       RuntimeIdentifier="$(PortableProductMonikerRid)"
       RuntimeIdentifierGraphPath="$(PortableRuntimeIdentifierGraphTargetFile)"
-      RuntimeIdentifierChainOutputPath="$(NETCoreSdkRuntimeIdentifierChainTargetFile)" />
+      RuntimeIdentifierChainOutputPath="$(_SdkRuntimeIdentifierChainOutput)" />
+    <!-- Write completion only after the chain exists. The stamp can advance without
+         touching a chain file whose content remains the same. -->
+    <CompleteIncrementalLayout ExpectedOutputs="$(_SdkRuntimeIdentifierChainOutput)"
+                               CompletionStampFile="$(_SdkRuntimeIdentifierChainStatePrefix).complete" />
   </Target>
 
   <Target Name="PublishVersionFile">
@@ -41,7 +88,7 @@
                       WriteOnlyWhenDifferent="true" />
   </Target>
 
-  <Target Name="PublishRoslyn">
+  <Target Name="_PublishRoslynFiles">
     <PropertyGroup>
       <RoslynPackagePath>$(NuGetPackageRoot)microsoft.net.compilers.toolset\$(MicrosoftNetCompilersToolsetVersion)\tasks\netcore\</RoslynPackagePath>
     </PropertyGroup>
@@ -53,20 +100,36 @@
       <!-- binfx folder contains full framework dlls that are needed only on Windows -->
       <RoslynFrameworkAssembly Include="$(RoslynPackagePath)binfx\**\*" Condition="'$(OS)' != 'Windows_NT'"/>
       <RoslynFile Include="$(RoslynPackagePath)**\*" Exclude="@(RoslynFrameworkAssembly)" />
+      <_RoslynRuntimeConfig Include="@(RoslynFile)"
+                            Exclude="$(RoslynPackagePath)**\testhost-*.runtimeconfig.json"
+                            Condition="'%(Extension)' == '.json' and $([System.String]::new('%(Filename)').EndsWith('.runtimeconfig'))" />
+      <_RoslynCopyFile Include="@(RoslynFile)" Exclude="@(_RoslynRuntimeConfig)" />
     </ItemGroup>
 
     <Error Condition="'@(RoslynFile)' == ''" Text="Something moved around in Roslyn package, adjust code here accordingly. TFM change?" />
-    <Copy SourceFiles="@(RoslynFile)"
-          DestinationFiles="@(RoslynFile->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
+    <Copy SourceFiles="@(_RoslynCopyFile)"
+          DestinationFiles="@(_RoslynCopyFile->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
 
+    <!-- Finalize package runtime config files directly from package inputs. Copying raw
+         files before retargeting would overwrite stable SDK outputs on every build. -->
+    <UpdateRuntimeConfig RuntimeConfigPaths="@(_RoslynRuntimeConfig)"
+                         DestinationPaths="@(_RoslynRuntimeConfig->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+                         Condition="'@(_RoslynRuntimeConfig)' != ''" />
+
+  </Target>
+
+  <Target Name="PublishRoslyn"
+          DependsOnTargets="_PublishRoslynFiles">
     <CreateAppHost AppHostSourcePath="$(NuGetPackageRoot)\microsoft.netcore.app.host.$(SharedFrameworkRid)\$(MicrosoftNETCoreAppHostPackageVersion)\runtimes\$(SharedFrameworkRid)\native\apphost$(ExeExtension)"
                    AppHostDestinationPath="%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
                    AppBinaryName="%(_RoslynAppHost.Filename)%(_RoslynAppHost.Extension)"
                    IntermediateAssembly="%(_RoslynAppHost.FullPath)"
                    EnableMacOSCodeSign="$(SharedFrameworkRid.StartsWith('osx'))" />
 
-    <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' %(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)"
+    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier '%(_RoslynAppHost.SigningIdentifier)' --entitlements '$(MSBuildProjectDirectory)/roslyn-entitlements.plist' &quot;%(_RoslynAppHost.RootDir)%(_RoslynAppHost.Directory)%(_RoslynAppHost.Filename)$(ExeExtension)&quot;"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
   </Target>
 
@@ -88,7 +151,7 @@
           SkipUnchangedFiles="true"
           Condition="$(SharedFrameworkRid.StartsWith('win')) AND Exists('$(_FrameworkTlbPath)')" />
 
-    <Exec Command="codesign --sign - --force --entitlements '$(MSBuildProjectDirectory)/msbuild-entitlements.plist' %(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)$(ExeExtension)"
+    <Exec Command="codesign --sign - --force --preserve-metadata=entitlements,requirements,flags,runtime,launch-constraints,library-constraints --identifier '%(_MSBuildAppHost.SigningIdentifier)' --entitlements '$(MSBuildProjectDirectory)/msbuild-entitlements.plist' &quot;%(_MSBuildAppHost.RootDir)%(_MSBuildAppHost.Directory)%(_MSBuildAppHost.Filename)$(ExeExtension)&quot;"
           Condition="$(SharedFrameworkRid.StartsWith('osx'))" />
   </Target>
 
@@ -163,11 +226,23 @@
                                  $(ArtifactsBinDir)dotnet-format/$(Configuration)/$(NetCurrent)/**/*.exe;
                                  $(ArtifactsBinDir)dotnet-format/$(Configuration)/$(NetCurrent)/**/*.json;
                                  $(ArtifactsBinDir)dotnet-format/$(Configuration)/$(NetCurrent)/**/*.config" />
+      <_DotnetFormatRuntimeConfig Include="@(DotnetFormatFile)"
+                                  Exclude="$(ArtifactsBinDir)dotnet-format/$(Configuration)/$(NetCurrent)/**/testhost-*.runtimeconfig.json"
+                                  Condition="'%(Extension)' == '.json' and $([System.String]::new('%(Filename)').EndsWith('.runtimeconfig'))" />
+      <_DotnetFormatCopyFile Include="@(DotnetFormatFile)" Exclude="@(_DotnetFormatRuntimeConfig)" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(DotnetFormatFile)"
-          DestinationFiles="@(DotnetFormatFile->'$(OutputPath)DotnetTools\dotnet-format\%(RecursiveDir)%(Filename)%(Extension)')"
+    <Copy SourceFiles="@(_DotnetFormatCopyFile)"
+          DestinationFiles="@(_DotnetFormatCopyFile->'$(OutputPath)DotnetTools\dotnet-format\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
+
+    <!-- Finalize BuildHost runtime config files from source so package JSON cannot
+         overwrite framework versions that the SDK already pins. -->
+    <UpdateRuntimeConfig RuntimeConfigPaths="@(_DotnetFormatRuntimeConfig)"
+                         DestinationPaths="@(_DotnetFormatRuntimeConfig->'$(OutputPath)DotnetTools\dotnet-format\%(RecursiveDir)%(Filename)%(Extension)')"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+                         Condition="'@(_DotnetFormatRuntimeConfig)' != ''" />
   </Target>
 
   <Target Name="PublishMSBuildExtensions">
@@ -252,11 +327,15 @@
   </Target>
 
   <Target Name="PublishTestCli">
+    <ItemGroup>
+      <_TestCliEntryPoint Include="$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/net*/vstest.console.dll" />
+    </ItemGroup>
+
+    <Error Condition="'@(_TestCliEntryPoint->Count())' != '1'"
+           Text="Expected exactly one vstest.console.dll under '$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/net*'; found @(_TestCliEntryPoint->Count())." />
+
     <PropertyGroup>
-      <TestCliNuGetDirectoryTargetFramework>net10.0</TestCliNuGetDirectoryTargetFramework>
-      <!-- NetTFMUpdate: Restore $(NetCurrent) when the source-built VSTest CLI targets net12.0. -->
-      <TestCliNuGetDirectoryTargetFramework Condition="'$(DotNetBuildSourceOnly)' == 'true'">net11.0</TestCliNuGetDirectoryTargetFramework>
-      <TestCliNuGetDirectory>$(NuGetPackageRoot)microsoft.testplatform.cli/$(MicrosoftTestPlatformCLIPackageVersion)/contentFiles/any/$(TestCliNuGetDirectoryTargetFramework)/</TestCliNuGetDirectory>
+      <TestCliNuGetDirectory>@(_TestCliEntryPoint->'%(RootDir)%(Directory)')</TestCliNuGetDirectory>
     </PropertyGroup>
 
     <ItemGroup>
@@ -270,19 +349,76 @@
       <TestCliBitsToExclude Include="$(TestCliNuGetDirectory)System.Text.Json.dll" />
       <TestCliBits Include="$(TestCliNuGetDirectory)**/*"
                    Exclude="@(TestCliBitsToExclude)" />
+      <_TestCliRuntimeConfig Include="@(TestCliBits)"
+                             Exclude="$(TestCliNuGetDirectory)**/testhost-*.runtimeconfig.json"
+                             Condition="'%(Extension)' == '.json' and $([System.String]::new('%(Filename)').EndsWith('.runtimeconfig'))" />
+      <_TestCliCopyFile Include="@(TestCliBits)" Exclude="@(_TestCliRuntimeConfig)" />
     </ItemGroup>
 
     <Error Condition="'@(TestCliBits)' == ''" Text="Something moved around in Test CLI package, adjust code here accordingly. TFM change?" />
-    <Copy SourceFiles="@(TestCliBits)"
-          DestinationFiles="@(TestCliBits->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+    <Copy SourceFiles="@(_TestCliCopyFile)"
+          DestinationFiles="@(_TestCliCopyFile->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true"/>
+
+    <!-- Copy testhost runtime config files without modification because testhost keeps
+         its package framework selection. Finalize all other runtime config files before
+         publishing. -->
+    <UpdateRuntimeConfig RuntimeConfigPaths="@(_TestCliRuntimeConfig)"
+                         DestinationPaths="@(_TestCliRuntimeConfig->'$(OutputPath)%(RecursiveDir)%(Filename)%(Extension)')"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)"
+                         Condition="'@(_TestCliRuntimeConfig)' != ''" />
   </Target>
 
   <Target Name="PublishFSharp">
+    <!-- Publish tool_fsc under the intermediate directory. Publishing directly into the
+         SDK makes each build recreate synthetic files after cleanup and rewrite shipping
+         JSON. The intermediate directory also gives fsc and fsi stable source files. -->
+    <PropertyGroup>
+      <FSharpPublishDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'fsharp-publish'))</FSharpPublishDirectory>
+      <FSharpDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(OutputPath)', 'FSharp'))</FSharpDirectory>
+      <_FSharpLayoutFileList>$([MSBuild]::NormalizePath('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'fsharp-layout.files'))</_FSharpLayoutFileList>
+    </PropertyGroup>
+
     <MSBuild
       Targets="Publish"
       Projects="$(MSBuildProjectDirectory)\tools\tool_fsc.csproj"
-      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/FSharp" />
+      Properties="Configuration=$(Configuration);PublishDir=$(FSharpPublishDirectory)" />
+
+    <!-- The finalizer writes the fsc and fsi config and deps files. Keep raw synthetic
+         files under the intermediate directory, and copy only the compiler payload. -->
+    <ItemGroup>
+      <_FSharpPublishFile Include="$(FSharpPublishDirectory)**/*"
+                          Exclude="$(FSharpPublishDirectory)tool_fsc.dll;
+                                   $(FSharpPublishDirectory)tool_fsc.pdb;
+                                   $(FSharpPublishDirectory)tool_fsc.runtimeconfig.json;
+                                   $(FSharpPublishDirectory)tool_fsc.deps.json;
+                                   $(FSharpPublishDirectory)fsc.runtimeconfig.json;
+                                   $(FSharpPublishDirectory)fsc.deps.json;
+                                   $(FSharpPublishDirectory)fsi.runtimeconfig.json;
+                                   $(FSharpPublishDirectory)fsi.deps.json" />
+      <_CurrentFSharpLayoutFile Include="@(_FSharpPublishFile->'$(FSharpDirectory)%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+    <ReadLinesFromFile File="$(_FSharpLayoutFileList)"
+                       Condition="Exists('$(_FSharpLayoutFileList)')">
+      <Output TaskParameter="Lines" ItemName="_PriorFSharpLayoutFile" />
+    </ReadLinesFromFile>
+    <ItemGroup>
+      <_StaleFSharpLayoutFile Include="@(_PriorFSharpLayoutFile)" Exclude="@(_CurrentFSharpLayoutFile)" />
+    </ItemGroup>
+    <!-- Child Publish cleans only its intermediate directory. Remove prior copy
+         outputs that disappeared, without treating unrelated shipping files as owned. -->
+    <FindUnderPath Path="$(FSharpDirectory)" Files="@(_StaleFSharpLayoutFile)">
+      <Output TaskParameter="InPath" ItemName="_OwnedStaleFSharpLayoutFile" />
+    </FindUnderPath>
+    <Delete Files="@(_OwnedStaleFSharpLayoutFile)" />
+    <Copy SourceFiles="@(_FSharpPublishFile)"
+          DestinationFiles="@(_CurrentFSharpLayoutFile)"
+          SkipUnchangedFiles="true" />
+    <WriteLinesToFile File="$(_FSharpLayoutFileList)"
+                      Lines="@(_CurrentFSharpLayoutFile)"
+                      Overwrite="true"
+                      WriteOnlyWhenDifferent="true" />
   </Target>
 
   <Target Name="PublishContainersSdk">
@@ -308,9 +444,9 @@
 
   <Target Name="GenerateCliRuntimeConfigurationFiles" DependsOnTargets="PublishTargetExtensions">
     <ItemGroup>
-      <BundledTools Include="MSBuild;
-                            dotnet;
-                            NuGet.CommandLine.XPlat" />
+      <BundledTools Include="MSBuild" RemoveResources="false" />
+      <BundledTools Include="dotnet" RemoveResources="true" />
+      <BundledTools Include="NuGet.CommandLine.XPlat" RemoveResources="false" />
 
       <BundledToolProjects Include="tool_msbuild;
                                     tool_nuget;
@@ -322,51 +458,54 @@
                                  SectionName="runtime"
                                  AssetPath="%(BundledToolProjects.Identity).dll" />
 
-    <Copy SourceFiles="$(OutputPath)$(TargetName).deps.json"
-          DestinationFiles="$(OutputPath)%(BundledTools.Identity).deps.json"
-          SkipUnchangedFiles="true" />
+    <!-- Build each tool's deps JSON from the common source, then compare the final content
+         with the destination. Copying before renaming always changes redist.deps.json.
+         Remove dotnet resources here so the later cleanup does not rewrite the file. -->
+    <ChangeEntryPointLibraryName DepsFile="$(OutputPath)$(TargetName).deps.json"
+                                 DestinationFile="$(OutputPath)%(BundledTools.Identity).deps.json"
+                                 NewName="%(BundledTools.Identity).deps.json"
+                                 RemoveResources="%(BundledTools.RemoveResources)" />
 
-    <Copy SourceFiles="$(OutputPath)/$(TargetName).runtimeconfig.json"
-          DestinationFiles="$(OutputPath)/%(BundledTools.Identity).runtimeconfig.json"
-          SkipUnchangedFiles="true" />
+    <UpdateRuntimeConfig RuntimeConfigPaths="$(OutputPath)$(TargetName).runtimeconfig.json"
+                         DestinationPaths="$(OutputPath)%(BundledTools.Identity).runtimeconfig.json"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
 
     <Delete Files="$(OutputPath)/%(BundledToolProjects.Identity).dll;
                    $(OutputPath)/%(BundledToolProjects.Identity).pdb" />
-
-    <ChangeEntryPointLibraryName
-          DepsFile="$(OutputPath)/%(BundledTools.Identity).deps.json"
-          NewName="%(BundledTools.Identity).deps.json" />
   </Target>
 
   <Target Name="RemoveResourcesFromDotnetDeps">
+    <!-- Keep this cleanup entry point for direct callers. Normal finalization already
+         removes dotnet resources, and this task does not rewrite a file when its content
+         stays the same. -->
     <RemoveAssetFromDepsPackages DepsFile="$(OutputPath)/dotnet.deps.json"
                SectionName="resources"
                AssetPath="*" />
   </Target>
 
-  <Target Name="MakeFscRunnableAndMoveToPublishDir" BeforeTargets="RemoveFilesAfterPublish">
+  <Target Name="MakeFscRunnableAndMoveToPublishDir"
+          DependsOnTargets="PublishFSharp"
+          BeforeTargets="RemoveFilesAfterPublish">
     <PropertyGroup>
       <FSharpDirectory>$(OutputPath)/FSharp</FSharpDirectory>
     </PropertyGroup>
 
     <ItemGroup>
-      <AssetsToRemoveFromDeps Include="tool_fsc.dll"
-                              SectionName="runtime"/>
+      <_FSharpTool Include="fsc;fsi" />
     </ItemGroup>
 
-    <RemoveAssetFromDepsPackages DepsFile="$(FSharpDirectory)/tool_fsc.deps.json"
-                                 SectionName="%(AssetsToRemoveFromDeps.SectionName)"
-                                 AssetPath="%(AssetsToRemoveFromDeps.Identity)" />
-
-    <!-- Deploy deps and runtime config for fsc.exe and fsi.exe.  Both apps have exactly the same dependencies so this is Ok -->
-    <Copy SourceFiles="$(FSharpDirectory)/tool_fsc.runtimeconfig.json;
-                       $(FSharpDirectory)/tool_fsc.deps.json;"
-          DestinationFiles="$(FSharpDirectory)/fsc.runtimeconfig.json;
-                            $(FSharpDirectory)/fsc.deps.json;"/>
-    <Copy SourceFiles="$(FSharpDirectory)/tool_fsc.runtimeconfig.json;
-                       $(FSharpDirectory)/tool_fsc.deps.json;"
-          DestinationFiles="$(FSharpDirectory)/fsi.runtimeconfig.json;
-                            $(FSharpDirectory)/fsi.deps.json;"/>
+    <!-- fsc and fsi share dependencies. Build each final deps file from the source that
+         child publish leaves intact, remove the synthetic assembly, and pin the
+         frameworks. Content-stable writes do not need a separate freshness stamp. -->
+    <RemoveAssetFromDepsPackages DepsFile="$(FSharpPublishDirectory)tool_fsc.deps.json"
+                                 DestinationFile="$(FSharpDirectory)/%(_FSharpTool.Identity).deps.json"
+                                 SectionName="runtime"
+                                 AssetPath="tool_fsc.dll" />
+    <UpdateRuntimeConfig RuntimeConfigPaths="$(FSharpPublishDirectory)tool_fsc.runtimeconfig.json"
+                         DestinationPaths="$(FSharpDirectory)/%(_FSharpTool.Identity).runtimeconfig.json"
+                         MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+                         MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
   </Target>
 
   <Target Name="RemoveFscFilesAfterPublish">
@@ -639,6 +778,8 @@
           Condition="'$(OSName)' == 'osx'" />
   </Target>
 
+  <!-- Keep RetargetTools as a repair pass without an incremental stamp. Other targets
+       can add runtime config files or legacy 15.0 files after a previous run. -->
   <Target Name="RetargetTools">
     <ItemGroup>
       <!-- Exclude testhost from retargeting: https://github.com/dotnet/sdk/issues/24769 -->

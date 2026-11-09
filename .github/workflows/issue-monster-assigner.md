@@ -8,6 +8,7 @@ on:
   # agentic job is skipped. The workflow_dispatch API still requires Actions write
   # permission, so unprivileged users cannot trigger the assignment workflow.
   roles: all
+  needs: [assignment-auth]
   # A no-op activation step forces gh-aw to emit a `pre_activation` job, which the
   # pat_pool import requires (`needs: [pre_activation]`). `roles: all` alone leaves no
   # activation logic, so gh-aw would otherwise omit pre_activation and compilation fails
@@ -73,17 +74,47 @@ concurrency:
   queue: max
 
 jobs:
-  conclusion:
-    pre-steps:
+  assignment-auth:
+    runs-on: ubuntu-slim
+    environment: issue-monster
+    permissions: {}
+    timeout-minutes: 5
+    steps:
+      - name: Validate assignment credential
+        uses: actions/github-script@v9.0.0
+        env:
+          ISSUE_MONSTER_ASSIGNMENT_TOKEN: ${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}
+        with:
+          script: |
+            const token = process.env.ISSUE_MONSTER_ASSIGNMENT_TOKEN;
+            const remediation = "Renew ISSUE_MONSTER_ASSIGNMENT_TOKEN for the issue-monster environment with metadata: read and actions, contents, issues, and pull requests: write. Do not use an inference-pool PAT.";
+            if (!token) {
+              throw new Error(`Assignment credential is missing. ${remediation}`);
+            }
+            try {
+              await getOctokit(token).rest.repos.get(context.repo);
+            } catch (error) {
+              throw new Error(`Assignment credential validation failed (HTTP ${error.status ?? "unknown"}). ${remediation}`);
+            }
+  verify-assignment:
+    needs: [agent, safe_outputs]
+    if: always() && needs.agent.result == 'success'
+    runs-on: ubuntu-slim
+    permissions: {}
+    steps:
       - name: Verify Copilot assignment
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          ASSIGNMENTS: ${{ needs.safe_outputs.outputs.assign_to_agent_assigned }}
         shell: bash
         run: |
-          if ! grep -Fqx "issue:${{ inputs.issue_number }}:copilot" <<< "${{ needs.safe_outputs.outputs.assign_to_agent_assigned }}"; then
-            echo "::error::Copilot assignment was not created for issue ${{ inputs.issue_number }}."
+          if ! grep -Fqx "issue:${ISSUE_NUMBER}:copilot" <<< "$ASSIGNMENTS"; then
+            echo "::error::Copilot assignment was not created for issue ${ISSUE_NUMBER}."
             exit 1
           fi
 
 safe-outputs:
+  report-failure-as-issue: false
   # The inference PAT pool intentionally grants only Copilot Requests access.
   # Process the assignment in the separate environment that owns the
   # repository-write PAT instead of broadening every PAT in the inference pool.

@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Restore;
 
 internal sealed class ToolRestoreCommandDefinition : Command
 {
-    public readonly Option<string> ConfigOption = ToolAppliedOption.CreateConfigOption();
+    public readonly Option<FileInfo> ConfigOption = ToolAppliedOption.CreateConfigOption();
 
     public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption();
 

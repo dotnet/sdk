@@ -1,0 +1,68 @@
+name: Assign Reviewers to Dependency Flow PRs
+
+on:
+  # zizmor: ignore[dangerous-triggers] -- no PR code is checked out; only requests reviewers via API
+  pull_request_target:
+    types: [opened, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  request-reviewers:
+    runs-on: ubuntu-latest
+    # Only run in the dotnet/sdk repository
+    if: github.repository == 'dotnet/sdk'
+
+    steps:
+      - name: Request owning team review for dependency flow PRs
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            // Darc opens dependency flow PRs titled "Update dependencies from <org>/<repo>",
+            // optionally prefixed with the target branch, e.g. "[release/10.0.1xx] Update ...".
+            // Map each source repository to the teams that own reviewing those updates.
+            const reviewerTeamsBySourceRepo = {
+              'microsoft/testfx': ['dotnet-testing'],
+            };
+
+            const pr = context.payload.pull_request;
+            const trustedAuthors = new Set(['dotnet-maestro[bot]', 'dotnet-maestro']);
+            const author = pr.user.login.toLowerCase();
+            if (!trustedAuthors.has(author)) {
+              console.log(`PR author is not a trusted dependency flow bot, skipping: ${author}`);
+              return;
+            }
+
+            const title = pr.title ?? '';
+            const match = title.match(/^(?:\[[^\]]+\]\s*)?Update dependencies from (\S+\/\S+?)(?:\s.*)?$/i);
+            if (!match) {
+              console.log(`PR title is not a dependency flow title, skipping: ${title}`);
+              return;
+            }
+
+            const sourceRepo = match[1].toLowerCase();
+            const teams = reviewerTeamsBySourceRepo[sourceRepo];
+            if (!teams) {
+              console.log(`No reviewer team configured for dependency source: ${sourceRepo}`);
+              return;
+            }
+
+            const alreadyRequested = (pr.requested_teams ?? []).map(t => t.slug.toLowerCase());
+            const teamsToRequest = teams.filter(team => !alreadyRequested.includes(team.toLowerCase()));
+            if (teamsToRequest.length === 0) {
+              console.log('All owning teams are already requested as reviewers, skipping.');
+              return;
+            }
+
+            await github.rest.pulls.requestReviewers({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              team_reviewers: teamsToRequest
+            });
+            console.log(`Requested review from ${teamsToRequest.join(', ')} on PR #${pr.number}.`);
