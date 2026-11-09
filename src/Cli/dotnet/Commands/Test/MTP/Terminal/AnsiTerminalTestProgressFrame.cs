@@ -102,21 +102,21 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
         charsTaken++;
         AppendToWidth(terminal, progress.AssemblyName, nonReservedWidth, ref charsTaken);
 
-        if (charsTaken < nonReservedWidth && (progress.TargetFramework != null || progress.Architecture != null))
+        if (charsTaken < nonReservedWidth && (progress.TargetFramework is not null || progress.Architecture is not null))
         {
             int lengthNeeded = 0;
 
             lengthNeeded++; // for '('
-            if (progress.TargetFramework != null)
+            if (progress.TargetFramework is not null)
             {
                 lengthNeeded += progress.TargetFramework.Length;
-                if (progress.Architecture != null)
+                if (progress.Architecture is not null)
                 {
                     lengthNeeded++; // for '|'
                 }
             }
 
-            if (progress.Architecture != null)
+            if (progress.Architecture is not null)
             {
                 lengthNeeded += progress.Architecture.Length;
             }
@@ -126,16 +126,16 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
             if (charsTaken + lengthNeeded < nonReservedWidth)
             {
                 terminal.Append(" (");
-                if (progress.TargetFramework != null)
+                if (progress.TargetFramework is not null)
                 {
                     terminal.Append(progress.TargetFramework);
-                    if (progress.Architecture != null)
+                    if (progress.Architecture is not null)
                     {
                         terminal.Append('|');
                     }
                 }
 
-                if (progress.Architecture != null)
+                if (progress.Architecture is not null)
                 {
                     terminal.Append(progress.Architecture);
                 }

@@ -199,6 +199,13 @@ cancellation plumbing.
 
 The vendored non-cursor renderer measures **visible-output silence**, not silence between
 test completions. Its totals include completed modules after their worker slots are freed.
+Captured per-test stdout and stderr default to failed-only output independently of result
+visibility. Resolve explicit stream modes from each module's effective arguments and
+configuration, not just the parent command line; raw test-host process output is unaffected.
+The SDK owns these rendered defaults, so its dynamic platform-option help must describe them
+even when older test applications supply different defaults in their help metadata. See
+[`MicrosoftTestingPlatformTestCommand`](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs)
+and its [help renderer](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.Help.cs).
 Resolve parent progress from every selected module's effective arguments and working
 directory; any effective opt-out disables the shared heartbeat and slow-test display.
 Collection status must not override discovery formatting. Keep optional timer and warning

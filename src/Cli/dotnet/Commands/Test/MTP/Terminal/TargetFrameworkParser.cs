@@ -9,7 +9,7 @@ internal static class TargetFrameworkParser
 {
     public static string? GetShortTargetFramework(string? frameworkDescription)
     {
-        if (frameworkDescription == null)
+        if (frameworkDescription is null)
         {
             return null;
         }
