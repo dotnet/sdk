@@ -791,15 +791,31 @@ public partial class AotIntegrationTests
     {
         SkipIfDnUnavailable();
 
-        // "build" is unsupported by AOT parser → should fall back to managed CLI
-        // In a full SDK layout, this would invoke dotnet build. We just verify it doesn't crash.
-        var (exitCode, stdout, stderr) = RunDn(["build", "--help"], enableAot: true);
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-build-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+        try
+        {
+            string projectPath = Path.Join(testDirectory, "ManagedFallback.proj");
+            File.WriteAllText(projectPath, """
+                <Project DefaultTargets="Build">
+                  <Target Name="Build">
+                    <Message Text="AOT_MANAGED_FALLBACK:$(MSBuildRuntimeType)" Importance="high" />
+                  </Target>
+                </Project>
+                """);
 
-        // If managed fallback works, it should show build help (exit 0)
-        // If managed fallback is missing, it returns 1
-        // Either way, it shouldn't crash or timeout
-        Assert.IsTrue(exitCode == 0 || exitCode == 1,
-            $"Expected exit code 0 or 1, got {exitCode}. Stderr: {stderr}");
+            var (exitCode, stdout, stderr) = RunDn(
+                ["build", projectPath, "--no-restore", "--verbosity", "minimal", "-nologo"],
+                enableAot: true,
+                workingDirectory: testDirectory);
+
+            Assert.AreEqual(0, exitCode, stdout + stderr);
+            Assert.Contains("AOT_MANAGED_FALLBACK:Core", stdout);
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
     }
 
     [TestMethod]
