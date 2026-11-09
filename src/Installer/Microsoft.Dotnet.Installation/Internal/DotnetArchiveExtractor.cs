@@ -199,7 +199,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
             return;
         }
 
-        string? existingVersion = WrapFileErrors(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFiles.ReadFromDirectory(directory));
+        string? existingVersion = WrapWithCustomExtractionExceptions(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFiles.ReadFromDirectory(directory));
         if (string.Equals(existingVersion, archiveVersion, StringComparison.OrdinalIgnoreCase))
         {
             return;
@@ -214,13 +214,13 @@ internal class DotnetArchiveExtractor : IInstallArtifact
     }
 
     private Dictionary<string, string> ReadArchiveVersionFiles(string archivePath) =>
-        WrapFileErrors(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFiles.ReadFromArchive(archivePath));
+        WrapWithCustomExtractionExceptions(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFiles.ReadFromArchive(archivePath));
 
-    private void WrapFileErrors(string permissionDeniedFormat, string failedFormat, Action action) =>
-        WrapFileErrors(permissionDeniedFormat, failedFormat, () => { action(); return true; });
+    private void WrapWithCustomExtractionExceptions(string permissionDeniedFormat, string failedFormat, Action action) =>
+        WrapWithCustomExtractionExceptions(permissionDeniedFormat, failedFormat, () => { action(); return true; });
 
     /// <summary>Runs a file operation, rethrowing archive and file system failures as <see cref="DotnetInstallException"/> with matching error codes.</summary>
-    private T WrapFileErrors<T>(string permissionDeniedFormat, string failedFormat, Func<T> action)
+    private T WrapWithCustomExtractionExceptions<T>(string permissionDeniedFormat, string failedFormat, Func<T> action)
     {
         try
         {
@@ -249,7 +249,7 @@ internal class DotnetArchiveExtractor : IInstallArtifact
     {
         try
         {
-            WrapFileErrors(Strings.ArchiveExtractPermissionDenied, Strings.ArchiveExtractFailed, () => ExtractArchiveDirectlyToTarget(archivePath, targetPath, installTask));
+            WrapWithCustomExtractionExceptions(Strings.ArchiveExtractPermissionDenied, Strings.ArchiveExtractFailed, () => ExtractArchiveDirectlyToTarget(archivePath, targetPath, installTask));
             installTask.Value = installTask.MaxValue;
         }
         catch (DotnetInstallException)
