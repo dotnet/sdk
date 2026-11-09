@@ -320,7 +320,10 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             string? language,
             string? defaultLanguage)
         {
-            return templates
+            IReadOnlyList<ITemplateInfo> templateList = templates as IReadOnlyList<ITemplateInfo> ?? templates.ToList();
+            string? effectiveDefaultLanguage = GetEffectiveDefaultLanguage(templateList, language, defaultLanguage);
+
+            return templateList
                 .Select(template => template.GetLanguage())
                 .Where(lang => !string.IsNullOrWhiteSpace(lang))
                 .Select(lang => lang!)
@@ -328,11 +331,45 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
                 .Select(lang => new TemplateLanguageJsonContract
                 {
                     Id = lang,
-                    Default = string.IsNullOrEmpty(language) && string.Equals(defaultLanguage, lang, StringComparison.OrdinalIgnoreCase)
+                    Default = effectiveDefaultLanguage != null && string.Equals(effectiveDefaultLanguage, lang, StringComparison.OrdinalIgnoreCase)
                 })
                 .OrderByDescending(lang => lang.Default)
                 .ThenBy(lang => lang.Id, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
+        }
+
+        private static string? GetEffectiveDefaultLanguage(
+            IReadOnlyList<ITemplateInfo> templateList,
+            string? language,
+            string? defaultLanguage)
+        {
+            if (!string.IsNullOrEmpty(language) || templateList.Count == 0)
+            {
+                return null;
+            }
+
+            IReadOnlyList<ITemplateInfo> templatesToCheck = templateList;
+            if (!string.IsNullOrWhiteSpace(defaultLanguage))
+            {
+                List<ITemplateInfo> preferredTemplates = templateList
+                    .Where(t => string.Equals(t.GetLanguage(), defaultLanguage, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+                if (preferredTemplates.Count > 0)
+                {
+                    templatesToCheck = preferredTemplates;
+                }
+            }
+
+            int highestPrecedence = templatesToCheck.Max(t => t.Precedence);
+            List<string> candidateLanguages = templatesToCheck
+                .Where(t => t.Precedence == highestPrecedence)
+                .Select(t => t.GetLanguage())
+                .Where(lang => !string.IsNullOrWhiteSpace(lang))
+                .Select(lang => lang!)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            return candidateLanguages.Count == 1 ? candidateLanguages[0] : null;
         }
 
         private static string[] GetTypesForJson(IEnumerable<ITemplateInfo> templates)

@@ -54,6 +54,19 @@ internal class HandleDiagnosticAction(Option<bool> option) : InvocableOptionActi
         {
             Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
             CommandLoggingContext.SetVerbose(true);
+            Option<Commands.New.NewListOutputFormat>? newListFormatOption = parseResult.CommandResult.Command switch
+            {
+                Commands.New.NewListCommandDefinition listCommand => listCommand.FormatOption,
+                Commands.New.NewCommandDefinition newCommand => newCommand.LegacyListCommand.FormatOption,
+                _ => null
+            };
+            if (newListFormatOption is not null
+                && parseResult.GetResult(newListFormatOption) is { Implicit: false } formatResult
+                && !parseResult.Errors.Any(error => error.SymbolResult == formatResult)
+                && formatResult.GetValueOrDefault<Commands.New.NewListOutputFormat>() == Commands.New.NewListOutputFormat.json)
+            {
+                CommandLoggingContext.SetVerboseToStdErr(true);
+            }
             Reporter.Reset();
 
             var home = Env.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName);

@@ -365,6 +365,29 @@ Dotnet 本地...  tool-manifest
         }
 
         [TestMethod]
+        public void CanDisplayTemplateListJson_FallbackLanguageIsDefault()
+        {
+            MockTemplateInfo templateFSharp = new MockTemplateInfo("basic", name: "Basic FSharp", identity: "Microsoft.Basic.FSharp", groupIdentity: "Microsoft.Basic", author: "Microsoft")
+                .WithClassifications("Common", "Code")
+                .WithTag("language", "F#")
+                .WithTag("type", "item");
+
+            IEnumerable<TemplateGroup> templateGroups = TemplateGroup.FromTemplateList(
+                CliTemplateInfo.FromTemplateInfo(new[] { templateFSharp }, A.Fake<IHostSpecificDataLoader>()));
+
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(defaultParameters: new Dictionary<string, string> { { "prefs:language", "C#" } });
+            IEngineEnvironmentSettings settings = new EngineEnvironmentSettings(host, virtualizeSettings: true);
+            BufferedReporter reporter = new();
+
+            TemplateGroupDisplay.DisplayTemplateListJson(settings, templateGroups, reporter);
+
+            Assert.HasCount(1, reporter.Lines);
+            Assert.AreEqual(
+                """{"version":1,"data":[{"name":"Basic FSharp","shortNames":["basic"],"languages":[{"id":"F#","default":true}],"types":["item"],"authors":["Microsoft"],"classifications":["Common","Code"]}]}""",
+                reporter.Lines[0]);
+        }
+
+        [TestMethod]
         public void CanDisplayEmptyTemplateListJson()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost();

@@ -101,6 +101,57 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         }
 
         [TestMethod]
+        [DataRow("list --format json")]
+        [DataRow("--list --format json")]
+        public void JsonFormatMarksFallbackLanguageAsDefault(string command)
+        {
+            string customHivePath = CreateTemporaryFolder(folderName: "Home");
+            InstallTestTemplate("TemplateResolution/DifferentLanguagesGroup/BasicFSharp", _log, customHivePath);
+
+            CommandResult result = new DotnetNewCommand(_log, command.Split(" "))
+                .WithCustomHive(customHivePath)
+                .WithoutBuiltInTemplates()
+                .Execute();
+
+            result
+                .Should()
+                .ExitWith(0)
+                .And.NotHaveStdErr();
+
+            using JsonDocument document = JsonDocument.Parse(result.StdOut!);
+            JsonElement template = document.RootElement.GetProperty("data").EnumerateArray().Single();
+            Assert.AreEqual("Basic FSharp", template.GetProperty("name").GetString());
+
+            JsonElement fsharpLang = template.GetProperty("languages").EnumerateArray().Single();
+            Assert.AreEqual("F#", fsharpLang.GetProperty("id").GetString());
+            Assert.IsTrue(fsharpLang.GetProperty("default").GetBoolean());
+        }
+
+        [TestMethod]
+        [DataRow("list --format json")]
+        [DataRow("--list --format json")]
+        [DataRow("list --format json --diagnostics")]
+        public void JsonFormatRoutesEngineWarningsAndDiagnosticsToStdErr(string command)
+        {
+            string customHivePath = CreateTemporaryFolder(folderName: "Home");
+            InstallTestTemplate("Invalid/InvalidHostData", _log, customHivePath);
+
+            CommandResult result = new DotnetNewCommand(_log, command.Split(" "))
+                .WithCustomHive(customHivePath)
+                .WithoutBuiltInTemplates()
+                .Execute();
+
+            result
+                .Should()
+                .ExitWith(0)
+                .And.HaveStdErrContaining("Warning:");
+
+            using JsonDocument document = JsonDocument.Parse(result.StdOut!);
+            JsonElement template = document.RootElement.GetProperty("data").EnumerateArray().Single();
+            Assert.AreEqual("Invalid.HostData", template.GetProperty("name").GetString());
+        }
+
+        [TestMethod]
         [DataRow("--list --columns-all")]
         [DataRow("--columns-all --list")]
         [DataRow("list --columns-all")]

@@ -80,9 +80,25 @@ internal static class NewCommandParser
                 }
                 verbosity = userSetVerbosity;
             }
+            bool isJsonOutput = IsJsonFormatOption(parseResult, definition.ListCommand.FormatOption)
+                || IsJsonFormatOption(parseResult, definition.LegacyListCommand.FormatOption);
+            if (isJsonOutput)
+            {
+                CommandLoggingContext.SetVerboseToStdErr(true);
+            }
+
             Reporter.Reset();
-            return CreateHost(disableSdkTemplates, disableProjectContext, projectPath, outputPath, isInteractive, verbosity.ToLogLevel());
+            return CreateHost(disableSdkTemplates, disableProjectContext, projectPath, outputPath, isInteractive, verbosity.ToLogLevel(), isJsonOutput);
         }
+    }
+
+    private static bool IsJsonFormatOption(ParseResult parseResult, Option<NewListOutputFormat> formatOption)
+    {
+        var optionResult = parseResult.GetResult(formatOption);
+        return optionResult != null
+            && !optionResult.Implicit
+            && !parseResult.Errors.Any(error => error.SymbolResult == optionResult)
+            && optionResult.GetValueOrDefault<NewListOutputFormat>() == NewListOutputFormat.json;
     }
 
     private static CliTemplateEngineHost CreateHost(
@@ -91,7 +107,8 @@ internal static class NewCommandParser
         FileInfo? projectPath,
         FileInfo? outputPath,
         bool isInteractive,
-        LogLevel logLevel)
+        LogLevel logLevel,
+        bool logToStdErr = false)
     {
         var builtIns = new List<(Type InterfaceType, IIdentifiedComponent Instance)>();
         builtIns.AddRange(TemplateEngine.Orchestrator.RunnableProjects.Components.AllComponents);
@@ -139,6 +156,7 @@ internal static class NewCommandParser
             preferences,
             builtIns,
             outputPath: outputPath?.FullName,
-            logLevel: logLevel);
+            logLevel: logLevel,
+            logToStdErr: logToStdErr);
     }
 }

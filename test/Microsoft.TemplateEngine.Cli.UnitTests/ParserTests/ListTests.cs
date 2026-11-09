@@ -264,6 +264,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         [TestMethod]
         [DataRow("new list --format invalid")]
         [DataRow("new --list --format invalid")]
+        [DataRow("new list --format 2")]
+        [DataRow("new --list --format 2")]
+        [DataRow("new list --format table,json")]
+        [DataRow("new --list --format table,json")]
         public void List_CannotParseInvalidFormat(string command)
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
