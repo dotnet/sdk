@@ -18,7 +18,8 @@ It:
   * extracts into a private scratch directory and copies only the validated
     files into the destination working tree, preserving repository-relative
     paths and refusing to write outside the destination or through existing
-    destination symlinks (including symlinked parent directories);
+    destination symlinks (including symlinked parent directories), opening each
+    destination file with ``O_NOFOLLOW`` so a leaf symlink is never followed;
   * prints the NUL-separated list of staged repository-relative paths to stdout
     so the caller can ``git add`` exactly those paths.
 
@@ -48,6 +49,17 @@ def fail(message: str) -> NoReturn:
 
 def is_git_path(name: str) -> bool:
     return ".git" in name.split("/") or name.endswith(".gitattributes")
+
+
+def copy_no_follow(source: str, destination: str, member_name: str) -> None:
+    # O_NOFOLLOW makes the open fail (ELOOP) if the leaf became a symlink after the checks above.
+    flags = os.O_WRONLY | os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW
+    try:
+        fd = os.open(destination, flags, 0o666)
+    except OSError as error:
+        fail(f"Refusing to write destination ({error.strerror}): {member_name}")
+    with os.fdopen(fd, "wb") as target, open(source, "rb") as src:
+        shutil.copyfileobj(src, target)
 
 
 def main() -> int:
@@ -126,7 +138,7 @@ def main() -> int:
                 if destination != dest_root and not destination.startswith(dest_root + os.sep):
                     fail(f"Refusing to write outside destination: {member.name}")
                 os.makedirs(os.path.dirname(destination), exist_ok=True)
-                shutil.copyfile(source, destination)
+                copy_no_follow(source, destination, member.name)
                 staged.append(member.name)
     finally:
         shutil.rmtree(scratch, ignore_errors=True)
