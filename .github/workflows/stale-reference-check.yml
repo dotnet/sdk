@@ -67,6 +67,7 @@ jobs:
       actions: write
       contents: read
       copilot-requests: write
+      pull-requests: read
     uses: ./.github/workflows/stale-reference-interpret.lock.yml
     with:
       input_artifact_id: ${{ needs.collect.outputs.input_artifact_id }}
