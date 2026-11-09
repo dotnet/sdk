@@ -134,7 +134,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
             var fakeExecutablePath = Path.Combine(fakeExecutableSubDirectory, FakeEntrypointName);
 
-            TransactionalAction.Run(() =>
+            try
             {
                 _fileSystem.Directory.CreateDirectory(fakeExecutableSubDirectory);
                 _fileSystem.File.CreateEmptyFile(fakeExecutablePath);
@@ -161,14 +161,16 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 {
                     DownloadCallback();
                 }
-
-            }, rollback: () =>
+            }
+            catch
             {
                 if (_fileSystem.Directory.Exists(nupkgDir))
                 {
                     _fileSystem.Directory.Delete(nupkgDir, true);
                 }
-            });
+
+                throw;
+            }
 
             return resolvedVersion;
         }

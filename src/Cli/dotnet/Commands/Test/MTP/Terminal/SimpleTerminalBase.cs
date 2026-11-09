@@ -58,7 +58,7 @@ internal abstract class SimpleTerminal : ITerminal
         int count = 0;
         foreach (TestProgressState? p in progress)
         {
-            if (p == null)
+            if (p is null)
             {
                 continue;
             }
@@ -114,16 +114,16 @@ internal abstract class SimpleTerminal : ITerminal
             Append(' ');
             Append(p.AssemblyName);
 
-            if (p.TargetFramework != null || p.Architecture != null)
+            if (p.TargetFramework is not null || p.Architecture is not null)
             {
                 Append(" (");
-                if (p.TargetFramework != null)
+                if (p.TargetFramework is not null)
                 {
                     Append(p.TargetFramework);
                     Append('|');
                 }
 
-                if (p.Architecture != null)
+                if (p.Architecture is not null)
                 {
                     Append(p.Architecture);
                 }

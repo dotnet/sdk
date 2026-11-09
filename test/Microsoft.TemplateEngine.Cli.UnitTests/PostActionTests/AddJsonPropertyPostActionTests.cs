@@ -198,6 +198,158 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
         }
 
         [TestMethod]
+        [DataRow("""{"test":{"runner":"VSTest"}}""", "\"Microsoft.Testing.Platform\"", false)]
+        [DataRow("""{"test":{"runner":null}}""", "\"Microsoft.Testing.Platform\"", false)]
+        [DataRow("""{"test":{"runner":"Microsoft.Testing.Platform"}}""", "\"Microsoft.Testing.Platform\"", true)]
+        [DataRow("""{"test":{}}""", "\"Microsoft.Testing.Platform\"", true)]
+        [DataRow("{}", "\"Microsoft.Testing.Platform\"", true)]
+        [DataRow("""{"test":{"runner":42}}""", "42", true)]
+        [DataRow("""{"test":{"runner":42}}""", "43", false)]
+        [DataRow("""{"test":{"runner":null}}""", "null", true)]
+        [DataRow("""{"test":{"runner":{"one":1,"two":2}}}""", """{"two":2,"one":1}""", true)]
+        public void PreservesExistingPropertiesWhenOverwriteIsDisabled(string originalJsonContent, string newJsonPropertyValue, bool expectedResult)
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string jsonFilePath = CreateJsonFile(targetBasePath, "global.json", originalJsonContent);
+            IPostAction postAction = new MockPostAction(default, default, default, default, default!)
+            {
+                ActionId = AddJsonPropertyPostActionProcessor.ActionProcessorId,
+                Args = new Dictionary<string, string>
+                {
+                    ["jsonFileName"] = "global.json",
+                    ["parentPropertyPath"] = "test",
+                    ["newJsonPropertyName"] = "runner",
+                    ["newJsonPropertyValue"] = newJsonPropertyValue,
+                    ["allowPathCreation"] = "true",
+                    ["allowPropertyOverwrite"] = "false"
+                }
+            };
+            Mock<IReporter> mockReporter = new();
+            Reporter.SetError(mockReporter.Object);
+            AddJsonPropertyPostActionProcessor processor = new();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.AreEqual(expectedResult, result);
+            string actualJsonContent = _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath);
+            if (expectedResult)
+            {
+                JsonNode? modifiedJsonContent = JsonNode.Parse(actualJsonContent);
+                Assert.IsNotNull(modifiedJsonContent);
+                Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(newJsonPropertyValue), modifiedJsonContent["test"]!["runner"]));
+                mockReporter.Verify(r => r.WriteLine(It.IsAny<string>()), Times.Never);
+            }
+            else
+            {
+                Assert.AreEqual(originalJsonContent, actualJsonContent);
+                mockReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_PropertyAlreadyExists, "test:runner", jsonFilePath)), Times.Once);
+            }
+        }
+
+        [TestMethod]
+        [DataRow("\"VALUE\"", "\"value\"", null, false)]
+        [DataRow("\"VALUE\"", "\"value\"", "false", false)]
+        [DataRow("\"VALUE\"", "\"value\"", "true", true)]
+        [DataRow("\"VALUE\"", "\"OTHER\"", "true", false)]
+        [DataRow("""{"name":"VALUE"}""", """{"name":"value"}""", "true", false)]
+        [DataRow("42", "\"42\"", "true", false)]
+        public void ComparesOnlyStringValuesIgnoringCaseWhenRequested(string originalValue, string newValue, string? ignorePropertyValueCase, bool expectedResult)
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string originalJsonContent = $$"""
+                { "settings": { "value": {{originalValue}} } }
+                """;
+            string jsonFilePath = CreateJsonFile(targetBasePath, "settings.json", originalJsonContent);
+            Dictionary<string, string> args = new()
+            {
+                ["jsonFileName"] = "settings.json",
+                ["parentPropertyPath"] = "settings",
+                ["newJsonPropertyName"] = "value",
+                ["newJsonPropertyValue"] = newValue,
+                ["allowPropertyOverwrite"] = "false"
+            };
+            if (ignorePropertyValueCase is not null)
+            {
+                args["ignorePropertyValueCase"] = ignorePropertyValueCase;
+            }
+
+            IPostAction postAction = new MockPostAction(default, default, default, default, default!)
+            {
+                ActionId = AddJsonPropertyPostActionProcessor.ActionProcessorId,
+                Args = args
+            };
+            Mock<IReporter> mockReporter = new();
+            Reporter.SetError(mockReporter.Object);
+            AddJsonPropertyPostActionProcessor processor = new();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.AreEqual(expectedResult, result);
+            string actualJsonContent = _engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath);
+            if (expectedResult)
+            {
+                JsonNode? modifiedJsonContent = JsonNode.Parse(actualJsonContent);
+                Assert.IsNotNull(modifiedJsonContent);
+                Assert.IsTrue(JsonNode.DeepEquals(JsonNode.Parse(originalValue), modifiedJsonContent["settings"]!["value"]));
+                mockReporter.Verify(r => r.WriteLine(It.IsAny<string>()), Times.Never);
+            }
+            else
+            {
+                Assert.AreEqual(originalJsonContent, actualJsonContent);
+                mockReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_PropertyAlreadyExists, "settings:value", jsonFilePath)), Times.Once);
+            }
+        }
+
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow("true")]
+        public void CanOverwriteExistingPropertyByDefaultOrWhenEnabled(string? allowPropertyOverwrite)
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string jsonFilePath = CreateJsonFile(targetBasePath, "global.json", """{"test":{"runner":"VSTest"}}""");
+            Dictionary<string, string> args = new()
+            {
+                ["jsonFileName"] = "global.json",
+                ["parentPropertyPath"] = "test",
+                ["newJsonPropertyName"] = "runner",
+                ["newJsonPropertyValue"] = "Microsoft.Testing.Platform"
+            };
+            if (allowPropertyOverwrite is not null)
+            {
+                args["allowPropertyOverwrite"] = allowPropertyOverwrite;
+            }
+
+            IPostAction postAction = new MockPostAction(default, default, default, default, default!)
+            {
+                ActionId = AddJsonPropertyPostActionProcessor.ActionProcessorId,
+                Args = args
+            };
+            AddJsonPropertyPostActionProcessor processor = new();
+
+            bool result = processor.Process(
+                _engineEnvironmentSettings,
+                postAction,
+                new MockCreationEffects(),
+                new MockCreationResult(),
+                targetBasePath);
+
+            Assert.IsTrue(result);
+            JsonNode? modifiedJsonContent = JsonNode.Parse(_engineEnvironmentSettings.Host.FileSystem.ReadAllText(jsonFilePath));
+            Assert.IsNotNull(modifiedJsonContent);
+            Assert.AreEqual("Microsoft.Testing.Platform", modifiedJsonContent["test"]!["runner"]!.GetValue<string>());
+        }
+
+        [TestMethod]
         [DynamicData(nameof(ModifyJsonPostActionTestCase<(JsonNode, bool)>.SuccessTestCases), typeof(ModifyJsonPostActionTestCase<(JsonNode, bool)>))]
         public void CanSuccessfullyCreateAndModifyJsonFileWhenAllowFileCreationAndPathCreationAreSet(ModifyJsonPostActionTestCase<(JsonNode, bool)> testCase)
         {
@@ -549,6 +701,39 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
 
         private static readonly ModifyJsonPostActionTestCase<Mock<IReporter>>[] _invalidConfigurationTestCases =
         {
+            new(
+                "IgnorePropertyValueCase argument is not boolean",
+                """{"test":{"runner":"VSTest"}}""",
+                new Dictionary<string, string>
+                {
+                    ["jsonFileName"] = "file.json",
+                    ["parentPropertyPath"] = "test",
+                    ["newJsonPropertyName"] = "runner",
+                    ["newJsonPropertyValue"] = "Microsoft.Testing.Platform",
+                    ["allowPropertyOverwrite"] = "false",
+                    ["ignorePropertyValueCase"] = "invalid"
+                },
+                (Mock<IReporter> errorReporter) =>
+                {
+                    errorReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, "ignorePropertyValueCase")), Times.Once);
+                }),
+
+            new(
+                "AllowPropertyOverwrite argument is not boolean",
+                """{"test":{"runner":"VSTest"}}""",
+                new Dictionary<string, string>
+                {
+                    ["jsonFileName"] = "file.json",
+                    ["parentPropertyPath"] = "test",
+                    ["newJsonPropertyName"] = "runner",
+                    ["newJsonPropertyValue"] = "Microsoft.Testing.Platform",
+                    ["allowPropertyOverwrite"] = "invalid"
+                },
+                (Mock<IReporter> errorReporter) =>
+                {
+                    errorReporter.Verify(r => r.WriteLine(string.Format(LocalizableStrings.PostAction_ModifyJson_Error_ArgumentNotBoolean, "allowPropertyOverwrite")), Times.Once);
+                }),
+
             new(
                 "JsonFileName argument not configured",
                 @"{}",

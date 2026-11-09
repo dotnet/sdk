@@ -147,7 +147,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/29968")]
         public void It_builds_successfully_when_targeting_net_framework()
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
@@ -167,6 +166,8 @@ namespace Microsoft.NET.Build.Tests
             project.Root.Elements(ns + "PropertyGroup").Elements(ns + "Nullable").Remove();
             // The template sets ImplicitUsings to "enable", which isn't supported on .NET Framework
             project.Root.Elements(ns + "PropertyGroup").Elements(ns + "ImplicitUsings").Remove();
+            // The template uses modern C# syntax, while .NET Framework defaults to C# 7.3.
+            project.Root.Elements(ns + "PropertyGroup").Single().Add(new XElement(ns + "LangVersion", "latest"));
             project.Save(projFile);
 
             var buildCommand = new BuildCommand(Log, testDirectory);
@@ -332,7 +333,7 @@ namespace Microsoft.NET.Build.Tests
         [OSCondition(OperatingSystems.Windows)]
         public void SupportedOSPlatformVersionCanBeSetInDirectoryBuildTargets()
         {
-            var testProject = new TestProject()
+            var testProject = new TestProject("DBPSupportedOS")
             {
                 TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}-windows10.0.19041.0"
             };

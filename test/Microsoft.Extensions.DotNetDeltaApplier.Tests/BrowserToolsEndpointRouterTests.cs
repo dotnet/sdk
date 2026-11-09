@@ -71,7 +71,7 @@ public class BrowserToolsEndpointRouterTests
         await using var server = new TestBrowserRefreshServer();
 
         var (context, body) = await InvokeAsync(
-            server, 
+            server,
             HttpMethods.Get,
             BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath);
 
@@ -168,7 +168,7 @@ public class BrowserToolsEndpointRouterTests
         }
 
         var config = new WebSocketConfig(port: 0, securePort: 0, hostName: null, additionalAllowedOrigins: []);
-            
+
         await server.HandleRequestAsync(config, context);
         return context;
     }
