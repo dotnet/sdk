@@ -88,11 +88,17 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
     public List<DotnetInstall> GetExistingSystemInstalls()
         => GetExistingSystemInstalls(GetSystemDotnetRoots());
 
+    internal static List<DotnetInstall> GetExistingSystemInstalls(IEnumerable<DotnetInstallRoot> systemRoots)
+        => GetExistingSystemInstalls(systemRoots, InstallRootEnumerator.GetInstalls);
+
     /// <summary>
     /// Lists the installs in the system roots that match this process's architecture. Roots of another
     /// architecture are skipped before they are read, so they can never displace a native install.
+    /// A root that cannot be read is reported and skipped so the remaining roots are still listed.
     /// </summary>
-    internal static List<DotnetInstall> GetExistingSystemInstalls(IEnumerable<DotnetInstallRoot> systemRoots)
+    internal static List<DotnetInstall> GetExistingSystemInstalls(
+        IEnumerable<DotnetInstallRoot> systemRoots,
+        Func<DotnetInstallRoot, IEnumerable<DotnetInstall>> enumerateRoot)
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var installs = new List<DotnetInstall>();
@@ -101,7 +107,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
         {
             try
             {
-                installs.AddRange(InstallRootEnumerator.GetInstalls(installRoot));
+                installs.AddRange(enumerateRoot(installRoot));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
