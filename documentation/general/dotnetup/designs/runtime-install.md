@@ -96,12 +96,7 @@ The .NET SDK install may include the .NET Runtime.
 2. Explicit user actions (install commands) are tracked in the manifest
 3. Uninstall operations should not break other installed components
 
-System install discovery uses [`SystemInstallEnumerator`](../../../../src/Installer/dotnetup.Library/SystemInstallEnumerator.cs)
-to walk `sdk/<version>` and `shared/<framework>/<version>`. It shares the marker-file check with
-[`InstallationValidator`](../../../../src/Installer/dotnetup.Library/InstallationValidator.cs):
-SDK folders must contain `dotnet.dll`, and runtime folders must contain `<framework>.deps.json`.
-Version folder names must parse as release versions. Discovery does not load native code or require
-`host/fxr`, and reports the folder version rather than a build version from `.version`.
+We will verify `dotnet.dll` exists in the /sdk/ folder and `<framework>.deps.json` in the runtime version folders, similar to `hostfxr` install checks. This is not a complete validity check but more of a 'spot check.'
 
 ## Optional Defaults
 
