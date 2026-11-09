@@ -449,6 +449,9 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         var manifestData = ReadManifest();
         var root = manifestData.DotnetRoots.FirstOrDefault(r =>
             DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+
+        // The only case where two installs may be found would be if a RTM version was installed, got promoted to a full build, and then the same .version became "GA"
+        // This is true with 10.0.100 GA which has 10.0.100-rtm.25523.111 and the actual GA.
         return root?.Installations.FirstOrDefault(existing =>
             existing.Component == install.Component &&
             (existing.Version == version || (matchLayoutVersion && existing.LayoutVersion == version)))?
