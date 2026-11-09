@@ -68,6 +68,10 @@ Guidance for changes under `test/`.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
+- **Value-returning assertions are not asynchronous checks.** `Assert.IsNotNull`
+  returns its input, so a `Task` input produces a `Task` return. Consume or discard
+  that value instead of awaiting it before requesting cancellation; see
+  [`InProcTestWatcher.DisposeAsync`](dotnet-watch.Tests/TestUtilities/InProcTestWatcher.cs).
 - **Use MSTest's built-in combinatorial data support.** Import
   `Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial` for
   `[CombinatorialData]`, `[CombinatorialValues]`, and `[CombinatorialRange]`; do not add
