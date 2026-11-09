@@ -58,7 +58,7 @@ variables:
   # The OfficialBuilder property is set to Microsoft for the official build only.
   # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
   # This constant is used in CompileOptions.cs to set both TelemetryOptOutDefault and TelemetryOptOutDefaultString.
-  value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
+  value: /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 - name: _SignType
   value: real
 
@@ -184,7 +184,7 @@ extends:
                 variables:
                   _SignType: real
       ############### BUILD / PACK / SIGN / PUBLISH ###############
-      # Standard Arcade flow.  Set projectsArgument to only build dotnetup, not the whole SDK.
+      # Build preview and GA first; the final daily command signs/stages all three and publishes daily only.
       - stage: build_dotnetup
         displayName: 🛠️ Build dotnetup
         dependsOn: []
@@ -212,6 +212,7 @@ extends:
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               enableDefaultArtifacts: true
               runTests: false
               variables:
@@ -222,6 +223,7 @@ extends:
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               enableDefaultArtifacts: true
               runTests: false
               variables:
@@ -252,6 +254,7 @@ extends:
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
               enableDefaultArtifacts: true
               runTests: false
@@ -263,6 +266,7 @@ extends:
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld
               enableDefaultArtifacts: true
               runTests: false
@@ -274,6 +278,7 @@ extends:
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
               enableDefaultArtifacts: true
               enableSbom: false
@@ -286,6 +291,7 @@ extends:
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               osProperties: /p:SysRoot=$ROOTFS_DIR /p:LinkerFlavor=lld /p:OSName=linux-musl
               enableDefaultArtifacts: true
               enableSbom: false
@@ -313,6 +319,7 @@ extends:
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               enableDefaultArtifacts: true
               runTests: false
             - categoryName: Dotnetup
@@ -322,6 +329,7 @@ extends:
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties) /p:PublishBinariesAndBadge=false
               projectsArgument: /p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf
+              buildVariants: [preview, ga, daily]
               enableDefaultArtifacts: true
               runTests: false
 
@@ -333,7 +341,7 @@ extends:
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
-            publishUsingPipelines: true
+            publishingVersion: 4
             publishAssetsImmediately: true
             isAssetlessBuild: false
             repositoryAlias: self
