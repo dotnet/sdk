@@ -124,9 +124,7 @@ public class ProjectUpdateInProcTests : DotNetWatchTestBase
         Log("Waiting for dependency resolution...");
         await hasResolvedDependency.Task.WaitAsync(w.ShutdownSource.Token);
 
-        // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
-        // to finish logging ManagedCodeChangesApplied. The app output arrives before this task
-        // completes because it's not awaited (line 497 of CompilationHandler.cs).
+        // Application output can arrive before the watcher reports update completion.
         using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         await managedCodeChangesApplied.WaitAsync(waitCts.Token);
 
@@ -194,9 +192,7 @@ public class ProjectUpdateInProcTests : DotNetWatchTestBase
         Log("Waiting for dependency resolution...");
         await hasResolvedDependency.Task.WaitAsync(w.ShutdownSource.Token);
 
-        // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
-        // to finish logging ManagedCodeChangesApplied. The app output arrives before this task
-        // completes because it's not awaited (line 497 of CompilationHandler.cs).
+        // Application output can arrive before the watcher reports update completion.
         using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         await managedCodeChangesApplied.WaitAsync(waitCts.Token);
 
