@@ -79,9 +79,9 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
 
         App.Start(testAsset, ["--urls", kestrelUrl], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
 
-        await App.WaitForOutputLineContaining(MessageDescriptor.ConfiguredToUseBrowserRefresh);
-        await App.WaitForOutputLineContaining(MessageDescriptor.ConfiguredToLaunchBrowser);
-        await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+        await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // Verify the browser has been launched.
         await App.WaitUntilOutputContains($"🧪 Fetching '{kestrelUrl}/_framework/aspnetcore-browser-refresh.js'");
@@ -102,9 +102,9 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         var errorMessage = $"{homePagePath}(13,9): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.";
         var jsonErrorMessage = JsonSerializer.Serialize(errorMessage);
 
-        await App.WaitForOutputLineContaining(errorMessage);
+        await App.WaitUntilOutputContains(errorMessage);
 
-        await App.WaitForOutputLineContaining("Do you want to restart your app?");
+        await App.WaitUntilOutputContains("Do you want to restart your app?");
 
         await App.WaitUntilOutputContains($$"""
             🧪 Received: {"type":"HotReloadDiagnosticsv1","diagnostics":[{{jsonErrorMessage}}]}
@@ -114,7 +114,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         App.SendKey('a');
 
         // browser page is reloaded when the app restarts:
-        await App.WaitForOutputLineContaining(MessageDescriptor.ReloadingBrowser, $"RazorApp ({tfm})");
+        await App.WaitUntilOutputContains(MessageDescriptor.ReloadingBrowser, $"RazorApp ({tfm})");
 
         // browser page was reloaded after the app restarted:
         await App.WaitUntilOutputContains("""
@@ -124,7 +124,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         // no other browser refresh messages sent:
         Assert.Equal(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
 
-        await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         App.Process.ClearOutput();
 
@@ -132,13 +132,13 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         UpdateSourceFile(homePagePath, src => src.Replace("public virtual int F() => 1;", "/* member placeholder */"));
 
         errorMessage = $"{homePagePath}(11,5): error ENC0033: Deleting method 'F()' requires restarting the application.";
-        await App.WaitForOutputLineContaining("[auto-restart] " + errorMessage);
+        await App.WaitUntilOutputContains("[auto-restart] " + errorMessage);
 
         await App.WaitUntilOutputContains($$"""
             🧪 Received: {"type":"HotReloadDiagnosticsv1","diagnostics":["Restarting application to apply changes ..."]}
             """);
 
-        await App.WaitForOutputLineContaining(MessageDescriptor.WaitingForChanges);
+        await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
         // browser page was reloaded after the app restarted:
         await App.WaitUntilOutputContains("""
@@ -150,7 +150,7 @@ public class BrowserTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger
         // valid edit:
         UpdateSourceFile(homePagePath, src => src.Replace("/* member placeholder */", "public int F() => 1;"));
 
-        await App.WaitForOutputLineContaining(MessageDescriptor.HotReloadSucceeded);
+        await App.WaitUntilOutputContains(MessageDescriptor.HotReloadSucceeded);
 
         await App.WaitUntilOutputContains($$"""
             🧪 Received: {"type":"HotReloadDiagnosticsv1","diagnostics":[]}
