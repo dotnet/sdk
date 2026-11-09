@@ -82,4 +82,13 @@ public static class InstallComponentExtensions
         WindowsDesktopFrameworkName => InstallComponent.WindowsDesktop,
         _ => null
     };
+
+    /// <summary>
+    /// Gets the install-root-relative folder of a component version, such as <c>sdk/10.0.100</c> or
+    /// <c>shared/Microsoft.NETCore.App/10.0.0</c>. This is also the component's subcomponent ID.
+    /// </summary>
+    public static string GetLayoutPath(this InstallComponent component, string layoutVersion) =>
+        component == InstallComponent.SDK
+            ? $"sdk/{layoutVersion}"
+            : $"shared/{component.GetFrameworkName()}/{layoutVersion}";
 }

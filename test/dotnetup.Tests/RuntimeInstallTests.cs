@@ -116,6 +116,18 @@ public class RuntimeInstallTests
             .WithMessage("*Version is required*");
     }
 
+    [TestMethod]
+    [DataRow(InstallComponent.Runtime, "runtime@10.0")]
+    [DataRow(InstallComponent.ASPNETCore, "aspnetcore@10.0")]
+    [DataRow(InstallComponent.WindowsDesktop, "windowsdesktop@10.0")]
+    public void FormatComponentSpec_UsesPrimaryNameAndRoundTrips(InstallComponent component, string expectedSpec)
+    {
+        string spec = RuntimeInstallCommand.FormatComponentSpec(component, "10.0");
+
+        spec.Should().Be(expectedSpec);
+        RuntimeInstallCommand.ParseComponentSpec(spec).Should().Be((component, "10.0"));
+    }
+
     #endregion
 
     #region Parser Tests

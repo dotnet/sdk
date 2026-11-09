@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.IO.Compression;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -19,6 +20,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
     private string? _archivePath;
     private IProgressReporter? _progressReporter;
     private readonly HashSet<string> _extractedSubcomponents = [];
+    private bool _existingLayoutVerified;
+    private Dictionary<string, string>? _archiveVersionFiles;
 
     /// <summary>
     /// Gets the list of subcomponent identifiers that were extracted during the last Commit() call.
@@ -26,6 +29,8 @@ internal class DotnetArchiveExtractor : IInstallArtifact
     public IReadOnlyList<string> ExtractedSubcomponents => [.. _extractedSubcomponents];
 
     public bool RequiresPostInstallValidation => true;
+
+    public ReleaseVersion? ProductVersion { get; private set; }
 
     public DotnetArchiveExtractor(
         DotnetInstallRequest request,
@@ -107,32 +112,33 @@ internal class DotnetArchiveExtractor : IInstallArtifact
 
         try
         {
-            _archivePath = _archiveDownloader.DownloadVerifiedArtifact(_request, _resolvedVersion, archiveBasePath, reporter).Path;
+            var download = _archiveDownloader.DownloadVerifiedArtifact(_request, _resolvedVersion, archiveBasePath, reporter);
+            _archivePath = download.Path;
+            ProductVersion = download.ProductVersion;
         }
         catch (DotnetInstallException)
         {
             throw;
         }
-        catch (HttpRequestException ex)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.DownloadFailed,
-                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
-                ex,
-                version: _resolvedVersion.ToString(),
-                component: _request.Component.ToString());
-        }
         catch (Exception ex)
         {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.DownloadFailed,
-                $"Failed to download .NET archive for version {_resolvedVersion}: {ex.Message}",
-                ex,
-                version: _resolvedVersion.ToString(),
-                component: _request.Component.ToString());
+            throw CreateException(DotnetInstallErrorCode.DownloadFailed, Strings.ArchiveDownloadFailed, ex);
         }
 
         ProgressTracker.CompleteDownload(downloadTask, _archivePath);
+
+        // Read outside the install-state lock; Commit reads them only if the root gained folders since.
+        if (_request.InstallRoot.Path is { } installRoot && LayoutVersionFiles.MayOverlap(installRoot))
+        {
+            try
+            {
+                _archiveVersionFiles = ReadArchiveVersionFiles(_archivePath);
+            }
+            catch (DotnetInstallException)
+            {
+                // Commit reads the archive again and reports the failure.
+            }
+        }
     }
 
     public void Commit()
@@ -149,16 +155,101 @@ internal class DotnetArchiveExtractor : IInstallArtifact
             throw new InvalidOperationException("Prepare() must be called before Commit().");
         }
 
+        ThrowIfExistingLayoutDiffers();
+
         ExtractWithExceptionHandling(_archivePath, _request.InstallRoot.Path!, installTask);
 
         ProgressTracker.CompleteExtraction(installTask);
     }
 
+    /// <summary>
+    /// Compares the <c>.version</c> file of each SDK and shared framework folder in the archive with the folder already on disk.
+    /// Folders with the same name can hold different builds, such as an RTM daily build and the release.
+    /// </summary>
+    public void ThrowIfExistingLayoutDiffers()
+    {
+        if (_existingLayoutVerified)
+        {
+            return;
+        }
+
+        if (_archivePath is null)
+        {
+            throw new InvalidOperationException("Prepare() must be called before ThrowIfExistingLayoutDiffers().");
+        }
+
+        string targetDir = _request.InstallRoot.Path!;
+        if (LayoutVersionFiles.MayOverlap(targetDir))
+        {
+            _archiveVersionFiles ??= ReadArchiveVersionFiles(_archivePath);
+            foreach (var (subcomponent, archiveVersion) in _archiveVersionFiles)
+            {
+                ThrowIfSubcomponentDiffers(targetDir, subcomponent, archiveVersion);
+            }
+        }
+
+        _existingLayoutVerified = true;
+    }
+
+    private void ThrowIfSubcomponentDiffers(string targetDir, string subcomponent, string archiveVersion)
+    {
+        string directory = Path.Combine(targetDir, subcomponent.Replace('/', Path.DirectorySeparatorChar));
+        if (!Directory.Exists(directory))
+        {
+            return;
+        }
+
+        string? existingVersion = WrapWithCustomExtractionExceptions(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFiles.ReadFromDirectory(directory));
+        if (string.Equals(existingVersion, archiveVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        string format = existingVersion is null ? Strings.ExistingLayoutMissingVersionFile : Strings.ExistingLayoutDifferentBuild;
+        throw new DotnetInstallException(
+            DotnetInstallErrorCode.InstallLayoutConflict,
+            string.Format(CultureInfo.CurrentCulture, format, directory, _request.Component.GetDisplayName(), _resolvedVersion),
+            version: _resolvedVersion.ToString(),
+            component: _request.Component.ToString());
+    }
+
+    private Dictionary<string, string> ReadArchiveVersionFiles(string archivePath) =>
+        WrapWithCustomExtractionExceptions(Strings.ArchiveReadPermissionDenied, Strings.ArchiveReadFailed, () => LayoutVersionFiles.ReadFromArchive(archivePath));
+
+    private void WrapWithCustomExtractionExceptions(string permissionDeniedFormat, string failedFormat, Action action) =>
+        WrapWithCustomExtractionExceptions(permissionDeniedFormat, failedFormat, () => { action(); return true; });
+
+    /// <summary>Runs a file operation, rethrowing archive and file system failures as <see cref="DotnetInstallException"/> with matching error codes.</summary>
+    private T WrapWithCustomExtractionExceptions<T>(string permissionDeniedFormat, string failedFormat, Func<T> action)
+    {
+        try
+        {
+            return action();
+        }
+        catch (InvalidDataException ex)
+        {
+            throw CreateException(DotnetInstallErrorCode.ArchiveCorrupted, Strings.ArchiveCorrupted, ex);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            throw CreateException(DotnetInstallErrorCode.PermissionDenied, permissionDeniedFormat, ex);
+        }
+        catch (IOException ex)
+        {
+            throw CreateException(DotnetInstallErrorCode.ExtractionFailed, failedFormat, ex);
+        }
+    }
+
+    /// <summary>Creates an install exception whose message is <paramref name="format"/> filled with the resolved version and the failure's message.</summary>
+    private DotnetInstallException CreateException(DotnetInstallErrorCode code, string format, Exception inner, Exception? reported = null) =>
+        new(code, string.Format(CultureInfo.CurrentCulture, format, _resolvedVersion, (reported ?? inner).Message), inner,
+            version: _resolvedVersion.ToString(), component: _request.Component.ToString());
+
     private void ExtractWithExceptionHandling(string archivePath, string targetPath, IProgressTask installTask)
     {
         try
         {
-            ExtractArchiveDirectlyToTarget(archivePath, targetPath, installTask);
+            WrapWithCustomExtractionExceptions(Strings.ArchiveExtractPermissionDenied, Strings.ArchiveExtractFailed, () => ExtractArchiveDirectlyToTarget(archivePath, targetPath, installTask));
             installTask.Value = installTask.MaxValue;
         }
         catch (DotnetInstallException)
@@ -169,56 +260,18 @@ internal class DotnetArchiveExtractor : IInstallArtifact
         {
             throw CreateFallbackInstallException(ex);
         }
-        catch (InvalidDataException ex)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.ArchiveCorrupted,
-                $"Archive is corrupted or truncated for version {_resolvedVersion}: {ex.Message}",
-                ex,
-                version: _resolvedVersion.ToString(),
-                component: _request.Component.ToString());
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.PermissionDenied,
-                $"Permission denied while extracting .NET archive for version {_resolvedVersion}: {ex.Message}",
-                ex,
-                version: _resolvedVersion.ToString(),
-                component: _request.Component.ToString());
-        }
-        catch (IOException ex)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.ExtractionFailed,
-                $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
-                ex,
-                version: _resolvedVersion.ToString(),
-                component: _request.Component.ToString());
-        }
         catch (Exception ex)
         {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.ExtractionFailed,
-                $"Failed to extract .NET archive for version {_resolvedVersion}: {ex.Message}",
-                ex,
-                version: _resolvedVersion.ToString(),
-                component: _request.Component.ToString());
+            throw CreateException(DotnetInstallErrorCode.ExtractionFailed, Strings.ArchiveExtractFailed, ex);
         }
     }
 
     private DotnetInstallException CreateFallbackInstallException(AggregateException exception)
     {
         Exception fallbackFailure = exception.InnerExceptions[1];
-        bool corrupt = fallbackFailure is InvalidDataException;
-        return new DotnetInstallException(
-            corrupt ? DotnetInstallErrorCode.ArchiveCorrupted : DotnetInstallErrorCode.PermissionDenied,
-            corrupt
-                ? $"Archive is corrupted or truncated for version {_resolvedVersion}: {fallbackFailure.Message}"
-                : $"Permission denied while extracting .NET archive for version {_resolvedVersion}: {fallbackFailure.Message}",
-            exception,
-            version: _resolvedVersion.ToString(),
-            component: _request.Component.ToString());
+        return fallbackFailure is InvalidDataException
+            ? CreateException(DotnetInstallErrorCode.ArchiveCorrupted, Strings.ArchiveCorrupted, exception, fallbackFailure)
+            : CreateException(DotnetInstallErrorCode.PermissionDenied, Strings.ArchiveExtractPermissionDenied, exception, fallbackFailure);
     }
 
     /// <summary>
