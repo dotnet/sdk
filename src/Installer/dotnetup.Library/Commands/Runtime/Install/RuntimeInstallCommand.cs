@@ -31,6 +31,9 @@ internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result
     /// <summary>Primary (non-alias) names shown in help text and error messages.</summary>
     private static readonly string[] s_primaryRuntimeTypes = ["runtime", "aspnetcore", "windowsdesktop"];
 
+    private static readonly Dictionary<InstallComponent, string> s_primaryRuntimeTypeNames =
+        s_primaryRuntimeTypes.ToDictionary(name => s_runtimeTypeMap[name]);
+
     protected override void ExecuteCore()
     {
         // Parse and validate all specs upfront before any downloads begin.
@@ -126,11 +129,8 @@ internal class RuntimeInstallCommand(ParseResult result) : InstallCommand(result
     }
 
     /// <summary>Formats a runtime component and version/channel as a spec that <see cref="ParseComponentSpec"/> accepts.</summary>
-    internal static string FormatComponentSpec(InstallComponent component, string versionOrChannel)
-    {
-        string componentName = s_primaryRuntimeTypes.First(name => s_runtimeTypeMap[name] == component);
-        return $"{componentName}@{versionOrChannel}";
-    }
+    internal static string FormatComponentSpec(InstallComponent component, string versionOrChannel) =>
+        $"{s_primaryRuntimeTypeNames[component]}@{versionOrChannel}";
 
     /// <summary>
     /// Gets the list of valid runtime types for the current platform.
