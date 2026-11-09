@@ -97,7 +97,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             try
             {
                 var installRoot = new DotnetInstallRoot(systemPath, InstallerUtilities.GetDefaultInstallArchitecture());
-                installs.AddRange(SystemInstallEnumerator.GetInstalls(installRoot));
+                installs.AddRange(InstallRootEnumerator.GetInstalls(installRoot));
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {

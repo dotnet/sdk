@@ -11,7 +11,7 @@ using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class SystemInstallEnumeratorTests
+public class InstallRootEnumeratorTests
 {
     [TestMethod]
     [DataRow(false)]
@@ -49,16 +49,16 @@ public class SystemInstallEnumeratorTests
         Directory.CreateDirectory(versionDirectory);
         File.WriteAllText(Path.Combine(versionDirectory, "wrong.deps.json"), string.Empty);
 
-        SystemInstallEnumerator.GetInstalls(root).Should().BeEmpty();
+        InstallRootEnumerator.GetInstalls(root).Should().BeEmpty();
 
         string marker = component == InstallComponent.SDK ? "dotnet.dll" : component.GetFrameworkName() + ".deps.json";
         File.WriteAllText(Path.Combine(versionDirectory, marker), string.Empty);
-        var install = SystemInstallEnumerator.GetInstalls(root).Should().ContainSingle().Subject;
+        var install = InstallRootEnumerator.GetInstalls(root).Should().ContainSingle().Subject;
         install.Component.Should().Be(component);
         new InstallationValidator().Validate(install).Should().BeTrue();
 
         File.Delete(Path.Combine(versionDirectory, marker));
-        SystemInstallEnumerator.GetInstalls(root).Should().BeEmpty();
+        InstallRootEnumerator.GetInstalls(root).Should().BeEmpty();
         new InstallationValidator().Validate(install).Should().BeFalse();
     }
 
@@ -72,10 +72,10 @@ public class SystemInstallEnumeratorTests
         WriteMarker(testEnv.InstallPath, Path.Combine("shared", "Custom.Framework"), "11.0.0", "Custom.Framework.deps.json");
         var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
-        SystemInstallEnumerator.GetInstalls(root).Should().BeEmpty();
+        InstallRootEnumerator.GetInstalls(root).Should().BeEmpty();
 
         WriteMarker(testEnv.InstallPath, Path.Combine("shared", "Microsoft.NETCore.App"), "11.0.0", "Microsoft.NETCore.App.deps.json");
-        var install = SystemInstallEnumerator.GetInstalls(root).Should().ContainSingle().Subject;
+        var install = InstallRootEnumerator.GetInstalls(root).Should().ContainSingle().Subject;
         install.Component.Should().Be(InstallComponent.Runtime);
         install.Version.ToString().Should().Be("11.0.0");
     }

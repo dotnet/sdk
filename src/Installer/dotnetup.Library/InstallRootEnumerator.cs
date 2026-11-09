@@ -7,11 +7,13 @@ using Microsoft.Dotnet.Installation.Internal;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Lists the SDKs and runtimes in one install root from its on-disk layout, without loading native code.
-/// A version folder counts as an install under the same marker rule <see cref="InstallationValidator"/> uses.
+/// Lists the SDKs and runtimes that a host would see in any dotnet root (system, user, or a global.json path),
+/// from the on-disk layout and without loading native code.
+/// Assumptions: only components dotnetup models are listed, and a version folder counts as an install only when it
+/// passes <see cref="InstallationValidator.PassesValidationSmokeCheck"/>.
 /// Versions are the on-disk folder versions, not the build identity of RTM or servicing daily builds.
 /// </summary>
-internal static class SystemInstallEnumerator
+internal static class InstallRootEnumerator
 {
     internal static List<DotnetInstall> GetInstalls(DotnetInstallRoot installRoot)
     {
