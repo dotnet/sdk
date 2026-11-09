@@ -91,10 +91,34 @@ present and valid.
 - Progress prints as plain lines with periodic percentages when output is
   redirected or in CI. Use `--no-progress` (or `--progress none`) to print
   only when each step starts and finishes.
+- Use `--progress json` when a program, such as an editor extension, shows
+  its own progress UI. See [Progress events](#progress-events).
 - Use `--verbosity normal` for normal automation.
 - Use `--verbosity detailed` to diagnose resolution or installation.
 - Check the command exit code. Update commands can continue after an
   individual failure and report failure after processing other requirements.
+
+## Progress events
+
+With `--progress json`, stdout carries only progress events, one JSON object
+per line. All other output, including warnings, errors, and the final summary,
+goes to stderr. Use the exit code to decide success.
+
+```json
+{"version":1,"event":"started","task":1,"description":"Downloading .NET SDK 10.0.103"}
+{"version":1,"event":"progress","task":1,"description":"Downloading .NET SDK 10.0.103 (68.2 MB / 272.6 MB)","percent":25}
+{"version":1,"event":"finished","task":1,"description":"Downloaded .NET SDK 10.0.103 (272.6 MB / 272.6 MB)"}
+```
+
+| Field | Description |
+| --- | --- |
+| `version` | Event format version. It increases only for incompatible changes. |
+| `event` | `started`, `progress`, or `finished`. |
+| `task` | Identifies the task within one command. Concurrent installs interleave tasks. |
+| `description` | Display text for the task's current state. |
+| `percent` | Whole-number completion, on `progress` events only. A task can finish without reporting every percentage. |
+
+Ignore fields you do not recognize; later versions can add fields.
 
 ## Coordinate writers
 

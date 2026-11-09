@@ -17,6 +17,12 @@ public enum ProgressMode
 
     /// <summary>One line when each task starts and one when it finishes.</summary>
     None,
+
+    /// <summary>
+    /// JSON Lines progress events on stdout (see <see cref="JsonProgressTarget"/>), with human-readable output
+    /// on stderr. Never chosen by <see cref="Auto"/>.
+    /// </summary>
+    Json,
 }
 
 internal static class ProgressTargets
@@ -28,6 +34,7 @@ internal static class ProgressTargets
     {
         ProgressMode.None => new NonUpdatingProgressTarget(),
         ProgressMode.Lines => new NonUpdatingProgressTarget(LinesProgressStepPercent),
+        ProgressMode.Json => new JsonProgressTarget(JsonProgressOutput.Events),
         _ => new SpectreProgressTarget(),
     };
 }

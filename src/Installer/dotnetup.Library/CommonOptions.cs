@@ -37,7 +37,7 @@ internal class CommonOptions
 
     public static readonly Option<ProgressMode> ProgressOption = new("--progress")
     {
-        Description = "How to display progress: auto (bars on a terminal, lines when output is redirected), bars, lines, or none.",
+        Description = "How to display progress: auto (bars on a terminal, lines when output is redirected), bars, lines, none, or json (JSON Lines events on stdout; other output goes to stderr).",
         Arity = ArgumentArity.ExactlyOne,
         DefaultValueFactory = _ => ProgressMode.Auto
     };
