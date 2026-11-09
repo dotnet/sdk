@@ -36,7 +36,7 @@ internal sealed class InstallationValidator : IInstallationValidator
         string dotnetMuxerPath = GetMuxerPath(installRoot);
         if (!File.Exists(dotnetMuxerPath))
         {
-            if (install.Component == InstallComponent.WindowsDesktop && ValidateComponentLayout(install))
+            if (install.Component == InstallComponent.WindowsDesktop && PassesValidationSmokeCheck(install))
             {
                 return true;
             }
@@ -44,7 +44,7 @@ internal sealed class InstallationValidator : IInstallationValidator
             return false;
         }
 
-        if (!ValidateComponentLayout(install))
+        if (!PassesValidationSmokeCheck(install))
         {
             failureReason = $"Component layout validation failed. Expected '{install.ComponentDirectory}' to contain {(install.Component == InstallComponent.SDK ? "dotnet.dll" : "the framework .deps.json")}.";
             return false;
@@ -57,10 +57,11 @@ internal sealed class InstallationValidator : IInstallationValidator
 #pragma warning restore CA1822
 
     /// <summary>
-    /// Matches how hostfxr recognizes installs: an SDK version folder must contain <c>dotnet.dll</c>, and a
-    /// runtime version folder must contain <c>&lt;framework name&gt;.deps.json</c>.
+    /// A spot check, not a full validity check: matches how hostfxr recognizes installs. An SDK version folder
+    /// must contain <c>dotnet.dll</c>, and a runtime version folder must contain <c>&lt;framework name&gt;.deps.json</c>.
+    /// The folder and marker are derived from the install's component and on-disk version.
     /// </summary>
-    internal static bool ValidateComponentLayout(DotnetInstall install)
+    internal static bool PassesValidationSmokeCheck(DotnetInstall install)
     {
         string markerFile = install.Component == InstallComponent.SDK
             ? "dotnet.dll"

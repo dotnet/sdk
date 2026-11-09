@@ -40,7 +40,7 @@ internal static class SystemInstallEnumerator
             if (ReleaseVersion.TryParse(Path.GetFileName(versionDirectory), out ReleaseVersion? version))
             {
                 var install = new DotnetInstall(installRoot, version, component);
-                if (InstallationValidator.ValidateComponentLayout(install))
+                if (InstallationValidator.PassesValidationSmokeCheck(install))
                 {
                     installs.Add(install);
                 }
