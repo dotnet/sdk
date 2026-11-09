@@ -217,6 +217,15 @@
     </Artifact>
   </ItemGroup>
 
+  <ItemGroup Condition="'$(DotnetupBuildVariant)' == 'daily'">
+    <_DotnetupCandidateBinary Include="$(ArtifactsDir)preview\bin\dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt);
+                                      $(ArtifactsDir)ga\bin\dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
+    <!-- SkipPublish is Arcade's existing sign-only contract: these never enter BAR. -->
+    <Artifact Include="@(_DotnetupCandidateBinary)" Kind="Blob" SkipPublish="true">
+      <ChecksumPath>%(FullPath).sha512</ChecksumPath>
+    </Artifact>
+  </ItemGroup>
+
   <!--
     Register the get-dotnetup bootstrap scripts as Blob artifacts from their staged copies
     (see StageGetDotnetupScripts in src/Installer/dotnetup/dotnetup.csproj). The scripts are
