@@ -452,7 +452,7 @@ internal sealed class Registry
                 // Break the loop if successful
                 break;
             }
-            catch (Exception ex) when (ex is not InvalidAuthResponseException)
+            catch (Exception ex) when (ex is not InvalidAuthResponseException and not InvalidAuthRealmConfigurationException)
             {
                 retryCount++;
                 if (retryCount >= MaxDownloadRetries)
@@ -538,7 +538,7 @@ internal sealed class Registry
             _logger.LogTrace("Attempting to upload whole blob, content length: {0}.", contents.Length);
             return _registryAPI.Blob.Upload.UploadAtomicallyAsync(startUploadInformation.UploadUri, contents, cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not InvalidAuthResponseException and not InvalidAuthRealmConfigurationException)
         {
             _logger.LogTrace("Errored while uploading whole blob: {0}.\nRetrying with chunked upload. Content length: {1}.", ex, contents.Length);
             contents.Seek(0, SeekOrigin.Begin);

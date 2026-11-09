@@ -762,6 +762,20 @@ Esempi:
         <target state="translated">Il valore deve essere un numero intero positivo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestShowStderrDescription">
+        <source>Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
+      </trans-unit>
+      <trans-unit id="CmdTestShowStdoutDescription">
+        <source>Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
+      </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
         <target state="translated">Arresta l'esecuzione dei test quando viene raggiunto il tempo di esecuzione dei test specificato in tutte le applicazioni di test. Passare dopo '--' per applicare per applicazione di test.</target>
@@ -1887,6 +1901,11 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionListFormatOptionDescription">
+        <source>The output format for the list of paths. JSON output is an array of paths.</source>
+        <target state="new">The output format for the list of paths. JSON output is an array of paths.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">File di progetto o di soluzione su cui intervenire. Se non si specifica un file, il comando ne cercherà uno nella directory corrente.</target>
@@ -2148,8 +2167,8 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">Cerca negli strumenti dotnet in nuget.org</target>
+        <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
+        <target state="needs-review-translation">Cerca negli strumenti dotnet in nuget.org</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

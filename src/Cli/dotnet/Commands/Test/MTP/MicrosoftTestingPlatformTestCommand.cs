@@ -34,6 +34,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
     private const string RetryFailedTestsOptionName = "--retry-failed-tests";
     private const string ShowFlakyTestsOptionName = "--show-flaky-tests";
     private const string ShowSlowestTestsOptionName = "--show-slowest-tests";
+    private const string ShowStdoutOptionName = "--show-stdout";
+    private const string ShowStderrOptionName = "--show-stderr";
     private const string ShowTestResultsOptionName = "--show-test-results";
     private const string TestConfigurationFileSuffix = ".testconfig.json";
     private const string TestingPlatformExitCodeIgnoreEnvironmentVariable = "TESTINGPLATFORM_EXITCODE_IGNORE";
@@ -118,6 +120,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
         forwardedAffectedTests |= responseFileAffectedTests;
         forwardedMinimumExpectedTests |= responseFileMinimumExpectedTests;
 #else
+        // Resolve trace paths before a strict MT build session takes ownership of the process directory.
+        _ = Logger.TraceEnabled;
+
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], "dotnet-test");
         ITestHandler testHandler;
         MSBuildSession? buildSession = null;
@@ -768,7 +773,15 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 effectiveArguments,
                 configurationSettings.ShowFlakyTests),
             HasForwardedOption(effectiveArguments, RetryFailedTestsOptionName)
-                || configurationSettings.RetryFailedTests);
+                || configurationSettings.RetryFailedTests,
+            GetShowOutputMode(
+                effectiveArguments,
+                ShowStdoutOptionName,
+                configurationSettings.ShowStdout),
+            GetShowOutputMode(
+                effectiveArguments,
+                ShowStderrOptionName,
+                configurationSettings.ShowStderr));
     }
 
     internal static IReadOnlyList<string> GetEffectiveTestApplicationArguments(TestModule? module, BuildOptions buildOptions)
@@ -899,15 +912,19 @@ internal partial class MicrosoftTestingPlatformTestCommand
                     ? GetConfigurationOption(commandLineOptions, optionName)
                     : default;
 
+            ConfigurationOption GetOptionOrDefault(string optionName)
+            {
+                ConfigurationOption option = GetOption(optionName);
+                return !option.IsSpecified && hasCommandLineOptionDefaults
+                    ? GetConfigurationOption(commandLineOptionDefaults, optionName)
+                    : option;
+            }
+
             ConfigurationOption zeroTestsPolicy = GetOption(ZeroTestsPolicyOptionName);
             ConfigurationOption ignoredExitCodes = GetOption(IgnoreExitCodeOptionName);
-            ConfigurationOption showTestResults = GetOption(ShowTestResultsOptionName);
-            if (!showTestResults.IsSpecified && hasCommandLineOptionDefaults)
-            {
-                showTestResults = GetConfigurationOption(
-                    commandLineOptionDefaults,
-                    ShowTestResultsOptionName);
-            }
+            ConfigurationOption showTestResults = GetOptionOrDefault(ShowTestResultsOptionName);
+            ConfigurationOption showStdout = GetOptionOrDefault(ShowStdoutOptionName);
+            ConfigurationOption showStderr = GetOptionOrDefault(ShowStderrOptionName);
             ConfigurationOption showSlowestTests = GetOption(ShowSlowestTestsOptionName);
             ConfigurationOption showFlakyTests = GetOption(ShowFlakyTestsOptionName);
             ConfigurationOption retryFailedTests = GetOption(RetryFailedTestsOptionName);
@@ -932,7 +949,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 retryFailedTests.IsSpecified &&
                     retryFailedTests.Enabled &&
                     retryFailedTests.Values.Count == 0,
-                output.Values is [string outputValue] ? outputValue : null);
+                output.Values is [string outputValue] ? outputValue : null,
+                showStdout.Enabled ? showStdout.Values : null,
+                showStderr.Enabled ? showStderr.Values : null);
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException or JsonException or ArgumentException or NotSupportedException)
@@ -1011,7 +1030,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
         IReadOnlyList<string>? ShowSlowestTests,
         bool? ShowFlakyTests,
         bool RetryFailedTests,
-        string? Output);
+        string? Output,
+        IReadOnlyList<string>? ShowStdout,
+        IReadOnlyList<string>? ShowStderr);
 
     private static bool TryGetProperty(
         JsonElement element,
@@ -1226,6 +1247,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
             ListTestsFormat = testOptions.ListTestsFormat,
             SlowestTestsCount = fallbackSettings.SlowestTestsCount,
             ShowFlakyTests = fallbackSettings.ShowFlakyTests,
+            ShowStdout = fallbackSettings.ShowStdout,
+            ShowStderr = fallbackSettings.ShowStderr,
             HeartbeatSilenceThreshold = GetProgressThreshold(Environment.GetEnvironmentVariable("MTP_PROGRESS_SILENCE_SECONDS")),
             SlowTestThreshold = GetProgressThreshold(Environment.GetEnvironmentVariable("MTP_PROGRESS_SLOW_TEST_SECONDS")),
         });
@@ -1268,6 +1291,35 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
     internal static bool IsLegacyRetryOptionEnabled(IReadOnlyList<string> arguments)
         => HasForwardedOption(arguments, RetryFailedTestsOptionName);
+
+    private static OutputShowMode GetShowOutputMode(
+        IReadOnlyList<string> arguments,
+        string optionName,
+        IReadOnlyList<string>? configuredValues)
+    {
+        bool hasExplicitOption = HasForwardedOption(arguments, optionName);
+        string? value = hasExplicitOption
+            ? GetForwardedOptionValue(arguments, optionName)
+            : configuredValues is [string configuredValue] ? configuredValue : null;
+        if (value is null && !hasExplicitOption && configuredValues is null)
+        {
+            return OutputShowMode.Failed;
+        }
+
+        switch (value?.ToLowerInvariant())
+        {
+            case "all":
+                return OutputShowMode.All;
+            case "failed":
+                return OutputShowMode.Failed;
+            case "none":
+                return OutputShowMode.None;
+            default:
+                // The test application owns validation of forwarded options and reports the error.
+                Logger.LogTrace($"Invalid '{optionName}' arguments while reconstructing captured-output policy.");
+                return OutputShowMode.Failed;
+        }
+    }
 
     internal static TestResultVisibility GetTestResultVisibility(
         OutputOptions output,

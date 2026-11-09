@@ -306,93 +306,91 @@ namespace EndToEnd.Tests
 
         /// <summary>
         /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0
         /// </summary>
         [TestMethod]
-        [DataRow("console")]
-        [DataRow("console", "C#")]
-        [DataRow("console", "VB")]
-        [DataRow("console", "F#")]
-        [DataRow("classlib")]
-        [DataRow("classlib", "C#")]
-        [DataRow("classlib", "VB")]
-        [DataRow("classlib", "F#")]
-        [DataRow("worker")]
-        [DataRow("worker", "C#")]
-        [DataRow("worker", "F#")]
-        [DataRow("mstest")]
-        [DataRow("mstest", "C#")]
-        [DataRow("mstest", "VB")]
-        [DataRow("mstest", "F#")]
-        [DataRow("nunit")]
-        [DataRow("nunit", "C#")]
-        [DataRow("nunit", "VB")]
-        [DataRow("nunit", "F#")]
-        [DataRow("xunit")]
-        [DataRow("xunit", "C#")]
-        [DataRow("xunit", "VB")]
-        [DataRow("xunit", "F#")]
+        [DataRow(ProjectTemplate.Console)]
+        [DataRow(ProjectTemplate.Console, "C#")]
+        [DataRow(ProjectTemplate.Console, "VB")]
+        [DataRow(ProjectTemplate.Console, "F#")]
+        [DataRow(ProjectTemplate.Classlib)]
+        [DataRow(ProjectTemplate.Classlib, "C#")]
+        [DataRow(ProjectTemplate.Classlib, "VB")]
+        [DataRow(ProjectTemplate.Classlib, "F#")]
+        [DataRow(ProjectTemplate.Worker)]
+        [DataRow(ProjectTemplate.Worker, "C#")]
+        [DataRow(ProjectTemplate.Worker, "F#")]
+        [DataRow(ProjectTemplate.Mstest)]
+        [DataRow(ProjectTemplate.Mstest, "C#")]
+        [DataRow(ProjectTemplate.Mstest, "VB")]
+        [DataRow(ProjectTemplate.Mstest, "F#")]
+        [DataRow(ProjectTemplate.Nunit)]
+        [DataRow(ProjectTemplate.Nunit, "C#")]
+        [DataRow(ProjectTemplate.Nunit, "VB")]
+        [DataRow(ProjectTemplate.Nunit, "F#")]
+        [DataRow(ProjectTemplate.Xunit)]
+        [DataRow(ProjectTemplate.Xunit, "C#")]
+        [DataRow(ProjectTemplate.Xunit, "VB")]
+        [DataRow(ProjectTemplate.Xunit, "F#")]
         // Skip = "https://github.com/dotnet/sdk/issues/53791"
         //[DataRow("blazorwasm")]
-        [DataRow("web")]
-        [DataRow("web", "C#")]
-        [DataRow("web", "F#")]
-        [DataRow("mvc")]
-        [DataRow("mvc", "C#")]
-        [DataRow("mvc", "F#")]
-        [DataRow("webapi")]
-        [DataRow("webapi", "C#")]
-        [DataRow("webapi", "F#")]
-        [DataRow("webapp")]
-        [DataRow("razorclasslib")]
-        public void ItCanCreateAndBuildTemplatesWithDefaultFramework(string templateName, string language = "")
+        [DataRow(ProjectTemplate.Web)]
+        [DataRow(ProjectTemplate.Web, "C#")]
+        [DataRow(ProjectTemplate.Web, "F#")]
+        [DataRow(ProjectTemplate.Mvc)]
+        [DataRow(ProjectTemplate.Mvc, "C#")]
+        [DataRow(ProjectTemplate.Mvc, "F#")]
+        [DataRow(ProjectTemplate.Webapi)]
+        [DataRow(ProjectTemplate.Webapi, "C#")]
+        [DataRow(ProjectTemplate.Webapi, "F#")]
+        [DataRow(ProjectTemplate.Webapp)]
+        [DataRow(ProjectTemplate.Razorclasslib)]
+        public void ItCanCreateAndBuildTemplatesWithDefaultFramework(ProjectTemplate template, string language = "")
         {
-            string framework = DetectExpectedDefaultFramework(templateName);
-            TestTemplateCreateAndBuild(templateName, selfContained: false, language: language, framework: framework);
+            string framework = DetectExpectedDefaultFramework(template);
+            TestTemplateCreateAndBuild(template.ToString().ToLowerInvariant(), selfContained: false, language: language, framework: framework);
         }
 
         /// <summary>
         /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
         [TestMethod]
-        [DataRow("wpf")]
-        [DataRow("wpf", "C#")]
-        [DataRow("wpf", "VB")]
-        [DataRow("wpflib")]
-        [DataRow("wpflib", "C#")]
-        [DataRow("wpflib", "VB")]
-        [DataRow("wpfcustomcontrollib")]
-        [DataRow("wpfcustomcontrollib", "C#")]
-        [DataRow("wpfcustomcontrollib", "VB")]
-        [DataRow("wpfusercontrollib")]
-        [DataRow("wpfusercontrollib", "C#")]
-        [DataRow("wpfusercontrollib", "VB")]
-        [DataRow("winforms")]
-        [DataRow("winforms", "C#")]
-        [DataRow("winforms", "VB")]
-        [DataRow("winformslib")]
-        [DataRow("winformslib", "C#")]
-        [DataRow("winformslib", "VB")]
-        [DataRow("winformscontrollib")]
-        [DataRow("winformscontrollib", "C#")]
-        [DataRow("winformscontrollib", "VB")]
-        public void ItCanCreateAndBuildTemplatesWithDefaultFramework_Windows(string templateName, string language = "")
+        [DataRow(ProjectTemplate.Wpf)]
+        [DataRow(ProjectTemplate.Wpf, "C#")]
+        [DataRow(ProjectTemplate.Wpf, "VB")]
+        [DataRow(ProjectTemplate.Wpflib)]
+        [DataRow(ProjectTemplate.Wpflib, "C#")]
+        [DataRow(ProjectTemplate.Wpflib, "VB")]
+        [DataRow(ProjectTemplate.Wpfcustomcontrollib)]
+        [DataRow(ProjectTemplate.Wpfcustomcontrollib, "C#")]
+        [DataRow(ProjectTemplate.Wpfcustomcontrollib, "VB")]
+        [DataRow(ProjectTemplate.Wpfusercontrollib)]
+        [DataRow(ProjectTemplate.Wpfusercontrollib, "C#")]
+        [DataRow(ProjectTemplate.Wpfusercontrollib, "VB")]
+        [DataRow(ProjectTemplate.Winforms)]
+        [DataRow(ProjectTemplate.Winforms, "C#")]
+        [DataRow(ProjectTemplate.Winforms, "VB")]
+        [DataRow(ProjectTemplate.Winformslib)]
+        [DataRow(ProjectTemplate.Winformslib, "C#")]
+        [DataRow(ProjectTemplate.Winformslib, "VB")]
+        [DataRow(ProjectTemplate.Winformscontrollib)]
+        [DataRow(ProjectTemplate.Winformscontrollib, "C#")]
+        [DataRow(ProjectTemplate.Winformscontrollib, "VB")]
+        public void ItCanCreateAndBuildTemplatesWithDefaultFramework_Windows(ProjectTemplate template, string language = "")
         {
-            string framework = DetectExpectedDefaultFramework(templateName);
-            TestTemplateCreateAndBuild(templateName, selfContained: false, language: language, framework: $"{framework}-windows");
+            string framework = DetectExpectedDefaultFramework(template);
+            TestTemplateCreateAndBuild(template.ToString().ToLowerInvariant(), selfContained: false, language: language, framework: $"{framework}-windows");
         }
 
         /// <summary>
         /// [project is not built on linux-musl]
         /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
         [TestMethod]
-        [DataRow("grpc")]
-        public void ItCanCreateAndBuildTemplatesWithDefaultFramework_DisableBuildOnLinuxMusl(string templateName)
+        [DataRow(ProjectTemplate.Grpc)]
+        public void ItCanCreateAndBuildTemplatesWithDefaultFramework_DisableBuildOnLinuxMusl(ProjectTemplate template)
         {
-            string framework = DetectExpectedDefaultFramework(templateName);
+            string framework = DetectExpectedDefaultFramework(template);
+            string templateName = template.ToString().ToLowerInvariant();
 
             if (RuntimeInformation.RuntimeIdentifier.StartsWith("linux-musl"))
             {
@@ -404,22 +402,40 @@ namespace EndToEnd.Tests
             }
         }
 
-        private static string DetectExpectedDefaultFramework(string template)
+        public enum ProjectTemplate
         {
-            // NetTFMUpdate: Use the current product-pack TFM while templates are staged to net11.
-            return ToolsetInfo.CurrentTargetFramework;
+            Console,
+            Classlib,
+            Worker,
+            Mstest,
+            Nunit,
+            Xunit,
+            Web,
+            Mvc,
+            Webapi,
+            Webapp,
+            Razorclasslib,
+            Grpc,
+            Wpf,
+            Wpflib,
+            Wpfcustomcontrollib,
+            Wpfusercontrollib,
+            Winforms,
+            Winformslib,
+            Winformscontrollib
+        }
 
-            /*
-            string dotnetFolder = Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath);
-            string[] runtimeFolders = Directory.GetDirectories(Path.Combine(dotnetFolder, "shared", "Microsoft.NETCore.App"));
-            int latestMajorVersion = runtimeFolders.Select(folder => int.Parse(Path.GetFileName(folder).Split('.').First())).Max();
-            if (latestMajorVersion == 11)
+        private static string DetectExpectedDefaultFramework(ProjectTemplate template)
+        {
+            return template switch
             {
-                return $"net{latestMajorVersion}.0";
-            }
-
-            throw new Exception("Unsupported version of SDK");
-            */
+                ProjectTemplate.Worker or ProjectTemplate.Web or ProjectTemplate.Mvc or ProjectTemplate.Webapi or ProjectTemplate.Webapp or ProjectTemplate.Razorclasslib or ProjectTemplate.Grpc
+                    => ToolsetInfo.SdkTargetFramework,
+                // NetTFMUpdate: Windows Desktop templates still target net11.
+                ProjectTemplate.Wpf or ProjectTemplate.Wpflib or ProjectTemplate.Wpfcustomcontrollib or ProjectTemplate.Wpfusercontrollib or ProjectTemplate.Winforms or ProjectTemplate.Winformslib or ProjectTemplate.Winformscontrollib
+                    => "net11.0",
+                _ => ToolsetInfo.CurrentTargetFramework
+            };
         }
 
         private void TestTemplateCreateAndBuild(

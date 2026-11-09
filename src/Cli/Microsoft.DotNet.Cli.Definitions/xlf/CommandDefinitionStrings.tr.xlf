@@ -762,6 +762,20 @@ Bu bağımsız değişken, birden çok değişken sağlamak için birden çok ke
         <target state="translated">Değer bir pozitif tamsayı olmalıdır.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestShowStderrDescription">
+        <source>Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured error output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
+      </trans-unit>
+      <trans-unit id="CmdTestShowStdoutDescription">
+        <source>Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</source>
+        <target state="new">Determines when to show captured standard output of a test.
+Valid values are 'All', 'Failed', 'None'. Default is 'Failed'.</target>
+        <note>{Locked="All"}{Locked="Failed"}{Locked="None"}</note>
+      </trans-unit>
       <trans-unit id="CmdTimeoutDescription">
         <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
         <target state="translated">Tüm test uygulamaları arasında belirtilen test yürütme süresine ulaşıldığında test yürütmeyi durdurur. Her test uygulaması başına uygulanmak üzere '--' öğesinden sonra geçirin.</target>
@@ -1887,6 +1901,11 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionListFormatOptionDescription">
+        <source>The output format for the list of paths. JSON output is an array of paths.</source>
+        <target state="new">The output format for the list of paths. JSON output is an array of paths.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">Üzerinde işlem yapılacak proje veya çözüm dosyası. Bir dosya belirtilmezse komut geçerli dizinde dosya arar.</target>
@@ -2148,8 +2167,8 @@ Varsayılan değer 'false.' Ancak çalışma zamanı tanımlayıcısı belirtild
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">Nuget.org'da dotnet araçlarını arayın</target>
+        <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
+        <target state="needs-review-translation">Nuget.org'da dotnet araçlarını arayın</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

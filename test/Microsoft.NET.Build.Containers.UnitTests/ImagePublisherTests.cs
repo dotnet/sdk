@@ -91,6 +91,104 @@ public class ImagePublisherTests
         }
     }
 
+    /// <summary>
+    /// Verifies invalid realm configuration is reported with its container diagnostic code
+    /// instead of being converted to a generic MSBuild task or push failure.
+    /// </summary>
+    [TestMethod]
+    [DataRow(false, true)]
+    [DataRow(false, false)]
+    [DataRow(true, true)]
+    [DataRow(true, false)]
+    public async Task PublishImage_ReportsInvalidRealmConfiguration(bool localArchive, bool invalidPolicy)
+    {
+        string registryName = $"publish-config-test-{Guid.NewGuid():N}.invalid";
+        Uri registryUri = new($"https://{registryName}");
+        var transport = new BearerChallengeHandler(registryUri);
+        string diagnosticCode = invalidPolicy ? "CONTAINER2034" : "CONTAINER2033";
+        string environmentVariable = invalidPolicy
+            ? RegistrySettings.EnvVariables.AuthRealmPolicy
+            : RegistrySettings.EnvVariables.AuthRealmAllowedAddresses;
+        string invalidValue = invalidPolicy ? "Strict" : "not-an-ip";
+        var configError = invalidPolicy
+            ? new InvalidAuthRealmConfigurationException(
+                nameof(global::Microsoft.NET.Build.Containers.Resources.Strings.InvalidAuthRealmPolicy),
+                environmentVariable,
+                invalidValue)
+            : new InvalidAuthRealmConfigurationException(
+                nameof(global::Microsoft.NET.Build.Containers.Resources.Strings.InvalidAuthRealmAllowedAddress),
+                environmentVariable,
+                invalidValue);
+        using var client = new HttpClient(new AuthHandshakeMessageHandler(
+            registryName,
+            registryUri,
+            isInsecureRegistry: false,
+            transport,
+            NullLogger.Instance,
+            localArchive ? RegistryMode.Pull : RegistryMode.Push,
+            _ => throw configError));
+        var api = new Mock<IRegistryAPI>(MockBehavior.Strict);
+        api.SetupGet(a => a.Manifest).Returns(new DefaultManifestOperations(registryUri, registryName, client, NullLogger.Instance));
+        api.SetupGet(a => a.Blob).Returns(new DefaultBlobOperations(registryUri, registryName, client, NullLogger.Instance));
+        var registry = new Registry(registryName, NullLogger.Instance, api.Object, retryDelayProvider: () => TimeSpan.Zero);
+        var source = new SourceImageReference(registry, "base/image", "latest", null);
+        BuiltImage image = new()
+        {
+            Config = "{}",
+            ImageDigest = "sha256:config",
+            Manifest = "{}",
+            ManifestDigest = "sha256:manifest",
+            ManifestMediaType = SchemaTypes.OciManifestV1,
+            Layers = [new ManifestLayer(SchemaTypes.OciLayerGzipV1, 123, $"sha256:{Guid.NewGuid():N}{Guid.NewGuid():N}", null)],
+            OS = "linux",
+            Architecture = "amd64",
+        };
+        var errors = new List<BuildErrorEventArgs>();
+        var telemetryEvents = new List<CustomBuildEventArgs>();
+        var engine = new Mock<IBuildEngine>();
+        engine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>())).Callback<BuildErrorEventArgs>(errors.Add);
+        engine.Setup(e => e.LogCustomEvent(It.IsAny<CustomBuildEventArgs>())).Callback<CustomBuildEventArgs>(telemetryEvents.Add);
+        using var task = new CreateNewImage { BuildEngine = engine.Object };
+        string archivePath = Path.Combine(Path.GetTempPath(), $"publish-config-test-{Guid.NewGuid():N}.tar.gz");
+        try
+        {
+            DestinationImageReference destination = localArchive
+                ? new(new ArchiveFileRegistry(archivePath), "test/image", ["latest"])
+                : new(registry, "test/image", ["latest"]);
+            var telemetry = new Telemetry(source, destination, task.Log);
+
+            await ImagePublisher.PublishImageAsync(image, source, destination, false, task.Log, telemetry, TestContext.CancellationToken);
+
+            Assert.HasCount(1, errors);
+            Assert.AreEqual(diagnosticCode, errors[0].Code, errors[0].Message);
+            Assert.Contains(environmentVariable, errors[0].Message!);
+            Assert.Contains(invalidValue, errors[0].Message!);
+            Assert.DoesNotContain("MSB4018", errors[0].Message!);
+            Assert.AreEqual(1, transport.RequestCount);
+            Assert.IsEmpty(telemetryEvents);
+        }
+        finally
+        {
+            File.Delete(archivePath);
+        }
+    }
+
+    private sealed class BearerChallengeHandler(Uri registryUri) : HttpMessageHandler
+    {
+        public int RequestCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            RequestCount++;
+            Assert.AreEqual(registryUri.GetLeftPart(UriPartial.Authority), request.RequestUri?.GetLeftPart(UriPartial.Authority));
+            var response = new HttpResponseMessage(HttpStatusCode.Unauthorized) { RequestMessage = request };
+            response.Headers.WwwAuthenticate.Add(new AuthenticationHeaderValue(
+                "Bearer",
+                "realm=\"https://auth.invalid/token\", service=\"registry\""));
+            return Task.FromResult(response);
+        }
+    }
+
     private sealed class RedirectedChallengeHandler(Uri redirectedUri) : HttpMessageHandler
     {
         public int RequestCount { get; private set; }

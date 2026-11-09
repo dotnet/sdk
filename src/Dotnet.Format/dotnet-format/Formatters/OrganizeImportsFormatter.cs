@@ -3,7 +3,6 @@
 
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Formatting;
-using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 
@@ -21,14 +20,18 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
         public override FixCategory Category => FixCategory.CodeStyle;
 
         internal override async Task<SourceText> FormatFileAsync(
-            Document document,
+            TextDocument document,
             SourceText sourceText,
-            OptionSet optionSet,
             AnalyzerConfigOptions analyzerConfigOptions,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            if (document is not Document sourceDocument)
+            {
+                return sourceText;
+            }
+
             try
             {
                 // Only run formatter if the user has specifically configured one of the driving properties.
@@ -38,9 +41,9 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                     return sourceText;
                 }
 
-                var organizedDocument = await Formatter.OrganizeImportsAsync(document, cancellationToken);
+                var organizedDocument = await Formatter.OrganizeImportsAsync(sourceDocument, cancellationToken);
 
-                var isSameVersion = await IsSameDocumentAndVersionAsync(document, organizedDocument, cancellationToken);
+                var isSameVersion = await IsSameDocumentAndVersionAsync(sourceDocument, organizedDocument, cancellationToken);
                 if (isSameVersion)
                 {
                     return sourceText;
@@ -49,13 +52,13 @@ namespace Microsoft.CodeAnalysis.Tools.Formatters
                 // Because the Formatter does not abide the `end_of_line` option we have to fix up the ends of the organized lines.
                 // See https://github.com/dotnet/roslyn/issues/44136
                 var organizedSourceText = await organizedDocument.GetTextAsync(cancellationToken);
-                return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, optionSet, analyzerConfigOptions, formatOptions, logger, cancellationToken);
+                return await _endOfLineFormatter.FormatFileAsync(organizedDocument, organizedSourceText, analyzerConfigOptions, formatOptions, logger, cancellationToken);
             }
             catch (InsufficientExecutionStackException)
             {
                 // This case is normally not hit when running against a handwritten code file.
                 // https://github.com/dotnet/roslyn/issues/44710#issuecomment-636253053
-                logger.LogWarning(Resources.Unable_to_organize_imports_for_0_The_document_is_too_complex, Path.GetFileName(document.FilePath));
+                logger.LogWarning(Resources.Unable_to_organize_imports_for_0_The_document_is_too_complex, Path.GetFileName(sourceDocument.FilePath));
                 return sourceText;
             }
         }

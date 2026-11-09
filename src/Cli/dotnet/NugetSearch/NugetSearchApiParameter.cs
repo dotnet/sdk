@@ -7,10 +7,12 @@ internal sealed class NugetSearchApiParameter(
     string? searchTerm = null,
     int? skip = null,
     int? take = null,
-    bool prerelease = false)
+    bool prerelease = false,
+    bool includeVersions = false)
 {
     public string? SearchTerm { get; } = searchTerm;
     public int? Skip { get; } = skip;
     public int? Take { get; } = take;
     public bool Prerelease { get; } = prerelease;
+    public bool IncludeVersions { get; } = includeVersions;
 }

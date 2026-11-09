@@ -106,6 +106,25 @@ Many CLI tests use Verify (`[UsesVerify]` / VerifyMSTest):
 - Volatile lines (paths, timings, versions) are scrubbed via
   `settings.ScrubLinesContaining(...)` — scrub rather than hard-code them.
 
+## MTP build preparation
+
+[`MSBuildSession`](dotnet/MSBuildSession.cs) owns the single-node build and project collection
+for targets MTP invokes directly: restore, device discovery, deployment and run-argument computation.
+Honor explicit `-mt` / `-multiThreaded` values using MSBuild's precedence and environment defaults,
+without adding automatic response-file discovery.
+
+A strict MT session owns the process current directory until it ends; do not restore that directory
+between MT requests. [`MSBuildUtility`](dotnet/Commands/Test/MTP/MSBuildUtility.cs) runs intervening
+builds and restores out-of-process through
+[`RestoringCommand`](dotnet/Commands/Restore/RestoringCommand.cs), using the captured invocation
+directory so relative arguments and logs retain their meaning. Keep one coherent preparation binlog,
+target-produced project state, and the session's success/failure cleanup. Cover these boundaries in
+[`GivenDotnetTestProducesBinaryLog`](../../test/dotnet.Tests/CommandTests/Test/GivenDotnetTestProducesBinaryLog.cs).
+
+Parent-process operations must also use the captured invocation directory: pass it through background
+workload updates to both `global.json` discovery and NuGet configuration, and initialize absolute MTP
+trace paths before starting the session. Changing only a child process's directory is insufficient.
+
 ## MTP process completion
 
 [`TestApplicationHandler`](dotnet/Commands/Test/MTP/TestApplicationHandler.cs) distinguishes
@@ -180,6 +199,13 @@ cancellation plumbing.
 
 The vendored non-cursor renderer measures **visible-output silence**, not silence between
 test completions. Its totals include completed modules after their worker slots are freed.
+Captured per-test stdout and stderr default to failed-only output independently of result
+visibility. Resolve explicit stream modes from each module's effective arguments and
+configuration, not just the parent command line; raw test-host process output is unaffected.
+The SDK owns these rendered defaults, so its dynamic platform-option help must describe them
+even when older test applications supply different defaults in their help metadata. See
+[`MicrosoftTestingPlatformTestCommand`](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.cs)
+and its [help renderer](dotnet/Commands/Test/MTP/MicrosoftTestingPlatformTestCommand.Help.cs).
 Resolve parent progress from every selected module's effective arguments and working
 directory; any effective opt-out disables the shared heartbeat and slow-test display.
 Collection status must not override discovery formatting. Keep optional timer and warning
