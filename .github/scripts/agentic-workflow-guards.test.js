@@ -206,7 +206,10 @@ test("the monitor forwards every issue from the trusted result artifact", async 
         assert.equal(name, "./.github/ci-quality-monitor/issue-monster-dispatch.js");
         return require("../ci-quality-monitor/issue-monster-dispatch.js");
     }, {env: {CREATED_ISSUE_NUMBER: "101", CREATED_ISSUE_MAP_FILE: "trusted-map.json", TARGET_REF: "main"}},
-    {rest: {actions: {async createWorkflowDispatch(args) { calls.push(args); }}}},
+    {rest: {
+        actions: {async createWorkflowDispatch(args) { calls.push(args); }},
+        issues: {async listForRepo() { return {data: []}; }},
+    }},
     context, {info() {}});
     assert.deepEqual(calls.map(call => call.inputs.issue_number), ["101", "102"]);
     assert.ok(calls.every(call => call.ref === "main" && call.workflow_id === "issue-monster.lock.yml"));

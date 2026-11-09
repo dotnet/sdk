@@ -1901,6 +1901,11 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionListFormatOptionDescription">
+        <source>The output format for the list of paths. JSON output is an array of paths.</source>
+        <target state="new">The output format for the list of paths. JSON output is an array of paths.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">El archivo de proyecto o solución donde operar. Si no se especifica un archivo, el comando buscará uno en el directorio actual.</target>
@@ -2162,8 +2167,8 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">Busca las herramientas dotnet en nuget.org.</target>
+        <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
+        <target state="needs-review-translation">Busca las herramientas dotnet en nuget.org.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

@@ -1901,6 +1901,11 @@ Wartość domyślna to „false”. Jednak w przypadku, gdy docelową jest platf
         <target state="translated">SLN_FILE</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionListFormatOptionDescription">
+        <source>The output format for the list of paths. JSON output is an array of paths.</source>
+        <target state="new">The output format for the list of paths. JSON output is an array of paths.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionOrProjectArgumentDescription">
         <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
         <target state="translated">Plik projektu lub rozwiązania, dla którego ma zostać wykonana operacja. Jeśli plik nie zostanie podany, polecenie wyszuka go w bieżącym katalogu.</target>
@@ -2162,8 +2167,8 @@ Wartość domyślna to „false”. Jednak w przypadku, gdy docelową jest platf
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">Wyszukaj narzędzia dotnet w witrynie nuget.org</target>
+        <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
+        <target state="needs-review-translation">Wyszukaj narzędzia dotnet w witrynie nuget.org</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

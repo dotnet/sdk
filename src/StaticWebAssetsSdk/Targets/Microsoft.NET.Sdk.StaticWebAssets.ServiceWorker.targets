@@ -324,6 +324,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Don't emit the service worker source files to the output -->
       <Content Remove="@(ServiceWorker)" />
       <Content Remove="@(ServiceWorker->'%(PublishedContent)')" />
+      <UpToDateCheckInput Include="@(ServiceWorker)" Condition="Exists('%(ServiceWorker.Identity)')" Set="StaticWebAssets" />
     </ItemGroup>
   </Target>
 
