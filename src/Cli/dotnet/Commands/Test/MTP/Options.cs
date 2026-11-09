@@ -74,7 +74,9 @@ internal readonly record struct TestApplicationSettings(
     TestResultVisibility TestResultVisibility,
     int SlowestTestsCount,
     bool ShowFlakyTests,
-    bool LegacyRetryEnabled)
+    bool LegacyRetryEnabled,
+    OutputShowMode ShowStdout = OutputShowMode.Failed,
+    OutputShowMode ShowStderr = OutputShowMode.Failed)
 {
     public static TestApplicationSettings Default { get; } = new(
         default,
