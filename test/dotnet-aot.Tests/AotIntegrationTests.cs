@@ -361,7 +361,10 @@ public partial class AotIntegrationTests
     }
 
     [TestMethod]
-    public void AotComplete_RootLabels_RunWithoutManagedFallbackOrFirstRunSideEffects()
+    [DataRow("dotnet bu", 9, new[] { "build", "build-server", "msbuild" })]
+    [DataRow("dotnet --ver", 12, new[] { "--version" })]
+    public void AotComplete_RootLabels_RunWithoutManagedFallbackOrFirstRunSideEffects(
+        string input, int position, string[] expected)
     {
         SkipIfDnUnavailable();
 
@@ -371,15 +374,6 @@ public partial class AotIntegrationTests
         Directory.CreateDirectory(sdkDirectory);
         Directory.CreateDirectory(cliHome);
 
-        string dnPath = FindDnPath()!;
-        string aotLibraryDirectory = Environment.GetEnvironmentVariable("DOTNET_AOT_LIBRARY_DIR")
-            ?? Path.GetDirectoryName(dnPath)!;
-        string aotLibraryFileName = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
-            : OperatingSystem.IsMacOS() ? "libdotnet-aot.dylib"
-            : "libdotnet-aot.so";
-        File.Copy(
-            Path.Combine(aotLibraryDirectory, aotLibraryFileName),
-            Path.Combine(sdkDirectory, aotLibraryFileName));
         var environment = new Dictionary<string, string>
         {
             ["DOTNET_AOT_SDK_DIR"] = sdkDirectory,
@@ -394,20 +388,23 @@ public partial class AotIntegrationTests
 
         try
         {
+            CopyAotLibrary(sdkDirectory);
+
             var (exitCode, stdout, stderr) = RunDn(
-                ["complete", "--position", "9", "dotnet bu"],
+                ["complete", "--position", position.ToString(), input],
                 enableAot: true,
                 extraEnv: environment);
 
             Assert.AreEqual(0, exitCode, stderr);
             Assert.IsTrue(string.IsNullOrEmpty(stderr), stderr);
             Assert.AreSequenceEqual(
-                ["build", "build-server", "msbuild"],
+                expected,
                 stdout.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
             Assert.IsFalse(File.Exists(Path.Combine(
                 cliHome,
                 ".dotnet",
                 FirstTimeUseNoticeSentinel.SENTINEL)));
+            Assert.IsEmpty(Directory.EnumerateFiles(cliHome, "*.sentinel", SearchOption.AllDirectories));
         }
         finally
         {
@@ -421,12 +418,16 @@ public partial class AotIntegrationTests
         SkipIfDnUnavailable();
 
         string testDirectory = Path.Combine(Path.GetTempPath(), $"dotnet-aot-complete-fallback-{Guid.NewGuid():N}");
+        string sdkDirectory = Path.Combine(testDirectory, "sdk");
         string cliHome = Path.Combine(testDirectory, "home");
         string customHive = Path.Combine(testDirectory, "hive");
+        Directory.CreateDirectory(sdkDirectory);
         Directory.CreateDirectory(cliHome);
 
         var environment = new Dictionary<string, string>
         {
+            ["DOTNET_AOT_SDK_DIR"] = sdkDirectory,
+            ["DOTNET_AOT_LIBRARY_DIR"] = sdkDirectory,
             ["DOTNET_CLI_HOME"] = cliHome,
             ["DOTNET_CLI_TELEMETRY_OPTOUT"] = bool.TrueString,
             ["DOTNET_GENERATE_ASPNET_CERTIFICATE"] = bool.FalseString,
@@ -434,10 +435,21 @@ public partial class AotIntegrationTests
             ["DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK"] = bool.TrueString,
             ["DOTNET_NOLOGO"] = bool.TrueString,
         };
-        string completionInput = $"new --debug:custom-hive {customHive} ";
+        string completionInput = $"new --debug:custom-hive \"{customHive}\" ";
 
         try
         {
+            // The SDK root must contain both the loaded native library and the managed fallback.
+            string managedSdkDirectory = Environment.GetEnvironmentVariable("DOTNET_AOT_SDK_DIR")
+                ?? Path.GetDirectoryName(FindDnPath()!)!;
+            // Template providers discover installed packages relative to this SDK's Sdks directory.
+            environment["MSBuildSDKsPath"] = Path.Combine(managedSdkDirectory, "Sdks");
+            foreach (string file in Directory.EnumerateFiles(managedSdkDirectory))
+            {
+                File.Copy(file, Path.Combine(sdkDirectory, Path.GetFileName(file)));
+            }
+            CopyAotLibrary(sdkDirectory);
+
             var (warmupExitCode, _, warmupError) = RunDn(
                 ["complete", completionInput],
                 enableAot: true,
@@ -464,6 +476,19 @@ public partial class AotIntegrationTests
         {
             Directory.Delete(testDirectory, recursive: true);
         }
+    }
+
+    private static void CopyAotLibrary(string sdkDirectory)
+    {
+        string aotLibraryDirectory = Environment.GetEnvironmentVariable("DOTNET_AOT_LIBRARY_DIR")
+            ?? Path.GetDirectoryName(FindDnPath()!)!;
+        string aotLibraryFileName = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
+            : OperatingSystem.IsMacOS() ? "libdotnet-aot.dylib"
+            : "libdotnet-aot.so";
+        File.Copy(
+            Path.Combine(aotLibraryDirectory, aotLibraryFileName),
+            Path.Combine(sdkDirectory, aotLibraryFileName),
+            overwrite: true);
     }
 
     /// <summary>

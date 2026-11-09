@@ -468,18 +468,20 @@ public partial class AotParserTests
     }
 
     [TestMethod]
-    public void InvokeComplete_RendersCompletionsFromAot()
+    [DataRow("dotnet bu", 9, new[] { "build", "build-server", "msbuild" })]
+    [DataRow("dotnet --ver", 12, new[] { "--version" })]
+    public void InvokeComplete_RendersCompletionsFromAot(string input, int position, string[] expected)
     {
         var (exitCode, stdout, stderr) = InvokeWithCapture([
             "complete",
-            "--position", "9",
-            "dotnet bu",
+            "--position", position.ToString(),
+            input,
         ]);
 
         Assert.AreEqual(0, exitCode);
         Assert.IsTrue(string.IsNullOrEmpty(stderr));
         Assert.AreSequenceEqual(
-            ["build", "build-server", "msbuild"],
+            expected,
             stdout.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
     }
 
@@ -487,9 +489,20 @@ public partial class AotParserTests
     [DataRow("dotnet new ")]
     [DataRow("dotnet build --framework ")]
     [DataRow("dotnet add package ")]
+    [DataRow("new ")]
+    [DataRow("dotnet package update ")]
+    [DataRow("dotnet build --unknown-option ")]
     public void InvokeComplete_CommandSpecificCompletionsFallBackToManaged(string input)
     {
         var result = Parser.Parse(["complete", input]);
+
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void InvokeComplete_CommandSpecificCompletionsBeyondInputFallBackToManaged()
+    {
+        var result = Parser.Parse(["complete", "--position", "13", "dotnet build"]);
 
         Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
     }

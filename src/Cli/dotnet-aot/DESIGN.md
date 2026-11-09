@@ -124,9 +124,12 @@ CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
 can run entirely in AOT (`--version`, `--info`, root command and option shell
 completion, the AOT-capable `sln` subcommands, the narrow file-based run path, and build-free
 `test --test-modules` invocations described below) execute immediately and return.
-Shell completion falls back before
-producing output once its input selects a command, allowing the managed parser to
-supply template, project, package, and other command-specific providers.
+The [shared completion implementation](../dotnet/Commands/Hidden/Complete/CompleteCommand.cs)
+parses the cursor-normalized input once and falls back before enumerating or writing
+candidates once that input selects a command. This lets the managed parser supply
+template, project, package, and other command-specific providers.
+[First-run setup](../dotnet/FirstRunExperience.cs) is skipped for native completion,
+so root completion does not print first-use messages or create first-use sentinels.
 Other built-in command shapes are wired with a fallback action that throws
 `CommandNotAvailableInAotException`;
 the bridge catches it (and any unexpected parse-time failure) and transparently
