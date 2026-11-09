@@ -202,7 +202,7 @@ internal class DotnetDownloader : IArtifactDownloader
         string destinationBasePath,
         IProgress<DownloadProgress>? progress = null)
     {
-        var (downloadUrl, expectedHash) = ResolveManifestEntry(installRequest, resolvedVersion);
+        var (downloadUrl, expectedHash, productVersion) = ResolveManifestEntry(installRequest, resolvedVersion);
         string extension = GetExtensionFromUrl(downloadUrl);
         var download = new ResolvedDownload(
             new Uri(downloadUrl), expectedHash,
@@ -210,7 +210,7 @@ internal class DotnetDownloader : IArtifactDownloader
             IsUnsigned: downloadUrl.StartsWith(BlobFeedUrlBuilder.ArchiveBaseUrl + "/", StringComparison.Ordinal));
         string path = DownloadWithVerification(download, destinationBasePath + extension, progress,
             installRequest.Options.RequireReleasesJsonSignature);
-        return new VerifiedDownload(path, expectedHash, download.IsUnsigned);
+        return new VerifiedDownload(path, expectedHash, download.IsUnsigned, productVersion);
     }
 
     /// <summary>
@@ -282,7 +282,7 @@ internal class DotnetDownloader : IArtifactDownloader
         return Path.GetExtension(localPath);
     }
 
-    private (string DownloadUrl, string ExpectedHash) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
+    private (string DownloadUrl, string ExpectedHash, ReleaseVersion ProductVersion) ResolveManifestEntry(DotnetInstallRequest installRequest, ReleaseVersion resolvedVersion)
     {
         // Daily-channel builds are blob-feed-only: they are never listed in the releases
         // manifest and have no detached .p7s signature. Skip the signature-verified manifest
@@ -353,7 +353,7 @@ internal class DotnetDownloader : IArtifactDownloader
             resolvedVersion);
     }
 
-    private static (string DownloadUrl, string ExpectedHash) BuildEntryFromReleaseFile(
+    private static (string DownloadUrl, string ExpectedHash, ReleaseVersion ProductVersion) BuildEntryFromReleaseFile(
         ReleaseFile targetFile,
         ReleaseVersion resolvedVersion,
         DotnetInstallRequest installRequest)
@@ -382,7 +382,7 @@ internal class DotnetDownloader : IArtifactDownloader
                 component: installRequest.Component.ToString());
         }
 
-        return (downloadUrl, expectedHash);
+        return (downloadUrl, expectedHash, resolvedVersion);
     }
 
     /// <summary>
@@ -418,7 +418,7 @@ internal class DotnetDownloader : IArtifactDownloader
     /// Resolves a download URL + SHA-512 by probing the public dotnet blob feed
     /// for the given component/version/RID.
     /// </summary>
-    private (string DownloadUrl, string ExpectedHash) ResolveBlobFeedEntry(
+    private (string DownloadUrl, string ExpectedHash, ReleaseVersion ProductVersion) ResolveBlobFeedEntry(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion)
     {
@@ -436,12 +436,14 @@ internal class DotnetDownloader : IArtifactDownloader
 
         foreach (string extension in GetBlobFeedExtensions(installRequest))
         {
-            var location = BlobFeedUrlBuilder.GetFeedLocation(installRequest.Component, resolvedVersion, rid, extension);
-            locationsChecked.Add(location.ChecksumUrl);
-            string? hash = TryGetHashFromUrl(location.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
-            if (hash != null)
+            foreach (var location in BlobFeedUrlBuilder.GetFeedLocations(installRequest.Component, resolvedVersion, rid, extension))
             {
-                return (location.ArchiveUrl, hash);
+                locationsChecked.Add(location.ChecksumUrl);
+                string? hash = TryGetHashFromUrl(location.ChecksumUrl, resolvedVersion, installRequest.Component.ToString());
+                if (hash != null)
+                {
+                    return (location.ArchiveUrl, hash, location.ProductVersion);
+                }
             }
         }
 

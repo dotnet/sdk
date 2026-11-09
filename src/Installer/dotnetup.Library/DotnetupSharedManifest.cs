@@ -184,25 +184,27 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         WriteManifestWithChecksum(json);
     }
 
+    /// <summary>
+    /// Returns the root tracked at <paramref name="path"/>, optionally only for <paramref name="architecture"/>.
+    /// A path is tracked at most once: <see cref="GetOrAddDotnetRoot"/> never adds a duplicate and
+    /// <see cref="ValidateManifestData"/> rejects edited manifests that contain one.
+    /// </summary>
+    private static DotnetRootEntry? FindRoot(DotnetupManifestData manifest, string path, InstallArchitecture? architecture = null)
+    {
+        var root = manifest.DotnetRoots.SingleOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, path));
+        return architecture is null || root?.Architecture == architecture ? root : null;
+    }
+
     private static DotnetRootEntry GetOrAddDotnetRoot(DotnetupManifestData manifest, string path, InstallArchitecture architecture)
     {
-        var existing = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(r.Path, path) && r.Architecture == architecture);
-
-        if (existing is not null)
+        if (FindRoot(manifest, path) is { } existing)
         {
-            return existing;
-        }
-
-        // Check for conflict: same path but different architecture
-        var conflicting = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(r.Path, path) && r.Architecture != architecture);
-        if (conflicting is not null)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.LocalManifestError,
-                $"The dotnet root at '{path}' is already tracked with architecture '{conflicting.Architecture}'. " +
-                $"Cannot add it again with architecture '{architecture}'.");
+            return existing.Architecture == architecture
+                ? existing
+                : throw new DotnetInstallException(
+                    DotnetInstallErrorCode.LocalManifestError,
+                    $"The dotnet root at '{path}' is already tracked with architecture '{existing.Architecture}'. " +
+                    $"Cannot add it again with architecture '{architecture}'.");
         }
 
         var newRoot = new DotnetRootEntry
@@ -274,12 +276,21 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     private void ValidateManifestData(DotnetupManifestData manifest)
     {
         var errors = new List<string>();
+        var seenRoots = new List<string>();
 
         foreach (var root in manifest.DotnetRoots)
         {
             if (string.IsNullOrWhiteSpace(root.Path))
             {
                 errors.Add("A dotnet root entry has an empty path.");
+            }
+            else if (seenRoots.Any(seen => DotnetupUtilities.PathsEqual(seen, root.Path)))
+            {
+                errors.Add($"The dotnet root '{root.Path}' is listed more than once.");
+            }
+            else
+            {
+                seenRoots.Add(root.Path);
             }
 
             foreach (var installation in root.Installations)
@@ -298,6 +309,11 @@ internal class DotnetupSharedManifest : IDotnetupManifest
                 if (!ReleaseVersion.TryParse(installation.Version, out _))
                 {
                     errors.Add($"Invalid version '{installation.Version}' for {installation.Component} in root '{root.Path}'.");
+                }
+
+                if (installation.ProductVersion is not null && !ReleaseVersion.TryParse(installation.ProductVersion, out _))
+                {
+                    errors.Add($"Invalid product version '{installation.ProductVersion}' for {installation.Component} in root '{root.Path}'.");
                 }
             }
 
@@ -333,9 +349,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public IEnumerable<InstallSpec> GetInstallSpecs(DotnetInstallRoot installRoot)
     {
-        var manifest = ReadManifest();
-        var root = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        var root = FindRoot(ReadManifest(), installRoot.Path, installRoot.Architecture);
         return root?.InstallSpecs ?? [];
     }
 
@@ -365,8 +379,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     public void RemoveInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
     {
         var manifest = ReadManifestCore();
-        var root = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        var root = FindRoot(manifest, installRoot.Path, installRoot.Architecture);
 
         if (root is null)
         {
@@ -391,9 +404,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public IEnumerable<Installation> GetInstallations(DotnetInstallRoot installRoot)
     {
-        var manifest = ReadManifest();
-        var root = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        var root = FindRoot(ReadManifest(), installRoot.Path, installRoot.Architecture);
         return root?.Installations ?? [];
     }
 
@@ -414,8 +425,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     public void RemoveInstallation(DotnetInstallRoot installRoot, Installation installation)
     {
         var manifest = ReadManifestCore();
-        var root = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        var root = FindRoot(manifest, installRoot.Path, installRoot.Architecture);
 
         if (root is null)
         {
@@ -431,14 +441,49 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     /// Returns true if the manifest already records an installation matching the given install.
     /// Must be called while holding the install-state mutex.
     /// </summary>
-    internal bool InstallAlreadyExists(DotnetInstall install)
+    internal bool InstallAlreadyExists(DotnetInstall install) => FindExistingInstall(install) is not null;
+
+    /// <summary>
+    /// Returns the recorded installation matching the given install, including its on-disk version.
+    /// With <paramref name="matchLayoutVersion"/>, an installation whose folder is the install's version also matches,
+    /// as the host resolves global.json against folders. Must be called while holding the install-state mutex.
+    /// </summary>
+    internal DotnetInstall? FindExistingInstall(DotnetInstall install, bool matchLayoutVersion = false)
     {
-        var manifestData = ReadManifest();
-        var root = manifestData.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
-        return root?.Installations.Any(existing =>
-            existing.Version == install.Version.ToString() &&
-            existing.Component == install.Component) ?? false;
+        string version = install.Version.ToString();
+        var root = FindRoot(ReadManifest(), install.InstallRoot.Path!);
+
+        // The only case where two installs may be found would be if a RTM version was installed, got promoted to a full build, and then the same .version became "GA"
+        // This is true with 10.0.100 GA which has 10.0.100-rtm.25523.111 and the actual GA. 
+        return root?.Installations.FirstOrDefault(existing =>
+            existing.Component == install.Component &&
+            (existing.Version == version || (matchLayoutVersion && existing.LayoutVersion == version)))?
+            .ToDotnetInstall(install.InstallRoot);
+    }
+
+    /// <summary>
+    /// Returns the tracked installations of other builds that occupy the same on-disk folder as the install,
+    /// with the install specs that keep any of them, as garbage collection selects them. Must be called while holding the install-state mutex.
+    /// </summary>
+    internal (IReadOnlyList<Installation> Installations, IReadOnlyList<InstallSpec> OwningSpecs)? FindLayoutConflict(DotnetInstall install)
+    {
+        string version = install.Version.ToString();
+        string layoutVersion = install.LayoutVersion.ToString();
+
+        var root = FindRoot(ReadManifest(), install.InstallRoot.Path!);
+        var conflicts = root?.Installations.Where(existing =>
+            existing.Component == install.Component &&
+            existing.Version != version &&
+            existing.LayoutVersion == layoutVersion).ToList();
+        if (conflicts is null or [])
+        {
+            return null;
+        }
+
+        var owningSpecs = root!.InstallSpecs
+            .Where(spec => GarbageCollector.ResolveLatestMatchingInstallation(spec, root.Installations) is { } kept && conflicts.Contains(kept))
+            .ToList();
+        return (conflicts, owningSpecs);
     }
 
     /// <summary>
@@ -552,27 +597,8 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     /// Returns true if the primary on-disk directory for the given installation
     /// still exists under <paramref name="rootPath"/>.
     /// </summary>
-    private static bool InstallationExistsOnDisk(string rootPath, Installation installation)
-    {
-        string? componentDir = GetComponentDirectory(rootPath, installation);
-        return componentDir is not null && Directory.Exists(componentDir);
-    }
-
-    internal static string? GetComponentDirectory(string rootPath, Installation installation)
-    {
-        if (string.IsNullOrEmpty(installation.Version))
-        {
-            return null;
-        }
-
-        return installation.Component switch
-        {
-            InstallComponent.SDK => Path.Combine(rootPath, "sdk", installation.Version),
-            InstallComponent.Runtime => Path.Combine(rootPath, "shared", InstallComponentExtensions.RuntimeFrameworkName, installation.Version),
-            InstallComponent.ASPNETCore => Path.Combine(rootPath, "shared", InstallComponentExtensions.AspNetCoreFrameworkName, installation.Version),
-            InstallComponent.WindowsDesktop => Path.Combine(rootPath, "shared", InstallComponentExtensions.WindowsDesktopFrameworkName, installation.Version),
-            _ => null,
-        };
-    }
+    private static bool InstallationExistsOnDisk(string rootPath, Installation installation) =>
+        !string.IsNullOrEmpty(installation.Version)
+            && Directory.Exists(Path.Combine(rootPath, installation.LayoutPath.Replace('/', Path.DirectorySeparatorChar)));
 
 }

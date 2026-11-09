@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
@@ -33,6 +34,9 @@ internal abstract class InstallCommand : CommandBase
 
     public IDotnetEnvironmentManager DotnetEnvironment { get; }
     public ChannelVersionResolver ChannelVersionResolver => _channelVersionResolver.Value;
+
+    /// <summary>The installs completed or found already present by this command, across every install batch it ran.</summary>
+    internal List<InstallResult> CompletedInstalls { get; } = [];
 
     protected InstallCommand(
         ParseResult parseResult,

@@ -336,6 +336,28 @@ public class ManifestTests
         manifest.GetInstallations(installRoot).Should().HaveCount(2);
     }
 
+    [TestMethod]
+    public void FindExistingInstall_PromotedDailyAndReleaseShareFolder_ResolvesWithoutThrowing()
+    {
+        // The 10.0.100 release is byte-identical to daily build 10.0.100-rtm.25523.111, so both can record sdk/10.0.100.
+        using var testEnv = new TestEnvironment();
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        var installRoot = new DotnetInstallRoot(testEnv.InstallPath, InstallArchitecture.x64);
+        testEnv.StubComponentDirectories(null, (InstallComponent.SDK, "10.0.100"));
+
+        manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "10.0.100-rtm.25523.111", ProductVersion = "10.0.100" });
+        manifest.AddInstallation(installRoot, new Installation { Component = InstallComponent.SDK, Version = "10.0.100" });
+        manifest.GetInstallations(installRoot).Should().HaveCount(2);
+
+        var daily = new DotnetInstall(installRoot, new ReleaseVersion("10.0.100-rtm.25523.111"), InstallComponent.SDK, new ReleaseVersion("10.0.100"));
+        var release = new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK);
+
+        manifest.FindExistingInstall(release, matchLayoutVersion: true)!.LayoutVersion.ToString().Should().Be("10.0.100");
+        manifest.FindExistingInstall(daily)!.Version.ToString().Should().Be("10.0.100-rtm.25523.111");
+        manifest.FindExistingInstall(release)!.Version.ToString().Should().Be("10.0.100");
+    }
+
     #region Manifest Checksum Tests
 
     [TestMethod]
@@ -519,6 +541,58 @@ public class ManifestTests
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
         ex.Message.Should().Contain("empty version");
+    }
+
+    [TestMethod]
+    public void ManifestValidation_InvalidProductVersion_ThrowsUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry
+                {
+                    Path = testEnv.InstallPath,
+                    Architecture = InstallerUtilities.GetDefaultInstallArchitecture(),
+                    Installations =
+                    [
+                        new Installation { Component = InstallComponent.SDK, Version = "11.0.100-rtm.26552.115", ProductVersion = "not-a-version" }
+                    ]
+                }
+            ]
+        };
+        File.WriteAllText(testEnv.ManifestPath, JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData));
+        File.WriteAllText(testEnv.ManifestPath + ".sha256", "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("Invalid product version 'not-a-version'");
+    }
+
+    [TestMethod]
+    public void ManifestValidation_DuplicateRoot_ThrowsUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var architecture = InstallerUtilities.GetDefaultInstallArchitecture();
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry { Path = testEnv.InstallPath, Architecture = architecture },
+                new DotnetRootEntry { Path = testEnv.InstallPath + Path.DirectorySeparatorChar, Architecture = architecture }
+            ]
+        };
+        File.WriteAllText(testEnv.ManifestPath, JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData));
+        File.WriteAllText(testEnv.ManifestPath + ".sha256", "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("listed more than once");
     }
 
     [TestMethod]

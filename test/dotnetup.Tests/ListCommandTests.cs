@@ -249,6 +249,21 @@ public class ListCommandTests(TestContext testContext) : IDisposable
     }
 
     [TestMethod]
+    [DataRow(true, "11.0.100-rtm.26552.115")]
+    [DataRow(false, null)]
+    public void RelationshipRows_MatchOnDiskVersionOnlyForGlobalJsonSpecs(bool fromGlobalJson, string? expected)
+    {
+        var daily = Installation("11.0.100-rtm.26552.115");
+        daily.ProductVersion = "11.0.100";
+        var spec = Spec("11.0.100");
+        spec.Source = fromGlobalJson ? InstallSource.GlobalJson : InstallSource.Explicit;
+
+        var rows = InstallationListRenderer.CreateRowsForRoot([spec], [daily]);
+
+        (rows.Single(r => r.Spec == spec).Installation?.Version).Should().Be(expected);
+    }
+
+    [TestMethod]
     public void RelationshipTable_ShowsRepositoryAndCommandSources()
     {
         var repository = Spec("10.0.1xx");

@@ -693,6 +693,18 @@ Or open a new terminal.</value>
     <value>Installation was cancelled before {0} {1} was installed.</value>
     <comment>{0} is the component display name, such as .NET SDK. {1} is the component version.</comment>
   </data>
+  <data name="InstallLayoutConflict" xml:space="preserve">
+    <value>{0} {1} replaces {0} {2} because they share the on-disk version {3}. {4}</value>
+    <comment>{0} is the component display name, such as .NET SDK. {1} is the requested version. {2} is the installed version. {3} is the version folder name on disk. {4} is the action the user should take.</comment>
+  </data>
+  <data name="InstallLayoutConflictRunCommand" xml:space="preserve">
+    <value>Run {0} first to proceed.</value>
+    <comment>{0} is one or more quoted dotnetup uninstall commands.</comment>
+  </data>
+  <data name="InstallLayoutConflictRemoveFolder" xml:space="preserve">
+    <value>No install spec keeps {0} {1}. Remove '{2}' first to proceed.</value>
+    <comment>{0} is the component display name, such as .NET SDK. {1} is one or more installed versions. {2} is the folder path on disk.</comment>
+  </data>
   <data name="ConfirmationOptionsWithKeyboardHints" xml:space="preserve">
     <value>([bold underline]Y[/]/n; Enter to proceed, Esc to cancel)</value>
     <comment>Confirmation hint. Y/N key bindings are not localized. {Locked="[bold underline]Y[/]/n"}</comment>

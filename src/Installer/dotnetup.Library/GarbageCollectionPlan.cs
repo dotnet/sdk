@@ -30,14 +30,5 @@ internal sealed class GarbageCollectionPlan(
             .ToList();
     }
 
-    internal string? GetPrimaryPath(Installation installation)
-    {
-        if (Root is null)
-        {
-            return null;
-        }
-
-        var directory = DotnetupSharedManifest.GetComponentDirectory(Root.Path, installation);
-        return directory is null ? null : Path.GetRelativePath(Root.Path, directory).Replace('\\', '/');
-    }
+    internal string? GetPrimaryPath(Installation installation) => Root is null ? null : installation.LayoutPath;
 }
