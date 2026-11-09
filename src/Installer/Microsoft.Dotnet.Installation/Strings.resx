@@ -171,4 +171,36 @@
     <value>Native TAR executable '{0}' exited with code {1} while extracting '{2}' to '{3}'.{4}</value>
     <comment>{0}=native TAR executable name or path, {1}=exit code, {2}=archive path, {3}=staging destination, {4}=optional standard-error details.</comment>
   </data>
+  <data name="ArchiveDownloadFailed" xml:space="preserve">
+    <value>Failed to download .NET archive for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message.</comment>
+  </data>
+  <data name="ArchiveCorrupted" xml:space="preserve">
+    <value>Archive is corrupted or truncated for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message.</comment>
+  </data>
+  <data name="ArchiveReadPermissionDenied" xml:space="preserve">
+    <value>Permission denied while trying to read .NET files for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message. Shown when reading .version files from the archive or install root fails.</comment>
+  </data>
+  <data name="ArchiveReadFailed" xml:space="preserve">
+    <value>Failed to read .NET files for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message. Shown when reading .version files from the archive or install root fails.</comment>
+  </data>
+  <data name="ArchiveExtractPermissionDenied" xml:space="preserve">
+    <value>Permission denied while extracting .NET archive for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message.</comment>
+  </data>
+  <data name="ArchiveExtractFailed" xml:space="preserve">
+    <value>Failed to extract .NET archive for version {0}: {1}</value>
+    <comment>{0}=resolved version, {1}=underlying error message.</comment>
+  </data>
+  <data name="ExistingLayoutMissingVersionFile" xml:space="preserve">
+    <value>'{0}' has no .version file to verify it holds the same build as {1} {2} includes, and installing would keep the existing files. Remove '{0}' or uninstall the component that installed it first to proceed.</value>
+    <comment>{0}=existing SDK or framework folder path, {1}=component display name, {2}=resolved version.</comment>
+  </data>
+  <data name="ExistingLayoutDifferentBuild" xml:space="preserve">
+    <value>'{0}' holds a different build than {1} {2} includes, and installing would keep the existing files. Remove '{0}' or uninstall the component that installed it first to proceed.</value>
+    <comment>{0}=existing SDK or framework folder path, {1}=component display name, {2}=resolved version.</comment>
+  </data>
 </root>
