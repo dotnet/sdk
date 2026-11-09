@@ -93,8 +93,8 @@ public enum DotnetInstallErrorCode
     InstallPathHasUntrackedArtifacts,
 
     /// <summary>
-    /// Failed to start a child <c>dotnet</c> process (Process.Start returned null
-    /// or threw). Distinct from <see cref="Unknown"/> so the telemetry classifier
+    /// Failed to start a child <c>dotnet</c> process.
+    /// Distinct from <see cref="Unknown"/> so the telemetry classifier
     /// can route this to the Product category with a stable signal name.
     /// </summary>
     ProcessStartFailed,
@@ -190,6 +190,9 @@ public enum DotnetInstallErrorCode
 
     /// <summary>Admin mode will not use a download without signature validation until we add interactive agreement.</summary>
     AdminModeSignatureRequired,
+
+    /// <summary>The install would overwrite a different build of the same component that uses the same on-disk version folder.</summary>
+    InstallLayoutConflict,
 }
 
 /// <summary>

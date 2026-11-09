@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
@@ -43,10 +44,10 @@ public class SystemInstallEnumeratorTests
     {
         using var testEnv = new TestEnvironment();
         File.WriteAllText(InstallationValidator.GetMuxerPath(testEnv.InstallPath), string.Empty);
-        string versionDirectory = InstallationValidator.GetComponentDirectory(testEnv.InstallPath, component, "11.0.100")!;
+        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
+        string versionDirectory = new DotnetInstall(root, new ReleaseVersion("11.0.100"), component).ComponentDirectory;
         Directory.CreateDirectory(versionDirectory);
         File.WriteAllText(Path.Combine(versionDirectory, "wrong.deps.json"), string.Empty);
-        var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
         SystemInstallEnumerator.GetInstalls(root).Should().BeEmpty();
 
@@ -62,18 +63,18 @@ public class SystemInstallEnumeratorTests
     }
 
     [TestMethod]
-    public void GetInstalls_RequiresValidVersionAndMatchingFrameworkMarker()
+    public void GetInstalls_RequiresValidVersionAndKnownFrameworkMarker()
     {
         using var testEnv = new TestEnvironment();
         WriteMarker(testEnv.InstallPath, "sdk", "not-a-version", "dotnet.dll");
         WriteMarker(testEnv.InstallPath, "sdk", "11.0.100", "payload");
-        WriteMarker(testEnv.InstallPath, Path.Combine("shared", "Custom.Framework"), "11.0.0", "Microsoft.NETCore.App.deps.json");
-        WriteMarker(testEnv.InstallPath, Path.Combine("shared", "Custom.Framework"), "not-a-version", "Custom.Framework.deps.json");
+        WriteMarker(testEnv.InstallPath, Path.Combine("shared", "Microsoft.NETCore.App"), "11.0.0", "Custom.Framework.deps.json");
+        WriteMarker(testEnv.InstallPath, Path.Combine("shared", "Custom.Framework"), "11.0.0", "Custom.Framework.deps.json");
         var root = new DotnetInstallRoot(testEnv.InstallPath, InstallerUtilities.GetDefaultInstallArchitecture());
 
         SystemInstallEnumerator.GetInstalls(root).Should().BeEmpty();
 
-        WriteMarker(testEnv.InstallPath, Path.Combine("shared", "Custom.Framework"), "11.0.0", "Custom.Framework.deps.json");
+        WriteMarker(testEnv.InstallPath, Path.Combine("shared", "Microsoft.NETCore.App"), "11.0.0", "Microsoft.NETCore.App.deps.json");
         var install = SystemInstallEnumerator.GetInstalls(root).Should().ContainSingle().Subject;
         install.Component.Should().Be(InstallComponent.Runtime);
         install.Version.ToString().Should().Be("11.0.0");

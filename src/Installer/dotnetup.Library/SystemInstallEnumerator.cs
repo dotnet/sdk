@@ -6,46 +6,44 @@ using Microsoft.Dotnet.Installation.Internal;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
-/// <summary>Lists installs in a single root using the host's folder rules, without loading native code.</summary>
+/// <summary>
+/// Lists the SDKs and runtimes in one install root from its on-disk layout, without loading native code.
+/// A version folder counts as an install under the same marker rule <see cref="InstallationValidator"/> uses.
+/// Versions are the on-disk folder versions, not the build identity of RTM or servicing daily builds.
+/// </summary>
 internal static class SystemInstallEnumerator
 {
     internal static List<DotnetInstall> GetInstalls(DotnetInstallRoot installRoot)
     {
         var installs = new List<DotnetInstall>();
-        AddInstalls(installs, installRoot, Path.Combine(installRoot.Path, "sdk"), InstallComponent.SDK);
-
-        string sharedDirectory = Path.Combine(installRoot.Path, "shared");
-        if (Directory.Exists(sharedDirectory))
+        foreach (InstallComponent component in Enum.GetValues<InstallComponent>())
         {
-            foreach (string frameworkDirectory in Directory.EnumerateDirectories(sharedDirectory))
-            {
-                string frameworkName = Path.GetFileName(frameworkDirectory);
-                InstallComponent component = InstallComponentExtensions.FromFrameworkName(frameworkName) ?? InstallComponent.Runtime;
-                AddInstalls(installs, installRoot, frameworkDirectory, component, frameworkName);
-            }
+            AddInstalls(installs, installRoot, component);
         }
 
         return installs;
     }
 
-    private static void AddInstalls(
-        List<DotnetInstall> installs,
-        DotnetInstallRoot installRoot,
-        string componentDirectory,
-        InstallComponent component,
-        string? frameworkName = null)
+    private static void AddInstalls(List<DotnetInstall> installs, DotnetInstallRoot installRoot, InstallComponent component)
     {
-        if (!Directory.Exists(componentDirectory))
+        string componentRoot = component == InstallComponent.SDK
+            ? Path.Combine(installRoot.Path, "sdk")
+            : Path.Combine(installRoot.Path, "shared", component.GetFrameworkName());
+        if (!Directory.Exists(componentRoot))
         {
             return;
         }
 
-        foreach (string versionDirectory in Directory.EnumerateDirectories(componentDirectory))
+        foreach (string versionDirectory in Directory.EnumerateDirectories(componentRoot))
         {
-            if (ReleaseVersion.TryParse(Path.GetFileName(versionDirectory), out ReleaseVersion? version)
-                && InstallationValidator.IsInstallDirectory(versionDirectory, frameworkName))
+            // A version that does not round-trip names a different folder, so its marker check fails.
+            if (ReleaseVersion.TryParse(Path.GetFileName(versionDirectory), out ReleaseVersion? version))
             {
-                installs.Add(new DotnetInstall(installRoot, version, component));
+                var install = new DotnetInstall(installRoot, version, component);
+                if (InstallationValidator.ValidateComponentLayout(install))
+                {
+                    installs.Add(install);
+                }
             }
         }
     }

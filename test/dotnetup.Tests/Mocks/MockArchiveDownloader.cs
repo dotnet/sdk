@@ -62,6 +62,8 @@ internal class MockArchiveDownloader : IArtifactDownloader
     /// </summary>
     public bool IsUnsigned { get; set; }
 
+    public ReleaseVersion? ProductVersion { get; set; }
+
     public VerifiedDownload DownloadVerifiedArtifact(
         DotnetInstallRequest installRequest,
         ReleaseVersion resolvedVersion,
@@ -93,6 +95,6 @@ internal class MockArchiveDownloader : IArtifactDownloader
         progress?.Report(new DownloadProgress(100, 100));
 
         string expectedHash = ExpectedHash ?? Convert.ToHexStringLower(SHA512.HashData(FakeArchiveContent));
-        return new VerifiedDownload(destinationPath, expectedHash, IsUnsigned);
+        return new VerifiedDownload(destinationPath, expectedHash, IsUnsigned, ProductVersion);
     }
 }

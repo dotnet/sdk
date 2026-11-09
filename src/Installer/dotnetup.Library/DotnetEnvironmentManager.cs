@@ -84,6 +84,7 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             .Select(i => i.Version.ToString())];
     }
 
+    // Enumeration only sees folders, so Version is the on-disk version, not an RTM or servicing daily build's identity.
     public List<DotnetInstall> GetExistingSystemInstalls()
         => GetExistingSystemInstalls(GetSystemDotnetPaths());
 
@@ -371,15 +372,23 @@ internal class DotnetEnvironmentManager : IDotnetEnvironmentManager
             : dotnetRoot;
 
     /// <inheritdoc />
-    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests)
+    public void ApplyGlobalJsonModifications(IReadOnlyList<ResolvedInstallRequest> requests, IReadOnlyList<InstallResult> installs)
     {
         foreach (var request in requests)
         {
             string? globalJsonPath = request.Request.Options.GlobalJsonPath;
             if (globalJsonPath is not null && request.Request.Component == InstallComponent.SDK)
             {
-                GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, request.ResolvedVersion.ToString());
+                GlobalJsonModifier.UpdateGlobalJson(globalJsonPath, GetInstalledSdkVersion(request, installs));
             }
         }
     }
+
+    // The host resolves global.json against sdk/<version>, which is untagged for RTM and servicing daily builds.
+    private static string GetInstalledSdkVersion(ResolvedInstallRequest request, IReadOnlyList<InstallResult> installs) =>
+        installs.FirstOrDefault(result => result.Install.Component == InstallComponent.SDK
+            && result.Install.Version == request.ResolvedVersion
+            && DotnetupUtilities.PathsEqual(result.Install.InstallRoot.Path, request.Request.InstallRoot.Path))?
+            .Install.LayoutVersion.ToString()
+        ?? request.ResolvedVersion.ToString();
 }
