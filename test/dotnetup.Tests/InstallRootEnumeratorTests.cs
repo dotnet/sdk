@@ -27,7 +27,7 @@ public class InstallRootEnumeratorTests
             WriteMarker(testEnv.InstallPath, Path.Combine("host", "fxr"), "11.0.0", "libhostfxr.dylib");
         }
 
-        var installs = DotnetEnvironmentManager.GetExistingSystemInstalls([testEnv.InstallPath]);
+        var installs = DotnetEnvironmentManager.GetExistingSystemInstalls([NativeRoot(testEnv.InstallPath)]);
 
         var install = installs.Should().ContainSingle().Subject;
         install.Component.Should().Be(InstallComponent.SDK);
@@ -93,11 +93,31 @@ public class InstallRootEnumeratorTests
         WriteMarker(otherRoot, "sdk", "12.0.100-preview.1", "dotnet.dll");
         WriteMarker(otherRoot, Path.Combine("shared", "Microsoft.NETCore.App"), "11.0.0", "Microsoft.NETCore.App.deps.json");
 
-        var installs = DotnetEnvironmentManager.GetExistingSystemInstalls([testEnv.InstallPath, otherRoot]);
+        var installs = DotnetEnvironmentManager.GetExistingSystemInstalls([NativeRoot(testEnv.InstallPath), NativeRoot(otherRoot)]);
 
         installs.Select(i => i.Version.ToString()).Should().Equal("12.0.100-preview.1", "11.0.100", "11.0.0");
         installs[1].InstallRoot.Path.Should().Be(testEnv.InstallPath);
         installs.Should().OnlyContain(i => i.InstallRoot.Architecture == InstallerUtilities.GetDefaultInstallArchitecture());
+    }
+
+    [TestMethod]
+    public void GetExistingSystemInstalls_SkipsRootsOfOtherArchitectures()
+    {
+        using var testEnv = new TestEnvironment();
+        string foreignRoot = Path.Combine(testEnv.TempRoot, "foreign");
+        WriteMarker(foreignRoot, "sdk", "11.0.100", "dotnet.dll");
+        WriteMarker(foreignRoot, "sdk", "12.0.100", "dotnet.dll");
+        WriteMarker(testEnv.InstallPath, "sdk", "11.0.100", "dotnet.dll");
+        InstallArchitecture foreignArch = Enum.GetValues<InstallArchitecture>()
+            .First(arch => arch != InstallerUtilities.GetDefaultInstallArchitecture());
+
+        // The foreign root comes first, so it would win deduplication if it were enumerated.
+        var installs = DotnetEnvironmentManager.GetExistingSystemInstalls(
+            [new DotnetInstallRoot(foreignRoot, foreignArch), NativeRoot(testEnv.InstallPath)]);
+
+        var install = installs.Should().ContainSingle().Subject;
+        install.Version.ToString().Should().Be("11.0.100");
+        install.InstallRoot.Should().Be(NativeRoot(testEnv.InstallPath));
     }
 
     [TestMethod]
@@ -106,8 +126,10 @@ public class InstallRootEnumeratorTests
         using var testEnv = new TestEnvironment();
 
         DotnetEnvironmentManager.GetExistingSystemInstalls(
-            [Path.Combine(testEnv.TempRoot, "missing"), testEnv.InstallPath]).Should().BeEmpty();
+            [NativeRoot(Path.Combine(testEnv.TempRoot, "missing")), NativeRoot(testEnv.InstallPath)]).Should().BeEmpty();
     }
+
+    private static DotnetInstallRoot NativeRoot(string path) => new(path, InstallerUtilities.GetDefaultInstallArchitecture());
 
     private static void WriteMarker(string root, string componentDirectory, string version, string marker)
     {

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -22,6 +23,36 @@ public class WindowsPathHelperTests
         paths.Should().NotBeNull();
         paths.Should().NotBeEmpty();
         paths.Should().AllSatisfy(p => p.Should().EndWith("dotnet"));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void CreateRegisteredRoots_UsesTheRegistrySubkeyArchitecture()
+    {
+        KeyValuePair<string, string>[] locations =
+        [
+            new("SDKFeatures", @"C:\Ignored"),
+            new("x64", @"C:\Program Files\dotnet"),
+            new("X86", @"C:\Program Files (x86)\dotnet"),
+            new("arm64", @"C:\Program Files\dotnet"),
+            new("arm", @"C:\Arm"),
+            new("1", @"C:\Numeric"),
+        ];
+
+        var roots = WindowsPathHelper.CreateRegisteredRoots(locations);
+
+        roots.Should().Equal(
+            new DotnetInstallRoot(@"C:\Program Files\dotnet", InstallArchitecture.x64),
+            new DotnetInstallRoot(@"C:\Program Files (x86)\dotnet", InstallArchitecture.x86));
+    }
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void GetProgramFilesDotnetRoots_MatchesTheReportedPaths()
+    {
+        var roots = WindowsPathHelper.GetProgramFilesDotnetRoots();
+
+        WindowsPathHelper.GetProgramFilesDotnetPaths().Should().Contain(roots.Select(root => root.Path));
     }
 
     [TestMethod]

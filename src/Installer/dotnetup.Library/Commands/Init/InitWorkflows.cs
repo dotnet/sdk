@@ -482,9 +482,11 @@ internal class InitWorkflows
         // Find the system install path for display purposes. Whether the dotnet winning on PATH is
         // a dotnetup hive is irrelevant here; we want its location only when it is a system install.
         var currentInstall = dotnetEnvironment.GetCurrentPathConfiguration();
+        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         string systemPath = currentInstall is not null && InstallPathClassifier.IsAdminInstallPath(currentInstall.Path)
             ? currentInstall.Path
-            : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
+            : DotnetEnvironmentManager.GetSystemDotnetRoots().FirstOrDefault(root => root.Architecture == nativeArch)?.Path
+                ?? "the system .NET location";
 
         SpectreAnsiConsole.MarkupLine($"You have existing system-managed .NET installs in [{DotnetupTheme.Current.Accent}]{systemPath.EscapeMarkup()}[/].");
 

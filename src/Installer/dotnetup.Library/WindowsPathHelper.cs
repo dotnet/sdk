@@ -137,63 +137,133 @@ internal sealed partial class WindowsPathHelper : IDisposable
     ///   1. First checks {arch}\sharedhost → Path value (preferred, set by the .NET host installer)
     ///   2. Falls back to {arch} → InstallLocation value
     /// If the registry yields no results, falls back to %ProgramFiles%\dotnet if it exists.
+    /// PATH management needs every machine-wide root, so this does not filter by architecture.
     /// See https://github.com/dotnet/designs/blob/main/accepted/2021/install-location-per-architecture.md
     /// See https://github.com/dotnet/runtime/issues/109974
     /// </summary>
     public static List<string> GetProgramFilesDotnetPaths()
     {
-        var paths = new List<string>();
+        var paths = ReadRegisteredInstallLocations()
+            .Select(location => location.Value)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
 
-        // Read from registry to find actual dotnet installations.
-        // Use 32-bit registry hive to ensure we get the correct view on WoW64.
-        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
-        using var key = baseKey.OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
-        if (key != null)
+        if (paths.Count == 0 && GetDefaultProgramFilesDotnetPath() is { } defaultPath)
         {
-            foreach (var archName in key.GetSubKeyNames())
-            {
-                using var archKey = key.OpenSubKey(archName);
-                if (archKey == null)
-                {
-                    continue;
-                }
-
-                // Prefer sharedhost\Path — this is the canonical location set by the host installer.
-                string? installPath = null;
-                using (var sharedHostKey = archKey.OpenSubKey("sharedhost"))
-                {
-                    installPath = sharedHostKey?.GetValue("Path") as string;
-                }
-
-                // Fallback to the InstallLocation value on the architecture key.
-                installPath ??= archKey.GetValue("InstallLocation") as string;
-
-                if (!string.IsNullOrEmpty(installPath))
-                {
-                    var normalized = installPath.TrimEnd(Path.DirectorySeparatorChar);
-                    if (Directory.Exists(normalized) && !paths.Contains(normalized, StringComparer.OrdinalIgnoreCase))
-                    {
-                        paths.Add(normalized);
-                    }
-                }
-            }
-        }
-
-        // Fallback: if registry yielded nothing, check the default Program Files location.
-        if (paths.Count == 0)
-        {
-            var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-            if (!string.IsNullOrEmpty(programFiles))
-            {
-                var defaultPath = Path.Combine(programFiles, "dotnet");
-                if (Directory.Exists(defaultPath))
-                {
-                    paths.Add(defaultPath);
-                }
-            }
+            paths.Add(defaultPath);
         }
 
         return paths;
+    }
+
+    /// <summary>
+    /// Gets the same Program Files dotnet roots as <see cref="GetProgramFilesDotnetPaths"/>, each with the
+    /// architecture of the registry subkey that registered it. Subkeys that do not name a supported
+    /// architecture (such as <c>SDKFeatures</c>) are skipped. The %ProgramFiles%\dotnet fallback is
+    /// OS-native, except in an x86 process, which sees the Program Files (x86) folder.
+    /// </summary>
+    public static List<DotnetInstallRoot> GetProgramFilesDotnetRoots()
+    {
+        var roots = CreateRegisteredRoots(ReadRegisteredInstallLocations());
+        if (roots.Count == 0 && GetDefaultProgramFilesDotnetPath() is { } defaultPath)
+        {
+            InstallArchitecture architecture = RuntimeInformation.ProcessArchitecture == Architecture.X86
+                ? InstallArchitecture.x86
+                : InstallerUtilities.GetOsInstallArchitecture();
+            roots.Add(new DotnetInstallRoot(defaultPath, architecture));
+        }
+
+        return roots;
+    }
+
+    /// <summary>
+    /// Creates one root per registered location whose registry subkey names a supported architecture,
+    /// keeping the first registration of a path.
+    /// </summary>
+    internal static List<DotnetInstallRoot> CreateRegisteredRoots(IEnumerable<KeyValuePair<string, string>> locationsByArchitectureName)
+    {
+        var roots = new List<DotnetInstallRoot>();
+        foreach (var (architectureName, path) in locationsByArchitectureName)
+        {
+            if (TryParseRegistryArchitecture(architectureName, out InstallArchitecture architecture)
+                && !roots.Any(root => string.Equals(root.Path, path, StringComparison.OrdinalIgnoreCase)))
+            {
+                roots.Add(new DotnetInstallRoot(path, architecture));
+            }
+        }
+
+        return roots;
+    }
+
+    private static bool TryParseRegistryArchitecture(string name, out InstallArchitecture architecture)
+    {
+        foreach (InstallArchitecture candidate in Enum.GetValues<InstallArchitecture>())
+        {
+            if (string.Equals(name, candidate.ToString(), StringComparison.OrdinalIgnoreCase))
+            {
+                architecture = candidate;
+                return true;
+            }
+        }
+
+        architecture = default;
+        return false;
+    }
+
+    /// <summary>Reads the existing install location registered under each subkey, keyed by subkey name.</summary>
+    private static List<KeyValuePair<string, string>> ReadRegisteredInstallLocations()
+    {
+        var locations = new List<KeyValuePair<string, string>>();
+
+        // Use 32-bit registry hive to ensure we get the correct view on WoW64.
+        using var baseKey = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry32);
+        using var key = baseKey.OpenSubKey(@"SOFTWARE\dotnet\Setup\InstalledVersions");
+        if (key == null)
+        {
+            return locations;
+        }
+
+        foreach (var archName in key.GetSubKeyNames())
+        {
+            using var archKey = key.OpenSubKey(archName);
+            if (archKey == null)
+            {
+                continue;
+            }
+
+            // Prefer sharedhost\Path — this is the canonical location set by the host installer.
+            string? installPath = null;
+            using (var sharedHostKey = archKey.OpenSubKey("sharedhost"))
+            {
+                installPath = sharedHostKey?.GetValue("Path") as string;
+            }
+
+            // Fallback to the InstallLocation value on the architecture key.
+            installPath ??= archKey.GetValue("InstallLocation") as string;
+
+            if (!string.IsNullOrEmpty(installPath))
+            {
+                var normalized = installPath.TrimEnd(Path.DirectorySeparatorChar);
+                if (Directory.Exists(normalized))
+                {
+                    locations.Add(new KeyValuePair<string, string>(archName, normalized));
+                }
+            }
+        }
+
+        return locations;
+    }
+
+    private static string? GetDefaultProgramFilesDotnetPath()
+    {
+        var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
+        if (string.IsNullOrEmpty(programFiles))
+        {
+            return null;
+        }
+
+        var defaultPath = Path.Combine(programFiles, "dotnet");
+        return Directory.Exists(defaultPath) ? defaultPath : null;
     }
 
     /// <summary>
