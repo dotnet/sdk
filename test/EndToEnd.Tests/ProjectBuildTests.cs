@@ -306,7 +306,6 @@ namespace EndToEnd.Tests
 
         /// <summary>
         /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0
         /// </summary>
         [TestMethod]
         [DataRow(ProjectTemplate.Console)]
@@ -353,7 +352,6 @@ namespace EndToEnd.Tests
 
         /// <summary>
         /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
         [TestMethod]
         [DataRow(ProjectTemplate.Wpf)]
@@ -386,7 +384,6 @@ namespace EndToEnd.Tests
         /// <summary>
         /// [project is not built on linux-musl]
         /// The test checks if the template creates the template for correct framework by default.
-        /// For .NET 6 the templates should create the projects targeting net6.0.
         /// </summary>
         [TestMethod]
         [DataRow(ProjectTemplate.Grpc)]
@@ -430,9 +427,15 @@ namespace EndToEnd.Tests
 
         private static string DetectExpectedDefaultFramework(ProjectTemplate template)
         {
-            return template is ProjectTemplate.Worker or ProjectTemplate.Web or ProjectTemplate.Mvc or ProjectTemplate.Webapi or ProjectTemplate.Webapp or ProjectTemplate.Razorclasslib or ProjectTemplate.Grpc
-                ? ToolsetInfo.SdkTargetFramework
-                : ToolsetInfo.CurrentTargetFramework;
+            return template switch
+            {
+                ProjectTemplate.Worker or ProjectTemplate.Web or ProjectTemplate.Mvc or ProjectTemplate.Webapi or ProjectTemplate.Webapp or ProjectTemplate.Razorclasslib or ProjectTemplate.Grpc
+                    => ToolsetInfo.SdkTargetFramework,
+                // NetTFMUpdate: Windows Desktop templates still target net11.
+                ProjectTemplate.Wpf or ProjectTemplate.Wpflib or ProjectTemplate.Wpfcustomcontrollib or ProjectTemplate.Wpfusercontrollib or ProjectTemplate.Winforms or ProjectTemplate.Winformslib or ProjectTemplate.Winformscontrollib
+                    => "net11.0",
+                _ => ToolsetInfo.CurrentTargetFramework
+            };
         }
 
         private void TestTemplateCreateAndBuild(

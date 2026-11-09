@@ -44,6 +44,7 @@
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" VersionOverride="8.0.*-*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.9.0" VersionOverride="9.0.*-*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.10.0" VersionOverride="10.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.11.0" VersionOverride="11.0.*-*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.7.0" VersionOverride="7.0.*-*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.8.0" VersionOverride="8.0.*-*" GeneratePathProperty="true" />
@@ -77,6 +78,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
       public static string MicrosoftDotNetCommonProjectTemplates80Path => FindNupkg("microsoft.dotnet.common.projecttemplates.8.0.")%3B
       public static string MicrosoftDotNetCommonProjectTemplates90Path => FindNupkg("microsoft.dotnet.common.projecttemplates.9.0.")%3B
       public static string MicrosoftDotNetCommonProjectTemplates100Path => FindNupkg("microsoft.dotnet.common.projecttemplates.10.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates110Path => FindNupkg("microsoft.dotnet.common.projecttemplates.11.0.")%3B
       public static string MicrosoftDotNetWebProjectTemplates60Path => FindNupkg("microsoft.dotnet.web.projecttemplates.6.0.")%3B
       public static string MicrosoftDotNetWebProjectTemplates70Path => FindNupkg("microsoft.dotnet.web.projecttemplates.7.0.")%3B
       public static string MicrosoftDotNetWebProjectTemplates80Path => FindNupkg("microsoft.dotnet.web.projecttemplates.8.0.")%3B
@@ -102,6 +104,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_8_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_9_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_10_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_11_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_6_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_7_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_8_0)/*.nupkg" CopyToOutputDirectory="PreserveNewest" />
