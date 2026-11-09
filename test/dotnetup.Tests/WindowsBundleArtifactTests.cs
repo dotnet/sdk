@@ -77,7 +77,7 @@ public class WindowsBundleArtifactTests : IDisposable
     }
 
     [TestMethod]
-    public void Commit_RunsBundleQuietlyWithoutRestart()
+    public void Commit_RunsBundlePassivelyWithoutRestart()
     {
         var runner = new FakeRunner(exitCode: 0);
         var artifact = CreateArtifact(StableChannel, runner: runner);
@@ -87,11 +87,11 @@ public class WindowsBundleArtifactTests : IDisposable
 
         runner.Calls.Should().ContainSingle();
         runner.Calls[0].Path.Should().Be(artifact.BundlePath);
-        runner.Calls[0].Arguments.Should().Equal("/install", "/quiet", "/norestart");
+        runner.Calls[0].Arguments.Should().Equal("/install", "/passive", "/norestart");
     }
 
     [TestMethod]
-    public void TryRepair_RerunsSameBundleQuietlyWithRepairAndExplains()
+    public void TryRepair_RerunsSameBundlePassivelyWithRepairAndExplains()
     {
         var runner = new FakeRunner(exitCode: 0);
         using var notices = new StringWriter();
@@ -103,7 +103,7 @@ public class WindowsBundleArtifactTests : IDisposable
 
         runner.Calls.Should().HaveCount(2);
         runner.Calls[1].Path.Should().Be(artifact.BundlePath);
-        runner.Calls[1].Arguments.Should().Equal("/repair", "/quiet", "/norestart");
+        runner.Calls[1].Arguments.Should().Equal("/repair", "/passive", "/norestart");
         notices.ToString().Should().Contain(".NET SDK 10.0.100 is registered with Windows, but its files are missing");
     }
 
@@ -128,7 +128,7 @@ public class WindowsBundleArtifactTests : IDisposable
         var ex = Assert.ThrowsExactly<DotnetInstallException>(() => artifact.TryRepair());
 
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.InstallerFailed);
-        runner.Calls.Should().ContainSingle().Which.Arguments.Should().Equal("/repair", "/quiet", "/norestart");
+        runner.Calls.Should().ContainSingle().Which.Arguments.Should().Equal("/repair", "/passive", "/norestart");
     }
 
     [TestMethod]

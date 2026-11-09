@@ -39,22 +39,19 @@ internal static class SelfUpdateStartupTelemetryProcess
 
         using var process = Process.Start(startInfo);
         Assert.IsNotNull(process);
-        using var output = new MemoryStream();
-        using var error = new MemoryStream();
-        var stdout = process.StandardOutput.BaseStream.CopyToAsync(output);
-        var stderr = process.StandardError.BaseStream.CopyToAsync(error);
         try
         {
             using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
-            await Task.WhenAll(process.WaitForExitAsync(timeout.Token), stdout, stderr).WaitAsync(timeout.Token).ConfigureAwait(false);
-            Assert.AreEqual(0, process.ExitCode, Encoding.UTF8.GetString(output.ToArray()) + Encoding.UTF8.GetString(error.ToArray()));
+            var (output, error) = await process.ReadAllBytesAsync(timeout.Token).ConfigureAwait(false);
+            await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
+            Assert.AreEqual(0, process.ExitCode, Encoding.UTF8.GetString(output) + Encoding.UTF8.GetString(error));
             if (expectedUtf8Output is not null)
             {
-                Assert.IsGreaterThanOrEqualTo(0, output.ToArray().AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Output)));
+                Assert.IsGreaterThanOrEqualTo(0, output.AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Output)));
             }
             if (expectedUtf8Error is not null)
             {
-                Assert.IsGreaterThanOrEqualTo(0, error.ToArray().AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Error)));
+                Assert.IsGreaterThanOrEqualTo(0, error.AsSpan().IndexOf(Encoding.UTF8.GetBytes(expectedUtf8Error)));
             }
         }
         finally

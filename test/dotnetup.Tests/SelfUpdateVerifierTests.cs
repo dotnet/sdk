@@ -13,8 +13,6 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 [TestClass]
 public class SelfUpdateVerifierTests
 {
-    public TestContext TestContext { get; set; } = null!;
-
     [TestMethod]
     [DataRow("valid")]
     [DataRow("none")]
@@ -43,6 +41,16 @@ public class SelfUpdateVerifierTests
     }
 
     [TestMethod]
+    public void VersionOutputBeyondPreviousCaptureLimitIsAccepted()
+    {
+        using var files = new SelfUpdateTestFiles();
+        var version = SelfUpdateTestFiles.OriginalVersion + "+" + new string('a', 5000);
+        SelfUpdateTestFiles.WriteExecutable(files.Paths.InstalledPath, version);
+
+        Assert.AreEqual(version, SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath));
+    }
+
+    [TestMethod]
     [DataRow(SelfUpdateTestFiles.OriginalVersion)]
     [DataRow(SelfUpdateTestFiles.OriginalVersion + "+full-build.42")]
     public void InstalledVersionMatchesVersionOutput(string version)
@@ -55,7 +63,7 @@ public class SelfUpdateVerifierTests
     }
 
     [TestMethod]
-    public async Task PublishedFixtureUsesRelativeRuntimeInsteadOfEnvironment()
+    public void PublishedFixtureUsesRelativeRuntimeInsteadOfEnvironment()
     {
         using var files = new SelfUpdateTestFiles(executable: true);
         var startInfo = new ProcessStartInfo(files.Paths.InstalledPath)
@@ -70,24 +78,10 @@ public class SelfUpdateVerifierTests
             startInfo.Environment[variable] = Path.Combine(files.Paths.DirectoryPath, "missing-runtime");
         }
 
-        using var process = Process.Start(startInfo);
-        Assert.IsNotNull(process);
-        var stdout = process.StandardOutput.ReadToEndAsync(TestContext.CancellationToken);
-        var stderr = process.StandardError.ReadToEndAsync(TestContext.CancellationToken);
-        try
-        {
-            await process.WaitForExitAsync(TestContext.CancellationToken).WaitAsync(TimeSpan.FromSeconds(20), TestContext.CancellationToken);
-            Assert.AreEqual(0, process.ExitCode, await stderr);
-            Assert.AreEqual(SelfUpdateTestFiles.OriginalVersion + Environment.NewLine, await stdout);
-        }
-        finally
-        {
-            if (!process.HasExited)
-            {
-                process.Kill(entireProcessTree: true);
-                Assert.IsTrue(process.WaitForExit(10_000));
-            }
-        }
+        var result = ChildProcessRunner.Run(startInfo, TimeSpan.FromSeconds(20));
+        Assert.IsFalse(result.TimedOut, "Version process timed out.");
+        Assert.AreEqual(0, result.ExitCode, result.StandardError);
+        Assert.AreEqual(SelfUpdateTestFiles.OriginalVersion + Environment.NewLine, result.StandardOutput);
     }
 
     [TestMethod]
@@ -97,16 +91,19 @@ public class SelfUpdateVerifierTests
     [DataRow("bom", 0)]
     [DataRow("nonzero", 17)]
     [DataRow("flood", 0)]
-    public void BadVersionExitStatusAndExcessiveOutputAreRejected(string mode, int expectedExitCode)
+    public void BadVersionOutputAndExitStatusAreRejected(string mode, int expectedExitCode)
     {
         using var files = new SelfUpdateTestFiles(executable: true, mode);
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
             SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath, TimeSpan.FromSeconds(20)));
         Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
-        Assert.IsLessThan(5000, exception.Message.Length);
         Assert.IsInstanceOfType<IOException>(exception.InnerException);
         Assert.Contains($"Verification exited with code {expectedExitCode} or", exception.InnerException.Message);
         Assert.Contains($"SelfUpdateProcess mode: {mode}", exception.InnerException.Message);
+        if (mode == "flood")
+        {
+            Assert.Contains(new string('x', 524288), exception.InnerException.Message);
+        }
 
         var version = SelfUpdateTestFiles.OriginalVersion;
         var expectedOutput = mode switch
@@ -131,6 +128,8 @@ public class SelfUpdateVerifierTests
         var exception = Assert.ThrowsExactly<DotnetInstallException>(() =>
             SelfUpdateVerifier.ReadVersion(files.Paths.InstalledPath, TimeSpan.FromSeconds(3)));
         Assert.AreEqual(DotnetInstallErrorCode.InstallFailed, exception.ErrorCode);
+        Assert.IsInstanceOfType<IOException>(exception.InnerException);
+        Assert.AreEqual("The verification child exceeded its timeout.", exception.InnerException.Message);
         Assert.IsLessThan(TimeSpan.FromSeconds(15), watch.Elapsed);
         Assert.IsTrue(File.Exists(files.Paths.InstalledPath + ".pid"), "The fixture must have started before timing out.");
         var processId = int.Parse(File.ReadAllText(files.Paths.InstalledPath + ".pid"), CultureInfo.InvariantCulture);

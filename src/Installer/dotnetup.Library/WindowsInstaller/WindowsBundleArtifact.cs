@@ -16,11 +16,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.WindowsInstaller;
 /// </summary>
 internal sealed class WindowsBundleArtifact : IInstallArtifact
 {
-    /// <summary>Quiet, per-machine install that never restarts the computer.</summary>
-    internal static IReadOnlyList<string> InstallArguments { get; } = ["/install", "/quiet", "/norestart"];
+    /// <summary>Per-machine install with progress UI that never restarts the computer.</summary>
+    internal static IReadOnlyList<string> InstallArguments { get; } = ["/install", "/passive", "/norestart"];
 
-    /// <summary>Quiet repair that never restarts the computer.</summary>
-    internal static IReadOnlyList<string> RepairArguments { get; } = ["/repair", "/quiet", "/norestart"];
+    /// <summary>Repair with progress UI that never restarts the computer.</summary>
+    internal static IReadOnlyList<string> RepairArguments { get; } = ["/repair", "/passive", "/norestart"];
 
     private readonly DotnetInstallRequest _request;
     private readonly ReleaseVersion _version;
