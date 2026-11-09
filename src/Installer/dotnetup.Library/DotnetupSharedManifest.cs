@@ -184,25 +184,27 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         WriteManifestWithChecksum(json);
     }
 
+    /// <summary>
+    /// Returns the root tracked at <paramref name="path"/>, optionally only for <paramref name="architecture"/>.
+    /// A path is tracked at most once: <see cref="GetOrAddDotnetRoot"/> never adds a duplicate and
+    /// <see cref="ValidateManifestData"/> rejects edited manifests that contain one.
+    /// </summary>
+    private static DotnetRootEntry? FindRoot(DotnetupManifestData manifest, string path, InstallArchitecture? architecture = null)
+    {
+        var root = manifest.DotnetRoots.SingleOrDefault(r => DotnetupUtilities.PathsEqual(r.Path, path));
+        return architecture is null || root?.Architecture == architecture ? root : null;
+    }
+
     private static DotnetRootEntry GetOrAddDotnetRoot(DotnetupManifestData manifest, string path, InstallArchitecture architecture)
     {
-        var existing = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(r.Path, path) && r.Architecture == architecture);
-
-        if (existing is not null)
+        if (FindRoot(manifest, path) is { } existing)
         {
-            return existing;
-        }
-
-        // Check for conflict: same path but different architecture
-        var conflicting = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(r.Path, path) && r.Architecture != architecture);
-        if (conflicting is not null)
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.LocalManifestError,
-                $"The dotnet root at '{path}' is already tracked with architecture '{conflicting.Architecture}'. " +
-                $"Cannot add it again with architecture '{architecture}'.");
+            return existing.Architecture == architecture
+                ? existing
+                : throw new DotnetInstallException(
+                    DotnetInstallErrorCode.LocalManifestError,
+                    $"The dotnet root at '{path}' is already tracked with architecture '{existing.Architecture}'. " +
+                    $"Cannot add it again with architecture '{architecture}'.");
         }
 
         var newRoot = new DotnetRootEntry
@@ -274,12 +276,21 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     private void ValidateManifestData(DotnetupManifestData manifest)
     {
         var errors = new List<string>();
+        var seenRoots = new List<string>();
 
         foreach (var root in manifest.DotnetRoots)
         {
             if (string.IsNullOrWhiteSpace(root.Path))
             {
                 errors.Add("A dotnet root entry has an empty path.");
+            }
+            else if (seenRoots.Any(seen => DotnetupUtilities.PathsEqual(seen, root.Path)))
+            {
+                errors.Add($"The dotnet root '{root.Path}' is listed more than once.");
+            }
+            else
+            {
+                seenRoots.Add(root.Path);
             }
 
             foreach (var installation in root.Installations)
@@ -338,9 +349,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public IEnumerable<InstallSpec> GetInstallSpecs(DotnetInstallRoot installRoot)
     {
-        var manifest = ReadManifest();
-        var root = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        var root = FindRoot(ReadManifest(), installRoot.Path, installRoot.Architecture);
         return root?.InstallSpecs ?? [];
     }
 
@@ -370,8 +379,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     public void RemoveInstallSpec(DotnetInstallRoot installRoot, InstallSpec spec)
     {
         var manifest = ReadManifestCore();
-        var root = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        var root = FindRoot(manifest, installRoot.Path, installRoot.Architecture);
 
         if (root is null)
         {
@@ -396,9 +404,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
 
     public IEnumerable<Installation> GetInstallations(DotnetInstallRoot installRoot)
     {
-        var manifest = ReadManifest();
-        var root = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        var root = FindRoot(ReadManifest(), installRoot.Path, installRoot.Architecture);
         return root?.Installations ?? [];
     }
 
@@ -419,8 +425,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     public void RemoveInstallation(DotnetInstallRoot installRoot, Installation installation)
     {
         var manifest = ReadManifestCore();
-        var root = manifest.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(Path.GetFullPath(r.Path), Path.GetFullPath(installRoot.Path)) && r.Architecture == installRoot.Architecture);
+        var root = FindRoot(manifest, installRoot.Path, installRoot.Architecture);
 
         if (root is null)
         {
@@ -446,12 +451,10 @@ internal class DotnetupSharedManifest : IDotnetupManifest
     internal DotnetInstall? FindExistingInstall(DotnetInstall install, bool matchLayoutVersion = false)
     {
         string version = install.Version.ToString();
-        var manifestData = ReadManifest();
-        var root = manifestData.DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+        var root = FindRoot(ReadManifest(), install.InstallRoot.Path!);
 
         // The only case where two installs may be found would be if a RTM version was installed, got promoted to a full build, and then the same .version became "GA"
-        // This is true with 10.0.100 GA which has 10.0.100-rtm.25523.111 and the actual GA.
+        // This is true with 10.0.100 GA which has 10.0.100-rtm.25523.111 and the actual GA. 
         return root?.Installations.FirstOrDefault(existing =>
             existing.Component == install.Component &&
             (existing.Version == version || (matchLayoutVersion && existing.LayoutVersion == version)))?
@@ -467,8 +470,7 @@ internal class DotnetupSharedManifest : IDotnetupManifest
         string version = install.Version.ToString();
         string layoutVersion = install.LayoutVersion.ToString();
 
-        var root = ReadManifest().DotnetRoots.FirstOrDefault(r =>
-            DotnetupUtilities.PathsEqual(r.Path, install.InstallRoot.Path!));
+        var root = FindRoot(ReadManifest(), install.InstallRoot.Path!);
         var conflicts = root?.Installations.Where(existing =>
             existing.Component == install.Component &&
             existing.Version != version &&

@@ -573,6 +573,29 @@ public class ManifestTests
     }
 
     [TestMethod]
+    public void ManifestValidation_DuplicateRoot_ThrowsUserCorrupted()
+    {
+        using var testEnv = new TestEnvironment();
+        var architecture = InstallerUtilities.GetDefaultInstallArchitecture();
+        var badManifest = new DotnetupManifestData
+        {
+            DotnetRoots =
+            [
+                new DotnetRootEntry { Path = testEnv.InstallPath, Architecture = architecture },
+                new DotnetRootEntry { Path = testEnv.InstallPath + Path.DirectorySeparatorChar, Architecture = architecture }
+            ]
+        };
+        File.WriteAllText(testEnv.ManifestPath, JsonSerializer.Serialize(badManifest, DotnetupManifestJsonContext.Default.DotnetupManifestData));
+        File.WriteAllText(testEnv.ManifestPath + ".sha256", "wronghash");
+
+        var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+        using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
+        ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
+        ex.Message.Should().Contain("listed more than once");
+    }
+
+    [TestMethod]
     public void ManifestValidation_ValidData_DoesNotThrow()
     {
         using var testEnv = new TestEnvironment();
