@@ -36,6 +36,11 @@ Two families of targets:
 - Producing the laid-out SDK requires the **full repo build** (so the components exist
   to copy), not just this project — see the root build/dogfood instructions.
 
+### Visual Studio transport symbols
+
+The Visual Studio transport projects must keep `IncludeSymbols` disabled because
+their component projects archive symbols directly through Arcade.
+
 ### macOS tool signing
 
 `PublishRoslyn` and `CreateMSBuildAppHost` ad hoc sign the concrete SDK apphosts with

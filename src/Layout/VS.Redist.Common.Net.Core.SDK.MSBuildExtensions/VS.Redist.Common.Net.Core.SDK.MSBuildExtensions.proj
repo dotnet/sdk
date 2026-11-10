@@ -14,6 +14,8 @@
     <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IsShippingPackage>false</IsShippingPackage>
+    <!-- Component projects archive their symbols separately from this transport package. -->
+    <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
   <ItemGroup>

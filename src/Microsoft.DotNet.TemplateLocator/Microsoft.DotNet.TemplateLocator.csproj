@@ -13,6 +13,9 @@
     <!-- https://github.com/dotnet/sdk/issues/14801 -->
     <AssemblyVersion Condition="'$(TargetFramework)' == '$(NetFrameworkToolCurrent)'">5.0.100.0</AssemblyVersion>
     <TargetsForTfmSpecificBuildOutput>$(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage</TargetsForTfmSpecificBuildOutput>
+    <PublishWindowsPdb Condition="'$(TargetFramework)' == '$(NetFrameworkToolCurrent)' and
+                                 '$(OS)' == 'Windows_NT' and
+                                 '$(DotNetBuildSourceOnly)' != 'true'">true</PublishWindowsPdb>
 
     <!--
       Mark as Native AOT compatible. This will enable relevant analyzers.
