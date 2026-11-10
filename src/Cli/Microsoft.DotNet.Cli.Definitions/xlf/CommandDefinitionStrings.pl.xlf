@@ -1964,7 +1964,7 @@ Wartość domyślna to „false”. Jednak w przypadku, gdy docelową jest platf
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying the Microsoft Test Platform banner</source>
-        <target state="needs-review-translation">Uruchom testy bez wyświetlania baneru platformy testowej firmy Microsoft</target>
+        <target state="new">Run test(s), without displaying the Microsoft Test Platform banner</target>
         <note>{Locked="Microsoft Test Platform"}</note>
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
